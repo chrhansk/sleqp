@@ -5,10 +5,6 @@ stages:
 - build
 - test
 
-cache:
-  paths:
-    - build
-
 # run cmake
 prepare:
   stage: prepare
