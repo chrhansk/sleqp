@@ -6,7 +6,7 @@ set(COMMON_SRC
   sleqp_cmp.c
   lp/sleqp_lpi.c)
 
-add_library(sleqp
+add_library(sleqp STATIC
   ${SOPLEX_LPI_SRC}
   ${COMMON_SRC})
 
