@@ -5,6 +5,11 @@ stages:
 - build
 - test
 
+cache:
+  key: "PIPELINE-$CI_PIPELINE_ID"
+  paths:
+    - build
+
 # run cmake
 prepare:
   stage: prepare
