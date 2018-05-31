@@ -17,6 +17,7 @@ function(add_unit_test TEST_NAME)
 
   target_link_libraries(${BASE_NAME}
     ${CHECK_LIBRARIES}
+    ${CMAKE_THREAD_LIBS_INIT}
     sleqp)
 
   add_dependencies(build_tests ${BASE_NAME})

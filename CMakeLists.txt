@@ -11,6 +11,7 @@ find_package(SoPlex REQUIRED)
 find_package(ZLIB REQUIRED)
 
 find_package(Check)
+find_package(Threads)
 
 enable_testing()
 set(ENABLE_UNIT_TESTS TRUE)
