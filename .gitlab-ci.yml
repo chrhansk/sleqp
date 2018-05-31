@@ -13,6 +13,7 @@ cache:
 prepare:
   stage: prepare
   script:
+    - mkdir -p build
     - cd build
     - cmake ..
 
