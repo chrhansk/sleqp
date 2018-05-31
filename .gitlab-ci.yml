@@ -1,0 +1,32 @@
+image: chrh/sleqp_builddeps
+
+stages:
+- prepare
+- build
+- test
+
+cache:
+  paths:
+    - build
+
+# run cmake
+prepare:
+  stage: prepare
+  script:
+    - cd build
+    - cmake ..
+
+# run make
+build:
+  stage: build
+  script:
+    - cd build
+    - make -j$(nproc)
+
+# run tests
+test:
+  stage: test
+  script:
+    - cd build
+    - make build_tests
+    - make test
