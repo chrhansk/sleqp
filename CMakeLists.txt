@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.1)
 
 project(sleqp)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 find_package(GMP REQUIRED)
