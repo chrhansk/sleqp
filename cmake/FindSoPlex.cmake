@@ -44,6 +44,8 @@ list(APPEND _SOPLEX_SEARCHES _SOPLEX_SEARCH_NORMAL)
 # Try each search configuration.
 foreach(search ${_SOPLEX_SEARCHES})
   FIND_PATH(SOPLEX_INCLUDE_DIR NAMES soplex.h ${${search}} PATH_SUFFIXES src include soplex)
+
+  FIND_LIBRARY(SOPLEX_LIBRARIES NAMES soplex-pic ${${search}} PATH_SUFFIXES lib)
   FIND_LIBRARY(SOPLEX_LIBRARIES NAMES soplex ${${search}} PATH_SUFFIXES lib)
 endforeach()
 
