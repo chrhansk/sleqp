@@ -1,4 +1,4 @@
-include_directories(${CHECK_INCLUDE_DIRS})
+include_directories(${CHECK_INCLUDE_DIR})
 
 include_directories("${CMAKE_SOURCE_DIR}/src/main")
 include_directories("${CMAKE_SOURCE_DIR}/src/test")
