@@ -1,0 +1,48 @@
+# Umfpack lib usually requires linking to a BLAS library.
+# It is up to the user of this module to find a BLAS and link to it.
+#
+# Once done, this will define
+#
+#  UMFPACK_INCLUDE_DIRS   - where to find soplex.h, etc.
+#  UMFPACK_LIBRARIES      - List of libraries when using soplex.
+#  UMFPACK_FOUND          - True if soplex found.
+
+find_path(UMFPACK_INCLUDE_DIRS
+  NAMES umfpack.h
+  PATHS $ENV{UMFPACKDIR} ${INCLUDE_INSTALL_DIR}
+  PATH_SUFFIXES suitesparse ufsparse)
+
+find_library(UMFPACK_LIBRARIES umfpack PATHS $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+
+if(UMFPACK_LIBRARIES)
+
+  if(NOT UMFPACK_LIBDIR)
+    get_filename_component(UMFPACK_LIBDIR ${UMFPACK_LIBRARIES} PATH)
+  endif(NOT UMFPACK_LIBDIR)
+
+  find_library(COLAMD_LIBRARY colamd PATHS ${UMFPACK_LIBDIR} $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+  if(COLAMD_LIBRARY)
+    set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARIES} ${COLAMD_LIBRARY})
+  endif()
+
+  find_library(AMD_LIBRARY amd PATHS ${UMFPACK_LIBDIR} $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+  if(AMD_LIBRARY)
+    set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARIES} ${AMD_LIBRARY})
+  endif()
+
+  find_library(SUITESPARSE_LIBRARY SuiteSparse PATHS ${UMFPACK_LIBDIR} $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+  if(SUITESPARSE_LIBRARY)
+    set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARIES} ${SUITESPARSE_LIBRARY})
+  endif()
+
+  find_library(CHOLMOD_LIBRARY cholmod PATHS $ENV{UMFPACK_LIBDIR} $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
+  if(CHOLMOD_LIBRARY)
+    set(UMFPACK_LIBRARIES ${UMFPACK_LIBRARIES} ${CHOLMOD_LIBRARY})
+  endif()
+
+endif(UMFPACK_LIBRARIES)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(UMFPACK DEFAULT_MSG UMFPACK_INCLUDE_DIRS UMFPACK_LIBRARIES)
+
+mark_as_advanced(UMFPACK_INCLUDE_DIRS UMFPACK_LIBRARIES AMD_LIBRARY COLAMD_LIBRARY CHOLMOD_LIBRARY SUITESPARSE_LIBRARY)

@@ -11,9 +11,12 @@ extern "C" {
   {
     SLEQP_OKAY,
     SLEQP_NOMEM,
+    SLEQP_INVALID,
   };
 
   typedef enum SLEQP_Retcode SLEQP_RETCODE;
+
+  typedef unsigned int SLEQP_Bool;
 
 #define SLEQP_CALL(x)                                                   \
   do                                                                    \

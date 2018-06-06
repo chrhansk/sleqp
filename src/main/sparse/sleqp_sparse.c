@@ -2,9 +2,8 @@
 
 #include <assert.h>
 
+#include "sleqp_cmp.h"
 #include "sleqp_mem.h"
-
-#define MAX(a,b) (((a)>(b))?(a):(b))
 
 SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
                                          size_t dim,
@@ -22,6 +21,98 @@ SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
 
   sleqp_calloc(&vec->data, nnz_max);
   sleqp_calloc(&vec->indices, nnz_max);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
+                                       size_t idx,
+                                       double value)
+{
+  assert(idx < vec->nnz);
+
+  if(vec->nnz > 0)
+  {
+    assert(idx > vec->indices[vec->nnz - 1]);
+  }
+
+  vec->data[vec->nnz] = value;
+  vec->indices[vec->nnz] = idx;
+
+  ++(vec->nnz);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
+                                          size_t nnz)
+{
+  if(vec->nnz_max >= nnz)
+  {
+    return SLEQP_OKAY;
+  }
+
+  sleqp_realloc(&vec->data, nnz);
+  sleqp_realloc(&vec->indices, nnz);
+
+  vec->nnz_max = nnz;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
+                                       SleqpSparseVec* lb,
+                                       SleqpSparseVec* ub,
+                                       SleqpSparseVec** xstar)
+{
+  const size_t dim = x->dim;
+
+  assert(lb->dim == dim);
+  assert(ub->dim == dim);
+
+  sleqp_sparse_vector_create(xstar,
+                             dim,
+                             SLEQP_MIN(x->nnz + lb->nnz, dim));
+
+  size_t k_x = 0, k_lb = 0, k_ub = 0;
+
+  SleqpSparseVec* xclip = *xstar;
+
+  while(k_x < x->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  {
+    double lb_val = 0;
+    double ub_val = 0;
+    double x_val = 0;
+
+    SLEQP_Bool valid_x = (k_x < x->nnz);
+    SLEQP_Bool valid_lb = (k_lb < lb->nnz);
+    SLEQP_Bool valid_ub = (k_ub < ub->nnz);
+
+    size_t idx = valid_x ? x->indices[k_x] : dim + 1;
+    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
+    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
+
+    if(valid_x && idx == x->indices[k_x])
+    {
+      x_val = x->data[k_x];
+    }
+
+    if(valid_lb && idx == lb->indices[k_lb])
+    {
+      x_val = SLEQP_MAX(x_val, lb->data[k_lb]);
+    }
+
+    if(valid_ub && idx == ub->indices[k_ub])
+    {
+      x_val = SLEQP_MIN(x_val, ub->data[k_ub]);
+    }
+
+    if(!sleqp_zero(x_val))
+    {
+      SLEQP_CALL(sleqp_sparse_vector_push(xclip,
+                                          idx,
+                                          x_val));
+    }
+
+  }
 
   return SLEQP_OKAY;
 }
@@ -56,10 +147,25 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
   matrix->num_rows = num_rows;
 
   sleqp_calloc(&matrix->data, nnz_max);
-  sleqp_calloc(&matrix->cols, (MAX(nnz_max, num_cols) + 1));
+  sleqp_calloc(&matrix->cols, (SLEQP_MAX(nnz_max, num_cols) + 1));
   sleqp_calloc(&matrix->rows, nnz_max);
 
   return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
+                                          size_t nnz)
+{
+  if(matrix->nnz_max >= nnz)
+  {
+    return SLEQP_OKAY;
+  }
+
+  sleqp_realloc(&matrix->data, nnz);
+  sleqp_calloc(&matrix->cols, (SLEQP_MAX(nnz, matrix->num_cols) + 1));
+  sleqp_calloc(&matrix->rows, nnz);
+
+  matrix->nnz_max = nnz;
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** mstar)

@@ -37,6 +37,18 @@ extern "C" {
   }                                                     \
   while(0)
 
+#define sleqp_realloc(ptr, count)                       \
+  do                                                    \
+  {                                                     \
+    *ptr = realloc(ptr,                                 \
+                  (count)*sizeof(**ptr));               \
+    if(!*ptr)                                           \
+    {                                                   \
+      return SLEQP_NOMEM;                               \
+    }                                                   \
+  }                                                     \
+  while(0)
+
 #define sleqp_free(ptr)                         \
   do                                            \
   {                                             \

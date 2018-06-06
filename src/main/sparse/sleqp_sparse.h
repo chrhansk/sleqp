@@ -28,6 +28,18 @@ extern "C" {
                                            size_t dim,
                                            size_t nnz_max);
 
+  SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
+                                         size_t idx,
+                                         double value);
+
+  SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
+                                            size_t nnz);
+
+  SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
+                                         SleqpSparseVec* lb,
+                                         SleqpSparseVec* ub,
+                                         SleqpSparseVec** xstar);
+
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec);
 
   /**
@@ -51,6 +63,9 @@ extern "C" {
                                            size_t num_rows,
                                            size_t num_cols,
                                            size_t nnz_max);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
+                                            size_t nnz);
 
   SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** matrix);
 

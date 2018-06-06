@@ -3,6 +3,8 @@ include_directories(${CHECK_INCLUDE_DIR})
 include_directories("${CMAKE_SOURCE_DIR}/src/main")
 include_directories("${CMAKE_SOURCE_DIR}/src/test")
 
+include_directories(${CHECK_INCLUDE_DIRS})
+
 add_custom_target(build_tests)
 
 add_custom_target(run_tests

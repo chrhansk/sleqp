@@ -4,19 +4,23 @@
 #include "sleqp_types.h"
 #include "sparse/sleqp_sparse.h"
 
+#include <assert.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
   // TODO: add SLEQPProblem* at some point
 
-  //typedef struct SleqpFunc SleqpFunc;
+  typedef struct SleqpFunc SleqpFunc;
 
   /**
    * Sets the current iterate value.
    **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpSparseVec* x,
                                           size_t num_variables,
+                                          size_t* func_nnz,
+                                          size_t* grad_nnz,
                                           void* func_data);
 
   // evaluate functions (obj + cons)
@@ -25,8 +29,9 @@ extern "C" {
    **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(size_t num_variables,
                                            int* indices,
-                                           SleqpSparseVec* fvals,
-                                           SleqpSparseMatrix* grad,
+                                           double* func_val,
+                                           SleqpSparseVec* func_grad,
+                                           SleqpSparseMatrix* cons_jac,
                                            void* func_data);
 
   // lambda_0 * d^{T} * H(f) * d - d^{T} * (lambda^{T} * H(g)) * d
@@ -35,6 +40,33 @@ extern "C" {
                                                     SleqpSparseVec* direction,
                                                     SleqpSparseVec* multipliers,
                                                     void* func_data);
+
+  SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
+                                  SLEQP_FUNC_SET setx,
+                                  SLEQP_FUNC_EVAL eval,
+                                  SLEQP_HESS_EVAL_BILINEAR eval_bilin,
+                                  void* func_data);
+
+  SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
+                                     SleqpSparseVec* x,
+                                     size_t num_variables,
+                                     size_t* grad_nnz,
+                                     size_t* jac_nnz);
+
+  SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
+                                size_t num_variables,
+                                int* indices,
+                                double* func_val,
+                                SleqpSparseVec* func_grad,
+                                SleqpSparseMatrix* cons_jac);
+
+  SLEQP_RETCODE sleqp_hess_eval_bilinear(SleqpFunc* func,
+                                         size_t num_variables,
+                                         double* fval,
+                                         SleqpSparseVec* direction,
+                                         SleqpSparseVec* multipliers);
+
+  SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar);
 
   // objective:
 

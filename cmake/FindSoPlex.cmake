@@ -7,60 +7,39 @@
 #  SOPLEX_LIBRARIES      - List of libraries when using soplex.
 #  SOPLEX_FOUND          - True if soplex found.
 #
-# An includer may set SOPLEX_ROOT to a soplex installation root to tell
+# A maintainer may set SOPLEX_ROOT to a soplex installation root to tell
 # this module where to look.
-#
-# Variables used by this module, they can change the default behaviour and
-# need to be set before calling find_package:
-#
-# Author:
-# Wolfgang A. Welz <welz@math.tu-berlin.de>
-#
-# Distributed under the Boost Software License, Version 1.0.
-# (See accompanying file LICENSE.txt or copy at
-# http://www.boost.org/LICENSE_1_0.txt)
 
-include(LibFindMacros)
+find_path(SOPLEX_INCLUDE_DIR
+  NAMES soplex.h ${${search}}
+  PATHS ${SOPLEX_ROOT}
+  PATH_SUFFIXES src include soplex)
 
-# If SOPLEX_ROOT is not set, look for the environment variable
-if(NOT SOPLEX_ROOT AND NOT "$ENV{SOPLEX_ROOT}" STREQUAL "")
-  set(SOPLEX_ROOT $ENV{SOPLEX_ROOT})
+# Try to find a PIC-version first
+find_library(SOPLEX_LIBRARY
+  NAMES soplex-pic soplex
+  PATHS ${SOPLEX_ROOT}
+  PATH_SUFFIXES lib)
+
+if(SOPLEX_INCLUDE_DIR AND EXISTS "${SOPLEX_INCLUDE_DIR}/spxdefines.h")
+  file(STRINGS "${SOPLEX_INCLUDE_DIR}/spxdefines.h" SOPLEX_DEF_H REGEX "^#define SOPLEX_VERSION +[0-9]+")
+  string(REGEX REPLACE "^#define SOPLEX_VERSION +([0-9]+).*" "\\1" SVER ${SOPLEX_DEF_H})
+
+  string(REGEX REPLACE "([0-9]).*" "\\1" SOPLEX_VERSION_MAJOR ${SVER})
+  string(REGEX REPLACE "[0-9]([0-9]).*" "\\1" SOPLEX_VERSION_MINOR ${SVER})
+  string(REGEX REPLACE "[0-9][0-9]([0-9]).*" "\\1" SOPLEX_VERSION_PATCH ${SVER})
+  set(SOPLEX_VERSION "${SOPLEX_VERSION_MAJOR}.${SOPLEX_VERSION_MINOR}.${SOPLEX_VERSION_PATCH}")
 endif()
 
-set(_SOPLEX_SEARCHES)
+find_package(GMP QUIET)
+find_package(ZLIB QUIET)
 
-# Search SOPLEX_ROOT first if it is set.
-if(SOPLEX_ROOT)
-  set(_SOPLEX_SEARCH_ROOT PATHS ${SOPLEX_ROOT} NO_DEFAULT_PATH)
-  list(APPEND _SOPLEX_SEARCHES _SOPLEX_SEARCH_ROOT)
-endif()
+find_package_handle_standard_args(SOPLEX
+  FOUND_VAR SOPLEX_FOUND
+  REQUIRED_VARS SOPLEX_INCLUDE_DIR SOPLEX_LIBRARY GMP_LIBRARIES ZLIB_LIBRARIES
+  VERSION_VAR SOPLEX_VERSION)
 
-# Normal search.
-set(_SOPLEX_SEARCH_NORMAL
-  PATHS ""
-)
-list(APPEND _SOPLEX_SEARCHES _SOPLEX_SEARCH_NORMAL)
+set(SOPLEX_INCLUDE_DIRS ${SOPLEX_INCLUDE_DIR})
+set(SOPLEX_LIBRARIES ${SOPLEX_LIBRARY} ${GMP_LIBRARIES} ${ZLIB_LIBRARIES})
 
-# Try each search configuration.
-foreach(search ${_SOPLEX_SEARCHES})
-  FIND_PATH(SOPLEX_INCLUDE_DIR NAMES soplex.h ${${search}} PATH_SUFFIXES src include soplex)
-
-  FIND_LIBRARY(SOPLEX_LIBRARIES NAMES soplex-pic ${${search}} PATH_SUFFIXES lib)
-  FIND_LIBRARY(SOPLEX_LIBRARIES NAMES soplex ${${search}} PATH_SUFFIXES lib)
-endforeach()
-
-IF(SOPLEX_INCLUDE_DIR AND EXISTS "${SOPLEX_INCLUDE_DIR}/spxdefines.h")
-  FILE(STRINGS "${SOPLEX_INCLUDE_DIR}/spxdefines.h" SOPLEX_DEF_H REGEX "^#define SOPLEX_VERSION +[0-9]+")
-  STRING(REGEX REPLACE "^#define SOPLEX_VERSION +([0-9]+).*" "\\1" SVER ${SOPLEX_DEF_H})
-
-  STRING(REGEX REPLACE "([0-9]).*" "\\1" SOPLEX_VERSION_MAJOR ${SVER})
-  STRING(REGEX REPLACE "[0-9]([0-9]).*" "\\1" SOPLEX_VERSION_MINOR ${SVER})
-  STRING(REGEX REPLACE "[0-9][0-9]([0-9]).*" "\\1" SOPLEX_VERSION_PATCH ${SVER})
-  SET(SOPLEX_VERSION "${SOPLEX_VERSION_MAJOR}.${SOPLEX_VERSION_MINOR}.${SOPLEX_VERSION_PATCH}")
-ENDIF()
-
-# Set the include dir variables and the libraries and let libfind_process do the rest.
-# NOTE: Singular variables for this library, plural for libraries this this lib depends on.
-set(SOPLEX_PROCESS_INCLUDES SOPLEX_INCLUDE_DIR)
-set(SOPLEX_PROCESS_LIBS SOPLEX_LIBRARIES)
-libfind_process(SOPLEX)
+mark_as_advanced(SOPLEX_INCLUDE_DIR SOPLEX_INCLUDE_DIRS SOPLEX_LIBRARIES SOPLEX_LIBRARY GMP_LIBRARIES ZLIB_LIBRARIES)
