@@ -5,6 +5,9 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
+#include "sleqp_cauchy.h"
+#include "sleqp_iterate.h"
+
 #include "lp/sleqp_lpi.h"
 #include "lp/sleqp_lpi_soplex.h"
 
@@ -12,12 +15,14 @@ struct SleqpSolver
 {
   SleqpProblem* problem;
 
-  SleqpSparseVec* x;
+  SleqpIterate* iterate;
 
   SleqpLPi* lp_interface;
 
-  SleqpSparseVec* func_grad;
-  SleqpSparseMatrix* cons_jac;
+  SleqpCauchyData* cauchy_data;
+
+  double trust_radius;
+  double penalty;
 };
 
 // copy and adjust upper / lower bounds
@@ -27,8 +32,6 @@ static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
                                    SleqpSparseVec** adj_ubstar)
 {
   assert(lb->dim == ub->dim);
-
-  const size_t dim = lb->dim;
 
   SLEQP_CALL(sleqp_sparse_vector_create(adj_lbstar,
                                         lb->dim,
@@ -101,7 +104,7 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                    SleqpSparseVec* cons_lb,
                                    SleqpSparseVec* cons_ub)
 {
-  sleqp_malloc(star);
+  SLEQP_CALL(sleqp_malloc(star));
 
   SleqpProblem* sleqp = *star;
 
@@ -110,24 +113,24 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
 
   sleqp->func = func;
 
-  SleqpSparseVec** adj_lbstar;
-  SleqpSparseVec** adj_ubstar;
+  SleqpSparseVec* adj_lb;
+  SleqpSparseVec* adj_ub;
 
   SLEQP_CALL(adjust_bounds(var_lb,
                            var_ub,
-                           adj_lbstar,
-                           adj_ubstar));
+                           &adj_lb,
+                           &adj_ub));
 
-  sleqp->var_lb = *adj_lbstar;
-  sleqp->var_ub = *adj_ubstar;
+  sleqp->var_lb = adj_lb;
+  sleqp->var_ub = adj_ub;
 
   SLEQP_CALL(adjust_bounds(cons_lb,
                            cons_ub,
-                           adj_lbstar,
-                           adj_ubstar));
+                           &adj_lb,
+                           &adj_ub));
 
-  sleqp->cons_lb = *adj_lbstar;
-  sleqp->cons_ub = *adj_ubstar;
+  sleqp->cons_lb = adj_lb;
+  sleqp->cons_ub = adj_ub;
 
   sleqp->num_variables = var_lb->dim;
   sleqp->num_constraints = cons_lb->dim;
@@ -135,54 +138,58 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   return SLEQP_OKAY;
 }
 
-#if 0
-static SLEQP_RETCODE iterate(Sleqp* sleqp)
+static SLEQP_RETCODE iterate(SleqpSolver* solver)
 {
   size_t func_grad_nnz = 0;
+  size_t cons_val_nnz = 0;
   size_t cons_jac_nnz = 0;
 
-  SLEQP_CALL(sleqp_func_set_value(sleqp->func,
-                                  sleqp->x,
-                                  sleqp->num_variables,
+  double func_val;
+
+  SleqpProblem* problem = solver->problem;
+  SleqpIterate* iterate = solver->iterate;
+
+  SLEQP_CALL(sleqp_func_set_value(problem->func,
+                                  iterate->x,
+                                  problem->num_variables,
                                   &func_grad_nnz,
+                                  &cons_val_nnz,
                                   &cons_jac_nnz));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(sleqp->func_grad,
-                                         func_grad_nnz));
+  /*
+   * Reserve a litte more so we can add slack penalties
+   * without reallocations
+   */
+  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->func_grad,
+                                         func_grad_nnz + 2*problem->num_constraints));
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->cons_val,
+                                         cons_val_nnz));
 
   /*
    * Reserve a litte more so we can add the two
    * identity matrices afterwards
    */
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(sleqp->cons_jac,
-                                         cons_jac_nnz + 2*sleqp->num_constraints));
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(iterate->cons_jac,
+                                         cons_jac_nnz + 2*problem->num_constraints));
 
-  /*
-  SLEQP_CALL(sleqp_func_eval(sleqp->func,
-                             sleqp->num_variables,
+  SLEQP_CALL(sleqp_func_eval(problem->func,
+                             problem->num_variables,
                              NULL,
-                             fvals,
-                             grad));
-  */
+                             &func_val,
+                             iterate->func_grad,
+                             iterate->cons_val,
+                             iterate->cons_jac));
+
+  SLEQP_CALL(sleqp_cauchy_direction(problem,
+                                    iterate,
+                                    solver->cauchy_data,
+                                    solver->lp_interface,
+                                    solver->penalty,
+                                    solver->trust_radius));
 
   return SLEQP_OKAY;
 }
-
-SLEQP_RETCODE sleqp_problem_solve(Sleqp* sleqp,
-                                  SleqpSparseVec* x)
-{
-  SleqpSparseVec* xclip;
-
-  SLEQP_CALL(sleqp_sparse_vector_clip(x, sleqp->var_lb, sleqp->var_ub, &xclip));
-
-  sleqp->x = xclip;
-
-  iterate(sleqp);
-
-  return SLEQP_OKAY;
-}
-
-#endif
 
 SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star)
 {
@@ -201,40 +208,17 @@ SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star)
 
 
 SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
-                                  SleqpProblem* problem)
+                                  SleqpProblem* problem,
+                                  SleqpSparseVec* x)
 {
-  sleqp_malloc(star);
+  SLEQP_CALL(sleqp_malloc(star));
 
   SleqpSolver* solver = *star;
+  size_t num_constraints = problem->num_constraints;
+  size_t num_variables = problem->num_variables;
 
   solver->problem = problem;
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->func_grad,
-                                        problem->num_variables,
-                                        0));
-
-  SLEQP_CALL(sleqp_sparse_matrix_create(&solver->cons_jac,
-                                        problem->num_constraints,
-                                        problem->num_variables,
-                                        0));
-
-  // TODO: make this generic at a later point...
-  SLEQP_CALL(sleqp_lpi_soplex_create_interface(&solver->lp_interface));
-
-  size_t num_lp_variables = problem->num_variables + 2* problem->num_constraints;
-
-  SLEQP_CALL(sleqp_lpi_create_problem(solver->lp_interface,
-                                      num_lp_variables,
-                                      problem->num_constraints));
-
-  solver->x = NULL;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_solve(SleqpSolver* solver,
-                          SleqpSparseVec* x)
-{
   SleqpSparseVec* xclip;
 
   SLEQP_CALL(sleqp_sparse_vector_clip(x,
@@ -242,7 +226,30 @@ SLEQP_RETCODE sleqp_solve(SleqpSolver* solver,
                                       solver->problem->var_ub,
                                       &xclip));
 
-  solver->x = xclip;
+  SLEQP_CALL(sleqp_iterate_create(&solver->iterate,
+                                  solver->problem,
+                                  xclip));
+
+  // TODO: make this generic at a later point...
+  SLEQP_CALL(sleqp_lpi_soplex_create_interface(&solver->lp_interface));
+
+  SLEQP_CALL(sleqp_lpi_create_problem(solver->lp_interface,
+                                      num_variables + 2*num_constraints,
+                                      num_constraints));
+
+  SLEQP_CALL(sleqp_cauchy_data_create(&solver->cauchy_data,
+                                      problem));
+
+  // TODO: Set this to something different?!
+  solver->trust_radius = 1.;
+  solver->penalty = 1.;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_solve(SleqpSolver* solver)
+{
+  SLEQP_CALL(iterate(solver));
 
   return SLEQP_OKAY;
 }
@@ -251,16 +258,11 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
 {
   SleqpSolver* solver = *star;
 
+  SLEQP_CALL(sleqp_cauchy_data_free(&solver->cauchy_data));
+
   SLEQP_CALL(sleqp_lpi_free(&solver->lp_interface));
 
-  SLEQP_CALL(sleqp_sparse_matrix_free(&solver->cons_jac));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->func_grad));
-
-  if(solver->x)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_free(&solver->x));
-  }
+  SLEQP_CALL(sleqp_iterate_free(&solver->iterate));
 
   sleqp_free(star);
 

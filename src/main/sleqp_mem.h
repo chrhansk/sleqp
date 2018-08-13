@@ -9,52 +9,26 @@
 extern "C" {
 #endif
 
-#define sleqp_allocate_memory(ptr, size)        \
-  {                                             \
-    *ptr = malloc(size);                        \
-                                                \
-    if(!*ptr)                                   \
-    {                                           \
-      return SLEQP_NOMEM;                       \
-    }                                           \
-  }
+#define sleqp_allocate_memory(ptr, size)                                \
+  (((*ptr = (size > 0) ? malloc(size) : NULL), (size > 0) && ptr == NULL) \
+   ? SLEQP_NOMEM : SLEQP_OKAY)
+
+#define sleqp_reallocate_memory(ptr, size)                              \
+  (*ptr = realloc(*ptr, size), ptr != NULL) ? SLEQP_OKAY : SLEQP_NOMEM
 
   SLEQP_RETCODE sleqp_free(void** ptr);
 
 #define sleqp_malloc(ptr)                       \
-  do                                            \
-  {                                             \
-    sleqp_allocate_memory(ptr,                  \
-                          sizeof(**ptr));       \
-  }                                             \
-  while(0)
+  sleqp_allocate_memory(ptr, sizeof(**ptr))
 
 #define sleqp_calloc(ptr, count)                        \
-  do                                                    \
-  {                                                     \
-    sleqp_allocate_memory(ptr,                          \
-                          (count)*sizeof(**ptr));       \
-  }                                                     \
-  while(0)
+  sleqp_allocate_memory(ptr, ((count) * sizeof(**ptr)))
 
-#define sleqp_realloc(ptr, count)                       \
-  do                                                    \
-  {                                                     \
-    *ptr = realloc(ptr,                                 \
-                  (count)*sizeof(**ptr));               \
-    if(!*ptr)                                           \
-    {                                                   \
-      return SLEQP_NOMEM;                               \
-    }                                                   \
-  }                                                     \
-  while(0)
+#define sleqp_realloc(ptr, count)                               \
+  sleqp_reallocate_memory(ptr, ((count) * sizeof(**ptr)))
 
 #define sleqp_free(ptr)                         \
-  do                                            \
-  {                                             \
-    free(ptr);                                  \
-  }                                             \
-  while(0)
+  free(*ptr); *ptr = NULL
 
 #ifdef __cplusplus
 }

@@ -19,8 +19,9 @@ extern "C" {
    **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpSparseVec* x,
                                           size_t num_variables,
-                                          size_t* func_nnz,
-                                          size_t* grad_nnz,
+                                          size_t* func_grad_nnz,
+                                          size_t* cons_val_nnz,
+                                          size_t* cons_jac_nnz,
                                           void* func_data);
 
   // evaluate functions (obj + cons)
@@ -31,6 +32,7 @@ extern "C" {
                                            int* indices,
                                            double* func_val,
                                            SleqpSparseVec* func_grad,
+                                           SleqpSparseVec* cons_val,
                                            SleqpSparseMatrix* cons_jac,
                                            void* func_data);
 
@@ -50,14 +52,16 @@ extern "C" {
   SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                      SleqpSparseVec* x,
                                      size_t num_variables,
-                                     size_t* grad_nnz,
-                                     size_t* jac_nnz);
+                                     size_t* func_grad_nnz,
+                                     size_t* cons_val_nnz,
+                                     size_t* cons_jac_nnz);
 
   SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
                                 size_t num_variables,
                                 int* indices,
                                 double* func_val,
                                 SleqpSparseVec* func_grad,
+                                SleqpSparseVec* cons_val,
                                 SleqpSparseMatrix* cons_jac);
 
   SLEQP_RETCODE sleqp_hess_eval_bilinear(SleqpFunc* func,

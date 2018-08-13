@@ -67,6 +67,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
                                             size_t nnz);
 
+  SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
+                                            FILE* output);
+
   SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** matrix);
 
 #ifdef __cplusplus

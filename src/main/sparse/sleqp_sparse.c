@@ -11,7 +11,7 @@ SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
 {
   assert(nnz_max <= dim);
 
-  sleqp_malloc(vstar);
+  SLEQP_CALL(sleqp_malloc(vstar));
 
   SleqpSparseVec *vec = *vstar;
 
@@ -19,8 +19,8 @@ SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
   vec->dim = dim;
   vec->nnz_max = nnz_max;
 
-  sleqp_calloc(&vec->data, nnz_max);
-  sleqp_calloc(&vec->indices, nnz_max);
+  SLEQP_CALL(sleqp_calloc(&vec->data, nnz_max));
+  SLEQP_CALL(sleqp_calloc(&vec->indices, nnz_max));
 
   return SLEQP_OKAY;
 }
@@ -29,7 +29,7 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
                                        size_t idx,
                                        double value)
 {
-  assert(idx < vec->nnz);
+  assert(idx < vec->nnz_max);
 
   if(vec->nnz > 0)
   {
@@ -52,10 +52,12 @@ SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
     return SLEQP_OKAY;
   }
 
-  sleqp_realloc(&vec->data, nnz);
-  sleqp_realloc(&vec->indices, nnz);
+  SLEQP_CALL(sleqp_realloc(&vec->data, nnz));
+  SLEQP_CALL(sleqp_realloc(&vec->indices, nnz));
 
   vec->nnz_max = nnz;
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
@@ -78,8 +80,6 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
 
   while(k_x < x->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
   {
-    double lb_val = 0;
-    double ub_val = 0;
     double x_val = 0;
 
     SLEQP_Bool valid_x = (k_x < x->nnz);
@@ -93,6 +93,10 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
     if(valid_x && idx == x->indices[k_x])
     {
       x_val = x->data[k_x];
+    }
+    else
+    {
+      x_val = 0.;
     }
 
     if(valid_lb && idx == lb->indices[k_lb])
@@ -112,6 +116,21 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
                                           x_val));
     }
 
+    if(valid_lb && idx == lb->indices[k_lb])
+    {
+      ++k_lb;
+    }
+
+    if(valid_ub && idx == ub->indices[k_ub])
+    {
+      ++k_ub;
+    }
+
+    if(valid_x && idx == x->indices[k_x])
+    {
+      ++k_x;
+    }
+
   }
 
   return SLEQP_OKAY;
@@ -121,10 +140,10 @@ SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vstar)
 {
   SleqpSparseVec *vec = *vstar;
 
-  sleqp_free(vec->indices);
-  sleqp_free(vec->data);
+  sleqp_free(&vec->indices);
+  sleqp_free(&vec->data);
 
-  sleqp_free(vec);
+  sleqp_free(&vec);
 
   *vstar = NULL;
 
@@ -136,7 +155,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
                                          size_t num_cols,
                                          size_t nnz_max)
 {
-  sleqp_malloc(mstar);
+  SLEQP_CALL(sleqp_malloc(mstar));
 
   SleqpSparseMatrix* matrix = *mstar;
 
@@ -146,9 +165,9 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
   matrix->num_cols = num_cols;
   matrix->num_rows = num_rows;
 
-  sleqp_calloc(&matrix->data, nnz_max);
-  sleqp_calloc(&matrix->cols, (SLEQP_MAX(nnz_max, num_cols) + 1));
-  sleqp_calloc(&matrix->rows, nnz_max);
+  SLEQP_CALL(sleqp_calloc(&matrix->data, nnz_max));
+  SLEQP_CALL(sleqp_calloc(&matrix->cols, num_cols + 1));
+  SLEQP_CALL(sleqp_calloc(&matrix->rows, nnz_max));
 
   return SLEQP_OKAY;
 }
@@ -161,22 +180,50 @@ SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
     return SLEQP_OKAY;
   }
 
-  sleqp_realloc(&matrix->data, nnz);
-  sleqp_calloc(&matrix->cols, (SLEQP_MAX(nnz, matrix->num_cols) + 1));
-  sleqp_calloc(&matrix->rows, nnz);
+  SLEQP_CALL(sleqp_realloc(&matrix->data, nnz));
+  SLEQP_CALL(sleqp_realloc(&matrix->rows, nnz));
 
   matrix->nnz_max = nnz;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
+                                          FILE* output)
+{
+  fprintf(output,
+          "Sparse matrix, dimension: %ld x %ld, entries: %ld\n",
+          matrix->num_rows,
+          matrix->num_cols,
+          matrix->nnz);
+
+  size_t col = 0;
+
+  for(size_t k = 0; k < matrix->nnz; ++k)
+  {
+    while(col < matrix->cols[k])
+    {
+      ++col;
+    }
+
+    fprintf(output, "(%ld, %ld) = %f\n",
+            matrix->rows[k],
+            col,
+            matrix->data[k]);
+  }
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** mstar)
 {
   SleqpSparseMatrix* matrix = *mstar;
 
-  sleqp_free(matrix->rows);
-  sleqp_free(matrix->cols);
-  sleqp_free(matrix->data);
+  sleqp_free(&matrix->rows);
+  sleqp_free(&matrix->cols);
+  sleqp_free(&matrix->data);
 
-  sleqp_free(matrix);
+  sleqp_free(&matrix);
 
   *mstar = NULL;
 

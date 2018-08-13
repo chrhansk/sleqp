@@ -40,8 +40,8 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
 }
 
 SLEQP_RETCODE sleqp_lpi_create_problem(SleqpLPi* lp_interface,
-                                       int num_variables,
-                                       int num_constraints)
+                                       size_t num_variables,
+                                       size_t num_constraints)
 {
   assert(lp_interface);
 
@@ -70,7 +70,7 @@ SLEQP_RETCODE sleqp_lpi_solve(SleqpLPi* lp_interface,
 }
 
 SLEQP_RETCODE sleqp_lpi_get_solution(SleqpLPi* lp_interface,
-                                     int num_variables,
+                                     size_t num_variables,
                                      double* objective_value,
                                      double* solution_values)
 {
@@ -83,7 +83,7 @@ SLEQP_RETCODE sleqp_lpi_get_solution(SleqpLPi* lp_interface,
 }
 
 SLEQP_RETCODE sleqp_lpi_get_varstats(SleqpLPi* lp_interface,
-                                     int num_variables,
+                                     size_t num_variables,
                                      SLEQP_BASESTAT* variable_stats)
 {
   assert(lp_interface);
@@ -101,9 +101,7 @@ SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_star)
 
   lp_interface->free_problem(&lp_interface->lp_data);
 
-  sleqp_free(lp_interface);
-
-  *lp_star = NULL;
+  sleqp_free(lp_star);
 
   return SLEQP_OKAY;
 }

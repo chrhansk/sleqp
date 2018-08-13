@@ -7,6 +7,11 @@ include_directories(${CHECK_INCLUDE_DIRS})
 
 add_custom_target(build_tests)
 
+set(TEST_COMMON_SRC
+  rosenbrock_fixture.c)
+
+add_library(test_common ${TEST_COMMON_SRC})
+
 add_custom_target(run_tests
   COMMAND ${CMAKE_CTEST_COMMAND}
   DEPENDS build_tests)
@@ -18,6 +23,7 @@ function(add_unit_test TEST_NAME)
     "${TEST_NAME}.c")
 
   target_link_libraries(${BASE_NAME}
+    test_common
     ${CHECK_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     sleqp)
@@ -29,3 +35,5 @@ endfunction()
 
 
 add_unit_test(lp/soplex_lpi_test)
+
+add_unit_test(unconstrained_test)

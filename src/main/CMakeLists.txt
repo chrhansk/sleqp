@@ -6,6 +6,8 @@ set(COMMON_SRC
   sleqp_cauchy.c
   sleqp_cmp.c
   sleqp_func.c
+  sleqp_iterate.c
+  sleqp_log.c
   sleqp.c
   lp/sleqp_lpi.c)
 

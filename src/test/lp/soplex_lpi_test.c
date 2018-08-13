@@ -14,9 +14,9 @@ START_TEST(test_simplex_solve)
   int num_variables = 2;
   int num_constraints = 1;
 
-  CK_ASSERT_SLEQP_CALL(sleqp_lpi_soplex_create_interface(&lp_interface));
+  ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface));
 
-  CK_ASSERT_SLEQP_CALL(sleqp_lpi_create_problem(lp_interface,
+  ASSERT_CALL(sleqp_lpi_create_problem(lp_interface,
                                                 num_variables,
                                                 num_constraints));
 
@@ -26,7 +26,7 @@ START_TEST(test_simplex_solve)
   double cons_lb[] = {-sleqp_infinity()};
   double cons_ub[] = {1};
 
-  CK_ASSERT_SLEQP_CALL(sleqp_sparse_matrix_create(&cons_matrix, 1, 2, 2));
+  ASSERT_CALL(sleqp_sparse_matrix_create(&cons_matrix, 1, 2, 2));
 
   cons_matrix->data[0] = 1;
   cons_matrix->data[1] = 1;
@@ -40,7 +40,9 @@ START_TEST(test_simplex_solve)
 
   cons_matrix->nnz = 2;
 
-  CK_ASSERT_SLEQP_CALL(sleqp_lpi_solve(lp_interface,
+  //ASSERT_CALL(sleqp_sparse_matrix_fprintf(cons_matrix, stdout));
+
+  ASSERT_CALL(sleqp_lpi_solve(lp_interface,
                                        objective,
                                        cons_matrix,
                                        cons_lb,
@@ -51,7 +53,7 @@ START_TEST(test_simplex_solve)
   double solution[] = {-1, -1};
   double objective_value = 0;
 
-  CK_ASSERT_SLEQP_CALL(sleqp_lpi_get_solution(lp_interface,
+  ASSERT_CALL(sleqp_lpi_get_solution(lp_interface,
                                               num_variables,
                                               &objective_value,
                                               solution));
@@ -63,16 +65,16 @@ START_TEST(test_simplex_solve)
 
   SLEQP_BASESTAT variable_stats[] = {0, 0};
 
-  CK_ASSERT_SLEQP_CALL(sleqp_lpi_get_varstats(lp_interface,
+  ASSERT_CALL(sleqp_lpi_get_varstats(lp_interface,
                                               num_variables,
                                               variable_stats));
 
   ck_assert(variable_stats[0] == SLEQP_BASESTAT_BASIC);
   ck_assert(variable_stats[1] == SLEQP_BASESTAT_LOWER);
 
-  CK_ASSERT_SLEQP_CALL(sleqp_sparse_matrix_free(&cons_matrix));
+  ASSERT_CALL(sleqp_sparse_matrix_free(&cons_matrix));
 
-  CK_ASSERT_SLEQP_CALL(sleqp_lpi_free(&lp_interface));
+  ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 }
 END_TEST
 

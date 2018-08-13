@@ -1,9 +1,11 @@
 #ifndef TEST_COMMON_H
 #define TEST_COMMON_H
 
+#include <check.h>
+
 #include "sleqp_types.h"
 
-#define CK_ASSERT_SLEQP_CALL(x)                 \
+#define ASSERT_CALL(x)                          \
   do                                            \
   {                                             \
     SLEQP_RETCODE _retcode_ = (x);              \
