@@ -17,8 +17,8 @@ START_TEST(test_simplex_solve)
   ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface));
 
   ASSERT_CALL(sleqp_lpi_create_problem(lp_interface,
-                                                num_variables,
-                                                num_constraints));
+                                       num_variables,
+                                       num_constraints));
 
   double objective[] = {-1, 0};
   double vars_lb[] = {0, 0};

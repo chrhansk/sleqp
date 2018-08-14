@@ -3,8 +3,10 @@ set(SOPLEX_LPI_SRC
 
 set(COMMON_SRC
   sparse/sleqp_sparse.c
+  sleqp_active_set.c
   sleqp_cauchy.c
   sleqp_cmp.c
+  sleqp_dual_estimation.c
   sleqp_func.c
   sleqp_iterate.c
   sleqp_log.c

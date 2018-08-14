@@ -181,12 +181,12 @@ static SLEQP_RETCODE iterate(SleqpSolver* solver)
                              iterate->cons_val,
                              iterate->cons_jac));
 
-  SLEQP_CALL(sleqp_cauchy_direction(problem,
-                                    iterate,
-                                    solver->cauchy_data,
-                                    solver->lp_interface,
-                                    solver->penalty,
-                                    solver->trust_radius));
+  SLEQP_CALL(sleqp_cauchy_compute_direction(problem,
+                                            iterate,
+                                            solver->cauchy_data,
+                                            solver->lp_interface,
+                                            solver->penalty,
+                                            solver->trust_radius));
 
   return SLEQP_OKAY;
 }
