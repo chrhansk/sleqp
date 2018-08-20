@@ -138,16 +138,12 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE iterate(SleqpSolver* solver)
+SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
+                                     SleqpIterate* iterate)
 {
   size_t func_grad_nnz = 0;
   size_t cons_val_nnz = 0;
   size_t cons_jac_nnz = 0;
-
-  double func_val;
-
-  SleqpProblem* problem = solver->problem;
-  SleqpIterate* iterate = solver->iterate;
 
   SLEQP_CALL(sleqp_func_set_value(problem->func,
                                   iterate->x,
@@ -176,17 +172,29 @@ static SLEQP_RETCODE iterate(SleqpSolver* solver)
   SLEQP_CALL(sleqp_func_eval(problem->func,
                              problem->num_variables,
                              NULL,
-                             &func_val,
+                             &iterate->func_val,
                              iterate->func_grad,
                              iterate->cons_val,
                              iterate->cons_jac));
 
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE iterate(SleqpSolver* solver)
+{
+  /*
+
+  SleqpProblem* problem = solver->problem;
+  SleqpIterate* iterate = solver->iterate;
+
+
+
   SLEQP_CALL(sleqp_cauchy_compute_direction(problem,
                                             iterate,
                                             solver->cauchy_data,
-                                            solver->lp_interface,
                                             solver->penalty,
                                             solver->trust_radius));
+  */
 
   return SLEQP_OKAY;
 }
@@ -238,7 +246,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                       num_constraints));
 
   SLEQP_CALL(sleqp_cauchy_data_create(&solver->cauchy_data,
-                                      problem));
+                                      problem,
+                                      solver->lp_interface));
 
   // TODO: Set this to something different?!
   solver->trust_radius = 1.;

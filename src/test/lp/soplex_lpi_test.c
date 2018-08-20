@@ -101,6 +101,7 @@ int main()
   suite = soplex_lpi_suite();
   srunner = srunner_create(suite);
 
+  srunner_set_fork_status(srunner, CK_NOFORK);
   srunner_run_all(srunner, CK_NORMAL);
 
   num_fails = srunner_ntests_failed(srunner);

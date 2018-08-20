@@ -13,6 +13,8 @@ extern "C" {
   typedef struct SleqpIterate
   {
     SleqpSparseVec* x;
+
+    double func_val;
     SleqpSparseVec* func_grad;
 
     SleqpSparseVec* cons_val;

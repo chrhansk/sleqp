@@ -44,6 +44,36 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
+                                           double* values,
+                                           size_t dim)
+{
+  size_t nnz = 0;
+
+  for(size_t i = 0; i < dim;++i)
+  {
+    if(!sleqp_zero(values[i]))
+    {
+      ++nnz;
+    }
+  }
+
+  vec->dim = dim;
+  sleqp_sparse_vector_reserve(vec, nnz);
+
+  for(size_t i = 0; i < dim;++i)
+  {
+    double v = values[i];
+
+    if(!sleqp_zero(v))
+    {
+      sleqp_sparse_vector_push(vec, i, v);
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
                                           size_t nnz)
 {
@@ -58,6 +88,22 @@ SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
   vec->nnz_max = nnz;
 
   return SLEQP_OKAY;
+}
+
+double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
+                               size_t index)
+{
+  assert(index < vec->dim);
+
+  for(int i = 0; i < vec->nnz; ++i)
+  {
+    if(vec->indices[i] == index)
+    {
+      return vec->data + i;
+    }
+  }
+
+  return NULL;
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
@@ -136,6 +182,24 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
+                                          FILE* output)
+{
+  fprintf(output,
+          "Sparse vector, dimension: %ld, entries: %ld\n",
+          vec->dim,
+          vec->nnz);
+
+  for(size_t index = 0; index < vec->nnz; ++index)
+  {
+    fprintf(output, "(%ld) = %f\n",
+            vec->indices[index],
+            vec->data[index]);
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vstar)
 {
   SleqpSparseVec *vec = *vstar;
@@ -169,6 +233,11 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
   SLEQP_CALL(sleqp_calloc(&matrix->cols, num_cols + 1));
   SLEQP_CALL(sleqp_calloc(&matrix->rows, nnz_max));
 
+  if(nnz_max > 0)
+  {
+    matrix->data[0] = 0;
+  }
+
   return SLEQP_OKAY;
 }
 
@@ -188,28 +257,85 @@ SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
+                                         size_t num_rows,
+                                         size_t num_cols)
+{
+  if(matrix->num_cols < num_cols)
+  {
+    SLEQP_CALL(sleqp_realloc(&matrix->cols, num_cols + 1));
+  }
+
+  matrix->num_cols = num_cols;
+  matrix->num_rows = num_rows;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
+                                       size_t row,
+                                       size_t col,
+                                       double value)
+{
+  assert(matrix->nnz < matrix->nnz_max);
+  assert(row < matrix->num_rows);
+  assert(col < matrix->num_cols);
+
+  matrix->data[matrix->nnz] = value;
+  matrix->rows[matrix->nnz] = row;
+  matrix->cols[col + 1]++;
+  matrix->nnz++;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
+                                             size_t col)
+{
+  assert(col < matrix->num_cols);
+
+  matrix->cols[col + 1] = matrix->cols[col];
+
+  return SLEQP_OKAY;
+}
+
+double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
+                               size_t row,
+                               size_t col)
+{
+  assert(row < matrix->num_rows);
+  assert(col < matrix->num_cols);
+
+  for(int index = matrix->cols[col]; index < matrix->cols[col + 1]; ++index)
+  {
+    if(matrix->rows[index] == row)
+    {
+      return matrix->data + index;
+    }
+  }
+
+  return NULL;
+}
+
 SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
                                           FILE* output)
 {
   fprintf(output,
-          "Sparse matrix, dimension: %ld x %ld, entries: %ld\n",
+          "Sparse matrix, dimension: %d x %d, entries: %d\n",
           matrix->num_rows,
           matrix->num_cols,
           matrix->nnz);
 
-  size_t col = 0;
+  int col = 0;
 
-  for(size_t k = 0; k < matrix->nnz; ++k)
+  for(int index = 0; index < matrix->nnz; ++index)
   {
-    while(col < matrix->cols[k])
-    {
-      ++col;
-    }
+    col = SLEQP_MAX(col, matrix->cols[index]);
 
-    fprintf(output, "(%ld, %ld) = %f\n",
-            matrix->rows[k],
+    fprintf(output, "(%d, %d) = %f\n",
+            matrix->rows[index],
             col,
-            matrix->data[k]);
+            matrix->data[index]);
   }
 
   return SLEQP_OKAY;

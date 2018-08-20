@@ -13,7 +13,7 @@
 START_TEST(test_unconstrained_cauchy_direction)
 {
   SleqpProblem* problem;
-  //SleqpSolver* solver;
+  SleqpSolver* solver;
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
@@ -22,13 +22,13 @@ START_TEST(test_unconstrained_cauchy_direction)
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub));
 
-  /*
-  ASSERT_CALL(sleqp_solver_create(&solver, problem));
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  rosenbrock_x));
 
-  ASSERT_CALL(sleqp_solve(solver, rosenbrock_x));
+  ASSERT_CALL(sleqp_solve(solver));
 
   ASSERT_CALL(sleqp_solver_free(&solver));
-  */
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 }
@@ -39,7 +39,7 @@ Suite* unconstrained_test_suite()
   Suite *suite;
   TCase *tc_uncons;
 
-  suite = suite_create("Unconstrained test");
+  suite = suite_create("Unconstrained tests");
 
   tc_uncons = tcase_create("Unconstrained Cauchy direction");
 
@@ -63,6 +63,7 @@ int main()
   suite = unconstrained_test_suite();
   srunner = srunner_create(suite);
 
+  srunner_set_fork_status(srunner, CK_NOFORK);
   srunner_run_all(srunner, CK_NORMAL);
 
   num_fails = srunner_ntests_failed(srunner);

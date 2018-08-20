@@ -14,7 +14,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
                                                   SleqpProblem* problem);
 
-  SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* data,
+  SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_data,
                                               SleqpIterate* iterate,
                                               SleqpActiveSet* active_set);
 

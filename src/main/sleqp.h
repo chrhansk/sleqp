@@ -72,10 +72,11 @@ extern "C" {
                                      SleqpSparseVec* cons_lb,
                                      SleqpSparseVec* cons_ub);
 
-  /*
-  SLEQP_RETCODE sleqp_problem_solve(Sleqp* sleqp,
-                                    SleqpSparseVec* x);
-  */
+
+  typedef struct SleqpIterate SleqpIterate;
+
+  SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
+                                       SleqpIterate* iterate);
 
   /**
    * Frees a problem created previously.

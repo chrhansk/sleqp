@@ -32,30 +32,46 @@ extern "C" {
                                          size_t idx,
                                          double value);
 
+  SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
+                                             double* values,
+                                             size_t dim);
+
   SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
                                             size_t nnz);
+
+  double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
+                                 size_t index);
 
   SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
                                          SleqpSparseVec* lb,
                                          SleqpSparseVec* ub,
                                          SleqpSparseVec** xstar);
 
+  SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
+                                            FILE* output);
+
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec);
 
   /**
    * A sparse matrix data structure.
    * So far the data is stored in CSC format.
+   * Specifically:
+   *
+   * A(i, j) = data[k] iff row[k] = i and col[j] <= k < col[j + 1]
+   *
+   * for k = 0, ..., nnz - 1
+   *
    **/
   typedef struct SleqpSparseMatrix
   {
-    size_t num_rows, num_cols;
+    int num_rows, num_cols;
 
-    size_t nnz;
-    size_t nnz_max;
+    int nnz;
+    int nnz_max;
 
     double* data;
-    size_t* cols;
-    size_t* rows;
+    int* cols;
+    int* rows;
 
   } SleqpSparseMatrix;
 
@@ -66,6 +82,22 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
                                             size_t nnz);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
+                                           size_t num_rows,
+                                           size_t num_cols);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
+                                         size_t row,
+                                         size_t col,
+                                         double value);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
+                                               size_t col);
+
+  double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
+                                 size_t row,
+                                 size_t col);
 
   SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
                                             FILE* output);

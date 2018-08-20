@@ -11,8 +11,7 @@ extern "C" {
 
   enum SLEQP_Active_State {SLEQP_INACTIVE = 0,
                            SLEQP_ACTIVE_LOWER = 1,
-                           SLEQP_ACTIVE_UPPER = 2,
-                           SLEQP_ACTIVE_BOTH = SLEQP_ACTIVE_LOWER | SLEQP_ACTIVE_UPPER};
+                           SLEQP_ACTIVE_UPPER = 2};
 
   typedef enum SLEQP_Active_State SLEQP_ACTIVE_STATE;
 

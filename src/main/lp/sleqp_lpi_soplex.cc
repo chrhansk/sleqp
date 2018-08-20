@@ -54,26 +54,24 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
                                   double* vars_lb,
                                   double* vars_ub)
 {
+  // TODO: what about inf values?!
+
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  //soplex.changeObjReal(soplex::VectorReal(spx->num_variables, objective));
-
-  soplex.changeRangeReal(soplex::VectorReal(spx->num_variables, cons_lb),
-                         soplex::VectorReal(spx->num_variables, cons_ub));
-
-  /*
-  soplex.changeLowerReal(soplex::VectorReal(spx->num_constraints, cons_lb));
-  soplex.changeUpperReal(soplex::VectorReal(spx->num_constraints, cons_ub));
-  */
+  assert(soplex.numRowsReal() == (int) spx->num_constraints);
+  assert(soplex.numColsReal() == (int) spx->num_variables);
 
 
   assert(cons_matrix->num_cols == spx->num_variables);
   assert(cons_matrix->num_rows == spx->num_constraints);
 
+  soplex.changeRangeReal(soplex::VectorReal(spx->num_constraints, cons_lb),
+                         soplex::VectorReal(spx->num_constraints, cons_ub));
+
   size_t j = 0;
 
-  for(size_t k = 0; k < cons_matrix->nnz; ++k)
+  for(int k = 0; k < cons_matrix->nnz; ++k)
   {
     while(cons_matrix->cols[j] < k)
     {
@@ -89,6 +87,7 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
     soplex::SVectorReal column(num_entries, entries);
 
     /* This does not work... size_t* vs int* for second arg.
+     * TODO: It DOES work, reimplement!
     column.add(num_entries,
                cons_matrix->rows + k,
                cons_matrix->data + k);
@@ -107,6 +106,14 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
     delete[] entries;
   }
 
+  soplex.changeObjReal(soplex::VectorReal(spx->num_variables,
+                                          objective));
+
+  soplex.changeBoundsReal(soplex::VectorReal(spx->num_variables, vars_lb),
+                          soplex::VectorReal(spx->num_variables, vars_ub));
+
+  //soplex.writeFileReal("test.lp");
+
   soplex::SPxSolver::Status status = soplex.optimize();
 
   assert(status == soplex::SPxSolver::OPTIMAL);
@@ -123,11 +130,16 @@ static SLEQP_RETCODE soplex_get_solution(void* lp_data,
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  *objective_value = soplex.objValueReal();
+  if(objective_value)
+  {
+    *objective_value = soplex.objValueReal();
+  }
 
   soplex::VectorReal solution(num_variables, solution_values);
 
-  soplex.getPrimalReal(solution);
+  bool found_solution = soplex.getPrimalReal(solution);
+
+  assert(found_solution);
 
   return SLEQP_OKAY;
 }

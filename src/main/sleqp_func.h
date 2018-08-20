@@ -27,6 +27,8 @@ extern "C" {
   // evaluate functions (obj + cons)
   /**
    * Evaluates the function values / gradients
+   * Note: constraint jacobian is of dimension
+   * num_variables x num_constraints
    **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(size_t num_variables,
                                            int* indices,
