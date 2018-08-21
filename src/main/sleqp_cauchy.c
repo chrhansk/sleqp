@@ -347,7 +347,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpProblem* problem,
     {
       var_states[i] = SLEQP_ACTIVE_UPPER;
     }
-    else if((cauchy_data->base_stats[i] == SLEQP_BASESTAT_LOWER) && sleqp_lt(trust_radius, lbval - xval))
+    else if((cauchy_data->base_stats[i] == SLEQP_BASESTAT_LOWER) && sleqp_lt(-trust_radius, lbval - xval))
     {
       var_states[i] = SLEQP_ACTIVE_LOWER;
     }
