@@ -83,34 +83,57 @@ static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
   assert(num_constraints == cons_jac->num_rows);
   assert(num_variables == cons_jac->num_cols);
 
-  size_t nnz = cons_jac->nnz;
+  /*
+   * Reserve a litte more so we can add the two
+   * identity matrices afterwards
+   */
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac->nnz + 2*num_constraints));
 
-  assert(nnz + 2*num_constraints <= cons_jac->nnz);
+  SLEQP_CALL(sleqp_sparse_matrix_resize(cons_jac,
+                                        cons_jac->num_rows,
+                                        cons_jac->num_cols + 2*num_constraints));
 
   // append a + id
   for(size_t i = 0; i < num_constraints; ++i)
   {
-    cons_jac->data[nnz + i] = +1.;
-    cons_jac->rows[nnz + i] = i;
-    cons_jac->cols[num_variables + i] = nnz + i;
-  }
+    size_t con = num_variables + i;
 
-  nnz += num_constraints;
+    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac,
+                                              con));
+
+    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                        i,
+                                        con,
+                                        1.));
+  }
 
   // append a - id
   for(size_t i = 0; i < num_constraints; ++i)
   {
-    cons_jac->data[nnz + i] = -1.;
-    cons_jac->rows[nnz + i] = i;
-    cons_jac->cols[num_variables + num_constraints + i] = nnz + i;
+    size_t con = num_variables + num_constraints + i;
+
+    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac,
+                                              con));
+
+    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                        i,
+                                        con,
+                                        -1.));
   }
 
-  nnz += num_constraints;
-
-  cons_jac->nnz = nnz;
-  cons_jac->cols[num_variables + num_constraints] = nnz + 1;
-
   return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE remove_identities(SleqpSparseMatrix* cons_jac,
+                                       size_t num_variables,
+                                       size_t num_constraints)
+{
+  assert(num_constraints == cons_jac->num_rows);
+  assert(num_variables + 2*num_constraints == cons_jac->num_cols);
+
+  SLEQP_CALL(sleqp_sparse_matrix_resize(cons_jac,
+                                        num_constraints,
+                                        num_variables));
 }
 
 static SLEQP_RETCODE append_penalties(SleqpSparseVec* func_grad,
@@ -121,6 +144,13 @@ static SLEQP_RETCODE append_penalties(SleqpSparseVec* func_grad,
   assert(num_variables == func_grad->dim);
 
   size_t size_increase = 2*num_constraints;
+
+  /*
+   * Reserve a litte more so we can add slack penalties
+   * without reallocations
+   */
+  SLEQP_CALL(sleqp_sparse_vector_reserve(func_grad,
+                                         func_grad->nnz + size_increase));
 
   func_grad->dim += size_increase;
 
@@ -297,6 +327,11 @@ SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpProblem* problem,
                              cauchy_data->cons_ub,
                              cauchy_data->vars_lb,
                              cauchy_data->vars_ub));
+
+
+  SLEQP_CALL(remove_identities(cons_jac,
+                               num_variables,
+                               num_constraints));
 
   return SLEQP_OKAY;
 }

@@ -152,22 +152,11 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
 
-  /*
-   * Reserve a litte more so we can add slack penalties
-   * without reallocations
-   */
-  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->func_grad,
-                                         func_grad_nnz + 2*problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->func_grad, func_grad_nnz));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->cons_val,
-                                         cons_val_nnz));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->cons_val, cons_val_nnz));
 
-  /*
-   * Reserve a litte more so we can add the two
-   * identity matrices afterwards
-   */
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(iterate->cons_jac,
-                                         cons_jac_nnz + 2*problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(iterate->cons_jac, cons_jac_nnz));
 
   SLEQP_CALL(sleqp_func_eval(problem->func,
                              problem->num_variables,
