@@ -20,6 +20,9 @@ extern "C" {
     SleqpSparseVec* cons_val;
     SleqpSparseMatrix* cons_jac;
 
+    SleqpSparseVec* cons_dual;
+    SleqpSparseVec* vars_dual;
+
   } SleqpIterate;
 
   SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,

@@ -26,6 +26,14 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
                                         num_variables,
                                         0));
 
+  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->cons_dual,
+                                        num_constraints,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->vars_dual,
+                                        num_variables,
+                                        0));
+
   iterate->x = x;
 
   return SLEQP_OKAY;
@@ -35,6 +43,9 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
 SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
 {
   SleqpIterate* iterate = *star;
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&iterate->vars_dual));
+  SLEQP_CALL(sleqp_sparse_vector_free(&iterate->cons_dual));
 
   SLEQP_CALL(sleqp_sparse_matrix_free(&iterate->cons_jac));
 

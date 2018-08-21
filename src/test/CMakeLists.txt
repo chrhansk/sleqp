@@ -38,5 +38,6 @@ add_unit_test(sparse/sleqp_sparse_test)
 add_unit_test(lp/soplex_lpi_test)
 
 add_unit_test(sleqp_cauchy_test)
+add_unit_test(sleqp_dual_estimation_test)
 
 add_unit_test(unconstrained_test)

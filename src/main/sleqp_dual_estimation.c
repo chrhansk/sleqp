@@ -1,5 +1,8 @@
 #include "sleqp_dual_estimation.h"
 
+#include <umfpack.h>
+
+#include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
 struct SleqpDualEstimationData
@@ -104,14 +107,12 @@ static SLEQP_RETCODE fill_estimation_matrix(SleqpDualEstimationData* estimation_
   SleqpSparseMatrix* matrix = estimation_data->estimation_matrix;
 
   size_t num_active = num_active_cons + num_active_vars;
-
-  size_t active_cons_column = 0;
-  size_t active_vars_column = 0;
+  size_t num_variables = estimation_data->num_variables;
 
   SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(active_set);
   SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(active_set);
 
-  for(size_t column = 0; column < num_active; ++column)
+  for(size_t column = 0; column < num_variables; ++column)
   {
     SLEQP_CALL(sleqp_sparse_matrix_add_column(matrix,
                                               column));
@@ -122,58 +123,49 @@ static SLEQP_RETCODE fill_estimation_matrix(SleqpDualEstimationData* estimation_
                                         column,
                                         1.));
 
-    if(column < num_active_cons)
+    for(int index = cons_jac->cols[column];
+        index < cons_jac->cols[column + 1];
+        ++index)
     {
-      // find next active constraint, push corresponding jacobian column
+      int cons_row = cons_jac->rows[index];
 
-      while(cons_states[active_cons_column] == SLEQP_INACTIVE)
+      if(cons_states[cons_row] == SLEQP_INACTIVE)
       {
-        ++active_cons_column;
+        continue;
       }
 
-      int is_upper = (cons_states[active_cons_column] == SLEQP_ACTIVE_UPPER);
+      int is_upper = (cons_states[cons_row] == SLEQP_ACTIVE_UPPER);
 
-      for(int index = cons_jac->cols[active_cons_column];
-          index < cons_jac->cols[active_cons_column + 1];
-          ++index)
-      {
-        SLEQP_CALL(sleqp_sparse_matrix_push(matrix,
-                                            num_active + cons_jac->rows[index],
-                                            column,
-                                            is_upper ? cons_jac->data[index] : -(cons_jac->data[index])));
-      }
-
-      ++active_cons_column;
-
-    }
-    else
-    {
-      while(var_states[active_vars_column] == SLEQP_INACTIVE)
-      {
-        ++active_vars_column;
-      }
-
-      int is_upper = (var_states[active_cons_column] == SLEQP_ACTIVE_UPPER);
+      cons_row = estimation_data->active_cons[cons_row];
 
       SLEQP_CALL(sleqp_sparse_matrix_push(matrix,
-                                          num_active + num_active_cons + active_vars_column,
+                                          num_variables + cons_row, // row
+                                          column, // column
+                                          is_upper ? cons_jac->data[index] : -(cons_jac->data[index])));
+    }
+
+    if(var_states[column] != SLEQP_INACTIVE)
+    {
+      int is_upper = (var_states[column] == SLEQP_ACTIVE_UPPER);
+
+      SLEQP_CALL(sleqp_sparse_matrix_push(matrix,
+                                          num_variables + num_active_cons + estimation_data->active_vars[column],
                                           column,
                                           is_upper ? 1. : -1.));
     }
-
   }
 
-  for(size_t column = num_active + 1; column < matrix->num_cols + 1; ++column)
+  for(size_t column = num_variables + 1; column < matrix->num_cols + 1; ++column)
   {
     matrix->cols[column] = 0;
   }
 
   // count the elements in the columns
-  for(size_t column = 0; column < num_active; ++column)
+  for(size_t column = 0; column < num_variables; ++column)
   {
     for(int index = matrix->cols[column]; index < matrix->cols[column + 1]; ++index)
     {
-      if(matrix->rows[index] < num_active)
+      if(matrix->rows[index] < num_variables)
       {
         continue;
       }
@@ -183,14 +175,14 @@ static SLEQP_RETCODE fill_estimation_matrix(SleqpDualEstimationData* estimation_
   }
 
   // construct the cumulative sum
-  for(size_t column = num_active + 1; column < matrix->num_cols + 1; ++column)
+  for(size_t column = num_variables + 1; column < matrix->num_cols + 1; ++column)
   {
     matrix->cols[column] += matrix->cols[column - 1];
     estimation_data->col_indices[column] = 0;
   }
 
   // insert the entries
-  for(size_t column = 0; column < num_active; ++column)
+  for(size_t column = 0; column < num_variables; ++column)
   {
     for(int index = matrix->cols[column]; index < matrix->cols[column + 1]; ++index)
     {
@@ -209,15 +201,11 @@ static SLEQP_RETCODE fill_estimation_matrix(SleqpDualEstimationData* estimation_
 
       matrix->data[target_index] = matrix->data[index];
       matrix->rows[target_index] = column;
+      ++matrix->nnz;
     }
   }
 
   return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE solve_estimation(SleqpDualEstimationData* estimation_data)
-{
-
 }
 
 static SLEQP_RETCODE construct_estimation_rhs(SleqpDualEstimationData* estimation_data,
@@ -233,11 +221,125 @@ static SLEQP_RETCODE construct_estimation_rhs(SleqpDualEstimationData* estimatio
   {
     if(index < grad->nnz && grad->indices[index] == i)
     {
-      rhs[i] = grad->data[index++];
+      rhs[i] = -(grad->data[index++]);
     }
     else
     {
       rhs[i] = 0;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE solve_estimation(SleqpDualEstimationData* estimation_data,
+                                      SleqpIterate* iterate,
+                                      SleqpActiveSet* active_set,
+                                      size_t num_active_vars,
+                                      size_t num_active_cons)
+{
+  void* Numeric;
+  int status;
+  void* Symbolic;
+
+  SleqpSparseMatrix* matrix = estimation_data->estimation_matrix;
+  double* solution = estimation_data->estimation_values;
+  double* rhs = estimation_data->estimation_rhs;
+
+  assert(matrix->num_cols == matrix->num_rows);
+
+  status = umfpack_di_symbolic(matrix->num_cols,
+                               matrix->num_rows,
+                               matrix->cols,
+                               matrix->rows,
+                               matrix->data,
+                               &Symbolic,
+                               NULL,
+                               NULL);
+
+  status = umfpack_di_numeric(matrix->cols,
+                              matrix->rows,
+                              matrix->data,
+                              Symbolic,
+                              &Numeric,
+                              NULL,
+                              NULL);
+
+  umfpack_di_free_symbolic(&Symbolic);
+
+  status = umfpack_di_solve(UMFPACK_A,
+                            matrix->cols,
+                            matrix->rows,
+                            matrix->data,
+                            solution,
+                            rhs,
+                            Numeric,
+                            NULL,
+                            NULL);
+
+  umfpack_di_free_numeric(&Numeric);
+
+  size_t num_variables = estimation_data->num_variables;
+  size_t num_constraints = estimation_data->num_constraints;
+
+  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(active_set);
+  SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(active_set);
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->cons_dual,
+                                         num_active_cons));
+
+  for(size_t i = 0; i < num_constraints; ++i)
+  {
+    if(cons_states[i] == SLEQP_ACTIVE_UPPER)
+    {
+      double value = SLEQP_MAX(solution[num_variables + estimation_data->active_cons[i]], 0);
+
+      if(!sleqp_zero(value))
+      {
+        SLEQP_CALL(sleqp_sparse_vector_push(iterate->cons_dual,
+                                            i,
+                                            value));
+      }
+    }
+    else if(cons_states[i] == SLEQP_ACTIVE_LOWER)
+    {
+      double value = SLEQP_MIN(solution[num_variables + estimation_data->active_cons[i]], 0);
+
+      if(!sleqp_zero(value))
+      {
+        SLEQP_CALL(sleqp_sparse_vector_push(iterate->cons_dual,
+                                            i,
+                                            value));
+      }
+    }
+  }
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->vars_dual,
+                                         num_active_vars));
+
+  for(size_t i = 0; i < num_variables; ++i)
+  {
+    if(var_states[i] == SLEQP_ACTIVE_UPPER)
+    {
+      double value = SLEQP_MAX(-solution[num_variables + num_constraints + estimation_data->active_vars[i]], 0);
+
+      if(!sleqp_zero(value))
+      {
+        SLEQP_CALL(sleqp_sparse_vector_push(iterate->vars_dual,
+                                            i,
+                                            value));
+      }
+    }
+    else if(var_states[i] == SLEQP_ACTIVE_LOWER)
+    {
+      double value = SLEQP_MIN(-solution[num_variables + num_constraints + estimation_data->active_vars[i]], 0);
+
+      if(!sleqp_zero(value))
+      {
+        SLEQP_CALL(sleqp_sparse_vector_push(iterate->vars_dual,
+                                            i,
+                                            value));
+      }
     }
   }
 
@@ -270,7 +372,7 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
 
   size_t variable_nnz = num_active_vars;
 
-  size_t total_nnz = num_active // identity
+  size_t total_nnz = estimation_data->num_variables // identity
     + 2*(constraint_nnz + variable_nnz); // cons jac nnz + active variables
 
   size_t matrix_dim = estimation_data->num_variables + num_active;
@@ -289,6 +391,12 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
   SLEQP_CALL(construct_estimation_rhs(estimation_data,
                                       iterate,
                                       active_set));
+
+  SLEQP_CALL(solve_estimation(estimation_data,
+                              iterate,
+                              active_set,
+                              num_active_vars,
+                              num_active_cons));
 
 
   return SLEQP_OKAY;

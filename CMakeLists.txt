@@ -4,7 +4,7 @@ project(sleqp C CXX)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
-#find_package(Umfpack REQUIRED)
+find_package(Umfpack REQUIRED)
 
 find_package(SoPlex REQUIRED)
 
