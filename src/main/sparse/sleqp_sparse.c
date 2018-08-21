@@ -233,9 +233,9 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
   SLEQP_CALL(sleqp_calloc(&matrix->cols, num_cols + 1));
   SLEQP_CALL(sleqp_calloc(&matrix->rows, nnz_max));
 
-  if(nnz_max > 0)
+  for(int i = 0; i < num_cols + 1; ++i)
   {
-    matrix->data[0] = 0;
+    matrix->cols[i] = 0;
   }
 
   return SLEQP_OKAY;
@@ -264,6 +264,23 @@ SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
   if(matrix->num_cols < num_cols)
   {
     SLEQP_CALL(sleqp_realloc(&matrix->cols, num_cols + 1));
+
+    if(matrix->num_cols == 0)
+    {
+      matrix->cols[0] = 0;
+    }
+
+    for(int index = matrix->num_cols + 1; index < num_cols + 1; ++index)
+    {
+      matrix->cols[index] = matrix->cols[index - 1];
+    }
+  }
+  else if(matrix->num_cols > num_cols)
+  {
+    for(int column = matrix->num_cols - 1; column >= num_cols; --column)
+    {
+      SLEQP_CALL(sleqp_sparse_matrix_remove_column(matrix, column));
+    }
   }
 
   matrix->num_cols = num_cols;
@@ -299,6 +316,19 @@ SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_remove_column(SleqpSparseMatrix* matrix,
+                                                size_t col)
+{
+  assert(col < matrix->num_cols);
+
+  size_t nnz = matrix->cols[col + 1] - matrix->cols[col];
+
+  matrix->cols[col + 1] = matrix->cols[col];
+  matrix->nnz -= nnz;
+
+  return SLEQP_OKAY;
+}
+
 double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
                                size_t row,
                                size_t col)
@@ -330,7 +360,13 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
 
   for(int index = 0; index < matrix->nnz; ++index)
   {
-    col = SLEQP_MAX(col, matrix->cols[index]);
+    while(index >= matrix->cols[col + 1])
+    {
+      ++col;
+    }
+
+    assert(matrix->cols[col] <= index);
+    assert(index < matrix->cols[col + 1]);
 
     fprintf(output, "(%d, %d) = %f\n",
             matrix->rows[index],

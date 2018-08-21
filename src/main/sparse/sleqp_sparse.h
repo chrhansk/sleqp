@@ -95,6 +95,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
                                                size_t col);
 
+  SLEQP_RETCODE sleqp_sparse_matrix_remove_column(SleqpSparseMatrix* matrix,
+                                                  size_t col);
+
   double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
                                  size_t row,
                                  size_t col);
