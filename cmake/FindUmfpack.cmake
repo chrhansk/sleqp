@@ -3,14 +3,36 @@
 #
 # Once done, this will define
 #
-#  UMFPACK_INCLUDE_DIRS   - where to find soplex.h, etc.
-#  UMFPACK_LIBRARIES      - List of libraries when using soplex.
-#  UMFPACK_FOUND          - True if soplex found.
+#  UMFPACK_INCLUDE_DIRS   - where to find umfpack.h, etc.
+#  UMFPACK_LIBRARIES      - List of libraries when using Umfpack.
+#  UMFPACK_FOUND          - True if Umfpack found.
+
+function(extract_define file name result)
+  file(STRINGS "${file}"
+    file_result
+    REGEX "^#define ${name} +[0-9]+")
+  string(REGEX REPLACE "^#define ${name} +([0-9]+).*" "\\1" replace_result ${file_result})
+  set(${result} ${replace_result} PARENT_SCOPE)
+endfunction()
 
 find_path(UMFPACK_INCLUDE_DIRS
   NAMES umfpack.h
   PATHS $ENV{UMFPACKDIR} ${INCLUDE_INSTALL_DIR}
   PATH_SUFFIXES suitesparse ufsparse)
+
+if(UMFPACK_INCLUDE_DIRS)
+  extract_define("${UMFPACK_INCLUDE_DIRS}/umfpack.h"
+    "UMFPACK_MAIN_VERSION"
+    UMFPACK_MAIN_VERSION)
+  extract_define("${UMFPACK_INCLUDE_DIRS}/umfpack.h"
+    "UMFPACK_SUB_VERSION"
+    UMFPACK_SUB_VERSION)
+  extract_define("${UMFPACK_INCLUDE_DIRS}/umfpack.h"
+    "UMFPACK_SUBSUB_VERSION"
+    UMFPACK_SUBSUB_VERSION)
+
+  set(UMFPACK_VERSION "${UMFPACK_MAIN_VERSION}.${UMFPACK_SUB_VERSION}.${UMFPACK_SUBSUB_VERSION}")
+endif()
 
 find_library(UMFPACK_LIBRARIES umfpack PATHS $ENV{UMFPACKDIR} ${LIB_INSTALL_DIR})
 
@@ -43,6 +65,14 @@ if(UMFPACK_LIBRARIES)
 endif(UMFPACK_LIBRARIES)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(UMFPACK DEFAULT_MSG UMFPACK_INCLUDE_DIRS UMFPACK_LIBRARIES)
+find_package_handle_standard_args(Umfpack
+  REQUIRED_VARS UMFPACK_INCLUDE_DIRS UMFPACK_LIBRARIES
+  VERSION_VAR UMFPACK_VERSION)
 
-mark_as_advanced(UMFPACK_INCLUDE_DIRS UMFPACK_LIBRARIES AMD_LIBRARY COLAMD_LIBRARY CHOLMOD_LIBRARY SUITESPARSE_LIBRARY)
+mark_as_advanced(UMFPACK_INCLUDE_DIRS
+  UMFPACK_LIBRARIES
+  UMFPACK_VERSION
+  AMD_LIBRARY
+  COLAMD_LIBRARY
+  CHOLMOD_LIBRARY
+  SUITESPARSE_LIBRARY)
