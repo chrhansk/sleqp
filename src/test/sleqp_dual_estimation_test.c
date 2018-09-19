@@ -100,10 +100,11 @@ static SLEQP_RETCODE quadfunc_eval(size_t num_variables,
 }
 
 static SLEQP_RETCODE quadfunc_eval_bilinear(size_t num_variables,
-                                           double* fval,
-                                           SleqpSparseVec* direction,
-                                           SleqpSparseVec* multipliers,
-                                           void* func_data)
+                                            double* func_dual,
+                                            SleqpSparseVec* direction,
+                                            SleqpSparseVec* cons_duals,
+                                            double* bilinear_prod,
+                                            void* func_data)
 {
   return SLEQP_OKAY;
 }
@@ -120,6 +121,7 @@ void simply_constrained_setup()
                                 quadfunc_set,
                                 quadfunc_eval,
                                 quadfunc_eval_bilinear,
+                                2,
                                 func_data));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&quadfunc_var_lb,

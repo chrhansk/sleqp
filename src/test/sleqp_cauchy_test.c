@@ -94,10 +94,11 @@ static SLEQP_RETCODE linfunc_eval(size_t num_variables,
 }
 
 static SLEQP_RETCODE linfunc_eval_bilinear(size_t num_variables,
-                                            double* fval,
-                                            SleqpSparseVec* direction,
-                                            SleqpSparseVec* multipliers,
-                                            void* func_data)
+                                           double* func_dual,
+                                           SleqpSparseVec* direction,
+                                           SleqpSparseVec* cons_duals,
+                                           double* bilinear_prod,
+                                           void* func_data)
 {
   return SLEQP_OKAY;
 }
@@ -115,6 +116,7 @@ void unconstrained_setup()
                                 linfunc_set,
                                 linfunc_eval,
                                 linfunc_eval_bilinear,
+                                2,
                                 func_data));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&linfunc_var_lb,
