@@ -147,7 +147,6 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
 
   SLEQP_CALL(sleqp_func_set_value(problem->func,
                                   iterate->x,
-                                  problem->num_variables,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -159,7 +158,6 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
   SLEQP_CALL(sleqp_sparse_matrix_reserve(iterate->cons_jac, cons_jac_nnz));
 
   SLEQP_CALL(sleqp_func_eval(problem->func,
-                             problem->num_variables,
                              NULL,
                              &iterate->func_val,
                              iterate->func_grad,

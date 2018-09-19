@@ -93,9 +93,10 @@ static SLEQP_RETCODE rosenbrock_eval(size_t num_variables,
 }
 
 static SLEQP_RETCODE rosenbrock_eval_bilinear(size_t num_variables,
-                                              double* fval,
+                                              double* func_dual,
                                               SleqpSparseVec* direction,
-                                              SleqpSparseVec* multipliers,
+                                              SleqpSparseVec* cons_duals,
+                                              double* bilinear_prod,
                                               void* func_data)
 {
   return SLEQP_OKAY;
@@ -117,6 +118,7 @@ void rosenbrock_setup()
                                 rosenbrock_set,
                                 rosenbrock_eval,
                                 rosenbrock_eval_bilinear,
+                                2,
                                 func_data));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&rosenbrock_var_lb,

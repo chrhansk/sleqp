@@ -7,6 +7,8 @@ struct SleqpFunc
   SLEQP_FUNC_SET set_value;
   SLEQP_FUNC_EVAL eval;
   SLEQP_HESS_EVAL_BILINEAR eval_bilin;
+
+  size_t num_variables;
   void* data;
 };
 
@@ -14,6 +16,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
                                 SLEQP_FUNC_SET set_value,
                                 SLEQP_FUNC_EVAL eval,
                                 SLEQP_HESS_EVAL_BILINEAR eval_bilin,
+                                size_t num_variables,
                                 void* func_data)
 {
   sleqp_malloc(fstar);
@@ -23,6 +26,8 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   func->set_value = set_value;
   func->eval = eval;
   func->eval_bilin = eval_bilin;
+
+  func->num_variables = num_variables;
   func->data = func_data;
 
   return SLEQP_OKAY;
@@ -30,7 +35,6 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
 
 SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    SleqpSparseVec* x,
-                                   size_t num_variables,
                                    size_t* func_grad_nnz,
                                    size_t* cons_val_nnz,
                                    size_t* cons_jac_nnz)
@@ -38,7 +42,7 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
   assert(func);
 
   SLEQP_CALL(func->set_value(x,
-                             num_variables,
+                             func->num_variables,
                              func_grad_nnz,
                              cons_val_nnz,
                              cons_jac_nnz,
@@ -48,7 +52,6 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
 }
 
 SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
-                              size_t num_variables,
                               int* indices,
                               double* func_val,
                               SleqpSparseVec* func_grad,
@@ -57,7 +60,7 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
 {
   assert(func);
 
-  SLEQP_CALL(func->eval(num_variables,
+  SLEQP_CALL(func->eval(func->num_variables,
                         indices,
                         func_val,
                         func_grad,
@@ -69,17 +72,19 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
 }
 
 SLEQP_RETCODE sleqp_hess_eval_bilinear(SleqpFunc* func,
-                                       size_t num_variables,
-                                       double* fval,
+                                       double* func_dual,
                                        SleqpSparseVec* direction,
-                                       SleqpSparseVec* multipliers)
+                                       SleqpSparseVec* cons_duals,
+                                       double* bilinear_prod,
+                                       void* func_data)
 {
   assert(func);
 
-  SLEQP_CALL(func->eval_bilin(num_variables,
-                              fval,
+  SLEQP_CALL(func->eval_bilin(func->num_variables,
+                              func_dual,
                               direction,
-                              multipliers,
+                              cons_duals,
+                              bilinear_prod,
                               func->data));
 
   return SLEQP_OKAY;
