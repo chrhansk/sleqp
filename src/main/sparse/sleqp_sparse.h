@@ -1,6 +1,10 @@
 #ifndef SLEQP_SPARSE_H
 #define SLEQP_SPARSE_H
 
+/** @file sleqp_sparse.h
+ * Definition of SLEQP sparse vectors / matrices.
+ **/
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -24,20 +28,90 @@ extern "C" {
 
   } SleqpSparseVec;
 
+  /**
+   * Creates a new sparse vector. Data and indices are set to
+   * have size of nnz_max.
+   *
+   * @param[out] vec     A pointer to the vector to be created
+   * @param[in]  dim     The desired dimension of the vector
+   * @param[in]  nnz_max The desired amount of nonzeros of the vector
+   *
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,
                                            size_t dim,
                                            size_t nnz_max);
 
+  /**
+   * Pushes a new entry on top of a sparse vector. The new
+   * entry is assumed to have a larger index than the existing ones.
+   *
+   * @param[in,out] vec    A pointer to the vector
+   * @param[in]     idx    The index of the new entry
+   * @param[in]     value  The value of the new entry
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
                                          size_t idx,
                                          double value);
 
+  /**
+   * Creates the entries of a sparse vector from a dense
+   * vector. The sparse vector will reserve an appropriate
+   * number of entries, the dimension will be changed to
+   * match that of the dense vector.
+   *
+   * @param[in,out] vec    A pointer to the vector
+   * @param[in]     values A vector of values
+   * @param[in]     dim    The dimension of the values input
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
                                              double* values,
                                              size_t dim);
 
+  /**
+   * Reserves space for additional nonzeros
+   *
+   * @param[in,out] vec     A pointer to the vector
+   * @param[in]     nnz_max The number of nonzeros
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
                                             size_t nnz);
+
+  /**
+   * Computes the dot product of two sparse vectors
+   *
+   * @param[in]  first     A pointer to the first vector
+   * @param[in]  second    A pointer to the second vector
+   * @param[out] product   A pointer to the result
+   **/
+  SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
+                                        SleqpSparseVec* second,
+                                        double* product);
+
+  /**
+   * Computes the sum of two sparse vectors
+   *
+   * @param[in]  first         A pointer to the first vector
+   * @param[in]  second        A pointer to the second vector
+   * @param[in]  first_factor  A factor for the first vector
+   * @param[in]  second_factor A factor for the first vector
+   * @param[out] result        A pointer to the result
+   **/
+  SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
+                                        SleqpSparseVec* second,
+                                        double first_factor,
+                                        double second_factor,
+                                        SleqpSparseVec* result);
+
+  /**
+   * Computes the dot product of a sparse and a dense vector
+   *
+   * @param[in]  first     A pointer to the first vector
+   * @param[in]  second    A pointer to the second vector
+   * @param[out] product   A pointer to the result
+   **/
+  SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
+                                              double* second,
+                                              double* product);
 
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
                                  size_t index);
@@ -57,9 +131,9 @@ extern "C" {
    * So far the data is stored in CSC format.
    * Specifically:
    *
-   * A(i, j) = data[k] iff row[k] = i and col[j] <= k < col[j + 1]
+   * \f$ A(i, j) = data[k]\f$ iff \f$ row[k] = i \f$ and \f$ col[j] <= k < col[j + 1] \f$
    *
-   * for k = 0, ..., nnz - 1
+   * for \f$ k = 0, \ldots, nnz - 1 \f$
    *
    **/
   typedef struct SleqpSparseMatrix
@@ -97,6 +171,10 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_sparse_matrix_remove_column(SleqpSparseMatrix* matrix,
                                                   size_t col);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
+                                                   SleqpSparseVec* vector,
+                                                   double* result);
 
   double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
                                  size_t row,

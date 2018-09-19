@@ -75,17 +75,115 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
-                                          size_t nnz)
+                                          size_t nnz_max)
 {
-  if(vec->nnz_max >= nnz)
+  if(vec->nnz_max >= nnz_max)
   {
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_realloc(&vec->data, nnz));
-  SLEQP_CALL(sleqp_realloc(&vec->indices, nnz));
+  SLEQP_CALL(sleqp_realloc(&vec->data, nnz_max));
+  SLEQP_CALL(sleqp_realloc(&vec->indices, nnz_max));
 
-  vec->nnz_max = nnz;
+  vec->nnz_max = nnz_max;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
+                                      SleqpSparseVec* second,
+                                      double* product)
+{
+  assert(first->dim == second->dim);
+
+  *product = 0.;
+
+  size_t k_first = 0, k_second = 0;
+
+  while(k_first < first->nnz && k_second < second->nnz)
+  {
+    size_t i_first = first->indices[k_first];
+    size_t i_second = second->indices[k_second];
+
+    if(i_first == i_second)
+    {
+      *product += first->data[k_first] * second->data[k_second];
+      ++k_first;
+      ++k_second;
+    }
+    else if(i_first < i_second)
+    {
+      ++k_first;
+    }
+    else
+    {
+      ++k_second;
+    }
+
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
+                                            double* second,
+                                            double* product)
+{
+  *product = 0.;
+
+  for(size_t k_first = 0;k_first < first->nnz; ++k_first)
+  {
+    size_t i_first = first->indices[k_first];
+
+    *product += first->data[k_first] * second[i_first];
+
+    ++k_first;
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
+                                      SleqpSparseVec* second,
+                                      double first_factor,
+                                      double second_factor,
+                                      SleqpSparseVec* result)
+{
+  assert(first->dim == second->dim);
+
+  result->dim = first->dim;
+  result->nnz = 0;
+
+  size_t k_first = 0, k_second = 0;
+
+  while(k_first < first->nnz || k_second < second->nnz)
+  {
+    SLEQP_Bool valid_first = (k_first < first->nnz);
+    SLEQP_Bool valid_second = (k_second < second->nnz);
+
+    size_t i_first = valid_first ? first->indices[k_first] : first->dim + 1;
+    size_t i_second = valid_second ? second->indices[k_second] : first->dim + 1;
+
+    size_t i_combined = SLEQP_MIN(i_first, i_second);
+
+    double value = 0.;
+
+    if(i_first == i_combined)
+    {
+      value += first_factor * first->data[k_first];
+      ++k_first;
+    }
+
+    if(i_second == i_combined)
+    {
+      value += second_factor * second->data[k_second];
+      ++k_second;
+    }
+
+    SLEQP_CALL(sleqp_sparse_vector_push(result,
+                                        i_combined,
+                                        value));
+  }
 
   return SLEQP_OKAY;
 }
@@ -325,6 +423,33 @@ SLEQP_RETCODE sleqp_sparse_matrix_remove_column(SleqpSparseMatrix* matrix,
 
   matrix->cols[col + 1] = matrix->cols[col];
   matrix->nnz -= nnz;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
+                                                 SleqpSparseVec* vector,
+                                                 double* result)
+{
+  assert(matrix->num_cols == vector->dim);
+
+  for(int index = 0; index < matrix->num_rows; ++index)
+  {
+    result[index] = 0.;
+  }
+
+  size_t k_vec = 0.;
+
+  while(k_vec < vector->nnz)
+  {
+    int col = vector->indices[k_vec];
+    double factor = vector->data[k_vec];
+
+    for(int entry = matrix->cols[col]; entry< matrix->cols[col + 1]; ++entry)
+    {
+      result[matrix->rows[entry]] += factor * matrix->data[entry];
+    }
+  }
 
   return SLEQP_OKAY;
 }
