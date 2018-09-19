@@ -24,6 +24,11 @@ target_link_libraries(sleqp
   ${UMFPACK_LIBRARIES}
   ${SOPLEX_LIBRARIES})
 
+if(DOXYGEN_FOUND)
+  set(DOXYGEN_USE_MATHJAX YES)
+  doxygen_add_docs(doc ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
+
 set_target_properties(sleqp_bin
   PROPERTIES OUTPUT_NAME sleqp)
 

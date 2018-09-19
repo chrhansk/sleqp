@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.3)
 
 project(sleqp C CXX)
 
@@ -12,6 +12,12 @@ include_directories(${UMFPACK_INCLUDE_DIRS} ${SOPLEX_INCLUDE_DIRS})
 
 find_package(Check)
 find_package(Threads)
+
+find_package(Doxygen)
+
+if(DOXYGEN_FOUND)
+  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/doc")
+endif()
 
 enable_testing()
 set(ENABLE_UNIT_TESTS TRUE)
