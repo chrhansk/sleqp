@@ -57,7 +57,7 @@ extern "C" {
    * @param[in]  iterate           The current iterate \f$ overline{x} \f$
    * @param[in]  direction         The direction \f$ d \f$
    * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
-   * @param[out] penalty_value     The exact penalty value
+   * @param[out] penalty_value     The linear penalty value
    *
    **/
   SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
@@ -66,6 +66,24 @@ extern "C" {
                                      double penalty_parameter,
                                      double* penalty_value);
 
+  /**
+   * Computes the quadratic penalty value at the given iterate.
+   * The quadratic penalty value at \f$ \overline{x} \f$ w.r.t.
+   * a direction \f$ d \f$ is given by
+   *
+   * \f[
+   * q_v(\overline{x}, d) := \ell_v(\overline{x}, d)
+   * + \frac{1}{2} \langle d, \nabla_{xx} L(x, \lambda_0, \lambda) d \rangle
+   * \f]
+   *
+   *
+   * @param[in]  penalty_data      Penalty data
+   * @param[in]  iterate           The current iterate \f$ overline{x} \f$
+   * @param[in]  direction         The direction \f$ d \f$
+   * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
+   * @param[out] penalty_value     The linear penalty value
+   *
+   **/
   SLEQP_RETCODE sleqp_penalty_quadratic(SleqpPenalty* penalty_data,
                                         SleqpIterate* iterate,
                                         SleqpSparseVec* direction,

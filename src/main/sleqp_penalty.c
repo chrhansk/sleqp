@@ -212,6 +212,7 @@ SLEQP_RETCODE sleqp_penalty_quadratic(SleqpPenalty* penalty_data,
                                       iterate->cons_dual,
                                       penalty_value));
 
+  *penalty_value *= 0.5;
   *penalty_value += linear_penalty_value;
 
 

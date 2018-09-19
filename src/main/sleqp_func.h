@@ -63,8 +63,8 @@ extern "C" {
    *
    * The bilinear product with a direction \f$ d \f$ is then:
    * \f[
-   * \frac{1}{2} \langle d, \nabla_{xx} L(x, \lambda_0, \lambda) d \rangle
-   * = \frac{1}{2} \left( \lambda_0 \langle d, \nabla_{xx} f(x) d \rangle
+   * \langle d, \nabla_{xx} L(x, \lambda_0, \lambda) d \rangle
+   * = \left( \lambda_0 \langle d, \nabla_{xx} f(x) d \rangle
    *   + \sum_{i=1}^{m} \lambda_i \langle d , \nabla_{xx} c_i(x) d \rangle  \right)
    * \f]
    *
