@@ -10,6 +10,7 @@ set(COMMON_SRC
   sleqp_func.c
   sleqp_iterate.c
   sleqp_log.c
+  sleqp_penalty.c
   sleqp.c
   lp/sleqp_lpi.c)
 

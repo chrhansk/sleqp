@@ -145,8 +145,7 @@ extern "C" {
                                          double* func_dual,
                                          SleqpSparseVec* direction,
                                          SleqpSparseVec* cons_duals,
-                                         double* bilinear_prod,
-                                         void* func_data);
+                                         double* bilinear_prod);
 
   SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar);
 

@@ -75,8 +75,7 @@ SLEQP_RETCODE sleqp_hess_eval_bilinear(SleqpFunc* func,
                                        double* func_dual,
                                        SleqpSparseVec* direction,
                                        SleqpSparseVec* cons_duals,
-                                       double* bilinear_prod,
-                                       void* func_data)
+                                       double* bilinear_prod)
 {
   assert(func);
 
