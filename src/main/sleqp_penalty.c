@@ -7,12 +7,22 @@ struct SleqpPenalty
 {
   SleqpProblem* problem;
 
-  double* jac_dot_dense;
+  double* dense_cache;
+  int cache_size;
+
   SleqpSparseVec* jac_dot_sparse;
   SleqpSparseVec* lin_jac_vals;
 
   SleqpFunc* func;
 };
+
+static void reset_cache(double* values, int size)
+{
+  for(int i = 0; i < size; ++i)
+  {
+    values[i] = 0.;
+  }
+}
 
 SLEQP_RETCODE sleqp_penalty_create(SleqpPenalty** star,
                                    SleqpProblem* problem,
@@ -20,33 +30,36 @@ SLEQP_RETCODE sleqp_penalty_create(SleqpPenalty** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  SleqpPenalty* penalty = *star;
+  SleqpPenalty* penalty_data = *star;
 
-  penalty->problem = problem;
-  penalty->func = func;
+  penalty_data->problem = problem;
+  penalty_data->func = func;
 
-  SLEQP_CALL(sleqp_calloc(&penalty->jac_dot_dense, problem->num_constraints));
+  penalty_data->cache_size = SLEQP_MAX(problem->num_constraints,
+                                       problem->num_variables);
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&penalty->jac_dot_sparse,
+  SLEQP_CALL(sleqp_calloc(&penalty_data->dense_cache, penalty_data->cache_size));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&penalty_data->jac_dot_sparse,
                                         problem->num_constraints,
                                         0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&penalty->lin_jac_vals,
+  SLEQP_CALL(sleqp_sparse_vector_create(&penalty_data->lin_jac_vals,
                                         problem->num_constraints,
                                         0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_penalty_func(SleqpPenalty* penalty,
+SLEQP_RETCODE sleqp_penalty_func(SleqpPenalty* penalty_data,
                                  SleqpIterate* iterate,
                                  double penalty_parameter,
                                  double* penalty_value)
 {
   *penalty_value = iterate->func_val;
 
-  SleqpSparseVec* lb = penalty->problem->cons_lb;
-  SleqpSparseVec* ub = penalty->problem->cons_ub;
+  SleqpSparseVec* lb = penalty_data->problem->cons_lb;
+  SleqpSparseVec* ub = penalty_data->problem->cons_ub;
   SleqpSparseVec* c = iterate->cons_val;
 
   size_t k_c = 0, k_lb = 0, k_ub = 0;
@@ -120,12 +133,14 @@ SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
                                      direction,
                                      penalty_value));
 
+  reset_cache(penalty_data->dense_cache, penalty_data->cache_size);
+
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(iterate->cons_jac,
                                                 direction,
-                                                penalty_data->jac_dot_dense));
+                                                penalty_data->dense_cache));
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(penalty_data->jac_dot_sparse,
-                                          penalty_data->jac_dot_dense,
+                                          penalty_data->dense_cache,
                                           problem->num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_add(penalty_data->jac_dot_sparse,
@@ -219,15 +234,63 @@ SLEQP_RETCODE sleqp_penalty_quadratic(SleqpPenalty* penalty_data,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_penalty_quadratic_gradient(SleqpPenalty* penalty_data,
+                                               SleqpIterate* iterate,
+                                               SleqpActiveSet* active_set,
+                                               double penalty_parameter,
+                                               SleqpSparseVec* gradient)
+{
+  reset_cache(penalty_data->dense_cache, penalty_data->cache_size);
+
+  SleqpSparseVec* func_grad = iterate->func_grad;
+  double* cache = penalty_data->dense_cache;
+  SleqpProblem* problem = penalty_data->problem;
+
+  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(active_set);
+  SleqpSparseMatrix* cons_jac = iterate->cons_jac;
+
+  for(size_t k = 0; k < func_grad->nnz; ++k)
+  {
+    cache[func_grad->indices[k]] = func_grad->data[k];
+  }
+
+  for(size_t col = 0; col < problem->num_variables; ++col)
+  {
+    if(cons_states[col] == SLEQP_INACTIVE)
+    {
+      continue;
+    }
+    else if(cons_states[col] == SLEQP_ACTIVE_UPPER)
+    {
+      for(size_t index = cons_jac->cols[col]; index < cons_jac->cols[col + 1]; ++index)
+      {
+        cache[cons_jac->rows[index]] += penalty_parameter * cons_jac->data[index];
+      }
+    }
+    else if(cons_states[col] == SLEQP_ACTIVE_LOWER)
+    {
+      for(size_t index = cons_jac->cols[col]; index < cons_jac->cols[col + 1]; ++index)
+      {
+        cache[cons_jac->rows[index]] += -1. * penalty_parameter * cons_jac->data[index];
+      }
+    }
+  }
+
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(gradient, cache, problem->num_variables));
+
+  return SLEQP_OKAY;
+}
+
+
 SLEQP_RETCODE sleqp_penalty_free(SleqpPenalty** star)
 {
-  SleqpPenalty* penalty = *star;
+  SleqpPenalty* penalty_data = *star;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&penalty->lin_jac_vals));
+  SLEQP_CALL(sleqp_sparse_vector_free(&penalty_data->lin_jac_vals));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&penalty->jac_dot_sparse));
+  SLEQP_CALL(sleqp_sparse_vector_free(&penalty_data->jac_dot_sparse));
 
-  sleqp_free(&penalty->jac_dot_dense);
+  sleqp_free(&penalty_data->dense_cache);
 
   sleqp_free(star);
 

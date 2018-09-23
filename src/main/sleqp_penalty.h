@@ -1,14 +1,16 @@
 #ifndef SLEQP_PENALTY_H
 #define SLEQP_PENALTY_H
 
-/** @file sleqp_penalty.h
- * Definition of SLEQP penalty functions.
+/**
+ * @file sleqp_penalty.h
+ * @brief Definition of penalty functions.
  **/
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include "sleqp_active_set.h"
 #include "sleqp_func.h"
 #include "sleqp_iterate.h"
 #include "sleqp.h"
@@ -89,6 +91,24 @@ extern "C" {
                                         SleqpSparseVec* direction,
                                         double penalty_parameter,
                                         double* penalty_value);
+
+  /**
+   * Computes the gradient of the quadratic penalty function at
+   * the current iterate.
+   *
+   *
+   * @param[in]  penalty_data      Penalty data
+   * @param[in]  iterate           The current iterate \f$ overline{x} \f$
+   * @param[in]  active_set        The active set at the current iterate
+   * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
+   * @param[out] gradient          The gradient
+   *
+   **/
+  SLEQP_RETCODE sleqp_penalty_quadratic_gradient(SleqpPenalty* penalty_data,
+                                                 SleqpIterate* iterate,
+                                                 SleqpActiveSet* active_set,
+                                                 double penalty_parameter,
+                                                 SleqpSparseVec* gradient);
 
   SLEQP_RETCODE sleqp_penalty_free(SleqpPenalty** star);
 

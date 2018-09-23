@@ -20,22 +20,38 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star);
 
-  SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpProblem* problem,
+  SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpCauchyData* cauchy_data,
                                                SleqpIterate* iterate,
-                                               SleqpCauchyData* cauchy_data,
                                                double penalty,
                                                double trust_radius);
 
-  SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpProblem* problem,
+  SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
                                             SleqpIterate* iterate,
-                                            SleqpCauchyData* cauchy_data,
                                             SleqpActiveSet* active_set,
                                             double trust_radius);
 
-  SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpProblem* problem,
+  SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
                                            SleqpIterate* iterate,
-                                           SleqpCauchyData* cauchy_data,
                                            SleqpSparseVec* direction);
+
+  /**
+   * Computes the Cauchy step by (approximately) minimizing the
+   * quadratic penalty along a direction. The direction will
+   * be returned scaled and then returned.
+   *
+   * @param[in]      cauchy_data        Cauchy data
+   * @param[in]      iterate            The current iterate
+   * @param[in]      active_set         The active set at the current iterate
+   * @param[in]      penalty_parameter  The penalty parameter \f$ v \f$
+   * @param[in,out]  direction          The direction
+   *
+   **/
+  SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
+                                          SleqpIterate* iterate,
+                                          SleqpActiveSet* active_set,
+                                          double penalty_parameter,
+                                          SleqpSparseVec* direction,
+                                          double* predicted_reduction);
 
 #ifdef __cplusplus
 }

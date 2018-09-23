@@ -2,9 +2,12 @@
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
+#include "sleqp_penalty.h"
 
 struct SleqpCauchyData
 {
+  SleqpProblem* problem;
+
   size_t num_variables;
   size_t num_constraints;
 
@@ -19,6 +22,9 @@ struct SleqpCauchyData
   double* vars_ub;
 
   double* solution_values;
+
+  SleqpSparseVec* quadratic_gradient;
+  SleqpPenalty* penalty_data;
 };
 
 SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
@@ -29,6 +35,7 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
 
   SleqpCauchyData* data = *star;
 
+  data->problem = problem;
   data->num_variables = problem->num_variables + 2 * problem->num_constraints;
   data->num_constraints = problem->num_constraints;
 
@@ -46,6 +53,14 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
 
   SLEQP_CALL(sleqp_calloc(&data->solution_values, data->num_variables));
 
+  SLEQP_CALL(sleqp_sparse_vector_create(&data->quadratic_gradient,
+                                        problem->num_variables,
+                                        0));
+
+  SLEQP_CALL(sleqp_penalty_create(&data->penalty_data,
+                                  problem,
+                                  problem->func));
+
   for(size_t i = problem->num_variables; i < data->num_variables; ++i)
   {
     data->vars_lb[i] = 0;
@@ -58,6 +73,10 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
 SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
 {
   SleqpCauchyData* data = *star;
+
+  SLEQP_CALL(sleqp_penalty_free(&data->penalty_data));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->quadratic_gradient));
 
   sleqp_free(&data->solution_values);
 
@@ -164,16 +183,15 @@ static SLEQP_RETCODE append_penalties(SleqpSparseVec* func_grad,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE create_cons_bounds(SleqpProblem* problem,
+static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
                                         SleqpIterate* iterate,
-                                        SleqpCauchyData* cauchy_data,
                                         size_t num_variables,
                                         size_t num_constraints)
 {
   size_t k_y = 0, k_lb = 0, k_ub = 0;
 
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* lb = cauchy_data->problem->cons_lb;
+  SleqpSparseVec* ub = cauchy_data->problem->cons_ub;
 
   SleqpSparseVec* val = iterate->cons_val;
 
@@ -207,16 +225,15 @@ static SLEQP_RETCODE create_cons_bounds(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE create_var_bounds(SleqpProblem* problem,
+static SLEQP_RETCODE create_var_bounds(SleqpCauchyData* cauchy_data,
                                        SleqpIterate* iterate,
-                                       SleqpCauchyData* cauchy_data,
                                        double trust_radius,
                                        size_t num_variables,
                                        size_t num_constraints)
 {
   SleqpSparseVec* x = iterate->x;
-  SleqpSparseVec* lb = problem->var_lb;
-  SleqpSparseVec* ub = problem->var_ub;
+  SleqpSparseVec* lb = cauchy_data->problem->var_lb;
+  SleqpSparseVec* ub = cauchy_data->problem->var_ub;
 
   size_t k_x = 0, k_lb = 0, k_ub = 0;
 
@@ -248,9 +265,8 @@ static SLEQP_RETCODE create_var_bounds(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE create_objective(SleqpProblem* problem,
+static SLEQP_RETCODE create_objective(SleqpCauchyData* cauchy_data,
                                       SleqpIterate* iterate,
-                                      SleqpCauchyData* cauchy_data,
                                       double trust_radius,
                                       size_t num_variables,
                                       size_t num_constraints)
@@ -280,9 +296,8 @@ static SLEQP_RETCODE create_objective(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpProblem* problem,
+SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpCauchyData* cauchy_data,
                                              SleqpIterate* iterate,
-                                             SleqpCauchyData* cauchy_data,
                                              double penalty,
                                              double trust_radius)
 {
@@ -300,22 +315,19 @@ SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpProblem* problem,
                                num_variables,
                                num_constraints));
 
-  SLEQP_CALL(create_var_bounds(problem,
+  SLEQP_CALL(create_var_bounds(cauchy_data,
                                iterate,
-                               cauchy_data,
                                trust_radius,
                                num_variables,
                                num_constraints));
 
-  SLEQP_CALL(create_cons_bounds(problem,
+  SLEQP_CALL(create_cons_bounds(cauchy_data,
                                 iterate,
-                                cauchy_data,
                                 num_variables,
                                 num_constraints));
 
-  SLEQP_CALL(create_objective(problem,
+  SLEQP_CALL(create_objective(cauchy_data,
                               iterate,
-                              cauchy_data,
                               trust_radius,
                               num_variables,
                               num_constraints));
@@ -336,18 +348,17 @@ SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpProblem* problem,
+SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
                                           SleqpIterate* iterate,
-                                          SleqpCauchyData* cauchy_data,
                                           SleqpActiveSet* active_set,
                                           double trust_radius)
 {
   SleqpSparseVec* x = iterate->x;
-  SleqpSparseVec* lb = problem->var_lb;
-  SleqpSparseVec* ub = problem->var_ub;
+  SleqpSparseVec* lb = cauchy_data->problem->var_lb;
+  SleqpSparseVec* ub = cauchy_data->problem->var_ub;
 
-  size_t num_variables = problem->num_variables;
-  size_t num_constraints = problem->num_constraints;
+  size_t num_variables = cauchy_data->problem->num_variables;
+  size_t num_constraints = cauchy_data->problem->num_constraints;
 
   size_t k_x = 0, k_lb = 0, k_ub = 0;
 
@@ -410,19 +421,69 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpProblem* problem,
+SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
                                          SleqpIterate* iterate,
-                                         SleqpCauchyData* cauchy_data,
                                          SleqpSparseVec* direction)
 {
   SLEQP_CALL(sleqp_lpi_get_solution(cauchy_data->lp_interface,
-                                    problem->num_variables,
+                                    cauchy_data->problem->num_variables,
                                     NULL,
                                     cauchy_data->solution_values));
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(direction,
                                           cauchy_data->solution_values,
-                                          problem->num_variables));
+                                          cauchy_data->problem->num_variables));
+
+  return SLEQP_OKAY;
+}
+
+
+SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
+                                        SleqpIterate* iterate,
+                                        SleqpActiveSet* active_set,
+                                        double penalty_parameter,
+                                        SleqpSparseVec* direction,
+                                        double* predicted_reduction)
+{
+  double func_val = iterate->func_val;
+
+  SLEQP_CALL(sleqp_penalty_quadratic_gradient(cauchy_data->penalty_data,
+                                              iterate,
+                                              active_set,
+                                              penalty_parameter,
+                                              cauchy_data->quadratic_gradient));
+
+  double gradient_product;
+
+  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
+                                     cauchy_data->quadratic_gradient,
+                                     &gradient_product));
+
+  double alpha = 1.;
+  double beta = 0.9;
+
+  while(1)
+  {
+    double quadratic_penalty_value;
+
+    SLEQP_CALL(sleqp_penalty_quadratic(cauchy_data->penalty_data,
+                                       iterate,
+                                       direction,
+                                       penalty_parameter,
+                                       &quadratic_penalty_value));
+
+    *predicted_reduction = quadratic_penalty_value;
+
+    if(sleqp_le(quadratic_penalty_value, alpha * gradient_product))
+    {
+      break;
+    }
+
+    SLEQP_CALL(sleqp_sparse_vector_scale(direction, beta));
+
+    alpha *= beta;
+  }
+
 
   return SLEQP_OKAY;
 }

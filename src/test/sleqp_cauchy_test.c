@@ -213,15 +213,13 @@ START_TEST(test_unconstrained_cauchy_direction)
                                        problem,
                                        lp_interface));
 
-  ASSERT_CALL(sleqp_cauchy_compute_direction(problem,
+  ASSERT_CALL(sleqp_cauchy_compute_direction(cauchy_data,
                                              iterate,
-                                             cauchy_data,
                                              penalty,
                                              trust_radius));
 
-  ASSERT_CALL(sleqp_cauchy_get_direction(problem,
+  ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data,
                                          iterate,
-                                         cauchy_data,
                                          direction));
 
   ck_assert_int_eq(direction->dim, 2);

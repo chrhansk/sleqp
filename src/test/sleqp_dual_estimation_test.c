@@ -220,15 +220,13 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_dual_estimation_data_create(&estimation_data, problem));
 
-  ASSERT_CALL(sleqp_cauchy_compute_direction(problem,
+  ASSERT_CALL(sleqp_cauchy_compute_direction(cauchy_data,
                                              iterate,
-                                             cauchy_data,
                                              penalty,
                                              trust_radius));
 
-  ASSERT_CALL(sleqp_cauchy_get_active_set(problem,
+  ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
                                           iterate,
-                                          cauchy_data,
                                           active_set,
                                           trust_radius));
 
