@@ -125,6 +125,15 @@ SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
+                                        double factor)
+{
+  for(size_t k = 0; k < vector->nnz; ++k)
+  {
+    vector->data[k] *= factor;
+  }
+}
+
 SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
                                             double* second,
                                             double* product)

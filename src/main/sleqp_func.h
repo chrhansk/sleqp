@@ -1,8 +1,9 @@
 #ifndef SLEQP_FUNC_H
 #define SLEQP_FUNC_H
 
-/** @file sleqp_func.h
- * Definition of functions used for objective / constraints.
+/**
+ * @file sleqp_func.h
+ * @brief Definition of functions used for objective / constraints.
  **/
 
 #include "sleqp_types.h"

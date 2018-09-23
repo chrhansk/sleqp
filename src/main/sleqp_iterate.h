@@ -1,6 +1,11 @@
 #ifndef SLEQP_ITERATE_H
 #define SLEQP_ITERATE_H
 
+/**
+ * @file sleqp_sparse.h
+ * @brief Definition of iterate.
+ **/
+
 #include "sleqp_types.h"
 
 #include "sleqp.h"

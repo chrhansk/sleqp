@@ -1,6 +1,11 @@
 #ifndef SLEQP_ACTIVE_SET_H
 #define SLEQP_ACTIVE_SET_H
 
+/**
+ * @file sleqp_active_set.h
+ * @brief Definition of active sets.
+ **/
+
 #include "sleqp_func.h"
 #include "sleqp_types.h"
 #include "sleqp.h"

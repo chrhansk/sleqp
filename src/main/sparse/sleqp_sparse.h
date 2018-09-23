@@ -1,8 +1,9 @@
 #ifndef SLEQP_SPARSE_H
 #define SLEQP_SPARSE_H
 
-/** @file sleqp_sparse.h
- * Definition of SLEQP sparse vectors / matrices.
+/**
+ * @file sleqp_sparse.h
+ * @brief Definition of SLEQP sparse vectors / matrices.
  **/
 
 #ifdef __cplusplus
@@ -86,6 +87,15 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
                                         SleqpSparseVec* second,
                                         double* product);
+
+  /**
+   * Scales the sparse vector by a factor
+   *
+   * @param[in,out] vector   A pointer to the vector
+   * @param[out]    factor   The factor
+   **/
+  SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
+                                          double factor);
 
   /**
    * Computes the sum of two sparse vectors
