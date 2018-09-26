@@ -163,6 +163,8 @@ SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
   result->dim = first->dim;
   result->nnz = 0;
 
+  SLEQP_CALL(sleqp_sparse_vector_reserve(result, first->nnz + second->nnz));
+
   size_t k_first = 0, k_second = 0;
 
   while(k_first < first->nnz || k_second < second->nnz)
@@ -384,10 +386,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
   }
   else if(matrix->num_cols > num_cols)
   {
-    for(int column = matrix->num_cols - 1; column >= num_cols; --column)
-    {
-      SLEQP_CALL(sleqp_sparse_matrix_remove_column(matrix, column));
-    }
+    matrix->nnz = matrix->cols[num_cols];
   }
 
   matrix->num_cols = num_cols;
@@ -454,10 +453,12 @@ SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
     int col = vector->indices[k_vec];
     double factor = vector->data[k_vec];
 
-    for(int entry = matrix->cols[col]; entry< matrix->cols[col + 1]; ++entry)
+    for(int entry = matrix->cols[col]; entry < matrix->cols[col + 1]; ++entry)
     {
       result[matrix->rows[entry]] += factor * matrix->data[entry];
     }
+
+    ++k_vec;
   }
 
   return SLEQP_OKAY;

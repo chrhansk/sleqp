@@ -3,7 +3,59 @@
 
 #include "test_common.h"
 
+#include "sleqp_cmp.h"
+#include "sleqp_mem.h"
 #include "sparse/sleqp_sparse.h"
+
+START_TEST(test_sparse_matrix_vector_product)
+{
+  SleqpSparseMatrix* matrix;
+
+  int num_rows = 2;
+  int num_cols = 3;
+  int nnz_max = 4;
+
+  ASSERT_CALL(sleqp_sparse_matrix_create(&matrix,
+                                          num_rows,
+                                          num_cols,
+                                          nnz_max));
+
+  // row, col, val
+  ASSERT_CALL(sleqp_sparse_matrix_add_column(matrix, 0));
+  ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 0, 0, 1.));
+
+  ASSERT_CALL(sleqp_sparse_matrix_add_column(matrix, 1));
+  ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 1, 1, 2.));
+
+  ASSERT_CALL(sleqp_sparse_matrix_add_column(matrix, 2));
+  ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 0, 2, 2.));
+  ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 1, 2, 3.));
+
+  SleqpSparseVec* vector;
+  double* result;
+
+  ASSERT_CALL(sleqp_sparse_vector_create(&vector, 3, 3));
+  ASSERT_CALL(sleqp_sparse_vector_push(vector, 0, 2.));
+  ASSERT_CALL(sleqp_sparse_vector_push(vector, 1, 4.));
+  ASSERT_CALL(sleqp_sparse_vector_push(vector, 2, 3.));
+
+  ASSERT_CALL(sleqp_calloc(&result, 2));
+
+  ASSERT_CALL(sleqp_sparse_matrix_vector_product(matrix,
+                                                 vector,
+                                                 result));
+
+  ck_assert(sleqp_eq(result[0], 8.));
+  ck_assert(sleqp_eq(result[1], 17.));
+
+  sleqp_free(&result);
+
+  ASSERT_CALL(sleqp_sparse_vector_free(&vector));
+
+  ASSERT_CALL(sleqp_sparse_matrix_free(&matrix));
+
+}
+END_TEST
 
 START_TEST(test_sparse_reserve)
 {
@@ -82,15 +134,14 @@ START_TEST(test_sparse_remove_column)
 
   int removed = 0;
 
-  for(size_t column = size - 1; column >= 0; --column)
+  for(size_t column = size - 1; column > 0; --column)
   {
     ASSERT_CALL(sleqp_sparse_matrix_remove_column(matrix, column));
 
-    ck_assert_int_eq(matrix->cols[column + 1] - matrix->cols[column], 0);
+    ++removed;
 
     ck_assert_int_eq(matrix->nnz, size - removed);
 
-    ++removed;
   }
 
 
@@ -170,13 +221,13 @@ START_TEST(test_sparse_decrease_size)
                                          1.));
   }
 
-  ASSERT_CALL(sleqp_sparse_matrix_resize(identity, 2, 2));
+  ck_assert_int_eq(identity->nnz, size);
 
-  for(int column = reduced_size; column < size; ++column)
-  {
-    ck_assert_int_eq(identity->cols[column + 1] - identity->cols[column], 0);
-  }
+  ASSERT_CALL(sleqp_sparse_matrix_resize(identity,
+                                         reduced_size,
+                                         reduced_size));
 
+  ck_assert_int_eq(identity->nnz, reduced_size);
 
   ASSERT_CALL(sleqp_sparse_matrix_free(&identity));
 }
@@ -187,6 +238,7 @@ Suite* sparse_test_suite()
   Suite *suite;
   TCase *tc_sparse_construction;
   TCase *tc_sparse_modification;
+  TCase *tc_sparse_operations;
 
   suite = suite_create("Sparse tests");
 
@@ -196,12 +248,20 @@ Suite* sparse_test_suite()
 
   tc_sparse_modification = tcase_create("Sparse matrix modification");
 
+  tc_sparse_operations = tcase_create("Sparse matrix operations");
+
   tcase_add_test(tc_sparse_modification, test_sparse_reserve);
   tcase_add_test(tc_sparse_modification, test_sparse_increase_size);
   tcase_add_test(tc_sparse_modification, test_sparse_decrease_size);
   tcase_add_test(tc_sparse_modification, test_sparse_remove_column);
 
+  tcase_add_test(tc_sparse_operations, test_sparse_matrix_vector_product);
+
   suite_add_tcase(suite, tc_sparse_construction);
+
+  suite_add_tcase(suite, tc_sparse_modification);
+
+  suite_add_tcase(suite, tc_sparse_operations);
 
   return suite;
 }
@@ -215,6 +275,8 @@ int main()
 
   suite = sparse_test_suite();
   srunner = srunner_create(suite);
+
+  srunner_set_fork_status(srunner, CK_NOFORK);
 
   srunner_run_all(srunner, CK_NORMAL);
 

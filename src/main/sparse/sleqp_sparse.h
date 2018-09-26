@@ -141,7 +141,7 @@ extern "C" {
    * So far the data is stored in CSC format.
    * Specifically:
    *
-   * \f$ A(i, j) = data[k]\f$ iff \f$ row[k] = i \f$ and \f$ col[j] <= k < col[j + 1] \f$
+   * \f$ A(i, j) = data[k]\f$ iff \f$ rows[k] = i \f$ and \f$ cols[j] <= k < cols[j + 1] \f$
    *
    * for \f$ k = 0, \ldots, nnz - 1 \f$
    *
