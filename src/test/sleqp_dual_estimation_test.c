@@ -227,12 +227,10 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
                                           iterate,
-                                          active_set,
                                           trust_radius));
 
   ASSERT_CALL(sleqp_dual_estimation_compute(estimation_data,
-                                            iterate,
-                                            active_set));
+                                            iterate));
 
   SleqpSparseVec* vars_dual = iterate->vars_dual;
 

@@ -350,7 +350,6 @@ SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpCauchyData* cauchy_data,
 
 SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
                                           SleqpIterate* iterate,
-                                          SleqpActiveSet* active_set,
                                           double trust_radius)
 {
   SleqpSparseVec* x = iterate->x;
@@ -366,7 +365,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
                                     cauchy_data->num_variables,
                                     cauchy_data->base_stats));
 
-  SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(active_set);
+  SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(iterate->active_set);
 
   for(size_t i = 0; i < num_variables; ++i)
   {
@@ -403,7 +402,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
     }
   }
 
-  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(active_set);
+  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
 
   for(size_t i = 0; i < num_constraints; ++i)
   {
@@ -440,16 +439,26 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
 
 SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         SleqpIterate* iterate,
-                                        SleqpActiveSet* active_set,
                                         double penalty_parameter,
                                         SleqpSparseVec* direction,
                                         double* predicted_reduction)
 {
   double func_val = iterate->func_val;
 
+  SleqpFunc* func = cauchy_data->problem->func;
+
+  cauchy_data->quadratic_gradient->nnz = 0;
+
+  double zero_value;
+
+  SLEQP_CALL(sleqp_penalty_linear(cauchy_data->penalty_data,
+                                  iterate,
+                                  cauchy_data->quadratic_gradient,
+                                  penalty_parameter,
+                                  &zero_value));
+
   SLEQP_CALL(sleqp_penalty_quadratic_gradient(cauchy_data->penalty_data,
                                               iterate,
-                                              active_set,
                                               penalty_parameter,
                                               cauchy_data->quadratic_gradient));
 
@@ -459,6 +468,16 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                      cauchy_data->quadratic_gradient,
                                      &gradient_product));
 
+  double hessian_product;
+
+  double func_dual = 1.;
+
+  SLEQP_CALL(sleqp_hess_eval_bilinear(func,
+                                      &func_dual,
+                                      direction,
+                                      iterate->cons_dual,
+                                      &hessian_product));
+
   double alpha = 1.;
   double beta = 0.9;
 
@@ -466,13 +485,23 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
   {
     double quadratic_penalty_value;
 
+    SLEQP_CALL(sleqp_penalty_linear(cauchy_data->penalty_data,
+                                    iterate,
+                                    direction,
+                                    penalty_parameter,
+                                    &quadratic_penalty_value));
+
+    quadratic_penalty_value += alpha*alpha*hessian_product;
+
+    /*
     SLEQP_CALL(sleqp_penalty_quadratic(cauchy_data->penalty_data,
                                        iterate,
                                        direction,
                                        penalty_parameter,
                                        &quadratic_penalty_value));
+    */
 
-    *predicted_reduction = quadratic_penalty_value;
+    *predicted_reduction = zero_value - quadratic_penalty_value;
 
     if(sleqp_le(quadratic_penalty_value, alpha * gradient_product))
     {

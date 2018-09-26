@@ -3,7 +3,6 @@
 
 #include "sleqp.h"
 
-#include "sleqp_active_set.h"
 #include "sleqp_iterate.h"
 
 #include "lp/sleqp_lpi.h"
@@ -27,7 +26,6 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
                                             SleqpIterate* iterate,
-                                            SleqpActiveSet* active_set,
                                             double trust_radius);
 
   SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
@@ -41,14 +39,12 @@ extern "C" {
    *
    * @param[in]      cauchy_data        Cauchy data
    * @param[in]      iterate            The current iterate
-   * @param[in]      active_set         The active set at the current iterate
    * @param[in]      penalty_parameter  The penalty parameter \f$ v \f$
    * @param[in,out]  direction          The direction
    *
    **/
   SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                           SleqpIterate* iterate,
-                                          SleqpActiveSet* active_set,
                                           double penalty_parameter,
                                           SleqpSparseVec* direction,
                                           double* predicted_reduction);

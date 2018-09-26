@@ -2,13 +2,14 @@
 #define SLEQP_ITERATE_H
 
 /**
- * @file sleqp_sparse.h
+ * @file sleqp_iterate.h
  * @brief Definition of iterate.
  **/
 
-#include "sleqp_types.h"
 
-#include "sleqp.h"
+#include "sleqp_active_set.h"
+#include "sleqp_problem.h"
+
 #include "sparse/sleqp_sparse.h"
 
 #ifdef __cplusplus
@@ -17,15 +18,45 @@ extern "C" {
 
   typedef struct SleqpIterate
   {
+    /**
+     * The current point. Has dimension = num_variables.
+     **/
     SleqpSparseVec* x;
 
+    /**
+     * The current function value
+     **/
     double func_val;
+
+    /**
+     * The current function gradient. Has dimension = num_variables.
+     **/
     SleqpSparseVec* func_grad;
 
+    /**
+     * The current constraint values. Has dimension = num_constraints.
+     **/
     SleqpSparseVec* cons_val;
+
+    /**
+     * The Jacobian of the constraitns at the current iterate.
+     * Has num_constraints many rows, num_variables many columns.
+     */
     SleqpSparseMatrix* cons_jac;
 
+    /**
+     * The current active set.
+     **/
+    SleqpActiveSet* active_set;
+
+    /**
+     * The dual values of the constraints. Has dimension = num_constraints.
+     */
     SleqpSparseVec* cons_dual;
+
+    /**
+     * The dual values of the variable bounds. Has dimension = num_variables.
+     */
     SleqpSparseVec* vars_dual;
 
   } SleqpIterate;
