@@ -21,11 +21,11 @@ extern "C" {
   typedef struct SleqpSparseVec
   {
     double* data;
-    size_t* indices;
+    int* indices;
 
-    size_t dim;
-    size_t nnz;
-    size_t nnz_max;
+    int dim;
+    int nnz;
+    int nnz_max;
 
   } SleqpSparseVec;
 
@@ -39,8 +39,8 @@ extern "C" {
    *
    **/
   SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,
-                                           size_t dim,
-                                           size_t nnz_max);
+                                           int dim,
+                                           int nnz_max);
 
   /**
    * Pushes a new entry on top of a sparse vector. The new
@@ -51,7 +51,7 @@ extern "C" {
    * @param[in]     value  The value of the new entry
    **/
   SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
-                                         size_t idx,
+                                         int idx,
                                          double value);
 
   /**
@@ -66,7 +66,7 @@ extern "C" {
    **/
   SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
                                              double* values,
-                                             size_t dim);
+                                             int dim);
 
   /**
    * Reserves space for additional nonzeros
@@ -75,7 +75,7 @@ extern "C" {
    * @param[in]     nnz_max The number of nonzeros
    **/
   SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
-                                            size_t nnz);
+                                            int nnz);
 
   /**
    * Computes the dot product of two sparse vectors
@@ -124,7 +124,7 @@ extern "C" {
                                               double* product);
 
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
-                                 size_t index);
+                                 int index);
 
   SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
                                          SleqpSparseVec* lb,
@@ -160,35 +160,35 @@ extern "C" {
   } SleqpSparseMatrix;
 
   SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** matrix,
-                                           size_t num_rows,
-                                           size_t num_cols,
-                                           size_t nnz_max);
+                                           int num_rows,
+                                           int num_cols,
+                                           int nnz_max);
 
   SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
-                                            size_t nnz);
+                                            int nnz);
 
   SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
-                                           size_t num_rows,
-                                           size_t num_cols);
+                                           int num_rows,
+                                           int num_cols);
 
   SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
-                                         size_t row,
-                                         size_t col,
+                                         int row,
+                                         int col,
                                          double value);
 
   SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
-                                               size_t col);
+                                               int col);
 
   SLEQP_RETCODE sleqp_sparse_matrix_remove_column(SleqpSparseMatrix* matrix,
-                                                  size_t col);
+                                                  int col);
 
   SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
                                                    SleqpSparseVec* vector,
                                                    double* result);
 
   double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
-                                 size_t row,
-                                 size_t col);
+                                 int row,
+                                 int col);
 
   SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
                                             FILE* output);

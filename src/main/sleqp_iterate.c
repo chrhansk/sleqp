@@ -10,8 +10,8 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
 
   SleqpIterate* iterate = *star;
 
-  size_t num_variables = problem->num_variables;
-  size_t num_constraints = problem->num_constraints;
+  int num_variables = problem->num_variables;
+  int num_constraints = problem->num_constraints;
 
   SLEQP_CALL(sleqp_sparse_vector_create(&iterate->func_grad,
                                         num_variables,

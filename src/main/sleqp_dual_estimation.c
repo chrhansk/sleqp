@@ -7,8 +7,8 @@
 
 struct SleqpDualEstimationData
 {
-  size_t num_variables;
-  size_t num_constraints;
+  int num_variables;
+  int num_constraints;
 
   int* active_vars;
   int* active_cons;
@@ -41,12 +41,12 @@ SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
                                         0,
                                         0));
 
-  size_t estimation_size_bound = 2*problem->num_variables + problem->num_constraints;
+  int estimation_size_bound = 2*problem->num_variables + problem->num_constraints;
 
   SLEQP_CALL(sleqp_calloc(&estimation_data->estimation_rhs, estimation_size_bound));
   SLEQP_CALL(sleqp_calloc(&estimation_data->estimation_values, estimation_size_bound));
 
-  for(size_t i = 0; i < estimation_size_bound; ++i)
+  for(int i = 0; i < estimation_size_bound; ++i)
   {
     estimation_data->estimation_rhs[i] = 0;
   }
@@ -55,8 +55,8 @@ SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
 }
 
 static SLEQP_RETCODE resize_estimation_matrix(SleqpDualEstimationData* estimation_data,
-                                              size_t dim,
-                                              size_t total_nnz)
+                                              int dim,
+                                              int total_nnz)
 {
   SLEQP_CALL(sleqp_sparse_matrix_reserve(estimation_data->estimation_matrix,
                                          total_nnz));
@@ -70,15 +70,15 @@ static SLEQP_RETCODE resize_estimation_matrix(SleqpDualEstimationData* estimatio
   return SLEQP_OKAY;
 }
 
-static size_t count_active_constraint_nnz(SleqpSparseMatrix* cons_jac,
+static int count_active_constraint_nnz(SleqpSparseMatrix* cons_jac,
                                           SleqpActiveSet* active_set)
 {
-  size_t constraint_nnz = 0;
+  int constraint_nnz = 0;
   SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(active_set);
 
-  size_t col = 0;
+  int col = 0;
 
-  for(size_t index = 0; index < cons_jac->nnz; ++index)
+  for(int index = 0; index < cons_jac->nnz; ++index)
   {
     while(col < cons_jac->cols[index])
     {
@@ -98,20 +98,20 @@ static size_t count_active_constraint_nnz(SleqpSparseMatrix* cons_jac,
 
 static SLEQP_RETCODE fill_estimation_matrix(SleqpDualEstimationData* estimation_data,
                                             SleqpIterate* iterate,
-                                            size_t num_active_vars,
-                                            size_t num_active_cons,
-                                            size_t total_nnz)
+                                            int num_active_vars,
+                                            int num_active_cons,
+                                            int total_nnz)
 {
   SleqpSparseMatrix* cons_jac = iterate->cons_jac;
   SleqpSparseMatrix* matrix = estimation_data->estimation_matrix;
 
-  size_t num_active = num_active_cons + num_active_vars;
-  size_t num_variables = estimation_data->num_variables;
+  int num_active = num_active_cons + num_active_vars;
+  int num_variables = estimation_data->num_variables;
 
   SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
   SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(iterate->active_set);
 
-  for(size_t column = 0; column < num_variables; ++column)
+  for(int column = 0; column < num_variables; ++column)
   {
     SLEQP_CALL(sleqp_sparse_matrix_add_column(matrix,
                                               column));
@@ -154,13 +154,13 @@ static SLEQP_RETCODE fill_estimation_matrix(SleqpDualEstimationData* estimation_
     }
   }
 
-  for(size_t column = num_variables + 1; column < matrix->num_cols + 1; ++column)
+  for(int column = num_variables + 1; column < matrix->num_cols + 1; ++column)
   {
     matrix->cols[column] = 0;
   }
 
   // count the elements in the columns
-  for(size_t column = 0; column < num_variables; ++column)
+  for(int column = 0; column < num_variables; ++column)
   {
     for(int index = matrix->cols[column]; index < matrix->cols[column + 1]; ++index)
     {
@@ -174,14 +174,14 @@ static SLEQP_RETCODE fill_estimation_matrix(SleqpDualEstimationData* estimation_
   }
 
   // construct the cumulative sum
-  for(size_t column = num_variables + 1; column < matrix->num_cols + 1; ++column)
+  for(int column = num_variables + 1; column < matrix->num_cols + 1; ++column)
   {
     matrix->cols[column] += matrix->cols[column - 1];
     estimation_data->col_indices[column] = 0;
   }
 
   // insert the entries
-  for(size_t column = 0; column < num_variables; ++column)
+  for(int column = 0; column < num_variables; ++column)
   {
     for(int index = matrix->cols[column]; index < matrix->cols[column + 1]; ++index)
     {
@@ -195,8 +195,8 @@ static SLEQP_RETCODE fill_estimation_matrix(SleqpDualEstimationData* estimation_
       // target data: matrix->data[index]
       // target index: matrix->cols[*target column*] + (col_indices[*target column*]++)
 
-      size_t target_column = matrix->rows[index];
-      size_t target_index = matrix->cols[target_column] + estimation_data->col_indices[target_column + 1]++;
+      int target_column = matrix->rows[index];
+      int target_index = matrix->cols[target_column] + estimation_data->col_indices[target_column + 1]++;
 
       matrix->data[target_index] = matrix->data[index];
       matrix->rows[target_index] = column;
@@ -213,7 +213,7 @@ static SLEQP_RETCODE construct_estimation_rhs(SleqpDualEstimationData* estimatio
   SleqpSparseVec* grad = iterate->func_grad;
   double* rhs = estimation_data->estimation_rhs;
 
-  size_t index = 0;
+  int index = 0;
 
   for(int i = 0; i < grad->dim; ++i)
   {
@@ -232,8 +232,8 @@ static SLEQP_RETCODE construct_estimation_rhs(SleqpDualEstimationData* estimatio
 
 static SLEQP_RETCODE solve_estimation(SleqpDualEstimationData* estimation_data,
                                       SleqpIterate* iterate,
-                                      size_t num_active_vars,
-                                      size_t num_active_cons)
+                                      int num_active_vars,
+                                      int num_active_cons)
 {
   void* Numeric;
   int status;
@@ -276,8 +276,8 @@ static SLEQP_RETCODE solve_estimation(SleqpDualEstimationData* estimation_data,
 
   umfpack_di_free_numeric(&Numeric);
 
-  size_t num_variables = estimation_data->num_variables;
-  size_t num_constraints = estimation_data->num_constraints;
+  int num_variables = estimation_data->num_variables;
+  int num_constraints = estimation_data->num_constraints;
 
   SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
   SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(iterate->active_set);
@@ -285,7 +285,7 @@ static SLEQP_RETCODE solve_estimation(SleqpDualEstimationData* estimation_data,
   SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->cons_dual,
                                          num_active_cons));
 
-  for(size_t i = 0; i < num_constraints; ++i)
+  for(int i = 0; i < num_constraints; ++i)
   {
     if(cons_states[i] == SLEQP_ACTIVE_UPPER)
     {
@@ -314,7 +314,7 @@ static SLEQP_RETCODE solve_estimation(SleqpDualEstimationData* estimation_data,
   SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->vars_dual,
                                          num_active_vars));
 
-  for(size_t i = 0; i < num_variables; ++i)
+  for(int i = 0; i < num_variables; ++i)
   {
     if(var_states[i] == SLEQP_ACTIVE_UPPER)
     {
@@ -349,30 +349,30 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
   SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
   SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(iterate->active_set);
 
-  size_t num_active_cons = 0, num_active_vars = 0;
+  int num_active_cons = 0, num_active_vars = 0;
 
   // first step: count active cons / vars
-  for(size_t i = 0; i < estimation_data->num_constraints; ++i)
+  for(int i = 0; i < estimation_data->num_constraints; ++i)
   {
     estimation_data->active_cons[i] = (cons_states[i] != SLEQP_INACTIVE) ? num_active_cons++ : -1;
   }
 
-  for(size_t i = 0; i < estimation_data->num_variables; ++i)
+  for(int i = 0; i < estimation_data->num_variables; ++i)
   {
     estimation_data->active_vars[i] = (var_states[i] != SLEQP_INACTIVE) ? num_active_vars++ : -1;
   }
 
-  size_t num_active = num_active_vars + num_active_cons;
+  int num_active = num_active_vars + num_active_cons;
 
-  size_t constraint_nnz = count_active_constraint_nnz(iterate->cons_jac,
+  int constraint_nnz = count_active_constraint_nnz(iterate->cons_jac,
                                                       iterate->active_set);
 
-  size_t variable_nnz = num_active_vars;
+  int variable_nnz = num_active_vars;
 
-  size_t total_nnz = estimation_data->num_variables // identity
+  int total_nnz = estimation_data->num_variables // identity
     + 2*(constraint_nnz + variable_nnz); // cons jac nnz + active variables
 
-  size_t matrix_dim = estimation_data->num_variables + num_active;
+  int matrix_dim = estimation_data->num_variables + num_active;
 
   SLEQP_CALL(resize_estimation_matrix(estimation_data,
                                       matrix_dim,

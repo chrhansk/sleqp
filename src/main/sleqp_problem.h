@@ -46,12 +46,12 @@ extern "C" {
     /**
      * number of variables.
      **/
-    size_t num_variables;
+    int num_variables;
 
     /**
      * number of constraints.
      **/
-    size_t num_constraints;
+    int num_constraints;
 
   } SleqpProblem;
 

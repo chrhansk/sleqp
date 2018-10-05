@@ -20,8 +20,8 @@ extern "C" {
   typedef enum SLEQP_BaseStat SLEQP_BASESTAT;
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_CREATE)(void** lp_data,
-                                            size_t num_variables,
-                                            size_t num_constraints);
+                                            int num_variables,
+                                            int num_constraints);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_SOLVE)(void* lp_data,
                                            double* objective,
@@ -32,12 +32,12 @@ extern "C" {
                                            double* vars_ub);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_GET_SOLUTION)(void* lp_data,
-                                                  size_t num_variables,
+                                                  int num_variables,
                                                   double* objective_value,
                                                   double* solution_values);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_GET_VARSTATS)(void* lp_data,
-                                                  size_t num_variables,
+                                                  int num_variables,
                                                   SLEQP_BASESTAT* variable_stats);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_FREE)(void** lp_data);

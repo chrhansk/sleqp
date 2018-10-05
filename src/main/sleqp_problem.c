@@ -23,7 +23,7 @@ static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
   SleqpSparseVec* adj_lb = *adj_lbstar;
   SleqpSparseVec* adj_ub = *adj_ubstar;
 
-  size_t k_lb = 0, k_ub = 0;
+  int k_lb = 0, k_ub = 0;
 
   while(k_lb < lb->nnz || k_ub < ub->nnz)
   {
@@ -33,10 +33,10 @@ static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
     SLEQP_Bool valid_lb = (k_lb < lb->nnz);
     SLEQP_Bool valid_ub = (k_ub < ub->nnz);
 
-    size_t lb_i = valid_lb ? lb->indices[k_lb] : lb->dim + 1;
-    size_t ub_i = valid_ub ? ub->indices[k_ub] : ub->dim + 1;
+    int lb_i = valid_lb ? lb->indices[k_lb] : lb->dim + 1;
+    int ub_i = valid_ub ? ub->indices[k_ub] : ub->dim + 1;
 
-    size_t idx = SLEQP_MIN(lb_i, ub_i);
+    int idx = SLEQP_MIN(lb_i, ub_i);
 
     if(valid_lb && idx == lb_i)
     {

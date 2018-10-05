@@ -62,11 +62,11 @@ SLEQP_RETCODE sleqp_penalty_func(SleqpPenalty* penalty_data,
   SleqpSparseVec* ub = penalty_data->problem->cons_ub;
   SleqpSparseVec* c = iterate->cons_val;
 
-  size_t k_c = 0, k_lb = 0, k_ub = 0;
+  int k_c = 0, k_lb = 0, k_ub = 0;
 
   while(k_lb < lb->nnz || k_ub < ub->nnz || k_c < c->nnz)
   {
-    size_t i = c->dim + 1;
+    int i = c->dim + 1;
 
     SLEQP_Bool valid_lb = (k_lb < lb->nnz);
     SLEQP_Bool valid_ub = (k_ub < ub->nnz);
@@ -148,11 +148,11 @@ SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
                                      1., 1.,
                                      lin));
 
-  size_t k_l = 0, k_lb = 0, k_ub = 0;
+  int k_l = 0, k_lb = 0, k_ub = 0;
 
   while(k_l < lin->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
   {
-    size_t i = lin->dim + 1;
+    int i = lin->dim + 1;
 
     SLEQP_Bool valid_lb = (k_lb < lb->nnz);
     SLEQP_Bool valid_ub = (k_ub < ub->nnz);
@@ -218,7 +218,7 @@ SLEQP_RETCODE sleqp_penalty_quadratic_gradient(SleqpPenalty* penalty_data,
   SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
   SleqpSparseMatrix* cons_jac = iterate->cons_jac;
 
-  for(size_t k = 0; k < func_grad->nnz; ++k)
+  for(int k = 0; k < func_grad->nnz; ++k)
   {
     cache[func_grad->indices[k]] = func_grad->data[k];
   }

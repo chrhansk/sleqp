@@ -38,8 +38,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpSolver* solver = *star;
-  size_t num_constraints = problem->num_constraints;
-  size_t num_variables = problem->num_variables;
+  int num_constraints = problem->num_constraints;
+  int num_variables = problem->num_variables;
 
   solver->problem = problem;
 
@@ -83,13 +83,36 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE update_trust_radius(double reduction_ratio,
+                                         double direction_norm,
+                                         double* trust_radius)
+{
+  if(reduction_ratio >= 0.9)
+  {
+    *trust_radius = SLEQP_MAX(*trust_radius, 7*direction_norm);
+  }
+  else if(reduction_ratio >= 0.3)
+  {
+    *trust_radius = SLEQP_MAX(*trust_radius, 2*direction_norm);
+  }
+  else if(reduction_ratio >= 1e-8)
+  {
+  }
+  else
+  {
+    *trust_radius = SLEQP_MIN(0.5*(*trust_radius),
+                              0.5*direction_norm);
+  }
+
+  return SLEQP_OKAY;
+}
 
 SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                      SleqpIterate* iterate)
 {
-  size_t func_grad_nnz = 0;
-  size_t cons_val_nnz = 0;
-  size_t cons_jac_nnz = 0;
+  int func_grad_nnz = 0;
+  int cons_val_nnz = 0;
+  int cons_jac_nnz = 0;
 
   SLEQP_CALL(sleqp_func_set_value(problem->func,
                                   iterate->x,
@@ -159,8 +182,7 @@ SLEQP_RETCODE sleqp_solve(SleqpSolver* solver)
 {
   double predicted_reduction;
 
-  SLEQP_CALL(compute_trial_point(solver,
-                                 &predicted_reduction));
+  SLEQP_CALL(compute_trial_point(solver, &predicted_reduction));
 
   return SLEQP_OKAY;
 }

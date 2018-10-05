@@ -32,4 +32,6 @@ else()
   set(ENABLE_UNIT_TESTS FALSE)
 endif()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 add_subdirectory(src)

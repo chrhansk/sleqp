@@ -8,8 +8,8 @@ struct SleqpCauchyData
 {
   SleqpProblem* problem;
 
-  size_t num_variables;
-  size_t num_constraints;
+  int num_variables;
+  int num_constraints;
 
   SLEQP_BASESTAT* base_stats;
 
@@ -61,7 +61,7 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
                                   problem,
                                   problem->func));
 
-  for(size_t i = problem->num_variables; i < data->num_variables; ++i)
+  for(int i = problem->num_variables; i < data->num_variables; ++i)
   {
     data->vars_lb[i] = 0;
     data->vars_ub[i] = sleqp_infinity();
@@ -96,8 +96,8 @@ SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
 }
 
 static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
-                                       size_t num_variables,
-                                       size_t num_constraints)
+                                       int num_variables,
+                                       int num_constraints)
 {
   assert(num_constraints == cons_jac->num_rows);
   assert(num_variables == cons_jac->num_cols);
@@ -113,9 +113,9 @@ static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
                                         cons_jac->num_cols + 2*num_constraints));
 
   // append a + id
-  for(size_t i = 0; i < num_constraints; ++i)
+  for(int i = 0; i < num_constraints; ++i)
   {
-    size_t con = num_variables + i;
+    int con = num_variables + i;
 
     SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac,
                                               con));
@@ -127,9 +127,9 @@ static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
   }
 
   // append a - id
-  for(size_t i = 0; i < num_constraints; ++i)
+  for(int i = 0; i < num_constraints; ++i)
   {
-    size_t con = num_variables + num_constraints + i;
+    int con = num_variables + num_constraints + i;
 
     SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac,
                                               con));
@@ -144,8 +144,8 @@ static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
 }
 
 static SLEQP_RETCODE remove_identities(SleqpSparseMatrix* cons_jac,
-                                       size_t num_variables,
-                                       size_t num_constraints)
+                                       int num_variables,
+                                       int num_constraints)
 {
   assert(num_constraints == cons_jac->num_rows);
   assert(num_variables + 2*num_constraints == cons_jac->num_cols);
@@ -156,13 +156,13 @@ static SLEQP_RETCODE remove_identities(SleqpSparseMatrix* cons_jac,
 }
 
 static SLEQP_RETCODE append_penalties(SleqpSparseVec* func_grad,
-                                      size_t num_variables,
-                                      size_t num_constraints,
+                                      int num_variables,
+                                      int num_constraints,
                                       double penalty)
 {
   assert(num_variables == func_grad->dim);
 
-  size_t size_increase = 2*num_constraints;
+  int size_increase = 2*num_constraints;
 
   /*
    * Reserve a litte more so we can add slack penalties
@@ -173,7 +173,7 @@ static SLEQP_RETCODE append_penalties(SleqpSparseVec* func_grad,
 
   func_grad->dim += size_increase;
 
-  for(size_t i = 0; i < size_increase; ++i)
+  for(int i = 0; i < size_increase; ++i)
   {
     SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
                                         num_variables + i,
@@ -185,17 +185,17 @@ static SLEQP_RETCODE append_penalties(SleqpSparseVec* func_grad,
 
 static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
                                         SleqpIterate* iterate,
-                                        size_t num_variables,
-                                        size_t num_constraints)
+                                        int num_variables,
+                                        int num_constraints)
 {
-  size_t k_y = 0, k_lb = 0, k_ub = 0;
+  int k_y = 0, k_lb = 0, k_ub = 0;
 
   SleqpSparseVec* lb = cauchy_data->problem->cons_lb;
   SleqpSparseVec* ub = cauchy_data->problem->cons_ub;
 
   SleqpSparseVec* val = iterate->cons_val;
 
-  for(size_t i = 0; i < num_constraints; ++i)
+  for(int i = 0; i < num_constraints; ++i)
   {
     while(k_y < val->nnz && val->indices[k_y] < i)
     {
@@ -228,16 +228,16 @@ static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
 static SLEQP_RETCODE create_var_bounds(SleqpCauchyData* cauchy_data,
                                        SleqpIterate* iterate,
                                        double trust_radius,
-                                       size_t num_variables,
-                                       size_t num_constraints)
+                                       int num_variables,
+                                       int num_constraints)
 {
   SleqpSparseVec* x = iterate->x;
   SleqpSparseVec* lb = cauchy_data->problem->var_lb;
   SleqpSparseVec* ub = cauchy_data->problem->var_ub;
 
-  size_t k_x = 0, k_lb = 0, k_ub = 0;
+  int k_x = 0, k_lb = 0, k_ub = 0;
 
-  for(size_t i = 0; i < num_variables; ++i)
+  for(int i = 0; i < num_variables; ++i)
   {
     while(k_x < x->nnz && x->indices[k_x] < i)
     {
@@ -268,8 +268,8 @@ static SLEQP_RETCODE create_var_bounds(SleqpCauchyData* cauchy_data,
 static SLEQP_RETCODE create_objective(SleqpCauchyData* cauchy_data,
                                       SleqpIterate* iterate,
                                       double trust_radius,
-                                      size_t num_variables,
-                                      size_t num_constraints)
+                                      int num_variables,
+                                      int num_constraints)
 {
   int index = 0;
 
@@ -303,8 +303,8 @@ SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpCauchyData* cauchy_data,
 {
   SleqpSparseMatrix* cons_jac = iterate->cons_jac;
 
-  size_t num_variables = cons_jac->num_cols;
-  size_t num_constraints = cons_jac->num_rows;
+  int num_variables = cons_jac->num_cols;
+  int num_constraints = cons_jac->num_rows;
 
   SLEQP_CALL(append_penalties(iterate->func_grad,
                               num_variables,
@@ -356,10 +356,10 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
   SleqpSparseVec* lb = cauchy_data->problem->var_lb;
   SleqpSparseVec* ub = cauchy_data->problem->var_ub;
 
-  size_t num_variables = cauchy_data->problem->num_variables;
-  size_t num_constraints = cauchy_data->problem->num_constraints;
+  int num_variables = cauchy_data->problem->num_variables;
+  int num_constraints = cauchy_data->problem->num_constraints;
 
-  size_t k_x = 0, k_lb = 0, k_ub = 0;
+  int k_x = 0, k_lb = 0, k_ub = 0;
 
   SLEQP_CALL(sleqp_lpi_get_varstats(cauchy_data->lp_interface,
                                     cauchy_data->num_variables,
@@ -367,7 +367,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
 
   SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(iterate->active_set);
 
-  for(size_t i = 0; i < num_variables; ++i)
+  for(int i = 0; i < num_variables; ++i)
   {
     while(k_x < x->nnz && x->indices[k_x] < i)
     {
@@ -404,7 +404,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
 
   SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
 
-  for(size_t i = 0; i < num_constraints; ++i)
+  for(int i = 0; i < num_constraints; ++i)
   {
     if(cauchy_data->base_stats[num_variables + i] == SLEQP_BASESTAT_BASIC)
     {

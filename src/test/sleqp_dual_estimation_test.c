@@ -38,10 +38,10 @@ static inline double square(double v)
 }
 
 static SLEQP_RETCODE quadfunc_set(SleqpSparseVec* x,
-                                 size_t num_variables,
-                                 size_t* func_grad_nnz,
-                                 size_t* cons_val_nnz,
-                                 size_t* cons_jac_nnz,
+                                 int num_variables,
+                                 int* func_grad_nnz,
+                                 int* cons_val_nnz,
+                                 int* cons_jac_nnz,
                                  void* func_data)
 {
   *func_grad_nnz = 2;
@@ -53,7 +53,7 @@ static SLEQP_RETCODE quadfunc_set(SleqpSparseVec* x,
   data->x[0] = 0;
   data->x[1] = 0;
 
-  size_t k_x = 0;
+  int k_x = 0;
 
   while(k_x < x->nnz)
   {
@@ -65,7 +65,7 @@ static SLEQP_RETCODE quadfunc_set(SleqpSparseVec* x,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE quadfunc_eval(size_t num_variables,
+static SLEQP_RETCODE quadfunc_eval(int num_variables,
                                   int* indices,
                                   double* func_val,
                                   SleqpSparseVec* func_grad,
@@ -99,7 +99,7 @@ static SLEQP_RETCODE quadfunc_eval(size_t num_variables,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE quadfunc_eval_bilinear(size_t num_variables,
+static SLEQP_RETCODE quadfunc_eval_bilinear(int num_variables,
                                             double* func_dual,
                                             SleqpSparseVec* direction,
                                             SleqpSparseVec* cons_duals,
@@ -183,8 +183,8 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpActiveSet* active_set;
   SleqpDualEstimationData* estimation_data;
 
-  size_t num_variables;
-  size_t num_constraints;
+  int num_variables;
+  int num_constraints;
 
   double penalty = 1., trust_radius = 1.5;
 

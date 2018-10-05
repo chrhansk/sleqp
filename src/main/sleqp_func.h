@@ -30,10 +30,10 @@ extern "C" {
    * @param[in,out] func_data    The function data
    **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpSparseVec* x,
-                                          size_t num_variables,
-                                          size_t* func_grad_nnz,
-                                          size_t* cons_val_nnz,
-                                          size_t* cons_jac_nnz,
+                                          int num_variables,
+                                          int* func_grad_nnz,
+                                          int* cons_val_nnz,
+                                          int* cons_jac_nnz,
                                           void* func_data);
 
   /**
@@ -46,7 +46,7 @@ extern "C" {
    * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
    * @param[in,out] func_data       The function data
    **/
-  typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(size_t num_variables,
+  typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(int num_variables,
                                            int* indices,
                                            double* func_val,
                                            SleqpSparseVec* func_grad,
@@ -77,7 +77,7 @@ extern "C" {
    * @param[in,out] func_data         The function data
    *
    */
-  typedef SLEQP_RETCODE (*SLEQP_HESS_EVAL_BILINEAR)(size_t num_variables,
+  typedef SLEQP_RETCODE (*SLEQP_HESS_EVAL_BILINEAR)(int num_variables,
                                                     double* func_dual,
                                                     SleqpSparseVec* direction,
                                                     SleqpSparseVec* cons_duals,
@@ -98,7 +98,7 @@ extern "C" {
                                   SLEQP_FUNC_SET setx,
                                   SLEQP_FUNC_EVAL eval,
                                   SLEQP_HESS_EVAL_BILINEAR eval_bilin,
-                                  size_t num_variables,
+                                  int num_variables,
                                   void* func_data);
 
   /**
@@ -112,9 +112,9 @@ extern "C" {
    **/
   SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                      SleqpSparseVec* x,
-                                     size_t* func_grad_nnz,
-                                     size_t* cons_val_nnz,
-                                     size_t* cons_jac_nnz);
+                                     int* func_grad_nnz,
+                                     int* cons_val_nnz,
+                                     int* cons_jac_nnz);
 
   /**
    * Evaluates the function and its gradient at the current input vector

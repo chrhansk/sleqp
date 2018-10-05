@@ -6,8 +6,8 @@
 #include "sleqp_mem.h"
 
 SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
-                                         size_t dim,
-                                         size_t nnz_max)
+                                         int dim,
+                                         int nnz_max)
 {
   assert(nnz_max <= dim);
 
@@ -26,7 +26,7 @@ SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
-                                       size_t idx,
+                                       int idx,
                                        double value)
 {
   assert(idx < vec->nnz_max);
@@ -46,11 +46,11 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
 
 SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
                                            double* values,
-                                           size_t dim)
+                                           int dim)
 {
-  size_t nnz = 0;
+  int nnz = 0;
 
-  for(size_t i = 0; i < dim;++i)
+  for(int i = 0; i < dim;++i)
   {
     if(!sleqp_zero(values[i]))
     {
@@ -61,7 +61,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
   vec->dim = dim;
   sleqp_sparse_vector_reserve(vec, nnz);
 
-  for(size_t i = 0; i < dim;++i)
+  for(int i = 0; i < dim;++i)
   {
     double v = values[i];
 
@@ -75,7 +75,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
-                                          size_t nnz_max)
+                                          int nnz_max)
 {
   if(vec->nnz_max >= nnz_max)
   {
@@ -98,12 +98,12 @@ SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
 
   *product = 0.;
 
-  size_t k_first = 0, k_second = 0;
+  int k_first = 0, k_second = 0;
 
   while(k_first < first->nnz && k_second < second->nnz)
   {
-    size_t i_first = first->indices[k_first];
-    size_t i_second = second->indices[k_second];
+    int i_first = first->indices[k_first];
+    int i_second = second->indices[k_second];
 
     if(i_first == i_second)
     {
@@ -128,7 +128,7 @@ SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
 SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
                                         double factor)
 {
-  for(size_t k = 0; k < vector->nnz; ++k)
+  for(int k = 0; k < vector->nnz; ++k)
   {
     vector->data[k] *= factor;
   }
@@ -140,9 +140,9 @@ SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
 {
   *product = 0.;
 
-  for(size_t k_first = 0;k_first < first->nnz; ++k_first)
+  for(int k_first = 0;k_first < first->nnz; ++k_first)
   {
-    size_t i_first = first->indices[k_first];
+    int i_first = first->indices[k_first];
 
     *product += first->data[k_first] * second[i_first];
 
@@ -165,17 +165,17 @@ SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(result, first->nnz + second->nnz));
 
-  size_t k_first = 0, k_second = 0;
+  int k_first = 0, k_second = 0;
 
   while(k_first < first->nnz || k_second < second->nnz)
   {
     SLEQP_Bool valid_first = (k_first < first->nnz);
     SLEQP_Bool valid_second = (k_second < second->nnz);
 
-    size_t i_first = valid_first ? first->indices[k_first] : first->dim + 1;
-    size_t i_second = valid_second ? second->indices[k_second] : first->dim + 1;
+    int i_first = valid_first ? first->indices[k_first] : first->dim + 1;
+    int i_second = valid_second ? second->indices[k_second] : first->dim + 1;
 
-    size_t i_combined = SLEQP_MIN(i_first, i_second);
+    int i_combined = SLEQP_MIN(i_first, i_second);
 
     double value = 0.;
 
@@ -200,7 +200,7 @@ SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
 }
 
 double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
-                               size_t index)
+                               int index)
 {
   assert(index < vec->dim);
 
@@ -220,7 +220,7 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
                                        SleqpSparseVec* ub,
                                        SleqpSparseVec** xstar)
 {
-  const size_t dim = x->dim;
+  const int dim = x->dim;
 
   assert(lb->dim == dim);
   assert(ub->dim == dim);
@@ -229,7 +229,7 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
                              dim,
                              SLEQP_MIN(x->nnz + lb->nnz, dim));
 
-  size_t k_x = 0, k_lb = 0, k_ub = 0;
+  int k_x = 0, k_lb = 0, k_ub = 0;
 
   SleqpSparseVec* xclip = *xstar;
 
@@ -241,7 +241,7 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
     SLEQP_Bool valid_lb = (k_lb < lb->nnz);
     SLEQP_Bool valid_ub = (k_ub < ub->nnz);
 
-    size_t idx = valid_x ? x->indices[k_x] : dim + 1;
+    int idx = valid_x ? x->indices[k_x] : dim + 1;
     idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
     idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
 
@@ -299,7 +299,7 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
           vec->dim,
           vec->nnz);
 
-  for(size_t index = 0; index < vec->nnz; ++index)
+  for(int index = 0; index < vec->nnz; ++index)
   {
     fprintf(output, "(%ld) = %f\n",
             vec->indices[index],
@@ -324,9 +324,9 @@ SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vstar)
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
-                                         size_t num_rows,
-                                         size_t num_cols,
-                                         size_t nnz_max)
+                                         int num_rows,
+                                         int num_cols,
+                                         int nnz_max)
 {
   SLEQP_CALL(sleqp_malloc(mstar));
 
@@ -351,7 +351,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
-                                          size_t nnz)
+                                          int nnz)
 {
   if(matrix->nnz_max >= nnz)
   {
@@ -367,8 +367,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
-                                         size_t num_rows,
-                                         size_t num_cols)
+                                         int num_rows,
+                                         int num_cols)
 {
   if(matrix->num_cols < num_cols)
   {
@@ -396,8 +396,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
-                                       size_t row,
-                                       size_t col,
+                                       int row,
+                                       int col,
                                        double value)
 {
   assert(matrix->nnz < matrix->nnz_max);
@@ -413,7 +413,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
-                                             size_t col)
+                                             int col)
 {
   assert(col < matrix->num_cols);
 
@@ -423,11 +423,11 @@ SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_remove_column(SleqpSparseMatrix* matrix,
-                                                size_t col)
+                                                int col)
 {
   assert(col < matrix->num_cols);
 
-  size_t nnz = matrix->cols[col + 1] - matrix->cols[col];
+  int nnz = matrix->cols[col + 1] - matrix->cols[col];
 
   matrix->cols[col + 1] = matrix->cols[col];
   matrix->nnz -= nnz;
@@ -446,7 +446,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
     result[index] = 0.;
   }
 
-  size_t k_vec = 0.;
+  int k_vec = 0.;
 
   while(k_vec < vector->nnz)
   {
@@ -465,8 +465,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
 }
 
 double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
-                               size_t row,
-                               size_t col)
+                               int row,
+                               int col)
 {
   assert(row < matrix->num_rows);
   assert(col < matrix->num_cols);

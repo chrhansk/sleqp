@@ -8,7 +8,7 @@ struct SleqpFunc
   SLEQP_FUNC_EVAL eval;
   SLEQP_HESS_EVAL_BILINEAR eval_bilin;
 
-  size_t num_variables;
+  int num_variables;
   void* data;
 };
 
@@ -16,7 +16,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
                                 SLEQP_FUNC_SET set_value,
                                 SLEQP_FUNC_EVAL eval,
                                 SLEQP_HESS_EVAL_BILINEAR eval_bilin,
-                                size_t num_variables,
+                                int num_variables,
                                 void* func_data)
 {
   sleqp_malloc(fstar);
@@ -35,9 +35,9 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
 
 SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    SleqpSparseVec* x,
-                                   size_t* func_grad_nnz,
-                                   size_t* cons_val_nnz,
-                                   size_t* cons_jac_nnz)
+                                   int* func_grad_nnz,
+                                   int* cons_val_nnz,
+                                   int* cons_jac_nnz)
 {
   assert(func);
 

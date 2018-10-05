@@ -61,7 +61,7 @@ START_TEST(test_sparse_reserve)
 {
   SleqpSparseMatrix* matrix;
 
-  size_t size = 5;
+  int size = 5;
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&matrix,
                                          size,
@@ -81,8 +81,8 @@ START_TEST(test_sparse_increase_size)
 {
   SleqpSparseMatrix* matrix;
 
-  size_t num_nnz = 5;
-  size_t initial_size = 3, size = 10;
+  int num_nnz = 5;
+  int initial_size = 3, size = 10;
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&matrix,
                                          initial_size,
@@ -113,14 +113,14 @@ START_TEST(test_sparse_remove_column)
 {
   SleqpSparseMatrix* matrix;
 
-  size_t size = 5;
+  int size = 5;
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&matrix,
                                          size,
                                          size,
                                          size));
 
-  for(size_t current = 0; current < size; ++current)
+  for(int current = 0; current < size; ++current)
   {
     ASSERT_CALL(sleqp_sparse_matrix_add_column(matrix, current));
 
@@ -134,7 +134,7 @@ START_TEST(test_sparse_remove_column)
 
   int removed = 0;
 
-  for(size_t column = size - 1; column > 0; --column)
+  for(int column = size - 1; column > 0; --column)
   {
     ASSERT_CALL(sleqp_sparse_matrix_remove_column(matrix, column));
 
@@ -154,7 +154,7 @@ START_TEST(test_sparse_construction)
 {
   SleqpSparseMatrix* identity;
 
-  size_t size = 5;
+  int size = 5;
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&identity,
                                          size,
@@ -166,7 +166,7 @@ START_TEST(test_sparse_construction)
   ck_assert_int_eq(identity->nnz_max, size);
   ck_assert_int_eq(identity->nnz, 0);
 
-  for(size_t current = 0; current < size; ++current)
+  for(int current = 0; current < size; ++current)
   {
     ASSERT_CALL(sleqp_sparse_matrix_add_column(identity, current));
 
@@ -178,9 +178,9 @@ START_TEST(test_sparse_construction)
     ck_assert_int_eq(identity->nnz, current + 1);
   }
 
-  for(size_t row = 0; row < identity->num_rows; ++row)
+  for(int row = 0; row < identity->num_rows; ++row)
   {
-    for(size_t col = 0; col < identity->num_cols; ++col)
+    for(int col = 0; col < identity->num_cols; ++col)
     {
       double* value = sleqp_sparse_matrix_at(identity, row, col);
 
@@ -204,14 +204,14 @@ START_TEST(test_sparse_decrease_size)
 {
   SleqpSparseMatrix* identity;
 
-  size_t size = 5, reduced_size = 2;
+  int size = 5, reduced_size = 2;
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&identity,
                                          size,
                                          size,
                                          size));
 
-  for(size_t current = 0; current < size; ++current)
+  for(int current = 0; current < size; ++current)
   {
     ASSERT_CALL(sleqp_sparse_matrix_add_column(identity, current));
 
