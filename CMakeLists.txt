@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.3)
 
 project(sleqp C CXX)
 
+set(PROJECT_NAME "${CMAKE_PROJECT_NAME}")
+set(PROJECT_NAMESPACE "${PROJECT_NAME}::")
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
 
 find_package(Umfpack REQUIRED)

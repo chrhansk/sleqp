@@ -37,3 +37,16 @@ set_target_properties(sleqp_bin
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(sleqp_bin sleqp)
+
+install(TARGETS sleqp
+  EXPORT sleqp
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
+
+install(EXPORT sleqp
+  NAMESPACE "${PROJECT_NAMESPACE}"
+  DESTINATION "lib/cmake/sleqp")
+
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/main/"
+  DESTINATION include/sleqp
+  FILES_MATCHING PATTERN "sleqp*.h*")
