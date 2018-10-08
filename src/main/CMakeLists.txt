@@ -39,11 +39,11 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(sleqp_bin sleqp)
 
 install(TARGETS sleqp
-  EXPORT sleqp
+  EXPORT sleqp-config
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 
-install(EXPORT sleqp
+install(EXPORT sleqp-config
   NAMESPACE "${PROJECT_NAMESPACE}"
   DESTINATION "lib/cmake/sleqp")
 
