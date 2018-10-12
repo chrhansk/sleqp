@@ -4,7 +4,8 @@
 #include "sleqp_func.h"
 #include "sleqp_types.h"
 
-#include "sparse/sleqp_sparse.h"
+#include "sparse/sleqp_sparse_matrix.h"
+#include "sparse/sleqp_sparse_vec.h"
 
 #ifdef __cplusplus
 extern "C" {

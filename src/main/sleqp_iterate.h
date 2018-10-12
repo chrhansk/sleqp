@@ -10,7 +10,8 @@
 #include "sleqp_active_set.h"
 #include "sleqp_problem.h"
 
-#include "sparse/sleqp_sparse.h"
+#include "sparse/sleqp_sparse_matrix.h"
+#include "sparse/sleqp_sparse_vec.h"
 
 #ifdef __cplusplus
 extern "C" {

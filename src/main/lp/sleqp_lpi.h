@@ -1,7 +1,8 @@
 #ifndef SLEQP_LPI_H
 #define SLEQP_LPI_H
 
-#include "sparse/sleqp_sparse.h"
+#include "sparse/sleqp_sparse_matrix.h"
+#include "sparse/sleqp_sparse_vec.h"
 
 #include "sleqp_types.h"
 #include "sleqp_lpi_types.h"
@@ -15,6 +16,7 @@ extern "C" {
                                            SLEQP_LPI_SOLVE solve,
                                            SLEQP_LPI_GET_SOLUTION get_solution,
                                            SLEQP_LPI_GET_VARSTATS get_varstats,
+                                           SLEQP_LPI_GET_CONSSTATS get_consstats,
                                            SLEQP_LPI_FREE free_problem);
 
   SLEQP_RETCODE sleqp_lpi_create_problem(SleqpLPi* lp_interface,
@@ -37,6 +39,10 @@ extern "C" {
   SLEQP_RETCODE sleqp_lpi_get_varstats(SleqpLPi* lp_interface,
                                        int num_variables,
                                        SLEQP_BASESTAT* variable_stats);
+
+  SLEQP_RETCODE sleqp_lpi_get_consstats(SleqpLPi* lp_interface,
+                                        int num_constraints,
+                                        SLEQP_BASESTAT* constraint_stats);
 
   SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_interface);
 

@@ -40,6 +40,10 @@ extern "C" {
                                                   int num_variables,
                                                   SLEQP_BASESTAT* variable_stats);
 
+  typedef SLEQP_RETCODE (*SLEQP_LPI_GET_CONSSTATS)(void* lp_data,
+                                                   int num_constraints,
+                                                   SLEQP_BASESTAT* constraintstats);
+
   typedef SLEQP_RETCODE (*SLEQP_LPI_FREE)(void** lp_data);
 
 #ifdef __cplusplus

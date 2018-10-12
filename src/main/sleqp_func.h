@@ -7,7 +7,9 @@
  **/
 
 #include "sleqp_types.h"
-#include "sparse/sleqp_sparse.h"
+
+#include "sparse/sleqp_sparse_matrix.h"
+#include "sparse/sleqp_sparse_vec.h"
 
 #include <assert.h>
 

@@ -59,8 +59,8 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  assert(soplex.numRowsReal() == (int) spx->num_constraints);
-  assert(soplex.numColsReal() == (int) spx->num_variables);
+  assert(soplex.numRowsReal() == spx->num_constraints);
+  assert(soplex.numColsReal() == spx->num_variables);
 
 
   assert(cons_matrix->num_cols == spx->num_variables);
@@ -176,6 +176,38 @@ static SLEQP_RETCODE soplex_get_varstats(void* lp_data,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE soplex_get_consstats(void* lp_data,
+                                          int num_constraints,
+                                          SLEQP_BASESTAT* constraint_stats)
+{
+  SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
+  soplex::SoPlex& soplex = *(spx->soplex);
+
+  for(int i = 0; i < num_constraints; ++i)
+  {
+    switch (soplex.basisRowStatus(i))
+    {
+    case soplex::SPxSolver::ON_LOWER:
+      constraint_stats[i] = SLEQP_BASESTAT_LOWER;
+      break;
+    case soplex::SPxSolver::ON_UPPER:
+      constraint_stats[i] = SLEQP_BASESTAT_UPPER;
+      break;
+    case soplex::SPxSolver::ZERO:
+      constraint_stats[i] = SLEQP_BASESTAT_ZERO;
+      break;
+    case soplex::SPxSolver::FIXED:
+    case soplex::SPxSolver::BASIC:
+      constraint_stats[i] = SLEQP_BASESTAT_BASIC;
+      break;
+    default:
+      break;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE soplex_free(void** lp_data)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) *lp_data;
@@ -198,6 +230,7 @@ extern "C"
                                       soplex_solve,
                                       soplex_get_solution,
                                       soplex_get_varstats,
+                                      soplex_get_consstats,
                                       soplex_free);
   }
 }

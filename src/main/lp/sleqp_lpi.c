@@ -14,6 +14,7 @@ struct SleqpLPi
   SLEQP_LPI_SOLVE solve;
   SLEQP_LPI_GET_SOLUTION get_solution;
   SLEQP_LPI_GET_VARSTATS get_varstats;
+  SLEQP_LPI_GET_CONSSTATS get_consstats;
   SLEQP_LPI_FREE free_problem;
 };
 
@@ -22,6 +23,7 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
                                          SLEQP_LPI_SOLVE solve,
                                          SLEQP_LPI_GET_SOLUTION get_solution,
                                          SLEQP_LPI_GET_VARSTATS get_varstats,
+                                         SLEQP_LPI_GET_CONSSTATS get_consstats,
                                          SLEQP_LPI_FREE free_problem)
 {
   sleqp_malloc(lp_star);
@@ -34,6 +36,7 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
   lp_interface->solve = solve;
   lp_interface->get_solution = get_solution;
   lp_interface->get_varstats = get_varstats;
+  lp_interface->get_consstats = get_consstats;
   lp_interface->free_problem = free_problem;
 
   return SLEQP_OKAY;
@@ -91,6 +94,17 @@ SLEQP_RETCODE sleqp_lpi_get_varstats(SleqpLPi* lp_interface,
   return lp_interface->get_varstats(lp_interface->lp_data,
                                     num_variables,
                                     variable_stats);
+}
+
+SLEQP_RETCODE sleqp_lpi_get_consstats(SleqpLPi* lp_interface,
+                                      int num_constraints,
+                                      SLEQP_BASESTAT* constraint_stats)
+{
+  assert(lp_interface);
+
+  return lp_interface->get_consstats(lp_interface->lp_data,
+                                     num_constraints,
+                                     constraint_stats);
 }
 
 SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_star)

@@ -365,7 +365,7 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
   int num_active = num_active_vars + num_active_cons;
 
   int constraint_nnz = count_active_constraint_nnz(iterate->cons_jac,
-                                                      iterate->active_set);
+                                                   iterate->active_set);
 
   int variable_nnz = num_active_vars;
 

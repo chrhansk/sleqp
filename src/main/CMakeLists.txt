@@ -2,7 +2,8 @@ set(SOPLEX_LPI_SRC
   lp/sleqp_lpi_soplex.cc)
 
 set(COMMON_SRC
-  sparse/sleqp_sparse.c
+  sparse/sleqp_sparse_matrix.c
+  sparse/sleqp_sparse_vec.c
   sleqp_active_set.c
   sleqp_cauchy.c
   sleqp_cmp.c
@@ -19,6 +20,8 @@ add_library(sleqp
   ${SOPLEX_LPI_SRC}
   ${COMMON_SRC})
 
+set_property(TARGET sleqp PROPERTY C_STANDARD 11)
+
 add_executable(sleqp_bin
   sleqp_main.c)
 
@@ -34,7 +37,10 @@ endif()
 set_target_properties(sleqp_bin
   PROPERTIES OUTPUT_NAME sleqp)
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories(sleqp
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+  $<INSTALL_INTERFACE:"include/sleqp">)
 
 target_link_libraries(sleqp_bin sleqp)
 
