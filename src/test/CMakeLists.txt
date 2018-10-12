@@ -33,7 +33,7 @@ function(add_unit_test TEST_NAME)
   add_test(NAME ${BASE_NAME} COMMAND ${BASE_NAME})
 endfunction()
 
-add_unit_test(sparse/sleqp_sparse_test)
+add_unit_test(sparse/sleqp_sparse_matrix_test)
 
 add_unit_test(lp/soplex_lpi_test)
 

@@ -5,7 +5,9 @@
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
-#include "sparse/sleqp_sparse.h"
+
+#include "sparse/sleqp_sparse_matrix.h"
+#include "sparse/sleqp_sparse_vec.h"
 
 START_TEST(test_sparse_matrix_vector_product)
 {
