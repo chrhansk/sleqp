@@ -156,6 +156,8 @@ static SLEQP_RETCODE remove_identities(SleqpSparseMatrix* cons_jac,
   SLEQP_CALL(sleqp_sparse_matrix_resize(cons_jac,
                                         num_constraints,
                                         num_variables));
+
+  return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE append_penalties(SleqpSparseVec* func_grad,
@@ -463,6 +465,7 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
 }
 
 
+// TODO: Fix this to make it consistent with the paper
 SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         SleqpIterate* iterate,
                                         double penalty_parameter,
