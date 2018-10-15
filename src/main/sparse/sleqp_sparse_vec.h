@@ -70,6 +70,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
                                             int nnz);
 
+  SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
+                                           int dim);
+
   /**
    * Computes the dot product of two sparse vectors
    *
@@ -115,6 +118,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
                                               double* second,
                                               double* product);
+
+  double sleqp_sparse_vec_normsq(SleqpSparseVec* vec);
 
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
                                  int index);

@@ -128,7 +128,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
     result[index] = 0.;
   }
 
-  int k_vec = 0.;
+  int k_vec = 0;
 
   while(k_vec < vector->nnz)
   {
@@ -141,6 +141,48 @@ SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
     }
 
     ++k_vec;
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(SleqpSparseMatrix* matrix,
+                                                       SleqpSparseVec* vector,
+                                                       SleqpSparseVec* result)
+{
+  assert(matrix->num_cols == vector->dim);
+  assert(matrix->num_rows == result->dim);
+
+  for(int col = 0; col < matrix->num_cols; ++col)
+  {
+    int k_vec = 0, k_mat = matrix->cols[col];
+
+    double sum = 0.;
+
+    while(k_vec < vector->nnz && k_mat < matrix->cols[col + 1])
+    {
+      int vec_idx = vector->indices[k_vec];
+      int row_idx = matrix->rows[k_mat];
+
+      if(vec_idx < row_idx)
+      {
+        ++k_vec;
+      }
+      else if(vec_idx > row_idx)
+      {
+        ++k_mat;
+      }
+      else
+      {
+        sum += vector->data[k_vec++] * matrix->data[k_mat++];
+      }
+    }
+
+    if(!sleqp_zero(sum))
+    {
+      SLEQP_CALL(sleqp_sparse_vector_push(result, col, sum));
+    }
+
   }
 
   return SLEQP_OKAY;

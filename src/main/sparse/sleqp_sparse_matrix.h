@@ -58,6 +58,10 @@ extern "C" {
                                                    SleqpSparseVec* vector,
                                                    double* result);
 
+  SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(SleqpSparseMatrix* matrix,
+                                                         SleqpSparseVec* vector,
+                                                         SleqpSparseVec* result);
+
   double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
                                  int row,
                                  int col);

@@ -59,7 +59,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
   }
 
   vec->dim = dim;
-  sleqp_sparse_vector_reserve(vec, nnz);
+  SLEQP_CALL(sleqp_sparse_vector_reserve(vec, nnz));
 
   for(int i = 0; i < dim;++i)
   {
@@ -86,6 +86,22 @@ SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
   SLEQP_CALL(sleqp_realloc(&vec->indices, nnz_max));
 
   vec->nnz_max = nnz_max;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
+                                         int dim)
+{
+  if(dim < vec->dim)
+  {
+    while(vec->nnz > 0 && vec->indices[vec->nnz - 1] >= dim)
+    {
+      --vec->nnz;
+    }
+  }
+
+  vec->dim = dim;
 
   return SLEQP_OKAY;
 }
@@ -132,6 +148,8 @@ SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
   {
     vector->data[k] *= factor;
   }
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
@@ -150,6 +168,20 @@ SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
   }
 
   return SLEQP_OKAY;
+}
+
+double sleqp_sparse_vec_normsq(SleqpSparseVec* vec)
+{
+  double normsq = 0.;
+
+  for(int k = 0; k < vec->nnz; ++k)
+  {
+    double value = vec->data[k];
+
+    normsq += value*value;
+  }
+
+  return normsq;
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
@@ -295,13 +327,13 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
                                           FILE* output)
 {
   fprintf(output,
-          "Sparse vector, dimension: %ld, entries: %ld\n",
+          "Sparse vector, dimension: %d, entries: %d\n",
           vec->dim,
           vec->nnz);
 
   for(int index = 0; index < vec->nnz; ++index)
   {
-    fprintf(output, "(%ld) = %f\n",
+    fprintf(output, "(%d) = %f\n",
             vec->indices[index],
             vec->data[index]);
   }
