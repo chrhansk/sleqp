@@ -29,7 +29,8 @@ add_executable(sleqp_bin
 
 target_link_libraries(sleqp
   ${UMFPACK_LIBRARIES}
-  ${SOPLEX_LIBRARIES})
+  ${SOPLEX_LIBRARIES}
+  m)
 
 if(DOXYGEN_FOUND)
   set(DOXYGEN_USE_MATHJAX YES)

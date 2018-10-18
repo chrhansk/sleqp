@@ -204,52 +204,6 @@ SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_penalty_quadratic_gradient(SleqpPenalty* penalty_data,
-                                               SleqpIterate* iterate,
-                                               double penalty_parameter,
-                                               SleqpSparseVec* gradient)
-{
-  reset_cache(penalty_data->dense_cache, penalty_data->cache_size);
-
-  SleqpSparseVec* func_grad = iterate->func_grad;
-  double* cache = penalty_data->dense_cache;
-  SleqpProblem* problem = penalty_data->problem;
-
-  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
-  SleqpSparseMatrix* cons_jac = iterate->cons_jac;
-
-  for(int k = 0; k < func_grad->nnz; ++k)
-  {
-    cache[func_grad->indices[k]] = func_grad->data[k];
-  }
-
-  int col = 0;
-
-  for(int index = 0; index < cons_jac->nnz; ++index)
-  {
-    while(index >= cons_jac->cols[col + 1])
-    {
-      ++col;
-    }
-
-    switch (cons_states[col]) {
-    case SLEQP_ACTIVE_UPPER:
-      cache[cons_jac->rows[index]] += penalty_parameter * cons_jac->data[index];
-      break;
-    case SLEQP_ACTIVE_LOWER:
-      cache[cons_jac->rows[index]] += -1. * penalty_parameter * cons_jac->data[index];
-      break;
-    case SLEQP_INACTIVE:
-      break;
-    }
-  }
-
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(gradient, cache, problem->num_variables));
-
-  return SLEQP_OKAY;
-}
-
-
 SLEQP_RETCODE sleqp_penalty_free(SleqpPenalty** star)
 {
   SleqpPenalty* penalty_data = *star;

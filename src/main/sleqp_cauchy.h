@@ -46,8 +46,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                           SleqpIterate* iterate,
                                           double penalty_parameter,
-                                          SleqpSparseVec* direction,
-                                          double* predicted_reduction);
+                                          SleqpSparseVec* direction);
 
 #ifdef __cplusplus
 }

@@ -151,8 +151,7 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
-                                         double* predicted_reduction)
+static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -183,8 +182,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
   SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
                                        iterate,
                                        solver->penalty_parameter,
-                                       solver->cauchy_direction,
-                                       predicted_reduction));
+                                       solver->cauchy_direction));
 
   SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
                                      solver->cauchy_direction,
@@ -199,9 +197,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
 
 SLEQP_RETCODE sleqp_solve(SleqpSolver* solver)
 {
-  double predicted_reduction;
-
-  SLEQP_CALL(compute_trial_point(solver, &predicted_reduction));
+  SLEQP_CALL(compute_trial_point(solver));
 
   return SLEQP_OKAY;
 }

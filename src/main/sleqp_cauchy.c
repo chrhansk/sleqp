@@ -1,5 +1,7 @@
 #include "sleqp_cauchy.h"
 
+#include <math.h>
+
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 #include "sleqp_penalty.h"
@@ -485,81 +487,81 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
 }
 
 
-// TODO: Fix this to make it consistent with the paper
 SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         SleqpIterate* iterate,
                                         double penalty_parameter,
-                                        SleqpSparseVec* direction,
-                                        double* predicted_reduction)
+                                        SleqpSparseVec* direction)
 {
-  double func_val = iterate->func_val;
+  double exact_penalty_value;
 
+  SleqpPenalty* penalty_data = cauchy_data->penalty_data;
   SleqpFunc* func = cauchy_data->problem->func;
 
-  cauchy_data->quadratic_gradient->nnz = 0;
-
-  double zero_value;
-
-  SLEQP_CALL(sleqp_penalty_linear(cauchy_data->penalty_data,
-                                  iterate,
-                                  cauchy_data->quadratic_gradient,
-                                  penalty_parameter,
-                                  &zero_value));
-
-  SLEQP_CALL(sleqp_penalty_quadratic_gradient(cauchy_data->penalty_data,
-                                              iterate,
-                                              penalty_parameter,
-                                              cauchy_data->quadratic_gradient));
-
-  double gradient_product;
-
-  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
-                                     cauchy_data->quadratic_gradient,
-                                     &gradient_product));
+  SLEQP_CALL(sleqp_penalty_func(penalty_data, iterate, penalty_parameter, &exact_penalty_value));
 
   double hessian_product;
 
-  double func_dual = 1.;
-
-  SLEQP_CALL(sleqp_hess_eval_bilinear(func,
-                                      &func_dual,
-                                      direction,
-                                      iterate->cons_dual,
-                                      &hessian_product));
-
-  double alpha = 1.;
-  double beta = 0.9;
-
-  while(1)
   {
-    double quadratic_penalty_value;
+    double func_dual = 1.;
 
-    SLEQP_CALL(sleqp_penalty_linear(cauchy_data->penalty_data,
-                                    iterate,
-                                    direction,
-                                    penalty_parameter,
-                                    &quadratic_penalty_value));
+    SLEQP_CALL(sleqp_hess_eval_bilinear(func,
+                                        &func_dual,
+                                        direction,
+                                        iterate->cons_dual,
+                                        &hessian_product));
+  }
 
-    quadratic_penalty_value += alpha*alpha*hessian_product;
+  double delta = 1.;
 
-    /*
-    SLEQP_CALL(sleqp_penalty_quadratic(cauchy_data->penalty_data,
-                                       iterate,
-                                       direction,
-                                       penalty_parameter,
-                                       &quadratic_penalty_value));
-    */
+  {
+    double direction_norm = sleqp_sparse_vectro_normsq(direction);
 
-    *predicted_reduction = zero_value - quadratic_penalty_value;
+    direction_norm = sqrt(direction_norm);
 
-    if(sleqp_le(quadratic_penalty_value, alpha * gradient_product))
+    if(sleqp_lt(direction_norm, delta))
     {
-      break;
+      delta = direction_norm;
+
+      hessian_product *= delta;
+
+      SLEQP_CALL(sleqp_sparse_vector_scale(direction, delta));
+    }
+  }
+
+  //TODO: make those adjustable
+  const double tau = 0.9;
+  const double eta = 0.9;
+
+  for(int iter = 0; iter < 100; ++iter)
+  {
+
+    // check
+
+    {
+      double linear_penalty_value;
+
+      SLEQP_CALL(sleqp_penalty_linear(penalty_data,
+                                      iterate,
+                                      direction,
+                                      penalty_parameter,
+                                      &linear_penalty_value));
+
+      if(sleqp_ge(exact_penalty_value - (linear_penalty_value + hessian_product),
+                  eta*(exact_penalty_value - linear_penalty_value)))
+      {
+        break;
+      }
     }
 
-    SLEQP_CALL(sleqp_sparse_vector_scale(direction, beta));
+    // update
 
-    alpha *= beta;
+    SLEQP_CALL(sleqp_sparse_vector_scale(direction, tau));
+
+    hessian_product *= (tau*tau);
+
+    SLEQP_CALL(sleqp_sparse_vector_scale(direction, tau));
+
+    delta *= tau;
   }
 
 
