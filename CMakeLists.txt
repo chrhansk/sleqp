@@ -11,10 +11,14 @@ find_package(Umfpack REQUIRED)
 
 find_package(SoPlex REQUIRED)
 
+find_package(trlib REQUIRED)
+
 include_directories(${UMFPACK_INCLUDE_DIRS} ${SOPLEX_INCLUDE_DIRS})
 
 find_package(Check)
 find_package(Threads)
+
+add_library(trlib INTERFACE IMPORTED)
 
 find_package(Doxygen)
 
