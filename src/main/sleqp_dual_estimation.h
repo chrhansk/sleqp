@@ -3,6 +3,7 @@
 
 #include "sleqp.h"
 #include "sleqp_active_set.h"
+#include "sleqp_aug_jacobian.h"
 #include "sleqp_iterate.h"
 
 #ifdef __cplusplus
@@ -15,7 +16,8 @@ extern "C" {
                                                   SleqpProblem* problem);
 
   SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_data,
-                                              SleqpIterate* iterate);
+                                              SleqpIterate* iterate,
+                                              SleqpAugJacobian* jacobian);
 
   SLEQP_RETCODE sleqp_dual_estimation_data_free(SleqpDualEstimationData** star);
 

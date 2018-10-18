@@ -32,11 +32,11 @@ SleqpSparseVec* linfunc_cons_ub;
 SleqpSparseVec* linfunc_x;
 
 static SLEQP_RETCODE linfunc_set(SleqpSparseVec* x,
-                                    int num_variables,
-                                    int* func_grad_nnz,
-                                    int* cons_val_nnz,
-                                    int* cons_jac_nnz,
-                                    void* func_data)
+                                 int num_variables,
+                                 int* func_grad_nnz,
+                                 int* cons_val_nnz,
+                                 int* cons_jac_nnz,
+                                 void* func_data)
 {
   *func_grad_nnz = 2;
   *cons_val_nnz = 0;
@@ -60,12 +60,12 @@ static SLEQP_RETCODE linfunc_set(SleqpSparseVec* x,
 }
 
 static SLEQP_RETCODE linfunc_eval(int num_variables,
-                                     int* indices,
-                                     double* func_val,
-                                     SleqpSparseVec* func_grad,
-                                     SleqpSparseVec* cons_val,
-                                     SleqpSparseMatrix* cons_jac,
-                                     void* func_data)
+                                  int* indices,
+                                  double* func_val,
+                                  SleqpSparseVec* func_grad,
+                                  SleqpSparseVec* cons_val,
+                                  SleqpSparseMatrix* cons_jac,
+                                  void* func_data)
 {
   LinFuncData* data = (LinFuncData*) func_data;
 
@@ -179,9 +179,6 @@ START_TEST(test_unconstrained_cauchy_direction)
   SleqpSparseVec* direction;
   SleqpCauchyData* cauchy_data;
 
-  int num_variables;
-  int num_constraints;
-
   double penalty = 1., trust_radius = 1.5;
 
 
@@ -192,18 +189,16 @@ START_TEST(test_unconstrained_cauchy_direction)
                                    linfunc_cons_lb,
                                    linfunc_cons_ub));
 
-  num_variables = problem->num_variables;
-  num_constraints = problem->num_constraints;
-
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
                                    linfunc_x));
 
-  ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface));
+  int num_lp_variables = problem->num_variables + 2*problem->num_constraints;
+  int num_lp_constraints = problem->num_constraints;
 
-  ASSERT_CALL(sleqp_lpi_create_problem(lp_interface,
-                                       num_variables + 2*num_constraints,
-                                       num_constraints));
+  ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface,
+                                                num_lp_variables,
+                                                num_lp_constraints));
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 

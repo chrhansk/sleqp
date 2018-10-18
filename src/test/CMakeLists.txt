@@ -8,9 +8,13 @@ include_directories(${CHECK_INCLUDE_DIRS})
 add_custom_target(build_tests)
 
 set(TEST_COMMON_SRC
+  quadcons_fixture.c
+  quadfunc_fixture.c
   rosenbrock_fixture.c)
 
-add_library(test_common ${TEST_COMMON_SRC})
+add_library(test_common
+  EXCLUDE_FROM_ALL
+  ${TEST_COMMON_SRC})
 
 add_custom_target(run_tests
   COMMAND ${CMAKE_CTEST_COMMAND}
@@ -37,7 +41,9 @@ add_unit_test(sparse/sleqp_sparse_matrix_test)
 
 add_unit_test(lp/soplex_lpi_test)
 
+add_unit_test(sleqp_active_set_var_test)
 add_unit_test(sleqp_cauchy_test)
 add_unit_test(sleqp_dual_estimation_test)
 
+add_unit_test(constrained_test)
 add_unit_test(unconstrained_test)

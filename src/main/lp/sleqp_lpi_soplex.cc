@@ -109,14 +109,18 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
   soplex.changeObjReal(soplex::VectorReal(spx->num_variables,
                                           objective));
 
+  //soplex::infinity;
+
   soplex.changeBoundsReal(soplex::VectorReal(spx->num_variables, vars_lb),
                           soplex::VectorReal(spx->num_variables, vars_ub));
 
-  //soplex.writeFileReal("test.lp");
-
   soplex::SPxSolver::Status status = soplex.optimize();
 
+  //soplex.writeFileReal("test.lp");
+
   assert(status == soplex::SPxSolver::OPTIMAL);
+
+  assert(soplex.hasBasis());
 
   return SLEQP_OKAY;
 }
@@ -223,9 +227,13 @@ static SLEQP_RETCODE soplex_free(void** lp_data)
 
 extern "C"
 {
-  SLEQP_RETCODE sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star)
+  SLEQP_RETCODE sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star,
+                                                  int num_variables,
+                                                  int num_constraints)
   {
     return sleqp_lpi_create_interface(lp_star,
+                                      num_variables,
+                                      num_constraints,
                                       soplex_create_problem,
                                       soplex_solve,
                                       soplex_get_solution,

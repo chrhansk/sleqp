@@ -69,9 +69,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
                                             FILE* output);
 
+  SLEQP_Bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix);
+
   SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** matrix);
-
-
 
 #ifdef __cplusplus
 }

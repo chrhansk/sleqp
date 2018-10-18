@@ -7,7 +7,9 @@
 extern "C" {
 #endif
 
-  SLEQP_RETCODE sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star);
+  SLEQP_RETCODE sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star,
+                                                  int num_variables,
+                                                  int num_constraints);
 
 #ifdef __cplusplus
 }

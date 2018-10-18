@@ -12,6 +12,8 @@ extern "C" {
 #endif
 
   SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_interface,
+                                           int num_variables,
+                                           int num_constraints,
                                            SLEQP_LPI_CREATE create_problem,
                                            SLEQP_LPI_SOLVE solve,
                                            SLEQP_LPI_GET_SOLUTION get_solution,
@@ -19,9 +21,9 @@ extern "C" {
                                            SLEQP_LPI_GET_CONSSTATS get_consstats,
                                            SLEQP_LPI_FREE free_problem);
 
-  SLEQP_RETCODE sleqp_lpi_create_problem(SleqpLPi* lp_interface,
-                                         int num_variables,
-                                         int num_constraints);
+  int sleqp_lpi_get_num_variables(SleqpLPi* lp_interface);
+
+  int sleqp_lpi_get_num_constraints(SleqpLPi* lp_interface);
 
   SLEQP_RETCODE sleqp_lpi_solve(SleqpLPi* lp_interface,
                                 double* objective,

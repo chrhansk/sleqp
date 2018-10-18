@@ -22,6 +22,8 @@ extern "C" {
 
   SLEQP_Bool sleqp_zero(double x);
 
+  SLEQP_Bool sleqp_is_infinity(double x);
+
 #define SLEQP_MAX(a,b) (((a)>(b))?(a):(b))
 #define SLEQP_MIN(a,b) (((a)<(b))?(a):(b))
 

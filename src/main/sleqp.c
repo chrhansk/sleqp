@@ -5,8 +5,10 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
+#include "sleqp_aug_jacobian.h"
 #include "sleqp_cauchy.h"
 #include "sleqp_dual_estimation.h"
+
 #include "sleqp_iterate.h"
 
 #include "lp/sleqp_lpi.h"
@@ -24,6 +26,8 @@ struct SleqpSolver
   SleqpSparseVec* cauchy_direction;
 
   SleqpSparseVec* trial_point;
+
+  SleqpAugJacobian* aug_jacobian;
 
   SleqpDualEstimationData* estimation_data;
 
@@ -45,6 +49,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SleqpSparseVec* xclip;
 
+  assert(sleqp_sparse_vector_valid(x));
+
   SLEQP_CALL(sleqp_sparse_vector_clip(x,
                                       solver->problem->var_lb,
                                       solver->problem->var_ub,
@@ -55,11 +61,13 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   xclip));
 
   // TODO: make this generic at a later point...
-  SLEQP_CALL(sleqp_lpi_soplex_create_interface(&solver->lp_interface));
 
-  SLEQP_CALL(sleqp_lpi_create_problem(solver->lp_interface,
-                                      num_variables + 2*num_constraints,
-                                      num_constraints));
+  int num_lp_variables = num_variables + 2*num_constraints;
+  int num_lp_constraints = num_constraints;
+
+  SLEQP_CALL(sleqp_lpi_soplex_create_interface(&solver->lp_interface,
+                                               num_lp_variables,
+                                               num_lp_constraints));
 
   SLEQP_CALL(sleqp_cauchy_data_create(&solver->cauchy_data,
                                       problem,
@@ -72,6 +80,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->trial_point,
                                         num_variables,
                                         0));
+
+  SLEQP_CALL(sleqp_aug_jacobian_create(&solver->aug_jacobian, problem));
 
   SLEQP_CALL(sleqp_dual_estimation_data_create(&solver->estimation_data,
                                                problem));
@@ -133,6 +143,11 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                              iterate->cons_val,
                              iterate->cons_jac));
 
+  assert(sleqp_sparse_vector_valid(iterate->func_grad));
+  assert(sleqp_sparse_vector_valid(iterate->cons_val));
+
+  assert(sleqp_sparse_matrix_valid(iterate->cons_jac));
+
   return SLEQP_OKAY;
 }
 
@@ -154,12 +169,16 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                          iterate,
                                          solver->trust_radius));
 
+  SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
+                                            iterate));
+
   SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
                                         iterate,
                                         solver->cauchy_direction));
 
   SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
-                                           iterate));
+                                           iterate,
+                                           solver->aug_jacobian));
 
   SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
                                        iterate,
@@ -192,6 +211,8 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
   SleqpSolver* solver = *star;
 
   SLEQP_CALL(sleqp_dual_estimation_data_free(&solver->estimation_data));
+
+  SLEQP_CALL(sleqp_aug_jacobian_free(&solver->aug_jacobian));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->trial_point));
 

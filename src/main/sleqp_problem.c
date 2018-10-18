@@ -90,6 +90,12 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   assert(var_lb->dim == var_ub->dim);
   assert(cons_lb->dim == cons_ub->dim);
 
+  assert(sleqp_sparse_vector_valid(var_lb));
+  assert(sleqp_sparse_vector_valid(var_ub));
+
+  assert(sleqp_sparse_vector_valid(cons_lb));
+  assert(sleqp_sparse_vector_valid(cons_ub));
+
   sleqp->func = func;
 
   SleqpSparseVec* adj_lb;

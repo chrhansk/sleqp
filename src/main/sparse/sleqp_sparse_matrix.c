@@ -1,6 +1,7 @@
 #include "sleqp_sparse_matrix.h"
 
 #include <assert.h>
+#include <stdbool.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
@@ -234,6 +235,56 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
   }
 
   return SLEQP_OKAY;
+}
+
+SLEQP_Bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix)
+{
+  if(matrix->nnz > matrix->nnz_max)
+  {
+    return false;
+  }
+
+  if(matrix->num_cols < 0 || matrix->num_rows < 0)
+  {
+    return false;
+  }
+
+  if(matrix->nnz == 0)
+  {
+    return true;
+  }
+
+  for(int col = 0; col < matrix->num_cols; ++col)
+  {
+    if(matrix->cols[col] > matrix->cols[col + 1])
+    {
+      return false;
+    }
+
+    for(int index = matrix->cols[col]; index < matrix->cols[col + 1] - 1; ++index)
+    {
+      if(matrix->rows[index] >= matrix->rows[index + 1])
+      {
+        return false;
+      }
+    }
+
+    for(int index = matrix->cols[col]; index < matrix->cols[col + 1]; ++index)
+    {
+      if(matrix->rows[index] < 0 ||
+         matrix->rows[index] >= matrix->num_rows)
+      {
+        return false;
+      }
+    }
+  }
+
+  if(matrix->cols[matrix->num_cols] != matrix->nnz)
+  {
+    return false;
+  }
+
+  return true;
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** mstar)

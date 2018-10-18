@@ -119,7 +119,7 @@ extern "C" {
                                               double* second,
                                               double* product);
 
-  double sleqp_sparse_vec_normsq(SleqpSparseVec* vec);
+  double sleqp_sparse_vectro_normsq(SleqpSparseVec* vec);
 
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
                                  int index);
@@ -131,6 +131,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
                                             FILE* output);
+
+  SLEQP_Bool sleqp_sparse_vector_valid(SleqpSparseVec* vec);
 
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec);
 

@@ -1,6 +1,7 @@
 #include "sleqp_sparse_vec.h"
 
 #include <assert.h>
+#include <stdbool.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
@@ -29,7 +30,7 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
                                        int idx,
                                        double value)
 {
-  assert(idx < vec->nnz_max);
+  assert(vec->nnz < vec->nnz_max);
 
   if(vec->nnz > 0)
   {
@@ -59,6 +60,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
   }
 
   vec->dim = dim;
+
   SLEQP_CALL(sleqp_sparse_vector_reserve(vec, nnz));
 
   for(int i = 0; i < dim;++i)
@@ -170,7 +172,7 @@ SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
   return SLEQP_OKAY;
 }
 
-double sleqp_sparse_vec_normsq(SleqpSparseVec* vec)
+double sleqp_sparse_vector_normsq(SleqpSparseVec* vec)
 {
   double normsq = 0.;
 
@@ -339,6 +341,42 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
   }
 
   return SLEQP_OKAY;
+}
+
+SLEQP_Bool sleqp_sparse_vector_valid(SleqpSparseVec* vec)
+{
+  if(vec->nnz > vec->nnz_max || vec->nnz < 0)
+  {
+    return false;
+  }
+
+  if(vec->nnz == 0)
+  {
+    return true;
+  }
+
+  for(int k = 0; k < vec->nnz; ++k)
+  {
+    if(vec->indices[k] < 0)
+    {
+      return false;
+    }
+  }
+
+  for(int k = 0; k < vec->nnz - 1; ++k)
+  {
+    if(vec->indices[k] >= vec->indices[k + 1])
+    {
+      return false;
+    }
+  }
+
+  if(vec->indices[vec->nnz - 1] >= vec->dim)
+  {
+    return false;
+  }
+
+  return true;
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vstar)

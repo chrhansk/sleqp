@@ -6,7 +6,7 @@ const double eps = 1e-8;
 
 double sleqp_infinity()
 {
-  return 1e20;
+  return 1e100;
 }
 
 SLEQP_Bool sleqp_eq(double x,
@@ -52,4 +52,9 @@ SLEQP_Bool sleqp_pos(double x)
 SLEQP_Bool sleqp_zero(double x)
 {
   return ABS(x) <= eps;
+}
+
+SLEQP_Bool sleqp_is_infinity(double x)
+{
+  return x >= sleqp_infinity();
 }

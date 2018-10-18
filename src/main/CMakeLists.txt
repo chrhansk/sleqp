@@ -2,9 +2,11 @@ set(SOPLEX_LPI_SRC
   lp/sleqp_lpi_soplex.cc)
 
 set(COMMON_SRC
+  sparse/sleqp_sparse_factorization.c
   sparse/sleqp_sparse_matrix.c
   sparse/sleqp_sparse_vec.c
   sleqp_active_set.c
+  sleqp_aug_jacobian.c
   sleqp_cauchy.c
   sleqp_cmp.c
   sleqp_dual_estimation.c
