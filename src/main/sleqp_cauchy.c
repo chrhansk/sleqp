@@ -514,7 +514,7 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
   double delta = 1.;
 
   {
-    double direction_norm = sleqp_sparse_vectro_normsq(direction);
+    double direction_norm = sleqp_sparse_vector_normsq(direction);
 
     direction_norm = sqrt(direction_norm);
 

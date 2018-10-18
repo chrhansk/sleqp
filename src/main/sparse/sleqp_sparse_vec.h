@@ -119,7 +119,7 @@ extern "C" {
                                               double* second,
                                               double* product);
 
-  double sleqp_sparse_vectro_normsq(SleqpSparseVec* vec);
+  double sleqp_sparse_vector_normsq(SleqpSparseVec* vec);
 
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
                                  int index);
