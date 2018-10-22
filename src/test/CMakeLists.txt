@@ -45,5 +45,7 @@ add_unit_test(sleqp_active_set_var_test)
 add_unit_test(sleqp_cauchy_test)
 add_unit_test(sleqp_dual_estimation_test)
 
+add_unit_test(unconstrained_newton_test)
+
 add_unit_test(constrained_test)
 add_unit_test(unconstrained_test)

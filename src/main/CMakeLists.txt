@@ -13,6 +13,7 @@ set(COMMON_SRC
   sleqp_func.c
   sleqp_iterate.c
   sleqp_log.c
+  sleqp_newton.c
   sleqp_penalty.c
   sleqp_problem.c
   sleqp.c
@@ -28,6 +29,7 @@ add_executable(sleqp_bin
   sleqp_main.c)
 
 target_link_libraries(sleqp
+  trlib::trlib
   ${UMFPACK_LIBRARIES}
   ${SOPLEX_LIBRARIES}
   m)
