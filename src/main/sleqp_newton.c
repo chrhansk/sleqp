@@ -764,6 +764,19 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
 
   }
 
+  if(ret < 0)
+  {
+    const char* trlib_error_string;
+
+    SLEQP_CALL(trlib_get_error_string(ret, &trlib_error_string));
+
+    sleqp_log_error("Caught trlib error <%d> (%s)",
+                    ret,
+                    trlib_error_string);
+
+    return SLEQP_INTERNAL_ERROR;
+  }
+
   return SLEQP_OKAY;
 }
 

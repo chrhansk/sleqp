@@ -7,6 +7,8 @@ extern "C" {
 
 #include <stdio.h>
 
+#include "sleqp_log.h"
+
   enum SLEQP_Retcode
   {
     SLEQP_OKAY,
@@ -19,16 +21,16 @@ extern "C" {
 
   typedef unsigned char SLEQP_Bool;
 
-#define SLEQP_CALL(x)                                                   \
-  do                                                                    \
-  {                                                                     \
-    SLEQP_RETCODE _retcode_;                                            \
-    if( (_retcode_ = (x)) != SLEQP_OKAY )                               \
-    {                                                                   \
-      fprintf(stderr, "Error <%d> in function call\n", _retcode_);      \
-      return _retcode_;                                                 \
-    }                                                                   \
-  }                                                                     \
+#define SLEQP_CALL(x)                                                      \
+  do                                                                       \
+  {                                                                        \
+    SLEQP_RETCODE _retcode_;                                               \
+    if( (_retcode_ = (x)) != SLEQP_OKAY )                                  \
+    {                                                                      \
+      sleqp_log_error("Error <%d> in function call\n", _retcode_);         \
+      return _retcode_;                                                    \
+    }                                                                      \
+  }                                                                        \
   while(0)
 
 #ifdef __cplusplus
