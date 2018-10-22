@@ -68,9 +68,9 @@ SLEQP_RETCODE sleqp_penalty_func(SleqpPenalty* penalty_data,
   {
     int i = c->dim + 1;
 
-    SLEQP_Bool valid_lb = (k_lb < lb->nnz);
-    SLEQP_Bool valid_ub = (k_ub < ub->nnz);
-    SLEQP_Bool valid_c = (k_c < c->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
+    bool valid_c = (k_c < c->nnz);
 
     if(valid_lb)
     {
@@ -154,9 +154,9 @@ SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
   {
     int i = lin->dim + 1;
 
-    SLEQP_Bool valid_lb = (k_lb < lb->nnz);
-    SLEQP_Bool valid_ub = (k_ub < ub->nnz);
-    SLEQP_Bool valid_lin = (k_l < lin->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
+    bool valid_lin = (k_l < lin->nnz);
 
     if(valid_lb)
     {

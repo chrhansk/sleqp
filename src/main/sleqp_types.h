@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "sleqp_log.h"
 
@@ -19,16 +20,14 @@ extern "C" {
 
   typedef enum SLEQP_Retcode SLEQP_RETCODE;
 
-  typedef unsigned char SLEQP_Bool;
-
 #define SLEQP_CALL(x)                                                      \
   do                                                                       \
   {                                                                        \
-    SLEQP_RETCODE _retcode_;                                               \
-    if( (_retcode_ = (x)) != SLEQP_OKAY )                                  \
+    SLEQP_RETCODE status;                                                  \
+    if( (status = (x)) != SLEQP_OKAY )                                     \
     {                                                                      \
-      sleqp_log_error("Error <%d> in function call\n", _retcode_);         \
-      return _retcode_;                                                    \
+      sleqp_log_error("Error <%d> in function call\n", status);            \
+      return status;                                                       \
     }                                                                      \
   }                                                                        \
   while(0)

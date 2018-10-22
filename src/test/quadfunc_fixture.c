@@ -90,12 +90,9 @@ SLEQP_RETCODE quadfunc_hess_prod(int num_variables,
                                  SleqpSparseVec* result,
                                  void* func_data)
 {
-  SquareFuncData* data = (SquareFuncData*) func_data;
-
   if(func_dual)
   {
     double total_value = 2.* (*func_dual);
-
 
     SLEQP_CALL(sleqp_sparse_vector_copy(direction, result));
 
@@ -107,8 +104,6 @@ SLEQP_RETCODE quadfunc_hess_prod(int num_variables,
 
 void quadfunc_setup()
 {
-  const double inf = sleqp_infinity();
-
   ASSERT_CALL(sleqp_malloc(&func_data));
 
   ASSERT_CALL(sleqp_calloc(&func_data->x, 2));

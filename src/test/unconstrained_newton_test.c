@@ -31,9 +31,6 @@ void newton_setup()
                                    quadfunc_cons_lb,
                                    quadfunc_cons_ub));
 
-  int num_variables = problem->num_variables;
-  int num_constraints = problem->num_constraints;
-
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
                                    quadfunc_x));
@@ -76,9 +73,7 @@ START_TEST(newton_wide_step)
 
   SleqpAugJacobian* jacobian;
 
-
   int num_variables = problem->num_variables;
-  int num_constraints = problem->num_constraints;
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 2));
 
@@ -131,7 +126,6 @@ START_TEST(newton_small_step)
 
 
   int num_variables = problem->num_variables;
-  int num_constraints = problem->num_constraints;
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 2));
 

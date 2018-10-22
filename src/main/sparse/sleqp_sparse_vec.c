@@ -1,7 +1,6 @@
 #include "sleqp_sparse_vec.h"
 
 #include <assert.h>
-#include <stdbool.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
@@ -144,8 +143,8 @@ SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-SLEQP_Bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
-                                  SleqpSparseVec* second)
+bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
+                            SleqpSparseVec* second)
 {
   assert(first->dim == second->dim);
 
@@ -153,8 +152,8 @@ SLEQP_Bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
 
   while(k_first < first->nnz || k_second < second->nnz)
   {
-    SLEQP_Bool valid_first = (k_first < first->nnz);
-    SLEQP_Bool valid_second = (k_second < second->nnz);
+    bool valid_first = (k_first < first->nnz);
+    bool valid_second = (k_second < second->nnz);
 
     double first_value = valid_first ? first->data[k_first] : 0.;
     double second_value = valid_second ? second->data[k_second] : 0.;
@@ -274,8 +273,8 @@ SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
 
   while(k_first < first->nnz || k_second < second->nnz)
   {
-    SLEQP_Bool valid_first = (k_first < first->nnz);
-    SLEQP_Bool valid_second = (k_second < second->nnz);
+    bool valid_first = (k_first < first->nnz);
+    bool valid_second = (k_second < second->nnz);
 
     int i_first = valid_first ? first->indices[k_first] : first->dim + 1;
     int i_second = valid_second ? second->indices[k_second] : first->dim + 1;
@@ -342,9 +341,9 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
   {
     double x_val = 0;
 
-    SLEQP_Bool valid_x = (k_x < x->nnz);
-    SLEQP_Bool valid_lb = (k_lb < lb->nnz);
-    SLEQP_Bool valid_ub = (k_ub < ub->nnz);
+    bool valid_x = (k_x < x->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
 
     int idx = valid_x ? x->indices[k_x] : dim + 1;
     idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
@@ -414,7 +413,7 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-SLEQP_Bool sleqp_sparse_vector_valid(SleqpSparseVec* vec)
+bool sleqp_sparse_vector_valid(SleqpSparseVec* vec)
 {
   if(vec->nnz > vec->nnz_max || vec->nnz < 0)
   {

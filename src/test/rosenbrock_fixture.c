@@ -101,7 +101,6 @@ static SLEQP_RETCODE rosenbrock_hess_prod(int num_variables,
 {
   RosenbrockData* data = (RosenbrockData*) func_data;
 
-  double a = data->a;
   double b = data->b;
 
   double* x = data->x;

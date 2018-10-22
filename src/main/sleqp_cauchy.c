@@ -437,10 +437,9 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
   {
     cons_states[i] = SLEQP_INACTIVE;
 
-    /*
-    SLEQP_Bool zero_slack = upper_slack_stats[i] == SLEQP_BASESTAT_LOWER &&
-      lower_slack_stats[i] == SLEQP_BASESTAT_LOWER;
-    */
+
+    // bool zero_slack = upper_slack_stats[i] == SLEQP_BASESTAT_LOWER &&
+    // lower_slack_stats[i] == SLEQP_BASESTAT_LOWER;
 
     if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_UPPER)
     {

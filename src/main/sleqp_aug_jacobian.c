@@ -28,24 +28,6 @@ struct SleqpAugJacobian
 
 };
 
-/*
-static SLEQP_RETCODE resize_augmented_jacobian(SleqpSparseMatrix* augmented_matrix,
-                                               int dim,
-                                               int total_nnz)
-{
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(augmented_matrix,
-                                         total_nnz));
-
-  SLEQP_CALL(sleqp_sparse_matrix_resize(augmented_matrix,
-                                        dim,
-                                        dim));
-
-  augmented_matrix->nnz = 0;
-
-  return SLEQP_OKAY;
-}
-*/
-
 static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
                                              SleqpIterate* iterate,
                                              int total_nnz)
@@ -53,7 +35,6 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
   SleqpProblem* problem = jacobian->problem;
 
   int num_active_vars = jacobian->num_active_vars;
-  int num_active_conss = jacobian->num_active_conss;
   int active_set_size = jacobian->active_set_size;
 
   SleqpSparseMatrix* cons_jac = iterate->cons_jac;
@@ -91,7 +72,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
       {
         assert(var_states[column] != SLEQP_INACTIVE);
 
-        SLEQP_Bool is_upper = (var_states[column] == SLEQP_ACTIVE_UPPER);
+        bool is_upper = (var_states[column] == SLEQP_ACTIVE_UPPER);
 
         SLEQP_CALL(sleqp_sparse_matrix_push(augmented_matrix,
                                             num_variables + variable_index,
@@ -115,7 +96,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
       {
         assert(cons_states[jac_row] != SLEQP_INACTIVE);
 
-        SLEQP_Bool is_upper = (cons_states[jac_row] == SLEQP_ACTIVE_UPPER);
+        bool is_upper = (cons_states[jac_row] == SLEQP_ACTIVE_UPPER);
 
         double value = is_upper ? cons_jac->data[index] : -(cons_jac->data[index]);
 
@@ -304,8 +285,6 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   int total_nnz = problem->num_variables // identity
     + 2*(constraint_nnz + variable_nnz); // cons jac nnz + active variables
 
-  int matrix_dim = problem->num_variables + jacobian->active_set_size;
-
   SLEQP_CALL(sleqp_sparse_matrix_reserve(jacobian->augmented_matrix, total_nnz));
 
   SLEQP_CALL(fill_augmented_jacobian(jacobian,
@@ -363,7 +342,6 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
   assert(jacobian->factorization);
 
   SleqpProblem* problem = jacobian->problem;
-  SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
   SleqpSparseFactorization* factorization = jacobian->factorization;
 
   int num_variables = problem->num_variables;
@@ -404,7 +382,6 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
   assert(jacobian->factorization);
 
   SleqpProblem* problem = jacobian->problem;
-  SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
   SleqpSparseFactorization* factorization = jacobian->factorization;
 
   int num_variables = problem->num_variables;

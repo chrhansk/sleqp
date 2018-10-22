@@ -2,7 +2,6 @@
 
 #include <math.h>
 #include <trlib.h>
-#include <stdbool.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_iterate.h"
@@ -246,8 +245,8 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
     while(k_lower < lower_diff->nnz || k_upper < upper_diff->nnz)
     {
-      SLEQP_Bool valid_lower = (k_lower < lower_diff->nnz);
-      SLEQP_Bool valid_upper = (k_upper < upper_diff->nnz);
+      bool valid_lower = (k_lower < lower_diff->nnz);
+      bool valid_upper = (k_upper < upper_diff->nnz);
 
       int i_lower = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
       int i_upper = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
@@ -306,8 +305,8 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
     while(k_lower < lower_diff->nnz || k_upper < upper_diff->nnz)
     {
-      SLEQP_Bool valid_lower = (k_lower < lower_diff->nnz);
-      SLEQP_Bool valid_upper = (k_upper < upper_diff->nnz);
+      bool valid_lower = (k_lower < lower_diff->nnz);
+      bool valid_upper = (k_upper < upper_diff->nnz);
 
       int i_lower = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
       int i_upper = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
@@ -367,9 +366,9 @@ static SLEQP_RETCODE get_violated_constraints(SleqpProblem* problem,
   {
     double c_val = 0., lb_val = 0., ub_val = 0.;
 
-    SLEQP_Bool valid_v = (k_c < v->nnz);
-    SLEQP_Bool valid_lb = (k_lb < lb->nnz);
-    SLEQP_Bool valid_ub = (k_ub < ub->nnz);
+    bool valid_v = (k_c < v->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
 
     int idx = valid_v ? v->indices[k_c] : dim + 1;
     idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);

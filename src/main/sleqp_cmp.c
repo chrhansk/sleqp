@@ -9,52 +9,52 @@ double sleqp_infinity()
   return 1e100;
 }
 
-SLEQP_Bool sleqp_eq(double x,
-                    double y)
+bool sleqp_eq(double x,
+              double y)
 {
   return ABS(x - y) <= eps;
 }
 
-SLEQP_Bool sleqp_lt(double x,
-                    double y)
+bool sleqp_lt(double x,
+              double y)
 {
   return ((x) - (y)) < -eps;
 }
 
-SLEQP_Bool sleqp_gt(double x,
-                    double y)
+bool sleqp_gt(double x,
+              double y)
 {
   return ((x) - (y)) > eps;
 }
 
-SLEQP_Bool sleqp_le(double x,
-                    double y)
+bool sleqp_le(double x,
+              double y)
 {
   return ((x) - (y)) <= eps;
 }
 
-SLEQP_Bool sleqp_ge(double x,
-                    double y)
+bool sleqp_ge(double x,
+              double y)
 {
   return ((x) - (y)) >= -eps;
 }
 
-SLEQP_Bool sleqp_neg(double x)
+bool sleqp_neg(double x)
 {
   return x < -eps;
 }
 
-SLEQP_Bool sleqp_pos(double x)
+bool sleqp_pos(double x)
 {
   return x > eps;
 }
 
-SLEQP_Bool sleqp_zero(double x)
+bool sleqp_zero(double x)
 {
   return ABS(x) <= eps;
 }
 
-SLEQP_Bool sleqp_is_infinity(double x)
+bool sleqp_is_infinity(double x)
 {
   return x >= sleqp_infinity();
 }

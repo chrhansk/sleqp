@@ -79,8 +79,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
                                            int dim);
 
-  SLEQP_Bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
-                                    SleqpSparseVec* second);
+  bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
+                              SleqpSparseVec* second);
 
   /**
    * Computes the dot product of two sparse vectors
@@ -141,7 +141,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
                                             FILE* output);
 
-  SLEQP_Bool sleqp_sparse_vector_valid(SleqpSparseVec* vec);
+  bool sleqp_sparse_vector_valid(SleqpSparseVec* vec);
 
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec);
 

@@ -32,9 +32,6 @@ void constrained_setup()
                                    quadconsfunc_cons_lb,
                                    quadconsfunc_cons_ub));
 
-  int num_variables = problem->num_variables;
-  int num_constraints = problem->num_constraints;
-
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
                                    quadconsfunc_x));
@@ -80,7 +77,6 @@ END_TEST
 
 START_TEST(test_dual_variable)
 {
-  SleqpActiveSet* active_set = iterate->active_set;
   SleqpSparseVec* cons_dual = iterate->cons_dual;
 
   SleqpAugJacobian* jacobian;

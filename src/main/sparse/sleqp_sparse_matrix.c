@@ -1,7 +1,6 @@
 #include "sleqp_sparse_matrix.h"
 
 #include <assert.h>
-#include <stdbool.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
@@ -246,7 +245,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_Bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix)
+bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix)
 {
   if(matrix->nnz > matrix->nnz_max)
   {

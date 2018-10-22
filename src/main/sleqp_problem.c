@@ -30,8 +30,8 @@ static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
     double lb_val = 0;
     double ub_val = 0;
 
-    SLEQP_Bool valid_lb = (k_lb < lb->nnz);
-    SLEQP_Bool valid_ub = (k_ub < ub->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
 
     int lb_i = valid_lb ? lb->indices[k_lb] : lb->dim + 1;
     int ub_i = valid_ub ? ub->indices[k_ub] : ub->dim + 1;

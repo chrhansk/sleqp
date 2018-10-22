@@ -42,19 +42,19 @@ static SLEQP_RETCODE umfpack_get_error_string(int value,
 #define UMFPACK_CALL(x)                                            \
   do                                                               \
   {                                                                \
-  int status = (x);                                                \
+  int umfpack_status = (x);                                        \
                                                                    \
-  if(status != UMFPACK_OK)                                         \
+  if(umfpack_status != UMFPACK_OK)                                 \
   {                                                                \
     const char* umfpack_error_string;                              \
-    SLEQP_CALL(umfpack_get_error_string(status,                    \
+    SLEQP_CALL(umfpack_get_error_string(umfpack_status,            \
                                         &umfpack_error_string));   \
                                                                    \
     sleqp_log_error("Caught Umfpack error <%d> (%s)",              \
-                    status,                                        \
+                    umfpack_status,                                \
                     umfpack_error_string);                         \
                                                                    \
-    switch (status)                                                \
+    switch(umfpack_status)                                         \
     {                                                              \
     case UMFPACK_ERROR_invalid_matrix:                             \
     case UMFPACK_ERROR_argument_missing:                           \
