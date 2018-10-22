@@ -6,29 +6,33 @@ struct SleqpFunc
 {
   SLEQP_FUNC_SET set_value;
   SLEQP_FUNC_EVAL eval;
-  SLEQP_HESS_EVAL_BILINEAR eval_bilin;
+  SLEQP_HESS_PRODUCT eval_hess_prod;
 
   int num_variables;
   void* data;
+
+  SleqpSparseVec* product;
 };
 
 SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
                                 SLEQP_FUNC_SET set_value,
                                 SLEQP_FUNC_EVAL eval,
-                                SLEQP_HESS_EVAL_BILINEAR eval_bilin,
+                                SLEQP_HESS_PRODUCT eval_hess_prod,
                                 int num_variables,
                                 void* func_data)
 {
-  sleqp_malloc(fstar);
+  SLEQP_CALL(sleqp_malloc(fstar));
 
   SleqpFunc* func = *fstar;
 
   func->set_value = set_value;
   func->eval = eval;
-  func->eval_bilin = eval_bilin;
+  func->eval_hess_prod = eval_hess_prod;
 
   func->num_variables = num_variables;
   func->data = func_data;
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&func->product, num_variables, 0));
 
   return SLEQP_OKAY;
 }
@@ -39,7 +43,7 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    int* cons_val_nnz,
                                    int* cons_jac_nnz)
 {
-  assert(func);
+
 
   SLEQP_CALL(func->set_value(x,
                              func->num_variables,
@@ -58,7 +62,7 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
                               SleqpSparseVec* cons_val,
                               SleqpSparseMatrix* cons_jac)
 {
-  assert(func);
+
 
   SLEQP_CALL(func->eval(func->num_variables,
                         indices,
@@ -71,26 +75,53 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_hess_eval_bilinear(SleqpFunc* func,
+int sleqp_func_get_num_variables(SleqpFunc* func)
+{
+  return func->num_variables;
+}
+
+SLEQP_RETCODE sleqp_func_hess_product(SleqpFunc* func,
+                                      double* func_dual,
+                                      SleqpSparseVec* direction,
+                                      SleqpSparseVec* cons_duals,
+                                      SleqpSparseVec* product)
+{
+  SLEQP_CALL(func->eval_hess_prod(func->num_variables,
+                                  func_dual,
+                                  direction,
+                                  cons_duals,
+                                  product,
+                                  func->data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
                                        double* func_dual,
                                        SleqpSparseVec* direction,
                                        SleqpSparseVec* cons_duals,
                                        double* bilinear_prod)
 {
-  assert(func);
+  SLEQP_CALL(func->eval_hess_prod(func->num_variables,
+                                  func_dual,
+                                  direction,
+                                  cons_duals,
+                                  func->product,
+                                  func->data));
 
-  SLEQP_CALL(func->eval_bilin(func->num_variables,
-                              func_dual,
-                              direction,
-                              cons_duals,
-                              bilinear_prod,
-                              func->data));
+  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
+                                     func->product,
+                                     bilinear_prod));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
 {
+  SleqpFunc* func = *fstar;
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
+
   sleqp_free(fstar);
 
   return SLEQP_OKAY;

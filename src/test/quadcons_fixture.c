@@ -112,22 +112,36 @@ SLEQP_RETCODE quadconsfunc_eval(int num_variables,
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 2*data->x[1]));
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 1, 2*(data->x[1] - 1.)));
-
-    SLEQP_CALL(sleqp_sparse_matrix_fprintf(cons_jac,
-                                           stdout));
-
   }
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE quadconsfunc_eval_bilinear(int num_variables,
-                                         double* func_dual,
-                                         SleqpSparseVec* direction,
-                                         SleqpSparseVec* cons_duals,
-                                         double* bilinear_prod,
-                                         void* func_data)
+SLEQP_RETCODE quadconsfunc_hess_prof(int num_variables,
+                                     double* func_dual,
+                                     SleqpSparseVec* direction,
+                                     SleqpSparseVec* cons_duals,
+                                     SleqpSparseVec* result,
+                                     void* func_data)
 {
+  double total_value = 0.;
+
+  if(func_dual)
+  {
+    total_value += *func_dual;
+  }
+
+  for(int k = 0; k < cons_duals->nnz; ++k)
+  {
+    total_value += cons_duals->data[k];
+  }
+
+  total_value *= 2;
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(direction, result));
+
+  SLEQP_CALL(sleqp_sparse_vector_scale(result, total_value));
+
   return SLEQP_OKAY;
 }
 
@@ -143,7 +157,7 @@ void quadconsfunc_setup()
   ASSERT_CALL(sleqp_func_create(&quadconsfunc,
                                 quadconsfunc_set,
                                 quadconsfunc_eval,
-                                quadconsfunc_eval_bilinear,
+                                quadconsfunc_hess_prof,
                                 2,
                                 func_data));
 

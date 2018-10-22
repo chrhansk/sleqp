@@ -8,7 +8,7 @@ typedef struct RosenbrockData
 } RosenbrockData;
 
 
-static inline double square(double v)
+static inline double sq(double v)
 {
   return v*v;
 }
@@ -63,11 +63,11 @@ static SLEQP_RETCODE rosenbrock_eval(int num_variables,
 {
   RosenbrockData* data = (RosenbrockData*) func_data;
 
-  double xsq = square(data->x[0]);
+  double xsq = sq(data->x[0]);
 
   if(func_val)
   {
-    *func_val = square(data->a - data->x[0]) + data->b* square(data->x[1] - xsq);
+    *func_val = sq(data->a - data->x[0]) + data->b* sq(data->x[1] - xsq);
   }
 
   if(func_grad)
@@ -92,13 +92,38 @@ static SLEQP_RETCODE rosenbrock_eval(int num_variables,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE rosenbrock_eval_bilinear(int num_variables,
-                                              double* func_dual,
-                                              SleqpSparseVec* direction,
-                                              SleqpSparseVec* cons_duals,
-                                              double* bilinear_prod,
-                                              void* func_data)
+static SLEQP_RETCODE rosenbrock_hess_prod(int num_variables,
+                                          double* func_dual,
+                                          SleqpSparseVec* direction,
+                                          SleqpSparseVec* cons_duals,
+                                          SleqpSparseVec* product,
+                                          void* func_data)
 {
+  RosenbrockData* data = (RosenbrockData*) func_data;
+
+  double a = data->a;
+  double b = data->b;
+
+  double* x = data->x;
+  double d[2];
+
+  SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, d));
+
+  if(func_dual)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_reserve(product, 2));
+
+    SLEQP_CALL(sleqp_sparse_vector_push(product,
+                                        0,
+                                        (8*b*sq(x[0]) + 4*b*(sq(x[0]) - x[1]) + 2)*d[0] -4*b*x[0]*d[1]));
+
+    SLEQP_CALL(sleqp_sparse_vector_push(product,
+                                        1,
+                                        -4*b*x[0]*d[0] + 2*b*d[1]));
+
+
+  }
+
   return SLEQP_OKAY;
 }
 
@@ -117,7 +142,7 @@ void rosenbrock_setup()
   ASSERT_CALL(sleqp_func_create(&rosenbrock_func,
                                 rosenbrock_set,
                                 rosenbrock_eval,
-                                rosenbrock_eval_bilinear,
+                                rosenbrock_hess_prod,
                                 2,
                                 func_data));
 

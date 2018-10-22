@@ -504,7 +504,7 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
   {
     double func_dual = 1.;
 
-    SLEQP_CALL(sleqp_hess_eval_bilinear(func,
+    SLEQP_CALL(sleqp_func_hess_bilinear(func,
                                         &func_dual,
                                         direction,
                                         iterate->cons_dual,

@@ -83,22 +83,24 @@ SLEQP_RETCODE quadfunc_eval(int num_variables,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE quadfunc_eval_bilinear(int num_variables,
-                                     double* func_dual,
-                                     SleqpSparseVec* direction,
-                                     SleqpSparseVec* cons_duals,
-                                     double* bilinear_prod,
-                                     void* func_data)
+SLEQP_RETCODE quadfunc_hess_prod(int num_variables,
+                                 double* func_dual,
+                                 SleqpSparseVec* direction,
+                                 SleqpSparseVec* cons_duals,
+                                 SleqpSparseVec* result,
+                                 void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*) func_data;
 
-  for(int k = 0; k < direction->nnz; ++k)
+  if(func_dual)
   {
-    double value = direction->data[k];
+    double total_value = 2.* (*func_dual);
 
-    (*bilinear_prod) += value*value;
+
+    SLEQP_CALL(sleqp_sparse_vector_copy(direction, result));
+
+    SLEQP_CALL(sleqp_sparse_vector_scale(result, total_value));
   }
-
 
   return SLEQP_OKAY;
 }
@@ -114,7 +116,7 @@ void quadfunc_setup()
   ASSERT_CALL(sleqp_func_create(&quadfunc,
                                 quadfunc_set,
                                 quadfunc_eval,
-                                quadfunc_eval_bilinear,
+                                quadfunc_hess_prod,
                                 2,
                                 func_data));
 

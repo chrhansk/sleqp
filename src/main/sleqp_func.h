@@ -64,27 +64,27 @@ extern "C" {
    * L(x, \lambda_0, \lambda) := \lambda_0 f(x) + \langle \lambda, c(x) \rangle
    * \f]
    *
-   * The bilinear product with a direction \f$ d \f$ is then:
+   * The product with a direction \f$ d \f$ is then:
    * \f[
-   * \langle d, \nabla_{xx} L(x, \lambda_0, \lambda) d \rangle
-   * = \left( \lambda_0 \langle d, \nabla_{xx} f(x) d \rangle
-   *   + \sum_{i=1}^{m} \lambda_i \langle d , \nabla_{xx} c_i(x) d \rangle  \right)
+   * \nabla_{xx} L(x, \lambda_0, \lambda) d
+   * = \left( \lambda_0 \nabla_{xx} f(x) d
+   *   + \sum_{i=1}^{m} \lambda_i  \nabla_{xx} c_i(x) d \right)
    * \f]
    *
    * @param[in]     num_variables     The number of variables
    * @param[in]     func_dual         The value \f$ \lambda_0 \f$
    * @param[in]     direction         The direction \f$ d \f$
    * @param[in]     cons_duals        The values \f$ \lambda \f$
-   * @param[in]     bilinear_prod     The resulting bilinear product
+   * @param[out]    product           The resulting product
    * @param[in,out] func_data         The function data
    *
    */
-  typedef SLEQP_RETCODE (*SLEQP_HESS_EVAL_BILINEAR)(int num_variables,
-                                                    double* func_dual,
-                                                    SleqpSparseVec* direction,
-                                                    SleqpSparseVec* cons_duals,
-                                                    double* bilinear_prod,
-                                                    void* func_data);
+  typedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(int num_variables,
+                                              double* func_dual,
+                                              SleqpSparseVec* direction,
+                                              SleqpSparseVec* cons_duals,
+                                              SleqpSparseVec* product,
+                                              void* func_data);
 
   /**
    * Creates a new function.
@@ -99,7 +99,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
                                   SLEQP_FUNC_SET setx,
                                   SLEQP_FUNC_EVAL eval,
-                                  SLEQP_HESS_EVAL_BILINEAR eval_bilin,
+                                  SLEQP_HESS_PRODUCT eval_hess_prod,
                                   int num_variables,
                                   void* func_data);
 
@@ -134,6 +134,24 @@ extern "C" {
                                 SleqpSparseVec* cons_val,
                                 SleqpSparseMatrix* cons_jac);
 
+  int sleqp_func_get_num_variables(SleqpFunc* func);
+
+  /**
+   * Evaluates the product of the Hessian of the Lagrangian of the given function.
+   *
+   * @param[in]     func              The function
+   * @param[in]     func_dual         The value \f$ \lambda_0 \f$
+   * @param[in]     direction         The direction \f$ d \f$
+   * @param[in]     cons_duals        The values \f$ \lambda \f$
+   * @param[out]    product           The resulting product
+   *
+   */
+  SLEQP_RETCODE sleqp_func_hess_product(SleqpFunc* func,
+                                        double* func_dual,
+                                        SleqpSparseVec* direction,
+                                        SleqpSparseVec* cons_duals,
+                                        SleqpSparseVec* product);
+
   /**
    * Evaluates the bilinear product of the Hessian of the Lagrangian of the given function.
    *
@@ -141,10 +159,10 @@ extern "C" {
    * @param[in]     func_dual         The value \f$ \lambda_0 \f$
    * @param[in]     direction         The direction \f$ d \f$
    * @param[in]     cons_duals        The values \f$ \lambda \f$
-   * @param[in]     bilinear_prod     The resulting bilinear product
+   * @param[out]    bilinear_prod     The resulting bilinear product
    *
    */
-  SLEQP_RETCODE sleqp_hess_eval_bilinear(SleqpFunc* func,
+  SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
                                          double* func_dual,
                                          SleqpSparseVec* direction,
                                          SleqpSparseVec* cons_duals,

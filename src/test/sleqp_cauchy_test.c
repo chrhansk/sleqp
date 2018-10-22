@@ -93,13 +93,14 @@ static SLEQP_RETCODE linfunc_eval(int num_variables,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE linfunc_eval_bilinear(int num_variables,
-                                           double* func_dual,
-                                           SleqpSparseVec* direction,
-                                           SleqpSparseVec* cons_duals,
-                                           double* bilinear_prod,
-                                           void* func_data)
+static SLEQP_RETCODE linfunc_hess_prod(int num_variables,
+                                       double* func_dual,
+                                       SleqpSparseVec* direction,
+                                       SleqpSparseVec* cons_duals,
+                                       SleqpSparseVec* product,
+                                       void* func_data)
 {
+  product->nnz = 0;
   return SLEQP_OKAY;
 }
 
@@ -115,7 +116,7 @@ void unconstrained_setup()
   ASSERT_CALL(sleqp_func_create(&linfunc,
                                 linfunc_set,
                                 linfunc_eval,
-                                linfunc_eval_bilinear,
+                                linfunc_hess_prod,
                                 2,
                                 func_data));
 
