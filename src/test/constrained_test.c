@@ -86,11 +86,11 @@ START_TEST(test_dual_variable)
   SleqpAugJacobian* jacobian;
   SleqpDualEstimationData* estimation_data;
 
-  double trust_radius = 0.1, penalty = 1.;
+  double trust_radius = 0.1, penalty_parameter = 1.;
 
   ASSERT_CALL(sleqp_cauchy_compute_direction(cauchy_data,
                                              iterate,
-                                             penalty,
+                                             penalty_parameter,
                                              trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,

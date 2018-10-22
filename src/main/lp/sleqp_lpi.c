@@ -30,7 +30,7 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
                                          SLEQP_LPI_GET_CONSSTATS get_consstats,
                                          SLEQP_LPI_FREE free_problem)
 {
-  sleqp_malloc(lp_star);
+  SLEQP_CALL(sleqp_malloc(lp_star));
 
   SleqpLPi* lp_interface = *lp_star;
 

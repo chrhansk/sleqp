@@ -371,6 +371,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
   assert(sol->dim == num_variables);
   assert(rhs->dim == jacobian->active_set_size);
 
+  rhs->dim += num_variables;
+
   for(int k = 0; k < rhs->nnz; ++k)
   {
     rhs->indices[k] += num_variables;
@@ -383,6 +385,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
                                                 sol,
                                                 0,
                                                 problem->num_variables));
+
+  rhs->dim -= num_variables;
 
   for(int k = 0; k < rhs->nnz; ++k)
   {

@@ -151,8 +151,17 @@ SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(SleqpSparseMatrix* matrix
                                                        SleqpSparseVec* vector,
                                                        SleqpSparseVec* result)
 {
-  assert(matrix->num_cols == vector->dim);
-  assert(matrix->num_rows == result->dim);
+  assert(matrix->num_rows == vector->dim);
+  assert(matrix->num_cols == result->dim);
+
+  int col_size = 0;
+
+  for(int col = 0; col < matrix->num_cols; ++col)
+  {
+    col_size += (matrix->cols[col + 1] - matrix->cols[col]) > 0;
+  }
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(result, col_size));
 
   for(int col = 0; col < matrix->num_cols; ++col)
   {

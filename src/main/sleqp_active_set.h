@@ -25,6 +25,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_active_set_create(SleqpActiveSet** star,
                                         SleqpProblem* problem);
 
+  SLEQP_RETCODE sleqp_active_set_reset(SleqpActiveSet* active_set);
+
   SLEQP_ACTIVE_STATE* sleqp_active_set_var_states(SleqpActiveSet* active_set);
   SLEQP_ACTIVE_STATE* sleqp_active_set_cons_states(SleqpActiveSet* active_set);
 

@@ -25,9 +25,6 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   SleqpDualEstimationData* estimation_data;
 
-  int num_variables;
-  int num_constraints;
-
   double penalty = 1., trust_radius = 0.1;
 
 
@@ -37,9 +34,6 @@ START_TEST(test_simply_constrained_dual_estimation)
                                    quadfunc_var_ub,
                                    quadfunc_cons_lb,
                                    quadfunc_cons_ub));
-
-  num_variables = problem->num_variables;
-  num_constraints = problem->num_constraints;
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
