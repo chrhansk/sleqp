@@ -1,3 +1,8 @@
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sleqp_defs.h.in"
+  "${CMAKE_BINARY_DIR}/sleqp_defs.h")
+
+include_directories("${CMAKE_BINARY_DIR}")
+
 set(SOPLEX_LPI_SRC
   lp/sleqp_lpi_soplex.cc)
 

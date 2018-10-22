@@ -1,8 +1,26 @@
 cmake_minimum_required(VERSION 3.3)
 
-project(sleqp C CXX)
+project(sleqp
+  VERSION "0.1.0"
+  DESCRIPTION "An active set-based NLP solver"
+  LANGUAGES C CXX)
 
-set(PROJECT_NAME "${CMAKE_PROJECT_NAME}")
+# Get the current working branch
+execute_process(
+  COMMAND git rev-parse --abbrev-ref HEAD
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE "PROJECT_GIT_BRANCH"
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash of the working branch
+execute_process(
+  COMMAND git log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE "PROJECT_GIT_COMMIT_HASH"
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 set(PROJECT_NAMESPACE "${PROJECT_NAME}::")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
