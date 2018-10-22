@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.3)
 
 project(sleqp
-  VERSION "0.1.0"
-  DESCRIPTION "An active set-based NLP solver"
+  VERSION 0.1.0
   LANGUAGES C CXX)
 
 # Get the current working branch
