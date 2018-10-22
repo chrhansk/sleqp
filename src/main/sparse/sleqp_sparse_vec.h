@@ -61,6 +61,12 @@ extern "C" {
                                              double* values,
                                              int dim);
 
+  SLEQP_RETCODE sleqp_sparse_vector_to_raw(SleqpSparseVec* vec,
+                                           double* values);
+
+  SLEQP_RETCODE sleqp_sparse_vector_copy(SleqpSparseVec* source,
+                                         SleqpSparseVec* target);
+
   /**
    * Reserves space for additional nonzeros
    *
@@ -72,6 +78,9 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
                                            int dim);
+
+  SLEQP_Bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
+                                    SleqpSparseVec* second);
 
   /**
    * Computes the dot product of two sparse vectors

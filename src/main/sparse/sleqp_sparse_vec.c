@@ -59,6 +59,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
     }
   }
 
+  vec->nnz = 0;
   vec->dim = dim;
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(vec, nnz));
@@ -71,6 +72,41 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
     {
       sleqp_sparse_vector_push(vec, i, v);
     }
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_to_raw(SleqpSparseVec* vec,
+                                         double* values)
+{
+  for(int i = 0; i < vec->dim; ++i)
+  {
+    values[i] = 0.;
+  }
+
+  for(int k = 0; k < vec->nnz; ++k)
+  {
+    values[vec->indices[k]] = vec->data[k];
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_copy(SleqpSparseVec* source,
+                                       SleqpSparseVec* target)
+{
+  assert(source->dim == target->dim);
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(target, source->nnz));
+
+  target->nnz = 0;
+
+  for(int k = 0; k < source->nnz; ++k)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_push(target,
+                                        source->indices[k],
+                                        source->data[k]));
   }
 
   return SLEQP_OKAY;
@@ -106,6 +142,41 @@ SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
   vec->dim = dim;
 
   return SLEQP_OKAY;
+}
+
+SLEQP_Bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
+                                  SleqpSparseVec* second)
+{
+  assert(first->dim == second->dim);
+
+  int k_first = 0, k_second = 0;
+
+  while(k_first < first->nnz || k_second < second->nnz)
+  {
+    SLEQP_Bool valid_first = (k_first < first->nnz);
+    SLEQP_Bool valid_second = (k_second < second->nnz);
+
+    double first_value = valid_first ? first->data[k_first] : 0.;
+    double second_value = valid_second ? second->data[k_second] : 0.;
+
+    if(!sleqp_eq(first_value, second_value))
+    {
+      return false;
+    }
+
+    if(valid_first)
+    {
+      ++k_first;
+    }
+
+    if(valid_second)
+    {
+      ++k_second;
+    }
+
+  }
+
+  return true;
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
