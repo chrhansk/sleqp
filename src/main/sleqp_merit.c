@@ -1,9 +1,9 @@
-#include "sleqp_penalty.h"
+#include "sleqp_merit.h"
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
-struct SleqpPenalty
+struct SleqpMeritData
 {
   SleqpProblem* problem;
 
@@ -24,42 +24,42 @@ static void reset_cache(double* values, int size)
   }
 }
 
-SLEQP_RETCODE sleqp_penalty_create(SleqpPenalty** star,
-                                   SleqpProblem* problem,
-                                   SleqpFunc* func)
+SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
+                                      SleqpProblem* problem,
+                                      SleqpFunc* func)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  SleqpPenalty* penalty_data = *star;
+  SleqpMeritData* merit_data = *star;
 
-  penalty_data->problem = problem;
-  penalty_data->func = func;
+  merit_data->problem = problem;
+  merit_data->func = func;
 
-  penalty_data->cache_size = SLEQP_MAX(problem->num_constraints,
-                                       problem->num_variables);
+  merit_data->cache_size = SLEQP_MAX(problem->num_constraints,
+                                     problem->num_variables);
 
-  SLEQP_CALL(sleqp_calloc(&penalty_data->dense_cache, penalty_data->cache_size));
+  SLEQP_CALL(sleqp_calloc(&merit_data->dense_cache, merit_data->cache_size));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&penalty_data->jac_dot_sparse,
+  SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->jac_dot_sparse,
                                         problem->num_constraints,
                                         0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&penalty_data->lin_jac_vals,
+  SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->lin_jac_vals,
                                         problem->num_constraints,
                                         0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_penalty_func(SleqpPenalty* penalty_data,
-                                 SleqpIterate* iterate,
-                                 double penalty_parameter,
-                                 double* penalty_value)
+SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
+                               SleqpIterate* iterate,
+                               double penalty_parameter,
+                               double* merit_value)
 {
-  *penalty_value = iterate->func_val;
+  *merit_value = iterate->func_val;
 
-  SleqpSparseVec* lb = penalty_data->problem->cons_lb;
-  SleqpSparseVec* ub = penalty_data->problem->cons_ub;
+  SleqpSparseVec* lb = merit_data->problem->cons_lb;
+  SleqpSparseVec* ub = merit_data->problem->cons_ub;
   SleqpSparseVec* c = iterate->cons_val;
 
   int k_c = 0, k_lb = 0, k_ub = 0;
@@ -95,8 +95,8 @@ SLEQP_RETCODE sleqp_penalty_func(SleqpPenalty* penalty_data,
     double val_ub = valid_ub ? ub->data[i] : 0;
     double val_c = valid_c ? c->data[i] : 0;
 
-    *penalty_value += penalty_parameter * SLEQP_MAX(val_c - val_ub, 0);
-    *penalty_value += penalty_parameter * SLEQP_MAX(val_lb - val_c, 0);
+    *merit_value += penalty_parameter * SLEQP_MAX(val_c - val_ub, 0);
+    *merit_value += penalty_parameter * SLEQP_MAX(val_lb - val_c, 0);
 
     if(valid_lb)
     {
@@ -117,33 +117,33 @@ SLEQP_RETCODE sleqp_penalty_func(SleqpPenalty* penalty_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
-                                   SleqpIterate* iterate,
-                                   SleqpSparseVec* direction,
-                                   double penalty_parameter,
-                                   double* penalty_value)
+SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
+                                 SleqpIterate* iterate,
+                                 SleqpSparseVec* direction,
+                                 double penalty_parameter,
+                                 double* merit_value)
 {
-  SleqpProblem* problem = penalty_data->problem;
+  SleqpProblem* problem = merit_data->problem;
 
-  SleqpSparseVec* lin = penalty_data->lin_jac_vals;
+  SleqpSparseVec* lin = merit_data->lin_jac_vals;
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
 
   SLEQP_CALL(sleqp_sparse_vector_dot(iterate->func_grad,
                                      direction,
-                                     penalty_value));
+                                     merit_value));
 
-  reset_cache(penalty_data->dense_cache, penalty_data->cache_size);
+  reset_cache(merit_data->dense_cache, merit_data->cache_size);
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(iterate->cons_jac,
                                                 direction,
-                                                penalty_data->dense_cache));
+                                                merit_data->dense_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(penalty_data->jac_dot_sparse,
-                                          penalty_data->dense_cache,
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(merit_data->jac_dot_sparse,
+                                          merit_data->dense_cache,
                                           problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(penalty_data->jac_dot_sparse,
+  SLEQP_CALL(sleqp_sparse_vector_add(merit_data->jac_dot_sparse,
                                      iterate->cons_val,
                                      1., 1.,
                                      lin));
@@ -182,8 +182,8 @@ SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
     double val_lin = valid_lin ? lin->data[i] : 0;
 
 
-    *penalty_value += penalty_parameter * SLEQP_MAX(val_lin - val_ub, 0);
-    *penalty_value += penalty_parameter * SLEQP_MAX(val_lb - val_lin, 0);
+    *merit_value += penalty_parameter * SLEQP_MAX(val_lin - val_ub, 0);
+    *merit_value += penalty_parameter * SLEQP_MAX(val_lb - val_lin, 0);
 
     if(valid_lb)
     {
@@ -204,15 +204,15 @@ SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_penalty_free(SleqpPenalty** star)
+SLEQP_RETCODE sleqp_merit_data_free(SleqpMeritData** star)
 {
-  SleqpPenalty* penalty_data = *star;
+  SleqpMeritData* merit_data = *star;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&penalty_data->lin_jac_vals));
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->lin_jac_vals));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&penalty_data->jac_dot_sparse));
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->jac_dot_sparse));
 
-  sleqp_free(&penalty_data->dense_cache);
+  sleqp_free(&merit_data->dense_cache);
 
   sleqp_free(star);
 

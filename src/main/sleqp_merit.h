@@ -1,9 +1,9 @@
-#ifndef SLEQP_PENALTY_H
-#define SLEQP_PENALTY_H
+#ifndef SLEQP_MERIT_H
+#define SLEQP_MERIT_H
 
 /**
- * @file sleqp_penalty.h
- * @brief Definition of penalty functions.
+ * @file sleqp_merit.h
+ * @brief Definition of merit functions.
  **/
 
 #ifdef __cplusplus
@@ -16,15 +16,15 @@ extern "C" {
 #include "sleqp.h"
 
 
-  typedef struct SleqpPenalty SleqpPenalty;
+  typedef struct SleqpMeritData SleqpMeritData;
 
-  SLEQP_RETCODE sleqp_penalty_create(SleqpPenalty** star,
-                                     SleqpProblem* problem,
-                                     SleqpFunc* func);
+  SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
+                                        SleqpProblem* problem,
+                                        SleqpFunc* func);
 
   /**
-   * Computes the exact penalty value at the given
-   * iterate. The exact penalty value at \f$ x \f$ is given by
+   * Computes the exact merit value at the given
+   * iterate. The exact merit value at \f$ x \f$ is given by
    *
    * \f[
    * \Phi_v(x) := f(x)
@@ -32,20 +32,20 @@ extern "C" {
    *              + v \left(\sum_{i=1}^{m} \max(l_i - c_i(x), 0) \right)
    * \f]
    *
-   * @param[in]  penalty_data      Penalty data
+   * @param[in]  merit_data        Merit data
    * @param[in]  iterate           The current iterate
    * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
-   * @param[out] penalty_value     The exact penalty value
+   * @param[out] merit_value       The exact merit value
    *
    **/
-  SLEQP_RETCODE sleqp_penalty_func(SleqpPenalty* penalty_data,
+  SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
                                    SleqpIterate* iterate,
                                    double penalty_parameter,
-                                   double* penalty_value);
+                                   double* merit_value);
 
   /**
-   * Computes the linearized penalty value at the given iterate.
-   * The linearized penalty value at \f$ \overline{x} \f$ w.r.t.
+   * Computes the linearized merit value at the given iterate.
+   * The linearized merit value at \f$ \overline{x} \f$ w.r.t.
    * a direction \f$ d \f$ is given by
    *
    * \f[
@@ -55,24 +55,24 @@ extern "C" {
    * \f]
    *
    *
-   * @param[in]  penalty_data      Penalty data
+   * @param[in]  merit_data        Merit data
    * @param[in]  iterate           The current iterate \f$ overline{x} \f$
    * @param[in]  direction         The direction \f$ d \f$
    * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
-   * @param[out] penalty_value     The linear penalty value
+   * @param[out] merit_value       The linear merit value
    *
    **/
-  SLEQP_RETCODE sleqp_penalty_linear(SleqpPenalty* penalty_data,
+  SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
                                      SleqpIterate* iterate,
                                      SleqpSparseVec* direction,
                                      double penalty_parameter,
-                                     double* penalty_value);
+                                     double* merit_value);
 
-  SLEQP_RETCODE sleqp_penalty_free(SleqpPenalty** star);
+  SLEQP_RETCODE sleqp_merit_data_free(SleqpMeritData** star);
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* SLEQP_PENALTY_H */
+#endif /* SLEQP_MERIT_H */

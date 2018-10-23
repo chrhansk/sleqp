@@ -4,7 +4,7 @@
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
-#include "sleqp_penalty.h"
+#include "sleqp_merit.h"
 
 struct SleqpCauchyData
 {
@@ -27,7 +27,7 @@ struct SleqpCauchyData
   double* solution_values;
 
   SleqpSparseVec* quadratic_gradient;
-  SleqpPenalty* penalty_data;
+  SleqpMeritData* merit_data;
 };
 
 SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
@@ -65,9 +65,9 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
                                         problem->num_variables,
                                         0));
 
-  SLEQP_CALL(sleqp_penalty_create(&data->penalty_data,
-                                  problem,
-                                  problem->func));
+  SLEQP_CALL(sleqp_merit_data_create(&data->merit_data,
+                                     problem,
+                                     problem->func));
 
   for(int i = problem->num_variables; i < data->num_lp_variables; ++i)
   {
@@ -82,7 +82,7 @@ SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
 {
   SleqpCauchyData* data = *star;
 
-  SLEQP_CALL(sleqp_penalty_free(&data->penalty_data));
+  SLEQP_CALL(sleqp_merit_data_free(&data->merit_data));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->quadratic_gradient));
 
@@ -492,14 +492,14 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         SleqpSparseVec* hessian_direction,
                                         SleqpSparseVec* direction)
 {
-  double exact_penalty_value;
+  double exact_merit_value;
 
-  SleqpPenalty* penalty_data = cauchy_data->penalty_data;
+  SleqpMeritData* merit_data = cauchy_data->merit_data;
 
-  SLEQP_CALL(sleqp_penalty_func(penalty_data,
-                                iterate,
-                                penalty_parameter,
-                                &exact_penalty_value));
+  SLEQP_CALL(sleqp_merit_func(merit_data,
+                              iterate,
+                              penalty_parameter,
+                              &exact_merit_value));
 
   double hessian_product;
 
@@ -532,16 +532,16 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
     // check
 
     {
-      double linear_penalty_value;
+      double linear_merit_value;
 
-      SLEQP_CALL(sleqp_penalty_linear(penalty_data,
-                                      iterate,
-                                      direction,
-                                      penalty_parameter,
-                                      &linear_penalty_value));
+      SLEQP_CALL(sleqp_merit_linear(merit_data,
+                                    iterate,
+                                    direction,
+                                    penalty_parameter,
+                                    &linear_merit_value));
 
-      if(sleqp_ge(exact_penalty_value - (linear_penalty_value + hessian_product),
-                  eta*(exact_penalty_value - linear_penalty_value)))
+      if(sleqp_ge(exact_merit_value - (linear_merit_value + hessian_product),
+                  eta*(exact_merit_value - linear_merit_value)))
       {
         break;
       }

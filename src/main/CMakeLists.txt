@@ -19,7 +19,7 @@ set(COMMON_SRC
   sleqp_iterate.c
   sleqp_log.c
   sleqp_newton.c
-  sleqp_penalty.c
+  sleqp_merit.c
   sleqp_problem.c
   sleqp_soc.c
   sleqp_solver.c
