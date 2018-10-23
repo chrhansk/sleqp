@@ -21,6 +21,7 @@ set(COMMON_SRC
   sleqp_newton.c
   sleqp_penalty.c
   sleqp_problem.c
+  sleqp_soc.c
   sleqp.c
   lp/sleqp_lpi.c)
 
