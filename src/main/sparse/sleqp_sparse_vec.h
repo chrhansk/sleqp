@@ -67,6 +67,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_copy(SleqpSparseVec* source,
                                          SleqpSparseVec* target);
 
+  SLEQP_RETCODE sleqp_sparse_vector_clear(SleqpSparseVec* vec);
+
   /**
    * Reserves space for additional nonzeros
    *

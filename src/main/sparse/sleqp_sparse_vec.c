@@ -111,6 +111,13 @@ SLEQP_RETCODE sleqp_sparse_vector_copy(SleqpSparseVec* source,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_vector_clear(SleqpSparseVec* vec)
+{
+  vec->nnz = 0;
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
                                           int nnz_max)
 {

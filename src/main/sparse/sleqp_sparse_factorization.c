@@ -156,13 +156,6 @@ SLEQP_RETCODE sleqp_sparse_factorization_solve(SleqpSparseFactorization* factori
 
   SLEQP_CALL(reset_cache(factorization->rhs, rhs));
 
-  /*
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
-                                          factorization->solution,
-                                          matrix->num_cols));
-  */
-
-
   return SLEQP_OKAY;
 }
 

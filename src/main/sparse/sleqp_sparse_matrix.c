@@ -215,6 +215,18 @@ double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
   return NULL;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix)
+{
+  matrix->nnz = 0;
+
+  for(int col = 0; col <= matrix->num_cols; ++col)
+  {
+    matrix->cols[col] = 0;
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
                                           FILE* output)
 {

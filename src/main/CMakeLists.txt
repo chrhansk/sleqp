@@ -65,4 +65,7 @@ install(EXPORT sleqp-config
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/main/"
   DESTINATION include/sleqp
-  FILES_MATCHING PATTERN "sleqp*.h*")
+  FILES_MATCHING PATTERN "sleqp*.h")
+
+install(FILES "${CMAKE_BINARY_DIR}/sleqp_defs.h"
+  DESTINATION include/sleqp)

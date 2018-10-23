@@ -26,7 +26,7 @@ extern "C" {
     SLEQP_RETCODE status;                                                  \
     if( (status = (x)) != SLEQP_OKAY )                                     \
     {                                                                      \
-      sleqp_log_error("Error <%d> in function call\n", status);            \
+      sleqp_log_error("Error <%d> in function call", status);              \
       return status;                                                       \
     }                                                                      \
   }                                                                        \

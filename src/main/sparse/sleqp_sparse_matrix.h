@@ -66,6 +66,8 @@ extern "C" {
                                  int row,
                                  int col);
 
+  SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix);
+
   SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
                                             FILE* output);
 

@@ -756,7 +756,7 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
     }
     }
 
-    if(ret != TRLIB_CLR_CONTINUE)
+    if(ret < TRLIB_CLR_CONTINUE)
     {
       break;
     }
