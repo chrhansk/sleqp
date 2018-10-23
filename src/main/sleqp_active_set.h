@@ -7,8 +7,8 @@
  **/
 
 #include "sleqp_func.h"
+#include "sleqp_problem.h"
 #include "sleqp_types.h"
-#include "sleqp.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -146,8 +146,8 @@ START_TEST(newton_small_step)
   ASSERT_CALL(sleqp_newton_data_create(&newton_data, problem));
 
   // we use the default (empty) active set for the Newton step,
-  // trust region size should be large to ensure that
-  // the solution is that of the unrestricted step
+  // trust region size should be so small that
+  // the solution is on the boundary of the feasible set
   ASSERT_CALL(sleqp_newton_compute_step(newton_data,
                                         iterate,
                                         jacobian,

@@ -45,12 +45,12 @@ extern "C" {
    * minimum norm.
    *
    * \f[
-   * \min \|x - x_0\|_2, \text{s.t. } A_W x = 0
+   * \min \|x\|_2, \text{s.t. } A_W x = b_W
    * \f]
    *
    * @param[in]  jacobian   The augmented Jacobian
    * @param[in]  rhs        The right hand side \f$ b_W \f$
-   * @param[out] sol        The solution \f$ x \f$, together with the optimal dual values
+   * @param[out] sol        The solution \f$ x \f$
    *
    **/
   SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,

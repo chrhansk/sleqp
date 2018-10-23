@@ -2,8 +2,9 @@
 #define SLEQP_H
 
 #include "sleqp_func.h"
-#include "sleqp_types.h"
+#include "sleqp_iterate.h"
 #include "sleqp_problem.h"
+#include "sleqp_types.h"
 
 #include "sparse/sleqp_sparse_matrix.h"
 #include "sparse/sleqp_sparse_vec.h"
@@ -13,9 +14,6 @@ extern "C" {
 #endif
 
   typedef struct SleqpSolver SleqpSolver;
-
-
-  typedef struct SleqpIterate SleqpIterate;
 
   SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                        SleqpIterate* iterate);
