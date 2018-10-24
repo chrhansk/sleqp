@@ -42,6 +42,8 @@ extern "C" {
    * Evaluates the function and its gradient at the current input vector
    *
    * @param[in]     num_variables   The number of variables
+   * @param[in]     cons_indices    The indices of the constraint function
+   *                                to be evaluated
    * @param[out]    func_val        The function value \f$ f(x) \f$
    * @param[out]    func_grad       The function gradient \f$ \nabla f(x) \f$
    * @param[out]    cons_val        The value of the constraint function \f$ c(x) \f$
@@ -49,7 +51,7 @@ extern "C" {
    * @param[in,out] func_data       The function data
    **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(int num_variables,
-                                           int* indices,
+                                           SleqpSparseVec* cons_indices,
                                            double* func_val,
                                            SleqpSparseVec* func_grad,
                                            SleqpSparseVec* cons_val,
@@ -122,13 +124,15 @@ extern "C" {
    * Evaluates the function and its gradient at the current input vector
    *
    * @param[in]     func            The function
+   * @param[in]     cons_indices    The indices of the constraint function
+   *                                to be evaluated
    * @param[out]    func_grad       The function gradient \f$ \nabla f(x) \f$
    * @param[out]    cons_val        The value of the constraint function \f$ c(x) \f$
    * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
    * @param[in,out] func_data       The function data
    **/
   SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
-                                int* indices,
+                                SleqpSparseVec* cons_indices,
                                 double* func_val,
                                 SleqpSparseVec* func_grad,
                                 SleqpSparseVec* cons_val,

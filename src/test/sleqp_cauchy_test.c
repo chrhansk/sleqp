@@ -60,7 +60,7 @@ static SLEQP_RETCODE linfunc_set(SleqpSparseVec* x,
 }
 
 static SLEQP_RETCODE linfunc_eval(int num_variables,
-                                  int* indices,
+                                  SleqpSparseVec* indices,
                                   double* func_val,
                                   SleqpSparseVec* func_grad,
                                   SleqpSparseVec* cons_val,

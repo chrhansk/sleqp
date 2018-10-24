@@ -49,7 +49,7 @@ SLEQP_RETCODE quadconsfunc_set(SleqpSparseVec* x,
 }
 
 SLEQP_RETCODE quadconsfunc_eval(int num_variables,
-                                int* indices,
+                                SleqpSparseVec* cons_indices,
                                 double* func_val,
                                 SleqpSparseVec* func_grad,
                                 SleqpSparseVec* cons_val,

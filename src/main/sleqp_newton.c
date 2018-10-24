@@ -3,6 +3,7 @@
 #include <math.h>
 #include <trlib.h>
 
+#include "sleqp.h"
 #include "sleqp_cmp.h"
 #include "sleqp_iterate.h"
 #include "sleqp_log.h"
@@ -347,70 +348,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE get_violated_constraints(SleqpProblem* problem,
-                                              SleqpIterate* iterate,
-                                              double penalty_parameter,
-                                              SleqpSparseVec* multipliers)
-{
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
-  SleqpSparseVec* v = iterate->cons_val;
-
-  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
-
-  const int dim = v->dim;
-
-  int k_c = 0, k_lb = 0, k_ub = 0;
-
-  while(k_c < v->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
-  {
-    double c_val = 0., lb_val = 0., ub_val = 0.;
-
-    bool valid_v = (k_c < v->nnz);
-    bool valid_lb = (k_lb < lb->nnz);
-    bool valid_ub = (k_ub < ub->nnz);
-
-    int idx = valid_v ? v->indices[k_c] : dim + 1;
-    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
-    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
-
-    if(valid_v && idx == v->indices[k_c])
-    {
-      c_val = v->data[k_c++];
-    }
-
-    if(valid_lb && idx == lb->indices[k_lb])
-    {
-      lb_val = lb->data[k_lb++];
-    }
-
-    if(valid_ub && idx == ub->indices[k_ub])
-    {
-      ub_val = ub->data[k_ub++];
-    }
-
-    if(cons_states[idx] != SLEQP_INACTIVE)
-    {
-      continue;
-    }
-
-    if(sleqp_gt(c_val, ub_val))
-    {
-      SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
-                                          idx,
-                                          penalty_parameter));
-    }
-    else if(sleqp_lt(c_val, lb_val))
-    {
-      SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
-                                          idx,
-                                          -penalty_parameter));
-    }
-
-  }
-
-  return SLEQP_OKAY;
-}
 
 static SLEQP_RETCODE matrix_push_column(SleqpSparseMatrix* matrix,
                                         SleqpSparseVec* vector,
@@ -802,10 +739,12 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   SleqpSparseVec* multipliers = data->multipliers;
 
-  SLEQP_CALL(get_violated_constraints(problem,
-                                      iterate,
-                                      penalty_parameter,
-                                      multipliers));
+  SLEQP_CALL(sleqp_get_violated_constraints(problem,
+                                            iterate->x,
+                                            iterate->cons_val,
+                                            penalty_parameter,
+                                            multipliers,
+                                            iterate->active_set));
 
   SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
                                                       multipliers,

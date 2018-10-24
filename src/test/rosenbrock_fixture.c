@@ -54,7 +54,7 @@ static SLEQP_RETCODE rosenbrock_set(SleqpSparseVec* x,
 }
 
 static SLEQP_RETCODE rosenbrock_eval(int num_variables,
-                                     int* indices,
+                                     SleqpSparseVec* cons_indices,
                                      double* func_val,
                                      SleqpSparseVec* func_grad,
                                      SleqpSparseVec* cons_val,

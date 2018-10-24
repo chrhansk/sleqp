@@ -43,8 +43,6 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    int* cons_val_nnz,
                                    int* cons_jac_nnz)
 {
-
-
   SLEQP_CALL(func->set_value(x,
                              func->num_variables,
                              func_grad_nnz,
@@ -56,16 +54,14 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
 }
 
 SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
-                              int* indices,
+                              SleqpSparseVec* cons_indices,
                               double* func_val,
                               SleqpSparseVec* func_grad,
                               SleqpSparseVec* cons_val,
                               SleqpSparseMatrix* cons_jac)
 {
-
-
   SLEQP_CALL(func->eval(func->num_variables,
-                        indices,
+                        cons_indices,
                         func_val,
                         func_grad,
                         cons_val,
