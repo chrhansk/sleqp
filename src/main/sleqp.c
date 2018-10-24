@@ -105,3 +105,122 @@ SLEQP_RETCODE sleqp_get_violated_constraints(SleqpProblem* problem,
 
   return SLEQP_OKAY;
 }
+
+SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
+                                    SleqpSparseVec* d,
+                                    SleqpSparseVec* l,
+                                    SleqpSparseVec* u,
+                                    double* max_step_length)
+{
+  const int dim = x->dim;
+
+  assert(l->dim == dim);
+  assert(u->dim == dim);
+  assert(d->dim == dim);
+
+  assert(!sleqp_neg(*max_step_length));
+
+  // upper bound
+
+  {
+    int k_x = 0, k_d = 0, k_u = 0;
+
+    while(k_x < x->nnz || k_d < d->nnz || k_u < u->nnz)
+    {
+      bool valid_x = (k_x < x->nnz);
+      bool valid_d = (k_d < d->nnz);
+      bool valid_u = (k_u < u->nnz);
+
+      int i_combined = valid_x ? x->indices[k_x] : dim + 1;
+      i_combined = SLEQP_MIN(i_combined, valid_d ? d->indices[k_d] : dim + 1);
+      i_combined = SLEQP_MIN(i_combined, valid_u ? u->indices[k_u] : dim + 1);
+
+      valid_x = valid_x && x->indices[k_x] == i_combined;
+      valid_d = valid_d && d->indices[k_d] == i_combined;
+      valid_u = valid_u && u->indices[k_u] == i_combined;
+
+      double x_value = valid_x ? x->data[k_x] : 0.;
+      double d_value = valid_d ? d->data[k_d] : 0.;
+      double u_value = valid_u ? u->data[k_u] : 0.;
+
+      double diff = u_value - x_value;
+
+      if((sleqp_pos(d_value) && sleqp_pos(diff)) ||
+         (sleqp_neg(d_value) && sleqp_neg(diff)))
+      {
+        double current_bound = diff / d_value;
+
+        (*max_step_length) = SLEQP_MIN(*max_step_length, current_bound);
+      }
+
+      if(valid_x)
+      {
+        ++k_x;
+      }
+
+      if(valid_d)
+      {
+        ++k_d;
+      }
+
+      if(valid_u)
+      {
+        ++k_u;
+      }
+    }
+  }
+
+  // lower bound
+
+  {
+    int k_x = 0, k_d = 0, k_l = 0;
+
+    while(k_x < x->nnz || k_d < d->nnz || k_l < l->nnz)
+    {
+      bool valid_x = (k_x < x->nnz);
+      bool valid_d = (k_d < d->nnz);
+      bool valid_l = (k_l < l->nnz);
+
+      int i_combined = valid_x ? x->indices[k_x] : dim + 1;
+      i_combined = SLEQP_MIN(i_combined, valid_d ? d->indices[k_d] : dim + 1);
+      i_combined = SLEQP_MIN(i_combined, valid_l ? l->indices[k_l] : dim + 1);
+
+      valid_x = valid_x && x->indices[k_x] == i_combined;
+      valid_d = valid_d && d->indices[k_d] == i_combined;
+      valid_l = valid_l && l->indices[k_l] == i_combined;
+
+      double x_value = valid_x ? x->data[k_x] : 0.;
+      double d_value = valid_d ? d->data[k_d] : 0.;
+      double l_value = valid_l ? l->data[k_l] : 0.;
+
+      double diff = x_value - l_value;
+
+      if((sleqp_pos(d_value) && sleqp_pos(diff)) ||
+         (sleqp_neg(d_value) && sleqp_neg(diff)))
+      {
+        double current_bound = diff / d_value;
+
+        (*max_step_length) = SLEQP_MIN(*max_step_length, current_bound);
+      }
+
+      if(valid_x)
+      {
+        ++k_x;
+      }
+
+      if(valid_d)
+      {
+        ++k_d;
+      }
+
+      if(valid_l)
+      {
+        ++k_l;
+      }
+    }
+  }
+
+  assert(!sleqp_neg(*max_step_length));
+
+  return SLEQP_OKAY;
+}

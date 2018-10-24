@@ -25,6 +25,12 @@ extern "C" {
                                                SleqpSparseVec* multipliers,
                                                SleqpActiveSet* active_set);
 
+  SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
+                                      SleqpSparseVec* direction,
+                                      SleqpSparseVec* var_lb,
+                                      SleqpSparseVec* var_ub,
+                                      double* max_step_length);
+
 
 #ifdef __cplusplus
 }
