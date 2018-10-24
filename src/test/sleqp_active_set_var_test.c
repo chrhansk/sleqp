@@ -50,8 +50,10 @@ void active_set_var_setup()
 
 START_TEST(test_inactive)
 {
-  quadfunc_x->data[0] = 1.5;
-  quadfunc_x->data[1] = 2.5;
+  iterate->x->data[0] = 1.5;
+  iterate->x->data[1] = 2.5;
+
+  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 
   SleqpActiveSet* active_set = iterate->active_set;
 
@@ -75,8 +77,10 @@ END_TEST
 
 START_TEST(test_active)
 {
-  quadfunc_x->data[0] = 1.5;
-  quadfunc_x->data[1] = 2.5;
+  iterate->x->data[0] = 1.5;
+  iterate->x->data[1] = 2.5;
+
+  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 
   SleqpActiveSet* active_set = iterate->active_set;
 
@@ -100,8 +104,10 @@ END_TEST
 
 START_TEST(test_first_active)
 {
-  quadfunc_x->data[0] = 1.;
-  quadfunc_x->data[1] = 2.5;
+  iterate->x->data[0] = 1.;
+  iterate->x->data[1] = 2.5;
+
+  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 
   SleqpActiveSet* active_set = iterate->active_set;
 

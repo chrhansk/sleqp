@@ -119,15 +119,15 @@ void quadfunc_setup()
                                          2,
                                          2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_lb, 0, 1));
-  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_lb, 1, 2));
+  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_lb, 0, 1.));
+  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_lb, 1, 2.));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&quadfunc_var_ub,
                                          2,
                                          2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_ub, 0, 2));
-  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_ub, 1, 3));
+  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_ub, 0, 2.));
+  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_ub, 1, 3.));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&quadfunc_cons_lb,
                                          0,
@@ -142,9 +142,9 @@ void quadfunc_setup()
                                          2));
 
 
-  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_x, 0, 1));
+  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_x, 0, 1.));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_x, 1, 2));
+  ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_x, 1, 2.));
 }
 
 void quadfunc_teardown()

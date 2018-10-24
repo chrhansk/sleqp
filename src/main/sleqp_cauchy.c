@@ -265,13 +265,13 @@ static SLEQP_RETCODE create_var_bounds(SleqpCauchyData* cauchy_data,
       ++k_ub;
     }
 
-    bool valid_x = (k_x < x->nnz);
-    bool valid_ub = (k_ub < ub->nnz);
-    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_x = (k_x < x->nnz) && (i == x->indices[k_x]);
+    bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
+    bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
 
-    double ubval = valid_ub && (i == ub->indices[k_ub]) ? ub->data[k_ub] : 0.;
-    double lbval = valid_lb && (i == lb->indices[k_lb]) ? lb->data[k_lb] : 0.;
-    double xval = valid_x && (i == x->indices[k_x]) ? x->data[k_x] : 0.;
+    double ubval = valid_ub ? ub->data[k_ub] : 0.;
+    double lbval = valid_lb ? lb->data[k_lb] : 0.;
+    double xval = valid_x ? x->data[k_x] : 0.;
 
     cauchy_data->vars_ub[i] = SLEQP_MIN(ubval - xval, trust_radius);
     cauchy_data->vars_lb[i] = SLEQP_MAX(lbval - xval, -trust_radius);
@@ -414,13 +414,13 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
       ++k_ub;
     }
 
-    bool valid_x = (k_x < x->nnz);
-    bool valid_ub = (k_ub < ub->nnz);
-    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_x = (k_x < x->nnz) && (i == x->indices[k_x]);
+    bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
+    bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
 
-    double ubval = valid_ub && (i == ub->indices[k_ub]) ? ub->data[k_ub] : 0.;
-    double lbval = valid_lb && (i == lb->indices[k_lb]) ? lb->data[k_lb] : 0.;
-    double xval = valid_x && (i == x->indices[k_x]) ? x->data[k_x] : 0.;
+    double ubval = valid_ub ? ub->data[k_ub] : 0.;
+    double lbval = valid_lb ? lb->data[k_lb] : 0.;
+    double xval = valid_x ? x->data[k_x] : 0.;
 
     if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER) && sleqp_lt(ubval - xval, trust_radius))
     {
