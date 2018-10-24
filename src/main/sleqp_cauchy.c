@@ -490,7 +490,8 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         SleqpIterate* iterate,
                                         double penalty_parameter,
                                         SleqpSparseVec* hessian_direction,
-                                        SleqpSparseVec* direction)
+                                        SleqpSparseVec* direction,
+                                        double* step_length)
 {
   double exact_merit_value;
 
@@ -559,6 +560,11 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
   }
 
   SLEQP_CALL(sleqp_sparse_vector_scale(hessian_direction, delta));
+
+  if(step_length)
+  {
+    *step_length = delta;
+  }
 
   return SLEQP_OKAY;
 }

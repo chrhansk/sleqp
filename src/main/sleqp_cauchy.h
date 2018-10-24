@@ -42,13 +42,15 @@ extern "C" {
    * @param[in]      penalty_parameter  The penalty parameter \f$ v \f$
    * @param[in,out]  hessian_direction  The product of the Hessian with the initial direction
    * @param[in,out]  direction          The direction
+   * @param[out]     step_length        The computed step length
    *
    **/
   SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                           SleqpIterate* iterate,
                                           double penalty_parameter,
                                           SleqpSparseVec* hessian_product,
-                                          SleqpSparseVec* direction);
+                                          SleqpSparseVec* direction,
+                                          double* step_length);
 
 #ifdef __cplusplus
 }
