@@ -18,14 +18,12 @@ extern "C" {
   SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                        SleqpIterate* iterate);
 
-
-  SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
-                                    SleqpProblem* problem,
-                                    SleqpSparseVec* x);
-
-  SLEQP_RETCODE sleqp_solve(SleqpSolver* solver);
-
-  SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star);
+  SLEQP_RETCODE sleqp_get_violated_constraints(SleqpProblem* problem,
+                                               SleqpSparseVec* x,
+                                               SleqpSparseVec* cons_vals,
+                                               double penalty_parameter,
+                                               SleqpSparseVec* multipliers,
+                                               SleqpActiveSet* active_set);
 
 
 #ifdef __cplusplus
