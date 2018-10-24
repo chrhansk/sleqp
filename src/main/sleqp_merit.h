@@ -63,10 +63,16 @@ extern "C" {
    *
    **/
   SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
-                                     SleqpIterate* iterate,
-                                     SleqpSparseVec* direction,
-                                     double penalty_parameter,
-                                     double* merit_value);
+                                   SleqpIterate* iterate,
+                                   SleqpSparseVec* direction,
+                                   double penalty_parameter,
+                                   double* merit_value);
+
+  SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
+                                            SleqpIterate* iterate,
+                                            SleqpSparseVec* direction,
+                                            double penalty_parameter,
+                                            SleqpSparseVec* gradient);
 
   SLEQP_RETCODE sleqp_merit_data_free(SleqpMeritData** star);
 

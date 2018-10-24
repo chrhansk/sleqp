@@ -263,6 +263,20 @@ double sleqp_sparse_vector_normsq(SleqpSparseVec* vec)
   return normsq;
 }
 
+double sleqp_sparse_vector_norminf(SleqpSparseVec* vec)
+{
+  double norminf = 0.;
+
+  for(int k = 0; k < vec->nnz; ++k)
+  {
+    double value = SLEQP_ABS(vec->data[k]);
+
+    norminf = SLEQP_MAX(value, norminf);
+  }
+
+  return norminf;
+}
+
 SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
                                       SleqpSparseVec* second,
                                       double first_factor,

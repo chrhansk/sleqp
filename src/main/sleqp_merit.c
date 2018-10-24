@@ -13,6 +13,9 @@ struct SleqpMeritData
   SleqpSparseVec* jac_dot_sparse;
   SleqpSparseVec* lin_jac_vals;
 
+  SleqpSparseVec* multipliers;
+  SleqpSparseVec* sparse_cache;
+
   SleqpFunc* func;
 };
 
@@ -45,6 +48,14 @@ SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
                                         0));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->lin_jac_vals,
+                                        problem->num_constraints,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->multipliers,
+                                        problem->num_constraints,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->sparse_cache,
                                         problem->num_constraints,
                                         0));
 
@@ -204,9 +215,42 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
+                                          SleqpIterate* iterate,
+                                          SleqpSparseVec* direction,
+                                          double penalty_parameter,
+                                          SleqpSparseVec* gradient)
+{
+  SleqpProblem* problem = merit_data->problem;
+
+  SleqpSparseVec* x = iterate->x;
+  SleqpSparseVec* cons_vals = iterate->cons_val;
+
+  SLEQP_CALL(sleqp_get_violated_constraints(problem,
+                                            x,
+                                            cons_vals,
+                                            penalty_parameter,
+                                            merit_data->multipliers,
+                                            NULL));
+
+
+
+  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
+                                                      merit_data->multipliers,
+                                                      merit_data->sparse_cache));
+
+  SLEQP_CALL(sleqp_sparse_vector_add(merit_data->sparse_cache, iterate->func_grad, 1., 1., gradient));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_merit_data_free(SleqpMeritData** star)
 {
   SleqpMeritData* merit_data = *star;
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->sparse_cache));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->multipliers));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->lin_jac_vals));
 

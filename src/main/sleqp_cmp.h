@@ -25,7 +25,10 @@ extern "C" {
   bool sleqp_is_infinity(double x);
 
 #define SLEQP_MAX(a,b) (((a)>(b))?(a):(b))
+
 #define SLEQP_MIN(a,b) (((a)<(b))?(a):(b))
+
+#define SLEQP_ABS(a) (((a)>0)?(a):(-(a)))
 
 #ifdef __cplusplus
 }

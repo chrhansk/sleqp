@@ -132,6 +132,8 @@ extern "C" {
 
   double sleqp_sparse_vector_normsq(SleqpSparseVec* vec);
 
+  double sleqp_sparse_vector_norminf(SleqpSparseVec* vec);
+
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
                                  int index);
 
