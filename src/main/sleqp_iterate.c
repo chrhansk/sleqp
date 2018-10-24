@@ -8,10 +8,18 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
+  assert(sleqp_sparse_vector_valid(x));
+
   SleqpIterate* iterate = *star;
 
   int num_variables = problem->num_variables;
   int num_constraints = problem->num_constraints;
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->x,
+                                        num_variables,
+                                        x->nnz));
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(x, iterate->x));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&iterate->func_grad,
                                         num_variables,
@@ -37,8 +45,6 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
                                         num_variables,
                                         0));
 
-  iterate->x = x;
-
   return SLEQP_OKAY;
 }
 
@@ -56,6 +62,8 @@ SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->cons_val));
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->func_grad));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&iterate->x));
 
   sleqp_free(star);
 

@@ -285,8 +285,12 @@ SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
 {
   assert(first->dim == second->dim);
 
-  result->dim = first->dim;
-  result->nnz = 0;
+  assert(first != result);
+  assert(second != result);
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(result));
+
+  SLEQP_CALL(sleqp_sparse_vector_resize(result, first->dim));
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(result, first->nnz + second->nnz));
 

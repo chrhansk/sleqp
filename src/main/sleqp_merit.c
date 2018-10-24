@@ -233,7 +233,10 @@ SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
                                             merit_data->multipliers,
                                             NULL));
 
+  SLEQP_CALL(sleqp_sparse_vector_clear(merit_data->sparse_cache));
 
+  SLEQP_CALL(sleqp_sparse_vector_resize(merit_data->sparse_cache,
+                                        problem->num_variables));
 
   SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
                                                       merit_data->multipliers,

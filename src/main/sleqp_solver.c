@@ -445,7 +445,8 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
 
   SLEQP_CALL(compute_trial_direction(solver, quadratic_reduction));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(iterate->x, solver->trial_direction,
+  SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
+                                     solver->trial_direction,
                                      1., 1.,
                                      solver->trial_iterate->x));
 
