@@ -20,6 +20,13 @@ extern "C" {
 
   typedef enum SLEQP_Retcode SLEQP_RETCODE;
 
+  enum SLEQP_Active_State {SLEQP_INACTIVE = 0,
+                           SLEQP_ACTIVE_LOWER = (1 << 1),
+                           SLEQP_ACTIVE_UPPER = (1 << 2),
+                           SLEQP_ACTIVE = SLEQP_ACTIVE_LOWER | SLEQP_ACTIVE_UPPER};
+
+  typedef enum SLEQP_Active_State SLEQP_ACTIVE_STATE;
+
 #define SLEQP_CALL(x)                                                      \
   do                                                                       \
   {                                                                        \

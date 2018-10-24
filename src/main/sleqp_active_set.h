@@ -14,12 +14,6 @@
 extern "C" {
 #endif
 
-  enum SLEQP_Active_State {SLEQP_INACTIVE = 0,
-                           SLEQP_ACTIVE_LOWER = 1,
-                           SLEQP_ACTIVE_UPPER = 2};
-
-  typedef enum SLEQP_Active_State SLEQP_ACTIVE_STATE;
-
   typedef struct SleqpActiveSet SleqpActiveSet;
 
   SLEQP_RETCODE sleqp_active_set_create(SleqpActiveSet** star,
