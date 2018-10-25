@@ -21,6 +21,27 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
   spx->soplex = new soplex::SoPlex();
   soplex::SoPlex& soplex = *(spx->soplex);
 
+  if(sleqp_log_level() >= SLEQP_LOG_DEBUG)
+  {
+    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
+                       soplex::SoPlex::VERBOSITY_HIGH);
+  }
+  else if(sleqp_log_level() >= SLEQP_LOG_INFO)
+  {
+    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
+                       soplex::SoPlex::VERBOSITY_NORMAL);
+  }
+  else if(sleqp_log_level() >= SLEQP_LOG_WARN)
+  {
+    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
+                       soplex::SoPlex::VERBOSITY_WARNING);
+  }
+  else if(sleqp_log_level() >= SLEQP_LOG_ERROR)
+  {
+    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
+                       soplex::SoPlex::VERBOSITY_ERROR);
+  }
+
   spx->num_variables = num_variables;
   spx->num_constraints = num_constraints;
 

@@ -401,7 +401,7 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
   trlib_int_t maxlanczos = 100;
   trlib_int_t ctl_invariant = 0;
   trlib_int_t refine = 1;
-  trlib_int_t verbose = 1;
+  trlib_int_t verbose = (sleqp_log_level() >= SLEQP_LOG_DEBUG);
   trlib_int_t unicode = 0;
   trlib_flt_t tol_rel_i = -2.0;
   trlib_flt_t tol_abs_i = 0.0;
@@ -698,6 +698,20 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
       break;
     }
 
+    if(sleqp_zero(g_dot_g))
+    {
+      g_dot_g = 0.;
+    }
+
+    if(sleqp_zero(v_dot_g))
+    {
+      v_dot_g = 0.;
+    }
+
+    if(sleqp_zero(p_dot_Hp))
+    {
+      p_dot_Hp = 0.;
+    }
   }
 
   if(ret < 0)
@@ -735,7 +749,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   trust_radius -= initial_norm;
 
-  assert(sleqp_pos(trust_radius));
+  assert(!sleqp_neg(trust_radius));
 
   SleqpSparseVec* multipliers = data->multipliers;
 

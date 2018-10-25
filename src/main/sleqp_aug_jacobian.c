@@ -285,6 +285,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   int total_nnz = problem->num_variables // identity
     + 2*(constraint_nnz + variable_nnz); // cons jac nnz + active variables
 
+  SLEQP_CALL(sleqp_sparse_matrix_clear(jacobian->augmented_matrix));
+
   SLEQP_CALL(sleqp_sparse_matrix_reserve(jacobian->augmented_matrix, total_nnz));
 
   SLEQP_CALL(fill_augmented_jacobian(jacobian,

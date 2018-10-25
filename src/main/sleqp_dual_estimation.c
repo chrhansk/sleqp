@@ -44,6 +44,8 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
 
   SLEQP_CALL(sleqp_sparse_vector_resize(dual_sol, sleqp_aug_jacobian_active_set_size(jacobian)));
 
+  SLEQP_CALL(sleqp_sparse_vector_clear(neg_grad));
+
   SLEQP_CALL(sleqp_sparse_vector_reserve(neg_grad, grad->nnz));
 
   for(int k = 0; k < grad->nnz; ++k)

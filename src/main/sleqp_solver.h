@@ -13,7 +13,8 @@ extern "C" {
                                     SleqpProblem* problem,
                                     SleqpSparseVec* x);
 
-  SLEQP_RETCODE sleqp_solve(SleqpSolver* solver);
+  SLEQP_RETCODE sleqp_solve(SleqpSolver* solver,
+                            int max_num_iterations);
 
   SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star);
 

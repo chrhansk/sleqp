@@ -60,6 +60,22 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
                               SleqpSparseVec* cons_val,
                               SleqpSparseMatrix* cons_jac)
 {
+  if(func_grad)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
+  }
+
+  if(cons_val)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
+  }
+
+  if(cons_jac)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
+  }
+
+
   SLEQP_CALL(func->eval(func->num_variables,
                         cons_indices,
                         func_val,
@@ -82,6 +98,8 @@ SLEQP_RETCODE sleqp_func_hess_product(SleqpFunc* func,
                                       SleqpSparseVec* cons_duals,
                                       SleqpSparseVec* product)
 {
+  SLEQP_CALL(sleqp_sparse_vector_clear(product));
+
   SLEQP_CALL(func->eval_hess_prod(func->num_variables,
                                   func_dual,
                                   direction,

@@ -803,14 +803,33 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_solve(SleqpSolver* solver)
+SLEQP_RETCODE sleqp_solve(SleqpSolver* solver,
+                          int max_num_iterations)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
+  sleqp_log_info("Solving a problem with %d variables, %d constraints",
+                 problem->num_variables,
+                 problem->num_constraints);
+
   SLEQP_CALL(sleqp_set_and_evaluate(problem, iterate));
 
-  SLEQP_CALL(sleqp_perform_iteration(solver));
+  sleqp_log_info("Initial function value: ", solver->iterate->func_val);
+
+  for(int i = 0; i < max_num_iterations; ++i)
+  {
+    SLEQP_CALL(sleqp_perform_iteration(solver));
+
+    sleqp_log_info("Iteration %d, function value: %f",
+                   (i + 1),
+                   solver->iterate->func_val);
+
+    if(should_terminate(solver))
+    {
+      break;
+    }
+  }
 
   return SLEQP_OKAY;
 }

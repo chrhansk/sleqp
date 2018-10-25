@@ -26,7 +26,7 @@ START_TEST(test_unconstrained_cauchy_direction)
                                   problem,
                                   rosenbrock_x));
 
-  ASSERT_CALL(sleqp_solve(solver));
+  ASSERT_CALL(sleqp_solve(solver, 100));
 
   ASSERT_CALL(sleqp_solver_free(&solver));
 
