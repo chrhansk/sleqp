@@ -76,6 +76,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_dual_estimation_compute(estimation_data,
                                             iterate,
+                                            NULL,
                                             jacobian));
 
   SleqpSparseVec* vars_dual = iterate->vars_dual;

@@ -1,6 +1,7 @@
 #include "sleqp_solver.h"
 
 #include <assert.h>
+#include <math.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
@@ -54,6 +55,7 @@ struct SleqpSolver
   SleqpAugJacobian* aug_jacobian;
 
   SleqpDualEstimationData* estimation_data;
+  SleqpSparseVec* estimation_residuum;
 
   SleqpMeritData* merit_data;
 
@@ -64,6 +66,10 @@ struct SleqpSolver
   SleqpSparseVec* soc_direction;
 
   SleqpSparseVec* soc_corrected_direction;
+
+  SleqpSparseVec* cons_diff;
+
+  // parameters, adjusted throughout...
 
   double trust_radius;
 
@@ -152,6 +158,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_dual_estimation_data_create(&solver->estimation_data,
                                                problem));
 
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->estimation_residuum,
+                                        num_variables,
+                                        0));
+
   SLEQP_CALL(sleqp_merit_data_create(&solver->merit_data,
                                      problem,
                                      problem->func));
@@ -169,6 +179,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->soc_corrected_direction,
                                         num_variables,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->cons_diff,
+                                        num_constraints,
                                         0));
 
   // TODO: Set this to something different?!
@@ -465,6 +479,110 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+static bool should_terminate(SleqpSolver* solver)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpIterate* iterate = solver->iterate;
+
+  const double optimality_residuum = sleqp_sparse_vector_norminf(solver->estimation_residuum);
+
+  double multiplier_norm = 0.;
+
+  {
+    multiplier_norm += sleqp_sparse_vector_normsq(iterate->cons_dual);
+    multiplier_norm += sleqp_sparse_vector_normsq(iterate->vars_dual);
+
+    multiplier_norm = sqrt(multiplier_norm);
+  }
+
+  double slackness_residuum = 0.;
+
+  {
+    SleqpSparseVec* cons_val = iterate->cons_val;
+    SleqpSparseVec* cons_dual = iterate->cons_dual;
+
+    int k_v = 0, k_d = 0;
+
+    while(k_v < cons_val->nnz || k_d < cons_dual->nnz)
+    {
+      bool valid_val = (k_v < cons_val->nnz);
+      bool valid_dual = (k_d < cons_dual->nnz);
+
+      int i_first = valid_val ? cons_val->indices[k_v] : cons_val->dim + 1;
+      int i_second = valid_dual ? cons_dual->indices[k_d] : cons_dual->dim + 1;
+
+      int i_combined = SLEQP_MIN(i_first, i_second);
+
+      valid_val = valid_val && i_first == i_combined;
+      valid_dual = valid_dual && i_second == i_combined;
+
+      double value = valid_val ? cons_val->data[k_v] : 0.;
+      double dual = valid_dual ? cons_dual->data[k_d] : 0.;
+
+      double current_residuum = value * dual;
+
+      current_residuum = SLEQP_ABS(current_residuum);
+
+      slackness_residuum = SLEQP_MAX(current_residuum, slackness_residuum);
+
+      if(valid_val)
+      {
+        ++k_v;
+      }
+
+      if(valid_dual)
+      {
+        ++k_d;
+      }
+    }
+  }
+
+  const double optimality_tolerance = 1e-6;
+
+  {
+    double residuum = SLEQP_MAX(optimality_residuum, slackness_residuum);
+
+    if(residuum >= optimality_tolerance * (1 + multiplier_norm))
+    {
+      return false;
+    }
+  }
+
+  double cons_residuum = 0.;
+
+  {
+    SleqpSparseVec* cons_diff = solver->cons_diff;
+
+    SLEQP_CALL(sleqp_sparse_vector_add(problem->cons_ub,
+                                       iterate->cons_val,
+                                       -1.,
+                                       1.,
+                                       cons_diff));
+
+    for(int k = 0; k < cons_diff->nnz; ++k)
+    {
+      double current_residuum = SLEQP_MAX(cons_diff->data[k], 0.);
+
+      cons_residuum = SLEQP_MAX(cons_residuum, current_residuum);
+    }
+
+    SLEQP_CALL(sleqp_sparse_vector_add(problem->cons_lb,
+                                       iterate->cons_val,
+                                       1.,
+                                       -1.,
+                                       cons_diff));
+
+    for(int k = 0; k < cons_diff->nnz; ++k)
+    {
+      double current_residuum = SLEQP_MAX(cons_diff->data[k], 0.);
+
+      cons_residuum = SLEQP_MAX(cons_residuum, current_residuum);
+    }
+  }
+
+  return (cons_residuum < optimality_tolerance * (1 + multiplier_norm));
+}
+
 static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                          double* quadratic_reduction)
 {
@@ -497,6 +615,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
                                              iterate,
+                                             solver->estimation_residuum,
                                              solver->aug_jacobian));
 
     SLEQP_CALL(sleqp_func_hess_product(problem->func,
@@ -699,6 +818,7 @@ SLEQP_RETCODE sleqp_solve(SleqpSolver* solver)
 SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
 {
   SleqpSolver* solver = *star;
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cons_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_corrected_direction));
 
@@ -709,6 +829,8 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->linear_merit_gradient));
 
   SLEQP_CALL(sleqp_merit_data_free(&solver->merit_data));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->estimation_residuum));
 
   SLEQP_CALL(sleqp_dual_estimation_data_free(&solver->estimation_data));
 

@@ -162,6 +162,14 @@ bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
     bool valid_first = (k_first < first->nnz);
     bool valid_second = (k_second < second->nnz);
 
+    int i_first = valid_first ? first->indices[k_first] : first->dim + 1;
+    int i_second = valid_second ? second->indices[k_second] : second->dim + 1;
+
+    int i_combined = SLEQP_MIN(i_first, i_second);
+
+    valid_first = valid_first && i_first == i_combined;
+    valid_second = valid_second && i_second == i_combined;
+
     double first_value = valid_first ? first->data[k_first] : 0.;
     double second_value = valid_second ? second->data[k_second] : 0.;
 

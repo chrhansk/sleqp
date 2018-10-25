@@ -32,6 +32,7 @@ SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
 
 SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_data,
                                             SleqpIterate* iterate,
+                                            SleqpSparseVec* residuum,
                                             SleqpAugJacobian* jacobian)
 {
   SleqpProblem* problem = estimation_data->problem;
@@ -52,7 +53,7 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
 
   SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
                                            neg_grad,
-                                           NULL,
+                                           residuum,
                                            dual_sol));
 
   {

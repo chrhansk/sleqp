@@ -110,6 +110,7 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_dual_estimation_compute(estimation_data,
                                             iterate,
+                                            NULL,
                                             jacobian));
 
   ASSERT_CALL(sleqp_sparse_vector_fprintf(iterate->cons_dual, stdout));
