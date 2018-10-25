@@ -57,12 +57,15 @@ START_TEST(test_inactive)
 
   SleqpActiveSet* active_set = iterate->active_set;
 
-  double trust_radius = 0.25, penalty = 1.;
+  double trust_radius = 0.25, penalty_parameter = 1.;
 
-  ASSERT_CALL(sleqp_cauchy_compute_direction(cauchy_data,
-                                             iterate,
-                                             penalty,
-                                             trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
+                                       iterate,
+                                       trust_radius));
+
+  ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
+                                 iterate->func_grad,
+                                 penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
                                           iterate,
@@ -84,12 +87,15 @@ START_TEST(test_active)
 
   SleqpActiveSet* active_set = iterate->active_set;
 
-  double trust_radius = 1., penalty = 1.;
+  double trust_radius = 1., penalty_parameter = 1.;
 
-  ASSERT_CALL(sleqp_cauchy_compute_direction(cauchy_data,
-                                             iterate,
-                                             penalty,
-                                             trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
+                                       iterate,
+                                       trust_radius));
+
+  ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
+                                 iterate->func_grad,
+                                 penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
                                           iterate,
@@ -111,12 +117,15 @@ START_TEST(test_first_active)
 
   SleqpActiveSet* active_set = iterate->active_set;
 
-  double trust_radius = 0.25, penalty = 1.;
+  double trust_radius = 0.25, penalty_parameter = 1.;
 
-  ASSERT_CALL(sleqp_cauchy_compute_direction(cauchy_data,
-                                             iterate,
-                                             penalty,
-                                             trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
+                                       iterate,
+                                       trust_radius));
+
+  ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
+                                 iterate->func_grad,
+                                 penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
                                           iterate,

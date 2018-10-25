@@ -24,23 +24,40 @@ extern "C" {
                                             int num_constraints);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_SOLVE)(void* lp_data,
-                                           double* objective,
-                                           SleqpSparseMatrix* matrix,
-                                           double* cons_lb,
-                                           double* cons_ub,
-                                           double* vars_lb,
-                                           double* vars_ub);
+                                           int num_variables,
+                                           int num_constraints);
+
+  typedef SLEQP_RETCODE (*SLEQP_LPI_SET_BOUNDS)(void* lp_data,
+                                                int num_variables,
+                                                int num_constraints,
+                                                double* cons_lb,
+                                                double* cons_ub,
+                                                double* vars_lb,
+                                                double* vars_ub);
+
+  typedef SLEQP_RETCODE (*SLEQP_LPI_SET_COEFFICIENTS)(void* lp_data,
+                                                      int num_variables,
+                                                      int num_constraints,
+                                                      SleqpSparseMatrix* cons_matrix);
+
+  typedef SLEQP_RETCODE (*SLEQP_LPI_SET_OBJECTIVE)(void* lp_data,
+                                                   int num_variables,
+                                                   int num_constraints,
+                                                   double* objective);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_GET_SOLUTION)(void* lp_data,
                                                   int num_variables,
+                                                  int num_constraints,
                                                   double* objective_value,
                                                   double* solution_values);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_GET_VARSTATS)(void* lp_data,
                                                   int num_variables,
+                                                  int num_constraints,
                                                   SLEQP_BASESTAT* variable_stats);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_GET_CONSSTATS)(void* lp_data,
+                                                   int num_variables,
                                                    int num_constraints,
                                                    SLEQP_BASESTAT* constraintstats);
 

@@ -38,23 +38,26 @@ START_TEST(test_simplex_solve)
 
   cons_matrix->nnz = 2;
 
-  //ASSERT_CALL(sleqp_sparse_matrix_fprintf(cons_matrix, stdout));
+  ASSERT_CALL(sleqp_lpi_set_bounds(lp_interface,
+                                   cons_lb,
+                                   cons_ub,
+                                   vars_lb,
+                                   vars_ub));
 
-  ASSERT_CALL(sleqp_lpi_solve(lp_interface,
-                                       objective,
-                                       cons_matrix,
-                                       cons_lb,
-                                       cons_ub,
-                                       vars_lb,
-                                       vars_ub));
+  ASSERT_CALL(sleqp_lpi_set_coefficients(lp_interface,
+                                         cons_matrix));
+
+  ASSERT_CALL(sleqp_lpi_set_objective(lp_interface,
+                                      objective));
+
+  ASSERT_CALL(sleqp_lpi_solve(lp_interface));
 
   double solution[] = {-1, -1};
   double objective_value = 0;
 
   ASSERT_CALL(sleqp_lpi_get_solution(lp_interface,
-                                              num_variables,
-                                              &objective_value,
-                                              solution));
+                                     &objective_value,
+                                     solution));
 
   ck_assert(sleqp_eq(objective_value, -1.));
 
@@ -64,8 +67,7 @@ START_TEST(test_simplex_solve)
   SLEQP_BASESTAT variable_stats[] = {0, 0};
 
   ASSERT_CALL(sleqp_lpi_get_varstats(lp_interface,
-                                              num_variables,
-                                              variable_stats));
+                                     variable_stats));
 
   ck_assert(variable_stats[0] == SLEQP_BASESTAT_BASIC);
   ck_assert(variable_stats[1] == SLEQP_BASESTAT_LOWER);

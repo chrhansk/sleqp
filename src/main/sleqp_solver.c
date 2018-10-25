@@ -174,7 +174,99 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   // TODO: Set this to something different?!
   solver->trust_radius = 1.;
   solver->lp_trust_radius = 1.;
-  solver->penalty_parameter = 1.;
+
+  // suggested by authors
+  solver->penalty_parameter = 10.;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpIterate* iterate = solver->iterate;
+
+  int num_constraints = problem->num_constraints;
+
+  const double violation_tolerance = 1e-8;
+  const double min_decrease = .1;
+  const int max_increases = 100;
+
+  const double penalty_increase = 10.;
+
+  if(num_constraints == 0)
+  {
+    return SLEQP_OKAY;
+  }
+
+  SleqpCauchyData* cauchy_data = solver->cauchy_data;
+
+  double current_violation;
+
+  sleqp_cauchy_get_violation(cauchy_data, &current_violation);
+
+  current_violation /= num_constraints;
+
+  if(current_violation <= violation_tolerance)
+  {
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
+                                NULL,
+                                solver->penalty_parameter));
+
+  double inf_violation;
+
+  sleqp_cauchy_get_violation(cauchy_data, &inf_violation);
+
+  inf_violation /= num_constraints;
+
+  if(inf_violation <= violation_tolerance)
+  {
+    for(int i = 0; i < max_increases; ++i)
+    {
+      solver->penalty_parameter *= penalty_increase;
+
+      SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
+                                    iterate->func_grad,
+                                    solver->penalty_parameter));
+
+      double next_violation;
+
+      sleqp_cauchy_get_violation(cauchy_data, &next_violation);
+
+      next_violation /= num_constraints;
+
+      if(next_violation <= violation_tolerance)
+      {
+        return SLEQP_OKAY;
+      }
+    }
+  }
+  else
+  {
+    for(int i = 0; i < max_increases; ++i)
+    {
+      solver->penalty_parameter *= penalty_increase;
+
+      SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
+                                    iterate->func_grad,
+                                    solver->penalty_parameter));
+
+      double next_violation;
+
+      sleqp_cauchy_get_violation(cauchy_data, &next_violation);
+
+      next_violation /= num_constraints;
+
+      if((current_violation - next_violation) >= min_decrease*(current_violation - inf_violation))
+      {
+        return SLEQP_OKAY;
+      }
+    }
+  }
+
 
   return SLEQP_OKAY;
 }
@@ -383,38 +475,42 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
 
   // compute Cauchy direction / step and dual estimation
   {
-  SLEQP_CALL(sleqp_cauchy_compute_direction(solver->cauchy_data,
-                                            iterate,
-                                            solver->penalty_parameter,
-                                            solver->lp_trust_radius));
 
-  SLEQP_CALL(sleqp_cauchy_get_active_set(solver->cauchy_data,
-                                         iterate,
-                                         solver->lp_trust_radius));
-
-  SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
-                                            iterate));
-
-  SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
+    SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
                                         iterate,
-                                        solver->cauchy_direction));
+                                        solver->lp_trust_radius));
 
-  SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
+    SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
+                                  iterate->func_grad,
+                                  solver->penalty_parameter));
+
+    SLEQP_CALL(sleqp_cauchy_get_active_set(solver->cauchy_data,
                                            iterate,
-                                           solver->aug_jacobian));
+                                           solver->lp_trust_radius));
 
-  SLEQP_CALL(sleqp_func_hess_product(problem->func,
-                                     &one,
-                                     solver->cauchy_direction,
-                                     iterate->cons_dual,
-                                     solver->cauchy_hessian_direction));
+    SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
+                                              iterate));
 
-  SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
-                                       iterate,
-                                       solver->penalty_parameter,
-                                       solver->cauchy_hessian_direction,
-                                       solver->cauchy_step,
-                                       &solver->cauchy_step_length));
+    SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
+                                          iterate,
+                                          solver->cauchy_direction));
+
+    SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
+                                             iterate,
+                                             solver->aug_jacobian));
+
+    SLEQP_CALL(sleqp_func_hess_product(problem->func,
+                                       &one,
+                                       solver->cauchy_direction,
+                                       iterate->cons_dual,
+                                       solver->cauchy_hessian_direction));
+
+    SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
+                                         iterate,
+                                         solver->penalty_parameter,
+                                         solver->cauchy_hessian_direction,
+                                         solver->cauchy_step,
+                                         &solver->cauchy_step_length));
   }
 
   // compute Newton step
@@ -560,8 +656,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
     SLEQP_CALL(sleqp_set_and_evaluate(problem, trial_iterate));
   }
 
-  // update trust radii
-
+  // update trust radii, penalty parameter
   {
     SLEQP_CALL(update_trust_radius(reduction_ratio,
                                    trial_step_accepted,
@@ -576,6 +671,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
                                       cauchy_direction_norm,
                                       solver->cauchy_step_length,
                                       &(solver->lp_trust_radius)));
+
+    SLEQP_CALL(update_penalty_parameter(solver));
   }
 
   // update current iterate

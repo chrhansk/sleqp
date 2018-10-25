@@ -19,10 +19,13 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star);
 
-  SLEQP_RETCODE sleqp_cauchy_compute_direction(SleqpCauchyData* cauchy_data,
-                                               SleqpIterate* iterate,
-                                               double penalty,
-                                               double trust_radius);
+  SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchyData* cauchy_data,
+                                         SleqpIterate* iterate,
+                                         double trust_radius);
+
+  SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
+                                   SleqpSparseVec* gradient,
+                                   double penalty);
 
   SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
                                             SleqpIterate* iterate,
@@ -31,6 +34,14 @@ extern "C" {
   SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
                                            SleqpIterate* iterate,
                                            SleqpSparseVec* direction);
+
+  /**
+   * Gets the total constraint vioation of the solution at the given iterate.
+   * The total violation is defined as the sum over the violations of all
+   * violated constraints.
+   **/
+  SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchyData* cauchy_data,
+                                           double* violation);
 
   /**
    * Computes the Cauchy step by (approximately) minimizing the

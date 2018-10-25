@@ -180,7 +180,7 @@ START_TEST(test_unconstrained_cauchy_direction)
   SleqpSparseVec* direction;
   SleqpCauchyData* cauchy_data;
 
-  double penalty = 1., trust_radius = 1.5;
+  double penalty_parameter = 1., trust_radius = 1.5;
 
 
   ASSERT_CALL(sleqp_problem_create(&problem,
@@ -209,10 +209,13 @@ START_TEST(test_unconstrained_cauchy_direction)
                                        problem,
                                        lp_interface));
 
-  ASSERT_CALL(sleqp_cauchy_compute_direction(cauchy_data,
-                                             iterate,
-                                             penalty,
-                                             trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
+                                       iterate,
+                                       trust_radius));
+
+  ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
+                                 iterate->func_grad,
+                                 penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data,
                                          iterate,

@@ -25,7 +25,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   SleqpDualEstimationData* estimation_data;
 
-  double penalty = 1., trust_radius = 0.1;
+  double penalty_parameter = 1., trust_radius = 0.1;
 
 
   ASSERT_CALL(sleqp_problem_create(&problem,
@@ -60,10 +60,13 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_dual_estimation_data_create(&estimation_data, problem));
 
-  ASSERT_CALL(sleqp_cauchy_compute_direction(cauchy_data,
-                                             iterate,
-                                             penalty,
-                                             trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
+                                       iterate,
+                                       trust_radius));
+
+  ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
+                                 iterate->func_grad,
+                                 penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
                                           iterate,
