@@ -39,10 +39,6 @@ add_library(trlib INTERFACE IMPORTED)
 
 find_package(Doxygen)
 
-if(DOXYGEN_FOUND)
-  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/doc")
-endif()
-
 enable_testing()
 set(ENABLE_UNIT_TESTS TRUE)
 

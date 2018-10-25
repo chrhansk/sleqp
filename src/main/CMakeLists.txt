@@ -42,6 +42,7 @@ target_link_libraries(sleqp
   m)
 
 if(DOXYGEN_FOUND)
+  set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/doc")
   set(DOXYGEN_USE_MATHJAX YES)
   doxygen_add_docs(doc ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
