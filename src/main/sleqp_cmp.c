@@ -9,6 +9,11 @@ double sleqp_infinity()
   return 1e100;
 }
 
+bool sleqp_is_inf(double value)
+{
+  return value / 2. >= sleqp_infinity();
+}
+
 bool sleqp_eq(double x,
               double y)
 {
