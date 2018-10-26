@@ -63,11 +63,17 @@ static SLEQP_RETCODE rosenbrock_eval(int num_variables,
 {
   RosenbrockData* data = (RosenbrockData*) func_data;
 
-  double xsq = sq(data->x[0]);
+  double x = data->x[0];
+  double y = data->x[1];
+
+  double a = data->a;
+  double b = data->b;
+
+  double xsq = sq(x);
 
   if(func_val)
   {
-    *func_val = sq(data->a - data->x[0]) + data->b* sq(data->x[1] - xsq);
+    *func_val = sq(a - x) + b * sq(y - xsq);
   }
 
   if(func_grad)
@@ -75,9 +81,9 @@ static SLEQP_RETCODE rosenbrock_eval(int num_variables,
     assert(func_grad->nnz == 0);
     assert(func_grad->dim == 2);
 
-    double gradx = 2*(data->a - data->x[0]) - 4*data->b*data->x[0]*(data->x[1] - xsq);
+    double gradx = (4.*b*x*(xsq - y)) + 2.*x - 2.*a;
 
-    double grady = 2 * data->b*(data->x[1] - xsq);
+    double grady = -2.*b*(xsq - y);
 
     SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
                                         0,
@@ -133,8 +139,8 @@ void rosenbrock_setup()
 
   ASSERT_CALL(sleqp_malloc(&func_data));
 
-  func_data->a = 1;
-  func_data->b = 100;
+  func_data->a = 1.;
+  func_data->b = 100.;
 
   ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
 
