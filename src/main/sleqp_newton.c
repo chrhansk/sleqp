@@ -751,39 +751,48 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   assert(!sleqp_neg(trust_radius));
 
-  SleqpSparseVec* multipliers = data->multipliers;
+  if(!sleqp_zero(trust_radius))
+  {
 
-  SLEQP_CALL(sleqp_get_violated_constraints(problem,
-                                            iterate->x,
-                                            iterate->cons_val,
-                                            penalty_parameter,
-                                            multipliers,
-                                            iterate->active_set));
+    SleqpSparseVec* multipliers = data->multipliers;
 
-  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
-                                                      multipliers,
-                                                      data->sparse_cache));
+    SLEQP_CALL(sleqp_get_violated_constraints(problem,
+                                              iterate->x,
+                                              iterate->cons_val,
+                                              penalty_parameter,
+                                              multipliers,
+                                              iterate->active_set));
+
+    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
+                                                        multipliers,
+                                                        data->sparse_cache));
 
 
-  SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
-                                     iterate->func_grad,
-                                     1.,
-                                     1.,
-                                     data->gradient));
+    SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
+                                       iterate->func_grad,
+                                       1.,
+                                       1.,
+                                       data->gradient));
 
-  SLEQP_CALL(trust_region_step(data,
-                               iterate,
-                               jacobian,
-                               newton_step,
-                               trust_radius));
+    SLEQP_CALL(trust_region_step(data,
+                                 iterate,
+                                 jacobian,
+                                 newton_step,
+                                 trust_radius));
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(newton_step, data->sparse_cache));
+    SLEQP_CALL(sleqp_sparse_vector_copy(newton_step, data->sparse_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
-                                     data->initial_solution,
-                                     1.,
-                                     1.,
-                                     newton_step));
+    SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
+                                       data->initial_solution,
+                                       1.,
+                                       1.,
+                                       newton_step));
+
+  }
+  else
+  {
+    SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_solution, newton_step));
+  }
 
   return SLEQP_OKAY;
 }
