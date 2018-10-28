@@ -160,6 +160,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(SleqpSparseMatrix* matrix
     col_size += (matrix->cols[col + 1] - matrix->cols[col]) > 0;
   }
 
+  SLEQP_CALL(sleqp_sparse_vector_clear(result));
   SLEQP_CALL(sleqp_sparse_vector_reserve(result, col_size));
 
   for(int col = 0; col < matrix->num_cols; ++col)
