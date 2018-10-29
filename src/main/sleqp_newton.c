@@ -12,6 +12,7 @@
 struct SleqpNewtonData
 {
   SleqpProblem* problem;
+  SleqpParams* params;
 
   // trlib-related data:
   trlib_int_t trlib_maxiter;
@@ -112,13 +113,15 @@ static SLEQP_RETCODE trlib_get_status_string(int value,
 }
 
 SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
-                                       SleqpProblem* problem)
+                                       SleqpProblem* problem,
+                                       SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpNewtonData* data = *star;
 
   data->problem = problem;
+  data->params = params;
 
   data->trlib_maxiter = 10 * problem->num_variables;
 
@@ -221,6 +224,8 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   SleqpSparseVec* initial_rhs = data->initial_rhs;
   SleqpActiveSet* active_set = iterate->active_set;
 
+  const double eps = sleqp_params_get_eps(data->params);
+
   SLEQP_CALL(sleqp_sparse_vector_clear(initial_rhs));
 
   SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, sleqp_aug_jacobian_active_set_size(jacobian)));
@@ -236,9 +241,9 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
     SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(active_set);
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_ub, -1., 1., upper_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_ub, -1., 1., eps, upper_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_lb, -1., 1., lower_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_lb, -1., 1., eps, lower_diff));
 
     SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, SLEQP_MAX(lower_diff->nnz, upper_diff->nnz)));
 
@@ -296,9 +301,9 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
     SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(active_set);
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_ub, -1., 1., upper_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_ub, -1., 1., eps, upper_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_lb, -1., 1., lower_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_lb, -1., 1., eps, lower_diff));
 
     SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, SLEQP_MAX(lower_diff->nnz, upper_diff->nnz)));
 
@@ -420,7 +425,9 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
 
   //trlib_flt_t zero = TRLIB_EPS*TRLIB_EPS;
 
-  trlib_flt_t zero = sleqp_eps();
+  const double eps = sleqp_params_get_eps(data->params);
+
+  trlib_flt_t zero = eps;
 
   trlib_int_t iter = 0;
 
@@ -525,11 +532,15 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
     {
       SLEQP_CALL(sleqp_sparse_vector_from_raw(data->h,
                                               fwork + data->trlib_h_pointer,
-                                              iter + 1));
+                                              iter + 1,
+                                              eps));
 
       SLEQP_CALL(sleqp_sparse_matrix_vector_product(data->Q, data->h, data->dense_cache));
 
-      SLEQP_CALL(sleqp_sparse_vector_from_raw(newton_step, data->dense_cache, problem->num_variables));
+      SLEQP_CALL(sleqp_sparse_vector_from_raw(newton_step,
+                                              data->dense_cache,
+                                              problem->num_variables,
+                                              eps));
 
 
       break;
@@ -542,6 +553,7 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
                                                   data->p,
                                                   1.,
                                                   flt1,
+                                                  eps,
                                                   data->sparse_cache));
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, newton_step));
@@ -567,7 +579,12 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->g, data->gm));
 
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->g, data->Hp, 1., flt1, data->sparse_cache));
+        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->g,
+                                                  data->Hp,
+                                                  1.,
+                                                  flt1,
+                                                  eps,
+                                                  data->sparse_cache));
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->g));
 
@@ -585,9 +602,19 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
       }
       if(ityp == TRLIB_CLT_L)
       {
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->Hp, data->g, 1., flt1, data->sparse_cache));
+        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->Hp,
+                                                  data->g,
+                                                  1.,
+                                                  flt1,
+                                                  eps,
+                                                  data->sparse_cache));
 
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache, data->gm, 1., flt2, newton_step));
+        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache,
+                                                  data->gm,
+                                                  1.,
+                                                  flt2,
+                                                  eps,
+                                                  newton_step));
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->g, data->gm));
 
@@ -615,16 +642,26 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
                                          data->multipliers,
                                          data->sparse_cache));
 
-      SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache, data->gradient, data->l));
+      SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache, data->gradient, eps, data->l));
 
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->l, newton_step, 1., flt1, data->h_lhs));
+      SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->l,
+                                                newton_step,
+                                                1.,
+                                                flt1,
+                                                eps,
+                                                data->h_lhs));
 
       SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
                                                data->l,
                                                data->sparse_cache,
                                                NULL));
 
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache, newton_step, 1., flt1, data->h_rhs));
+      SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache,
+                                                newton_step,
+                                                1.,
+                                                flt1,
+                                                eps,
+                                                data->h_rhs));
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->h_lhs, data->h_rhs, &v_dot_g));
 
@@ -643,7 +680,12 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
       {
         assert(flt1 == -1.);
 
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->v, data->p, flt1, flt2, data->sparse_cache));
+        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->v,
+                                                  data->p,
+                                                  flt1,
+                                                  flt2,
+                                                  eps,
+                                                  data->sparse_cache));
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->p));
 
@@ -666,7 +708,12 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
 
         assert(iter == data->Q->num_cols);
 
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->v, data->p, flt1, flt2, data->sparse_cache));
+        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->v,
+                                                  data->p,
+                                                  flt1,
+                                                  flt2,
+                                                  eps,
+                                                  data->sparse_cache));
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->p));
 
@@ -754,6 +801,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 {
   SleqpProblem* problem = data->problem;
 
+  const double eps = sleqp_params_get_eps(data->params);
+
   SLEQP_CALL(get_initial_rhs(data, iterate, jacobian));
 
   SLEQP_CALL(sleqp_aug_jacobian_min_norm_solution(jacobian,
@@ -764,9 +813,9 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   trust_radius -= initial_norm;
 
-  assert(!sleqp_neg(trust_radius));
+  assert(!sleqp_neg(trust_radius, eps));
 
-  if(!sleqp_zero(trust_radius))
+  if(!sleqp_zero(trust_radius, eps))
   {
 
     SleqpSparseVec* multipliers = data->multipliers;
@@ -776,15 +825,18 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                               iterate->cons_val,
                                               penalty_parameter,
                                               multipliers,
-                                              iterate->active_set));
+                                              iterate->active_set,
+                                              eps));
 
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
                                                         multipliers,
+                                                        eps,
                                                         data->sparse_cache));
 
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
                                        iterate->func_grad,
+                                       eps,
                                        data->gradient));
 
     SLEQP_CALL(trust_region_step(data,
@@ -797,6 +849,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
                                        data->initial_solution,
+                                       eps,
                                        newton_step));
 
   }

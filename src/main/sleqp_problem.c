@@ -7,6 +7,7 @@
 
 static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
                                    SleqpSparseVec* ub,
+                                   double eps,
                                    SleqpSparseVec** adj_lbstar,
                                    SleqpSparseVec** adj_ubstar)
 {
@@ -48,7 +49,7 @@ static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
       ub_val = ub->data[k_ub];
     }
 
-    if(sleqp_gt(lb_val, ub_val))
+    if(sleqp_gt(lb_val, ub_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_free(adj_lbstar));
 
@@ -78,6 +79,7 @@ static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
 
 SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                    SleqpFunc* func,
+                                   SleqpParams* params,
                                    SleqpSparseVec* var_lb,
                                    SleqpSparseVec* var_ub,
                                    SleqpSparseVec* cons_lb,
@@ -103,6 +105,7 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(adjust_bounds(var_lb,
                            var_ub,
+                           sleqp_params_get_eps(params),
                            &adj_lb,
                            &adj_ub));
 
@@ -111,6 +114,7 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(adjust_bounds(cons_lb,
                            cons_ub,
+                           sleqp_params_get_eps(params),
                            &adj_lb,
                            &adj_ub));
 

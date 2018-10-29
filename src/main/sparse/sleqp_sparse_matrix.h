@@ -60,6 +60,7 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(SleqpSparseMatrix* matrix,
                                                          SleqpSparseVec* vector,
+                                                         double eps,
                                                          SleqpSparseVec* result);
 
   double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,

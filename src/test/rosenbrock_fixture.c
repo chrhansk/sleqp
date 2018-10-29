@@ -107,9 +107,13 @@ static SLEQP_RETCODE rosenbrock_hess_prod(int num_variables,
 {
   RosenbrockData* data = (RosenbrockData*) func_data;
 
+  double x = data->x[0];
+  double y = data->x[1];
+
   double b = data->b;
 
-  double* x = data->x;
+  double xsq = sq(x);
+
   double d[2];
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, d));
@@ -120,11 +124,12 @@ static SLEQP_RETCODE rosenbrock_hess_prod(int num_variables,
 
     SLEQP_CALL(sleqp_sparse_vector_push(product,
                                         0,
-                                        (8*b*sq(x[0]) + 4*b*(sq(x[0]) - x[1]) + 2)*d[0] -4*b*x[0]*d[1]));
+                                        (8.*b*xsq + 4.*b*(xsq - y) + 2.)*d[0]
+                                        - (4.*b*x)*d[1]));
 
     SLEQP_CALL(sleqp_sparse_vector_push(product,
                                         1,
-                                        -4*b*x[0]*d[0] + 2*b*d[1]));
+                                        (-4.*b*x)*d[0] + (2.*b)*d[1]));
 
 
   }

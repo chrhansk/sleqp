@@ -44,7 +44,8 @@ SLEQP_RETCODE sleqp_get_violated_constraints(SleqpProblem* problem,
                                              SleqpSparseVec* cons_vals,
                                              double penalty_parameter,
                                              SleqpSparseVec* multipliers,
-                                             SleqpActiveSet* active_set)
+                                             SleqpActiveSet* active_set,
+                                             double eps)
 {
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
@@ -88,13 +89,13 @@ SLEQP_RETCODE sleqp_get_violated_constraints(SleqpProblem* problem,
       continue;
     }
 
-    if(sleqp_gt(c_val, ub_val))
+    if(sleqp_gt(c_val, ub_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
                                           penalty_parameter));
     }
-    else if(sleqp_lt(c_val, lb_val))
+    else if(sleqp_lt(c_val, lb_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
@@ -118,7 +119,7 @@ SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
   assert(u->dim == dim);
   assert(d->dim == dim);
 
-  assert(!sleqp_neg(*max_step_length));
+  assert((*max_step_length) > 0.);
 
   // upper bound
 
@@ -145,8 +146,8 @@ SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
 
       double diff = u_value - x_value;
 
-      if((sleqp_pos(d_value) && sleqp_pos(diff)) ||
-         (sleqp_neg(d_value) && sleqp_neg(diff)))
+      if((d_value > 0. && diff > 0.) ||
+         (d_value < 0. && diff < 0.))
       {
         double current_bound = diff / d_value;
 
@@ -195,8 +196,8 @@ SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
 
       double diff = x_value - l_value;
 
-      if((sleqp_pos(d_value) && sleqp_pos(diff)) ||
-         (sleqp_neg(d_value) && sleqp_neg(diff)))
+      if((d_value > 0. && diff > 0.) ||
+         (d_value < 0. && diff < 0.))
       {
         double current_bound = diff / d_value;
 
@@ -220,7 +221,7 @@ SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
     }
   }
 
-  assert(!sleqp_neg(*max_step_length));
+  assert((*max_step_length) >= 0.);
 
   return SLEQP_OKAY;
 }

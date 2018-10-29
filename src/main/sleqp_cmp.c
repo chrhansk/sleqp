@@ -1,8 +1,18 @@
 #include "sleqp_cmp.h"
 
-#define ABS(x) (((x) >= 0) ? (x) : (-(x)))
-
 const double eps = 1e-16;
+
+double rel_diff(double x, double y)
+{
+  double d = x - y;
+
+  double m = SLEQP_MAX(SLEQP_ABS(x),
+                       SLEQP_ABS(y));
+
+  m = SLEQP_MAX(m, 1.);
+
+  return d / m;
+}
 
 double sleqp_eps()
 {
@@ -20,48 +30,57 @@ bool sleqp_is_inf(double value)
 }
 
 bool sleqp_eq(double x,
-              double y)
+              double y,
+              double eps)
 {
-  return ABS(x - y) <= eps;
+  double d = rel_diff(x, y);
+  return SLEQP_ABS(d) <= eps;
 }
 
 bool sleqp_lt(double x,
-              double y)
+              double y,
+              double eps)
 {
-  return ((x) - (y)) < -eps;
+  return rel_diff(x, y) < -eps;
 }
 
 bool sleqp_gt(double x,
-              double y)
+              double y,
+              double eps)
 {
-  return ((x) - (y)) > eps;
+  return rel_diff(x, y) > eps;
 }
 
 bool sleqp_le(double x,
-              double y)
+              double y,
+              double eps)
 {
-  return ((x) - (y)) <= eps;
+  return rel_diff(x, y) <= eps;
 }
 
 bool sleqp_ge(double x,
-              double y)
+              double y,
+              double eps)
 {
-  return ((x) - (y)) >= -eps;
+  return rel_diff(x, y) >= -eps;
 }
 
-bool sleqp_neg(double x)
+// note: these versions are compatible with the ones above, e.g.
+// sleqp_neg(x) iff sleqp_lt(x, 0.) and so on
+
+bool sleqp_neg(double x, double eps)
 {
   return x < -eps;
 }
 
-bool sleqp_pos(double x)
+bool sleqp_pos(double x, double eps)
 {
   return x > eps;
 }
 
-bool sleqp_zero(double x)
+bool sleqp_zero(double x, double eps)
 {
-  return ABS(x) <= eps;
+  return SLEQP_ABS(x) <= eps;
 }
 
 bool sleqp_is_infinity(double x)

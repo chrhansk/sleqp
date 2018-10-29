@@ -10,13 +10,24 @@
 #include "rosenbrock_fixture.h"
 
 
-START_TEST(test_unconstrained_cauchy_direction)
+START_TEST(test_unconstrained_solve)
 {
+  SleqpParams* params;
   SleqpProblem* problem;
   SleqpSolver* solver;
 
+  SleqpSparseVec* expected_solution;
+
+  ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 2, 2));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 1.));
+
+  ASSERT_CALL(sleqp_params_create(&params));
+
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
+                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
@@ -24,13 +35,39 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
+                                  params,
                                   rosenbrock_x));
 
-  ASSERT_CALL(sleqp_solve(solver, 100));
+  /*
+  ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_x));
+
+  ASSERT_CALL(sleqp_sparse_vector_reserve(rosenbrock_x, 2));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_x, 0, 10.));
+  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_x, 1, 10.));
+  */
+
+  // 100 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 100));
+
+  SleqpIterate* solution_iterate;
+
+  ASSERT_CALL(sleqp_solver_get_solution(solver,
+                                        &solution_iterate));
+
+  SleqpSparseVec* actual_solution = solution_iterate->x;
+
+  ck_assert(sleqp_sparse_vector_eq(actual_solution,
+                                   expected_solution,
+                                   1e-6));
 
   ASSERT_CALL(sleqp_solver_free(&solver));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
+
+  ASSERT_CALL(sleqp_params_free(&params));
+
+  ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
 }
 END_TEST
 
@@ -47,7 +84,7 @@ Suite* unconstrained_test_suite()
                             rosenbrock_setup,
                             rosenbrock_teardown);
 
-  tcase_add_test(tc_uncons, test_unconstrained_cauchy_direction);
+  tcase_add_test(tc_uncons, test_unconstrained_solve);
   suite_add_tcase(suite, tc_uncons);
 
   return suite;

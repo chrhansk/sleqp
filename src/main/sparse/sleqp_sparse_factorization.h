@@ -20,7 +20,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_factorization_get_sol(SleqpSparseFactorization* factorization,
                                                    SleqpSparseVec* sol,
                                                    int begin,
-                                                   int end);
+                                                   int end,
+                                                   double eps);
 
   SLEQP_RETCODE sleqp_sparse_factorization_free(SleqpSparseFactorization** star);
 

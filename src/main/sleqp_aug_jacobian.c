@@ -7,6 +7,7 @@
 struct SleqpAugJacobian
 {
   SleqpProblem* problem;
+  SleqpParams* params;
 
   SleqpSparseMatrix* augmented_matrix;
   SleqpSparseFactorization* factorization;
@@ -171,13 +172,15 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
 }
 
 SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
-                                        SleqpProblem* problem)
+                                        SleqpProblem* problem,
+                                        SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpAugJacobian* jacobian = *star;
 
   jacobian->problem = problem;
+  jacobian->params = params;
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&jacobian->augmented_matrix, 0, 0, 0));
 
@@ -364,7 +367,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
   SLEQP_CALL(sleqp_sparse_factorization_get_sol(factorization,
                                                 sol,
                                                 0,
-                                                problem->num_variables));
+                                                problem->num_variables,
+                                                sleqp_params_get_eps(jacobian->params)));
 
   rhs->dim -= num_variables;
 
@@ -405,7 +409,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
     SLEQP_CALL(sleqp_sparse_factorization_get_sol(factorization,
                                                   primal_sol,
                                                   0,
-                                                  num_variables));
+                                                  num_variables,
+                                                  sleqp_params_get_eps(jacobian->params)));
   }
 
   if(dual_sol)
@@ -415,7 +420,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
     SLEQP_CALL(sleqp_sparse_factorization_get_sol(factorization,
                                                   dual_sol,
                                                   num_variables,
-                                                  total_size));
+                                                  total_size,
+                                                  sleqp_params_get_eps(jacobian->params)));
 
     //SLEQP_CALL(sleqp_sparse_vector_scale(dual_sol, -1.));
 

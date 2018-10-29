@@ -148,6 +148,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
 
 SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(SleqpSparseMatrix* matrix,
                                                        SleqpSparseVec* vector,
+                                                       double eps,
                                                        SleqpSparseVec* result)
 {
   assert(matrix->num_rows == vector->dim);
@@ -188,7 +189,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(SleqpSparseMatrix* matrix
       }
     }
 
-    if(!sleqp_zero(sum))
+    if(!sleqp_zero(sum, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(result, col, sum));
     }

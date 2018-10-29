@@ -15,6 +15,7 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
                                          SleqpProblem* problem,
+                                         SleqpParams* params,
                                          SleqpLPi* lp_interface);
 
   SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star);

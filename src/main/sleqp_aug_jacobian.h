@@ -3,6 +3,7 @@
 
 #include "sleqp_problem.h"
 #include "sleqp_iterate.h"
+#include "sleqp_params.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +12,8 @@ extern "C" {
   typedef struct SleqpAugJacobian SleqpAugJacobian;
 
   SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
-                                          SleqpProblem* problem);
+                                          SleqpProblem* problem,
+                                          SleqpParams* params);
 
   SLEQP_RETCODE sleqp_aug_jacobian_free(SleqpAugJacobian** star);
 

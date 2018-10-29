@@ -12,7 +12,8 @@ extern "C" {
   typedef struct SleqpNewtonData SleqpNewtonData;
 
   SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
-                                         SleqpProblem* problem);
+                                         SleqpProblem* problem,
+                                         SleqpParams* params);
 
   SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                           SleqpIterate* iterate,

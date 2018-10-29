@@ -9,6 +9,7 @@
 struct SleqpCauchyData
 {
   SleqpProblem* problem;
+  SleqpParams* params;
 
   int num_lp_variables;
   int num_lp_constraints;
@@ -32,6 +33,7 @@ struct SleqpCauchyData
 
 SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
                                        SleqpProblem* problem,
+                                       SleqpParams* params,
                                        SleqpLPi* lp_interface)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -39,6 +41,7 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
   SleqpCauchyData* data = *star;
 
   data->problem = problem;
+  data->params = params;
 
   data->num_lp_variables = problem->num_variables + 2 * problem->num_constraints;
   data->num_lp_constraints = problem->num_constraints;
@@ -67,7 +70,7 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
 
   SLEQP_CALL(sleqp_merit_data_create(&data->merit_data,
                                      problem,
-                                     problem->func));
+                                     params));
 
   for(int i = problem->num_variables; i < data->num_lp_variables; ++i)
   {
@@ -382,6 +385,8 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
 
   int k_x = 0, k_lb = 0, k_ub = 0;
 
+  const double eps = sleqp_params_get_eps(cauchy_data->params);
+
   SLEQP_CALL(sleqp_lpi_get_varstats(cauchy_data->lp_interface,
                                     cauchy_data->var_stats));
 
@@ -415,11 +420,13 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
     double lbval = valid_lb ? lb->data[k_lb] : 0.;
     double xval = valid_x ? x->data[k_x] : 0.;
 
-    if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER) && sleqp_lt(ubval - xval, trust_radius))
+    if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER) &&
+       sleqp_lt(ubval - xval, trust_radius, eps))
     {
       var_states[i] = SLEQP_ACTIVE_UPPER;
     }
-    else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) && sleqp_lt(-trust_radius, lbval - xval))
+    else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
+            sleqp_lt(-trust_radius, lbval - xval, eps))
     {
       var_states[i] = SLEQP_ACTIVE_LOWER;
     }
@@ -474,13 +481,16 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
                                          SleqpIterate* iterate,
                                          SleqpSparseVec* direction)
 {
+  const double eps = sleqp_params_get_eps(cauchy_data->params);
+
   SLEQP_CALL(sleqp_lpi_get_solution(cauchy_data->lp_interface,
                                     NULL,
                                     cauchy_data->solution_values));
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(direction,
                                           cauchy_data->solution_values,
-                                          cauchy_data->problem->num_variables));
+                                          cauchy_data->problem->num_variables,
+                                          eps));
 
   return SLEQP_OKAY;
 }
@@ -532,7 +542,7 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
 
     direction_norm = sqrt(direction_norm);
 
-    if(sleqp_lt(direction_norm, delta))
+    if(direction_norm < delta)
     {
       delta = direction_norm;
 
@@ -542,16 +552,14 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
     }
   }
 
-  //TODO: make those adjustable
-  const double eta = 0.1;
-  const double tau = 0.5;
+  const double eta = sleqp_params_get_cauchy_eta(cauchy_data->params);
+  const double tau = sleqp_params_get_cauchy_tau(cauchy_data->params);
 
   int max_it = 10000;
   int it = 0;
 
   for(it = 0; it < max_it; ++it)
   {
-
     // check
 
     {
@@ -563,8 +571,8 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                     penalty_parameter,
                                     &linear_merit_value));
 
-      if(sleqp_ge(exact_merit_value - (linear_merit_value + hessian_product),
-                  eta*(exact_merit_value - linear_merit_value)))
+      if((exact_merit_value - (linear_merit_value + hessian_product)
+          >= eta*(exact_merit_value - linear_merit_value)))
       {
         break;
       }

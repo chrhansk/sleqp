@@ -13,6 +13,7 @@ extern "C" {
 #include "sleqp_active_set.h"
 #include "sleqp_func.h"
 #include "sleqp_iterate.h"
+#include "sleqp_params.h"
 #include "sleqp.h"
 
 
@@ -20,7 +21,7 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
                                         SleqpProblem* problem,
-                                        SleqpFunc* func);
+                                        SleqpParams* params);
 
   /**
    * Computes the exact merit value at the given

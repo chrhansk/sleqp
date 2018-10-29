@@ -16,6 +16,7 @@
 
 START_TEST(test_simply_constrained_dual_estimation)
 {
+  SleqpParams* params;
   SleqpProblem* problem;
   SleqpIterate* iterate;
   SleqpLPi* lp_interface;
@@ -27,9 +28,11 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   double penalty_parameter = 1., trust_radius = 0.1;
 
+  ASSERT_CALL(sleqp_params_create(&params));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    quadfunc,
+                                   params,
                                    quadfunc_var_lb,
                                    quadfunc_var_ub,
                                    quadfunc_cons_lb,
@@ -50,13 +53,15 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
                                        problem,
+                                       params,
                                        lp_interface));
 
   ASSERT_CALL(sleqp_active_set_create(&active_set,
                                       problem));
 
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
-                                        problem));
+                                        problem,
+                                        params));
 
   ASSERT_CALL(sleqp_dual_estimation_data_create(&estimation_data, problem));
 
@@ -84,8 +89,10 @@ START_TEST(test_simply_constrained_dual_estimation)
   ck_assert(sleqp_sparse_vector_at(vars_dual, 0));
   ck_assert(sleqp_sparse_vector_at(vars_dual, 1));
 
-  ck_assert(sleqp_eq(*sleqp_sparse_vector_at(vars_dual, 0), -2.));
-  ck_assert(sleqp_eq(*sleqp_sparse_vector_at(vars_dual, 1), -4.));
+  double tolerance = 1e-8;
+
+  ck_assert(sleqp_eq(*sleqp_sparse_vector_at(vars_dual, 0), -2., tolerance));
+  ck_assert(sleqp_eq(*sleqp_sparse_vector_at(vars_dual, 1), -4., tolerance));
 
   ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
 
@@ -100,6 +107,8 @@ START_TEST(test_simply_constrained_dual_estimation)
   ASSERT_CALL(sleqp_iterate_free(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
+
+  ASSERT_CALL(sleqp_params_free(&params));
 }
 END_TEST
 

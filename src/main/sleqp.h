@@ -23,7 +23,8 @@ extern "C" {
                                                SleqpSparseVec* cons_vals,
                                                double penalty_parameter,
                                                SleqpSparseVec* multipliers,
-                                               SleqpActiveSet* active_set);
+                                               SleqpActiveSet* active_set,
+                                               double eps);
 
   SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
                                       SleqpSparseVec* direction,

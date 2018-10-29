@@ -14,6 +14,7 @@
 
 #include "quadfunc_fixture.h"
 
+SleqpParams* params;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpLPi* lp_interface;
@@ -23,8 +24,11 @@ void active_set_var_setup()
 {
   quadfunc_setup();
 
+  ASSERT_CALL(sleqp_params_create(&params));
+
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    quadfunc,
+                                   params,
                                    quadfunc_var_lb,
                                    quadfunc_var_ub,
                                    quadfunc_cons_lb,
@@ -45,6 +49,7 @@ void active_set_var_setup()
 
   ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
                                        problem,
+                                       params,
                                        lp_interface));
 }
 
@@ -147,6 +152,8 @@ void active_set_var_teardown()
   ASSERT_CALL(sleqp_iterate_free(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
+
+  ASSERT_CALL(sleqp_params_free(&params));
 
   quadfunc_teardown();
 }

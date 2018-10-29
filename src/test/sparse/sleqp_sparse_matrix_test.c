@@ -47,8 +47,10 @@ START_TEST(test_sparse_matrix_vector_product)
                                                  vector,
                                                  result));
 
-  ck_assert(sleqp_eq(result[0], 8.));
-  ck_assert(sleqp_eq(result[1], 17.));
+  double tolerance = 1e-8;
+
+  ck_assert(sleqp_eq(result[0], 8., tolerance));
+  ck_assert(sleqp_eq(result[1], 17., tolerance));
 
   sleqp_free(&result);
 

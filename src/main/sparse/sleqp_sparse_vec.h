@@ -56,10 +56,12 @@ extern "C" {
    * @param[in,out] vec    A pointer to the vector
    * @param[in]     values A vector of values
    * @param[in]     dim    The dimension of the values input
+   * @param[in]     eps    The numerical tolerance
    **/
   SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
                                              double* values,
-                                             int dim);
+                                             int dim,
+                                             double eps);
 
   SLEQP_RETCODE sleqp_sparse_vector_to_raw(SleqpSparseVec* vec,
                                            double* values);
@@ -82,7 +84,8 @@ extern "C" {
                                            int dim);
 
   bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
-                              SleqpSparseVec* second);
+                              SleqpSparseVec* second,
+                              double eps);
 
   /**
    * Computes the dot product of two sparse vectors
@@ -113,6 +116,7 @@ extern "C" {
    **/
   SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
                                         SleqpSparseVec* second,
+                                        double eps,
                                         SleqpSparseVec* result);
 
   /**
@@ -128,6 +132,7 @@ extern "C" {
                                                SleqpSparseVec* second,
                                                double first_factor,
                                                double second_factor,
+                                               double eps,
                                                SleqpSparseVec* result);
 
   double sleqp_sparse_vector_normsq(SleqpSparseVec* vec);
@@ -140,6 +145,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
                                          SleqpSparseVec* lb,
                                          SleqpSparseVec* ub,
+                                         double eps,
                                          SleqpSparseVec** xstar);
 
   SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,

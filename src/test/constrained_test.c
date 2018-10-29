@@ -14,6 +14,7 @@
 
 #include "quadcons_fixture.h"
 
+SleqpParams* params;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpLPi* lp_interface;
@@ -25,8 +26,11 @@ void constrained_setup()
 {
   quadconsfunc_setup();
 
+  ASSERT_CALL(sleqp_params_create(&params));
+
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    quadconsfunc,
+                                   params,
                                    quadconsfunc_var_lb,
                                    quadconsfunc_var_ub,
                                    quadconsfunc_cons_lb,
@@ -47,6 +51,7 @@ void constrained_setup()
 
   ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
                                        problem,
+                                       params,
                                        lp_interface));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&cauchy_direction, 2, 2));
@@ -102,7 +107,8 @@ START_TEST(test_dual_variable)
   ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, iterate, cauchy_direction));
 
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
-                                        problem));
+                                        problem,
+                                        params));
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
@@ -120,7 +126,7 @@ START_TEST(test_dual_variable)
 
   ck_assert_int_eq(cons_dual->dim, 2);
 
-  ck_assert(sleqp_eq(cons_dual->data[0], 0.41421356237309515));
+  ck_assert(sleqp_eq(cons_dual->data[0], 0.4142135623, 1e-8));
 
   ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
 
@@ -140,6 +146,8 @@ void constrained_teardown()
   ASSERT_CALL(sleqp_iterate_free(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
+
+  ASSERT_CALL(sleqp_params_free(&params));
 
   quadconsfunc_teardown();
 }

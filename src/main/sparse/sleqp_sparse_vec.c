@@ -46,13 +46,14 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
 
 SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
                                            double* values,
-                                           int dim)
+                                           int dim,
+                                           double eps)
 {
   int nnz = 0;
 
   for(int i = 0; i < dim;++i)
   {
-    if(!sleqp_zero(values[i]))
+    if(!sleqp_zero(values[i], eps))
     {
       ++nnz;
     }
@@ -67,7 +68,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
   {
     double v = values[i];
 
-    if(!sleqp_zero(v))
+    if(!sleqp_zero(v, eps))
     {
       sleqp_sparse_vector_push(vec, i, v);
     }
@@ -151,7 +152,8 @@ SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
 }
 
 bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
-                            SleqpSparseVec* second)
+                            SleqpSparseVec* second,
+                            double eps)
 {
   assert(first->dim == second->dim);
 
@@ -173,7 +175,7 @@ bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
     double first_value = valid_first ? first->data[k_first] : 0.;
     double second_value = valid_second ? second->data[k_second] : 0.;
 
-    if(!sleqp_eq(first_value, second_value))
+    if(!sleqp_eq(first_value, second_value, eps))
     {
       return false;
     }
@@ -269,12 +271,14 @@ double sleqp_sparse_vector_norminf(SleqpSparseVec* vec)
 
 SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
                                       SleqpSparseVec* second,
+                                      double eps,
                                       SleqpSparseVec* result)
 {
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(first,
                                             second,
                                             1.,
                                             1.,
+                                            eps,
                                             result));
 
   return SLEQP_OKAY;
@@ -284,6 +288,7 @@ SLEQP_RETCODE sleqp_sparse_vector_add_scaled(SleqpSparseVec* first,
                                              SleqpSparseVec* second,
                                              double first_factor,
                                              double second_factor,
+                                             double eps,
                                              SleqpSparseVec* result)
 {
   assert(first->dim == second->dim);
@@ -323,7 +328,7 @@ SLEQP_RETCODE sleqp_sparse_vector_add_scaled(SleqpSparseVec* first,
       ++k_second;
     }
 
-    if(sleqp_zero(value))
+    if(sleqp_zero(value, eps))
     {
       continue;
     }
@@ -355,6 +360,7 @@ double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
 SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
                                        SleqpSparseVec* lb,
                                        SleqpSparseVec* ub,
+                                       double eps,
                                        SleqpSparseVec** xstar)
 {
   const int dim = x->dim;
@@ -401,7 +407,7 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
       x_val = SLEQP_MIN(x_val, ub->data[k_ub]);
     }
 
-    if(!sleqp_zero(x_val))
+    if(!sleqp_zero(x_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(xclip,
                                           idx,

@@ -59,10 +59,12 @@ START_TEST(test_simplex_solve)
                                      &objective_value,
                                      solution));
 
-  ck_assert(sleqp_eq(objective_value, -1.));
+  double tolerance = 1e-8;
 
-  ck_assert(sleqp_eq(solution[0], 1.));
-  ck_assert(sleqp_eq(solution[1], 0.));
+  ck_assert(sleqp_eq(objective_value, -1., tolerance));
+
+  ck_assert(sleqp_eq(solution[0], 1., tolerance));
+  ck_assert(sleqp_eq(solution[1], 0., tolerance));
 
   SLEQP_BASESTAT variable_stats[] = {0, 0};
 

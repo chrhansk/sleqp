@@ -15,17 +15,23 @@
 
 #include "quadfunc_fixture.h"
 
+SleqpParams* params;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpLPi* lp_interface;
 SleqpCauchyData* cauchy_data;
 
+const double tolerance = 1e-8;
+
 void newton_setup()
 {
   quadfunc_setup();
 
+  ASSERT_CALL(sleqp_params_create(&params));
+
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    quadfunc,
+                                   params,
                                    quadfunc_var_lb,
                                    quadfunc_var_ub,
                                    quadfunc_cons_lb,
@@ -48,6 +54,7 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
                                        problem,
+                                       params,
                                        lp_interface));
 }
 
@@ -60,6 +67,8 @@ void newton_teardown()
   ASSERT_CALL(sleqp_iterate_free(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
+
+  ASSERT_CALL(sleqp_params_free(&params));
 
   quadfunc_teardown();
 }
@@ -87,11 +96,14 @@ START_TEST(newton_wide_step)
 
   // create with empty active set
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
-                                        problem));
+                                        problem,
+                                        params));
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
-  ASSERT_CALL(sleqp_newton_data_create(&newton_data, problem));
+  ASSERT_CALL(sleqp_newton_data_create(&newton_data,
+                                       problem,
+                                       params));
 
   // we use the default (empty) active set for the Newton step,
   // trust region size should be large to ensure that
@@ -103,7 +115,7 @@ START_TEST(newton_wide_step)
                                         penalty_parameter,
                                         actual_step));
 
-  ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step));
+  ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
   ASSERT_CALL(sleqp_newton_data_free(&newton_data));
 
@@ -139,11 +151,14 @@ START_TEST(newton_small_step)
 
   // create with empty active set
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
-                                        problem));
+                                        problem,
+                                        params));
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
-  ASSERT_CALL(sleqp_newton_data_create(&newton_data, problem));
+  ASSERT_CALL(sleqp_newton_data_create(&newton_data,
+                                       problem,
+                                       params));
 
   // we use the default (empty) active set for the Newton step,
   // trust region size should be so small that
@@ -155,7 +170,7 @@ START_TEST(newton_small_step)
                                         penalty_parameter,
                                         actual_step));
 
-  ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step));
+  ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
   ASSERT_CALL(sleqp_newton_data_free(&newton_data));
 
