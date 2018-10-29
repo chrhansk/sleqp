@@ -39,7 +39,7 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
 }
 
 
-SLEQP_RETCODE sleqp_get_violated_constraints(SleqpProblem* problem,
+SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
                                              SleqpSparseVec* x,
                                              SleqpSparseVec* cons_vals,
                                              double penalty_parameter,
@@ -54,6 +54,10 @@ SLEQP_RETCODE sleqp_get_violated_constraints(SleqpProblem* problem,
   SLEQP_ACTIVE_STATE* cons_states = active_set ? sleqp_active_set_cons_states(active_set) : NULL;
 
   const int dim = v->dim;
+
+  assert(lb->dim == dim);
+  assert(ub->dim == dim);
+  assert(multipliers->dim == dim);
 
   int k_c = 0, k_lb = 0, k_ub = 0;
 
@@ -222,6 +226,72 @@ SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
   }
 
   assert((*max_step_length) >= 0.);
+
+  return SLEQP_OKAY;
+}
+
+
+SLEQP_RETCODE sleqp_get_violation(SleqpProblem* problem,
+                                  SleqpIterate* iterate,
+                                  double eps,
+                                  SleqpSparseVec* violation)
+{
+  int num_constraints = problem->num_constraints;
+
+  assert(violation->dim == num_constraints);
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(violation));
+  SLEQP_CALL(sleqp_sparse_vector_resize(violation, num_constraints));
+
+  SleqpSparseVec* lb = problem->cons_lb;
+  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* v = iterate->cons_val;
+
+  const int dim = v->dim;
+
+  int k_c = 0, k_lb = 0, k_ub = 0;
+
+  while(k_c < v->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  {
+    double c_val = 0., lb_val = 0., ub_val = 0.;
+
+    bool valid_v = (k_c < v->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
+
+    int idx = valid_v ? v->indices[k_c] : dim + 1;
+    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
+    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
+
+    if(valid_v && idx == v->indices[k_c])
+    {
+      c_val = v->data[k_c++];
+    }
+
+    if(valid_lb && idx == lb->indices[k_lb])
+    {
+      lb_val = lb->data[k_lb++];
+    }
+
+    if(valid_ub && idx == ub->indices[k_ub])
+    {
+      ub_val = ub->data[k_ub++];
+    }
+
+    if(sleqp_gt(c_val, ub_val, eps))
+    {
+      SLEQP_CALL(sleqp_sparse_vector_push(violation,
+                                          idx,
+                                          c_val - ub_val));
+    }
+    else if(sleqp_lt(c_val, lb_val, eps))
+    {
+      SLEQP_CALL(sleqp_sparse_vector_push(violation,
+                                          idx,
+                                          c_val - lb_val));
+    }
+
+  }
 
   return SLEQP_OKAY;
 }

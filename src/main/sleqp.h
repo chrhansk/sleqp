@@ -18,7 +18,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                        SleqpIterate* iterate);
 
-  SLEQP_RETCODE sleqp_get_violated_constraints(SleqpProblem* problem,
+  SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
                                                SleqpSparseVec* x,
                                                SleqpSparseVec* cons_vals,
                                                double penalty_parameter,
@@ -31,6 +31,11 @@ extern "C" {
                                       SleqpSparseVec* var_lb,
                                       SleqpSparseVec* var_ub,
                                       double* max_step_length);
+
+  SLEQP_RETCODE sleqp_get_violation(SleqpProblem* problem,
+                                    SleqpIterate* iterate,
+                                    double eps,
+                                    SleqpSparseVec* violation);
 
 
 #ifdef __cplusplus

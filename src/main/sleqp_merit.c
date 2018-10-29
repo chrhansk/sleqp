@@ -233,7 +233,7 @@ SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
   SleqpSparseVec* x = iterate->x;
   SleqpSparseVec* cons_vals = iterate->cons_val;
 
-  SLEQP_CALL(sleqp_get_violated_constraints(problem,
+  SLEQP_CALL(sleqp_get_violated_multipliers(problem,
                                             x,
                                             cons_vals,
                                             penalty_parameter,

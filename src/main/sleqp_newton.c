@@ -820,7 +820,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
     SleqpSparseVec* multipliers = data->multipliers;
 
-    SLEQP_CALL(sleqp_get_violated_constraints(problem,
+    SLEQP_CALL(sleqp_get_violated_multipliers(problem,
                                               iterate->x,
                                               iterate->cons_val,
                                               penalty_parameter,

@@ -31,6 +31,8 @@ struct SleqpSolver
 
   SleqpIterate* iterate;
 
+  SleqpSparseVec* violation;
+
   SleqpLPi* lp_interface;
 
   SleqpCauchyData* cauchy_data;
@@ -69,8 +71,6 @@ struct SleqpSolver
 
   SleqpSparseVec* soc_corrected_direction;
 
-  SleqpSparseVec* cons_diff;
-
   // parameters, adjusted throughout...
 
   double trust_radius;
@@ -78,6 +78,10 @@ struct SleqpSolver
   double lp_trust_radius;
 
   double penalty_parameter;
+
+  // misc
+
+  int iteration;
 };
 
 
@@ -94,6 +98,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   solver->problem = problem;
   solver->params = params;
+  solver->iteration = 0;
 
   const double eps = sleqp_params_get_eps(params);
 
@@ -110,6 +115,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_iterate_create(&solver->iterate,
                                   solver->problem,
                                   xclip));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->violation,
+                                        num_constraints,
+                                        0));
 
   // TODO: make this generic at a later point...
 
@@ -189,10 +198,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->soc_corrected_direction,
                                         num_variables,
-                                        0));
-
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->cons_diff,
-                                        num_constraints,
                                         0));
 
 
@@ -505,10 +510,7 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 
 static bool should_terminate(SleqpSolver* solver)
 {
-  SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
-
-  const double eps = sleqp_params_get_eps(solver->params);
 
   const double optimality_residuum = sleqp_sparse_vector_norminf(solver->estimation_residuum);
 
@@ -574,39 +576,7 @@ static bool should_terminate(SleqpSolver* solver)
     }
   }
 
-  double cons_residuum = 0.;
-
-  {
-    SleqpSparseVec* cons_diff = solver->cons_diff;
-
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(problem->cons_ub,
-                                              iterate->cons_val,
-                                              -1.,
-                                              1.,
-                                              eps,
-                                              cons_diff));
-
-    for(int k = 0; k < cons_diff->nnz; ++k)
-    {
-      double current_residuum = SLEQP_MAX(cons_diff->data[k], 0.);
-
-      cons_residuum = SLEQP_MAX(cons_residuum, current_residuum);
-    }
-
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(problem->cons_lb,
-                                              iterate->cons_val,
-                                              1.,
-                                              -1.,
-                                              eps,
-                                              cons_diff));
-
-    for(int k = 0; k < cons_diff->nnz; ++k)
-    {
-      double current_residuum = SLEQP_MAX(cons_diff->data[k], 0.);
-
-      cons_residuum = SLEQP_MAX(cons_residuum, current_residuum);
-    }
-  }
+  double cons_residuum = sleqp_sparse_vector_norminf(solver->violation);
 
   return (cons_residuum < optimality_tolerance * (1 + multiplier_norm));
 }
@@ -827,6 +797,38 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+#define HEADER_FORMAT "%10s |%20s |%20s |%20s |%20s |%20s\n"
+
+#define LINE_FORMAT "%10d |%20e |%20e |%20e |%20e |%20e\n"
+
+static SLEQP_RETCODE print_header()
+{
+  fprintf(stdout,
+          HEADER_FORMAT,
+          "iter",
+          "funcval",
+          "violation",
+          "penalty",
+          "LP trust radius",
+          "EQP trust radius");
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE print_line(SleqpSolver* solver)
+{
+  fprintf(stdout,
+          LINE_FORMAT,
+          solver->iteration,
+          solver->iterate->func_val,
+          sleqp_sparse_vector_norminf(solver->violation),
+          solver->penalty_parameter,
+          solver->lp_trust_radius,
+          solver->trust_radius);
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
@@ -838,6 +840,13 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
   const double accepted_reduction = sleqp_params_get_accepted_reduction(solver->params);
 
   double quadratic_reduction = 0.;
+
+  if(solver->iteration % 25 == 0)
+  {
+    SLEQP_CALL(print_header());
+  }
+
+  SLEQP_CALL(print_line(solver));
 
   SLEQP_CALL(compute_trial_point(solver, &quadratic_reduction));
 
@@ -946,11 +955,18 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
 
     solver->trial_iterate = iterate;
     solver->iterate = trial_iterate;
+
+    SLEQP_CALL(sleqp_get_violation(problem,
+                                   iterate,
+                                   eps,
+                                   solver->violation));
   }
   else
   {
     set_func_value(solver, iterate);
   }
+
+  ++(solver->iteration);
 
   return SLEQP_OKAY;
 }
@@ -961,11 +977,20 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
+  const double eps = sleqp_params_get_eps(solver->params);
+
+  solver->iteration = 0;
+
   sleqp_log_info("Solving a problem with %d variables, %d constraints",
                  problem->num_variables,
                  problem->num_constraints);
 
   SLEQP_CALL(sleqp_set_and_evaluate(problem, iterate));
+
+  SLEQP_CALL(sleqp_get_violation(problem,
+                                 iterate,
+                                 eps,
+                                 solver->violation));
 
   sleqp_log_info("Initial function value: %f",
                  solver->iterate->func_val);
@@ -974,13 +999,15 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   {
     SLEQP_CALL(sleqp_perform_iteration(solver));
 
+    /*
     sleqp_log_info("Iteration %d, function value: %f, D_LP: %e, D_EQP: %e",
                    (i + 1),
                    solver->iterate->func_val,
                    solver->lp_trust_radius,
                    solver->trust_radius);
+    */
 
-    SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->x, stdout));
+    //SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->x, stdout));
 
     if(should_terminate(solver))
     {
@@ -1006,7 +1033,6 @@ SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
 SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
 {
   SleqpSolver* solver = *star;
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cons_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_corrected_direction));
 
@@ -1045,6 +1071,8 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_cauchy_data_free(&solver->cauchy_data));
 
   SLEQP_CALL(sleqp_lpi_free(&solver->lp_interface));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->violation));
 
   SLEQP_CALL(sleqp_iterate_free(&solver->iterate));
 
