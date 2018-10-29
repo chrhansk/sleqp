@@ -10,15 +10,22 @@ extern "C" {
 
 #include "sleqp_log.h"
 
-  enum SLEQP_Retcode
-  {
-    SLEQP_OKAY,
-    SLEQP_NOMEM,
-    SLEQP_INVALID,
-    SLEQP_INTERNAL_ERROR,
-  };
+#define RETCODES C(SLEQP_OKAY, 0)               \
+    C(SLEQP_NOMEM, 1)                           \
+    C(SLEQP_INVALID, 2)                         \
+    C(SLEQP_INTERNAL_ERROR, 3)                  \
+    C(SLEQP_NUM_RETCODES, 4)
+
+#define C(k, v) k = v,
+  enum SLEQP_Retcode { RETCODES };
+#undef C
 
   typedef enum SLEQP_Retcode SLEQP_RETCODE;
+
+#define C(k, v) [v] = #k,
+  static const char * const sleqp_retcode_names[] = { RETCODES };
+#undef C
+#undef RETCODES
 
   enum SLEQP_Active_State {SLEQP_INACTIVE = 0,
                            SLEQP_ACTIVE_LOWER = (1 << 1),
@@ -33,7 +40,9 @@ extern "C" {
     SLEQP_RETCODE status;                                                  \
     if( (status = (x)) != SLEQP_OKAY )                                     \
     {                                                                      \
-      sleqp_log_error("Error <%d> in function call", status);              \
+      sleqp_log_error("Error <%d> (%s) in function call",                  \
+                      status,                                              \
+                      sleqp_retcode_names[status]);                        \
       return status;                                                       \
     }                                                                      \
   }                                                                        \
