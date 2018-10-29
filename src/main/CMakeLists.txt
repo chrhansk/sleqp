@@ -17,6 +17,7 @@ set(COMMON_SRC
   sleqp_dual_estimation.c
   sleqp_func.c
   sleqp_iterate.c
+  sleqp_params.c
   sleqp_log.c
   sleqp_newton.c
   sleqp_merit.c
