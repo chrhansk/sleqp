@@ -51,7 +51,7 @@ extern "C" {
    * @param[in]      cauchy_data        Cauchy data
    * @param[in]      iterate            The current iterate
    * @param[in]      penalty_parameter  The penalty parameter \f$ v \f$
-   * @param[in,out]  hessian_direction  The product of the Hessian with the initial direction
+   * @param[in]      hessian_direction  The product of the Hessian with the initial direction
    * @param[in,out]  direction          The direction
    * @param[out]     step_length        The computed step length
    *

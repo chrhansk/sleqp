@@ -58,8 +58,8 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
     }
   }
 
-  vec->nnz = 0;
-  vec->dim = dim;
+  SLEQP_CALL(sleqp_sparse_vector_clear(vec));
+  SLEQP_CALL(sleqp_sparse_vector_resize(vec, dim));
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(vec, nnz));
 
@@ -239,24 +239,6 @@ SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
-                                            double* second,
-                                            double* product)
-{
-  *product = 0.;
-
-  for(int k_first = 0;k_first < first->nnz; ++k_first)
-  {
-    int i_first = first->indices[k_first];
-
-    *product += first->data[k_first] * second[i_first];
-
-    ++k_first;
-  }
-
-  return SLEQP_OKAY;
-}
-
 double sleqp_sparse_vector_normsq(SleqpSparseVec* vec)
 {
   double normsq = 0.;
@@ -287,9 +269,22 @@ double sleqp_sparse_vector_norminf(SleqpSparseVec* vec)
 
 SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
                                       SleqpSparseVec* second,
-                                      double first_factor,
-                                      double second_factor,
                                       SleqpSparseVec* result)
+{
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(first,
+                                            second,
+                                            1.,
+                                            1.,
+                                            result));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_add_scaled(SleqpSparseVec* first,
+                                             SleqpSparseVec* second,
+                                             double first_factor,
+                                             double second_factor,
+                                             SleqpSparseVec* result)
 {
   assert(first->dim == second->dim);
 
@@ -326,6 +321,11 @@ SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
     {
       value += second_factor * second->data[k_second];
       ++k_second;
+    }
+
+    if(sleqp_zero(value))
+    {
+      continue;
     }
 
     SLEQP_CALL(sleqp_sparse_vector_push(result,
@@ -438,7 +438,7 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
 
   for(int index = 0; index < vec->nnz; ++index)
   {
-    fprintf(output, "(%d) = %f\n",
+    fprintf(output, "(%d) = %e\n",
             vec->indices[index],
             vec->data[index]);
   }

@@ -156,7 +156,6 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
 
   SLEQP_CALL(sleqp_sparse_vector_add(merit_data->jac_dot_sparse,
                                      iterate->cons_val,
-                                     1., 1.,
                                      lin));
 
   int k_l = 0, k_lb = 0, k_ub = 0;
@@ -242,7 +241,7 @@ SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
                                                       merit_data->multipliers,
                                                       merit_data->sparse_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(merit_data->sparse_cache, iterate->func_grad, 1., 1., gradient));
+  SLEQP_CALL(sleqp_sparse_vector_add(merit_data->sparse_cache, iterate->func_grad, gradient));
 
   return SLEQP_OKAY;
 }

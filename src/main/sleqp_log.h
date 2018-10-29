@@ -1,6 +1,10 @@
 #ifndef SLEQP_LOG_H
 #define SLEQP_LOG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum SLEQP_Log_Level {SLEQP_LOG_ERROR = 0,
                       SLEQP_LOG_WARN = 1,
                       SLEQP_LOG_INFO = 2,
@@ -39,5 +43,8 @@ void sleqp_log_trace_level(int level, const char *file, int line, const char *fm
 #define sleqp_log_warn(...)  sleqp_log_log_trace(SLEQP_LOG_WARN,  __FILE__, __LINE__, __VA_ARGS__)
 #define sleqp_log_error(...) sleqp_log_log_trace(SLEQP_LOG_ERROR,  __FILE__, __LINE__, __VA_ARGS__)
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SLEQP_LOG_H */

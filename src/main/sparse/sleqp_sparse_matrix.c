@@ -249,7 +249,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
     assert(matrix->cols[col] <= index);
     assert(index < matrix->cols[col + 1]);
 
-    fprintf(output, "(%d, %d) = %f\n",
+    fprintf(output, "(%d, %d) = %e\n",
             matrix->rows[index],
             col,
             matrix->data[index]);

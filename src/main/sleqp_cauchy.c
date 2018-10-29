@@ -543,10 +543,13 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
   }
 
   //TODO: make those adjustable
-  const double tau = 0.9;
-  const double eta = 0.9;
+  const double eta = 0.1;
+  const double tau = 0.5;
 
-  for(int iter = 0; iter < 100; ++iter)
+  int max_it = 10000;
+  int it = 0;
+
+  for(it = 0; it < max_it; ++it)
   {
 
     // check
@@ -578,7 +581,12 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
     delta *= tau;
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_scale(hessian_direction, delta));
+  if(it == max_it)
+  {
+    sleqp_log_warn("Line search failed to converge");
+
+    SLEQP_CALL(sleqp_sparse_vector_clear(direction));
+  }
 
   if(step_length)
   {

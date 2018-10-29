@@ -185,11 +185,13 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                         num_constraints,
                                         0));
 
-  // TODO: Set this to something different?!
-  solver->trust_radius = 1.;
-  solver->lp_trust_radius = 1.;
 
-  // suggested by authors
+  // initial trust region radii as suggested,
+  // penalty parameter as suggested:
+
+  solver->trust_radius = 1.;
+  solver->lp_trust_radius = .8 * (solver->trust_radius) * sqrt((double) num_variables);
+
   solver->penalty_parameter = 10.;
 
   return SLEQP_OKAY;
@@ -225,8 +227,6 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
   {
     return SLEQP_OKAY;
   }
-
-  sleqp_log_debug("Updating penalty parameter");
 
   SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                 NULL,
@@ -381,17 +381,11 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 
   // holds the product of the gradient of the quadratic model
   // at alpha = 0 with the step direction
-  double gradient_product = 0.;
+  double gradient_product;
 
-  {
-    double temp;
-
-    SLEQP_CALL(sleqp_sparse_vector_dot(solver->cauchy_newton_direction,
-                                       solver->linear_merit_gradient,
-                                       &temp));
-
-    gradient_product = temp + prod_chc;
-  }
+  SLEQP_CALL(sleqp_sparse_vector_dot(solver->cauchy_newton_direction,
+                                     solver->linear_merit_gradient,
+                                     &gradient_product));
 
   // holds the value of the quadratic model at alpha = 0
   double zero_func_val = 0.;
@@ -406,8 +400,6 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
     zero_func_val += .5 * prod_chc;
   }
 
-  int max_it = 100;
-
   double alpha = 1.;
 
   // compute the maximum trial step length
@@ -416,7 +408,6 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_sparse_vector_add(solver->iterate->x,
                                        solver->cauchy_step,
-                                       1., 1.,
                                        solver->trial_direction));
 
     SLEQP_CALL(sleqp_max_step_length(solver->trial_direction,
@@ -428,18 +419,22 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 
   // TODO: Make these adjustable
 
-  double eta = 1e-3;
-  double tau = 0.9;
+  double eta = 1e-4;
+  double tau = 0.5;
+  double cutoff_threshold = 1e-20;
 
-  for(int i = 0; i < max_it; ++i)
+  int max_it = 10000;
+  int it = 0;
+
+  for(it = 0; it < max_it; ++it)
   {
     // holds the value of the quadratic model at alpha
     double alpha_func_val = 0.;
 
-    SLEQP_CALL(sleqp_sparse_vector_add(solver->cauchy_step,
-                                       solver->cauchy_newton_direction,
-                                       1., alpha,
-                                       solver->trial_direction));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->cauchy_step,
+                                              solver->cauchy_newton_direction,
+                                              1., alpha,
+                                              solver->trial_direction));
 
     {
       double temp;
@@ -452,11 +447,11 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 
       alpha_func_val += temp;
 
-      alpha_func_val += 0.5 * prod_chc;
+      alpha_func_val += .5 * prod_chc;
 
       alpha_func_val += alpha * prod_che;
 
-      alpha_func_val += 0.5*(alpha*alpha) * prod_ehe;
+      alpha_func_val += .5*(alpha*alpha) * prod_ehe;
     }
 
     (*quadratic_reduction) = zero_func_val - alpha_func_val;
@@ -466,9 +461,28 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
       break;
     }
 
+    // if alpha becomes too small, set it to zero
+    if(alpha <= cutoff_threshold)
+    {
+      alpha = 0.;
+
+      SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_step,
+                                          solver->trial_direction));
+
+      break;
+    }
+
     alpha *= tau;
   }
 
+  if(it == max_it)
+  {
+    sleqp_log_warn("Line search failed to converge");
+
+    alpha = 0.;
+
+    SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_step, solver->trial_direction));
+  }
 
   return SLEQP_OKAY;
 }
@@ -536,8 +550,6 @@ static bool should_terminate(SleqpSolver* solver)
   {
     double residuum = SLEQP_MAX(optimality_residuum, slackness_residuum);
 
-    sleqp_log_info("Residuum: %f", residuum);
-
     if(residuum >= optimality_tolerance * (1 + multiplier_norm))
     {
       return false;
@@ -549,11 +561,11 @@ static bool should_terminate(SleqpSolver* solver)
   {
     SleqpSparseVec* cons_diff = solver->cons_diff;
 
-    SLEQP_CALL(sleqp_sparse_vector_add(problem->cons_ub,
-                                       iterate->cons_val,
-                                       -1.,
-                                       1.,
-                                       cons_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(problem->cons_ub,
+                                              iterate->cons_val,
+                                              -1.,
+                                              1.,
+                                              cons_diff));
 
     for(int k = 0; k < cons_diff->nnz; ++k)
     {
@@ -562,11 +574,11 @@ static bool should_terminate(SleqpSolver* solver)
       cons_residuum = SLEQP_MAX(cons_residuum, current_residuum);
     }
 
-    SLEQP_CALL(sleqp_sparse_vector_add(problem->cons_lb,
-                                       iterate->cons_val,
-                                       1.,
-                                       -1.,
-                                       cons_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(problem->cons_lb,
+                                              iterate->cons_val,
+                                              1.,
+                                              -1.,
+                                              cons_diff));
 
     for(int k = 0; k < cons_diff->nnz; ++k)
     {
@@ -609,6 +621,17 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                           iterate,
                                           solver->cauchy_direction));
 
+    {
+      double product;
+
+      SLEQP_CALL(sleqp_sparse_vector_dot(iterate->func_grad,
+                                         solver->cauchy_direction,
+                                         &product));
+
+      assert(!sleqp_pos(product));
+
+    }
+
     SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
                                              iterate,
                                              solver->estimation_residuum,
@@ -629,6 +652,9 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                          solver->cauchy_hessian_direction,
                                          solver->cauchy_step,
                                          &solver->cauchy_step_length));
+
+    SLEQP_CALL(sleqp_sparse_vector_scale(solver->cauchy_hessian_direction,
+                                         solver->cauchy_step_length));
   }
 
   // compute Newton step
@@ -639,16 +665,55 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                          solver->trust_radius,
                                          solver->penalty_parameter,
                                          solver->newton_step));
+  }
+
+  {
+    double cnorm = sqrt(sleqp_sparse_vector_normsq(solver->cauchy_step));
+    double nnorm = sqrt(sleqp_sparse_vector_normsq(solver->newton_step));
+
+    double nprod;
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(solver->iterate->func_grad,
+                                       solver->newton_step,
+                                       &nprod));
+
+    double objval, lin_term, quad_term;
+
+    SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
+                                  solver->iterate,
+                                  solver->newton_step,
+                                  solver->penalty_parameter,
+                                  &lin_term));
+
+    SLEQP_CALL(sleqp_func_hess_product(problem->func,
+                                       &one,
+                                       solver->newton_step,
+                                       iterate->cons_dual,
+                                       solver->cauchy_newton_hessian_direction));
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(solver->cauchy_newton_hessian_direction,
+                                       solver->newton_step,
+                                       &quad_term));
+
+    objval = lin_term + 0.5*quad_term;
+
+    sleqp_log_debug("Cauchy step norm: %e, Newton step norm: %e, " \
+                    "Newton grad prod: %e, Newton objval: %e ",
+                    cnorm,
+                    nnorm,
+                    nprod,
+                    objval);
+
 
   }
 
   // compute Cauchy Newton direction (from Cauchy point to Newton point)
   {
-    SLEQP_CALL(sleqp_sparse_vector_add(solver->newton_step,
-                                       solver->cauchy_step,
-                                       1.,
-                                       -1.,
-                                       solver->cauchy_newton_direction));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->newton_step,
+                                              solver->cauchy_step,
+                                              1.,
+                                              -1.,
+                                              solver->cauchy_newton_direction));
 
     SLEQP_CALL(sleqp_func_hess_product(problem->func,
                                        &one,
@@ -661,7 +726,6 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
                                      solver->trial_direction,
-                                     1., 1.,
                                      solver->trial_iterate->x));
 
   return SLEQP_OKAY;
@@ -697,16 +761,14 @@ static SLEQP_RETCODE perform_soc(SleqpSolver* solver)
                                    problem->var_ub,
                                    &max_step_length));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(solver->trial_direction,
-                                     solver->soc_direction,
-                                     1.,
-                                     max_step_length,
-                                     solver->soc_corrected_direction));
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->trial_direction,
+                                            solver->soc_direction,
+                                            1.,
+                                            max_step_length,
+                                            solver->soc_corrected_direction));
 
   SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
                                      solver->soc_corrected_direction,
-                                     1.,
-                                     1.,
                                      trial_point));
 
 
@@ -747,9 +809,9 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
 
   SLEQP_CALL(compute_trial_point(solver, &quadratic_reduction));
 
-  assert(!sleqp_neg(quadratic_reduction));
+  //assert(!sleqp_neg(quadratic_reduction));
 
-  set_func_value(solver, trial_iterate);
+  SLEQP_CALL(set_func_value(solver, trial_iterate));
 
   SLEQP_CALL(sleqp_func_eval(problem->func,
                              NULL,
@@ -762,11 +824,11 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
 
   double reduction_ratio = actual_reduction / quadratic_reduction;
 
-  sleqp_log_debug("Current function value: %f, trial function value: %f",
+  sleqp_log_debug("Current function value: %e, trial function value: %e",
                   iterate->func_val,
                   trial_iterate->func_val);
 
-  sleqp_log_debug("Reduction ratio: %f, actual: %f, quadratic: %f",
+  sleqp_log_debug("Reduction ratio: %e, actual: %e, quadratic: %e",
                   reduction_ratio,
                   actual_reduction,
                   quadratic_reduction);
@@ -774,6 +836,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
   double direction_norm = sleqp_sparse_vector_normsq(solver->trial_direction);
 
   direction_norm = sqrt(direction_norm);
+
+  sleqp_log_debug("Trial step norm: %e", direction_norm);
 
   bool step_accepted = true;
 
@@ -783,50 +847,36 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
   }
   else
   {
-    sleqp_log_debug("Step rejected");
+    sleqp_log_debug("Trial step rejected");
 
     step_accepted = false;
 
-    /*
-    sleqp_log_debug("Trial step rejected, performing SOC");
-
-    SLEQP_CALL(perform_soc(solver));
-
-    SLEQP_CALL(sleqp_func_set_value(problem->func,
-                                    trial_iterate->x,
-                                    &func_grad_nnz,
-                                    &cons_val_nnz,
-                                    &cons_jac_nnz));
-
-    SLEQP_CALL(sleqp_sparse_vector_reserve(trial_iterate->func_grad, func_grad_nnz));
-
-    SLEQP_CALL(sleqp_sparse_vector_reserve(trial_iterate->cons_val, cons_val_nnz));
-
-    SLEQP_CALL(sleqp_sparse_matrix_reserve(trial_iterate->cons_jac, cons_jac_nnz));
-
-    SLEQP_CALL(sleqp_func_eval(problem->func,
-                               NULL,
-                               &trial_iterate->func_val,
-                               NULL,
-                               NULL,
-                               NULL));
-
-    double soc_reduction = iterate->func_val - trial_iterate->func_val;
-
-    double soc_reduction_ratio = actual_reduction / quadratic_reduction;
-
-    if(soc_reduction_ratio >= accepted_reduction)
+    if(problem->num_constraints > 0)
     {
-      sleqp_log_debug("SOC-corrected step accepted");
+      sleqp_log_debug("Performing SOC");
 
-      step_accepted = true;
+      SLEQP_CALL(perform_soc(solver));
+
+      SLEQP_CALL(set_func_value(solver, trial_iterate));
+
+      SLEQP_CALL(sleqp_func_eval(problem->func,
+                                 NULL,
+                                 &trial_iterate->func_val,
+                                 NULL,
+                                 NULL,
+                                 NULL));
+
+      double soc_reduction = iterate->func_val - trial_iterate->func_val;
+
+      double soc_reduction_ratio = soc_reduction / quadratic_reduction;
+
+      if(soc_reduction_ratio >= accepted_reduction)
+      {
+        sleqp_log_debug("SOC correction accepted");
+
+        step_accepted = true;
+      }
     }
-    else
-    {
-      sleqp_log_debug("Step rejected");
-      step_accepted = false;
-    }
-    */
   }
 
   // update trust radii, penalty parameter
@@ -891,11 +941,13 @@ SLEQP_RETCODE sleqp_solve(SleqpSolver* solver,
   {
     SLEQP_CALL(sleqp_perform_iteration(solver));
 
-    sleqp_log_info("Iteration %d, function value: %f, D_LP: %f, D_EQP: %f",
+    sleqp_log_info("Iteration %d, function value: %f, D_LP: %e, D_EQP: %e",
                    (i + 1),
                    solver->iterate->func_val,
                    solver->lp_trust_radius,
                    solver->trust_radius);
+
+    SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->x, stdout));
 
     if(should_terminate(solver))
     {

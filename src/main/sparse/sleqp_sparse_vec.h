@@ -109,26 +109,26 @@ extern "C" {
    *
    * @param[in]  first         A pointer to the first vector
    * @param[in]  second        A pointer to the second vector
-   * @param[in]  first_factor  A factor for the first vector
-   * @param[in]  second_factor A factor for the first vector
    * @param[out] result        A pointer to the result
    **/
   SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
                                         SleqpSparseVec* second,
-                                        double first_factor,
-                                        double second_factor,
                                         SleqpSparseVec* result);
 
   /**
-   * Computes the dot product of a sparse and a dense vector
+   * Computes the weighted sum of two sparse vectors
    *
-   * @param[in]  first     A pointer to the first vector
-   * @param[in]  second    A pointer to the second vector
-   * @param[out] product   A pointer to the result
+   * @param[in]  first         A pointer to the first vector
+   * @param[in]  second        A pointer to the second vector
+   * @param[in]  first_factor  A factor for the first vector
+   * @param[in]  second_factor A factor for the first vector
+   * @param[out] result        A pointer to the result
    **/
-  SLEQP_RETCODE sleqp_sparse_vector_dense_dot(SleqpSparseVec* first,
-                                              double* second,
-                                              double* product);
+  SLEQP_RETCODE sleqp_sparse_vector_add_scaled(SleqpSparseVec* first,
+                                               SleqpSparseVec* second,
+                                               double first_factor,
+                                               double second_factor,
+                                               SleqpSparseVec* result);
 
   double sleqp_sparse_vector_normsq(SleqpSparseVec* vec);
 
