@@ -2,7 +2,12 @@
 
 #define ABS(x) (((x) >= 0) ? (x) : (-(x)))
 
-const double eps = 1e-8;
+const double eps = 1e-16;
+
+double sleqp_eps()
+{
+  return eps;
+}
 
 double sleqp_infinity()
 {

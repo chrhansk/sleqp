@@ -24,6 +24,8 @@ extern "C" {
 
   bool sleqp_zero(double x);
 
+  double sleqp_eps();
+
   bool sleqp_is_infinity(double x);
 
 #define SLEQP_MAX(a,b) (((a)>(b))?(a):(b))
