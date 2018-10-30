@@ -782,11 +782,18 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
 
   if(ret < 0)
   {
-    sleqp_log_error("Caught trlib error <%d> (%s)",
-                    ret,
-                    trlib_status_string);
+    if(ret == TRLIB_CLR_PCINDEF)
+    {
+      sleqp_log_warn("trlib reported indefinite preconditioner");
+    }
+    else
+    {
+      sleqp_log_error("Caught trlib error <%d> (%s)",
+                      ret,
+                      trlib_status_string);
 
-    return SLEQP_INTERNAL_ERROR;
+      return SLEQP_INTERNAL_ERROR;
+    }
   }
 
   return SLEQP_OKAY;

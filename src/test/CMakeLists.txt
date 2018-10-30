@@ -45,6 +45,7 @@ add_unit_test(active_set_var_test)
 add_unit_test(cauchy_test)
 add_unit_test(dual_estimation_test)
 
+add_unit_test(constrained_newton_test)
 add_unit_test(unconstrained_newton_test)
 
 add_unit_test(constrained_test)
