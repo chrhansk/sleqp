@@ -78,7 +78,7 @@ Suite* unconstrained_test_suite()
 
   suite = suite_create("Unconstrained tests");
 
-  tc_uncons = tcase_create("Unconstrained Cauchy direction");
+  tc_uncons = tcase_create("Unconstrained solution test");
 
   tcase_add_checked_fixture(tc_uncons,
                             rosenbrock_setup,

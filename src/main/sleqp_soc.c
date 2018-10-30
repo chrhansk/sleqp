@@ -27,13 +27,13 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
 {
   SleqpSparseVec* rhs = soc_data->rhs;
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(rhs));
-
   int active_set_size = sleqp_aug_jacobian_active_set_size(aug_jacobian);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(rhs));
 
   SLEQP_CALL(sleqp_sparse_vector_resize(rhs, active_set_size));
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(rhs, active_set_size));
 
   int max_num_nnz = trial_iterate->x->nnz + trial_iterate->cons_val->nnz;
 

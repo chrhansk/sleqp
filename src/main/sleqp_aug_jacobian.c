@@ -17,6 +17,8 @@ struct SleqpAugJacobian
 
   int active_set_size;
 
+  int max_set_size;
+
   // a mapping of 0..num_variables - 1 -> pos in the active set or -1
   int* active_vars;
 
@@ -35,7 +37,6 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
 {
   SleqpProblem* problem = jacobian->problem;
 
-  int num_active_vars = jacobian->num_active_vars;
   int active_set_size = jacobian->active_set_size;
 
   SleqpSparseMatrix* cons_jac = iterate->cons_jac;
@@ -101,7 +102,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
 
         double value = is_upper ? cons_jac->data[index] : -(cons_jac->data[index]);
 
-        int aug_row = num_variables + num_active_vars + act_cons_index;
+        int aug_row = num_variables + act_cons_index;
 
         SLEQP_CALL(sleqp_sparse_matrix_push(augmented_matrix,
                                             aug_row, // row
@@ -191,10 +192,10 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
   SLEQP_CALL(sleqp_calloc(&jacobian->active_vars, problem->num_variables));
   SLEQP_CALL(sleqp_calloc(&jacobian->active_conss, problem->num_constraints));
 
-  int max_set_size = problem->num_constraints + problem->num_variables;
-  int max_num_cols = problem->num_variables + max_set_size;
+  jacobian->max_set_size = problem->num_constraints + problem->num_variables;
+  int max_num_cols = problem->num_variables + jacobian->max_set_size;
 
-  SLEQP_CALL(sleqp_calloc(&jacobian->set_indices, max_set_size));
+  SLEQP_CALL(sleqp_calloc(&jacobian->set_indices, jacobian->max_set_size));
   SLEQP_CALL(sleqp_calloc(&jacobian->col_indices, max_num_cols + 1));
 
   return SLEQP_OKAY;
@@ -249,6 +250,11 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   jacobian->num_active_vars = 0;
   jacobian->active_set_size = 0;
 
+  for(int i = 0; i < jacobian->max_set_size; ++i)
+  {
+    jacobian->set_indices[i] = -1;
+  }
+
   // first step: count active vars / cons
   for(int j = 0; j < problem->num_variables; ++j)
   {
@@ -268,7 +274,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   {
     if(cons_states[i] != SLEQP_INACTIVE)
     {
-      jacobian->active_conss[i] = jacobian->num_active_conss++;
+      jacobian->active_conss[i] = jacobian->num_active_vars + (jacobian->num_active_conss)++;
 
       jacobian->set_indices[jacobian->active_set_size++] = problem->num_variables + i;
     }

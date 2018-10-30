@@ -230,6 +230,16 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
   SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, sleqp_aug_jacobian_active_set_size(jacobian)));
 
+  {
+    int set_size = sleqp_aug_jacobian_active_set_size(jacobian);
+
+    SLEQP_CALL(sleqp_sparse_vector_clear(initial_rhs));
+
+    SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, set_size));
+
+    SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, set_size));
+  }
+
   // variables
   {
     SleqpSparseVec* values = iterate->x;
@@ -244,8 +254,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_ub, -1., 1., eps, upper_diff));
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_lb, -1., 1., eps, lower_diff));
-
-    SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, SLEQP_MAX(lower_diff->nnz, upper_diff->nnz)));
 
     int k_lower = 0, k_upper = 0;
 
@@ -305,8 +313,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_lb, -1., 1., eps, lower_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, SLEQP_MAX(lower_diff->nnz, upper_diff->nnz)));
-
     int k_lower = 0, k_upper = 0;
 
     while(k_lower < lower_diff->nnz || k_upper < upper_diff->nnz)
@@ -322,8 +328,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      int i_set = sleqp_aug_jacobian_constraint_index(jacobian, i_combined) +
-        sleqp_aug_jacobian_num_active_vars(jacobian);
+      int i_set = sleqp_aug_jacobian_constraint_index(jacobian, i_combined);
 
       if(cons_states[i_combined] == SLEQP_ACTIVE_UPPER)
       {
@@ -816,54 +821,68 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                                   data->initial_rhs,
                                                   data->initial_solution));
 
-  double initial_norm = sqrt(sleqp_sparse_vector_normsq(data->initial_solution));
-
-  trust_radius -= initial_norm;
-
-  assert(!sleqp_neg(trust_radius, eps));
-
-  if(!sleqp_zero(trust_radius, eps))
+  // rescale min norm solution first:
   {
+    double initial_norm = sqrt(sleqp_sparse_vector_normsq(data->initial_solution));
 
-    SleqpSparseVec* multipliers = data->multipliers;
+    // this is pretty much guaranteed...
+    if(initial_norm != 0.)
+    {
+      assert(initial_norm > 0.);
 
-    SLEQP_CALL(sleqp_get_violated_multipliers(problem,
-                                              iterate->x,
-                                              iterate->cons_val,
-                                              penalty_parameter,
-                                              multipliers,
-                                              iterate->active_set,
-                                              eps));
+      double alpha = (0.8* trust_radius) / (initial_norm);
 
-    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
-                                                        multipliers,
-                                                        eps,
-                                                        data->sparse_cache));
+      alpha = SLEQP_MIN(alpha, 1.);
 
+      if(alpha != 1.)
+      {
+        SLEQP_CALL(sleqp_sparse_vector_scale(data->initial_solution, alpha));
+        initial_norm *= alpha;
+      }
+    }
 
-    SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
-                                       iterate->func_grad,
-                                       eps,
-                                       data->gradient));
+    double initial_norm_sq = initial_norm * initial_norm;
 
-    SLEQP_CALL(trust_region_step(data,
-                                 iterate,
-                                 jacobian,
-                                 newton_step,
-                                 trust_radius));
+    double trust_radius_sq = trust_radius*trust_radius;
 
-    SLEQP_CALL(sleqp_sparse_vector_copy(newton_step, data->sparse_cache));
+    assert(sleqp_lt(initial_norm_sq, trust_radius_sq, eps));
 
-    SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
-                                       data->initial_solution,
-                                       eps,
-                                       newton_step));
-
+    trust_radius = sqrt(trust_radius_sq - initial_norm_sq);
   }
-  else
-  {
-    SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_solution, newton_step));
-  }
+
+  SleqpSparseVec* multipliers = data->multipliers;
+
+  SLEQP_CALL(sleqp_get_violated_multipliers(problem,
+                                            iterate->x,
+                                            iterate->cons_val,
+                                            penalty_parameter,
+                                            multipliers,
+                                            iterate->active_set,
+                                            eps));
+
+  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
+                                                      multipliers,
+                                                      eps,
+                                                      data->sparse_cache));
+
+
+  SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
+                                     iterate->func_grad,
+                                     eps,
+                                     data->gradient));
+
+  SLEQP_CALL(trust_region_step(data,
+                               iterate,
+                               jacobian,
+                               newton_step,
+                               trust_radius));
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(newton_step, data->sparse_cache));
+
+  SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
+                                     data->initial_solution,
+                                     eps,
+                                     newton_step));
 
   return SLEQP_OKAY;
 }
