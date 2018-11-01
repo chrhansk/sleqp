@@ -277,6 +277,12 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
   }
   else
   {
+    if(current_violation - inf_violation <= violation_tolerance)
+    {
+      // we can't make progress in feasibility, no need for an increase
+      return SLEQP_OKAY;
+    }
+
     for(int i = 0; i < max_increases; ++i)
     {
       solver->penalty_parameter *= penalty_increase;
