@@ -4,6 +4,7 @@
 #include "sleqp_cauchy.h"
 #include "sleqp_iterate.h"
 #include "sleqp_dual_estimation.h"
+#include "sleqp_deriv_check.h"
 #include "sleqp_soc.h"
 #include "sleqp_newton.h"
 #include "sleqp_log.h"

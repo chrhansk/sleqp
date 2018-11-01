@@ -14,6 +14,7 @@ set(COMMON_SRC
   sleqp_aug_jacobian.c
   sleqp_cauchy.c
   sleqp_cmp.c
+  sleqp_deriv_check.c
   sleqp_dual_estimation.c
   sleqp_func.c
   sleqp_iterate.c

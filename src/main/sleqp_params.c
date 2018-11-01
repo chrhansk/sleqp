@@ -5,6 +5,9 @@
 struct SleqpParams
 {
   double eps;
+  double deriv_pertubation;
+  double deriv_tolerance;
+
   double cauchy_tau;
   double cauchy_eta;
 
@@ -18,6 +21,8 @@ struct SleqpParams
 };
 
 #define EPS_DEFAULT 1e-10
+#define DERIV_PERTUBATION_DEFAULT 1e-8
+#define DERIV_TOLERANCE_DEFAULT 1e-4
 
 #define CAUCHY_TAU_DEFAULT 0.5
 #define CAUCHY_ETA_DEFAULT 0.1
@@ -37,6 +42,8 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
   SleqpParams* params = *star;
 
   params->eps = EPS_DEFAULT;
+  params->deriv_pertubation = DERIV_PERTUBATION_DEFAULT;
+  params->deriv_tolerance = DERIV_TOLERANCE_DEFAULT;
 
   params->cauchy_tau = CAUCHY_TAU_DEFAULT;
   params->cauchy_eta = CAUCHY_ETA_DEFAULT;
@@ -55,6 +62,16 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 double sleqp_params_get_eps(SleqpParams* params)
 {
   return params->eps;
+}
+
+double sleqp_params_get_deriv_pertubation(SleqpParams* params)
+{
+  return params->deriv_pertubation;
+}
+
+double sleqp_params_get_deriv_tolerance(SleqpParams* params)
+{
+  return params->deriv_tolerance;
 }
 
 double sleqp_params_get_cauchy_tau(SleqpParams* params)
@@ -94,7 +111,7 @@ double sleqp_params_get_accepted_reduction(SleqpParams* params)
 
 SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
 {
-  SleqpParams* params = *star;
+  //SleqpParams* params = *star;
 
   sleqp_free(star);
 

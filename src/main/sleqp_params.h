@@ -13,6 +13,10 @@ extern "C" {
 
   double sleqp_params_get_eps(SleqpParams* params);
 
+  double sleqp_params_get_deriv_pertubation(SleqpParams* params);
+
+  double sleqp_params_get_deriv_tolerance(SleqpParams* params);
+
   double sleqp_params_get_cauchy_tau(SleqpParams* params);
   double sleqp_params_get_cauchy_eta(SleqpParams* params);
 
