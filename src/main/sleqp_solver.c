@@ -862,12 +862,30 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
 
   SLEQP_CALL(sleqp_func_eval(problem->func,
                              NULL,
-                             &trial_iterate->func_val,
+                             &(trial_iterate->func_val),
                              NULL,
-                             NULL,
+                             trial_iterate->cons_val,
                              NULL));
 
-  double actual_reduction = iterate->func_val - trial_iterate->func_val;
+  double actual_reduction = 0.;
+
+  {
+    double iterate_value;
+
+    SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+                                iterate,
+                                solver->penalty_parameter,
+                                &iterate_value));
+
+    double trial_iterate_value;
+
+    SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+                                trial_iterate,
+                                solver->penalty_parameter,
+                                &trial_iterate_value));
+
+    actual_reduction = iterate_value - trial_iterate_value;
+  }
 
   double reduction_ratio = actual_reduction / quadratic_reduction;
 
