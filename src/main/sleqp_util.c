@@ -203,10 +203,10 @@ SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
       double d_value = valid_d ? d->data[k_d] : 0.;
       double l_value = valid_l ? l->data[k_l] : 0.;
 
-      double diff = x_value - l_value;
+      double diff = l_value - x_value;
 
-      if((d_value > 0. && diff > 0.) ||
-         (d_value < 0. && diff < 0.))
+      if((d_value < 0. && diff < 0.) ||
+         (d_value > 0. && diff > 0.))
       {
         double current_bound = diff / d_value;
 
