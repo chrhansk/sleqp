@@ -8,6 +8,8 @@
 
 #include "sleqp_defs.h"
 
+#include "sleqp_deriv_check.h"
+
 #include "sleqp_aug_jacobian.h"
 
 #include "sleqp_cauchy.h"
@@ -28,6 +30,8 @@ struct SleqpSolver
   SleqpProblem* problem;
 
   SleqpParams* params;
+
+  SleqpDerivCheckData* deriv_check;
 
   SleqpIterate* iterate;
 
@@ -93,6 +97,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpSolver* solver = *star;
+
   const int num_constraints = problem->num_constraints;
   const int num_variables = problem->num_variables;
 
@@ -100,21 +105,23 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   solver->params = params;
   solver->iteration = 0;
 
-  const double eps = sleqp_params_get_eps(params);
+  SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_check,
+                                        problem,
+                                        params));
 
-  SleqpSparseVec* xclip;
+  const double eps = sleqp_params_get_eps(params);
 
   assert(sleqp_sparse_vector_valid(x));
 
-  SLEQP_CALL(sleqp_sparse_vector_clip(x,
-                                      solver->problem->var_lb,
-                                      solver->problem->var_ub,
-                                      eps,
-                                      &xclip));
-
   SLEQP_CALL(sleqp_iterate_create(&solver->iterate,
                                   solver->problem,
-                                  xclip));
+                                  x));
+
+  SLEQP_CALL(sleqp_sparse_vector_clip(x,
+                                      problem->var_lb,
+                                      problem->var_ub,
+                                      eps,
+                                      solver->iterate->x));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->violation,
                                         num_constraints,
@@ -225,6 +232,8 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   const double penalty_increase = 10.;
 
+  const double eps = sleqp_params_get_eps(solver->params);
+
   if(num_constraints == 0)
   {
     return SLEQP_OKAY;
@@ -252,6 +261,8 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
   sleqp_cauchy_get_violation(cauchy_data, &inf_violation);
 
   inf_violation /= num_constraints;
+
+  assert(sleqp_ge(current_violation, inf_violation, eps));
 
   if(inf_violation <= violation_tolerance)
   {
@@ -442,8 +453,6 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
                                      &alpha));
   }
 
-  // TODO: Make these adjustable
-
   double eta = sleqp_params_get_linesearch_eta(solver->params);
   double tau = sleqp_params_get_linesearch_tau(solver->params);
   double cutoff_threshold = sleqp_params_get_linesearch_cutoff(solver->params);
@@ -618,7 +627,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
     SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
                                           iterate,
                                           solver->cauchy_direction));
-
+    /*
     {
       double product;
 
@@ -629,6 +638,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
       assert(!sleqp_pos(product, eps));
 
     }
+   */
 
     SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
                                              iterate,
@@ -696,7 +706,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
     objval = lin_term + 0.5*quad_term;
 
     sleqp_log_debug("Cauchy step norm: %e, Newton step norm: %e, " \
-                    "Newton grad prod: %e, Newton objval: %e ",
+                    "Newton grad prod: %e, Newton quad objval: %e ",
                     cnorm,
                     nnorm,
                     nprod,
@@ -805,7 +815,7 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
 
 #define HEADER_FORMAT "%10s |%20s |%20s |%20s |%20s |%20s\n"
 
-#define LINE_FORMAT "%10d |%20e |%20e |%20e |%20e |%20e\n"
+#define LINE_FORMAT SLEQP_BOLD "%10d " SLEQP_NO_BOLD "|%20e |%20e |%20e |%20e |%20e\n"
 
 static SLEQP_RETCODE print_header()
 {
@@ -841,6 +851,10 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
+  assert(sleqp_sparse_vector_is_boxed(iterate->x,
+                                      problem->var_lb,
+                                      problem->var_ub));
+
   const double eps = sleqp_params_get_eps(solver->params);
 
   const double accepted_reduction = sleqp_params_get_accepted_reduction(solver->params);
@@ -853,6 +867,12 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
   }
 
   SLEQP_CALL(print_line(solver));
+
+  {
+    SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
+
+    SLEQP_CALL(sleqp_deriv_check_second_order(solver->deriv_check, iterate));
+  }
 
   SLEQP_CALL(compute_trial_point(solver, &quadratic_reduction));
 
@@ -916,6 +936,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
 
     step_accepted = false;
 
+    /*
     if(problem->num_constraints > 0)
     {
       sleqp_log_debug("Performing SOC");
@@ -942,6 +963,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
         step_accepted = true;
       }
     }
+    */
   }
 
   // update trust radii, penalty parameter
@@ -1010,6 +1032,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                  problem->num_constraints);
 
   SLEQP_CALL(sleqp_set_and_evaluate(problem, iterate));
+
+  SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
 
   SLEQP_CALL(sleqp_get_violation(problem,
                                  iterate,
@@ -1099,6 +1123,8 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->violation));
 
   SLEQP_CALL(sleqp_iterate_free(&solver->iterate));
+
+  SLEQP_CALL(sleqp_deriv_checker_free(&solver->deriv_check));
 
   sleqp_free(star);
 

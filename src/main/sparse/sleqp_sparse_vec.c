@@ -355,24 +355,97 @@ double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
   return NULL;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
-                                       SleqpSparseVec* lb,
-                                       SleqpSparseVec* ub,
-                                       double eps,
-                                       SleqpSparseVec** xstar)
+bool sleqp_sparse_vector_is_boxed(SleqpSparseVec* x,
+                                  SleqpSparseVec* lb,
+                                  SleqpSparseVec* ub)
 {
   const int dim = x->dim;
 
   assert(lb->dim == dim);
   assert(ub->dim == dim);
 
+  int k_x = 0, k_lb = 0, k_ub = 0;
+
+  while(k_x < x->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  {
+    bool valid_x = (k_x < x->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
+
+    int idx = valid_x ? x->indices[k_x] : dim + 1;
+    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
+    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
+
+    valid_x = valid_x && idx == x->indices[k_x];
+    valid_lb = valid_lb && idx == lb->indices[k_lb];
+    valid_ub = valid_ub && idx == ub->indices[k_ub];
+
+    double x_val = valid_x ? x->data[k_x] : 0.;
+    double lb_val = valid_lb ? lb->data[k_lb] : 0.;
+    double ub_val = valid_ub ? ub->data[k_ub] : 0.;
+
+    if(x_val < lb_val)
+    {
+      return false;
+    }
+
+    if(x_val > ub_val)
+    {
+      return false;
+    }
+
+    if(valid_lb)
+    {
+      ++k_lb;
+    }
+
+    if(valid_ub)
+    {
+      ++k_ub;
+    }
+
+    if(valid_x)
+    {
+      ++k_x;
+    }
+
+  }
+
+  return true;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
+                                       SleqpSparseVec* lb,
+                                       SleqpSparseVec* ub,
+                                       double eps,
+                                       SleqpSparseVec* xclip)
+{
+  const int dim = x->dim;
+
+  assert(lb->dim == dim);
+  assert(ub->dim == dim);
+  assert(xclip->dim == dim);
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(xclip));
+
+  {
+    int nnz = SLEQP_MAX(lb->nnz, x->nnz);
+    nnz += SLEQP_MAX(ub->nnz, x->nnz);
+
+    nnz = SLEQP_MIN(nnz, dim);
+
+    SLEQP_CALL(sleqp_sparse_vector_reserve(xclip, nnz));
+  }
+
+  /*
   sleqp_sparse_vector_create(xstar,
                              dim,
                              SLEQP_MIN(x->nnz + lb->nnz, dim));
+  */
 
   int k_x = 0, k_lb = 0, k_ub = 0;
 
-  SleqpSparseVec* xclip = *xstar;
+  //SleqpSparseVec* xclip = *xstar;
 
   while(k_x < x->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
   {
@@ -428,6 +501,8 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
     }
 
   }
+
+  assert(sleqp_sparse_vector_is_boxed(xclip, lb, ub));
 
   return SLEQP_OKAY;
 }

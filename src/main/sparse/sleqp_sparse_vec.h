@@ -142,11 +142,15 @@ extern "C" {
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
                                  int index);
 
+  bool sleqp_sparse_vector_is_boxed(SleqpSparseVec* x,
+                                    SleqpSparseVec* lb,
+                                    SleqpSparseVec* ub);
+
   SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
                                          SleqpSparseVec* lb,
                                          SleqpSparseVec* ub,
                                          double eps,
-                                         SleqpSparseVec** xstar);
+                                         SleqpSparseVec* xclip);
 
   SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
                                             FILE* output);
