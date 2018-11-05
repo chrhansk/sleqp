@@ -1,7 +1,5 @@
 #include "sleqp_cmp.h"
 
-const double eps = 1e-16;
-
 double rel_diff(double x, double y)
 {
   double d = x - y;
@@ -12,11 +10,6 @@ double rel_diff(double x, double y)
   m = SLEQP_MAX(m, 1.);
 
   return d / m;
-}
-
-double sleqp_eps()
-{
-  return eps;
 }
 
 double sleqp_infinity()

@@ -8,16 +8,6 @@
 
 #define TIME_BUF_SIZE 128
 
-#define NORM  "\x1B[0m"
-#define RED  "\x1B[31m"
-#define GREEN  "\x1B[32m"
-#define YELLOW  "\x1B[33m"
-#define BLUE  "\x1B[34m"
-#define DARK "\x1b[90m"
-
-#define BOLD "\x1B[1m"
-#define NO_BOLD "\x1B[22m"
-
 struct LevelInfo
 {
   const char* name;
@@ -26,10 +16,10 @@ struct LevelInfo
 
 static struct LevelInfo level_infos[SLEQP_NUM_LOG_LEVELS] =
 {
-  {"error", RED},
-  {"warn", YELLOW},
-  {"info", GREEN},
-  {"debug", BLUE}
+  {"error", SLEQP_RED},
+  {"warn", SLEQP_YELLOW},
+  {"info", SLEQP_GREEN},
+  {"debug", SLEQP_BLUE}
 };
 
 static SLEQP_LOG_LEVEL level = SLEQP_LOG_DEBUG;
@@ -50,7 +40,7 @@ void sleqp_log_msg_level(int level, const char *fmt, ...)
   buf[strftime(buf, TIME_BUF_SIZE - 1, "%H:%M:%S", lt)] = '\0';
 
   fprintf(stderr,
-          "[" BOLD "%s %s%s" NORM NO_BOLD "] " NORM,
+          "[" SLEQP_BOLD "%s %s%s" SLEQP_NORM SLEQP_NO_BOLD "] " SLEQP_NORM,
           buf,
           level_infos[level].color,
           level_infos[level].name);
@@ -77,7 +67,8 @@ void sleqp_log_trace_level(int level, const char *file, int line, const char *fm
   buf[strftime(buf, TIME_BUF_SIZE - 1, "%H:%M:%S", lt)] = '\0';
 
   fprintf(stderr,
-          "[" BOLD "%s %s%s" NORM NO_BOLD "] " DARK "%s:%d " NORM,
+          "[" SLEQP_BOLD "%s %s%s" SLEQP_NORM SLEQP_NO_BOLD "] "
+          SLEQP_DARK "%s:%d " SLEQP_NORM,
           buf,
           level_infos[level].color,
           level_infos[level].name,

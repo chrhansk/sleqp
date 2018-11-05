@@ -40,9 +40,9 @@ extern "C" {
    *
    **/
   SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
-                                   SleqpIterate* iterate,
-                                   double penalty_parameter,
-                                   double* merit_value);
+                                 SleqpIterate* iterate,
+                                 double penalty_parameter,
+                                 double* merit_value);
 
   /**
    * Computes the linearized merit value at the given iterate.

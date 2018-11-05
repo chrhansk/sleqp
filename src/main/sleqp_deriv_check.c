@@ -81,6 +81,21 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
   return SLEQP_OKAY;
 }
 
+static double get_perturbation(double perturbation_param,
+                               SleqpSparseVec* x,
+                               int j)
+{
+  double* vec_ptr = sleqp_sparse_vector_at(x, j);
+
+  double value = vec_ptr ? (*vec_ptr) : 0.;
+
+  value = SLEQP_ABS(value);
+
+  value = SLEQP_MAX(value, 1.);
+
+  return value * perturbation_param;
+}
+
 static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
                                                SleqpIterate* iterate,
                                                int j,
@@ -98,7 +113,10 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
   SleqpSparseVec* value_diff = data->value_diff;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
-  const double pertubation = sleqp_params_get_deriv_pertubation(data->params);
+
+  const double pertubation = get_perturbation(sleqp_params_get_deriv_pertubation(data->params),
+                                              iterate->x,
+                                              j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
@@ -168,7 +186,10 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
   SleqpSparseVec* value_diff = data->value_diff;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
-  const double pertubation = sleqp_params_get_deriv_pertubation(data->params);
+
+  const double pertubation = get_perturbation(sleqp_params_get_deriv_pertubation(data->params),
+                                              iterate->x,
+                                              j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
@@ -288,7 +309,10 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
   SleqpSparseVec* value_diff = data->value_diff;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
-  const double pertubation = sleqp_params_get_deriv_pertubation(data->params);
+
+  const double pertubation = get_perturbation(sleqp_params_get_deriv_pertubation(data->params),
+                                              iterate->x,
+                                              j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
@@ -401,7 +425,10 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   SleqpSparseVec* value_diff = data->value_diff;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
-  const double pertubation = sleqp_params_get_deriv_pertubation(data->params);
+
+  const double pertubation = get_perturbation(sleqp_params_get_deriv_pertubation(data->params),
+                                              iterate->x,
+                                              j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 

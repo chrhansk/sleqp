@@ -1,6 +1,16 @@
 #ifndef SLEQP_LOG_H
 #define SLEQP_LOG_H
 
+#define SLEQP_NORM  "\x1B[0m"
+#define SLEQP_RED  "\x1B[31m"
+#define SLEQP_GREEN  "\x1B[32m"
+#define SLEQP_YELLOW  "\x1B[33m"
+#define SLEQP_BLUE  "\x1B[34m"
+#define SLEQP_DARK "\x1b[90m"
+
+#define SLEQP_BOLD "\x1B[1m"
+#define SLEQP_NO_BOLD "\x1B[22m"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -163,7 +163,9 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   SLEQP_CALL(sleqp_sparse_vector_create(&data->p, problem->num_variables, 0));
   SLEQP_CALL(sleqp_sparse_vector_create(&data->Hp, problem->num_variables, 0));
 
-  SLEQP_CALL(sleqp_calloc(&data->dense_cache, problem->num_variables));
+  SLEQP_CALL(sleqp_calloc(&data->dense_cache, SLEQP_MAX(problem->num_variables,
+                                                        problem->num_constraints)));
+
   SLEQP_CALL(sleqp_sparse_vector_create(&data->sparse_cache, problem->num_variables, 0));
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&data->Q,
@@ -821,33 +823,53 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                                   data->initial_rhs,
                                                   data->initial_solution));
 
-  // rescale min norm solution first:
-  {
-    double initial_norm = sqrt(sleqp_sparse_vector_normsq(data->initial_solution));
+  const double norm_ratio = .8;
 
-    // this is pretty much guaranteed...
+  // rescale min norm solution if required.
+  {
+    double unscaled_norm = sqrt(sleqp_sparse_vector_normsq(data->initial_solution));
+
+    double initial_norm = unscaled_norm;
+
+    double alpha = 1.;
+
     if(initial_norm != 0.)
     {
       assert(initial_norm > 0.);
 
-      double alpha = (0.8* trust_radius) / (initial_norm);
+      alpha = (norm_ratio * trust_radius) / (initial_norm);
 
       alpha = SLEQP_MIN(alpha, 1.);
 
-      if(alpha != 1.)
+
+      if(sleqp_eq(alpha, 1., eps))
+      {
+        // no scaling required...
+
+        double initial_norm_sq = initial_norm * initial_norm;
+
+        double trust_radius_sq = trust_radius * trust_radius;
+
+        assert(sleqp_lt(initial_norm_sq, trust_radius_sq, eps));
+
+        trust_radius = sqrt(trust_radius_sq - initial_norm_sq);
+      }
+      else
       {
         SLEQP_CALL(sleqp_sparse_vector_scale(data->initial_solution, alpha));
-        initial_norm *= alpha;
+
+        // we know that the scaled initial solution
+        // has norm equal to norm_ratio * trust_radius
+        trust_radius *= sqrt(1. - norm_ratio * norm_ratio);
       }
     }
+  }
 
-    double initial_norm_sq = initial_norm * initial_norm;
+  if(sleqp_zero(trust_radius, eps))
+  {
+    SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_solution, newton_step));
 
-    double trust_radius_sq = trust_radius*trust_radius;
-
-    assert(sleqp_lt(initial_norm_sq, trust_radius_sq, eps));
-
-    trust_radius = sqrt(trust_radius_sq - initial_norm_sq);
+    return SLEQP_OKAY;
   }
 
   SleqpSparseVec* multipliers = data->multipliers;
