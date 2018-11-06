@@ -72,66 +72,8 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
                                   int num_variables,
                                   int num_constraints)
 {
-  // TODO: what about inf values?!
-
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
-
-  /*
-  assert(soplex.numRowsReal() == spx->num_constraints);
-  assert(soplex.numColsReal() == spx->num_variables);
-
-
-  assert(cons_matrix->num_cols == spx->num_variables);
-  assert(cons_matrix->num_rows == spx->num_constraints);
-
-  soplex.changeRangeReal(soplex::VectorReal(spx->num_constraints, cons_lb),
-                         soplex::VectorReal(spx->num_constraints, cons_ub));
-
-  int j = 0;
-
-  for(int k = 0; k < cons_matrix->nnz; ++k)
-  {
-    while(cons_matrix->cols[j] < k)
-    {
-      ++j;
-    }
-
-    assert(cons_matrix->cols[j + 1] >= cons_matrix->cols[j]);
-
-    int num_entries = cons_matrix->cols[j + 1] - cons_matrix->cols[j];
-
-    soplex::Nonzero<soplex::Real>* entries = new soplex::Nonzero<soplex::Real>[num_entries];
-
-    soplex::SVectorReal column(num_entries, entries);
-
-    // This does not work... int* vs int* for second arg.
-    // TODO: It DOES work, reimplement!
-    // column.add(num_entries,
-    //            cons_matrix->rows + k,
-    //            cons_matrix->data + k);
-
-    for(int i = 0; i < num_entries; ++i)
-    {
-      column.add(cons_matrix->rows[k + i], cons_matrix->data[k + i]);
-    }
-
-    soplex.changeColReal(j, soplex::LPCol(objective[j],
-                                          column,
-                                          vars_ub[j],
-                                          vars_lb[j]));
-
-    delete[] entries;
-  }
-
-  soplex.changeObjReal(soplex::VectorReal(spx->num_variables,
-                                          objective));
-
-  //soplex::infinity;
-
-  soplex.changeBoundsReal(soplex::VectorReal(spx->num_variables, vars_lb),
-                          soplex::VectorReal(spx->num_variables, vars_ub));
-  */
 
   soplex::SPxSolver::Status status = soplex.optimize();
 
