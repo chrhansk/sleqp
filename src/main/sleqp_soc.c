@@ -26,8 +26,9 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
                                 SleqpSparseVec* soc_direction)
 {
   SleqpSparseVec* rhs = soc_data->rhs;
+  SleqpActiveSet* active_set = iterate->active_set;
 
-  int active_set_size = sleqp_aug_jacobian_active_set_size(aug_jacobian);
+  const int active_set_size = sleqp_active_set_size(active_set);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(rhs));
 
@@ -46,7 +47,7 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
     {
       int index = x->indices[k_x];
 
-      int variable_index = sleqp_aug_jacobian_variable_index(aug_jacobian, index);
+      int variable_index = sleqp_active_set_get_variable_index(active_set, index);
 
       if(variable_index == -1)
       {
@@ -66,7 +67,7 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
     {
       int index = cons_val->indices[k_c];
 
-      int constraint_index = sleqp_aug_jacobian_constraint_index(aug_jacobian, index);
+      int constraint_index = sleqp_active_set_get_constraint_index(active_set, index);
 
       if(constraint_index == -1)
       {

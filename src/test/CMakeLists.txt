@@ -48,5 +48,7 @@ add_unit_test(dual_estimation_test)
 add_unit_test(constrained_newton_test)
 add_unit_test(unconstrained_newton_test)
 
+add_unit_test(constrained_cauchy_test)
+
 add_unit_test(constrained_test)
 add_unit_test(unconstrained_test)

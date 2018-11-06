@@ -12,7 +12,7 @@
 
 #include "test_common.h"
 
-#include "quadfunc_fixture.h"
+#include "quadcons_fixture.h"
 
 SleqpParams* params;
 SleqpProblem* problem;
@@ -20,23 +20,25 @@ SleqpIterate* iterate;
 SleqpLPi* lp_interface;
 SleqpCauchyData* cauchy_data;
 
-void active_set_var_setup()
+SleqpSparseVec* cauchy_direction;
+
+void constrained_setup()
 {
-  quadfunc_setup();
+  quadconsfunc_setup();
 
   ASSERT_CALL(sleqp_params_create(&params));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
-                                   quadfunc,
+                                   quadconsfunc,
                                    params,
-                                   quadfunc_var_lb,
-                                   quadfunc_var_ub,
-                                   quadfunc_cons_lb,
-                                   quadfunc_cons_ub));
+                                   quadconsfunc_var_lb,
+                                   quadconsfunc_var_ub,
+                                   quadconsfunc_cons_lb,
+                                   quadconsfunc_cons_ub));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
-                                   quadfunc_x));
+                                   quadconsfunc_x));
 
   int num_lp_variables = problem->num_variables + 2*problem->num_constraints;
   int num_lp_constraints = problem->num_constraints;
@@ -51,18 +53,16 @@ void active_set_var_setup()
                                        problem,
                                        params,
                                        lp_interface));
+
+  ASSERT_CALL(sleqp_sparse_vector_create(&cauchy_direction, 2, 2));
+
 }
 
-START_TEST(test_inactive)
+START_TEST(test_active_set)
 {
-  iterate->x->data[0] = 1.5;
-  iterate->x->data[1] = 2.5;
-
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
-
   SleqpActiveSet* active_set = iterate->active_set;
 
-  double trust_radius = 0.25, penalty_parameter = 1.;
+  double trust_radius = 0.1, penalty_parameter = 1.;
 
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
                                        iterate,
@@ -76,21 +76,19 @@ START_TEST(test_inactive)
                                           iterate,
                                           trust_radius));
 
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 0), SLEQP_INACTIVE);
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 1), SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_active_set_get_constraint_state(active_set, 0), SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_active_set_get_constraint_state(active_set, 1), SLEQP_ACTIVE_UPPER);
 }
 END_TEST
 
-START_TEST(test_active)
+START_TEST(test_dual_variable)
 {
-  iterate->x->data[0] = 1.5;
-  iterate->x->data[1] = 2.5;
+  SleqpSparseVec* cons_dual = iterate->cons_dual;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
+  SleqpAugJacobian* jacobian;
+  SleqpDualEstimationData* estimation_data;
 
-  SleqpActiveSet* active_set = iterate->active_set;
-
-  double trust_radius = 1., penalty_parameter = 1.;
+  double trust_radius = 0.1, penalty_parameter = 1.;
 
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
                                        iterate,
@@ -104,41 +102,41 @@ START_TEST(test_active)
                                           iterate,
                                           trust_radius));
 
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 0), SLEQP_ACTIVE_LOWER);
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 1), SLEQP_ACTIVE_LOWER);
+  ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, iterate, cauchy_direction));
+
+  ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
+                                        problem,
+                                        params));
+
+  ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
+
+  ASSERT_CALL(sleqp_dual_estimation_data_create(&estimation_data, problem));
+
+  ASSERT_CALL(sleqp_dual_estimation_compute(estimation_data,
+                                            iterate,
+                                            NULL,
+                                            jacobian));
+
+  ASSERT_CALL(sleqp_sparse_vector_fprintf(iterate->cons_dual, stdout));
+
+  ck_assert_int_eq(cons_dual->dim, 2);
+  ck_assert_int_eq(cons_dual->nnz, 1);
+
+  ck_assert_int_eq(cons_dual->dim, 2);
+
+  ck_assert(sleqp_eq(cons_dual->data[0], 0.4142135623, 1e-8));
+
+  ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
+
+  ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
+
 }
 END_TEST
 
-START_TEST(test_first_active)
+void constrained_teardown()
 {
-  iterate->x->data[0] = 1.;
-  iterate->x->data[1] = 2.5;
+  ASSERT_CALL(sleqp_sparse_vector_free(&cauchy_direction));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
-
-  SleqpActiveSet* active_set = iterate->active_set;
-
-  double trust_radius = 0.25, penalty_parameter = 1.;
-
-  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
-                                       iterate,
-                                       trust_radius));
-
-  ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 iterate->func_grad,
-                                 penalty_parameter));
-
-  ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
-                                          iterate,
-                                          trust_radius));
-
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 0), SLEQP_ACTIVE_LOWER);
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 1), SLEQP_INACTIVE);
-}
-END_TEST
-
-void active_set_var_teardown()
-{
   ASSERT_CALL(sleqp_cauchy_data_free(&cauchy_data));
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
@@ -149,31 +147,29 @@ void active_set_var_teardown()
 
   ASSERT_CALL(sleqp_params_free(&params));
 
-  quadfunc_teardown();
+  quadconsfunc_teardown();
 }
 
-Suite* active_set_var_test_suite()
+Suite* constrained_test_suite()
 {
   Suite *suite;
-  TCase *tc_active_set_var;
+  TCase *tc_cons;
 
-  suite = suite_create("Dual estimation tests");
+  suite = suite_create("Constrained tests");
 
-  tc_active_set_var = tcase_create("Simply constrained");
+  tc_cons = tcase_create("Constrained Cauchy direction");
 
-  tcase_add_checked_fixture(tc_active_set_var,
-                            active_set_var_setup,
-                            active_set_var_teardown);
+  tcase_add_checked_fixture(tc_cons,
+                            constrained_setup,
+                            constrained_teardown);
 
-  tcase_add_test(tc_active_set_var, test_inactive);
-  tcase_add_test(tc_active_set_var, test_active);
-  tcase_add_test(tc_active_set_var, test_first_active);
+  tcase_add_test(tc_cons, test_active_set);
+  //tcase_add_test(tc_cons, test_dual_variable);
 
-  suite_add_tcase(suite, tc_active_set_var);
+  suite_add_tcase(suite, tc_cons);
 
   return suite;
 }
-
 
 int main()
 {
@@ -181,7 +177,7 @@ int main()
   Suite* suite;
   SRunner* srunner;
 
-  suite = active_set_var_test_suite();
+  suite = constrained_test_suite();
   srunner = srunner_create(suite);
 
   srunner_set_fork_status(srunner, CK_NOFORK);

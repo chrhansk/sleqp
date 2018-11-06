@@ -36,13 +36,15 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
                                             SleqpAugJacobian* jacobian)
 {
   SleqpProblem* problem = estimation_data->problem;
+  SleqpActiveSet* active_set = iterate->active_set;
 
   SleqpSparseVec* grad = iterate->func_grad;
 
   SleqpSparseVec* dual_sol = estimation_data->solution;
   SleqpSparseVec* neg_grad = estimation_data->neg_grad;
 
-  SLEQP_CALL(sleqp_sparse_vector_resize(dual_sol, sleqp_aug_jacobian_active_set_size(jacobian)));
+  SLEQP_CALL(sleqp_sparse_vector_resize(dual_sol,
+                                        sleqp_active_set_size(iterate->active_set)));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(neg_grad));
 
@@ -68,21 +70,20 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
     vars_dual->nnz = 0;
     cons_dual->nnz = 0;
 
-    SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(iterate->active_set);
-    SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
-
     for(int k = 0; k < dual_sol->nnz; ++k)
     {
       int sol_index = dual_sol->indices[k];
       double dual_value = dual_sol->data[k];
 
-      int index = sleqp_aug_jacobian_get_set_index(jacobian, sol_index);
+      int index = sleqp_active_set_get_content(active_set, sol_index);
 
       if(index < problem->num_variables)
       {
-        assert(var_states[index] != SLEQP_INACTIVE);
+        SLEQP_ACTIVE_STATE var_state = sleqp_active_set_get_variable_state(active_set, index);
 
-        if(var_states[index] == SLEQP_ACTIVE_UPPER)
+        assert(var_state != SLEQP_INACTIVE);
+
+        if(var_state == SLEQP_ACTIVE_UPPER)
         {
           SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, SLEQP_MAX(dual_value, 0.)));
         }
@@ -96,9 +97,11 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
       {
         index -= problem->num_variables;
 
-        assert(cons_states[index] != SLEQP_INACTIVE);
+        SLEQP_ACTIVE_STATE cons_state = sleqp_active_set_get_constraint_state(active_set, index);
 
-        if(cons_states[index] == SLEQP_ACTIVE_UPPER)
+        assert(cons_state != SLEQP_INACTIVE);
+
+        if(cons_state == SLEQP_ACTIVE_UPPER)
         {
           SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, SLEQP_MAX(dual_value, 0.)));
         }

@@ -20,28 +20,6 @@ extern "C" {
   SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
                                                SleqpIterate* iterate);
 
-  int sleqp_aug_jacobian_constraint_index(SleqpAugJacobian* jacobian,
-                                          int index);
-
-  int sleqp_aug_jacobian_variable_index(SleqpAugJacobian* jacobian,
-                                        int index);
-
-  int sleqp_aug_jacobian_num_active_vars(SleqpAugJacobian* jacobian);
-
-  int sleqp_aug_jacobian_num_active_conss(SleqpAugJacobian* jacobian);
-
-  int sleqp_aug_jacobian_active_set_size(SleqpAugJacobian* jacobian);
-
-  /**
-   * Gets the variable / constraint index corresponding to the
-   * given index. Variable indices are in 0...,num_variables -1,
-   * constraint indices in num_variables,...,num_variables + num_constraints - 1.
-   */
-  int sleqp_aug_jacobian_get_set_index(SleqpAugJacobian* jacobian,
-                                       int index);
-
-  int sleqp_aug_jacobian_size(SleqpAugJacobian* jacobian);
-
   /**
    * computes the solution of the system \f$ A_W x = b_W \f$ with
    * minimum norm.

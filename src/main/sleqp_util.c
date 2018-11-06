@@ -51,8 +51,6 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
   SleqpSparseVec* ub = problem->cons_ub;
   SleqpSparseVec* v = cons_vals;
 
-  SLEQP_ACTIVE_STATE* cons_states = active_set ? sleqp_active_set_cons_states(active_set) : NULL;
-
   SLEQP_CALL(sleqp_sparse_vector_clear(multipliers));
 
   // TODO: use active set cons size instead...
@@ -93,7 +91,8 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
       ub_val = ub->data[k_ub++];
     }
 
-    if(cons_states && cons_states[idx] != SLEQP_INACTIVE)
+    if(active_set &&
+       sleqp_active_set_get_constraint_state(active_set, idx) != SLEQP_INACTIVE)
     {
       continue;
     }

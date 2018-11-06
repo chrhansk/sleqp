@@ -9,26 +9,13 @@ struct SleqpAugJacobian
   SleqpProblem* problem;
   SleqpParams* params;
 
+  int active_set_size;
+  int max_set_size;
+
   SleqpSparseMatrix* augmented_matrix;
   SleqpSparseFactorization* factorization;
 
-  int num_active_conss;
-  int num_active_vars;
-
-  int active_set_size;
-
-  int max_set_size;
-
-  // a mapping of 0..num_variables - 1 -> pos in the active set or -1
-  int* active_vars;
-
-  // a mapping of 0..num_constraints - 1 -> pos in the active set or -1
-  int* active_conss;
-
-  int* set_indices;
-
   int* col_indices;
-
 };
 
 static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
@@ -37,16 +24,14 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
 {
   SleqpProblem* problem = jacobian->problem;
 
-  int active_set_size = jacobian->active_set_size;
-
   SleqpSparseMatrix* cons_jac = iterate->cons_jac;
 
   SleqpSparseMatrix* augmented_matrix = jacobian->augmented_matrix;
 
-  int num_variables = problem->num_variables;
+  SleqpActiveSet* active_set = iterate->active_set;
 
-  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
-  SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(iterate->active_set);
+  const int num_variables = problem->num_variables;
+  const int active_set_size = sleqp_active_set_size(active_set);
 
   int augmented_size = num_variables + active_set_size;
 
@@ -68,13 +53,15 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
     {
       // push the jacobian of the variable, if it active (given by +/- e_j)
 
-      int variable_index = sleqp_aug_jacobian_variable_index(jacobian, column);
+      int variable_index = sleqp_active_set_get_variable_index(active_set, column);
+
+      SLEQP_ACTIVE_STATE var_state = sleqp_active_set_get_variable_state(active_set, column);
 
       if(variable_index != -1)
       {
-        assert(var_states[column] != SLEQP_INACTIVE);
+        assert(var_state != SLEQP_INACTIVE);
 
-        bool is_upper = (var_states[column] == SLEQP_ACTIVE_UPPER);
+        bool is_upper = (var_state == SLEQP_ACTIVE_UPPER);
 
         SLEQP_CALL(sleqp_sparse_matrix_push(augmented_matrix,
                                             num_variables + variable_index,
@@ -83,7 +70,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
       }
       else
       {
-        assert(var_states[column] == SLEQP_INACTIVE);
+        assert(var_state == SLEQP_INACTIVE);
       }
     }
 
@@ -92,13 +79,16 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
         ++index)
     {
       int jac_row = cons_jac->rows[index];
-      int act_cons_index = sleqp_aug_jacobian_constraint_index(jacobian, jac_row);
+
+      int act_cons_index = sleqp_active_set_get_constraint_index(active_set, jac_row);
+
+      SLEQP_ACTIVE_STATE cons_state = sleqp_active_set_get_constraint_state(active_set, jac_row);
 
       if(act_cons_index != -1)
       {
-        assert(cons_states[jac_row] != SLEQP_INACTIVE);
+        assert(cons_state != SLEQP_INACTIVE);
 
-        bool is_upper = (cons_states[jac_row] == SLEQP_ACTIVE_UPPER);
+        bool is_upper = (cons_state == SLEQP_ACTIVE_UPPER);
 
         double value = is_upper ? cons_jac->data[index] : -(cons_jac->data[index]);
 
@@ -112,7 +102,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
       }
       else
       {
-        assert(cons_states[jac_row] == SLEQP_INACTIVE);
+        assert(cons_state == SLEQP_INACTIVE);
       }
     }
   }
@@ -183,19 +173,15 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
   jacobian->problem = problem;
   jacobian->params = params;
 
+  jacobian->active_set_size = 0;
+
   SLEQP_CALL(sleqp_sparse_matrix_create(&jacobian->augmented_matrix, 0, 0, 0));
 
   jacobian->factorization = NULL;
 
-  jacobian->active_set_size = 0;
-
-  SLEQP_CALL(sleqp_calloc(&jacobian->active_vars, problem->num_variables));
-  SLEQP_CALL(sleqp_calloc(&jacobian->active_conss, problem->num_constraints));
-
   jacobian->max_set_size = problem->num_constraints + problem->num_variables;
   int max_num_cols = problem->num_variables + jacobian->max_set_size;
 
-  SLEQP_CALL(sleqp_calloc(&jacobian->set_indices, jacobian->max_set_size));
   SLEQP_CALL(sleqp_calloc(&jacobian->col_indices, max_num_cols + 1));
 
   return SLEQP_OKAY;
@@ -206,10 +192,6 @@ SLEQP_RETCODE sleqp_aug_jacobian_free(SleqpAugJacobian** star)
   SleqpAugJacobian* jacobian = *star;
 
   sleqp_free(&jacobian->col_indices);
-  sleqp_free(&jacobian->set_indices);
-
-  sleqp_free(&jacobian->active_conss);
-  sleqp_free(&jacobian->active_vars);
 
   if(jacobian->factorization)
   {
@@ -223,73 +205,18 @@ SLEQP_RETCODE sleqp_aug_jacobian_free(SleqpAugJacobian** star)
   return SLEQP_OKAY;
 }
 
-int sleqp_aug_jacobian_num_active_vars(SleqpAugJacobian* jacobian)
-{
-  return jacobian->num_active_vars;
-}
-
-int sleqp_aug_jacobian_num_active_conss(SleqpAugJacobian* jacobian)
-{
-  return jacobian->num_active_conss;
-}
-
-int sleqp_aug_jacobian_active_set_size(SleqpAugJacobian* jacobian)
-{
-  return jacobian->active_set_size;
-}
-
 SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
                                              SleqpIterate* iterate)
 {
   SleqpProblem* problem = jacobian->problem;
+  SleqpActiveSet* active_set = iterate->active_set;
 
-  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
-  SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(iterate->active_set);
-
-  jacobian->num_active_conss = 0;
-  jacobian->num_active_vars = 0;
-  jacobian->active_set_size = 0;
-
-  for(int i = 0; i < jacobian->max_set_size; ++i)
-  {
-    jacobian->set_indices[i] = -1;
-  }
-
-  // first step: count active vars / cons
-  for(int j = 0; j < problem->num_variables; ++j)
-  {
-    if(var_states[j] != SLEQP_INACTIVE)
-    {
-      jacobian->active_vars[j] = (jacobian->num_active_vars)++;
-
-      jacobian->set_indices[(jacobian->active_set_size)++] = j;
-    }
-    else
-    {
-      jacobian->active_vars[j] = -1;
-    }
-  }
-
-  for(int i = 0; i < problem->num_constraints; ++i)
-  {
-    if(cons_states[i] != SLEQP_INACTIVE)
-    {
-      jacobian->active_conss[i] = jacobian->num_active_vars + (jacobian->num_active_conss)++;
-
-      jacobian->set_indices[jacobian->active_set_size++] = problem->num_variables + i;
-    }
-    else
-    {
-      jacobian->active_conss[i] = -1;
-    }
-  }
-
-  jacobian->active_set_size = jacobian->num_active_conss + jacobian->num_active_vars;
+  jacobian->active_set_size = sleqp_active_set_size(active_set);
 
   // we overestimate here...
   int constraint_nnz = iterate->cons_jac->nnz;
 
-  int variable_nnz = jacobian->num_active_vars;
+  int variable_nnz = sleqp_active_set_num_active_vars(active_set);
 
   int total_nnz = problem->num_variables // identity
     + 2*(constraint_nnz + variable_nnz); // cons jac nnz + active variables
@@ -323,29 +250,6 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   return SLEQP_OKAY;
 }
 
-int sleqp_aug_jacobian_constraint_index(SleqpAugJacobian* jacobian,
-                                        int index)
-{
-  return jacobian->active_conss[index];
-}
-
-int sleqp_aug_jacobian_variable_index(SleqpAugJacobian* jacobian,
-                                      int index)
-{
-  return jacobian->active_vars[index];
-}
-
-int sleqp_aug_jacobian_get_set_index(SleqpAugJacobian* jacobian,
-                                     int index)
-{
-  return jacobian->set_indices[index];
-}
-
-int sleqp_aug_jacobian_size(SleqpAugJacobian* jacobian)
-{
-  return jacobian->problem->num_variables + jacobian->active_set_size;
-}
-
 SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
                                                    SleqpSparseVec* rhs,
                                                    SleqpSparseVec* sol)
@@ -358,7 +262,6 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
   int num_variables = problem->num_variables;
 
   assert(sol->dim == num_variables);
-  assert(rhs->dim == jacobian->active_set_size);
 
   rhs->dim += num_variables;
 

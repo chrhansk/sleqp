@@ -230,16 +230,16 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
   SLEQP_CALL(sleqp_sparse_vector_clear(initial_rhs));
 
-  SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, sleqp_aug_jacobian_active_set_size(jacobian)));
+  const int active_set_size = sleqp_active_set_size(iterate->active_set);
+
+  SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, active_set_size));
 
   {
-    int set_size = sleqp_aug_jacobian_active_set_size(jacobian);
-
     SLEQP_CALL(sleqp_sparse_vector_clear(initial_rhs));
 
-    SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, set_size));
+    SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, active_set_size));
 
-    SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, set_size));
+    SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, active_set_size));
   }
 
   // variables
@@ -250,8 +250,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
     SleqpSparseVec* lower_diff = data->lower_diff;
     SleqpSparseVec* upper_diff = data->upper_diff;
-
-    SLEQP_ACTIVE_STATE* var_states = sleqp_active_set_var_states(active_set);
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_ub, -1., 1., eps, upper_diff));
 
@@ -272,15 +270,18 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      int i_set = sleqp_aug_jacobian_variable_index(jacobian, i_combined);
+      int i_set = sleqp_active_set_get_variable_index(active_set, i_combined);
 
-      if(var_states[i_combined] == SLEQP_ACTIVE_UPPER)
+      SLEQP_ACTIVE_STATE var_state = sleqp_active_set_get_variable_state(active_set,
+                                                                         i_combined);
+
+      if(var_state == SLEQP_ACTIVE_UPPER)
       {
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
                                             upper_value));
       }
-      else if(var_states[i_combined] == SLEQP_ACTIVE_LOWER)
+      else if(var_state == SLEQP_ACTIVE_LOWER)
       {
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
@@ -309,8 +310,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
     SleqpSparseVec* lower_diff = data->lower_diff;
     SleqpSparseVec* upper_diff = data->upper_diff;
 
-    SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(active_set);
-
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_ub, -1., 1., eps, upper_diff));
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_lb, -1., 1., eps, lower_diff));
@@ -330,15 +329,18 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      int i_set = sleqp_aug_jacobian_constraint_index(jacobian, i_combined);
+      int i_set = sleqp_active_set_get_constraint_index(active_set, i_combined);
 
-      if(cons_states[i_combined] == SLEQP_ACTIVE_UPPER)
+      SLEQP_ACTIVE_STATE cons_state = sleqp_active_set_get_constraint_state(active_set,
+                                                                            i_combined);
+
+      if(cons_state == SLEQP_ACTIVE_UPPER)
       {
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
                                             upper_value));
       }
-      else if(cons_states[i_combined] == SLEQP_ACTIVE_LOWER)
+      else if(cons_state == SLEQP_ACTIVE_LOWER)
       {
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,

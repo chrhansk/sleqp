@@ -204,10 +204,11 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_active_set_reset(iterate->active_set));
 
-  SLEQP_ACTIVE_STATE* cons_states = sleqp_active_set_cons_states(iterate->active_set);
-
   // set the cons state manually...
-  cons_states[0] = SLEQP_ACTIVE_LOWER;
+
+  ASSERT_CALL(sleqp_active_set_add_constraint(iterate->active_set,
+                                              0,
+                                              SLEQP_ACTIVE_LOWER));
 }
 
 START_TEST(newton_constrained_step)
