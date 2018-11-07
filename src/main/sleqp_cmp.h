@@ -1,6 +1,11 @@
 #ifndef SLEQP_CMP_H
 #define SLEQP_CMP_H
 
+/**
+ * @file sleqp_cmp.h
+ * @brief Definition of numerical comparison functions.
+ **/
+
 #include "sleqp_types.h"
 
 #ifdef __cplusplus

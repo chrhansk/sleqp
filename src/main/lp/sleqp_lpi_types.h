@@ -1,6 +1,11 @@
 #ifndef SLEQP_LPI_TYPES_H
 #define SLEQP_LPI_TYPES_H
 
+/**
+ * @file sleqp_lpi_types.h
+ * @brief Definition of the LP interface types.
+ **/
+
 #include "sleqp_types.h"
 
 #ifdef __cplusplus

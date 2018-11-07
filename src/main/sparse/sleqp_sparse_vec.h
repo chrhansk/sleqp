@@ -1,6 +1,11 @@
 #ifndef SLEQP_SPARSE_VEC_H
 #define SLEQP_SPARSE_VEC_H
 
+/**
+ * @file sleqp_sparse_vec.h
+ * @brief Definition of sparse vectors.
+ **/
+
 #ifdef __cplusplus
 extern "C" {
 #endif

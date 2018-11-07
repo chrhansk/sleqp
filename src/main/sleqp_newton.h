@@ -1,6 +1,11 @@
 #ifndef SLEQP_NEWTON_H
 #define SLEQP_NEWTON_H
 
+/**
+ * @file sleqp_newton.h
+ * @brief Definition of functions used for the computation of Newton (aka EQP) steps.
+ **/
+
 #include "sleqp_aug_jacobian.h"
 #include "sleqp_problem.h"
 #include "sleqp_iterate.h"

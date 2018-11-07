@@ -1,6 +1,11 @@
 #ifndef SLEQP_SPARSE_MATRIX_H
 #define SLEQP_SPARSE_MATRIX_H
 
+/**
+ * @file sleqp_sparse_matrix.h
+ * @brief Definition of sparse matrices.
+ **/
+
 #ifdef __cplusplus
 extern "C" {
 #endif

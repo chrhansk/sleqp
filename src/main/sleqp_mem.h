@@ -1,6 +1,11 @@
 #ifndef SLEQP_MEM_H
 #define SLEQP_MEM_H
 
+/**
+ * @file sleqp_mem.h
+ * @brief Definition of memory (de-)allocation functions.
+ **/
+
 #include <stdlib.h>
 
 #include "sleqp_types.h"

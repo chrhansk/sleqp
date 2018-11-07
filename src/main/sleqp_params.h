@@ -1,6 +1,11 @@
 #ifndef SLEQP_PARAMS_H
 #define SLEQP_PARAMS_H
 
+/**
+ * @file sleqp_params.h
+ * @brief Definition of numerical parameters.
+ **/
+
 #include "sleqp_types.h"
 
 #ifdef __cplusplus

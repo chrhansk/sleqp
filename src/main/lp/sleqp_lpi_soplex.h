@@ -1,6 +1,11 @@
 #ifndef SLEQP_LPI_SOPLEX_H
 #define SLEQP_LPI_SOPLEX_H
 
+/**
+ * @file sleqp_lpi_soplex.h
+ * @brief Definition of the SoPlex LP interface.
+ **/
+
 #include "sleqp_lpi.h"
 
 #ifdef __cplusplus

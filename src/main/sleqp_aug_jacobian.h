@@ -1,6 +1,11 @@
 #ifndef SLEQP_AUG_JACOBIAN_H
 #define SLEQP_AUG_JACOBIAN_H
 
+/**
+ * @file sleqp_aug_jacobian.h
+ * @brief Definition of the augmented Jacobian matrix.
+ **/
+
 #include "sleqp_problem.h"
 #include "sleqp_iterate.h"
 #include "sleqp_params.h"

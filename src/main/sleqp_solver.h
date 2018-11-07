@@ -1,6 +1,11 @@
 #ifndef SLEQP_SOLVER_H
 #define SLEQP_SOLVER_H
 
+/**
+ * @file sleqp_solver.h
+ * @brief Definition of the solver structure.
+ **/
+
 #include "sleqp.h"
 
 #ifdef __cplusplus

@@ -1,6 +1,11 @@
 #ifndef SLEQP_LOG_H
 #define SLEQP_LOG_H
 
+/**
+ * @file sleqp_log.h
+ * @brief Definition of logging functions.
+ **/
+
 #define SLEQP_NORM  "\x1B[0m"
 #define SLEQP_RED  "\x1B[31m"
 #define SLEQP_GREEN  "\x1B[32m"

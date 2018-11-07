@@ -316,19 +316,22 @@ SLEQP_RETCODE sleqp_sparse_vector_add_scaled(SleqpSparseVec* first,
     bool valid_second = (k_second < second->nnz);
 
     int i_first = valid_first ? first->indices[k_first] : first->dim + 1;
-    int i_second = valid_second ? second->indices[k_second] : first->dim + 1;
+    int i_second = valid_second ? second->indices[k_second] : second->dim + 1;
 
     int i_combined = SLEQP_MIN(i_first, i_second);
 
+    valid_first = valid_first && (i_first == i_combined);
+    valid_second = valid_second && (i_second == i_combined);
+
     double value = 0.;
 
-    if(i_first == i_combined)
+    if(valid_first)
     {
       value += first_factor * first->data[k_first];
       ++k_first;
     }
 
-    if(i_second == i_combined)
+    if(valid_second)
     {
       value += second_factor * second->data[k_second];
       ++k_second;

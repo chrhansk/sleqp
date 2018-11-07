@@ -1,6 +1,11 @@
 #ifndef SLEQP_LPI_H
 #define SLEQP_LPI_H
 
+/**
+ * @file sleqp_lpi.h
+ * @brief Definition of the LP interface.
+ **/
+
 #include "sparse/sleqp_sparse_matrix.h"
 #include "sparse/sleqp_sparse_vec.h"
 

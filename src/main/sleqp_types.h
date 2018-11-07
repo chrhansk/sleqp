@@ -1,6 +1,11 @@
 #ifndef SLEQP_TYPES_H
 #define SLEQP_TYPES_H
 
+/**
+ * @file sleqp_types.h
+ * @brief Definition of basic types.
+ **/
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -1,6 +1,10 @@
 #ifndef SLEQP_SOC_H
 #define SLEQP_SOC_H
 
+/**
+ * @file sleqp_soc.h
+ * @brief Definition of SOC (second-order correction) functions.
+ **/
 
 #include "sleqp_aug_jacobian.h"
 #include "sleqp_iterate.h"

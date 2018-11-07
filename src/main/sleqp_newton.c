@@ -455,6 +455,11 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
     trlib_krylov_prepare_memory(maxiter, fwork);
   }
 
+  SLEQP_CALL(sleqp_sparse_matrix_clear(data->Q));
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(data->p));
+  SLEQP_CALL(sleqp_sparse_vector_clear(data->Hp));
+
   char* prefix = "trlib: ";
   FILE* fout = stderr;
 

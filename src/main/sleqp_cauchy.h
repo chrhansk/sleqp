@@ -1,6 +1,11 @@
 #ifndef SLEQP_CAUCHY_H
 #define SLEQP_CAUCHY_H
 
+/**
+ * @file sleqp_cauchy.h
+ * @brief Definition of Cauchy step-related functions.
+ **/
+
 #include "sleqp.h"
 
 #include "sleqp_iterate.h"

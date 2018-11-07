@@ -1,6 +1,11 @@
 #ifndef SLEQP_UTIL_H
 #define SLEQP_UTIL_H
 
+/**
+ * @file sleqp_util.h
+ * @brief Definition of utility functions.
+ **/
+
 #include "sleqp_func.h"
 #include "sleqp_iterate.h"
 #include "sleqp_problem.h"
