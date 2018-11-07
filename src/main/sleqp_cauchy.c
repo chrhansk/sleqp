@@ -453,7 +453,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
     int k_lb = 0, k_ub = 0;
 
     SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
-    SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_variables;
+    SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
 
     SleqpSparseVec* lb = cauchy_data->problem->cons_lb;
     SleqpSparseVec* ub = cauchy_data->problem->cons_ub;
