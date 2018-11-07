@@ -29,6 +29,8 @@ struct SleqpSolver
 {
   SleqpProblem* problem;
 
+  SLEQP_STATUS status;
+
   SleqpParams* params;
 
   SleqpDerivCheckData* deriv_check;
@@ -526,6 +528,7 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 static bool should_terminate(SleqpSolver* solver)
 {
   SleqpIterate* iterate = solver->iterate;
+  SleqpProblem* problem = solver->problem;
 
   const double optimality_residuum = sleqp_sparse_vector_norminf(solver->estimation_residuum);
 
@@ -538,47 +541,7 @@ static bool should_terminate(SleqpSolver* solver)
     multiplier_norm = sqrt(multiplier_norm);
   }
 
-  double slackness_residuum = 0.;
-
-  {
-    SleqpSparseVec* cons_val = iterate->cons_val;
-    SleqpSparseVec* cons_dual = iterate->cons_dual;
-
-    int k_v = 0, k_d = 0;
-
-    while(k_v < cons_val->nnz || k_d < cons_dual->nnz)
-    {
-      bool valid_val = (k_v < cons_val->nnz);
-      bool valid_dual = (k_d < cons_dual->nnz);
-
-      int i_first = valid_val ? cons_val->indices[k_v] : cons_val->dim + 1;
-      int i_second = valid_dual ? cons_dual->indices[k_d] : cons_dual->dim + 1;
-
-      int i_combined = SLEQP_MIN(i_first, i_second);
-
-      valid_val = valid_val && i_first == i_combined;
-      valid_dual = valid_dual && i_second == i_combined;
-
-      double value = valid_val ? cons_val->data[k_v] : 0.;
-      double dual = valid_dual ? cons_dual->data[k_d] : 0.;
-
-      double current_residuum = value * dual;
-
-      current_residuum = SLEQP_ABS(current_residuum);
-
-      slackness_residuum = SLEQP_MAX(current_residuum, slackness_residuum);
-
-      if(valid_val)
-      {
-        ++k_v;
-      }
-
-      if(valid_dual)
-      {
-        ++k_d;
-      }
-    }
-  }
+  double slackness_residuum = sleqp_iterate_slackness_residuum(iterate, problem);
 
   const double optimality_tolerance = sleqp_params_get_optimality_tol(solver->params);
 
@@ -627,6 +590,20 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
     SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
                                           iterate,
                                           solver->cauchy_direction));
+
+    {
+      /*
+      bool contained;
+
+      SLEQP_CALL(sleqp_iterate_active_set_contains(iterate,
+                                                   problem,
+                                                   solver->cauchy_direction,
+                                                   eps,
+                                                   &contained));
+
+      assert(contained);
+      */
+    }
     /*
     {
       double product;
@@ -1043,29 +1020,46 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   sleqp_log_info("Initial function value: %f",
                  solver->iterate->func_val);
 
+  solver->status = SLEQP_INVALID;
+
   for(int i = 0; i < max_num_iterations; ++i)
   {
     SLEQP_CALL(sleqp_perform_iteration(solver));
 
-    /*
-    sleqp_log_info("Iteration %d, function value: %f, D_LP: %e, D_EQP: %e",
-                   (i + 1),
-                   solver->iterate->func_val,
-                   solver->lp_trust_radius,
-                   solver->trust_radius);
-    */
-
-    //SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->x, stdout));
-
     if(should_terminate(solver))
     {
+      sleqp_log_info("Achieved optimality");
+      solver->status = SLEQP_OPTIMAL;
       break;
     }
   }
 
-  sleqp_log_info("Final solution: ");
+  if(solver->status != SLEQP_OPTIMAL)
+  {
+    const double infeasibility = sleqp_sparse_vector_norminf(solver->violation);
+
+    if(sleqp_zero(infeasibility, eps))
+    {
+      solver->status = SLEQP_FEASIBLE;
+    }
+    else
+    {
+      solver->status = SLEQP_INFEASIBLE;
+    }
+
+  }
+
+  sleqp_log_info("Primal solution: ");
 
   SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->x, stdout));
+
+  sleqp_log_info("Variable multipliers: ");
+
+  SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->vars_dual, stdout));
+
+  sleqp_log_info("Constraint multipliers: ");
+
+  SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->cons_dual, stdout));
 
   return SLEQP_OKAY;
 }
@@ -1076,6 +1070,11 @@ SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
   *iterate = solver->iterate;
 
   return SLEQP_OKAY;
+}
+
+SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
+{
+  return solver->status;
 }
 
 SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)

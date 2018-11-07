@@ -58,7 +58,7 @@ static SLEQP_RETCODE umfpack_get_error_string(int value,
     {                                                              \
     case UMFPACK_ERROR_invalid_matrix:                             \
     case UMFPACK_ERROR_argument_missing:                           \
-      return SLEQP_INVALID;                                        \
+      return SLEQP_ILLEGAL_ARGUMENT;                               \
     case UMFPACK_ERROR_out_of_memory:                              \
       return SLEQP_NOMEM;                                          \
     default:                                                       \

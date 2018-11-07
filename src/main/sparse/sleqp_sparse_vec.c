@@ -1,6 +1,7 @@
 #include "sleqp_sparse_vec.h"
 
 #include <assert.h>
+#include <math.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
@@ -28,6 +29,8 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
                                        double value)
 {
   assert(vec->nnz < vec->nnz_max);
+
+  //assert(!(isinf(value) || isnan(value)));
 
   if(vec->nnz > 0)
   {
@@ -231,6 +234,8 @@ SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
 SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
                                         double factor)
 {
+  //assert(!(isinf(factor) || isnan(factor)));
+
   for(int k = 0; k < vector->nnz; ++k)
   {
     vector->data[k] *= factor;
@@ -290,6 +295,9 @@ SLEQP_RETCODE sleqp_sparse_vector_add_scaled(SleqpSparseVec* first,
                                              SleqpSparseVec* result)
 {
   assert(first->dim == second->dim);
+
+  //assert(!(isinf(first_factor) || isnan(first_factor)));
+  //assert(!(isinf(second_factor) || isnan(second_factor)));
 
   assert(first != result);
   assert(second != result);

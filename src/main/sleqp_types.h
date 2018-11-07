@@ -12,7 +12,7 @@ extern "C" {
 
 #define RETCODES C(SLEQP_OKAY, 0)               \
     C(SLEQP_NOMEM, 1)                           \
-    C(SLEQP_INVALID, 2)                         \
+    C(SLEQP_ILLEGAL_ARGUMENT, 2)                \
     C(SLEQP_INVALID_DERIV, 3)                   \
     C(SLEQP_INTERNAL_ERROR, 4)                  \
     C(SLEQP_NUM_RETCODES, 5)
@@ -34,6 +34,13 @@ extern "C" {
                            SLEQP_ACTIVE = SLEQP_ACTIVE_LOWER | SLEQP_ACTIVE_UPPER};
 
   typedef enum SLEQP_Active_State SLEQP_ACTIVE_STATE;
+
+  enum SLEQP_Status {SLEQP_OPTIMAL,
+                     SLEQP_FEASIBLE,
+                     SLEQP_INFEASIBLE,
+                     SLEQP_INVALID};
+
+  typedef enum SLEQP_Status SLEQP_STATUS;
 
 #define SLEQP_CALL(x)                                                      \
   do                                                                       \

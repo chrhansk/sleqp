@@ -12,11 +12,12 @@
 
 START_TEST(test_unconstrained_solve)
 {
+  SleqpSparseVec* expected_solution;
+
   SleqpParams* params;
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  SleqpSparseVec* expected_solution;
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 2, 2));
 
@@ -54,6 +55,8 @@ START_TEST(test_unconstrained_solve)
 
   ASSERT_CALL(sleqp_solver_get_solution(solver,
                                         &solution_iterate));
+
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
   SleqpSparseVec* actual_solution = solution_iterate->x;
 

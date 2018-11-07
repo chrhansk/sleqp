@@ -17,6 +17,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                    int max_num_iterations);
 
+  SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver);
+
   SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                           SleqpIterate** iterate);
 

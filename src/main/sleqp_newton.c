@@ -228,8 +228,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
   const double eps = sleqp_params_get_eps(data->params);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(initial_rhs));
-
   const int active_set_size = sleqp_active_set_size(iterate->active_set);
 
   SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, active_set_size));
@@ -267,6 +265,9 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
       int i_combined = SLEQP_MIN(i_lower, i_upper);
 
+      valid_lower = valid_lower && (i_lower == i_combined);
+      valid_upper = valid_upper && (i_upper == i_combined);
+
       double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
@@ -285,7 +286,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       {
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
-                                            lower_value));
+                                            -1.*lower_value));
       }
 
       if(i_lower == i_combined)
@@ -326,6 +327,9 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
       int i_combined = SLEQP_MIN(i_lower, i_upper);
 
+      valid_lower = valid_lower && (i_lower == i_combined);
+      valid_upper = valid_upper && (i_upper == i_combined);
+
       double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
@@ -344,15 +348,15 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       {
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
-                                            lower_value));
+                                            -1.*lower_value));
       }
 
-      if(i_lower == i_combined)
+      if(valid_lower)
       {
         ++k_lower;
       }
 
-      if(i_upper == i_combined)
+      if(valid_upper)
       {
         ++k_upper;
       }
@@ -528,6 +532,8 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
       SLEQP_CALL(sleqp_sparse_matrix_clear(data->Q));
 
       data->Q->num_cols = 0;
+
+      assert(v_dot_g > 0);
 
       double scale = 1./sqrt(v_dot_g);
 
@@ -797,11 +803,11 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
     }
     else
     {
-      sleqp_log_error("Caught trlib error <%d> (%s)",
+      sleqp_log_warn("Caught trlib error <%d> (%s)",
                       ret,
                       trlib_status_string);
 
-      return SLEQP_INTERNAL_ERROR;
+      //return SLEQP_INTERNAL_ERROR;
     }
   }
 
@@ -848,16 +854,30 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
       {
         // no scaling required...
 
-        double initial_norm_sq = initial_norm * initial_norm;
+        const double initial_norm_sq = initial_norm * initial_norm;
 
-        double trust_radius_sq = trust_radius * trust_radius;
+        const double trust_radius_sq = trust_radius * trust_radius;
 
-        assert(sleqp_lt(initial_norm_sq, trust_radius_sq, eps));
+        //assert(sleqp_lt(initial_norm_sq, trust_radius_sq, eps));
+
+        {
+          bool contained;
+
+          SLEQP_CALL(sleqp_iterate_active_set_contains(iterate,
+                                                       problem,
+                                                       data->initial_solution,
+                                                       eps,
+                                                       data->dense_cache,
+                                                       &contained));
+
+          assert(contained);
+        }
 
         trust_radius = sqrt(trust_radius_sq - initial_norm_sq);
       }
       else
       {
+
         SLEQP_CALL(sleqp_sparse_vector_scale(data->initial_solution, alpha));
 
         // we know that the scaled initial solution
@@ -867,7 +887,10 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     }
   }
 
-  if(sleqp_zero(trust_radius, eps))
+  int active_set_size = sleqp_active_set_size(iterate->active_set);
+
+  // in either case the only feasible solution is the zero vector
+  if(sleqp_zero(trust_radius, eps) || problem->num_variables == active_set_size)
   {
     SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_solution, newton_step));
 

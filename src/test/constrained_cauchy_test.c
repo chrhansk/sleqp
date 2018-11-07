@@ -164,7 +164,7 @@ Suite* constrained_test_suite()
                             constrained_teardown);
 
   tcase_add_test(tc_cons, test_active_set);
-  //tcase_add_test(tc_cons, test_dual_variable);
+  tcase_add_test(tc_cons, test_dual_variable);
 
   suite_add_tcase(suite, tc_cons);
 

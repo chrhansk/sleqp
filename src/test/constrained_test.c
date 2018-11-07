@@ -309,8 +309,25 @@ void constrained_teardown()
 
 START_TEST(test_constrained_solve)
 {
+  SleqpSparseVec* expected_solution;
+
   SleqpParams* params;
   SleqpSolver* solver;
+
+  ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 4, 4));
+
+  /*
+  (0) = 1.000000e+00
+  (1) = 4.742999e+00
+  (2) = 3.821151e+00
+  (3) = 1.379408e+00
+  */
+
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 4.742999));
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 2, 3.821151));
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 3, 1.379408));
+
 
   ASSERT_CALL(sleqp_params_create(&params));
 
@@ -318,41 +335,6 @@ START_TEST(test_constrained_solve)
                                   problem,
                                   params,
                                   x));
-
-  ASSERT_CALL(sleqp_solver_solve(solver, 50));
-
-  ASSERT_CALL(sleqp_solver_free(&solver));
-
-  ASSERT_CALL(sleqp_params_free(&params));
-
-
-
-  /*
-  SleqpParams* params;
-  SleqpProblem* problem;
-  SleqpSolver* solver;
-
-  SleqpSparseVec* expected_solution;
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 2, 2));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 1.));
-
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   rosenbrock_func,
-                                   params,
-                                   rosenbrock_var_lb,
-                                   rosenbrock_var_ub,
-                                   rosenbrock_cons_lb,
-                                   rosenbrock_cons_ub));
-
-  ASSERT_CALL(sleqp_solver_create(&solver,
-                                  problem,
-                                  params,
-                                  rosenbrock_x));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100));
@@ -362,6 +344,8 @@ START_TEST(test_constrained_solve)
   ASSERT_CALL(sleqp_solver_get_solution(solver,
                                         &solution_iterate));
 
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+
   SleqpSparseVec* actual_solution = solution_iterate->x;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
@@ -370,12 +354,9 @@ START_TEST(test_constrained_solve)
 
   ASSERT_CALL(sleqp_solver_free(&solver));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
-
   ASSERT_CALL(sleqp_params_free(&params));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
-  */
 }
 END_TEST
 
