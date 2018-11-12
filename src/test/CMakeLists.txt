@@ -52,3 +52,7 @@ add_unit_test(constrained_cauchy_test)
 
 add_unit_test(constrained_test)
 add_unit_test(unconstrained_test)
+
+if(SLEQP_ENABLE_CUTEST)
+  add_subdirectory(cutest)
+endif()

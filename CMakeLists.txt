@@ -40,15 +40,18 @@ add_library(trlib INTERFACE IMPORTED)
 find_package(Doxygen)
 
 enable_testing()
-set(ENABLE_UNIT_TESTS TRUE)
+
+set(SLEQP_ENABLE_UNIT_TESTS TRUE CACHE BOOL "Whether or not to enable unit tests")
 
 if(CHECK_FOUND)
   include_directories(${CHECK_INCLUDE_DIR})
 else()
   message(STATUS "Could not find Check, unit tests will be disabled")
-  set(ENABLE_UNIT_TESTS FALSE)
+  set(SLEQP_ENABLE_UNIT_TESTS FALSE)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+set(SLEQP_ENABLE_CUTEST FALSE CACHE BOOL "Whether or not to include the CUTest suite")
 
 add_subdirectory(src)
