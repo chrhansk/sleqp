@@ -17,8 +17,6 @@
 extern "C" {
 #endif
 
-  // TODO: add SLEQPProblem* at some point
-
   typedef struct SleqpFunc SleqpFunc;
 
   /**
@@ -171,6 +169,8 @@ extern "C" {
                                          SleqpSparseVec* direction,
                                          SleqpSparseVec* cons_duals,
                                          double* bilinear_prod);
+
+  void* sleqp_func_get_data(SleqpFunc* func);
 
   SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar);
 

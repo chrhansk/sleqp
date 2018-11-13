@@ -130,6 +130,11 @@ SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+void* sleqp_func_get_data(SleqpFunc* func)
+{
+  return func->data;
+}
+
 SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
 {
   SleqpFunc* func = *fstar;
