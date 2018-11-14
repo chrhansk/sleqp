@@ -174,7 +174,7 @@ static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
                                         int num_variables,
                                         int num_constraints)
 {
-  int k_y = 0, k_lb = 0, k_ub = 0;
+  int k_c = 0, k_lb = 0, k_ub = 0;
 
   SleqpSparseVec* lb = cauchy_data->problem->cons_lb;
   SleqpSparseVec* ub = cauchy_data->problem->cons_ub;
@@ -185,9 +185,9 @@ static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
 
   for(int i = 0; i < num_constraints; ++i)
   {
-    while(k_y < val->nnz && val->indices[k_y] < i)
+    while(k_c < val->nnz && val->indices[k_c] < i)
     {
-      ++k_y;
+      ++k_c;
     }
 
     while(k_lb < lb->nnz && lb->indices[k_lb] < i)
@@ -200,13 +200,16 @@ static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
       ++k_ub;
     }
 
-    double ubval = (i == k_ub) ? ub->data[k_ub] : 0;
-    double lbval = (i == k_lb) ? lb->data[k_lb] : 0;
-    double yval = (i == k_y) ? val->data[k_y] : 0;
+    bool valid_ub = (k_ub < ub->nnz && ub->indices[k_ub] == i);
+    bool valid_lb = (k_lb < lb->nnz && lb->indices[k_lb] == i);
+    bool valid_c = (k_c < val->nnz && val->indices[k_c] == i);
 
+    const double ubval = valid_ub ? ub->data[k_ub] : 0;
+    const double lbval = valid_lb ? lb->data[k_lb] : 0;
+    const double cval = valid_c ? val->data[k_c] : 0;
 
-    cauchy_data->cons_ub[i] = ubval - yval;
-    cauchy_data->cons_lb[i] = lbval - yval;
+    cauchy_data->cons_ub[i] = ubval - cval;
+    cauchy_data->cons_lb[i] = lbval - cval;
 
     assert(sleqp_le(cauchy_data->cons_lb[i],
                     cauchy_data->cons_ub[i],

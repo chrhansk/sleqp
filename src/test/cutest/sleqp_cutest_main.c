@@ -3,6 +3,8 @@
 #include "sleqp.h"
 
 #include "sleqp_cutest_defs.h"
+
+#include "sleqp_cutest_constrained.h"
 #include "sleqp_cutest_unconstrained.h"
 
 int main(int argc, char *argv[])
@@ -20,10 +22,6 @@ int main(int argc, char *argv[])
 
   integer CUTEst_nvar;        /* number of variables */
   integer CUTEst_ncons;       /* number of constraints */
-  integer CUTEst_lcjac;       /* length of Jacobian arrays */
-  integer CUTEst_nnzj;        /* number of nonzeros in Jacobian */
-  integer CUTEst_nnzh;        /* number of nonzeros in upper triangular
-                                 part of the Hessian of the Lagrangian */
 
   bool CUTest_constrained = false;
 
@@ -54,7 +52,9 @@ int main(int argc, char *argv[])
 
   logical *equatn = NULL, *linear = NULL;
 
-  integer e_order = 1, l_order = 1, v_order = 0;
+  // we don't care about the ordering (or indeed the variable /
+  // constraint types) at this point
+  integer e_order = 0, l_order = 0, v_order = 0;
 
   SLEQP_CALL(sleqp_calloc(&x_dense, CUTEst_nvar));
   SLEQP_CALL(sleqp_calloc(&var_lb_dense, CUTEst_nvar));
@@ -62,9 +62,6 @@ int main(int argc, char *argv[])
 
   if(CUTest_constrained)
   {
-    sleqp_log_error("Not implemented");
-    return 1;
-
     SLEQP_CALL(sleqp_calloc(&cons_lb_dense, CUTEst_ncons + 1));
     SLEQP_CALL(sleqp_calloc(&cons_ub_dense, CUTEst_ncons + 1));
 
@@ -151,7 +148,14 @@ int main(int argc, char *argv[])
   SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_lb, cons_lb_dense, CUTEst_ncons, eps));
   SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_ub, cons_ub_dense, CUTEst_ncons, eps));
 
-  SLEQP_CALL(sleqp_cutest_uncons_func_create(&func, CUTEst_nvar, eps));
+  if(CUTest_constrained)
+  {
+    SLEQP_CALL(sleqp_cutest_cons_func_create(&func, CUTEst_nvar, CUTEst_ncons, eps));
+  }
+  else
+  {
+    SLEQP_CALL(sleqp_cutest_uncons_func_create(&func, CUTEst_nvar, eps));
+  }
 
   SLEQP_CALL(sleqp_problem_create(&problem,
                                   func,
@@ -178,7 +182,14 @@ int main(int argc, char *argv[])
 
   SLEQP_CALL(sleqp_problem_free(&problem));
 
-  SLEQP_CALL(sleqp_cutest_uncons_func_free(&func));
+  if(CUTest_constrained)
+  {
+    SLEQP_CALL(sleqp_cutest_cons_func_free(&func));
+  }
+  else
+  {
+    SLEQP_CALL(sleqp_cutest_uncons_func_free(&func));
+  }
 
   SLEQP_CALL(sleqp_sparse_vector_free(&cons_ub));
   SLEQP_CALL(sleqp_sparse_vector_free(&cons_lb));
@@ -186,6 +197,8 @@ int main(int argc, char *argv[])
   SLEQP_CALL(sleqp_sparse_vector_free(&x));
   SLEQP_CALL(sleqp_sparse_vector_free(&var_ub));
   SLEQP_CALL(sleqp_sparse_vector_free(&var_lb));
+
+  SLEQP_CALL(sleqp_params_free(&params));
 
   sleqp_free(&v);
   sleqp_free(&linear);

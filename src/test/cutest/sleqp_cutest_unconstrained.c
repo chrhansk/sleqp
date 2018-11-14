@@ -6,8 +6,6 @@
 
 typedef struct CUTestUnconsFuncData
 {
-  bool constrained;
-  int num_constraints;
   double eps;
 
   double* x;
@@ -20,9 +18,9 @@ typedef struct CUTestUnconsFuncData
 
 } CUTestUnconsFuncData;
 
-SLEQP_RETCODE sleqp_cutest_uncons_data_create(CUTestUnconsFuncData** star,
-                                              int num_variables,
-                                              double eps)
+static SLEQP_RETCODE sleqp_cutest_uncons_data_create(CUTestUnconsFuncData** star,
+                                                     int num_variables,
+                                                     double eps)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -41,7 +39,7 @@ SLEQP_RETCODE sleqp_cutest_uncons_data_create(CUTestUnconsFuncData** star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cutest_uncons_data_free(CUTestUnconsFuncData** star)
+static SLEQP_RETCODE sleqp_cutest_uncons_data_free(CUTestUnconsFuncData** star)
 {
   CUTestUnconsFuncData* data = *star;
 

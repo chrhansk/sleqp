@@ -14,12 +14,17 @@ struct SleqpDerivCheckData
 
   SleqpSparseVec* hessian_left;
   SleqpSparseVec* hessian_right;
+
   SleqpSparseVec* hessian_prod;
+
+  SleqpSparseVec* hessian_prod_zero;
+  SleqpSparseVec* hessian_prod_cache;
 
   SleqpSparseVec* cons_grad_iterate;
   SleqpSparseVec* cons_grad_check_iterate;
 
   SleqpSparseVec* multipliers;
+  SleqpSparseVec* multipliers_zero;
 
   SleqpIterate* iterate;
   SleqpIterate* check_iterate;
@@ -61,6 +66,14 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
                                         num_variables,
                                         0));
 
+  SLEQP_CALL(sleqp_sparse_vector_create(&data->hessian_prod_zero,
+                                        num_variables,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&data->hessian_prod_cache,
+                                        num_variables,
+                                        0));
+
   SLEQP_CALL(sleqp_sparse_vector_create(&data->cons_grad_iterate,
                                         num_variables,
                                         0));
@@ -70,6 +83,10 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
                                         0));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&data->multipliers,
+                                        num_constraints,
+                                        1));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&data->multipliers_zero,
                                         num_constraints,
                                         1));
 
@@ -422,6 +439,8 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   int cons_val_nnz = 0;
   int cons_jac_nnz = 0;
 
+  const double one = 1.;
+
   SleqpSparseVec* value_diff = data->value_diff;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
@@ -483,6 +502,12 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
 
   SLEQP_CALL(sleqp_sparse_vector_push(data->hessian_right, j, 1.));
 
+  SLEQP_CALL(sleqp_func_hess_product(func,
+                                     &one,
+                                     data->hessian_right,
+                                     data->multipliers_zero,
+                                     data->hessian_prod_zero));
+
   for(int k = 0; k < num_variables; ++k)
   {
     SLEQP_CALL(sleqp_func_set_value(func,
@@ -492,10 +517,17 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
                                     &cons_jac_nnz));
 
     SLEQP_CALL(sleqp_func_hess_product(func,
-                                       NULL,
+                                       &one,
                                        data->hessian_right,
                                        data->multipliers,
-                                       data->hessian_prod));
+                                       data->hessian_prod_cache));
+
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->hessian_prod_cache,
+                                              data->hessian_prod_zero,
+                                              1.,
+                                              -1.,
+                                              0,
+                                              data->hessian_prod));
 
     SLEQP_CALL(sleqp_sparse_vector_clear(data->hessian_left));
 
@@ -577,11 +609,17 @@ SLEQP_RETCODE sleqp_deriv_checker_free(SleqpDerivCheckData** star)
 
   SLEQP_CALL(sleqp_iterate_free(&data->check_iterate));
 
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers_zero));
+
   SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->cons_grad_check_iterate));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->cons_grad_iterate));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->hessian_prod_cache));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->hessian_prod_zero));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->hessian_prod));
 
