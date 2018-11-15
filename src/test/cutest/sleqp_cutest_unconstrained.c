@@ -1,7 +1,5 @@
 #include "sleqp_cutest_unconstrained.h"
 
-#include <cutest.h>
-
 #include "sleqp_cutest_defs.h"
 
 typedef struct CUTestUnconsFuncData
@@ -14,7 +12,7 @@ typedef struct CUTestUnconsFuncData
   double* direction;
   double* hessian_product;
 
-  bool goth;
+  logical goth;
 
 } CUTestUnconsFuncData;
 
@@ -27,7 +25,7 @@ static SLEQP_RETCODE sleqp_cutest_uncons_data_create(CUTestUnconsFuncData** star
   CUTestUnconsFuncData* data = *star;
 
   data->eps = eps;
-  data->goth = false;
+  data->goth = cutest_false;
 
   SLEQP_CALL(sleqp_calloc(&data->x, num_variables));
 
@@ -65,7 +63,7 @@ static SLEQP_RETCODE sleqp_cutest_uncons_func_set(SleqpSparseVec* x,
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->x));
 
-  data->goth = false;
+  data->goth = cutest_false;
 
   *func_grad_nnz = num_variables;
 
@@ -136,7 +134,7 @@ static SLEQP_RETCODE sleqp_cutest_uncons_func_hess_product(int num_variables,
 
     SLEQP_CUTEST_CHECK_STATUS(status);
 
-    data->goth = true;
+    data->goth = cutest_true;
   }
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(product,

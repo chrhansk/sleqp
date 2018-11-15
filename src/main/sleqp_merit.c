@@ -193,9 +193,9 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
     valid_ub = valid_ub && ub->indices[k_ub] == i;
     valid_lin = valid_lin && lin->indices[k_l] == i;
 
-    double val_lb = valid_lb ? lb->data[i] : 0;
-    double val_ub = valid_ub ? ub->data[i] : 0;
-    double val_lin = valid_lin ? lin->data[i] : 0;
+    double val_lb = valid_lb ? lb->data[k_lb] : 0;
+    double val_ub = valid_ub ? ub->data[k_ub] : 0;
+    double val_lin = valid_lin ? lin->data[k_l] : 0;
 
 
     *merit_value += penalty_parameter * SLEQP_MAX(val_lin - val_ub, 0);

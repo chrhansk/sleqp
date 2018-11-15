@@ -198,6 +198,7 @@ foreach(s ${SIFPROBLEMS_EXT})
 
   add_executable("cutest_${PROBLEM}_solver"
     EXCLUDE_FROM_ALL
+    sleqp_cutest_defs.c
     sleqp_cutest_main.c
     sleqp_cutest_constrained.c
     sleqp_cutest_unconstrained.c)

@@ -1,5 +1,3 @@
-#include <cutest.h>
-
 #include "sleqp.h"
 
 #include "sleqp_cutest_defs.h"

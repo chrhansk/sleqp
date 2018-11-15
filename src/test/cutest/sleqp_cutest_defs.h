@@ -1,9 +1,14 @@
 #ifndef SLEQP_CUTEST_DEFS_H
 #define SLEQP_CUTEST_DEFS_H
 
+#include <cutest.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+  extern const logical cutest_true;
+  extern const logical cutest_false;
 
 #define SLEQP_CUTEST_CHECK_STATUS(status)       \
   do                                            \

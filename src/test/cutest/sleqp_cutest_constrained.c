@@ -1,7 +1,6 @@
 #include "sleqp_cutest_constrained.h"
 
 #include <stdlib.h>
-#include <cutest.h>
 
 #include "sleqp_cutest_defs.h"
 
@@ -27,7 +26,7 @@ typedef struct CUTestConsFuncData
   double* jac_vals;
   int* jac_indices;
 
-  bool goth;
+  logical goth;
 
 } CUTestConsFuncData;
 
@@ -80,7 +79,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
 
   data->eps = eps;
   data->num_constraints = num_constraints;
-  data->goth = false;
+  data->goth = cutest_false;
 
   SLEQP_CALL(sleqp_calloc(&data->x, num_variables));
   SLEQP_CALL(sleqp_calloc(&data->cons_vals, num_constraints));
@@ -140,7 +139,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpSparseVec* x,
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->x));
 
-  data->goth = false;
+  data->goth = cutest_false;
 
   *func_grad_nnz = num_variables;
 
@@ -193,14 +192,12 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
 
   if(func_grad || cons_jac)
   {
-    bool use_lagrangian = false;
-
     CUTEST_csgr(&status,                // status flag
                 &num_variables,         // number of variables
                 &data->num_constraints, // number of constraints
                 data->x,                // current iterate
                 NULL,                   // Lagrangian multipliers
-                &use_lagrangian,        // Do we want the gradient of the Lagrangian?
+                &cutest_false,          // Do we want the gradient of the Lagrangian?
                 &(data->jac_nnz),       // Actual number of Jacobian nonzeroes
                 &(data->jac_nnz_max),   // Maximum number of Jacobian nonzeroes
                 data->jac_vals,         // Jacobian data
