@@ -882,13 +882,14 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
                                 &trial_iterate_value));
 
     actual_reduction = iterate_value - trial_iterate_value;
+
+    sleqp_log_debug("Current merit function value: %e, trial merit function value: %e",
+                    iterate_value,
+                    trial_iterate_value);
+
   }
 
   double reduction_ratio = actual_reduction / quadratic_reduction;
-
-  sleqp_log_debug("Current function value: %e, trial function value: %e",
-                  iterate->func_val,
-                  trial_iterate->func_val);
 
   sleqp_log_debug("Reduction ratio: %e, actual: %e, quadratic: %e",
                   reduction_ratio,

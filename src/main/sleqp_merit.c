@@ -104,9 +104,9 @@ SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
     valid_ub = valid_ub && ub->indices[k_ub] == i;
     valid_c = valid_c && c->indices[k_c] == i;
 
-    double val_lb = valid_lb ? lb->data[i] : 0;
-    double val_ub = valid_ub ? ub->data[i] : 0;
-    double val_c = valid_c ? c->data[i] : 0;
+    double val_lb = valid_lb ? lb->data[k_lb] : 0;
+    double val_ub = valid_ub ? ub->data[k_ub] : 0;
+    double val_c = valid_c ? c->data[k_c] : 0;
 
     *merit_value += penalty_parameter * SLEQP_MAX(val_c - val_ub, 0);
     *merit_value += penalty_parameter * SLEQP_MAX(val_lb - val_c, 0);
