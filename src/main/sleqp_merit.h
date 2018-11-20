@@ -50,7 +50,7 @@ extern "C" {
    * a direction \f$ d \f$ is given by
    *
    * \f[
-   * \ell_v(\overline{x}, d) := \langle \nabla f(\overline{x}), d \rangle
+   * \ell_v(\overline{x}, d) := f(x) + \langle \nabla f(\overline{x}), d \rangle
    * + v \left( \sum_{i=1}^{m} \max((c_i{\overline{x}} + \langle \nabla c_i(\overline{x}) , d \rangle) - u_i, 0) \right)
    * + v  \left(\sum_{i=1}^{m} \max(l_i - (c_i{\overline{x}} + \langle \nabla c_i(\overline{x}) , d \rangle), 0) \right)
    * \f]

@@ -148,6 +148,8 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
                                      direction,
                                      merit_value));
 
+  *merit_value += iterate->func_val;
+
   reset_cache(merit_data->dense_cache, merit_data->cache_size);
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(iterate->cons_jac,

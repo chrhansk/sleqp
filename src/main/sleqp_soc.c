@@ -4,6 +4,7 @@
 
 struct SleqpSOCData
 {
+  SleqpProblem* problem;
   SleqpSparseVec* rhs;
 };
 
@@ -13,6 +14,8 @@ SLEQP_RETCODE sleqp_soc_data_create(SleqpSOCData** star,
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpSOCData* soc_data = *star;
+
+  soc_data->problem = problem;
 
   SLEQP_CALL(sleqp_sparse_vector_create(&(soc_data->rhs), 0, 0));
 
@@ -45,17 +48,22 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
 
     for(int k_x = 0; k_x < x->nnz; ++k_x)
     {
-      int index = x->indices[k_x];
+      const int index = x->indices[k_x];
 
-      int variable_index = sleqp_active_set_get_variable_index(active_set, index);
+      const SLEQP_ACTIVE_STATE variable_state = sleqp_active_set_get_variable_state(active_set, index);
 
-      if(variable_index == -1)
+      if(variable_state == SLEQP_INACTIVE)
       {
         continue;
       }
 
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, -(x->data[k_x])));
+      const int variable_index = sleqp_active_set_get_variable_index(active_set, index);
 
+      const double val = (variable_state == SLEQP_ACTIVE_UPPER) ? x->data[k_x] : (-1. * x->data[k_x]);
+
+      assert(variable_index != -1);
+
+      SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, -val));
     }
   }
 
@@ -65,16 +73,22 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
 
     for(int k_c = 0; k_c < cons_val->nnz; ++k_c)
     {
-      int index = cons_val->indices[k_c];
+      const int index = cons_val->indices[k_c];
 
-      int constraint_index = sleqp_active_set_get_constraint_index(active_set, index);
+      const SLEQP_ACTIVE_STATE constraint_state = sleqp_active_set_get_constraint_state(active_set, index);
 
-      if(constraint_index == -1)
+      if(constraint_state == SLEQP_INACTIVE)
       {
         continue;
       }
 
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, -(cons_val->data[k_c])));
+      int constraint_index = sleqp_active_set_get_constraint_index(active_set, index);
+
+      assert(constraint_index != -1);
+
+      const double val = (constraint_state == SLEQP_ACTIVE_UPPER) ? cons_val->data[k_c] : (-1. * cons_val->data[k_c]);
+
+      SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, -val));
     }
   }
 

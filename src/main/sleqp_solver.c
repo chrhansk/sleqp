@@ -60,6 +60,8 @@ struct SleqpSolver
 
   SleqpSparseVec* trial_direction;
 
+  SleqpSparseVec* initial_trial_point;
+
   SleqpIterate* trial_iterate;
 
   SleqpAugJacobian* aug_jacobian;
@@ -76,6 +78,10 @@ struct SleqpSolver
   SleqpSparseVec* soc_direction;
 
   SleqpSparseVec* soc_corrected_direction;
+
+  SleqpSparseVec* soc_hessian_direction;
+
+  SleqpSparseVec* initial_soc_trial_point;
 
   // parameters, adjusted throughout...
 
@@ -175,6 +181,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                         num_variables,
                                         0));
 
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->initial_trial_point,
+                                        num_variables,
+                                        0));
+
   SLEQP_CALL(sleqp_iterate_create(&solver->trial_iterate,
                                   solver->problem,
                                   solver->iterate->x));
@@ -206,6 +216,14 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                         0));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->soc_corrected_direction,
+                                        num_variables,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->soc_hessian_direction,
+                                        num_variables,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->initial_soc_trial_point,
                                         num_variables,
                                         0));
 
@@ -515,11 +533,19 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 
   if(it == max_it)
   {
-    sleqp_log_warn("Line search failed to converge");
+    sleqp_log_warn("Cauchy-Newton line search failed to converge after %d iterations (final value: %12)",
+                   it,
+                   alpha);
 
     alpha = 0.;
 
     SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_step, solver->trial_direction));
+  }
+  else
+  {
+    sleqp_log_debug("Cauchy-Newton line search converged after %d iterations (final value: %12)",
+                    it,
+                    alpha);
   }
 
   return SLEQP_OKAY;
@@ -713,12 +739,20 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
   SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
                                      solver->trial_direction,
                                      eps,
-                                     solver->trial_iterate->x));
+                                     solver->initial_trial_point));
+
+  SLEQP_CALL(sleqp_sparse_vector_clip(solver->initial_trial_point,
+                                      problem->var_lb,
+                                      problem->var_ub,
+                                      eps,
+                                      solver->trial_iterate->x));
+
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE perform_soc(SleqpSolver* solver)
+static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
+                                             double* quadratic_reduction)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -727,8 +761,20 @@ static SLEQP_RETCODE perform_soc(SleqpSolver* solver)
 
   const double eps = sleqp_params_get_eps(solver->params);
 
-  // TODO: evaluate only the required (= active) constraint values,
+  double soc_zero_value;
 
+  // the quadratic value at zero is just the linear value
+  {
+    SLEQP_CALL(sleqp_sparse_vector_clear(solver->soc_direction));
+
+    SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
+                                  solver->iterate,
+                                  solver->soc_direction,
+                                  solver->penalty_parameter,
+                                  &soc_zero_value));
+  }
+
+  // TODO: evaluate only the required (= active) constraint values...
   SLEQP_CALL(sleqp_func_eval(problem->func,
                              NULL,
                              NULL,
@@ -750,18 +796,57 @@ static SLEQP_RETCODE perform_soc(SleqpSolver* solver)
                                    problem->var_ub,
                                    &max_step_length));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->trial_direction,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_point,
                                             solver->soc_direction,
                                             1.,
                                             max_step_length,
                                             eps,
                                             solver->soc_corrected_direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
-                                     solver->soc_corrected_direction,
-                                     eps,
-                                     trial_point));
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_point,
+                                            solver->soc_corrected_direction,
+                                            1.,
+                                            1.,
+                                            eps,
+                                            solver->initial_soc_trial_point));
 
+  double soc_iterate_value;
+
+  {
+    double soc_lin_value;
+
+    SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
+                                  solver->iterate,
+                                  solver->soc_corrected_direction,
+                                  solver->penalty_parameter,
+                                  &soc_lin_value));
+
+    double one = 1.;
+
+    double soc_quad_value;
+
+    SLEQP_CALL(sleqp_func_hess_product(problem->func,
+                                       &one,
+                                       solver->soc_corrected_direction,
+                                       iterate->cons_dual,
+                                       solver->soc_hessian_direction));
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(solver->soc_corrected_direction,
+                                       solver->soc_hessian_direction,
+                                       &soc_quad_value));
+
+    soc_quad_value *= .5;
+
+    soc_iterate_value = soc_lin_value + soc_quad_value;
+  }
+
+  *(quadratic_reduction) = soc_zero_value - soc_iterate_value;
+
+  SLEQP_CALL(sleqp_sparse_vector_clip(solver->initial_soc_trial_point,
+                                      problem->var_lb,
+                                      problem->var_ub,
+                                      eps,
+                                      solver->trial_iterate->x));
 
   return SLEQP_OKAY;
 }
@@ -846,9 +931,9 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
   SLEQP_CALL(print_line(solver));
 
   {
-    SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
+    //SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
 
-    SLEQP_CALL(sleqp_deriv_check_second_order(solver->deriv_check, iterate));
+    //SLEQP_CALL(sleqp_deriv_check_second_order(solver->deriv_check, iterate));
   }
 
   SLEQP_CALL(compute_trial_point(solver, &quadratic_reduction));
@@ -914,34 +999,54 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
 
     step_accepted = false;
 
-    /*
     if(problem->num_constraints > 0)
     {
-      sleqp_log_debug("Performing SOC");
+      sleqp_log_debug("Computing second-order correction");
 
-      SLEQP_CALL(perform_soc(solver));
+      double soc_quadratic_reduction;
 
-      SLEQP_CALL(set_func_value(solver, trial_iterate));
+      SLEQP_CALL(set_func_value(solver, iterate));
 
-      SLEQP_CALL(sleqp_func_eval(problem->func,
-                                 NULL,
-                                 &trial_iterate->func_val,
-                                 NULL,
-                                 NULL,
-                                 NULL));
+      SLEQP_CALL(compute_soc_trial_point(solver, &soc_quadratic_reduction));
 
-      double soc_reduction = iterate->func_val - trial_iterate->func_val;
-
-      double soc_reduction_ratio = soc_reduction / quadratic_reduction;
-
-      if(soc_reduction_ratio >= accepted_reduction)
+      // in the SOC case it is not guaranteed that
+      // there is a quadratic reduction
+      if(sleqp_pos(soc_quadratic_reduction, eps))
       {
-        sleqp_log_debug("SOC correction accepted");
 
-        step_accepted = true;
+        SLEQP_CALL(set_func_value(solver, trial_iterate));
+
+        SLEQP_CALL(sleqp_func_eval(problem->func,
+                                   NULL,
+                                   &trial_iterate->func_val,
+                                   NULL,
+                                   NULL,
+                                   NULL));
+
+        double soc_reduction = iterate->func_val - trial_iterate->func_val;
+
+        double soc_reduction_ratio = soc_reduction / soc_quadratic_reduction;
+
+        sleqp_log_debug("SOC Reduction ratio: %e, actual: %e, quadratic: %e",
+                        soc_reduction_ratio,
+                        soc_reduction,
+                        soc_quadratic_reduction);
+
+        if(soc_reduction_ratio >= accepted_reduction)
+        {
+          step_accepted = true;
+        }
+      }
+
+      if(step_accepted)
+      {
+        sleqp_log_debug("Second-order correction accepted");
+      }
+      else
+      {
+        sleqp_log_debug("Second-order correction discarded");
       }
     }
-    */
   }
 
   // update trust radii, penalty parameter
@@ -1011,7 +1116,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_set_and_evaluate(problem, iterate));
 
-  SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
+  //SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
 
   SLEQP_CALL(sleqp_get_violation(problem,
                                  iterate,
@@ -1082,6 +1187,10 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
 {
   SleqpSolver* solver = *star;
 
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->initial_soc_trial_point));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_hessian_direction));
+
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_corrected_direction));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_direction));
@@ -1099,6 +1208,8 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_aug_jacobian_free(&solver->aug_jacobian));
 
   SLEQP_CALL(sleqp_iterate_free(&solver->trial_iterate));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->initial_trial_point));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->trial_direction));
 
