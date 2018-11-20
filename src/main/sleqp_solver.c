@@ -340,8 +340,8 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 }
 
 static SLEQP_RETCODE update_lp_trust_radius(bool trial_step_accepted,
-                                            double trial_direction_norm,
-                                            double cauchy_step_norm,
+                                            double trial_direction_infnorm,
+                                            double cauchy_step_infnorm,
                                             double cauchy_step_length,
                                             double eps,
                                             double* lp_trust_radius)
@@ -350,13 +350,13 @@ static SLEQP_RETCODE update_lp_trust_radius(bool trial_step_accepted,
   {
     double norm_increase_factor = 1.2;
 
-    trial_direction_norm *= norm_increase_factor;
-    cauchy_step_norm *= norm_increase_factor;
+    trial_direction_infnorm *= norm_increase_factor;
+    cauchy_step_infnorm *= norm_increase_factor;
 
     double scaled_trust_radius = .1 * (*lp_trust_radius);
 
-    double update_lhs = SLEQP_MAX(trial_direction_norm,
-                                  cauchy_step_norm);
+    double update_lhs = SLEQP_MAX(trial_direction_infnorm,
+                                  cauchy_step_infnorm);
 
     update_lhs = SLEQP_MAX(update_lhs, scaled_trust_radius);
 
@@ -370,7 +370,7 @@ static SLEQP_RETCODE update_lp_trust_radius(bool trial_step_accepted,
   }
   else
   {
-    double half_norm = .5 * trial_direction_norm;
+    double half_norm = .5 * trial_direction_infnorm;
     double small_radius = .1 * (*lp_trust_radius);
 
     double reduced_radius = SLEQP_MAX(half_norm, small_radius);
@@ -531,22 +531,11 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
     alpha *= tau;
   }
 
-  if(it == max_it)
-  {
-    sleqp_log_warn("Cauchy-Newton line search failed to converge after %d iterations (final value: %12)",
-                   it,
-                   alpha);
+  assert(it != max_it);
 
-    alpha = 0.;
-
-    SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_step, solver->trial_direction));
-  }
-  else
-  {
-    sleqp_log_debug("Cauchy-Newton line search converged after %d iterations (final value: %12)",
-                    it,
-                    alpha);
-  }
+  sleqp_log_debug("Cauchy-Newton line search converged after %d iterations (final value: %12e)",
+                  it,
+                  alpha);
 
   return SLEQP_OKAY;
 }
@@ -1056,12 +1045,12 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver)
                                    direction_norm,
                                    &(solver->trust_radius)));
 
-    double trial_direction_norm = sleqp_sparse_vector_norminf(solver->trial_direction);
-    double cauchy_step_norm = sleqp_sparse_vector_norminf(solver->cauchy_step);
+    double trial_direction_infnorm = sleqp_sparse_vector_norminf(solver->trial_direction);
+    double cauchy_step_infnorm = sleqp_sparse_vector_norminf(solver->cauchy_step);
 
     SLEQP_CALL(update_lp_trust_radius(step_accepted,
-                                      trial_direction_norm,
-                                      cauchy_step_norm,
+                                      trial_direction_infnorm,
+                                      cauchy_step_infnorm,
                                       solver->cauchy_step_length,
                                       eps,
                                       &(solver->lp_trust_radius)));
