@@ -519,6 +519,19 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
                                                NULL));
 
       SLEQP_CALL(sleqp_sparse_vector_copy(data->v, data->p));
+
+      {
+        double v_norm = sleqp_sparse_vector_normsq(data->v);
+        v_norm = sqrt(v_norm);
+
+        // We can stop directly, if the projected gradient is zero
+        if(sleqp_zero(v_norm, eps))
+        {
+          return SLEQP_OKAY;
+        }
+
+      }
+
       SLEQP_CALL(sleqp_sparse_vector_scale(data->p, -1.));
 
       g_dot_g = sleqp_sparse_vector_normsq(data->g);
