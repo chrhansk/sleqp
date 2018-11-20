@@ -31,6 +31,14 @@ set(MASTSIF_BASE ${SOURCE_DIR})
 
 enable_language (Fortran)
 
+add_library(sleqp_cutest
+  STATIC
+  sleqp_cutest_defs.c
+  sleqp_cutest_constrained.c
+  sleqp_cutest_unconstrained.c)
+
+include_directories("${CUTEST_BASE}/include")
+
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded")
 
 add_custom_command(
@@ -196,28 +204,27 @@ foreach(s ${SIFPROBLEMS_EXT})
 
   add_dependencies(cutest_libraries "cutest_${PROBLEM}")
 
-  add_executable("cutest_${PROBLEM}_solver"
+  set(SOLVER_NAME "cutest_${PROBLEM}_solver")
+
+  add_executable("${SOLVER_NAME}"
     EXCLUDE_FROM_ALL
-    sleqp_cutest_defs.c
-    sleqp_cutest_main.c
-    sleqp_cutest_constrained.c
-    sleqp_cutest_unconstrained.c)
+    sleqp_cutest_main.c)
 
-  target_include_directories("cutest_${PROBLEM}_solver"
-    PRIVATE "${CUTEST_BASE}/include")
-
-  target_compile_definitions("cutest_${PROBLEM}_solver"
+  target_compile_definitions("${SOLVER_NAME}"
     PRIVATE PROBLEM_OUTSDIF_D="${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/OUTSDIF.d")
 
-  target_link_libraries("cutest_${PROBLEM}_solver"
+  target_link_libraries("${SOLVER_NAME}"
     sleqp
+    sleqp_cutest
     m
     ${CMAKE_DL_LIBS}
     "cutest_${PROBLEM}"
     gfortran
     cutest)
 
-    add_dependencies(cutest_solvers "cutest_${PROBLEM}_solver")
+  add_test(NAME "${SOLVER_NAME}" COMMAND "${SOLVER_NAME}")
+
+  add_dependencies(cutest_solvers "${SOLVER_NAME}")
 
 endforeach(s)
 

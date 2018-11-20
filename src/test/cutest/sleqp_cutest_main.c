@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
   integer iout = 6;          /* FORTRAN unit number for error output */
   integer ierr;              /* Exit flag from OPEN and CLOSE */
   integer io_buffer = 11;    /* FORTRAN unit internal input/output */
-  integer status;            /* Exit flag from CUTEst tools */
+  integer cutest_status;            /* Exit flag from CUTEst tools */
 
 
   integer CUTEst_nvar;        /* number of variables */
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  CUTEST_cdimen( &status, &funit, &CUTEst_nvar, &CUTEst_ncons);
+  CUTEST_cdimen( &cutest_status, &funit, &CUTEst_nvar, &CUTEst_ncons);
 
   sleqp_log_info("Problem has %d variables, %d constraints",
                  CUTEst_nvar,
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 
     SLEQP_CALL(sleqp_calloc(&v, CUTEst_ncons + CUTEst_nvar + 1));
 
-    CUTEST_csetup(&status, &funit, &iout, &io_buffer,
+    CUTEST_csetup(&cutest_status, &funit, &iout, &io_buffer,
                   &CUTEst_nvar, &CUTEst_ncons,
                   x_dense,
                   var_lb_dense,
@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    CUTEST_usetup(&status, &funit, &iout, &io_buffer,
+    CUTEST_usetup(&cutest_status, &funit, &iout, &io_buffer,
                   &CUTEst_nvar, x_dense, var_lb_dense, var_ub_dense);
   }
 
@@ -170,9 +170,21 @@ int main(int argc, char *argv[])
 
   /**/
 
-  int max_num_iterations = 100;
+  int max_num_iterations = 1000;
 
-  SLEQP_CALL(sleqp_solver_solve(solver, max_num_iterations));
+  bool success = true;
+
+  SLEQP_RETCODE status = sleqp_solver_solve(solver, max_num_iterations);
+
+  if(status != SLEQP_OKAY)
+  {
+    success = false;
+  }
+
+  if(success && (sleqp_solver_get_status(solver) != SLEQP_OPTIMAL))
+  {
+    success = false;
+  }
 
   /**/
 
@@ -222,5 +234,5 @@ int main(int argc, char *argv[])
                     funit);
   }
 
-  return 0;
+  return !(success);
 }

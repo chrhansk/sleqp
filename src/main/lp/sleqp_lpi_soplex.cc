@@ -135,6 +135,11 @@ static SLEQP_RETCODE soplex_set_coefficients(void* lp_data,
   assert(num_variables == coeff_matrix->num_cols);
   assert(num_constraints == coeff_matrix->num_rows);
 
+  // TODO: Find out whether storing / restoring the basis
+  //       is a good idea.
+  soplex.clearBasis();
+  assert(soplex.status() == soplex::SPxSolver::NO_PROBLEM);
+
   for(int j = 0; j < num_variables; ++j)
   {
     int num_entries = coeff_matrix->cols[j + 1] - coeff_matrix->cols[j];
