@@ -53,14 +53,26 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 
   double inf = soplex::infinity;
 
-  for(int j = 0; j < num_variables; ++j)
   {
-    soplex.addColReal(soplex::LPCol(0., vec, inf, -inf));
+    soplex::LPColSetReal cols(num_variables, 0);
+
+    for(int j = 0; j < num_variables; ++j)
+    {
+      cols.add(soplex::LPCol(0., vec, inf, -inf));
+    }
+
+    soplex.addColsReal(cols);
   }
 
-  for(int i = 0; i < num_constraints; ++i)
   {
-    soplex.addRowReal(soplex::LPRow(-inf, vec, inf));
+    soplex::LPRowSetReal rows(num_constraints ,0);
+
+    for(int i = 0; i < num_constraints; ++i)
+    {
+      rows.add(soplex::LPRow(-inf, vec, inf));
+    }
+
+    soplex.addRowsReal(rows);
   }
 
   *lp_data = spx;
