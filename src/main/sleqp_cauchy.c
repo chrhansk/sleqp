@@ -572,6 +572,7 @@ SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchyData* cauchy_data,
 SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         SleqpIterate* iterate,
                                         double penalty_parameter,
+                                        double trust_radius,
                                         SleqpSparseVec* hessian_direction,
                                         SleqpSparseVec* direction,
                                         double* step_length)
@@ -596,9 +597,11 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
 
     direction_norm = sqrt(direction_norm);
 
-    if(direction_norm < delta)
+    double direction_factor = trust_radius / direction_norm;
+
+    if(direction_factor < 1)
     {
-      delta = direction_norm;
+      delta = direction_factor;
 
       hessian_product *= (delta*delta);
 

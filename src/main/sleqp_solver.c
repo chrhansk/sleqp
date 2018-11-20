@@ -649,6 +649,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
     SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
                                          iterate,
                                          solver->penalty_parameter,
+                                         solver->trust_radius,
                                          solver->cauchy_hessian_direction,
                                          solver->cauchy_step,
                                          &solver->cauchy_step_length));

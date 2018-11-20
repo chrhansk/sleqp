@@ -57,14 +57,18 @@ extern "C" {
    * @param[in]      cauchy_data        Cauchy data
    * @param[in]      iterate            The current iterate
    * @param[in]      penalty_parameter  The penalty parameter \f$ v \f$
+   * @param[in]      trust_radius       The current trust radius
    * @param[in]      hessian_direction  The product of the Hessian with the initial direction
    * @param[in,out]  direction          The direction
    * @param[out]     step_length        The computed step length
+   *
+   * @note The trust radius is supposed to be the EQP trust radius, note the LP trust radius
    *
    **/
   SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                           SleqpIterate* iterate,
                                           double penalty_parameter,
+                                          double trust_radius,
                                           SleqpSparseVec* hessian_product,
                                           SleqpSparseVec* direction,
                                           double* step_length);
