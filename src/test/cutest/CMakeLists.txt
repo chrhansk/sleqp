@@ -222,7 +222,7 @@ foreach(s ${SIFPROBLEMS_EXT})
     gfortran
     cutest)
 
-  add_test(NAME "${SOLVER_NAME}" COMMAND "${SOLVER_NAME}")
+  #add_test(NAME "${SOLVER_NAME}" COMMAND "${SOLVER_NAME}")
 
   add_dependencies(cutest_solvers "${SOLVER_NAME}")
 

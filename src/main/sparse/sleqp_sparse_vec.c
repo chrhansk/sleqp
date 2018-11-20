@@ -433,6 +433,10 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
 {
   const int dim = x->dim;
 
+  assert(x != xclip);
+  assert(lb != xclip);
+  assert(ub != xclip);
+
   assert(lb->dim == dim);
   assert(ub->dim == dim);
   assert(xclip->dim == dim);
@@ -448,67 +452,54 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
     SLEQP_CALL(sleqp_sparse_vector_reserve(xclip, nnz));
   }
 
-  /*
-  sleqp_sparse_vector_create(xstar,
-                             dim,
-                             SLEQP_MIN(x->nnz + lb->nnz, dim));
-  */
-
   int k_x = 0, k_lb = 0, k_ub = 0;
-
-  //SleqpSparseVec* xclip = *xstar;
 
   while(k_x < x->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
   {
-    double x_val = 0;
-
     bool valid_x = (k_x < x->nnz);
     bool valid_lb = (k_lb < lb->nnz);
     bool valid_ub = (k_ub < ub->nnz);
 
-    int idx = valid_x ? x->indices[k_x] : dim + 1;
-    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
-    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
+    int i_x = valid_x ? x->indices[k_x] : dim + 1;
+    int i_lb = valid_lb ? lb->indices[k_lb] : dim + 1;
+    int i_ub = valid_ub ? ub->indices[k_ub] : dim + 1;
 
-    if(valid_x && idx == x->indices[k_x])
-    {
-      x_val = x->data[k_x];
-    }
-    else
-    {
-      x_val = 0.;
-    }
+    int i_combined;
 
-    if(valid_lb && idx == lb->indices[k_lb])
-    {
-      x_val = SLEQP_MAX(x_val, lb->data[k_lb]);
-    }
+    i_combined = SLEQP_MIN(i_lb, i_ub);
+    i_combined = SLEQP_MIN(i_combined, i_x);
 
-    if(valid_ub && idx == ub->indices[k_ub])
-    {
-      x_val = SLEQP_MIN(x_val, ub->data[k_ub]);
-    }
+    valid_x = valid_x && (i_x == i_combined);
+    valid_lb = valid_lb && (i_lb == i_combined);
+    valid_ub = valid_ub && (i_ub == i_combined);
+
+    double x_val = valid_x ? x->data[k_x] : 0.;
+    double lb_val = valid_lb ? lb->data[k_lb] : 0.;
+    double ub_val = valid_ub ? ub->data[k_ub] : 0.;
+
+    x_val = SLEQP_MIN(x_val, ub_val);
+    x_val = SLEQP_MAX(x_val, lb_val);
 
     if(!sleqp_zero(x_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(xclip,
-                                          idx,
+                                          i_combined,
                                           x_val));
     }
 
-    if(valid_lb && idx == lb->indices[k_lb])
+    if(valid_x)
+    {
+      ++k_x;
+    }
+
+    if(valid_lb)
     {
       ++k_lb;
     }
 
-    if(valid_ub && idx == ub->indices[k_ub])
+    if(valid_ub)
     {
       ++k_ub;
-    }
-
-    if(valid_x && idx == x->indices[k_x])
-    {
-      ++k_x;
     }
 
   }
