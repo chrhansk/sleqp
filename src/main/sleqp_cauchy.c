@@ -576,14 +576,7 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         SleqpSparseVec* direction,
                                         double* step_length)
 {
-  double exact_merit_value;
-
   SleqpMeritData* merit_data = cauchy_data->merit_data;
-
-  SLEQP_CALL(sleqp_merit_func(merit_data,
-                              iterate,
-                              penalty_parameter,
-                              &exact_merit_value));
 
   double hessian_product;
 
@@ -600,7 +593,7 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
     {
       delta = direction_norm;
 
-      hessian_product *= delta;
+      hessian_product *= (delta*delta);
 
       SLEQP_CALL(sleqp_sparse_vector_scale(direction, delta));
     }
@@ -625,8 +618,9 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                     penalty_parameter,
                                     &linear_merit_value));
 
-      if((exact_merit_value - (linear_merit_value + hessian_product)
-          >= eta*(exact_merit_value - linear_merit_value)))
+      double quadratic_merit_value = linear_merit_value + 0.5* hessian_product;
+
+      if((quadratic_merit_value) <= eta*(linear_merit_value))
       {
         break;
       }
@@ -638,16 +632,22 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
 
     hessian_product *= (tau*tau);
 
-    SLEQP_CALL(sleqp_sparse_vector_scale(direction, tau));
-
     delta *= tau;
   }
 
   if(it == max_it)
   {
-    sleqp_log_warn("Line search failed to converge");
+    sleqp_log_warn("Cauchy line search failed to converge after %d iterations (final value: %20e)",
+                   it,
+                   delta);
 
     SLEQP_CALL(sleqp_sparse_vector_clear(direction));
+  }
+  else
+  {
+    sleqp_log_debug("Cauchy line search converged after %d iterations (final value: %20e)",
+                    it,
+                    delta);
   }
 
   if(step_length)
