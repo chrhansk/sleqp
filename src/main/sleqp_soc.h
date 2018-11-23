@@ -18,7 +18,8 @@ extern "C" {
   typedef struct SleqpSOCData SleqpSOCData;
 
   SLEQP_RETCODE sleqp_soc_data_create(SleqpSOCData** star,
-                                      SleqpProblem* problem);
+                                      SleqpProblem* problem,
+                                      SleqpParams* params);
 
   SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
                                   SleqpAugJacobian* augmented_jacobian,

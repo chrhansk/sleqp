@@ -4,6 +4,8 @@ project(sleqp
   VERSION 0.1.0
   LANGUAGES C CXX)
 
+set(PROJECT_DESCRIPTION "An active set-based NLP solver")
+
 # Get the current working branch
 execute_process(
   COMMAND git rev-parse --abbrev-ref HEAD
