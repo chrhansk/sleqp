@@ -336,8 +336,8 @@ START_TEST(test_constrained_solve)
                                   params,
                                   x));
 
-  // 100 iterations should be plenty...
-  ASSERT_CALL(sleqp_solver_solve(solver, 100));
+  // 500 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 500));
 
   SleqpIterate* solution_iterate;
 

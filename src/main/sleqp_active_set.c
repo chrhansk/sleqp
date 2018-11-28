@@ -6,6 +6,8 @@
 
 struct SleqpActiveSet
 {
+  SleqpProblem* problem;
+
   SLEQP_ACTIVE_STATE* variable_states;
   SLEQP_ACTIVE_STATE* constraint_states;
 
@@ -36,6 +38,8 @@ SLEQP_RETCODE sleqp_active_set_create(SleqpActiveSet** star,
   int num_constraints = problem->num_constraints;
 
   SleqpActiveSet* active_set = *star;
+
+  active_set->problem = problem;
 
   SLEQP_CALL(sleqp_calloc(&active_set->variable_states, num_variables));
   SLEQP_CALL(sleqp_calloc(&active_set->constraint_states, num_constraints));
@@ -172,6 +176,48 @@ int sleqp_active_set_num_active_conss(SleqpActiveSet* active_set)
 int sleqp_active_set_size(SleqpActiveSet* active_set)
 {
   return active_set->num_active_constraints + active_set->num_active_variables;
+}
+
+SLEQP_RETCODE sleqp_active_set_fprintf(SleqpActiveSet* active_set,
+                                       FILE* output)
+{
+  SleqpProblem* problem = active_set->problem;
+
+  int num_variables = problem->num_variables;
+  int num_constraints = problem->num_constraints;
+
+
+  fprintf(output,
+          "Active set, variables: %d, constraints: %d\n",
+          num_variables,
+          num_constraints);
+
+  const char* state_names[] = {[SLEQP_INACTIVE] = "inactive",
+                               [SLEQP_ACTIVE_UPPER] = "upper",
+                               [SLEQP_ACTIVE_LOWER] = "lower",
+                               [SLEQP_ACTIVE_BOTH] = "active"};
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    SLEQP_ACTIVE_STATE state = sleqp_active_set_get_variable_state(active_set, j);
+
+    fprintf(output,
+            "State of variable %d: %s\n",
+            j,
+            state_names[state]);
+  }
+
+  for(int i = 0; i < num_constraints; ++i)
+  {
+    SLEQP_ACTIVE_STATE state = sleqp_active_set_get_constraint_state(active_set, i);
+
+    fprintf(output,
+            "State of constraint %d: %s\n",
+            i,
+            state_names[state]);
+  }
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_active_set_free(SleqpActiveSet** star)

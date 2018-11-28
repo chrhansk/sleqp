@@ -87,9 +87,15 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
         {
           SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, SLEQP_MAX(dual_value, 0.)));
         }
+        else if(var_state == SLEQP_ACTIVE_LOWER)
+        {
+          SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, SLEQP_MIN(dual_value, 0.)));
+        }
         else
         {
-          SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, SLEQP_MIN(-dual_value, 0.)));
+          assert(var_state == SLEQP_ACTIVE_BOTH);
+
+          SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, dual_value));
         }
 
       }
@@ -105,9 +111,15 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
         {
           SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, SLEQP_MAX(dual_value, 0.)));
         }
+        else if(cons_state == SLEQP_ACTIVE_LOWER)
+        {
+          SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, SLEQP_MIN(dual_value, 0.)));
+        }
         else
         {
-          SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, SLEQP_MIN(-dual_value, 0.)));
+          assert(cons_state == SLEQP_ACTIVE_BOTH);
+
+          SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, dual_value));
         }
       }
 

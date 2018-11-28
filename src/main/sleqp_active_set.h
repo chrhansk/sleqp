@@ -50,6 +50,9 @@ extern "C" {
 
   int sleqp_active_set_size(SleqpActiveSet* active_set);
 
+  SLEQP_RETCODE sleqp_active_set_fprintf(SleqpActiveSet* active_set,
+                                         FILE* output);
+
   SLEQP_RETCODE sleqp_active_set_free(SleqpActiveSet** star);
 
 #ifdef __cplusplus

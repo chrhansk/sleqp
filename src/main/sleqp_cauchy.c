@@ -435,7 +435,16 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
       double lbval = valid_lb ? lb->data[k_lb] : 0.;
       double xval = valid_x ? x->data[k_x] : 0.;
 
-      if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
+      if(sleqp_eq(lbval, ubval, eps))
+      {
+        assert(sleqp_zero(lbval, eps));
+        assert(sleqp_zero(ubval, eps));
+
+        SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
+                                                 i,
+                                                 SLEQP_ACTIVE_BOTH));
+      }
+      else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
          sleqp_le(-trust_radius, lbval - xval, eps))
       {
         SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
@@ -489,10 +498,9 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
         {
           SLEQP_CALL(sleqp_active_set_add_constraint(iterate->active_set,
                                                      i,
-                                                     SLEQP_ACTIVE_UPPER));
+                                                     SLEQP_ACTIVE_BOTH));
         }
       }
-
       else
       {
         if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_UPPER)

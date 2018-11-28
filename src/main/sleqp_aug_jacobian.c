@@ -51,7 +51,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
                                         1.));
 
     {
-      // push the jacobian of the variable, if it active (given by +/- e_j)
+      // push the jacobian of the variable, if active
 
       int variable_index = sleqp_active_set_get_variable_index(active_set, column);
 
@@ -61,12 +61,10 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
       {
         assert(var_state != SLEQP_INACTIVE);
 
-        bool is_upper = (var_state == SLEQP_ACTIVE_UPPER);
-
         SLEQP_CALL(sleqp_sparse_matrix_push(augmented_matrix,
                                             num_variables + variable_index,
                                             column,
-                                            is_upper ? 1. : -1.));
+                                            1.));
       }
       else
       {
@@ -88,9 +86,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
       {
         assert(cons_state != SLEQP_INACTIVE);
 
-        bool is_upper = (cons_state == SLEQP_ACTIVE_UPPER);
-
-        double value = is_upper ? cons_jac->data[index] : -(cons_jac->data[index]);
+        const double value = cons_jac->data[index];
 
         int aug_row = num_variables + act_cons_index;
 

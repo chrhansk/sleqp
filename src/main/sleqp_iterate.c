@@ -1,5 +1,7 @@
 #include "sleqp_iterate.h"
 
+#include <math.h>
+
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
@@ -247,10 +249,7 @@ SLEQP_RETCODE sleqp_iterate_active_set_contains(SleqpIterate* iterate,
           ++k_v;
         }
       }
-
     }
-
-
   }
 
   return SLEQP_OKAY;
@@ -471,6 +470,179 @@ double sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
   return residuum;
 }
 
+double sleqp_iterate_constraint_violation(SleqpIterate* iterate,
+                                          SleqpProblem* problem)
+{
+  SleqpSparseVec* c = iterate->cons_val;
+  SleqpSparseVec* lb = problem->cons_lb;
+  SleqpSparseVec* ub = problem->cons_ub;
+
+  int k_c = 0, k_lb = 0, k_ub = 0;
+
+  int dim = c->dim;
+
+  double violation = 0.;
+
+  while(k_c < c->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  {
+    bool valid_c = k_c < c->nnz;
+    bool valid_lb = k_lb < lb->nnz;
+    bool valid_ub = k_ub < ub->nnz;
+
+    int i_c = valid_c ? c->indices[k_c] : dim + 1;
+    int i_lb = valid_lb ? lb->indices[k_lb] : dim + 1;
+    int i_ub = valid_ub ? ub->indices[k_ub] : dim + 1;
+
+    int i_combined = SLEQP_MIN(i_lb, i_ub);
+    i_combined = SLEQP_MIN(i_combined, i_c);
+
+    valid_c = valid_c && (i_c == i_combined);
+    valid_lb = valid_lb && (i_lb == i_combined);
+    valid_ub = valid_ub && (i_ub == i_combined);
+
+    double c_val = valid_c ? c->data[k_c] : 0.;
+    double lb_val = valid_lb ? lb->data[k_lb] : 0.;
+    double ub_val = valid_ub ? ub->data[k_ub] : 0.;
+
+    //double current_residuum = SLEQP_MIN(lb_val - x_val, 0.) * SLEQP_MIN(d_val, 0.);
+
+    {
+      double current_violation = SLEQP_MAX(c_val - ub_val, 0.);
+
+      violation = SLEQP_MAX(violation, current_violation);
+    }
+
+    {
+      double current_violation = SLEQP_MAX(lb_val - c_val, 0.);
+
+      violation = SLEQP_MAX(violation, current_violation);
+    }
+
+    if(valid_c)
+    {
+      ++k_c;
+    }
+
+    if(valid_lb)
+    {
+      ++k_lb;
+    }
+
+    if(valid_ub)
+    {
+      ++k_ub;
+    }
+  }
+
+  return violation;
+}
+
+double sleqp_iterate_optimality_residuum(SleqpIterate* iterate,
+                                         SleqpProblem* problem,
+                                         double* cache)
+{
+  double residuum = 0.;
+
+  const int num_variables = problem->num_variables;
+  const int num_constraints = problem->num_constraints;
+
+  SleqpSparseMatrix* cons_jac = iterate->cons_jac;
+  SleqpSparseVec* cons_dual = iterate->cons_dual;
+
+  SleqpSparseVec* vars_dual = iterate->vars_dual;
+  SleqpSparseVec* func_grad = iterate->func_grad;
+
+  assert(num_variables == cons_jac->num_cols);
+  assert(num_constraints == cons_jac->num_rows);
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    int k_d = 0, k_j = cons_jac->cols[j];
+
+    double sum = 0.;
+
+    while(k_d < cons_dual->nnz && k_j < cons_jac->cols[j + 1])
+    {
+      int d_idx = cons_dual->indices[k_d];
+      int j_idx = cons_jac->rows[k_j];
+
+      if(d_idx < j_idx)
+      {
+        ++k_d;
+      }
+      else if(d_idx > j_idx)
+      {
+        ++k_j;
+      }
+      else
+      {
+        sum += cons_dual->data[k_d++] * cons_jac->data[k_j++];
+      }
+    }
+
+    cache[j] = sum;
+  }
+
+  for(int k = 0; k < vars_dual->nnz; ++k)
+  {
+    cache[vars_dual->indices[k]] += vars_dual->data[k];
+  }
+
+  for(int k = 0; k < func_grad->nnz; ++k)
+  {
+    cache[func_grad->indices[k]] += func_grad->data[k];
+  }
+
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    residuum = SLEQP_MAX(residuum, SLEQP_ABS(cache[j]));
+  }
+
+  return residuum;
+}
+
+bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
+                              SleqpProblem* problem,
+                              double tolerance,
+                              double* cache)
+{
+  double multiplier_norm = 0.;
+
+  {
+    multiplier_norm += sleqp_sparse_vector_normsq(iterate->cons_dual);
+    multiplier_norm += sleqp_sparse_vector_normsq(iterate->vars_dual);
+
+    multiplier_norm = sqrt(multiplier_norm);
+  }
+
+  const double optimality_residuum = sleqp_iterate_optimality_residuum(iterate, problem, cache);
+
+  if(optimality_residuum >= tolerance * (1. + multiplier_norm))
+  {
+    return false;
+  }
+
+  const double slackness_residuum = sleqp_iterate_slackness_residuum(iterate, problem);
+
+  if(slackness_residuum >= tolerance * (1. + multiplier_norm))
+  {
+    return false;
+  }
+
+  double value_norm = 0.;
+
+  {
+    value_norm = sleqp_sparse_vector_normsq(iterate->x);
+
+    value_norm = sqrt(value_norm);
+  }
+
+  double constraint_violation = sleqp_iterate_constraint_violation(iterate, problem);
+
+  return constraint_violation <= tolerance * (1. + value_norm);
+
+}
 
 SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
 {

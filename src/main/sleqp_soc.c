@@ -102,7 +102,7 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
     }
     else if(variable_state == SLEQP_ACTIVE_LOWER && !sleqp_zero(ldval, eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, -ldval));
+      SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, ldval));
     }
   }
 
@@ -178,7 +178,7 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
     }
     else if(constraint_state == SLEQP_ACTIVE_LOWER && !sleqp_zero(ldval, eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, -ldval));
+      SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, ldval));
     }
   }
 

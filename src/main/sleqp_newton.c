@@ -286,7 +286,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       {
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
-                                            -1.*lower_value));
+                                            lower_value));
       }
 
       if(i_lower == i_combined)
@@ -348,7 +348,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       {
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
-                                            -1.*lower_value));
+                                            lower_value));
       }
 
       if(valid_lower)
@@ -551,7 +551,12 @@ static SLEQP_RETCODE trust_region_step(SleqpNewtonData* data,
 
       data->Q->num_cols = 0;
 
-      assert(v_dot_g > 0);
+      //assert(v_dot_g > 0);
+
+      if(!sleqp_pos(v_dot_g, eps))
+      {
+        return SLEQP_OKAY;
+      }
 
       double scale = 1./sqrt(v_dot_g);
 

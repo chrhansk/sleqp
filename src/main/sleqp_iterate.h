@@ -76,6 +76,18 @@ extern "C" {
   double sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
                                           SleqpProblem* problem);
 
+  double sleqp_iterate_constraint_violation(SleqpIterate* iterate,
+                                            SleqpProblem* problem);
+
+  double sleqp_iterate_optimality_residuum(SleqpIterate* iterate,
+                                           SleqpProblem* problem,
+                                           double* cache);
+
+  bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
+                                SleqpProblem* problem,
+                                double tolerance,
+                                double* cache);
+
   SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star);
 
 
