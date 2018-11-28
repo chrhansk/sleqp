@@ -10,16 +10,23 @@ struct SleqpLpiSoplex
   soplex::SoPlex* soplex;
   int num_variables;
   int num_constraints;
+
+  double eps;
 };
 
 static SLEQP_RETCODE soplex_create_problem(void** lp_data,
                                            int num_variables,
-                                           int num_constraints)
+                                           int num_constraints,
+                                           SleqpParams* params)
 {
   SleqpLpiSoplex* spx = new SleqpLpiSoplex;
 
   spx->soplex = new soplex::SoPlex();
   soplex::SoPlex& soplex = *(spx->soplex);
+
+  const double eps = sleqp_params_get_eps(params);
+
+  soplex.setRealParam(soplex::SoPlex::EPSILON_ZERO, eps);
 
   if(sleqp_log_level() >= SLEQP_LOG_DEBUG)
   {
@@ -44,6 +51,7 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 
   spx->num_variables = num_variables;
   spx->num_constraints = num_constraints;
+  spx->eps = eps;
 
   soplex.setIntParam(soplex::SoPlex::OBJSENSE,
                      soplex::SoPlex::OBJSENSE_MINIMIZE);
@@ -91,7 +99,63 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
 
   //soplex.writeFileReal("test.lp");
 
-  assert(status == soplex::SPxSolver::OPTIMAL);
+  /*
+  if(status != soplex::SPxSolver::OPTIMAL)
+  {
+    bool do_resolve = true;
+
+    bool is_primal_feasible = soplex.isPrimalFeasible();
+    bool is_dual_feasible = soplex.isDualFeasible();
+
+    sleqp_log_debug("Solution of LP not optimal (pfeas=%d, dfeas=%d)",
+                    is_primal_feasible,
+                    is_dual_feasible);
+
+
+    while (do_resolve)
+    {
+      do_resolve = false;
+
+      is_primal_feasible = soplex.isPrimalFeasible();
+      is_dual_feasible = soplex.isDualFeasible();
+
+      double feas_tol = soplex.realParam(soplex::SoPlex::FEASTOL);
+      double opt_tol = soplex.realParam(soplex::SoPlex::OPTTOL);
+
+      if(!is_primal_feasible && !sleqp_zero(feas_tol, spx->eps))
+      {
+        sleqp_log_debug("Solving again with higher feasibility tolerance");
+
+        feas_tol *= 1e-3;
+
+        feas_tol = SLEQP_MAX(feas_tol, spx->eps);
+
+        soplex.setRealParam(soplex::SoPlex::FEASTOL, feas_tol);
+
+        do_resolve = true;
+      }
+      else if(!is_dual_feasible && !sleqp_zero(opt_tol, spx->eps))
+      {
+        sleqp_log_debug("Solving again with higher optimality tolerance");
+
+        opt_tol *= 1e-3;
+
+        opt_tol = SLEQP_MAX(opt_tol, spx->eps);
+
+        soplex.setRealParam(soplex::SoPlex::OPTTOL, opt_tol);
+
+        do_resolve = true;
+      }
+
+      if(do_resolve)
+      {
+        status = soplex.optimize();
+      }
+    }
+
+    assert(status == soplex::SPxSolver::OPTIMAL);
+  }
+  */
 
   assert(soplex.hasBasis());
 
@@ -125,11 +189,13 @@ static SLEQP_RETCODE soplex_set_bounds(void* lp_data,
 
   for(int i = 0; i < num_constraints; ++i)
   {
+    assert(cons_lb[i] <= cons_ub[i]);
     soplex.changeRangeReal(i, adjust_inf(cons_lb[i]), adjust_inf(cons_ub[i]));
   }
 
   for(int j = 0; j < num_variables; ++j)
   {
+    assert(vars_lb[j] <= vars_ub[j]);
     soplex.changeBoundsReal(j, adjust_inf(vars_lb[j]), adjust_inf(vars_ub[j]));
   }
 
@@ -298,11 +364,13 @@ extern "C"
 {
   SLEQP_RETCODE sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star,
                                                   int num_variables,
-                                                  int num_constraints)
+                                                  int num_constraints,
+                                                  SleqpParams* params)
   {
     return sleqp_lpi_create_interface(lp_star,
                                       num_variables,
                                       num_constraints,
+                                      params,
                                       soplex_create_problem,
                                       soplex_solve,
                                       soplex_set_bounds,

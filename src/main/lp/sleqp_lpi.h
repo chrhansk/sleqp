@@ -19,6 +19,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_interface,
                                            int num_variables,
                                            int num_constraints,
+                                           SleqpParams* params,
                                            SLEQP_LPI_CREATE create_problem,
                                            SLEQP_LPI_SOLVE solve,
                                            SLEQP_LPI_SET_BOUNDS set_bounds,

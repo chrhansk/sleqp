@@ -8,15 +8,21 @@
 
 START_TEST(test_simplex_solve)
 {
-  SleqpLPi* lp_interface = NULL;
+  SleqpParams* params;
+
+  SleqpLPi* lp_interface;
+
   SleqpSparseMatrix* cons_matrix;
+
+  ASSERT_CALL(sleqp_params_create(&params));
 
   int num_variables = 2;
   int num_constraints = 1;
 
   ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface,
                                                 num_variables,
-                                                num_constraints));
+                                                num_constraints,
+                                                params));
 
   double objective[] = {-1, 0};
   double vars_lb[] = {0, 0};
@@ -77,6 +83,8 @@ START_TEST(test_simplex_solve)
   ASSERT_CALL(sleqp_sparse_matrix_free(&cons_matrix));
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
+
+  ASSERT_CALL(sleqp_params_free(&params));
 }
 END_TEST
 

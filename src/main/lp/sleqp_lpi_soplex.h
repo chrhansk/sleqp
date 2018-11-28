@@ -14,7 +14,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star,
                                                   int num_variables,
-                                                  int num_constraints);
+                                                  int num_constraints,
+                                                  SleqpParams* params);
 
 #ifdef __cplusplus
 }

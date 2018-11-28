@@ -142,7 +142,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_lpi_soplex_create_interface(&solver->lp_interface,
                                                num_lp_variables,
-                                               num_lp_constraints));
+                                               num_lp_constraints,
+                                               params));
 
   SLEQP_CALL(sleqp_cauchy_data_create(&solver->cauchy_data,
                                       problem,

@@ -43,7 +43,8 @@ void active_set_var_setup()
 
   ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface,
                                                 num_lp_variables,
-                                                num_lp_constraints));
+                                                num_lp_constraints,
+                                                params));
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 

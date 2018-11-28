@@ -26,6 +26,7 @@ struct SleqpLPi
 SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
                                          int num_variables,
                                          int num_constraints,
+                                         SleqpParams* params,
                                          SLEQP_LPI_CREATE create_problem,
                                          SLEQP_LPI_SOLVE solve,
                                          SLEQP_LPI_SET_BOUNDS set_bounds,
@@ -60,7 +61,8 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
 
   SLEQP_CALL(create_problem(&lp_interface->lp_data,
                             num_variables,
-                            num_constraints));
+                            num_constraints,
+                            params));
 
   return SLEQP_OKAY;
 }

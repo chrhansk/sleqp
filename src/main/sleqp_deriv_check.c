@@ -439,7 +439,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   int cons_val_nnz = 0;
   int cons_jac_nnz = 0;
 
-  const double one = 1.;
+  double one = 1.;
 
   SleqpSparseVec* value_diff = data->value_diff;
 

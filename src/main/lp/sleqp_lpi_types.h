@@ -8,6 +8,8 @@
 
 #include "sleqp_types.h"
 
+#include "sleqp_params.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -26,7 +28,8 @@ extern "C" {
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_CREATE)(void** lp_data,
                                             int num_variables,
-                                            int num_constraints);
+                                            int num_constraints,
+                                            SleqpParams* params);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_SOLVE)(void* lp_data,
                                            int num_variables,
