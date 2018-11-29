@@ -91,8 +91,7 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
       ub_val = ub->data[k_ub++];
     }
 
-    if(active_set &&
-       sleqp_active_set_get_constraint_state(active_set, idx) != SLEQP_INACTIVE)
+    if(active_set && sleqp_active_set_get_constraint_state(active_set, idx) != SLEQP_INACTIVE)
     {
       continue;
     }

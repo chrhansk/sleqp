@@ -25,6 +25,7 @@ struct SleqpNewtonData
   SleqpSparseVec* lower_diff;
   SleqpSparseVec* upper_diff;
 
+  SleqpSparseVec* violated_multipliers;
   SleqpSparseVec* multipliers;
 
   SleqpSparseVec* gradient;
@@ -143,6 +144,7 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   SLEQP_CALL(sleqp_sparse_vector_create(&data->lower_diff, problem->num_variables, 0));
   SLEQP_CALL(sleqp_sparse_vector_create(&data->upper_diff, problem->num_variables, 0));
 
+  SLEQP_CALL(sleqp_sparse_vector_create(&data->violated_multipliers, problem->num_constraints, 0));
   SLEQP_CALL(sleqp_sparse_vector_create(&data->multipliers, problem->num_constraints, 0));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&data->gradient, problem->num_variables, 0));
@@ -202,7 +204,9 @@ SLEQP_RETCODE sleqp_newton_data_free(SleqpNewtonData** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_rhs));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->gradient));
+
   SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->violated_multipliers));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->upper_diff));
   SLEQP_CALL(sleqp_sparse_vector_free(&data->lower_diff));
@@ -288,6 +292,14 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
                                             i_set,
                                             lower_value));
       }
+      else if(var_state == SLEQP_ACTIVE_BOTH)
+      {
+        assert(sleqp_eq(lower_value, upper_value, eps));
+
+        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
+                                            i_set,
+                                            lower_value));
+      }
 
       if(i_lower == i_combined)
       {
@@ -346,6 +358,14 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       }
       else if(cons_state == SLEQP_ACTIVE_LOWER)
       {
+        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
+                                            i_set,
+                                            lower_value));
+      }
+      else if(cons_state == SLEQP_ACTIVE_BOTH)
+      {
+        assert(sleqp_eq(lower_value, upper_value, eps));
+
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
                                             lower_value));
@@ -920,18 +940,21 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     return SLEQP_OKAY;
   }
 
-  SleqpSparseVec* multipliers = data->multipliers;
-
   SLEQP_CALL(sleqp_get_violated_multipliers(problem,
                                             iterate->x,
                                             iterate->cons_val,
                                             penalty_parameter,
-                                            multipliers,
+                                            data->violated_multipliers,
                                             iterate->active_set,
                                             eps));
 
+  SLEQP_CALL(sleqp_sparse_vector_add(data->violated_multipliers,
+                                     iterate->cons_dual,
+                                     eps,
+                                     data->multipliers));
+
   SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
-                                                      multipliers,
+                                                      data->multipliers,
                                                       eps,
                                                       data->sparse_cache));
 
@@ -940,6 +963,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                      iterate->func_grad,
                                      eps,
                                      data->gradient));
+
+  // TODO: Do we need the product H^{EQP}*d^{N}??
 
   SLEQP_CALL(trust_region_step(data,
                                iterate,

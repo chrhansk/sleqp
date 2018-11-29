@@ -224,9 +224,18 @@ SLEQP_RETCODE sleqp_iterate_active_set_contains(SleqpIterate* iterate,
             return SLEQP_OKAY;
           }
         }
-
-        if(cons_state == SLEQP_ACTIVE_LOWER)
+        else if(cons_state == SLEQP_ACTIVE_LOWER)
         {
+          if(!sleqp_eq(vval + cache[i_combined], lbval, eps))
+          {
+            *contained = false;
+            return SLEQP_OKAY;
+          }
+        }
+        else if(cons_state == SLEQP_ACTIVE_BOTH)
+        {
+          assert(sleqp_eq(lbval, ubval, eps));
+
           if(!sleqp_eq(vval + cache[i_combined], lbval, eps))
           {
             *contained = false;
