@@ -240,14 +240,7 @@ START_TEST(test_second_order_solve)
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 2, 2));
 
-  /*
   ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 4.742999));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 2, 3.821151));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 3, 1.379408));
-  */
-
-
 
   ASSERT_CALL(sleqp_params_create(&params));
 
@@ -268,11 +261,9 @@ START_TEST(test_second_order_solve)
 
   SleqpSparseVec* actual_solution = solution_iterate->x;
 
-  /*
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
                                    1e-6));
-  */
 
   ASSERT_CALL(sleqp_solver_free(&solver));
 
