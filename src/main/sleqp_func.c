@@ -98,6 +98,9 @@ SLEQP_RETCODE sleqp_func_hess_product(SleqpFunc* func,
                                       SleqpSparseVec* cons_duals,
                                       SleqpSparseVec* product)
 {
+  assert(func->num_variables == direction->dim);
+  assert(func->num_variables == product->dim);
+
   SLEQP_CALL(sleqp_sparse_vector_clear(product));
 
   SLEQP_CALL(func->eval_hess_prod(func->num_variables,

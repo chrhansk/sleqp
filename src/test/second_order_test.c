@@ -250,7 +250,7 @@ START_TEST(test_second_order_solve)
                                   x));
 
   // 100 iterations should be plenty...
-  ASSERT_CALL(sleqp_solver_solve(solver, 1000));
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
   SleqpIterate* solution_iterate;
 

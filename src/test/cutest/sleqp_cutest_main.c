@@ -170,11 +170,14 @@ int main(int argc, char *argv[])
 
   /**/
 
-  int max_num_iterations = 1000;
+  const int max_num_iterations = 1000;
+  const double time_limit = 3600;
 
   bool success = true;
 
-  SLEQP_RETCODE status = sleqp_solver_solve(solver, max_num_iterations);
+  SLEQP_RETCODE status = sleqp_solver_solve(solver,
+                                            max_num_iterations,
+                                            time_limit);
 
   if(status != SLEQP_OKAY)
   {

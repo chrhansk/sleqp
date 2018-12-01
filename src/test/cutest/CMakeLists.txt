@@ -196,7 +196,12 @@ foreach(s ${SIFPROBLEMS_EXT})
     "${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/RANGE.f")
 
   set_property(TARGET ${PROBLEM} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
-  add_library("cutest_${PROBLEM}" SHARED $<TARGET_OBJECTS:cutest> $<TARGET_OBJECTS:${PROBLEM}>)
+
+  add_library("cutest_${PROBLEM}"
+    SHARED
+    EXCLUDE_FROM_ALL
+    $<TARGET_OBJECTS:cutest>
+    $<TARGET_OBJECTS:${PROBLEM}>)
 
   set_target_properties("cutest_${PROBLEM}" PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}"
@@ -222,12 +227,14 @@ foreach(s ${SIFPROBLEMS_EXT})
     gfortran
     cutest)
 
-  #add_test(NAME "${SOLVER_NAME}" COMMAND "${SOLVER_NAME}")
+  add_test(NAME "${SOLVER_NAME}" COMMAND "${SOLVER_NAME}")
 
   add_dependencies(cutest_solvers "${SOLVER_NAME}")
 
 endforeach(s)
 
+add_dependencies(build_tests cutest_solvers)
+
 list(LENGTH SIFPROBLEMS NUM_PROBLEMS)
 
-message(STATUS "Decoded ${NUM_PROBLEMS} problems")
+message(STATUS "Suite contains ${NUM_PROBLEMS} problems")

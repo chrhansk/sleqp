@@ -62,6 +62,13 @@ extern "C" {
 
   } SleqpIterate;
 
+  /**
+   * Create a new iterate
+   *
+   * @param[in,out] star    A pointer to the newly created iterate
+   * @param[in] problem     The underlying problem
+   * @param[in] x           The point of the iterate
+   **/
   SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
                                      SleqpProblem* problem,
                                      SleqpSparseVec* x);

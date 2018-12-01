@@ -49,7 +49,7 @@ START_TEST(test_unconstrained_solve)
   */
 
   // 100 iterations should be plenty...
-  ASSERT_CALL(sleqp_solver_solve(solver, 100));
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
   SleqpIterate* solution_iterate;
 

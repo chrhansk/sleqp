@@ -20,7 +20,8 @@ extern "C" {
                                     SleqpSparseVec* x);
 
   SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
-                                   int max_num_iterations);
+                                   int max_num_iterations,
+                                   double time_limit);
 
   SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver);
 

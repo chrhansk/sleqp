@@ -3,6 +3,7 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
+#include <iostream>
 #include <soplex.h>
 
 struct SleqpLpiSoplex
@@ -23,6 +24,14 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 
   spx->soplex = new soplex::SoPlex();
   soplex::SoPlex& soplex = *(spx->soplex);
+
+  /*
+  soplex::SPxOut spxout;
+
+  spxout.setStream(soplex::SPxOut::DEBUG, std::cerr);
+
+  soplex.spxout = spxout;
+  */
 
   const double eps = sleqp_params_get_eps(params);
 

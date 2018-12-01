@@ -1075,7 +1075,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 }
 
 SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
-                                 int max_num_iterations)
+                                 int max_num_iterations,
+                                 double time_limit)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -1116,6 +1117,15 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
       sleqp_log_debug("Achieved optimality");
       solver->status = SLEQP_OPTIMAL;
       break;
+    }
+    else if(time_limit != -1)
+    {
+      double elapsed = sleqp_timer_elapsed(solver->elapsed_timer);
+
+      if(elapsed >= time_limit)
+      {
+        break;
+      }
     }
   }
 
