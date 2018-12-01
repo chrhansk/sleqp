@@ -18,6 +18,7 @@
 #include "sleqp_newton.h"
 
 #include "sleqp_soc.h"
+#include "sleqp_timer.h"
 
 #include "sleqp_iterate.h"
 #include "sleqp_merit.h"
@@ -28,6 +29,8 @@
 struct SleqpSolver
 {
   SleqpProblem* problem;
+
+  SleqpTimer* elapsed_timer;
 
   SLEQP_STATUS status;
 
@@ -114,6 +117,9 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   const int num_variables = problem->num_variables;
 
   solver->problem = problem;
+
+  SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
+
   solver->params = params;
   solver->iteration = 0;
 
@@ -1096,24 +1102,31 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   solver->status = SLEQP_INVALID;
 
-  for(int i = 0; i < max_num_iterations; ++i)
+  SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
+
+  int iteration = 0;
+
+  for(; iteration < max_num_iterations; ++iteration)
   {
     bool optimal;
     SLEQP_CALL(sleqp_perform_iteration(solver, &optimal));
 
     if(optimal)
     {
-      sleqp_log_info("Achieved optimality");
+      sleqp_log_debug("Achieved optimality");
       solver->status = SLEQP_OPTIMAL;
       break;
     }
   }
 
+  const double violation = sleqp_iterate_constraint_violation(solver->iterate,
+                                                              solver->problem);
+
   if(solver->status != SLEQP_OPTIMAL)
   {
-    const double infeasibility = sleqp_sparse_vector_norminf(solver->violation);
+    //const double violation = sleqp_sparse_vector_norminf(solver->violation);
 
-    if(sleqp_zero(infeasibility, eps))
+    if(sleqp_zero(violation, eps))
     {
       solver->status = SLEQP_FEASIBLE;
     }
@@ -1124,17 +1137,18 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   }
 
-  sleqp_log_info("Primal solution: ");
+  const char* descriptions[] = {
+    [SLEQP_FEASIBLE] = "problem is solved [feasible]",
+    [SLEQP_OPTIMAL] = "problem is solved [optimal]",
+    [SLEQP_INFEASIBLE] = "problem is solved [infeasible]",
+    [SLEQP_INVALID] = "invalid"
+  };
 
-  SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->x, stdout));
-
-  sleqp_log_info("Variable multipliers: ");
-
-  SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->vars_dual, stdout));
-
-  sleqp_log_info("Constraint multipliers: ");
-
-  SLEQP_CALL(sleqp_sparse_vector_fprintf(solver->iterate->cons_dual, stdout));
+  sleqp_log_info("   Solution status: %s", descriptions[solver->status]);
+  sleqp_log_info("   Objective value: %e", solver->iterate->func_val);
+  sleqp_log_info("         Violation: %e", violation);
+  sleqp_log_info("        Iterations: %d", iteration);
+  sleqp_log_info("Solving time (sec): %.2f", sleqp_timer_elapsed(solver->elapsed_timer));
 
   return SLEQP_OKAY;
 }
@@ -1207,6 +1221,8 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_iterate_free(&solver->iterate));
 
   SLEQP_CALL(sleqp_deriv_checker_free(&solver->deriv_check));
+
+  SLEQP_CALL(sleqp_timer_free(&solver->elapsed_timer));
 
   sleqp_free(star);
 
