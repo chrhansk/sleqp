@@ -103,7 +103,7 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
 
   soplex::SPxSolver::Status status = soplex.optimize();
 
-  soplex.writeFileReal("test.lp");
+  //soplex.writeFileReal("test.lp");
 
   /*
   if(status != soplex::SPxSolver::OPTIMAL)
