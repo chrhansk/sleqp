@@ -244,6 +244,13 @@ SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
   return SLEQP_OKAY;
 }
 
+double sleqp_sparse_vector_norm(SleqpSparseVec* vec)
+{
+  double normsq = sleqp_sparse_vector_normsq(vec);
+
+  return sqrt(normsq);
+}
+
 double sleqp_sparse_vector_normsq(SleqpSparseVec* vec)
 {
   double normsq = 0.;
