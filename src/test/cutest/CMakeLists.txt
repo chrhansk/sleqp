@@ -34,8 +34,11 @@ enable_language (Fortran)
 add_library(sleqp_cutest
   STATIC
   sleqp_cutest_defs.c
+  sleqp_cutest_driver.c
   sleqp_cutest_constrained.c
   sleqp_cutest_unconstrained.c)
+
+target_link_libraries(sleqp_cutest sleqp)
 
 include_directories("${CUTEST_BASE}/include")
 
@@ -219,7 +222,6 @@ foreach(s ${SIFPROBLEMS_EXT})
     PRIVATE PROBLEM_OUTSDIF_D="${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/OUTSDIF.d")
 
   target_link_libraries("${SOLVER_NAME}"
-    sleqp
     sleqp_cutest
     m
     ${CMAKE_DL_LIBS}
