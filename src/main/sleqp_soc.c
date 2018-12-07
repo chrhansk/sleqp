@@ -39,7 +39,9 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
                                           SleqpIterate* trial_iterate)
 {
   SleqpProblem* problem = soc_data->problem;
+
   const double eps = sleqp_params_get_eps(soc_data->params);
+  const double zero_eps = sleqp_params_get_zero_eps(soc_data->params);
 
   SleqpSparseVec* lower_diff = soc_data->lower_diff;
   SleqpSparseVec* upper_diff = soc_data->upper_diff;
@@ -57,14 +59,14 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
                                             problem->var_lb,
                                             -1.,
                                             1.,
-                                            eps,
+                                            zero_eps,
                                             lower_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_iterate->x,
                                             problem->var_ub,
                                             -1.,
                                             1.,
-                                            eps,
+                                            zero_eps,
                                             upper_diff));
 
   int k_ld = 0., k_ud = 0.;
@@ -120,7 +122,9 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
                                             SleqpIterate* trial_iterate)
 {
   SleqpProblem* problem = soc_data->problem;
+
   const double eps = sleqp_params_get_eps(soc_data->params);
+  const double zero_eps = sleqp_params_get_zero_eps(soc_data->params);
 
   SleqpSparseVec* lower_diff = soc_data->lower_diff;
   SleqpSparseVec* upper_diff = soc_data->upper_diff;
@@ -138,14 +142,14 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
                                             problem->cons_lb,
                                             -1.,
                                             1.,
-                                            eps,
+                                            zero_eps,
                                             lower_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_iterate->cons_val,
                                             problem->cons_ub,
                                             -1.,
                                             1.,
-                                            eps,
+                                            zero_eps,
                                             upper_diff));
 
 

@@ -16,6 +16,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_params_create(SleqpParams** star);
 
+  double sleqp_params_get_zero_eps(SleqpParams* params);
+
   double sleqp_params_get_eps(SleqpParams* params);
 
   double sleqp_params_get_deriv_pertubation(SleqpParams* params);

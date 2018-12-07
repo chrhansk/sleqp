@@ -11,8 +11,6 @@ struct SleqpLpiSoplex
   soplex::SoPlex* soplex;
   int num_variables;
   int num_constraints;
-
-  double eps;
 };
 
 static SLEQP_RETCODE soplex_create_problem(void** lp_data,
@@ -33,9 +31,9 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
   soplex.spxout = spxout;
   */
 
-  const double eps = sleqp_params_get_eps(params);
+  const double zero_eps = sleqp_params_get_zero_eps(params);
 
-  soplex.setRealParam(soplex::SoPlex::EPSILON_ZERO, eps);
+  soplex.setRealParam(soplex::SoPlex::EPSILON_ZERO, zero_eps);
 
   if(sleqp_log_level() >= SLEQP_LOG_DEBUG)
   {
@@ -60,7 +58,6 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 
   spx->num_variables = num_variables;
   spx->num_constraints = num_constraints;
-  spx->eps = eps;
 
   soplex.setIntParam(soplex::SoPlex::OBJSENSE,
                      soplex::SoPlex::OBJSENSE_MINIMIZE);
@@ -106,7 +103,7 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
 
   soplex::SPxSolver::Status status = soplex.optimize();
 
-  //soplex.writeFileReal("test.lp");
+  soplex.writeFileReal("test.lp");
 
   /*
   if(status != soplex::SPxSolver::OPTIMAL)

@@ -506,7 +506,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
         if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_UPPER)
         {
           if(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC &&
-             !sleqp_is_inf(ubval))
+             upper_slack_stats[i] != SLEQP_BASESTAT_BASIC)
           {
 
             // the constraint c(x) + grad(c(x))*d +I s_l -I s_u  <= u
@@ -520,7 +520,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
         else if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_LOWER)
         {
           if(upper_slack_stats[i] != SLEQP_BASESTAT_BASIC &&
-             !sleqp_is_inf(-lbval))
+             upper_slack_stats[i] != SLEQP_BASESTAT_BASIC)
           {
 
             // the constraint l <= c(x) + grad(c(x))*d +I s_l -I s_u
@@ -543,7 +543,7 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
                                          SleqpIterate* iterate,
                                          SleqpSparseVec* direction)
 {
-  const double eps = sleqp_params_get_eps(cauchy_data->params);
+  const double zero_eps = sleqp_params_get_zero_eps(cauchy_data->params);
 
   SLEQP_CALL(sleqp_lpi_get_solution(cauchy_data->lp_interface,
                                     NULL,
@@ -552,7 +552,7 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
   SLEQP_CALL(sleqp_sparse_vector_from_raw(direction,
                                           cauchy_data->solution_values,
                                           cauchy_data->problem->num_variables,
-                                          eps));
+                                          zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -585,6 +585,8 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         SleqpSparseVec* direction,
                                         double* step_length)
 {
+  const double eps = sleqp_params_get_eps(cauchy_data->params);
+
   SleqpMeritData* merit_data = cauchy_data->merit_data;
 
   double exact_merit_value;
@@ -601,9 +603,7 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
   double delta = 1.;
 
   {
-    double direction_norm = sleqp_sparse_vector_normsq(direction);
-
-    direction_norm = sqrt(direction_norm);
+    double direction_norm = sleqp_sparse_vector_norm(direction);
 
     double direction_factor = trust_radius / direction_norm;
 
@@ -663,6 +663,8 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
   {
     *step_length = delta;
   }
+
+  assert(sleqp_le(sleqp_sparse_vector_norm(direction), trust_radius, eps));
 
   return SLEQP_OKAY;
 }

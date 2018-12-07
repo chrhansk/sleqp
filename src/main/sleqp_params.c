@@ -5,6 +5,8 @@
 struct SleqpParams
 {
   double eps;
+  double zero_eps;
+
   double deriv_pertubation;
   double deriv_tolerance;
 
@@ -20,7 +22,9 @@ struct SleqpParams
   double accepted_reduction;
 };
 
+#define ZERO_EPS_DEFAULT 1e-16
 #define EPS_DEFAULT 1e-10
+
 #define DERIV_PERTUBATION_DEFAULT 1e-8
 #define DERIV_TOLERANCE_DEFAULT 1e-4
 
@@ -41,7 +45,9 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
   SleqpParams* params = *star;
 
+  params->zero_eps = ZERO_EPS_DEFAULT;
   params->eps = EPS_DEFAULT;
+
   params->deriv_pertubation = DERIV_PERTUBATION_DEFAULT;
   params->deriv_tolerance = DERIV_TOLERANCE_DEFAULT;
 
@@ -57,6 +63,11 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
   params->accepted_reduction = ACCEPTED_REDUCTION_DEFAULT;
 
   return SLEQP_OKAY;
+}
+
+double sleqp_params_get_zero_eps(SleqpParams* params)
+{
+  return params->zero_eps;
 }
 
 double sleqp_params_get_eps(SleqpParams* params)

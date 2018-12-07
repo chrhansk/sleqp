@@ -127,7 +127,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                         problem,
                                         params));
 
-  const double eps = sleqp_params_get_eps(params);
+  const double zero_eps = sleqp_params_get_zero_eps(params);
 
   assert(sleqp_sparse_vector_valid(x));
 
@@ -138,7 +138,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_clip(x,
                                       problem->var_lb,
                                       problem->var_ub,
-                                      eps,
+                                      zero_eps,
                                       solver->iterate->x));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->violation,
@@ -428,6 +428,7 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
                                              double* quadratic_value)
 {
   const double eps = sleqp_params_get_eps(solver->params);
+  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   SLEQP_CALL(sleqp_merit_linear_gradient(solver->merit_data,
                                          solver->iterate,
@@ -480,7 +481,7 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_sparse_vector_add(solver->iterate->x,
                                        solver->cauchy_step,
-                                       eps,
+                                       zero_eps,
                                        solver->trial_direction));
 
     SLEQP_CALL(sleqp_max_step_length(solver->trial_direction,
@@ -506,7 +507,7 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
                                               solver->cauchy_newton_direction,
                                               1.,
                                               alpha,
-                                              eps,
+                                              zero_eps,
                                               solver->trial_direction));
 
     {
@@ -563,7 +564,8 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  double eps = sleqp_params_get_eps(solver->params);
+  const double eps = sleqp_params_get_eps(solver->params);
+  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   double one = 1.;
 
@@ -639,8 +641,8 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
   }
 
   {
-    double cnorm = sqrt(sleqp_sparse_vector_normsq(solver->cauchy_step));
-    double nnorm = sqrt(sleqp_sparse_vector_normsq(solver->newton_step));
+    double cnorm = sleqp_sparse_vector_norm(solver->cauchy_step);
+    double nnorm = sleqp_sparse_vector_norm(solver->newton_step);
 
     double nprod;
 
@@ -684,7 +686,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                               solver->cauchy_step,
                                               1.,
                                               -1.,
-                                              eps,
+                                              zero_eps,
                                               solver->cauchy_newton_direction));
 
     SLEQP_CALL(sleqp_func_hess_product(problem->func,
@@ -698,13 +700,13 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
                                      solver->trial_direction,
-                                     eps,
+                                     zero_eps,
                                      solver->initial_trial_point));
 
   SLEQP_CALL(sleqp_sparse_vector_clip(solver->initial_trial_point,
                                       problem->var_lb,
                                       problem->var_ub,
-                                      eps,
+                                      zero_eps,
                                       solver->trial_iterate->x));
 
 
@@ -722,7 +724,7 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
   SleqpSparseVec* current_point = iterate->x;
   SleqpSparseVec* trial_point = trial_iterate->x;
 
-  const double eps = sleqp_params_get_eps(solver->params);
+  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   SLEQP_CALL(sleqp_soc_compute(solver->soc_data,
                                solver->aug_jacobian,
@@ -742,7 +744,7 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
                                             solver->soc_direction,
                                             1.,
                                             max_step_length,
-                                            eps,
+                                            zero_eps,
                                             solver->soc_corrected_direction));
 
   {
@@ -750,13 +752,13 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
                                               solver->soc_corrected_direction,
                                               1.,
                                               1.,
-                                              eps,
+                                              zero_eps,
                                               solver->initial_soc_trial_point));
 
     SLEQP_CALL(sleqp_sparse_vector_clip(solver->initial_soc_trial_point,
                                         problem->var_lb,
                                         problem->var_ub,
-                                        eps,
+                                        zero_eps,
                                         trial_point));
   }
 
@@ -861,6 +863,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                       problem->var_ub));
 
   const double eps = sleqp_params_get_eps(solver->params);
+  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   const double accepted_reduction = sleqp_params_get_accepted_reduction(solver->params);
 
@@ -909,7 +912,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   double quadratic_reduction = quadratic_iterate_value - quadratic_trial_value;
 
-  assert(!sleqp_neg(quadratic_reduction, eps));
+  assert(!sleqp_neg(quadratic_reduction, zero_eps));
 
   SLEQP_CALL(set_func_value(solver, trial_iterate));
 
@@ -948,9 +951,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   const double trial_direction_infnorm = sleqp_sparse_vector_norminf(solver->trial_direction);
   const double cauchy_step_infnorm = sleqp_sparse_vector_norminf(solver->cauchy_step);
 
-  double trial_direction_norm = sleqp_sparse_vector_normsq(solver->trial_direction);
-
-  trial_direction_norm = sqrt(trial_direction_norm);
+  double trial_direction_norm = sleqp_sparse_vector_norm(solver->trial_direction);
 
   sleqp_log_debug("Trial step norm: %e", trial_direction_norm);
 
@@ -981,7 +982,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
       // in the SOC case it is not guaranteed that
       // there is a quadratic reduction
-      if(sleqp_pos(soc_quadratic_reduction, eps))
+      if(sleqp_pos(soc_quadratic_reduction, zero_eps))
       {
 
         SLEQP_CALL(set_func_value(solver, trial_iterate));
@@ -1037,7 +1038,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                       trial_direction_infnorm,
                                       cauchy_step_infnorm,
                                       solver->cauchy_step_length,
-                                      eps,
+                                      zero_eps,
                                       &(solver->lp_trust_radius)));
 
     SLEQP_CALL(update_penalty_parameter(solver));
@@ -1082,6 +1083,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   SleqpIterate* iterate = solver->iterate;
 
   const double eps = sleqp_params_get_eps(solver->params);
+  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   solver->iteration = 0;
 
@@ -1136,7 +1138,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   {
     //const double violation = sleqp_sparse_vector_norminf(solver->violation);
 
-    if(sleqp_zero(violation, eps))
+    if(sleqp_zero(violation, zero_eps))
     {
       solver->status = SLEQP_FEASIBLE;
     }
