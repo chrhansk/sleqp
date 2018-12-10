@@ -11,24 +11,31 @@
 # this module where to look.
 
 find_path(SOPLEX_INCLUDE_DIR
-  NAMES soplex.h ${${search}}
-  PATHS ${SOPLEX_ROOT}
+  NAMES soplex.h
+  PATHS ${SOPLEX_ROOT} ${SCIP_ROOT} "${SCIP_ROOT}/soplex"
   PATH_SUFFIXES src include soplex)
 
 # Try to find a PIC-version first
 find_library(SOPLEX_LIBRARY
   NAMES soplex-pic soplex
-  PATHS ${SOPLEX_ROOT}
+  PATHS ${SOPLEX_ROOT} ${SCIP_ROOT}
   PATH_SUFFIXES lib)
 
-if(SOPLEX_INCLUDE_DIR AND EXISTS "${SOPLEX_INCLUDE_DIR}/spxdefines.h")
-  file(STRINGS "${SOPLEX_INCLUDE_DIR}/spxdefines.h" SOPLEX_DEF_H REGEX "^#define SOPLEX_VERSION +[0-9]+")
-  string(REGEX REPLACE "^#define SOPLEX_VERSION +([0-9]+).*" "\\1" SVER ${SOPLEX_DEF_H})
+if(SOPLEX_INCLUDE_DIR)
+  find_file(SPX_HEADER
+    NAMES "spxdefines.h"
+    PATHS ${SOPLEX_INCLUDE_DIR}
+    PATH_SUFFIXES "soplex")
 
-  string(REGEX REPLACE "([0-9]).*" "\\1" SOPLEX_VERSION_MAJOR ${SVER})
-  string(REGEX REPLACE "[0-9]([0-9]).*" "\\1" SOPLEX_VERSION_MINOR ${SVER})
-  string(REGEX REPLACE "[0-9][0-9]([0-9]).*" "\\1" SOPLEX_VERSION_PATCH ${SVER})
-  set(SOPLEX_VERSION "${SOPLEX_VERSION_MAJOR}.${SOPLEX_VERSION_MINOR}.${SOPLEX_VERSION_PATCH}")
+  if(SPX_HEADER)
+    file(STRINGS "${SPX_HEADER}" SOPLEX_DEF_H REGEX "^#define SOPLEX_VERSION +[0-9]+")
+    string(REGEX REPLACE "^#define SOPLEX_VERSION +([0-9]+).*" "\\1" SVER ${SOPLEX_DEF_H})
+
+    string(REGEX REPLACE "([0-9]).*" "\\1" SOPLEX_VERSION_MAJOR ${SVER})
+    string(REGEX REPLACE "[0-9]([0-9]).*" "\\1" SOPLEX_VERSION_MINOR ${SVER})
+    string(REGEX REPLACE "[0-9][0-9]([0-9]).*" "\\1" SOPLEX_VERSION_PATCH ${SVER})
+    set(SOPLEX_VERSION "${SOPLEX_VERSION_MAJOR}.${SOPLEX_VERSION_MINOR}.${SOPLEX_VERSION_PATCH}")
+  endif()
 endif()
 
 find_package(GMP QUIET)
