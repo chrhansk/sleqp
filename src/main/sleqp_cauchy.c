@@ -398,15 +398,17 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
   SLEQP_CALL(sleqp_lpi_get_consstats(cauchy_data->lp_interface,
                                      cauchy_data->cons_stats));
 
-  const int num_variables = cauchy_data->problem->num_variables;
-  const int num_constraints = cauchy_data->problem->num_constraints;
+  SleqpProblem* problem = cauchy_data->problem;
+
+  const int num_variables = problem->num_variables;
+  const int num_constraints = problem->num_constraints;
 
   const double eps = sleqp_params_get_eps(cauchy_data->params);
 
   {
     SleqpSparseVec* x = iterate->x;
-    SleqpSparseVec* lb = cauchy_data->problem->var_lb;
-    SleqpSparseVec* ub = cauchy_data->problem->var_ub;
+    SleqpSparseVec* lb = problem->var_lb;
+    SleqpSparseVec* ub = problem->var_ub;
 
     int k_x = 0, k_lb = 0, k_ub = 0;
 
@@ -467,8 +469,8 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
     SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
     SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
 
-    SleqpSparseVec* lb = cauchy_data->problem->cons_lb;
-    SleqpSparseVec* ub = cauchy_data->problem->cons_ub;
+    SleqpSparseVec* lb = problem->cons_lb;
+    SleqpSparseVec* ub = problem->cons_ub;
 
     for(int i = 0; i < num_constraints; ++i)
     {
@@ -534,6 +536,16 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
       }
     }
   }
+
+  int num_active_vars = sleqp_active_set_num_active_vars(iterate->active_set);
+  int num_active_conss = sleqp_active_set_num_active_conss(iterate->active_set);
+
+  assert(num_active_vars <= problem->num_variables);
+  assert(num_active_conss <= problem->num_variables);
+
+  sleqp_log_debug("Created an active set with %d variables, %d constraints",
+                  num_active_vars,
+                  num_active_conss);
 
 
   return SLEQP_OKAY;

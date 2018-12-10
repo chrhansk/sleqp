@@ -21,14 +21,29 @@ static SLEQP_RETCODE umfpack_get_error_string(int value,
 {
   switch(value)
   {
+  case UMFPACK_ERROR_different_pattern:
+    (*message) = "UMFPACK_ERROR_different_pattern";
+    break;
+  case UMFPACK_ERROR_invalid_Symbolic_object:
+    (*message) = "UMFPACK_ERROR_invalid_Symbolic_object";
+    break;
+  case UMFPACK_WARNING_singular_matrix:
+    (*message) = "UMFPACK_WARNING_singular_matrix";
+    break;
+  case UMFPACK_ERROR_n_nonpositive:
+    (*message) = "UMFPACK_ERROR_n_nonpositive";
+    break;
   case UMFPACK_ERROR_invalid_matrix:
     (*message) = "UMFPACK_ERROR_invalid_matrix";
     break;
   case UMFPACK_ERROR_argument_missing:
-    (*message) = "UMFPACK_ERROR_invalid_matrix";
+    (*message) = "MFPACK_ERROR_argument_missing";
     break;
   case UMFPACK_ERROR_out_of_memory:
     (*message) = "UMFPACK_ERROR_out_of_memory";
+    break;
+  case UMFPACK_ERROR_internal_error:
+    (*message) = "UMFPACK_ERROR_internal_error";
     break;
   default:
     (*message) = "Unknown";
@@ -39,32 +54,32 @@ static SLEQP_RETCODE umfpack_get_error_string(int value,
 }
 
 
-#define UMFPACK_CALL(x)                                            \
-  do                                                               \
-  {                                                                \
-  int umfpack_status = (x);                                        \
-                                                                   \
-  if(umfpack_status != UMFPACK_OK)                                 \
-  {                                                                \
-    const char* umfpack_error_string;                              \
-    SLEQP_CALL(umfpack_get_error_string(umfpack_status,            \
-                                        &umfpack_error_string));   \
-                                                                   \
-    sleqp_log_error("Caught Umfpack error <%d> (%s)",              \
-                    umfpack_status,                                \
-                    umfpack_error_string);                         \
-                                                                   \
-    switch(umfpack_status)                                         \
-    {                                                              \
-    case UMFPACK_ERROR_invalid_matrix:                             \
-    case UMFPACK_ERROR_argument_missing:                           \
-      return SLEQP_ILLEGAL_ARGUMENT;                               \
-    case UMFPACK_ERROR_out_of_memory:                              \
-      return SLEQP_NOMEM;                                          \
-    default:                                                       \
-      return SLEQP_INTERNAL_ERROR;                                 \
-    }                                                              \
-  }                                                                \
+#define UMFPACK_CALL(x)                                                 \
+  do                                                                    \
+  {                                                                     \
+    int umfpack_status = (x);                                           \
+                                                                        \
+    if(umfpack_status != UMFPACK_OK)                                    \
+    {                                                                   \
+      const char* umfpack_error_string;                                 \
+      SLEQP_CALL(umfpack_get_error_string(umfpack_status,               \
+                                          &umfpack_error_string));      \
+                                                                        \
+      sleqp_log_error("Caught Umfpack error <%d> (%s)",                 \
+                      umfpack_status,                                   \
+                      umfpack_error_string);                            \
+                                                                        \
+      switch(umfpack_status)                                            \
+      {                                                                 \
+      case UMFPACK_ERROR_invalid_matrix:                                \
+      case UMFPACK_ERROR_argument_missing:                              \
+        return SLEQP_ILLEGAL_ARGUMENT;                                  \
+      case UMFPACK_ERROR_out_of_memory:                                 \
+        return SLEQP_NOMEM;                                             \
+      default:                                                          \
+        return SLEQP_INTERNAL_ERROR;                                    \
+      }                                                                 \
+    }                                                                   \
   } while(0)
 
 SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
