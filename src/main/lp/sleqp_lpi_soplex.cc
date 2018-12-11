@@ -9,19 +9,26 @@
 struct SleqpLpiSoplex
 {
   soplex::SoPlex* soplex;
-  int num_variables;
-  int num_constraints;
+
+  soplex::SPxSolver::VarStatus* basis_rows;
+  soplex::SPxSolver::VarStatus* basis_cols;
+
+  int num_cols;
+  int num_rows;
 };
 
 static SLEQP_RETCODE soplex_create_problem(void** lp_data,
-                                           int num_variables,
-                                           int num_constraints,
+                                           int num_cols,
+                                           int num_rows,
                                            SleqpParams* params)
 {
   SleqpLpiSoplex* spx = new SleqpLpiSoplex;
 
   spx->soplex = new soplex::SoPlex();
   soplex::SoPlex& soplex = *(spx->soplex);
+
+  spx->basis_rows = new soplex::SPxSolver::VarStatus[num_rows];
+  spx->basis_cols = new soplex::SPxSolver::VarStatus[num_cols];
 
   /*
   soplex::SPxOut spxout;
@@ -56,8 +63,8 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
                        soplex::SoPlex::VERBOSITY_ERROR);
   }
 
-  spx->num_variables = num_variables;
-  spx->num_constraints = num_constraints;
+  spx->num_cols = num_cols;
+  spx->num_rows = num_rows;
 
   soplex.setIntParam(soplex::SoPlex::OBJSENSE,
                      soplex::SoPlex::OBJSENSE_MINIMIZE);
@@ -68,9 +75,9 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
   double inf = soplex::infinity;
 
   {
-    soplex::LPColSetReal cols(num_variables, 0);
+    soplex::LPColSetReal cols(num_cols, 0);
 
-    for(int j = 0; j < num_variables; ++j)
+    for(int j = 0; j < num_cols; ++j)
     {
       cols.add(soplex::LPCol(0., vec, inf, -inf));
     }
@@ -79,9 +86,9 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
   }
 
   {
-    soplex::LPRowSetReal rows(num_constraints ,0);
+    soplex::LPRowSetReal rows(num_rows ,0);
 
-    for(int i = 0; i < num_constraints; ++i)
+    for(int i = 0; i < num_rows; ++i)
     {
       rows.add(soplex::LPRow(-inf, vec, inf));
     }
@@ -95,8 +102,8 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 }
 
 static SLEQP_RETCODE soplex_solve(void* lp_data,
-                                  int num_variables,
-                                  int num_constraints)
+                                  int num_cols,
+                                  int num_rows)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
@@ -183,8 +190,8 @@ static double adjust_inf(double value)
 }
 
 static SLEQP_RETCODE soplex_set_bounds(void* lp_data,
-                                       int num_variables,
-                                       int num_constraints,
+                                       int num_cols,
+                                       int num_rows,
                                        double* cons_lb,
                                        double* cons_ub,
                                        double* vars_lb,
@@ -193,13 +200,13 @@ static SLEQP_RETCODE soplex_set_bounds(void* lp_data,
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  for(int i = 0; i < num_constraints; ++i)
+  for(int i = 0; i < num_rows; ++i)
   {
     assert(cons_lb[i] <= cons_ub[i]);
     soplex.changeRangeReal(i, adjust_inf(cons_lb[i]), adjust_inf(cons_ub[i]));
   }
 
-  for(int j = 0; j < num_variables; ++j)
+  for(int j = 0; j < num_cols; ++j)
   {
     assert(vars_lb[j] <= vars_ub[j]);
     soplex.changeBoundsReal(j, adjust_inf(vars_lb[j]), adjust_inf(vars_ub[j]));
@@ -209,22 +216,24 @@ static SLEQP_RETCODE soplex_set_bounds(void* lp_data,
 }
 
 static SLEQP_RETCODE soplex_set_coefficients(void* lp_data,
-                                             int num_variables,
-                                             int num_constraints,
+                                             int num_cols,
+                                             int num_rows,
                                              SleqpSparseMatrix* coeff_matrix)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  assert(num_variables == coeff_matrix->num_cols);
-  assert(num_constraints == coeff_matrix->num_rows);
+  assert(num_cols == coeff_matrix->num_cols);
+  assert(num_rows == coeff_matrix->num_rows);
 
-  // TODO: Find out whether storing / restoring the basis
-  //       is a good idea.
+  // Note: We save / restore the basis in order to
+  //       warm-start the iteration.
+  soplex.getBasis(spx->basis_rows, spx->basis_cols);
+
   soplex.clearBasis();
   assert(soplex.status() == soplex::SPxSolver::NO_PROBLEM);
 
-  for(int j = 0; j < num_variables; ++j)
+  for(int j = 0; j < num_cols; ++j)
   {
     int num_entries = coeff_matrix->cols[j + 1] - coeff_matrix->cols[j];
 
@@ -244,18 +253,20 @@ static SLEQP_RETCODE soplex_set_coefficients(void* lp_data,
     soplex.changeColReal(j, soplex::LPCol(objective, soplex_col, ub, lb));
   }
 
+  soplex.setBasis(spx->basis_rows, spx->basis_cols);
+
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE soplex_set_objective(void* lp_data,
-                                          int num_variables,
-                                          int num_constraints,
+                                          int num_cols,
+                                          int num_rows,
                                           double* objective)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  for(int j = 0; j < num_variables; ++j)
+  for(int j = 0; j < num_cols; ++j)
   {
     soplex.changeObjReal(j, adjust_inf(objective[j]));
   }
@@ -265,8 +276,8 @@ static SLEQP_RETCODE soplex_set_objective(void* lp_data,
 
 
 static SLEQP_RETCODE soplex_get_solution(void* lp_data,
-                                         int num_variables,
-                                         int num_constraints,
+                                         int num_cols,
+                                         int num_rows,
                                          double* objective_value,
                                          double* solution_values)
 {
@@ -278,7 +289,7 @@ static SLEQP_RETCODE soplex_get_solution(void* lp_data,
     *objective_value = soplex.objValueReal();
   }
 
-  soplex::VectorReal solution(num_variables, solution_values);
+  soplex::VectorReal solution(num_cols, solution_values);
 
   bool found_solution = soplex.getPrimalReal(solution);
 
@@ -288,14 +299,14 @@ static SLEQP_RETCODE soplex_get_solution(void* lp_data,
 }
 
 static SLEQP_RETCODE soplex_get_varstats(void* lp_data,
-                                         int num_variables,
-                                         int num_constraints,
+                                         int num_cols,
+                                         int num_rows,
                                          SLEQP_BASESTAT* variable_stats)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  for(int i = 0; i < num_variables; ++i)
+  for(int i = 0; i < num_cols; ++i)
   {
     switch (soplex.basisColStatus(i))
     {
@@ -324,14 +335,14 @@ static SLEQP_RETCODE soplex_get_varstats(void* lp_data,
 }
 
 static SLEQP_RETCODE soplex_get_consstats(void* lp_data,
-                                          int num_variables,
-                                          int num_constraints,
+                                          int num_cols,
+                                          int num_rows,
                                           SLEQP_BASESTAT* constraint_stats)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  for(int i = 0; i < num_constraints; ++i)
+  for(int i = 0; i < num_rows; ++i)
   {
     switch (soplex.basisRowStatus(i))
     {
@@ -363,6 +374,9 @@ static SLEQP_RETCODE soplex_free(void** lp_data)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) *lp_data;
 
+  delete[] spx->basis_cols;
+  delete[] spx->basis_rows;
+
   delete spx->soplex;
 
   delete spx;
@@ -375,13 +389,13 @@ static SLEQP_RETCODE soplex_free(void** lp_data)
 extern "C"
 {
   SLEQP_RETCODE sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star,
-                                                  int num_variables,
-                                                  int num_constraints,
+                                                  int num_cols,
+                                                  int num_rows,
                                                   SleqpParams* params)
   {
     return sleqp_lpi_create_interface(lp_star,
-                                      num_variables,
-                                      num_constraints,
+                                      num_cols,
+                                      num_rows,
                                       params,
                                       soplex_create_problem,
                                       soplex_solve,
