@@ -309,10 +309,13 @@ static SLEQP_RETCODE soplex_get_varstats(void* lp_data,
       variable_stats[i] = SLEQP_BASESTAT_ZERO;
       break;
     case soplex::SPxSolver::FIXED:
+      variable_stats[i] = SLEQP_BASESTAT_BASIC;
+      break;
     case soplex::SPxSolver::BASIC:
       variable_stats[i] = SLEQP_BASESTAT_BASIC;
       break;
     default:
+      assert(false);
       break;
     }
   }
@@ -342,10 +345,13 @@ static SLEQP_RETCODE soplex_get_consstats(void* lp_data,
       constraint_stats[i] = SLEQP_BASESTAT_ZERO;
       break;
     case soplex::SPxSolver::FIXED:
+      constraint_stats[i] = SLEQP_BASESTAT_BASIC;
+      break;
     case soplex::SPxSolver::BASIC:
       constraint_stats[i] = SLEQP_BASESTAT_BASIC;
       break;
     default:
+      assert(false);
       break;
     }
   }

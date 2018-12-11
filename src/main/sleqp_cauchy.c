@@ -309,15 +309,6 @@ SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchyData* cauchy_data,
   int num_variables = cons_jac->num_cols;
   int num_constraints = cons_jac->num_rows;
 
-  /*
-  SLEQP_CALL(append_penalties(func_grad,
-                              num_variables,
-                              num_constraints,
-                              penalty));
-  */
-
-  //assert(sleqp_sparse_vector_valid(func_grad));
-
   SLEQP_CALL(append_identities(cons_jac,
                                num_variables,
                                num_constraints));
@@ -343,23 +334,6 @@ SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchyData* cauchy_data,
 
   SLEQP_CALL(sleqp_lpi_set_coefficients(cauchy_data->lp_interface,
                                         cons_jac));
-  /*
-  SLEQP_CALL(create_objective(cauchy_data,
-                              iterate,
-                              trust_radius,
-                              num_variables,
-                              num_constraints));
-  */
-
-  /*
-  SLEQP_CALL(sleqp_lpi_solve(cauchy_data->lp_interface,
-                             cauchy_data->objective,
-                             cons_jac,
-                             cauchy_data->cons_lb,
-                             cauchy_data->cons_ub,
-                             cauchy_data->vars_lb,
-                             cauchy_data->vars_ub));
-  */
 
   SLEQP_CALL(remove_identities(cons_jac,
                                num_variables,
@@ -491,12 +465,16 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
       double ubval = valid_ub ? ub->data[k_ub] : 0.;
       double lbval = valid_lb ? lb->data[k_lb] : 0.;
 
-      assert(sleqp_active_set_get_constraint_state(iterate->active_set, i) == SLEQP_INACTIVE);
+      assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC ||
+             upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
+
+      bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER &&
+        upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
+
 
       if(sleqp_eq(lbval, ubval, eps))
       {
-        if(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC &&
-           upper_slack_stats[i] != SLEQP_BASESTAT_BASIC)
+        if(zero_slack)
         {
           SLEQP_CALL(sleqp_active_set_add_constraint(iterate->active_set,
                                                      i,
@@ -507,8 +485,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
       {
         if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_UPPER)
         {
-          if(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC &&
-             upper_slack_stats[i] != SLEQP_BASESTAT_BASIC)
+          if(zero_slack)
           {
 
             // the constraint c(x) + grad(c(x))*d +I s_l -I s_u  <= u
@@ -521,8 +498,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
         }
         else if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_LOWER)
         {
-          if(upper_slack_stats[i] != SLEQP_BASESTAT_BASIC &&
-             upper_slack_stats[i] != SLEQP_BASESTAT_BASIC)
+          if(zero_slack)
           {
 
             // the constraint l <= c(x) + grad(c(x))*d +I s_l -I s_u
@@ -537,11 +513,14 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
     }
   }
 
-  int num_active_vars = sleqp_active_set_num_active_vars(iterate->active_set);
-  int num_active_conss = sleqp_active_set_num_active_conss(iterate->active_set);
+  const int num_active_vars = sleqp_active_set_num_active_vars(iterate->active_set);
+  const int num_active_conss = sleqp_active_set_num_active_conss(iterate->active_set);
+  const int active_set_size = sleqp_active_set_size(iterate->active_set);
 
   assert(num_active_vars <= problem->num_variables);
   assert(num_active_conss <= problem->num_variables);
+
+  assert(active_set_size <= problem->num_variables);
 
   sleqp_log_debug("Created an active set with %d variables, %d constraints",
                   num_active_vars,

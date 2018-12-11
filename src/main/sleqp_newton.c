@@ -108,7 +108,7 @@ static SLEQP_RETCODE trlib_get_status_string(int value,
     (*message) = "TRLIB_CLR_FAIL_HARD";
     break;
   default:
-    return SLEQP_INTERNAL_ERROR;
+    (*message) = "(unknown)";
     break;
   }
 
