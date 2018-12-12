@@ -11,6 +11,7 @@ struct SleqpSparseFactorization
   SleqpSparseMatrix* matrix;
 
   void* numeric_factorization;
+  void* symbolic_factorization;
 
   double* solution;
   double* rhs;
@@ -93,26 +94,33 @@ SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
 
   factorization->matrix = matrix;
 
-  void* symbolic_factorization;
+  factorization->numeric_factorization = NULL;
+
+  factorization->symbolic_factorization = NULL;
 
   UMFPACK_CALL(umfpack_di_symbolic(matrix->num_cols,
                                    matrix->num_rows,
                                    matrix->cols,
                                    matrix->rows,
                                    matrix->data,
-                                   &symbolic_factorization,
+                                   &factorization->symbolic_factorization,
                                    NULL,
                                    NULL));
 
   UMFPACK_CALL(umfpack_di_numeric(matrix->cols,
                                   matrix->rows,
                                   matrix->data,
-                                  symbolic_factorization,
+                                  factorization->symbolic_factorization,
                                   &factorization->numeric_factorization,
                                   NULL,
                                   NULL));
 
-  umfpack_di_free_symbolic(&symbolic_factorization);
+  if(factorization->symbolic_factorization)
+  {
+    umfpack_di_free_symbolic(&factorization->symbolic_factorization);
+  }
+
+  factorization->symbolic_factorization = NULL;
 
   SLEQP_CALL(sleqp_calloc(&factorization->rhs,
                           matrix->num_rows));
@@ -197,7 +205,19 @@ SLEQP_RETCODE sleqp_sparse_factorization_free(SleqpSparseFactorization** star)
   sleqp_free(&factorization->rhs);
   sleqp_free(&factorization->solution);
 
-  umfpack_di_free_numeric(&factorization->numeric_factorization);
+  if(factorization->numeric_factorization)
+  {
+    umfpack_di_free_numeric(&factorization->numeric_factorization);
+
+    factorization->numeric_factorization = NULL;
+  }
+
+  if(factorization->symbolic_factorization)
+  {
+    umfpack_di_free_symbolic(&factorization->symbolic_factorization);
+
+    factorization->symbolic_factorization = NULL;
+  }
 
   sleqp_free(star);
 
