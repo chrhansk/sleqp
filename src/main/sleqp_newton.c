@@ -918,19 +918,6 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
         //assert(sleqp_lt(initial_norm_sq, trust_radius_sq, eps));
 
-        {
-          bool contained;
-
-          SLEQP_CALL(sleqp_iterate_active_set_contains(iterate,
-                                                       problem,
-                                                       data->initial_solution,
-                                                       eps,
-                                                       data->dense_cache,
-                                                       &contained));
-
-          assert(contained);
-        }
-
         trust_radius = sqrt(trust_radius_sq - initial_norm_sq);
       }
       else

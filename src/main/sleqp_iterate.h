@@ -73,13 +73,6 @@ extern "C" {
                                      SleqpProblem* problem,
                                      SleqpSparseVec* x);
 
-  SLEQP_RETCODE sleqp_iterate_active_set_contains(SleqpIterate* iterate,
-                                                  SleqpProblem* problem,
-                                                  SleqpSparseVec* direction,
-                                                  double eps,
-                                                  double* cache,
-                                                  bool* contained);
-
   double sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
                                           SleqpProblem* problem);
 

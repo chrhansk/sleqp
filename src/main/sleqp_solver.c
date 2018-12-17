@@ -591,19 +591,6 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                           iterate,
                                           solver->cauchy_direction));
 
-    {
-      bool contained;
-
-      SLEQP_CALL(sleqp_iterate_active_set_contains(iterate,
-                                                   problem,
-                                                   solver->cauchy_direction,
-                                                   eps,
-                                                   solver->dense_cache,
-                                                   &contained));
-
-      assert(contained);
-    }
-
     SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
                                              iterate,
                                              solver->estimation_residuum,
