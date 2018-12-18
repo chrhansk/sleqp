@@ -100,6 +100,8 @@ struct SleqpSolver
 
   // misc
 
+  double elapsed_seconds;
+
   int iteration;
 };
 
@@ -121,7 +123,9 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
   solver->params = params;
+
   solver->iteration = 0;
+  solver->elapsed_seconds =0.;
 
   SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_check,
                                         problem,
@@ -810,7 +814,7 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
 
 static SLEQP_RETCODE print_header()
 {
-  fprintf(stdout,
+  fprintf(stderr,
           HEADER_FORMAT,
           "iter",
           "funcval",
@@ -824,7 +828,7 @@ static SLEQP_RETCODE print_header()
 
 static SLEQP_RETCODE print_line(SleqpSolver* solver)
 {
-  fprintf(stdout,
+  fprintf(stderr,
           LINE_FORMAT,
           solver->iteration,
           solver->iterate->func_val,
@@ -1057,8 +1061,6 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     set_func_value(solver, iterate);
   }
 
-  ++(solver->iteration);
-
   return SLEQP_OKAY;
 }
 
@@ -1071,8 +1073,6 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
-
-  solver->iteration = 0;
 
   sleqp_log_info("Solving a problem with %d variables, %d constraints",
                  problem->num_variables,
@@ -1094,12 +1094,17 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
-  int iteration = 0;
+  solver->iteration = 0;
+  solver->elapsed_seconds = 0.;
 
-  for(; iteration < max_num_iterations; ++iteration)
+  while(true)
   {
+    ++solver->iteration;
+
     bool optimal;
     SLEQP_CALL(sleqp_perform_iteration(solver, &optimal));
+
+    solver->elapsed_seconds = sleqp_timer_elapsed(solver->elapsed_timer);
 
     if(optimal)
     {
@@ -1109,12 +1114,14 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     }
     else if(time_limit != -1)
     {
-      double elapsed = sleqp_timer_elapsed(solver->elapsed_timer);
-
-      if(elapsed >= time_limit)
+      if(solver->elapsed_seconds >= time_limit)
       {
         break;
       }
+    }
+    else if(max_num_iterations != -1 && solver->iteration >= max_num_iterations)
+    {
+      break;
     }
   }
 
@@ -1146,8 +1153,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   sleqp_log_info("   Solution status: %s", descriptions[solver->status]);
   sleqp_log_info("   Objective value: %e", solver->iterate->func_val);
   sleqp_log_info("         Violation: %e", violation);
-  sleqp_log_info("        Iterations: %d", iteration);
-  sleqp_log_info("Solving time (sec): %.2f", sleqp_timer_elapsed(solver->elapsed_timer));
+  sleqp_log_info("        Iterations: %d", solver->iteration);
+  sleqp_log_info("Solving time (sec): %.2f", solver->elapsed_seconds);
 
   return SLEQP_OKAY;
 }
@@ -1163,6 +1170,16 @@ SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
 SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
 {
   return solver->status;
+}
+
+int sleqp_solver_get_iterations(SleqpSolver* solver)
+{
+  return solver->iteration;
+}
+
+double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver)
+{
+  return solver->elapsed_seconds;
 }
 
 SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)

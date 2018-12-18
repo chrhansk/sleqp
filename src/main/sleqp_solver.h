@@ -28,6 +28,10 @@ extern "C" {
   SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                           SleqpIterate** iterate);
 
+  int sleqp_solver_get_iterations(SleqpSolver* solver);
+
+  double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver);
+
   SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star);
 
 #ifdef __cplusplus

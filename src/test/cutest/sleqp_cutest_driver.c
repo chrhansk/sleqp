@@ -168,7 +168,7 @@ int sleqp_cutest_run(const char* filename)
 
   /**/
 
-  const int max_num_iterations = 1000;
+  const int max_num_iterations = -1;
   const double time_limit = 3600;
 
   bool success = true;
@@ -177,12 +177,38 @@ int sleqp_cutest_run(const char* filename)
                                             max_num_iterations,
                                             time_limit);
 
-  if(status != SLEQP_OKAY)
+  if(status == SLEQP_OKAY)
   {
-    success = false;
-  }
+    const char* descriptions[] = {
+      [SLEQP_FEASIBLE] = "problem is solved [feasible]",
+      [SLEQP_OPTIMAL] = "problem is solved [optimal]",
+      [SLEQP_INFEASIBLE] = "problem is solved [infeasible]",
+      [SLEQP_INVALID] = "invalid"
+    };
 
-  if(success && (sleqp_solver_get_status(solver) != SLEQP_OPTIMAL))
+    SLEQP_STATUS status = sleqp_solver_get_status(solver);
+    SleqpIterate* iterate;
+
+    SLEQP_CALL(sleqp_solver_get_solution(solver, &iterate));
+
+    int iterations = sleqp_solver_get_iterations(solver);
+
+    double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
+
+    double violation = sleqp_iterate_constraint_violation(iterate, problem);
+
+    printf("   Solution status: %s", descriptions[status]);
+    printf("   Objective value: %e", iterate->func_val);
+    printf("         Violation: %e", violation);
+    printf("        Iterations: %d", iterations);
+    printf("Solving time (sec): %.2f", elapsed_seconds);
+
+    if(status == SLEQP_INVALID)
+    {
+      success = false;
+    }
+  }
+  else
   {
     success = false;
   }

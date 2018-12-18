@@ -30,13 +30,16 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
   spx->basis_rows = new soplex::SPxSolver::VarStatus[num_rows];
   spx->basis_cols = new soplex::SPxSolver::VarStatus[num_cols];
 
-  /*
   soplex::SPxOut spxout;
 
+  spxout.setStream(soplex::SPxOut::INFO1, std::cerr);
+  spxout.setStream(soplex::SPxOut::INFO2, std::cerr);
+  spxout.setStream(soplex::SPxOut::INFO3, std::cerr);
   spxout.setStream(soplex::SPxOut::DEBUG, std::cerr);
+  spxout.setStream(soplex::SPxOut::ERROR, std::cerr);
+  spxout.setStream(soplex::SPxOut::WARNING, std::cerr);
 
   soplex.spxout = spxout;
-  */
 
   const double zero_eps = sleqp_params_get_zero_eps(params);
 
