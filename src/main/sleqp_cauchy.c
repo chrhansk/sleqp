@@ -444,6 +444,12 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
 
     for(int i = 0; i < num_constraints; ++i)
     {
+      const SLEQP_BASESTAT cons_stat = cauchy_data->cons_stats[i];
+
+      if(cons_stat == SLEQP_BASESTAT_BASIC)
+      {
+        continue;
+      }
 
       while(k_lb < lb->nnz && lb->indices[k_lb] < i)
       {
@@ -455,17 +461,25 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
         ++k_ub;
       }
 
-      bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
-      bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
+      const bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
+      const bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
 
-      double ubval = valid_ub ? ub->data[k_ub] : 0.;
-      double lbval = valid_lb ? lb->data[k_lb] : 0.;
+      const double ubval = valid_ub ? ub->data[k_ub] : 0.;
+      const double lbval = valid_lb ? lb->data[k_lb] : 0.;
 
       assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC ||
              upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
 
       bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER &&
         upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
+
+      if(cons_stat == SLEQP_BASESTAT_ZERO)
+      {
+        assert(sleqp_is_inf(ubval));
+        assert(sleqp_is_inf(-lbval));
+
+        continue;
+      }
 
 
       if(sleqp_eq(lbval, ubval, eps))

@@ -412,10 +412,16 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
     multiplier_norm = sqrt(multiplier_norm);
   }
 
+  sleqp_log_debug("Checking optimality, tolerance: %e", tolerance);
+
   const double optimality_residuum = sleqp_iterate_optimality_residuum(iterate, problem, cache);
 
   if(optimality_residuum >= tolerance * (1. + multiplier_norm))
   {
+    sleqp_log_debug("Iterate is not optimal, residuum: %e, multiplier norm: %e",
+                    optimality_residuum,
+                    multiplier_norm);
+
     return false;
   }
 
@@ -423,6 +429,9 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
 
   if(slackness_residuum >= tolerance * (1. + multiplier_norm))
   {
+    sleqp_log_debug("Iterate does not satisfy complementary slackness, residuum: %e, multiplier norm: %e",
+                    slackness_residuum,
+                    multiplier_norm);
     return false;
   }
 
@@ -436,8 +445,16 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
 
   double constraint_violation = sleqp_iterate_constraint_violation(iterate, problem);
 
-  return constraint_violation <= tolerance * (1. + value_norm);
+  if(constraint_violation > tolerance * (1. + value_norm))
+  {
+    sleqp_log_debug("Iterate does not satisfy feasibility, violation: %e, iterate norm: %e",
+                    constraint_violation,
+                    value_norm);
 
+    return false;
+  }
+
+  return true;
 }
 
 SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)

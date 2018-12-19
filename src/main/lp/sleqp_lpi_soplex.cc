@@ -301,6 +301,26 @@ static SLEQP_RETCODE soplex_get_solution(void* lp_data,
   return SLEQP_OKAY;
 }
 
+static SLEQP_BASESTAT basestat_for(soplex::SPxSolver::VarStatus status)
+{
+  switch (status)
+  {
+  case soplex::SPxSolver::ON_LOWER:
+    return SLEQP_BASESTAT_LOWER;
+  case soplex::SPxSolver::ON_UPPER:
+    return SLEQP_BASESTAT_UPPER;
+  case soplex::SPxSolver::ZERO:
+    return SLEQP_BASESTAT_ZERO;
+  case soplex::SPxSolver::FIXED:
+    return SLEQP_BASESTAT_UPPER;
+  case soplex::SPxSolver::BASIC:
+    return SLEQP_BASESTAT_BASIC;
+  default:
+    assert(false);
+    break;
+  }
+}
+
 static SLEQP_RETCODE soplex_get_varstats(void* lp_data,
                                          int num_cols,
                                          int num_rows,
@@ -311,27 +331,7 @@ static SLEQP_RETCODE soplex_get_varstats(void* lp_data,
 
   for(int i = 0; i < num_cols; ++i)
   {
-    switch (soplex.basisColStatus(i))
-    {
-    case soplex::SPxSolver::ON_LOWER:
-      variable_stats[i] = SLEQP_BASESTAT_LOWER;
-      break;
-    case soplex::SPxSolver::ON_UPPER:
-      variable_stats[i] = SLEQP_BASESTAT_UPPER;
-      break;
-    case soplex::SPxSolver::ZERO:
-      variable_stats[i] = SLEQP_BASESTAT_ZERO;
-      break;
-    case soplex::SPxSolver::FIXED:
-      variable_stats[i] = SLEQP_BASESTAT_BASIC;
-      break;
-    case soplex::SPxSolver::BASIC:
-      variable_stats[i] = SLEQP_BASESTAT_BASIC;
-      break;
-    default:
-      assert(false);
-      break;
-    }
+    variable_stats[i] = basestat_for(soplex.basisColStatus(i));
   }
 
   return SLEQP_OKAY;
@@ -347,27 +347,7 @@ static SLEQP_RETCODE soplex_get_consstats(void* lp_data,
 
   for(int i = 0; i < num_rows; ++i)
   {
-    switch (soplex.basisRowStatus(i))
-    {
-    case soplex::SPxSolver::ON_LOWER:
-      constraint_stats[i] = SLEQP_BASESTAT_LOWER;
-      break;
-    case soplex::SPxSolver::ON_UPPER:
-      constraint_stats[i] = SLEQP_BASESTAT_UPPER;
-      break;
-    case soplex::SPxSolver::ZERO:
-      constraint_stats[i] = SLEQP_BASESTAT_ZERO;
-      break;
-    case soplex::SPxSolver::FIXED:
-      constraint_stats[i] = SLEQP_BASESTAT_BASIC;
-      break;
-    case soplex::SPxSolver::BASIC:
-      constraint_stats[i] = SLEQP_BASESTAT_BASIC;
-      break;
-    default:
-      assert(false);
-      break;
-    }
+    constraint_stats[i] = basestat_for(soplex.basisRowStatus(i));
   }
 
   return SLEQP_OKAY;

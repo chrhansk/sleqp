@@ -303,6 +303,10 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   inf_violation /= num_constraints;
 
+  sleqp_log_debug("Updating penalty parameter. Current violation: %e, inf violation: %e",
+                  current_violation,
+                  inf_violation);
+
   assert(sleqp_ge(current_violation, inf_violation, eps));
 
   if(inf_violation <= violation_tolerance)
@@ -1099,10 +1103,10 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   while(true)
   {
-    ++solver->iteration;
-
     bool optimal;
     SLEQP_CALL(sleqp_perform_iteration(solver, &optimal));
+
+    ++solver->iteration;
 
     solver->elapsed_seconds = sleqp_timer_elapsed(solver->elapsed_timer);
 
