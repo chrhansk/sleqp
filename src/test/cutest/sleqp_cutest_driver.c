@@ -197,11 +197,11 @@ int sleqp_cutest_run(const char* filename)
 
     double violation = sleqp_iterate_constraint_violation(iterate, problem);
 
-    printf("   Solution status: %s", descriptions[status]);
-    printf("   Objective value: %e", iterate->func_val);
-    printf("         Violation: %e", violation);
-    printf("        Iterations: %d", iterations);
-    printf("Solving time (sec): %.2f", elapsed_seconds);
+    printf("   Solution status: %s\n", descriptions[status]);
+    printf("   Objective value: %e\n", iterate->func_val);
+    printf("         Violation: %e\n", violation);
+    printf("        Iterations: %d\n", iterations);
+    printf("Solving time (sec): %.2f\n", elapsed_seconds);
 
     if(status == SLEQP_INVALID)
     {
