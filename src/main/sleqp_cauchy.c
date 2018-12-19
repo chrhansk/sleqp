@@ -411,24 +411,20 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
       double lbval = valid_lb ? lb->data[k_lb] : 0.;
       double xval = valid_x ? x->data[k_x] : 0.;
 
-      if(sleqp_eq(lbval, ubval, eps))
-      {
-        assert(sleqp_zero(lbval, eps));
-        assert(sleqp_zero(ubval, eps));
+      assert(cauchy_data->var_stats[i] != SLEQP_BASESTAT_ZERO);
 
-        SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
-                                                 i,
-                                                 SLEQP_ACTIVE_BOTH));
-      }
-      else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
-         sleqp_le(-trust_radius, lbval - xval, eps))
+      assert(sleqp_le(lbval, xval, eps));
+      assert(sleqp_le(xval, ubval, eps));
+
+      if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
+         (-trust_radius < lbval - xval))
       {
         SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
                                                  i,
                                                  SLEQP_ACTIVE_LOWER));
       }
       else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER) &&
-              sleqp_le(ubval - xval, trust_radius, eps))
+              (ubval - xval < trust_radius))
       {
         SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
                                                  i,
