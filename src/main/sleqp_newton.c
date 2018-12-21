@@ -188,51 +188,6 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_data_free(SleqpNewtonData** star)
-{
-  SleqpNewtonData* data = *star;
-
-  SLEQP_CALL(sleqp_sparse_matrix_free(&data->Q));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->sparse_cache));
-  sleqp_free(&data->dense_cache);
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->Hp));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->p));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->v));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->h));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->h_rhs));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->h_lhs));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->l));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->gm));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->g));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->jacobian_product));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_hessian_product));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_rhs));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->gradient));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->violated_multipliers));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->upper_diff));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->lower_diff));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_solution));
-
-  sleqp_free(&data->trlib_fwork);
-  sleqp_free(&data->trlib_iwork);
-
-  sleqp_free(star);
-
-  return SLEQP_OKAY;
-}
-
 static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
                                      SleqpIterate* iterate,
                                      SleqpAugJacobian* jacobian)
@@ -1002,6 +957,56 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                      data->initial_solution,
                                      zero_eps,
                                      newton_step));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_newton_data_free(SleqpNewtonData** star)
+{
+  SleqpNewtonData* data = *star;
+
+  if(!data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(sleqp_sparse_matrix_free(&data->Q));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->sparse_cache));
+  sleqp_free(&data->dense_cache);
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->Hp));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->p));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->v));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->h));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->h_rhs));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->h_lhs));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->l));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->gm));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->g));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->jacobian_product));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_hessian_product));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_rhs));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->gradient));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->violated_multipliers));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->upper_diff));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->lower_diff));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_solution));
+
+  sleqp_free(&data->trlib_fwork);
+  sleqp_free(&data->trlib_iwork);
+
+  sleqp_free(star);
 
   return SLEQP_OKAY;
 }

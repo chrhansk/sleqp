@@ -230,6 +230,11 @@ SLEQP_RETCODE sleqp_soc_data_free(SleqpSOCData** star)
 {
   SleqpSOCData* soc_data = *star;
 
+  if(!soc_data)
+  {
+    return SLEQP_OKAY;
+  }
+
   SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->lower_diff));
   SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->upper_diff));
 

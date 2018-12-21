@@ -574,6 +574,11 @@ SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vstar)
 {
   SleqpSparseVec *vec = *vstar;
 
+  if(!vec)
+  {
+    return SLEQP_OKAY;
+  }
+
   sleqp_free(&vec->indices);
   sleqp_free(&vec->data);
 

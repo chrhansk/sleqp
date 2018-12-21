@@ -265,6 +265,11 @@ SLEQP_RETCODE sleqp_merit_data_free(SleqpMeritData** star)
 {
   SleqpMeritData* merit_data = *star;
 
+  if(!merit_data)
+  {
+    return SLEQP_OKAY;
+  }
+
   SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->sparse_cache));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->multipliers));

@@ -224,6 +224,11 @@ SLEQP_RETCODE sleqp_active_set_free(SleqpActiveSet** star)
 {
   SleqpActiveSet* active_set = *star;
 
+  if(!active_set)
+  {
+    return SLEQP_OKAY;
+  }
+
   sleqp_free(&active_set->content_indices);
 
   sleqp_free(&active_set->constraint_indices);

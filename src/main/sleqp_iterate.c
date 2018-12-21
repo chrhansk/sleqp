@@ -461,6 +461,11 @@ SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
 {
   SleqpIterate* iterate = *star;
 
+  if(!iterate)
+  {
+    return SLEQP_OKAY;
+  }
+
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->vars_dual));
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->cons_dual));
 

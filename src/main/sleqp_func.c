@@ -142,6 +142,11 @@ SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
 {
   SleqpFunc* func = *fstar;
 
+  if(!func)
+  {
+    return SLEQP_OKAY;
+  }
+
   SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
 
   sleqp_free(fstar);

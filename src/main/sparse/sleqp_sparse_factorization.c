@@ -202,6 +202,11 @@ SLEQP_RETCODE sleqp_sparse_factorization_free(SleqpSparseFactorization** star)
 {
   SleqpSparseFactorization* factorization = *star;
 
+  if(!factorization)
+  {
+    return SLEQP_OKAY;
+  }
+
   sleqp_free(&factorization->rhs);
   sleqp_free(&factorization->solution);
 

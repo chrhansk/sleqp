@@ -81,32 +81,6 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
-{
-  SleqpCauchyData* data = *star;
-
-  SLEQP_CALL(sleqp_merit_data_free(&data->merit_data));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->quadratic_gradient));
-
-  sleqp_free(&data->solution_values);
-
-  sleqp_free(&data->vars_ub);
-  sleqp_free(&data->vars_lb);
-
-  sleqp_free(&data->cons_ub);
-  sleqp_free(&data->cons_lb);
-
-  sleqp_free(&data->objective);
-
-  sleqp_free(&data->cons_stats);
-  sleqp_free(&data->var_stats);
-
-  sleqp_free(star);
-
-  return SLEQP_OKAY;
-}
-
 static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
                                        int num_variables,
                                        int num_constraints)
@@ -666,6 +640,37 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
   }
 
   assert(sleqp_le(sleqp_sparse_vector_norm(direction), trust_radius, eps));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
+{
+  SleqpCauchyData* data = *star;
+
+  if(!data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(sleqp_merit_data_free(&data->merit_data));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->quadratic_gradient));
+
+  sleqp_free(&data->solution_values);
+
+  sleqp_free(&data->vars_ub);
+  sleqp_free(&data->vars_lb);
+
+  sleqp_free(&data->cons_ub);
+  sleqp_free(&data->cons_lb);
+
+  sleqp_free(&data->objective);
+
+  sleqp_free(&data->cons_stats);
+  sleqp_free(&data->var_stats);
+
+  sleqp_free(star);
 
   return SLEQP_OKAY;
 }

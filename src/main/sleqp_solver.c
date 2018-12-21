@@ -125,7 +125,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   solver->params = params;
 
   solver->iteration = 0;
-  solver->elapsed_seconds =0.;
+  solver->elapsed_seconds = 0.;
 
   SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_check,
                                         problem,
@@ -435,7 +435,6 @@ static SLEQP_RETCODE update_trust_radius(double reduction_ratio,
 static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
                                              double* quadratic_value)
 {
-  const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   SLEQP_CALL(sleqp_merit_linear_gradient(solver->merit_data,
@@ -572,7 +571,6 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   double one = 1.;
@@ -1189,6 +1187,11 @@ double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver)
 SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
 {
   SleqpSolver* solver = *star;
+
+  if(!solver)
+  {
+    return SLEQP_OKAY;
+  }
 
   sleqp_free(&solver->dense_cache);
 

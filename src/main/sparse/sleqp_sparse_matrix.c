@@ -313,6 +313,11 @@ SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** mstar)
 {
   SleqpSparseMatrix* matrix = *mstar;
 
+  if(!matrix)
+  {
+    return SLEQP_OKAY;
+  }
+
   sleqp_free(&matrix->rows);
   sleqp_free(&matrix->cols);
   sleqp_free(&matrix->data);

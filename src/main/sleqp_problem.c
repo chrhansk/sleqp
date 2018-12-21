@@ -129,13 +129,18 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
 
 SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star)
 {
-  SleqpProblem* sleqp = *star;
+  SleqpProblem* problem = *star;
 
-  sleqp_sparse_vector_free(&sleqp->var_lb);
-  sleqp_sparse_vector_free(&sleqp->var_ub);
+  if(!problem)
+  {
+    return SLEQP_OKAY;
+  }
 
-  sleqp_sparse_vector_free(&sleqp->cons_lb);
-  sleqp_sparse_vector_free(&sleqp->cons_ub);
+  sleqp_sparse_vector_free(&problem->var_lb);
+  sleqp_sparse_vector_free(&problem->var_ub);
+
+  sleqp_sparse_vector_free(&problem->cons_lb);
+  sleqp_sparse_vector_free(&problem->cons_ub);
 
   sleqp_free(star);
 

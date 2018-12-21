@@ -150,6 +150,11 @@ SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_star)
 {
   SleqpLPi* lp_interface = *lp_star;
 
+  if(!lp_interface)
+  {
+    return SLEQP_OKAY;
+  }
+
   lp_interface->free_problem(&lp_interface->lp_data);
 
   sleqp_free(lp_star);

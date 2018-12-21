@@ -134,6 +134,11 @@ SLEQP_RETCODE sleqp_dual_estimation_data_free(SleqpDualEstimationData** star)
 {
   SleqpDualEstimationData* data = *star;
 
+  if(!data)
+  {
+    return SLEQP_OKAY;
+  }
+
   SLEQP_CALL(sleqp_sparse_vector_free(&data->neg_grad));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->solution));

@@ -122,7 +122,12 @@ double sleqp_params_get_accepted_reduction(SleqpParams* params)
 
 SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
 {
-  //SleqpParams* params = *star;
+  SleqpParams* params = *star;
+
+  if(!params)
+  {
+    return SLEQP_OKAY;
+  }
 
   sleqp_free(star);
 

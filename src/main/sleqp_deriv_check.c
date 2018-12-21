@@ -607,6 +607,11 @@ SLEQP_RETCODE sleqp_deriv_checker_free(SleqpDerivCheckData** star)
 {
   SleqpDerivCheckData* data = *star;
 
+  if(!data)
+  {
+    return SLEQP_OKAY;
+  }
+
   SLEQP_CALL(sleqp_iterate_free(&data->check_iterate));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers_zero));
