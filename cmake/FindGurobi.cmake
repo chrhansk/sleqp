@@ -1,5 +1,5 @@
 # - Try to find Gurobi
-# See http://soplex.zib.de/ for more information on SoPlex
+# See http://www.gurobi.com for more information on Gurobi
 #
 # Once done, this will define
 #

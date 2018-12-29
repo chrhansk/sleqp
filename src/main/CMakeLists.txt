@@ -6,6 +6,9 @@ include_directories("${CMAKE_BINARY_DIR}")
 set(SOPLEX_LPI_SRC
   lp/sleqp_lpi_soplex.cc)
 
+set(GUROBI_LPI_SRC
+  lp/sleqp_lpi_gurobi.c)
+
 set(COMMON_SRC
   sparse/sleqp_sparse_factorization.c
   sparse/sleqp_sparse_matrix.c
