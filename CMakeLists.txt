@@ -43,17 +43,28 @@ find_package(Doxygen)
 
 enable_testing()
 
-set(SLEQP_ENABLE_UNIT_TESTS TRUE CACHE BOOL "Whether or not to enable unit tests")
+option(SLEQP_ENABLE_UNIT_TESTS "Whether or not to enable unit tests" ON)
+
+option(SLEQP_ENABLE_CUTEST "Whether or not to include the CUTest suite" OFF)
+
+option(SLEQP_ENABLE_PYTHON "Whether or not to enable python bindings" OFF)
 
 if(CHECK_FOUND)
   include_directories(${CHECK_INCLUDE_DIR})
 else()
   message(STATUS "Could not find Check, unit tests will be disabled")
-  set(SLEQP_ENABLE_UNIT_TESTS FALSE)
+  set(SLEQP_ENABLE_UNIT_TESTS OFF)
+  set(SLEQP_ENABLE_CUTEST OFF)
+endif()
+
+if(SLEQP_ENABLE_CUTEST)
+  set(SLEQP_ENABLE_UNIT_TESTS ON)
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-set(SLEQP_ENABLE_CUTEST FALSE CACHE BOOL "Whether or not to include the CUTest suite")
-
 add_subdirectory(src)
+
+if(SLEQP_ENABLE_PYTHON)
+  add_subdirectory(bindings)
+endif()
