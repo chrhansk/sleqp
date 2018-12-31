@@ -75,6 +75,8 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec)
 
+  SLEQP_RETCODE sleqp_sparse_vector_clear(SleqpSparseVec* vec)
+
   SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec, int nnz)
 
   SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
@@ -100,6 +102,9 @@ cdef extern from "sleqp.h":
                                          int row,
                                          int col,
                                          double value)
+
+  SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
+                                               int col)
 
   SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** matrix)
 

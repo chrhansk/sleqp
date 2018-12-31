@@ -31,26 +31,17 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
       func_val[0] = (<object> func_data).func_val()
 
     if func_grad:
-      array = (<object> func_data).func_grad()
-      array_to_sleqp_sparse_vec(array, func_grad)
+      grad_array = (<object> func_data).func_grad()
+      array_to_sleqp_sparse_vec(grad_array, func_grad)
 
     if cons_vals:
-      array = (<object> func_data).cons_vals()
-      array_to_sleqp_sparse_vec(array, cons_vals)
+      cons_array = (<object> func_data).cons_vals()
+      array_to_sleqp_sparse_vec(cons_array, cons_vals)
 
     if cons_jac:
-      nnz = cons_jac.nnz_max
+      cons_jac_mat = (<object> func_data).cons_jac()
+      matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac)
 
-      if nnz > 0:
-
-        (m, n) = (cons_jac.num_rows, cons_jac.num_cols)
-        data = np.asarray(<double[:nnz]> cons_jac.data)
-        rows = np.asarray(<int[:nnz]> cons_jac.rows)
-        cols = np.asarray(<int[:nnz]> cons_jac.cols)
-
-        mat = scipy.sparse.csc_matrix((data, rows, cols), shape=(m, n))
-
-        (<object> func_data).cons_jac(mat)
 
   except Exception:
     traceback.print_exc()
@@ -125,7 +116,7 @@ cdef class Func:
   cpdef cons_vals(self):
     pass
 
-  cpdef cons_jac(self, cons_jac):
+  cpdef cons_jac(self):
     pass
 
   cpdef hess_prod(self, func_dual, direction, cons_dual):

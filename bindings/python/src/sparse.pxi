@@ -6,7 +6,9 @@ cdef object sleqp_sparse_vec_to_array(csleqp.SleqpSparseVec* vec):
   values = np.zeros([vec.dim], dtype=np.float64)
 
   for k in range(vec.nnz):
-    values[vec.indices[k]] = vec.data[k]
+    data = vec.data[k]
+    if data:
+      values[vec.indices[k]] = vec.data[k]
 
   return values
 
@@ -19,24 +21,42 @@ cdef void array_to_sleqp_sparse_vec(np.ndarray array, csleqp.SleqpSparseVec* vec
   cdef int dim = array.shape[0]
 
   csleqp_call(csleqp.sleqp_sparse_vector_reserve(vec, dim))
+  csleqp_call(csleqp.sleqp_sparse_vector_clear(vec))
 
   for i in range(dim):
     csleqp_call(csleqp.sleqp_sparse_vector_push(vec, i, array[i]))
 
-# cdef void sparse_to_sleqp_sparse_matrix(np.ndarray mat, csleqp.SleqpSparseMatrix* matrix):
-#   assert matrix
-#   mcsc = mat.tocsc()
 
-#   if not mcsc.has_sorted_indices():
-#     mcsc = mcsc.sort_indices()
+def iter_matrix_entries(matrix):
 
-#   assert mcsc.shape == (matrix.num_cols, matrix.num_rows)
+  m = matrix
 
-#   csleqp.sleqp_sparse_matrix_reserve(matrix, mcsc.nnz)
+  if not scipy.sparse.issparse(matrix):
+    m = scipy.sparse.csc_matrix(matrix)
 
-#   for c in range(matrix.num_cols):
-#     matrix.cols[c] = mcsc.indptr[c]
+  assert scipy.sparse.isspmatrix_csc(m)
 
-#   for i in range(mcsc.nnz):
-#     matrix.rows[i] = mcsc.indices[i]
-#     matrix.data[i] = mcsc.data[i]
+  #if not scipy.sparse.isspmatrix_csc(m):
+  #  m = m.tocss()
+
+  for col in range(m.shape[1]):
+    for ind in range(m.indptr[col], m.indptr[col+1]):
+      data = m.data[ind]
+      if data:
+        yield m.indices[ind], col, m.data[ind]
+
+cdef void matrix_to_sleqp_sparse_matrix(object mat, csleqp.SleqpSparseMatrix* matrix):
+
+  assert matrix
+
+  cold = -1
+
+  for (row, col, data) in iter_matrix_entries(mat):
+    if cold != col:
+      cold = col
+      csleqp_call(csleqp.sleqp_sparse_matrix_add_column(matrix, col))
+
+    csleqp_call(csleqp.sleqp_sparse_matrix_push(matrix,
+                                                row,
+                                                col,
+                                                data))

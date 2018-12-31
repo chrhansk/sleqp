@@ -39,7 +39,7 @@ cdef class Problem:
     array_to_sleqp_sparse_vec(var_lb, self.var_lb)
     array_to_sleqp_sparse_vec(var_ub, self.var_ub)
     array_to_sleqp_sparse_vec(cons_lb, self.cons_lb)
-    array_to_sleqp_sparse_vec(cons_lb, self.cons_lb)
+    array_to_sleqp_sparse_vec(cons_ub, self.cons_ub)
 
     self.func = func
     self.params = params
