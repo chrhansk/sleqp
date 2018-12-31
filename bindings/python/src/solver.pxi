@@ -1,18 +1,30 @@
 cdef class Solver:
   cdef csleqp.SleqpSolver* solver
+  cdef csleqp.SleqpSparseVec* x
 
   def __cinit__(self,
                 Problem problem,
                 Params params,
                 np.ndarray x):
-    pass
+
+    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.x,
+                                                  problem.num_variables,
+                                                  0))
+
+    csleqp_call(csleqp.sleqp_solver_create(&self.solver,
+                                           problem.problem,
+                                           params.params,
+                                           self.x))
+
+    array_to_sleqp_sparse_vec(x, self.x)
 
   cpdef solve(self,
               int max_num_iterations,
               double time_limit):
-    csleqp.sleqp_solver_solve(self.solver,
-                              max_num_iterations,
-                              time_limit)
+
+    csleqp_call(csleqp.sleqp_solver_solve(self.solver,
+                                          max_num_iterations,
+                                          time_limit))
 
   @property
   def status(self):
@@ -28,27 +40,27 @@ cdef class Solver:
 
   @property
   def primal_solution(self):
-      cdef csleqp.SleqpIterate* iterate
+    cdef csleqp.SleqpIterate* iterate
 
-      csleqp.sleqp_solver_get_solution(self.solver, &iterate)
+    csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
 
-      return sleqp_sparse_vec_to_array(iterate.x)
+    return sleqp_sparse_vec_to_array(iterate.x)
 
   @property
   def vars_dual(self):
-      cdef csleqp.SleqpIterate* iterate
+    cdef csleqp.SleqpIterate* iterate
 
-      csleqp.sleqp_solver_get_solution(self.solver, &iterate)
+    csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
 
-      return sleqp_sparse_vec_to_array(iterate.vars_dual)
+    return sleqp_sparse_vec_to_array(iterate.vars_dual)
 
   @property
   def cons_dual(self):
-      cdef csleqp.SleqpIterate* iterate
+    cdef csleqp.SleqpIterate* iterate
 
-      csleqp.sleqp_solver_get_solution(self.solver, &iterate)
+    csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
 
-      return sleqp_sparse_vec_to_array(iterate.cons_dual)
+    return sleqp_sparse_vec_to_array(iterate.cons_dual)
 
   def  __dealloc__(self):
-      csleqp.sleqp_solver_free(&self.solver)
+    csleqp_call(csleqp.sleqp_solver_free(&self.solver))

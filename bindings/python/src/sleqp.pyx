@@ -4,8 +4,13 @@
 import numpy as np
 cimport numpy as np
 
+import traceback
+import scipy.sparse
+
 cimport csleqp
 
+include "call.pxi"
+include "cmp.pxi"
 include "sparse.pxi"
 include "func.pxi"
 include "params.pxi"

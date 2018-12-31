@@ -41,7 +41,8 @@ cdef extern from "sleqp.h":
     int* rows
 
   ctypedef struct SleqpProblem:
-    pass
+    int num_variables
+    int num_constraints
 
   ctypedef struct SleqpSolver:
     pass
@@ -167,3 +168,5 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
   SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
+
+  double sleqp_infinity()
