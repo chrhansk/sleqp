@@ -4,6 +4,14 @@
 from libc.stdio cimport FILE
 
 cdef extern from "sleqp.h":
+
+  cdef int sleqp_VERSION_MAJOR
+  cdef int sleqp_VERSION_MINOR
+  cdef int sleqp_VERSION_PATCH
+
+  cdef char* sleqp_GIT_BRANCH
+  cdef char* sleqp_GIT_COMMIT_HASH
+
   cdef enum SLEQP_Retcode:
     SLEQP_OKAY,
     SLEQP_NOMEM,

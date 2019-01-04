@@ -41,6 +41,11 @@ add_library(trlib INTERFACE IMPORTED)
 
 find_package(Doxygen)
 
+configure_file("${CMAKE_SOURCE_DIR}/src/main/sleqp_defs.h.in"
+  "${CMAKE_BINARY_DIR}/sleqp_defs.h")
+
+include_directories("${CMAKE_BINARY_DIR}")
+
 enable_testing()
 
 option(SLEQP_ENABLE_UNIT_TESTS "Whether or not to enable unit tests" ON)

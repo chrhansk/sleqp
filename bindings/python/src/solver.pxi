@@ -11,6 +11,8 @@ cdef class Solver:
                                                   problem.num_variables,
                                                   0))
 
+    array_to_sleqp_sparse_vec(x, self.x)
+
     csleqp_call(csleqp.sleqp_solver_create(&self.solver,
                                            problem.problem,
                                            params.params,
@@ -28,18 +30,18 @@ cdef class Solver:
 
   @property
   def status(self):
-      pass
+    return csleqp.sleqp_solver_get_status(self.solver);
 
   @property
   def iterations(self):
-      return csleqp.sleqp_solver_get_iterations(self.solver)
+    return csleqp.sleqp_solver_get_iterations(self.solver)
 
   @property
   def elapsed_seconds(self):
-      return csleqp.sleqp_solver_get_elapsed_seconds(self.solver)
+    return csleqp.sleqp_solver_get_elapsed_seconds(self.solver)
 
   @property
-  def primal_solution(self):
+  def primal(self):
     cdef csleqp.SleqpIterate* iterate
 
     csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
