@@ -15,6 +15,6 @@ class SLEQPError(Exception):
 
     return messages[self.code]
 
-cpdef csleqp_call(csleqp.SLEQP_RETCODE retcode):
+cdef csleqp_call(csleqp.SLEQP_RETCODE retcode):
   if retcode != csleqp.SLEQP_OKAY:
     raise SLEQPError(retcode)

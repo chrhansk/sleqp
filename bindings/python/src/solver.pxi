@@ -30,7 +30,7 @@ cdef class Solver:
 
   @property
   def status(self):
-    return csleqp.sleqp_solver_get_status(self.solver);
+    return Status(csleqp.sleqp_solver_get_status(self.solver))
 
   @property
   def iterations(self):
