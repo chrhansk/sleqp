@@ -1114,14 +1114,17 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
       solver->status = SLEQP_OPTIMAL;
       break;
     }
-    else if(time_limit != -1)
+
+    if(time_limit != -1)
     {
       if(solver->elapsed_seconds >= time_limit)
       {
         break;
       }
     }
-    else if(max_num_iterations != -1 && solver->iteration >= max_num_iterations)
+
+    if(max_num_iterations != -1 &&
+       solver->iteration >= max_num_iterations)
     {
       break;
     }
