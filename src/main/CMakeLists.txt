@@ -28,6 +28,7 @@ set(COMMON_SRC
   lp/sleqp_lpi.c)
 
 add_library(sleqp
+  SHARED
   ${SOPLEX_LPI_SRC}
   ${COMMON_SRC})
 

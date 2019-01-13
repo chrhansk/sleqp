@@ -80,3 +80,10 @@ add_test(NAME python_tests
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_dependencies(build_tests sleqp_python)
+
+install(CODE
+  "
+  execute_process(COMMAND ${PYTHON_EXECUTABLE} setup.py install --root=\$ENV{DESTDIR} --prefix=${CMAKE_INSTALL_PREFIX}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  "
+  COMPONENT python)

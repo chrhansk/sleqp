@@ -9,5 +9,5 @@ setup(name='@PROJECT_NAME@',
       ],
       include_package_data=True,
       zip_safe=False,
-      package_data={'@PYTHON_MOD_NAME@': ['@PYTHON_LIB_OUTPUT@']},
+      package_data={'@PYTHON_MOD_NAME@': ['@PYTHON_LIB_NAME@']},
       test_suite='tests')
