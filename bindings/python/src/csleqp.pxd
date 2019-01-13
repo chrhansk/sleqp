@@ -180,6 +180,25 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
+  double sleqp_params_get_zero_eps(SleqpParams* params)
+
+  double sleqp_params_get_eps(SleqpParams* params)
+
+  double sleqp_params_get_deriv_pertubation(SleqpParams* params)
+
+  double sleqp_params_get_deriv_tolerance(SleqpParams* params)
+
+  double sleqp_params_get_cauchy_tau(SleqpParams* params)
+  double sleqp_params_get_cauchy_eta(SleqpParams* params)
+
+  double sleqp_params_get_linesearch_tau(SleqpParams* params)
+  double sleqp_params_get_linesearch_eta(SleqpParams* params)
+  double sleqp_params_get_linesearch_cutoff(SleqpParams* params)
+
+  double sleqp_params_get_optimality_tolerance(SleqpParams* params)
+
+  double sleqp_params_get_accepted_reduction(SleqpParams* params)
+
   SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
 
   double sleqp_infinity()

@@ -110,7 +110,7 @@ double sleqp_params_get_linesearch_cutoff(SleqpParams* params)
   return params->linesearch_cutoff;
 }
 
-double sleqp_params_get_optimality_tol(SleqpParams* params)
+double sleqp_params_get_optimality_tolerance(SleqpParams* params)
 {
   return params->optimality_tol;
 }

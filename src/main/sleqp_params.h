@@ -31,7 +31,7 @@ extern "C" {
   double sleqp_params_get_linesearch_eta(SleqpParams* params);
   double sleqp_params_get_linesearch_cutoff(SleqpParams* params);
 
-  double sleqp_params_get_optimality_tol(SleqpParams* params);
+  double sleqp_params_get_optimality_tolerance(SleqpParams* params);
 
   double sleqp_params_get_accepted_reduction(SleqpParams* params);
 

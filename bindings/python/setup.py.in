@@ -1,0 +1,13 @@
+from setuptools import setup, find_packages
+
+setup(name='@PROJECT_NAME@',
+      version='@PROJECT_VERSION@',
+      packages=['@PYTHON_MOD_NAME@'],
+      install_requires=[
+        'numpy',
+        'scipy'
+      ],
+      include_package_data=True,
+      zip_safe=False,
+      package_data={'@PYTHON_MOD_NAME@': ['@PYTHON_LIB_OUTPUT@']},
+      test_suite='tests')

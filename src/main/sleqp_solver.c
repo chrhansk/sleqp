@@ -891,7 +891,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   SLEQP_CALL(compute_trial_point(solver, &quadratic_trial_value));
 
   {
-    const double optimality_tolerance = sleqp_params_get_optimality_tol(solver->params);
+    const double optimality_tolerance = sleqp_params_get_optimality_tolerance(solver->params);
 
     if(sleqp_iterate_is_optimal(iterate,
                                 problem,
