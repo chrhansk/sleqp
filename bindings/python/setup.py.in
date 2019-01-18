@@ -9,5 +9,10 @@ setup(name='@PROJECT_NAME@',
       ],
       include_package_data=True,
       zip_safe=False,
+      classifiers=[
+        'Programming Language :: Cython',
+        'Intended Audience :: Science/Research',
+        'Topic :: Scientific/Engineering :: Mathematics'
+      ]
       package_data={'@PYTHON_MOD_NAME@': ['@PYTHON_LIB_NAME@']},
       test_suite='tests')

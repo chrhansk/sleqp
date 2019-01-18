@@ -1,0 +1,4 @@
+recursive-include src *.pxd
+recursive-include src *.pxi
+recursive-include src *.pyx
+recursive-include tests *.py

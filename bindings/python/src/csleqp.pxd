@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #cython: language_level=3
 
 from libc.stdio cimport FILE
