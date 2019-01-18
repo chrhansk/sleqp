@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(name='@PROJECT_NAME@',
       version='@PROJECT_VERSION@',
-      packages=['@PYTHON_MOD_NAME@'],
+      packages=find_packages(exclude=["tests"]),
       install_requires=[
         'numpy',
         'scipy'
@@ -13,6 +13,6 @@ setup(name='@PROJECT_NAME@',
         'Programming Language :: Cython',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Mathematics'
-      ]
+      ],
       package_data={'@PYTHON_MOD_NAME@': ['@PYTHON_LIB_NAME@']},
       test_suite='tests')
