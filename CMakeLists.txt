@@ -6,6 +6,8 @@ project(sleqp
 
 set(PROJECT_DESCRIPTION "An active set-based NLP solver")
 
+include(CMakePackageConfigHelpers)
+
 # Get the current working branch
 execute_process(
   COMMAND git rev-parse --abbrev-ref HEAD
@@ -24,7 +26,7 @@ execute_process(
 
 set(PROJECT_NAMESPACE "${PROJECT_NAME}::")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 find_package(Umfpack REQUIRED)
 
@@ -73,3 +75,31 @@ add_subdirectory(src)
 if(SLEQP_ENABLE_PYTHON)
   add_subdirectory(bindings)
 endif()
+
+set(CONFIG_DESTINATION "lib/cmake/sleqp")
+
+set(CONFIG_FILE "${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake")
+set(CONFIG_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake")
+
+set(TARGET_FILE "${PROJECT_NAME}-targets.cmake")
+
+install(EXPORT sleqp-targets
+  FILE ${TARGET_FILE}
+  NAMESPACE
+  ${PROJECT_NAMESPACE}
+  DESTINATION
+  ${CONFIG_DESTINATION})
+
+write_basic_package_version_file(
+  ${CONFIG_VERSION_FILE}
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY SameMajorVersion
+)
+
+install(
+  FILES
+  ${CONFIG_FILE}
+  ${CONFIG_VERSION_FILE}
+  DESTINATION
+  ${CONFIG_DESTINATION}
+)
