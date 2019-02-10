@@ -82,7 +82,10 @@ cdef class Func:
   cdef int num_variables
   cdef int num_constraints
 
-  def __cinit__(self, int num_variables, int num_constraints):
+  def __cinit__(self, int num_variables,
+                int num_constraints,
+                *args,
+                **keywords):
     csleqp_call(csleqp.sleqp_func_create(&self.func,
                                          &sleqp_func_set,
                                          &sleqp_func_eval,
