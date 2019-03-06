@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 cdef class Problem:
   cdef csleqp.SleqpProblem* problem
 

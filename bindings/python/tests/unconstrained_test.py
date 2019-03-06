@@ -5,7 +5,6 @@ import unittest
 
 import sleqp
 
-
 num_variables = 2
 num_constraints = 0
 

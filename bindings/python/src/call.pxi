@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 class SLEQPError(Exception):
   def __init__(self, code):
     assert code != csleqp.SLEQP_OKAY

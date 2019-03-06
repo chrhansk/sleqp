@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 version = (csleqp.sleqp_VERSION_MAJOR,
            csleqp.sleqp_VERSION_MINOR,
            csleqp.sleqp_VERSION_PATCH)

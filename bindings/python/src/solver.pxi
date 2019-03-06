@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 cdef class Solver:
   cdef csleqp.SleqpSolver* solver
   cdef csleqp.SleqpSparseVec* x

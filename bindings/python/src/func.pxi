@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpSparseVec* x,
                                          int num_variables,
                                          int* func_grad_nnz,
@@ -32,15 +34,15 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
 
     if func_grad:
       grad_array = (<object> func_data).func_grad()
-      array_to_sleqp_sparse_vec(grad_array, func_grad)
+      csleqp_call(array_to_sleqp_sparse_vec(grad_array, func_grad))
 
     if cons_vals:
       cons_array = (<object> func_data).cons_vals()
-      array_to_sleqp_sparse_vec(cons_array, cons_vals)
+      csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
 
     if cons_jac:
       cons_jac_mat = (<object> func_data).cons_jac()
-      matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac)
+      csleqp_call(matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac))
 
 
   except Exception:
@@ -68,7 +70,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
 
     product_array = (<object> func_data).hess_prod(f_dual, direction_array, cons_dual_array)
 
-    array_to_sleqp_sparse_vec(product_array, product)
+    csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
   except Exception:
     traceback.print_exc()

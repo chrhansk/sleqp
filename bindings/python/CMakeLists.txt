@@ -74,12 +74,15 @@ set(PYTHON_LIB_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${PYTHON_LIB_NAME}")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in"
   "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
 
+if(SLEQP_ENABLE_UNIT_TESTS)
 
-add_test(NAME python_tests
-  COMMAND ${PYTHON_EXECUTABLE} "setup.py" "test"
-  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+  add_test(NAME python_tests
+    COMMAND ${PYTHON_EXECUTABLE} "setup.py" "test"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
-add_dependencies(build_tests sleqp_python)
+  add_dependencies(build_tests sleqp_python)
+
+endif()
 
 install(CODE
   "
