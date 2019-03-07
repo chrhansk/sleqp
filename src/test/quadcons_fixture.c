@@ -103,12 +103,12 @@ SLEQP_RETCODE quadconsfunc_eval(int num_variables,
     assert(cons_jac->num_cols == 2);
     assert(cons_jac->nnz_max >= 4);
 
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac, 0));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 0));
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 0, 2*data->x[0]));
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 0, 2*(data->x[0] - 1.)));
 
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac, 1));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 2*data->x[1]));
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 1, 2*(data->x[1] - 1.)));

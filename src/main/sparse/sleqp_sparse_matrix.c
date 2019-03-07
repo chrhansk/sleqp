@@ -94,8 +94,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
-                                             int col)
+SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,
+                                              int col)
 {
   assert(col < matrix->num_cols);
 
@@ -104,8 +104,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_add_column(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_remove_column(SleqpSparseMatrix* matrix,
-                                                int col)
+SLEQP_RETCODE sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix,
+                                             int col)
 {
   assert(col < matrix->num_cols);
 

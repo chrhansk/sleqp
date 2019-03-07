@@ -105,7 +105,7 @@ static SLEQP_RETCODE func_eval(int num_variables,
                                         0,
                                         2*x[0]));
 
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac, 1));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
                                         0,
@@ -117,7 +117,7 @@ static SLEQP_RETCODE func_eval(int num_variables,
                                         1,
                                         2*x[1]));
 
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac, 2));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 2));
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
                                         0,
@@ -129,7 +129,7 @@ static SLEQP_RETCODE func_eval(int num_variables,
                                         2,
                                         2*x[2]));
 
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac, 3));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 3));
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
                                         0,

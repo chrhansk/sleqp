@@ -41,8 +41,8 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
 
   for(int column = 0; column < num_variables; ++column)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(augmented_matrix,
-                                              column));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(augmented_matrix,
+                                               column));
 
     // push identity part first...
     SLEQP_CALL(sleqp_sparse_matrix_push(augmented_matrix,

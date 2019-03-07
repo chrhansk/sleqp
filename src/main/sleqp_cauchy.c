@@ -103,8 +103,8 @@ static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
   {
     int con = num_variables + i;
 
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac,
-                                              con));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
+                                               con));
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
                                         i,
@@ -117,8 +117,8 @@ static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
   {
     int con = num_variables + num_constraints + i;
 
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac,
-                                              con));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
+                                               con));
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
                                         i,

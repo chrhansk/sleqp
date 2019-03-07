@@ -94,7 +94,7 @@ static SLEQP_RETCODE func_eval(int num_variables,
                                         0,
                                         2*x));
 
-    SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac, 1));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
                                         0,

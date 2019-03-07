@@ -1,3 +1,5 @@
+#cython: language_level=3
+
 class Status(enum.Enum):
   Optimal = csleqp.SLEQP_OPTIMAL
   Feasible = csleqp.SLEQP_FEASIBLE

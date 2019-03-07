@@ -23,13 +23,13 @@ START_TEST(test_sparse_matrix_vector_product)
                                           nnz_max));
 
   // row, col, val
-  ASSERT_CALL(sleqp_sparse_matrix_add_column(matrix, 0));
+  ASSERT_CALL(sleqp_sparse_matrix_push_column(matrix, 0));
   ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 0, 0, 1.));
 
-  ASSERT_CALL(sleqp_sparse_matrix_add_column(matrix, 1));
+  ASSERT_CALL(sleqp_sparse_matrix_push_column(matrix, 1));
   ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 1, 1, 2.));
 
-  ASSERT_CALL(sleqp_sparse_matrix_add_column(matrix, 2));
+  ASSERT_CALL(sleqp_sparse_matrix_push_column(matrix, 2));
   ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 0, 2, 2.));
   ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 1, 2, 3.));
 
@@ -113,7 +113,7 @@ START_TEST(test_sparse_increase_size)
 }
 END_TEST
 
-START_TEST(test_sparse_remove_column)
+START_TEST(test_sparse_pop_column)
 {
   SleqpSparseMatrix* matrix;
 
@@ -126,7 +126,7 @@ START_TEST(test_sparse_remove_column)
 
   for(int current = 0; current < size; ++current)
   {
-    ASSERT_CALL(sleqp_sparse_matrix_add_column(matrix, current));
+    ASSERT_CALL(sleqp_sparse_matrix_push_column(matrix, current));
 
     ASSERT_CALL(sleqp_sparse_matrix_push(matrix,
                                          current,
@@ -140,7 +140,7 @@ START_TEST(test_sparse_remove_column)
 
   for(int column = size - 1; column > 0; --column)
   {
-    ASSERT_CALL(sleqp_sparse_matrix_remove_column(matrix, column));
+    ASSERT_CALL(sleqp_sparse_matrix_pop_column(matrix, column));
 
     ++removed;
 
@@ -172,7 +172,7 @@ START_TEST(test_sparse_construction)
 
   for(int current = 0; current < size; ++current)
   {
-    ASSERT_CALL(sleqp_sparse_matrix_add_column(identity, current));
+    ASSERT_CALL(sleqp_sparse_matrix_push_column(identity, current));
 
     ASSERT_CALL(sleqp_sparse_matrix_push(identity,
                                          current,
@@ -217,7 +217,7 @@ START_TEST(test_sparse_decrease_size)
 
   for(int current = 0; current < size; ++current)
   {
-    ASSERT_CALL(sleqp_sparse_matrix_add_column(identity, current));
+    ASSERT_CALL(sleqp_sparse_matrix_push_column(identity, current));
 
     ASSERT_CALL(sleqp_sparse_matrix_push(identity,
                                          current,
@@ -257,7 +257,7 @@ Suite* sparse_test_suite()
   tcase_add_test(tc_sparse_modification, test_sparse_reserve);
   tcase_add_test(tc_sparse_modification, test_sparse_increase_size);
   tcase_add_test(tc_sparse_modification, test_sparse_decrease_size);
-  tcase_add_test(tc_sparse_modification, test_sparse_remove_column);
+  tcase_add_test(tc_sparse_modification, test_sparse_pop_column);
 
   tcase_add_test(tc_sparse_operations, test_sparse_matrix_vector_product);
 

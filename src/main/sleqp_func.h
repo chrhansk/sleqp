@@ -57,7 +57,7 @@ extern "C" {
                                            void* func_data);
 
   /**
-   * Evaluates the bilinear product of the Hessian of the Lagrangian function.
+   * Evaluates the product of the Hessian of the Lagrangian function.
    * The Lagrangian function is given by:
    *
    * \f[

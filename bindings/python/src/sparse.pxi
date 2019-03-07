@@ -62,16 +62,20 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
 
   assert matrix
 
-  cold = -1
+  cdef int last_col = -1
 
   for (row, col, data) in iter_matrix_entries(mat):
-    if cold != col:
-      cold = col
-      csleqp_call(csleqp.sleqp_sparse_matrix_add_column(matrix, col))
+    while last_col != col:
+      last_col += 1
+      csleqp_call(csleqp.sleqp_sparse_matrix_push_column(matrix, last_col))
 
     csleqp_call(csleqp.sleqp_sparse_matrix_push(matrix,
                                                 row,
                                                 col,
                                                 data))
+
+  while last_col < matrix.num_cols - 1:
+    last_col += 1
+    csleqp_call(csleqp.sleqp_sparse_matrix_push_column(matrix, last_col))
 
   return csleqp.SLEQP_OKAY
