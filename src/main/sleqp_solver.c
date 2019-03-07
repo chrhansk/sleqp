@@ -1155,11 +1155,20 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     [SLEQP_INVALID] = "invalid"
   };
 
-  sleqp_log_info("   Solution status: %s", descriptions[solver->status]);
-  sleqp_log_info("   Objective value: %e", solver->iterate->func_val);
-  sleqp_log_info("         Violation: %e", violation);
-  sleqp_log_info("        Iterations: %d", solver->iteration);
-  sleqp_log_info("Solving time (sec): %.2f", solver->elapsed_seconds);
+  SleqpFunc* func = solver->problem->func;
+
+  sleqp_log_info("       Solution status: %s", descriptions[solver->status]);
+  sleqp_log_info("       Objective value: %e", solver->iterate->func_val);
+  sleqp_log_info("             Violation: %e", violation);
+  sleqp_log_info("            Iterations: %d", solver->iteration);
+
+  sleqp_log_info("  Function evaluations: %d", sleqp_func_get_num_func_evals(func));
+  sleqp_log_info("Constraint evaluations: %d", sleqp_func_get_num_cons_evals(func));
+  sleqp_log_info("  Gradient evaluations: %d", sleqp_func_get_num_grad_evals(func));
+  sleqp_log_info("  Jacobian evaluations: %d", sleqp_func_get_num_jac_evals(func));
+  sleqp_log_info("   Hessian evaluations: %d", sleqp_func_get_num_hess_evals(func));
+
+  sleqp_log_info("    Solving time (sec): %.2f", solver->elapsed_seconds);
 
   return SLEQP_OKAY;
 }

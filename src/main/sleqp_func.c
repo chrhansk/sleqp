@@ -11,6 +11,14 @@ struct SleqpFunc
   int num_variables;
   void* data;
 
+  int num_func_evals;
+  int num_cons_evals;
+
+  int num_grad_evals;
+  int num_jac_evals;
+
+  int num_hess_evals;
+
   SleqpSparseVec* product;
 };
 
@@ -31,6 +39,14 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
 
   func->num_variables = num_variables;
   func->data = func_data;
+
+  func->num_func_evals = 0;
+  func->num_cons_evals = 0;
+
+  func->num_grad_evals = 0;
+  func->num_jac_evals = 0;
+
+  func->num_hess_evals = 0;
 
   SLEQP_CALL(sleqp_sparse_vector_create(&func->product, num_variables, 0));
 
@@ -62,19 +78,27 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
 {
   if(func_grad)
   {
+    ++func->num_grad_evals;
+
     SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
   }
 
   if(cons_val)
   {
+    ++func->num_cons_evals;
+
     SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
   }
 
   if(cons_jac)
   {
+    ++func->num_jac_evals;
+
     SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
   }
 
+
+  ++func->num_func_evals;
 
   SLEQP_CALL(func->eval(func->num_variables,
                         cons_indices,
@@ -92,6 +116,29 @@ int sleqp_func_get_num_variables(SleqpFunc* func)
   return func->num_variables;
 }
 
+int sleqp_func_get_num_func_evals(SleqpFunc* func)
+{
+  return func->num_func_evals;
+}
+int sleqp_func_get_num_cons_evals(SleqpFunc* func)
+{
+  return func->num_cons_evals;
+}
+
+int sleqp_func_get_num_grad_evals(SleqpFunc* func)
+{
+  return func->num_grad_evals;
+}
+int sleqp_func_get_num_jac_evals(SleqpFunc* func)
+{
+  return func->num_jac_evals;
+}
+
+int sleqp_func_get_num_hess_evals(SleqpFunc* func)
+{
+  return func->num_hess_evals;
+}
+
 SLEQP_RETCODE sleqp_func_hess_product(SleqpFunc* func,
                                       double* func_dual,
                                       SleqpSparseVec* direction,
@@ -100,6 +147,8 @@ SLEQP_RETCODE sleqp_func_hess_product(SleqpFunc* func,
 {
   assert(func->num_variables == direction->dim);
   assert(func->num_variables == product->dim);
+
+  ++func->num_hess_evals;
 
   SLEQP_CALL(sleqp_sparse_vector_clear(product));
 

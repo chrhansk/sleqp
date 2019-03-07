@@ -138,6 +138,14 @@ extern "C" {
 
   int sleqp_func_get_num_variables(SleqpFunc* func);
 
+  int sleqp_func_get_num_func_evals(SleqpFunc* func);
+  int sleqp_func_get_num_cons_evals(SleqpFunc* func);
+
+  int sleqp_func_get_num_grad_evals(SleqpFunc* func);
+  int sleqp_func_get_num_jac_evals(SleqpFunc* func);
+
+  int sleqp_func_get_num_hess_evals(SleqpFunc* func);
+
   /**
    * Evaluates the product of the Hessian of the Lagrangian of the given function.
    *
