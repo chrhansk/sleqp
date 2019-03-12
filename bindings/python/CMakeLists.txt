@@ -84,9 +84,13 @@ if(SLEQP_ENABLE_UNIT_TESTS)
 
 endif()
 
-install(CODE
-  "
-  execute_process(COMMAND ${PYTHON_EXECUTABLE} setup.py install --root=\$ENV{DESTDIR} --prefix=${CMAKE_INSTALL_PREFIX}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  "
+set(PYTHON_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/python_install.cmake.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/python_install.cmake"
+  @ONLY)
+
+install(SCRIPT
+  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/python_install.cmake"
   COMPONENT python)
