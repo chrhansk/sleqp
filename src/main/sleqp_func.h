@@ -156,11 +156,11 @@ extern "C" {
    * @param[out]    product           The resulting product
    *
    */
-  SLEQP_RETCODE sleqp_func_hess_product(SleqpFunc* func,
-                                        double* func_dual,
-                                        SleqpSparseVec* direction,
-                                        SleqpSparseVec* cons_duals,
-                                        SleqpSparseVec* product);
+  SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
+                                     double* func_dual,
+                                     SleqpSparseVec* direction,
+                                     SleqpSparseVec* cons_duals,
+                                     SleqpSparseVec* product);
 
   /**
    * Evaluates the bilinear product of the Hessian of the Lagrangian of the given function.

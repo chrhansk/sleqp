@@ -139,11 +139,11 @@ int sleqp_func_get_num_hess_evals(SleqpFunc* func)
   return func->num_hess_evals;
 }
 
-SLEQP_RETCODE sleqp_func_hess_product(SleqpFunc* func,
-                                      double* func_dual,
-                                      SleqpSparseVec* direction,
-                                      SleqpSparseVec* cons_duals,
-                                      SleqpSparseVec* product)
+SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
+                                   double* func_dual,
+                                   SleqpSparseVec* direction,
+                                   SleqpSparseVec* cons_duals,
+                                   SleqpSparseVec* product)
 {
   assert(func->num_variables == direction->dim);
   assert(func->num_variables == product->dim);

@@ -376,11 +376,11 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
                                     &cons_val_nnz,
                                     &cons_jac_nnz));
 
-    SLEQP_CALL(sleqp_func_hess_product(func,
-                                       &one,
-                                       data->hessian_right,
-                                       data->multipliers,
-                                       data->hessian_prod));
+    SLEQP_CALL(sleqp_func_hess_prod(func,
+                                    &one,
+                                    data->hessian_right,
+                                    data->multipliers,
+                                    data->hessian_prod));
 
     SLEQP_CALL(sleqp_sparse_vector_clear(data->hessian_left));
 
@@ -494,11 +494,11 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
 
   SLEQP_CALL(sleqp_sparse_vector_push(data->hessian_right, j, 1.));
 
-  SLEQP_CALL(sleqp_func_hess_product(func,
-                                     &one,
-                                     data->hessian_right,
-                                     data->multipliers_zero,
-                                     data->hessian_prod_zero));
+  SLEQP_CALL(sleqp_func_hess_prod(func,
+                                  &one,
+                                  data->hessian_right,
+                                  data->multipliers_zero,
+                                  data->hessian_prod_zero));
 
   for(int k = 0; k < num_variables; ++k)
   {
@@ -508,11 +508,11 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
                                     &cons_val_nnz,
                                     &cons_jac_nnz));
 
-    SLEQP_CALL(sleqp_func_hess_product(func,
-                                       &one,
-                                       data->hessian_right,
-                                       data->multipliers,
-                                       data->hessian_prod_cache));
+    SLEQP_CALL(sleqp_func_hess_prod(func,
+                                    &one,
+                                    data->hessian_right,
+                                    data->multipliers,
+                                    data->hessian_prod_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->hessian_prod_cache,
                                               data->hessian_prod_zero,

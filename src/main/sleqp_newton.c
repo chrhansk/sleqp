@@ -526,11 +526,11 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
                                          data->g,
                                          &v_dot_g));
 
-      SLEQP_CALL(sleqp_func_hess_product(func,
-                                         &one,
-                                         data->p,
-                                         data->multipliers,
-                                         data->Hp));
+      SLEQP_CALL(sleqp_func_hess_prod(func,
+                                      &one,
+                                      data->p,
+                                      data->multipliers,
+                                      data->Hp));
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -664,10 +664,10 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
     }
     case TRLIB_CLA_CONV_HARD:
     {
-      SLEQP_CALL(sleqp_func_hess_product(func, &one,
-                                         newton_step,
-                                         data->multipliers,
-                                         data->sparse_cache));
+      SLEQP_CALL(sleqp_func_hess_prod(func, &one,
+                                      newton_step,
+                                      data->multipliers,
+                                      data->sparse_cache));
 
       SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache, data->gradient, zero_eps, data->l));
 
@@ -716,10 +716,10 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->p));
 
-        SLEQP_CALL(sleqp_func_hess_product(func, &one,
-                                           data->p,
-                                           data->multipliers,
-                                           data->Hp));
+        SLEQP_CALL(sleqp_func_hess_prod(func, &one,
+                                        data->p,
+                                        data->multipliers,
+                                        data->Hp));
 
         SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -744,10 +744,10 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->p));
 
-        SLEQP_CALL(sleqp_func_hess_product(func, &one,
-                                           data->p,
-                                           data->multipliers,
-                                           data->Hp));
+        SLEQP_CALL(sleqp_func_hess_prod(func, &one,
+                                        data->p,
+                                        data->multipliers,
+                                        data->Hp));
 
         SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -918,11 +918,11 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   {
     double one = 1.;
 
-    SLEQP_CALL(sleqp_func_hess_product(problem->func,
-                                       &one,
-                                       data->initial_solution,
-                                       data->multipliers,
-                                       data->initial_hessian_product));
+    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
+                                    &one,
+                                    data->initial_solution,
+                                    data->multipliers,
+                                    data->initial_hessian_product));
 
     SLEQP_CALL(sleqp_sparse_vector_add(iterate->func_grad,
                                        iterate->vars_dual,
