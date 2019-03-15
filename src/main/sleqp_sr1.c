@@ -309,8 +309,6 @@ SLEQP_RETCODE sr1_compute_inner_products(SleqpSR1Data* data)
       }
       else
       {
-        assert(inner_dot != 0.);
-
         data->inner_dots[i] = inner_dot;
       }
     }

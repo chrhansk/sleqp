@@ -33,7 +33,7 @@ const bool use_bfgs = false;
 const int num_bfgs_products = 5;
 const bool damped_bfgs = true;
 
-const bool use_sr1 = true;
+const bool use_sr1 = false;
 const int num_sr1_products = 5;
 
 const bool perform_soc = true;
