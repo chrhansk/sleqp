@@ -27,9 +27,15 @@
 #include "lp/sleqp_lpi_soplex.h"
 
 #include "sleqp_bfgs.h"
+#include "sleqp_sr1.h"
 
 const bool use_bfgs = false;
-const int num_products = 5;
+const int num_bfgs_products = 5;
+const bool damped_bfgs = true;
+
+const bool use_sr1 = true;
+const int num_sr1_products = 5;
+
 const bool perform_soc = true;
 
 struct SleqpSolver
@@ -99,6 +105,10 @@ struct SleqpSolver
 
   SleqpBFGSData* bfgs_data;
 
+  // SR1 related
+
+  SleqpSR1Data* sr1_data;
+
   // parameters, adjusted throughout...
 
   double trust_radius;
@@ -132,14 +142,27 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   {
     SleqpFunc* func = problem->func;
 
+    assert(!(use_bfgs && use_sr1));
+
     if(use_bfgs)
     {
       SLEQP_CALL(sleqp_bfgs_data_create(&solver->bfgs_data,
                                         func,
                                         params,
-                                        num_products));
+                                        num_bfgs_products,
+                                        damped_bfgs));
 
       func = sleqp_bfgs_get_func(solver->bfgs_data);
+    }
+
+    if(use_sr1)
+    {
+      SLEQP_CALL(sleqp_sr1_data_create(&solver->sr1_data,
+                                       func,
+                                       params,
+                                       num_sr1_products));
+
+      func = sleqp_sr1_get_func(solver->sr1_data);
     }
 
     SLEQP_CALL(sleqp_problem_create(&solver->problem,
@@ -1089,6 +1112,13 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                       trial_iterate));
     }
 
+    if(solver->sr1_data)
+    {
+      SLEQP_CALL(sleqp_sr1_data_push(solver->sr1_data,
+                                     iterate,
+                                     trial_iterate));
+    }
+
     solver->trial_iterate = iterate;
     solver->iterate = trial_iterate;
 
@@ -1299,6 +1329,8 @@ SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_timer_free(&solver->elapsed_timer));
 
   SLEQP_CALL(sleqp_problem_free(&solver->problem));
+
+  SLEQP_CALL(sleqp_sr1_data_free(&solver->sr1_data));
 
   SLEQP_CALL(sleqp_bfgs_data_free(&solver->bfgs_data));
 
