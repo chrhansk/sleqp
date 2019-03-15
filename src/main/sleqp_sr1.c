@@ -1,6 +1,31 @@
 #include "sleqp_sr1.h"
 
+#include <math.h>
+
 #include "sleqp_mem.h"
+
+/*
+ * Our SR1 implementation works in the following way:
+ * The Hessian approximation \f$ B_k \f$ in the k-th iteration
+ * is given as
+ *
+ * \f[ B_k := B_k^{0} +  \sum_{i=k-m}^{k - 1} \frac{a_i a_i^{T}}{a_i^{T} s_i}.  \f]
+ *
+ * where the inner products \f$ a_i \f$ are given as \f$a _i := y_i - B_i s_i \f$,
+ * where the \f$ s_i \f$ are the step differences (\f$ s_i := x_{i + 1} - x_{i} \f$)
+ * and the \f$  y_i \f$ are the differences of the gradients of the Lagrangian
+ * with multipliers according to \f$ x_i \f$ of the accepted steps.
+ *
+ * We recompute the values of \f$ a_i \f$ and the
+ * products \f$ a_i^{T} s_i \f$ whenever a new pair \f$ a_i, y_i \f$
+ * is pushed. Note that some pairs are actually discarded when computing \f$ B_k \f$
+ * (we don't want to divide by zero). The criterion is that we only use
+ * pairs where
+ *
+ * \f[ |a_i^{T} s_i| >= r \|s_i\| \| a_i \|  \f]
+ *
+ * with a safeguard factor \f$ r \in (0, 1) \f$.
+ */
 
 static const double safeguard_factor = 1e-8;
 
@@ -278,13 +303,14 @@ SLEQP_RETCODE sr1_compute_inner_products(SleqpSR1Data* data)
       assert(current_inner_norm >= 0.);
       assert(current_step_norm >= 0.);
 
-      if(inner_dot < safeguard_factor * current_inner_norm * current_step_norm ||
-        inner_dot == 0.)
+      if(fabs(inner_dot) < safeguard_factor * current_inner_norm * current_step_norm)
       {
         data->inner_dots[i] = 0.;
       }
       else
       {
+        assert(inner_dot != 0.);
+
         data->inner_dots[i] = inner_dot;
       }
     }
