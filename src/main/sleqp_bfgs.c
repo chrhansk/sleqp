@@ -315,7 +315,7 @@ SLEQP_RETCODE bfgs_compute_products(SleqpBFGSData* data)
                                        direction,
                                        &bidir_product));
 
-    assert(sleqp_pos(bidir_product, eps));
+    assert(bidir_product > 0);
 
     double dot_product;
 
@@ -340,6 +340,10 @@ SLEQP_RETCODE bfgs_compute_products(SleqpBFGSData* data)
                                                 1. - combination_factor,
                                                 eps,
                                                 current_outer_prod));
+
+      SLEQP_CALL(sleqp_sparse_vector_dot(current_outer_prod,
+                                         current_step_diff,
+                                         &dot_product));
     }
     else
     {
@@ -348,22 +352,16 @@ SLEQP_RETCODE bfgs_compute_products(SleqpBFGSData* data)
 
     // set outer product
     {
-      double outer_dot;
+      assert(dot_product > 0);
 
-      SLEQP_CALL(sleqp_sparse_vector_dot(current_outer_prod,
-                                         current_step_diff,
-                                         &outer_dot));
-
-      assert(sleqp_pos(outer_dot, eps));
-
-      SLEQP_CALL(sleqp_sparse_vector_scale(current_outer_prod, 1./sqrt(outer_dot)));
+      SLEQP_CALL(sleqp_sparse_vector_scale(current_outer_prod, 1./sqrt(dot_product)));
     }
 
     // set inner product
     {
       SLEQP_CALL(sleqp_sparse_vector_copy(product, current_inner_prod));
 
-      SLEQP_CALL(sleqp_sparse_vector_scale(current_inner_prod, 1./bidir_product));
+      SLEQP_CALL(sleqp_sparse_vector_scale(current_inner_prod, 1./sqrt(bidir_product)));
     }
   }
 
@@ -420,20 +418,6 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                             1.,
                                             eps,
                                             next_step_diff));
-
-  {
-    double grad_step_dot;
-
-    SLEQP_CALL(sleqp_sparse_vector_dot(next_step_diff,
-                                       next_grad_diff,
-                                       &grad_step_dot));
-
-    assert(sleqp_pos(grad_step_dot, eps));
-
-    double step_norm = sleqp_sparse_vector_norm(next_step_diff);
-
-    assert(sleqp_pos(step_norm, eps));
-  }
 
   if(data->len < data->num)
   {
