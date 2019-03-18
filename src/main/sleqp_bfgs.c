@@ -23,15 +23,17 @@ struct SleqpBFGSData
   SleqpSparseVec* outer_cache;
 
   SleqpSparseVec* step_cache;
-  SleqpSparseVec* grad_cache;
 
   SleqpSparseVec* prod_cache;
   SleqpSparseVec* combined_cache;
 
-  double* grad_step_dots;
+  double initial_scale;
 
+  // max size
   int num;
+  // curr size
   int len;
+  // curr index
   int curr;
 
   bool damped;
@@ -97,7 +99,6 @@ bfgs_func_hess_product(int num_variables,
   return SLEQP_OKAY;
 }
 
-
 SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
                                SleqpFunc* func,
                                SleqpBFGSData* bfgs_data)
@@ -151,8 +152,6 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
 
   SLEQP_CALL(sleqp_calloc(&(data->outer_prods), num));
 
-  SLEQP_CALL(sleqp_calloc(&(data->grad_step_dots), num));
-
   for(int i = 0; i < num; ++i)
   {
     SLEQP_CALL(sleqp_sparse_vector_create(data->step_diffs + i,
@@ -184,10 +183,6 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
                                         num_variables,
                                         0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&(data->grad_cache),
-                                        num_variables,
-                                        0));
-
   SLEQP_CALL(sleqp_sparse_vector_create(&(data->prod_cache),
                                         num_variables,
                                         0));
@@ -212,75 +207,165 @@ static int data_index(SleqpBFGSData* data, int index)
     return 0;
   }
 
-  int current_index = index % (data->len);
+  int current_index = index % (data->num);
 
-  return (current_index < 0) ? (current_index + data->len) : current_index;
+  return (current_index < 0) ? (current_index + data->num) : current_index;
 }
 
-static SLEQP_RETCODE bfgs_data_push_simple(SleqpBFGSData* data,
-                                           SleqpSparseVec* step_diff,
-                                           SleqpSparseVec* grad_diff)
+static
+SLEQP_RETCODE bfgs_hess_prod_range(SleqpBFGSData* data,
+                                   SleqpSparseVec* direction,
+                                   SleqpSparseVec* product,
+                                   int final)
 {
-  const int next = data_index(data, data->curr + 1);
-
   const double eps = sleqp_params_get_eps(data->params);
+  const int begin = data->curr - data->len + 1;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(step_diff, data->step_diffs[next]));
-  SLEQP_CALL(sleqp_sparse_vector_copy(grad_diff, data->grad_diffs[next]));
+  SLEQP_CALL(sleqp_sparse_vector_copy(direction, product));
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(step_diff,
-                                     grad_diff,
-                                     data->grad_step_dots + next));
+  SLEQP_CALL(sleqp_sparse_vector_scale(product, data->initial_scale));
 
-  assert(sleqp_pos(data->grad_step_dots[next], eps));
-
-  if(data->len < data->num)
+  for(int prev = begin; prev <= final; ++prev)
   {
-    ++data->len;
-  }
+    int j = data_index(data, prev);
 
-  data->curr = next;
+    SleqpSparseVec* inner_prod = data->inner_prods[j];
+    SleqpSparseVec* outer_prod = data->outer_prods[j];
+
+    double inner_dot, outer_dot;
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(inner_prod,
+                                       direction,
+                                       &inner_dot));
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(outer_prod,
+                                       direction,
+                                       &outer_dot));
+
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(product,
+                                              inner_prod,
+                                              1.,
+                                              -1. * inner_dot,
+                                              eps,
+                                              data->inner_cache));
+
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->inner_cache,
+                                              outer_prod,
+                                              1.,
+                                              1. * outer_dot,
+                                              eps,
+                                              product));
+  }
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE bfgs_data_push_damped(SleqpBFGSData* data,
-                                           SleqpSparseVec* step_diff,
-                                           SleqpSparseVec* grad_diff)
+static
+SLEQP_RETCODE bfgs_initial_scale(SleqpSparseVec* step_diff,
+                                 SleqpSparseVec* grad_diff,
+                                 double* initial_scale)
 {
-  double step_grad_dot;
+  double step_dot;
 
+  SLEQP_CALL(sleqp_sparse_vector_dot(grad_diff,
+                                     step_diff,
+                                     &step_dot));
+
+  const double step_diff_normsq = sleqp_sparse_vector_normsq(step_diff);
+
+  assert(step_diff_normsq > 0.);
+
+  (*initial_scale) = step_dot / step_diff_normsq;
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE bfgs_compute_products(SleqpBFGSData* data)
+{
   const double eps = sleqp_params_get_eps(data->params);
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(step_diff, grad_diff, &step_grad_dot));
+  assert(data->len > 0);
 
-  SLEQP_CALL(sleqp_bfgs_data_hess_prod(data, step_diff, data->prod_cache));
-
-  double bidir_dot;
-
-  SLEQP_CALL(sleqp_sparse_vector_dot(step_diff, data->prod_cache, &bidir_dot));
-
-  assert(sleqp_pos(bidir_dot, eps));
-
-  if(step_grad_dot >= damping_factor*bidir_dot)
   {
-    SLEQP_CALL(bfgs_data_push_simple(data, step_diff, grad_diff));
+    SLEQP_CALL(bfgs_initial_scale(data->step_diffs[data->curr],
+                                  data->grad_diffs[data->curr],
+                                  &data->initial_scale));
 
-    return SLEQP_OKAY;
+    assert(sleqp_pos(data->initial_scale, eps));
   }
 
-  double combination_factor = (1 - damping_factor)*bidir_dot / (bidir_dot - step_grad_dot);
+  const int begin = data->curr - data->len + 1;
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(grad_diff,
-                                            data->prod_cache,
-                                            combination_factor,
-                                            1. - combination_factor,
-                                            eps,
-                                            data->combined_cache));
+  for(int val = begin; val <= data->curr; ++val)
+  {
+    int i = data_index(data, val);
 
-  SLEQP_CALL(bfgs_data_push_simple(data,
-                                   step_diff,
-                                   data->combined_cache));
+    SleqpSparseVec* current_step_diff = data->step_diffs[i];
+    SleqpSparseVec* current_grad_diff = data->grad_diffs[i];
+
+    SleqpSparseVec* direction = current_step_diff;
+    SleqpSparseVec* product = data->prod_cache;
+
+    SLEQP_CALL(bfgs_hess_prod_range(data, direction, product, val - 1));
+
+    double bidir_product;
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(product,
+                                       direction,
+                                       &bidir_product));
+
+    assert(sleqp_pos(bidir_product, eps));
+
+    double dot_product;
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(current_step_diff,
+                                       current_grad_diff,
+                                       &dot_product));
+
+    SleqpSparseVec* current_inner_prod = data->inner_prods[i];
+    SleqpSparseVec* current_outer_prod = data->outer_prods[i];
+
+    if(data->damped && (dot_product < damping_factor*bidir_product))
+    {
+      double combination_factor = (1. - damping_factor) *
+        bidir_product / (bidir_product - dot_product);
+
+      assert(sleqp_pos(combination_factor, eps));
+      assert(sleqp_lt(combination_factor, 1., eps));
+
+      SLEQP_CALL(sleqp_sparse_vector_add_scaled(current_grad_diff,
+                                                product,
+                                                combination_factor,
+                                                1. - combination_factor,
+                                                eps,
+                                                current_outer_prod));
+    }
+    else
+    {
+      SLEQP_CALL(sleqp_sparse_vector_copy(current_grad_diff, current_outer_prod));
+    }
+
+    // set outer product
+    {
+      double outer_dot;
+
+      SLEQP_CALL(sleqp_sparse_vector_dot(current_outer_prod,
+                                         current_step_diff,
+                                         &outer_dot));
+
+      assert(sleqp_pos(outer_dot, eps));
+
+      SLEQP_CALL(sleqp_sparse_vector_scale(current_outer_prod, 1./sqrt(outer_dot)));
+    }
+
+    // set inner product
+    {
+      SLEQP_CALL(sleqp_sparse_vector_copy(product, current_inner_prod));
+
+      SLEQP_CALL(sleqp_sparse_vector_scale(current_inner_prod, 1./bidir_product));
+    }
+  }
 
   return SLEQP_OKAY;
 }
@@ -295,7 +380,6 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
 
   const int next = data_index(data, data->curr + 1);
 
-
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(old_iterate->cons_jac,
                                                         cons_dual,
@@ -307,6 +391,9 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                        eps,
                                        data->inner_cache));
   }
+
+  SleqpSparseVec* next_grad_diff = data->grad_diffs[next];
+  SleqpSparseVec* next_step_diff = data->step_diffs[next];
 
   {
   SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(new_iterate->cons_jac,
@@ -325,27 +412,37 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                             -1.,
                                             1.,
                                             eps,
-                                            data->grad_cache));
+                                            next_grad_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(old_iterate->x,
                                             new_iterate->x,
                                             -1.,
                                             1.,
                                             eps,
-                                            data->step_cache));
+                                            next_step_diff));
 
-  if(data->damped)
   {
-    SLEQP_CALL(bfgs_data_push_damped(data,
-                                     data->step_cache,
-                                     data->grad_cache));
+    double grad_step_dot;
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(next_step_diff,
+                                       next_grad_diff,
+                                       &grad_step_dot));
+
+    assert(sleqp_pos(grad_step_dot, eps));
+
+    double step_norm = sleqp_sparse_vector_norm(next_step_diff);
+
+    assert(sleqp_pos(step_norm, eps));
   }
-  else
+
+  if(data->len < data->num)
   {
-    SLEQP_CALL(bfgs_data_push_simple(data,
-                                     data->step_cache,
-                                     data->grad_cache));
+    ++data->len;
   }
+
+  data->curr = next;
+
+  SLEQP_CALL(bfgs_compute_products(data));
 
   return SLEQP_OKAY;
 }
@@ -367,124 +464,7 @@ SLEQP_RETCODE sleqp_bfgs_data_hess_prod(SleqpBFGSData* data,
 
   assert(data->len > 0);
 
-  const double eps = sleqp_params_get_eps(data->params);
-
-  double initial_scale;
-
-  {
-    const double grad_step_dot = data->grad_step_dots[data->curr];
-
-    SleqpSparseVec* current_step_diff = data->step_diffs[data->curr];
-
-    const double step_diff_normsq = sleqp_sparse_vector_normsq(current_step_diff);
-
-    initial_scale = grad_step_dot / step_diff_normsq;
-  }
-
-  assert(sleqp_pos(initial_scale, eps));
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(direction, product));
-
-  SLEQP_CALL(sleqp_sparse_vector_scale(product, initial_scale));
-
-  for(int val = data->curr - data->len + 1; val <= data->curr; ++val)
-  {
-    int i = data_index(data, val);
-
-    SleqpSparseVec* current_step_diff = data->step_diffs[i];
-    SleqpSparseVec* current_grad_diff = data->grad_diffs[i];
-
-    {
-      SLEQP_CALL(sleqp_sparse_vector_copy(data->grad_diffs[i],
-                                          data->outer_prods[i]));
-
-      SLEQP_CALL(sleqp_sparse_vector_scale(data->outer_prods[i],
-                                           1./sqrt(data->grad_step_dots[i])));
-    }
-
-    {
-      SLEQP_CALL(sleqp_sparse_vector_copy(data->step_diffs[i],
-                                          data->inner_prods[i]));
-
-      SLEQP_CALL(sleqp_sparse_vector_scale(data->inner_prods[i],
-                                           initial_scale));
-    }
-
-    SLEQP_CALL(sleqp_sparse_vector_clear(data->outer_cache));
-
-    for(int prev = data->curr - data->len + 1; prev < val; ++prev)
-    {
-      int j = data_index(data, prev);
-
-      SleqpSparseVec* old_inner_prod = data->inner_prods[j];
-      SleqpSparseVec* old_outer_prod = data->outer_prods[j];
-
-      double old_inner_dot, old_outer_dot;
-
-      SLEQP_CALL(sleqp_sparse_vector_dot(current_step_diff,
-                                         old_inner_prod,
-                                         &old_inner_dot));
-
-      SLEQP_CALL(sleqp_sparse_vector_dot(current_step_diff,
-                                         old_outer_prod,
-                                         &old_outer_dot));
-
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(old_inner_prod,
-                                                old_outer_prod,
-                                                -1.*old_inner_dot,
-                                                old_outer_dot,
-                                                eps,
-                                                data->inner_cache));
-
-      SLEQP_CALL(sleqp_sparse_vector_copy(data->inner_prods[i], data->outer_cache));
-
-
-      SLEQP_CALL(sleqp_sparse_vector_add(data->inner_cache,
-                                         data->outer_cache,
-                                         eps,
-                                         data->inner_prods[i]));
-
-    }
-
-    {
-      double inner_dot;
-
-      SLEQP_CALL(sleqp_sparse_vector_dot(current_step_diff,
-                                         data->inner_prods[i],
-                                         &inner_dot));
-
-      SLEQP_CALL(sleqp_sparse_vector_scale(data->inner_prods[i],
-                                           1./sqrt(inner_dot)));
-    }
-
-    {
-      double inner_dir_dot, outer_dir_dot;
-
-      SLEQP_CALL(sleqp_sparse_vector_dot(direction,
-                                         data->inner_prods[i],
-                                         &inner_dir_dot));
-
-      SLEQP_CALL(sleqp_sparse_vector_dot(direction,
-                                         data->outer_prods[i],
-                                         &outer_dir_dot));
-
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(product,
-                                                data->inner_prods[i],
-                                                1.,
-                                                -1.*inner_dir_dot,
-                                                eps,
-                                                data->outer_cache));
-
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->outer_cache,
-                                                data->outer_prods[i],
-                                                1.,
-                                                outer_dir_dot,
-                                                eps,
-                                                product));
-
-    }
-
-  }
+  SLEQP_CALL(bfgs_hess_prod_range(data, direction, product, data->curr));
 
   return SLEQP_OKAY;
 }
@@ -502,13 +482,10 @@ SLEQP_RETCODE sleqp_bfgs_data_free(SleqpBFGSData** star)
 
   SLEQP_CALL(sleqp_func_free(&(data->bfgs_func)));
 
-  sleqp_free(&(data->grad_step_dots));
-
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->combined_cache)));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->prod_cache)));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&(data->grad_cache)));
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->step_cache)));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->outer_cache)));

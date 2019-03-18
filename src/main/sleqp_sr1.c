@@ -198,9 +198,9 @@ static int data_index(SleqpSR1Data* data, int index)
     return 0;
   }
 
-  int current_index = index % (data->len);
+  int current_index = index % (data->num);
 
-  return (current_index < 0) ? (current_index + data->len) : current_index;
+  return (current_index < 0) ? (current_index + data->num) : current_index;
 }
 
 static
