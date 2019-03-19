@@ -25,7 +25,7 @@ In order to compile this package, use the following sequence of commands:
 mkdir build && cd build
 cmake .. <OPTIONS>
 make
-[make build tests && make test]
+[make build_tests && make test]
 ```
 
 ### Options
