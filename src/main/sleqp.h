@@ -3,6 +3,7 @@
 
 #include "sleqp_active_set.h"
 #include "sleqp_aug_jacobian.h"
+#include "sleqp_bfgs.h"
 #include "sleqp_cauchy.h"
 #include "sleqp_cmp.h"
 #include "sleqp_defs.h"
@@ -18,6 +19,7 @@
 #include "sleqp_problem.h"
 #include "sleqp_soc.h"
 #include "sleqp_solver.h"
+#include "sleqp_sr1.h"
 #include "sleqp_types.h"
 #include "sleqp_util.h"
 

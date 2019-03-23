@@ -95,7 +95,7 @@ sr1_func_eval(int num_variables,
 }
 
 static SLEQP_RETCODE
-sr1_func_hess_product(int num_variables,
+sr1_func_hess_prod(int num_variables,
                       double* func_dual,
                       SleqpSparseVec* direction,
                       SleqpSparseVec* cons_duals,
@@ -122,7 +122,7 @@ SLEQP_RETCODE sr1_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_func_create(fstar,
                                sr1_func_set_value,
                                sr1_func_eval,
-                               sr1_func_hess_product,
+                               sr1_func_hess_prod,
                                num_variables,
                                sr1_data));
   return SLEQP_OKAY;
