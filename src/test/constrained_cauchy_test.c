@@ -8,7 +8,7 @@
 #include "sleqp_dual_estimation.h"
 #include "sleqp_mem.h"
 
-#include "lp/sleqp_lpi_soplex.h"
+#include "lp/sleqp_lpi.h"
 
 #include "test_common.h"
 
@@ -43,10 +43,10 @@ void constrained_setup()
   int num_lp_variables = problem->num_variables + 2*problem->num_constraints;
   int num_lp_constraints = problem->num_constraints;
 
-  ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface,
-                                                num_lp_variables,
-                                                num_lp_constraints,
-                                                params));
+  ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
+                                                 num_lp_variables,
+                                                 num_lp_constraints,
+                                                 params));
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 

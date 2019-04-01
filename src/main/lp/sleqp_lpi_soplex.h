@@ -17,6 +17,11 @@ extern "C" {
                                                   int num_constraints,
                                                   SleqpParams* params);
 
+  SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
+                                                   int num_variables,
+                                                   int num_constraints,
+                                                   SleqpParams* params);
+
 #ifdef __cplusplus
 }
 #endif

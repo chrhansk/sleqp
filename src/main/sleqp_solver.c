@@ -24,7 +24,6 @@
 #include "sleqp_merit.h"
 
 #include "lp/sleqp_lpi.h"
-#include "lp/sleqp_lpi_soplex.h"
 
 #include "sleqp_bfgs.h"
 #include "sleqp_sr1.h"
@@ -205,15 +204,13 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                         num_constraints,
                                         0));
 
-  // TODO: make this generic at a later point...
-
   int num_lp_variables = num_variables + 2*num_constraints;
   int num_lp_constraints = num_constraints;
 
-  SLEQP_CALL(sleqp_lpi_soplex_create_interface(&solver->lp_interface,
-                                               num_lp_variables,
-                                               num_lp_constraints,
-                                               params));
+  SLEQP_CALL(sleqp_lpi_create_default_interface(&solver->lp_interface,
+                                                num_lp_variables,
+                                                num_lp_constraints,
+                                                params));
 
   SLEQP_CALL(sleqp_cauchy_data_create(&solver->cauchy_data,
                                       problem,

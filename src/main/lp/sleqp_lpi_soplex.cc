@@ -390,4 +390,18 @@ extern "C"
                                       soplex_get_consstats,
                                       soplex_free);
   }
+
+  SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
+                                                   int num_variables,
+                                                   int num_constraints,
+                                                   SleqpParams* params)
+  {
+    SLEQP_CALL(sleqp_lpi_soplex_create_interface(lp_interface,
+                                                 num_variables,
+                                                 num_constraints,
+                                                 params));
+
+    return SLEQP_OKAY;
+  }
+
 }

@@ -8,8 +8,6 @@
 #include "sleqp_dual_estimation.h"
 #include "sleqp_mem.h"
 
-#include "lp/sleqp_lpi_soplex.h"
-
 #include "test_common.h"
 
 #include "quadfunc_fixture.h"
@@ -45,10 +43,10 @@ START_TEST(test_simply_constrained_dual_estimation)
   int num_lp_variables = problem->num_variables + 2*problem->num_constraints;
   int num_lp_constraints = problem->num_constraints;
 
-  ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface,
-                                                num_lp_variables,
-                                                num_lp_constraints,
-                                                params));
+  ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
+                                                 num_lp_variables,
+                                                 num_lp_constraints,
+                                                 params));
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 

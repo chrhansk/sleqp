@@ -2,9 +2,10 @@
 #include <check.h>
 
 #include "sleqp_cmp.h"
-#include "lp/sleqp_lpi_soplex.h"
 
 #include "test_common.h"
+
+#include "lp/sleqp_lpi.h"
 
 START_TEST(test_simplex_solve)
 {
@@ -19,10 +20,10 @@ START_TEST(test_simplex_solve)
   int num_variables = 2;
   int num_constraints = 1;
 
-  ASSERT_CALL(sleqp_lpi_soplex_create_interface(&lp_interface,
-                                                num_variables,
-                                                num_constraints,
-                                                params));
+  ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
+                                                 num_variables,
+                                                 num_constraints,
+                                                 params));
 
   double objective[] = {-1, 0};
   double vars_lb[] = {0, 0};
@@ -88,12 +89,12 @@ START_TEST(test_simplex_solve)
 }
 END_TEST
 
-Suite* soplex_lpi_suite()
+Suite* lpi_suite()
 {
   Suite *suite;
   TCase *tc_simplex;
 
-  suite = suite_create("SoPlex LPI");
+  suite = suite_create("LPI");
 
   tc_simplex = tcase_create("Simplex solve");
   tcase_add_test(tc_simplex, test_simplex_solve);
@@ -108,7 +109,7 @@ int main()
   Suite* suite;
   SRunner* srunner;
 
-  suite = soplex_lpi_suite();
+  suite = lpi_suite();
   srunner = srunner_create(suite);
 
   srunner_set_fork_status(srunner, CK_NOFORK);

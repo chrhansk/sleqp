@@ -1,9 +1,3 @@
-set(SOPLEX_LPI_SRC
-  lp/sleqp_lpi_soplex.cc)
-
-set(GUROBI_LPI_SRC
-  lp/sleqp_lpi_gurobi.c)
-
 set(COMMON_SRC
   sparse/sleqp_sparse_factorization.c
   sparse/sleqp_sparse_matrix.c
@@ -40,8 +34,8 @@ add_executable(sleqp_bin
 
 target_link_libraries(sleqp
   trlib::trlib
+  ${SLEQP_LPS_LIBRARIES}
   ${UMFPACK_LIBRARIES}
-  ${SOPLEX_LIBRARIES}
   m)
 
 if(DOXYGEN_FOUND)
@@ -52,6 +46,9 @@ endif()
 
 set_target_properties(sleqp_bin
   PROPERTIES OUTPUT_NAME sleqp)
+
+include_directories(sleqp
+  ${SLEQP_LPS_INCLUDE_DIRS})
 
 target_include_directories(sleqp
   PUBLIC

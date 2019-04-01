@@ -26,15 +26,28 @@ execute_process(
 
 set(PROJECT_NAMESPACE "${PROJECT_NAME}::")
 
+string(TOUPPER "${PROJECT_NAME}" PROJECT_PREFIX)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
+# Options / user variables
+
+option(SLEQP_ENABLE_UNIT_TESTS "Whether or not to enable unit tests" ON)
+
+option(SLEQP_ENABLE_CUTEST "Whether or not to include the CUTest suite" OFF)
+
+option(SLEQP_ENABLE_PYTHON "Whether or not to enable python bindings" OFF)
+
+set(SLEQP_LPS ""
+  CACHE STRING "The LP solver used as a backend")
+
+# Find all packages
+
+include(SearchLPS)
 
 find_package(Umfpack REQUIRED)
 
-find_package(SoPlex REQUIRED)
-
 find_package(trlib REQUIRED)
-
-include_directories(${UMFPACK_INCLUDE_DIRS} ${SOPLEX_INCLUDE_DIRS})
 
 find_package(Check)
 find_package(Threads)
@@ -49,12 +62,6 @@ configure_file("${CMAKE_SOURCE_DIR}/src/main/sleqp_defs.h.in"
 include_directories("${CMAKE_BINARY_DIR}")
 
 enable_testing()
-
-option(SLEQP_ENABLE_UNIT_TESTS "Whether or not to enable unit tests" ON)
-
-option(SLEQP_ENABLE_CUTEST "Whether or not to include the CUTest suite" OFF)
-
-option(SLEQP_ENABLE_PYTHON "Whether or not to enable python bindings" OFF)
 
 if(CHECK_FOUND)
   include_directories(${CHECK_INCLUDE_DIR})
@@ -75,6 +82,8 @@ add_subdirectory(src)
 if(SLEQP_ENABLE_PYTHON)
   add_subdirectory(bindings)
 endif()
+
+# Miscellaneous installs
 
 set(CONFIG_DESTINATION "lib/cmake/sleqp")
 

@@ -25,6 +25,8 @@ if(NOT CYTHON)
   message(FATAL_ERROR "Cython executable not found")
 endif()
 
+mark_as_advanced(CYTHON)
+
 set(CYTHON_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/sleqp_python.pyx")
 set(CYTHON_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/sleqp_python.c")
 

@@ -60,6 +60,12 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_interface);
 
+  SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
+                                                   int num_variables,
+                                                   int num_constraints,
+                                                   SleqpParams* params);
+
+
 #ifdef __cplusplus
 }
 #endif

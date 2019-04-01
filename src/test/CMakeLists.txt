@@ -39,7 +39,7 @@ endfunction()
 
 add_unit_test(sparse/sleqp_sparse_matrix_test)
 
-add_unit_test(lp/soplex_lpi_test)
+add_unit_test(lp/lpi_test)
 
 add_unit_test(active_set_var_test)
 add_unit_test(cauchy_test)
