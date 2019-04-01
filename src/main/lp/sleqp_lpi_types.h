@@ -16,15 +16,13 @@ extern "C" {
 
   typedef struct SleqpLPi SleqpLPi;
 
-  enum SLEQP_BaseStat
+  typedef enum
   {
     SLEQP_BASESTAT_LOWER = 0,             /**< variable is at its lower bound */
     SLEQP_BASESTAT_BASIC = 1,             /**< variable is basic */
     SLEQP_BASESTAT_UPPER = 2,             /**< variable is at its upper bound */
     SLEQP_BASESTAT_ZERO  = 3              /**< free variable is non-basic and set to zero */
-  };
-
-  typedef enum SLEQP_BaseStat SLEQP_BASESTAT;
+  } SLEQP_BASESTAT;
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_CREATE)(void** lp_data,
                                             int num_variables,
