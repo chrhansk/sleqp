@@ -1,0 +1,11 @@
+__pycache__
+
+cmake/python_install.cmake
+
+dist
+
+*.egg-info
+
+*.so
+
+setup.py
