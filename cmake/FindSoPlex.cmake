@@ -35,6 +35,9 @@ if(SOPLEX_INCLUDE_DIR)
     string(REGEX REPLACE "[0-9]([0-9]).*" "\\1" SOPLEX_VERSION_MINOR ${SVER})
     string(REGEX REPLACE "[0-9][0-9]([0-9]).*" "\\1" SOPLEX_VERSION_PATCH ${SVER})
     set(SOPLEX_VERSION "${SOPLEX_VERSION_MAJOR}.${SOPLEX_VERSION_MINOR}.${SOPLEX_VERSION_PATCH}")
+
+    mark_as_advanced(SPX_HEADER)
+
   endif()
 endif()
 
