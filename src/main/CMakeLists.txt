@@ -29,10 +29,9 @@ set(COMMON_SRC
   sleqp_util.c
   lp/sleqp_lpi.c)
 
-add_library(sleqp
-  SHARED
-  ${SOPLEX_LPI_SRC}
-  ${COMMON_SRC})
+add_library(sleqp SHARED
+  ${COMMON_SRC}
+  ${SLEQP_LPS_SOURCES})
 
 set_property(TARGET sleqp PROPERTY C_STANDARD 11)
 
