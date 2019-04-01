@@ -48,6 +48,7 @@ set_target_properties(sleqp_bin
   PROPERTIES OUTPUT_NAME sleqp)
 
 include_directories(sleqp
+  ${UMFPACK_INCLUDE_DIRS}
   ${SLEQP_LPS_INCLUDE_DIRS})
 
 target_include_directories(sleqp
