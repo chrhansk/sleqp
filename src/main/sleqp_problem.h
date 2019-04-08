@@ -12,46 +12,63 @@
 extern "C" {
 #endif
 
+  /**
+   * @defgroup problem Problem definition
+   * @{
+   **/
 
   /**
-   * Main problem definion.
+   * A NLP is given as
+   *
+   * \f[
+   * \begin{aligned}
+   * \min \: & f(x)                       \\
+   * \text{s.t. } \: & l \leq c(x) \leq u \\
+   * & x_l \leq x \leq x_u
+   * \end{aligned}
+   * \f]
+   *
+   * where \f$ f : \mathbb{R}^{n} \to \mathbb{R} \f$, \f$ c : \mathbb{R}^{n} \to \mathbb{R}^{m} \f$
+   * are functions, \f$ l, u \in \mathbb{R}^{m}, l \leq u \f$ are the constraint bounds, and
+   * \f$ x_l, x_u \in \mathbb{R}^{n}, x_l \leq x_u \f$ are the variable bounds.
+   *
+   * @see Functions
+   *
    **/
   typedef struct SleqpProblem
   {
     /**
-     * The function is vector-valued
-     * containing both the objective
-     * and the constraints.
+     * The functions \f$ f\f$, and \f$ c \f$ combined.
      **/
     SleqpFunc* func;
 
     /**
-     * lower bounds on variables.
+     * lower variable bounds \f$ x_l \f$.
      **/
     SleqpSparseVec* var_lb;
 
     /**
-     * upper bounds on variables.
+     * upper variable bounds \f$ x_u \f$.
      **/
     SleqpSparseVec* var_ub;
 
     /**
-     * lower bounds on constraints.
+     * lower constraint bounds \f$ l \f$.
      **/
     SleqpSparseVec* cons_lb;
 
     /**
-     * upper bounds on constraints.
+     * upper constraint bounds \f$ u \f$.
      **/
     SleqpSparseVec* cons_ub;
 
     /**
-     * number of variables.
+     * number of variables \f$ n \f$.
      **/
     int num_variables;
 
     /**
-     * number of constraints.
+     * number of constraints \f$ m \f$.
      **/
     int num_constraints;
 
@@ -79,6 +96,9 @@ extern "C" {
    **/
   SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star);
 
+  /**
+   * @}
+   **/
 
 #ifdef __cplusplus
 }

@@ -20,6 +20,11 @@ extern "C" {
   typedef struct SleqpFunc SleqpFunc;
 
   /**
+   * @defgroup function Function definition
+   * @{
+   **/
+
+  /**
    * Sets the current input vector
    *
    * @param[in]  x               The input vector \f$ x \f$
@@ -136,14 +141,35 @@ extern "C" {
                                 SleqpSparseVec* cons_val,
                                 SleqpSparseMatrix* cons_jac);
 
+  /**
+   * Returns the number of variables \f$ n \f$.
+   **/
   int sleqp_func_get_num_variables(SleqpFunc* func);
 
+  /**
+   * Returns the number of evaluations of the function \f$ f \f$.
+   **/
   int sleqp_func_get_num_func_evals(SleqpFunc* func);
+
+  /**
+   * Returns the number of evaluations of the function \f$ c \f$.
+   **/
   int sleqp_func_get_num_cons_evals(SleqpFunc* func);
 
+  /**
+   * Returns the number of evaluations of the gradient of \f$ f \f$.
+   **/
   int sleqp_func_get_num_grad_evals(SleqpFunc* func);
+
+  /**
+   * Returns the number of evaluations of the Jacobian of \f$ c \f$.
+   **/
   int sleqp_func_get_num_jac_evals(SleqpFunc* func);
 
+  /**
+   * Returns the number of evaluations of Hessian products of the Lagrangian \f$ L \f$.
+   *
+   **/
   int sleqp_func_get_num_hess_evals(SleqpFunc* func);
 
   /**
@@ -178,9 +204,19 @@ extern "C" {
                                          SleqpSparseVec* cons_duals,
                                          double* bilinear_prod);
 
+  /**
+   * Returns the function data associated with the given function.
+   **/
   void* sleqp_func_get_data(SleqpFunc* func);
 
+  /**
+   * Frees a previously created function.
+   **/
   SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar);
+
+  /**
+   * @}
+   **/
 
 #ifdef __cplusplus
 }
