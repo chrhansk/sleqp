@@ -457,6 +457,34 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
   return true;
 }
 
+SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
+                                 SleqpIterate* target)
+{
+  SLEQP_CALL(sleqp_sparse_vector_copy(source->x, target->x));
+
+  target->func_val = source->func_val;
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(source->func_grad,
+                                      target->func_grad));
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(source->cons_val,
+                                      target->cons_val));
+
+  SLEQP_CALL(sleqp_sparse_matrix_copy(source->cons_jac,
+                                      target->cons_jac));
+
+  SLEQP_CALL(sleqp_active_set_copy(source->active_set,
+                                   target->active_set));
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(source->cons_dual,
+                                      target->cons_dual));
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(source->vars_dual,
+                                      target->vars_dual));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
 {
   SleqpIterate* iterate = *star;

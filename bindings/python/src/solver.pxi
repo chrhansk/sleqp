@@ -18,7 +18,8 @@ cdef class Solver:
     csleqp_call(csleqp.sleqp_solver_create(&self.solver,
                                            problem.problem,
                                            params.params,
-                                           self.x))
+                                           self.x,
+                                           NULL))
 
     array_to_sleqp_sparse_vec(x, self.x)
 

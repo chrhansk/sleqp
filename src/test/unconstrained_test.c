@@ -37,7 +37,8 @@ START_TEST(test_unconstrained_solve)
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
-                                  rosenbrock_x));
+                                  rosenbrock_x,
+                                  NULL));
 
   /*
   ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_x));

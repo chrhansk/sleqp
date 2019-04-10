@@ -77,6 +77,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
                                             FILE* output);
 
+  SLEQP_RETCODE sleqp_sparse_matrix_copy(SleqpSparseMatrix* source,
+                                         SleqpSparseMatrix* target);
+
   bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix);
 
   SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** matrix);

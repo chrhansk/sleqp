@@ -17,6 +17,7 @@
 #include "sleqp_newton.h"
 #include "sleqp_params.h"
 #include "sleqp_problem.h"
+#include "sleqp_scale.h"
 #include "sleqp_soc.h"
 #include "sleqp_solver.h"
 #include "sleqp_sr1.h"

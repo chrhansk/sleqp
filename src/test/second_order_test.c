@@ -247,7 +247,8 @@ START_TEST(test_second_order_solve)
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
-                                  x));
+                                  x,
+                                  NULL));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));

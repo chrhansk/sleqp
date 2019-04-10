@@ -14,25 +14,27 @@ extern "C" {
 
   /**
    * @defgroup problem Problem definition
-   * @{
-   **/
-
-  /**
+   *
    * A NLP is given as
    *
    * \f[
    * \begin{aligned}
    * \min \: & f(x)                       \\
    * \text{s.t. } \: & l \leq c(x) \leq u \\
-   * & x_l \leq x \leq x_u
+   * & l_x \leq x \leq u_x
    * \end{aligned}
    * \f]
    *
    * where \f$ f : \mathbb{R}^{n} \to \mathbb{R} \f$, \f$ c : \mathbb{R}^{n} \to \mathbb{R}^{m} \f$
    * are functions, \f$ l, u \in \mathbb{R}^{m}, l \leq u \f$ are the constraint bounds, and
-   * \f$ x_l, x_u \in \mathbb{R}^{n}, x_l \leq x_u \f$ are the variable bounds.
+   * \f$ l_x, u_x \in \mathbb{R}^{n}, l_x \leq u_x \f$ are the variable bounds.
    *
    * @see Functions
+   *
+   * @{
+   **/
+
+  /**
    *
    **/
   typedef struct SleqpProblem
@@ -43,12 +45,12 @@ extern "C" {
     SleqpFunc* func;
 
     /**
-     * lower variable bounds \f$ x_l \f$.
+     * lower variable bounds \f$ l_x \f$.
      **/
     SleqpSparseVec* var_lb;
 
     /**
-     * upper variable bounds \f$ x_u \f$.
+     * upper variable bounds \f$ u_x \f$.
      **/
     SleqpSparseVec* var_ub;
 

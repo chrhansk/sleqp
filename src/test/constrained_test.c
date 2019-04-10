@@ -13,6 +13,10 @@ SleqpSparseVec* cons_lb;
 SleqpSparseVec* cons_ub;
 SleqpSparseVec* x;
 
+SleqpParams* params;
+
+SleqpSparseVec* expected_solution;
+
 const int num_variables = 4;
 const int num_constraints = 2;
 
@@ -285,10 +289,19 @@ void constrained_setup()
                                    var_ub,
                                    cons_lb,
                                    cons_ub));
+
+  ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 4, 4));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 4.742999));
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 2, 3.821151));
+  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 3, 1.379408));
 }
 
 void constrained_teardown()
 {
+  ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
+
   ASSERT_CALL(sleqp_problem_free(&problem));
 
   ASSERT_CALL(sleqp_params_free(&params));
@@ -309,32 +322,49 @@ void constrained_teardown()
 
 START_TEST(test_constrained_solve)
 {
-  SleqpSparseVec* expected_solution;
-
-  SleqpParams* params;
   SleqpSolver* solver;
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 4, 4));
-
-  /*
-  (0) = 1.000000e+00
-  (1) = 4.742999e+00
-  (2) = 3.821151e+00
-  (3) = 1.379408e+00
-  */
-
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 4.742999));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 2, 3.821151));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 3, 1.379408));
-
-
-  ASSERT_CALL(sleqp_params_create(&params));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
-                                  x));
+                                  x,
+                                  NULL));
+
+  // 100 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
+
+  SleqpIterate* solution_iterate;
+
+  ASSERT_CALL(sleqp_solver_get_solution(solver,
+                                        &solution_iterate));
+
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+
+  SleqpSparseVec* actual_solution = solution_iterate->x;
+
+  ck_assert(sleqp_sparse_vector_eq(actual_solution,
+                                   expected_solution,
+                                   1e-6));
+
+  ASSERT_CALL(sleqp_solver_free(&solver));
+}
+END_TEST
+
+START_TEST(test_unscaled_solve)
+{
+  SleqpSolver* solver;
+
+  SleqpScalingData* scaling_data;
+
+  ASSERT_CALL(sleqp_scaling_create(&scaling_data,
+                                   problem,
+                                   params));
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  x,
+                                  scaling_data));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
@@ -354,9 +384,53 @@ START_TEST(test_constrained_solve)
 
   ASSERT_CALL(sleqp_solver_free(&solver));
 
-  ASSERT_CALL(sleqp_params_free(&params));
+  ASSERT_CALL(sleqp_scaling_free(&scaling_data));
+}
+END_TEST
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
+START_TEST(test_scaled_solve)
+{
+  SleqpSolver* solver;
+
+  SleqpScalingData* scaling_data;
+
+  ASSERT_CALL(sleqp_scaling_create(&scaling_data,
+                                   problem,
+                                   params));
+
+  ASSERT_CALL(sleqp_scaling_set_func_scale(scaling_data, 2));
+
+  ASSERT_CALL(sleqp_scaling_set_var_scale(scaling_data, 0, -2));
+  ASSERT_CALL(sleqp_scaling_set_var_scale(scaling_data, 1, 1));
+
+  ASSERT_CALL(sleqp_scaling_set_cons_scale(scaling_data, 0, -1));
+  ASSERT_CALL(sleqp_scaling_set_cons_scale(scaling_data, 1, 2));
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  x,
+                                  scaling_data));
+
+  // 100 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
+
+  SleqpIterate* solution_iterate;
+
+  ASSERT_CALL(sleqp_solver_get_solution(solver,
+                                        &solution_iterate));
+
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+
+  SleqpSparseVec* actual_solution = solution_iterate->x;
+
+  ck_assert(sleqp_sparse_vector_eq(actual_solution,
+                                   expected_solution,
+                                   1e-6));
+
+  ASSERT_CALL(sleqp_solver_free(&solver));
+
+  ASSERT_CALL(sleqp_scaling_free(&scaling_data));
 }
 END_TEST
 
@@ -374,6 +448,11 @@ Suite* constrained_test_suite()
                             constrained_teardown);
 
   tcase_add_test(tc_cons, test_constrained_solve);
+
+  tcase_add_test(tc_cons, test_unscaled_solve);
+
+  tcase_add_test(tc_cons, test_scaled_solve);
+
   suite_add_tcase(suite, tc_cons);
 
   return suite;

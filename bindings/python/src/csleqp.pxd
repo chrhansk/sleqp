@@ -54,6 +54,9 @@ cdef extern from "sleqp.h":
   ctypedef struct SleqpSolver:
     pass
 
+  ctypedef struct SleqpScalingData:
+    pass
+
   ctypedef struct SleqpParams:
     pass
 
@@ -150,7 +153,8 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     SleqpProblem* problem,
                                     SleqpParams* params,
-                                    SleqpSparseVec* x)
+                                    SleqpSparseVec* x,
+                                    SleqpScalingData* scaling)
 
   SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                    int max_num_iterations,

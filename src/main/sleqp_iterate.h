@@ -88,6 +88,9 @@ extern "C" {
                                 double tolerance,
                                 double* cache);
 
+  SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
+                                   SleqpIterate* target);
+
   SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star);
 
 

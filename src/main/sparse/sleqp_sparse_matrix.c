@@ -259,6 +259,36 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_copy(SleqpSparseMatrix* source,
+                                       SleqpSparseMatrix* target)
+{
+  assert(source->num_cols == target->num_cols);
+  assert(source->num_rows == target->num_rows);
+  assert(sleqp_sparse_matrix_valid(source));
+
+  SLEQP_CALL(sleqp_sparse_matrix_clear(target));
+
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
+                                         source->nnz));
+
+  for(int i = 0; i < source->nnz;++i)
+  {
+    target->data[i] = source->data[i];
+    target->rows[i] = source->rows[i];
+  }
+
+  for(int i = 0; i <= target->num_cols; ++i)
+  {
+    target->cols[i] = source->cols[i];
+  }
+
+  target->nnz = source->nnz;
+
+  assert(sleqp_sparse_matrix_valid(target));
+
+  return SLEQP_OKAY;
+}
+
 bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix)
 {
   if(matrix->nnz > matrix->nnz_max)

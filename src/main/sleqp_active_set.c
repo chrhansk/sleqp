@@ -220,6 +220,53 @@ SLEQP_RETCODE sleqp_active_set_fprintf(SleqpActiveSet* active_set,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_active_set_copy(SleqpActiveSet* source,
+                                    SleqpActiveSet* target)
+{
+  const int num_variables = source->problem->num_variables;
+  const int num_constraints = source->problem->num_constraints;
+  const int max_set_size = source->max_set_size;
+
+  assert(num_variables == target->problem->num_variables);
+  assert(num_constraints == target->problem->num_constraints);
+  assert(max_set_size == target->max_set_size);
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    target->variable_states[j] = source->variable_states[j];
+  }
+
+  for(int i = 0; i < num_constraints; ++i)
+  {
+    target->constraint_states[i] = source->constraint_states[i];
+  }
+
+  target->num_variables = source->num_variables;
+  target->num_constraints = source->num_constraints;
+
+  target->max_set_size = source->max_set_size;
+
+  target->num_active_constraints = source->num_active_constraints;
+  target->num_active_variables = source->num_active_variables;
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    target->variable_indices[j] = source->variable_indices[j];
+  }
+
+  for(int i = 0; i < num_constraints; ++i)
+  {
+    target->constraint_indices[i] = source->constraint_indices[i];
+  }
+
+  for(int k = 0; k < max_set_size; ++k)
+  {
+    target->content_indices[k] = source->content_indices[k];
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_active_set_free(SleqpActiveSet** star)
 {
   SleqpActiveSet* active_set = *star;

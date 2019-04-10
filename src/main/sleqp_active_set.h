@@ -53,6 +53,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_active_set_fprintf(SleqpActiveSet* active_set,
                                          FILE* output);
 
+  SLEQP_RETCODE sleqp_active_set_copy(SleqpActiveSet* source,
+                                      SleqpActiveSet* target);
+
   SLEQP_RETCODE sleqp_active_set_free(SleqpActiveSet** star);
 
 #ifdef __cplusplus
