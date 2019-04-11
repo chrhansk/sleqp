@@ -29,12 +29,12 @@ macro(add_lp_solver)
 endmacro()
 
 add_lp_solver(
-  NAME "SoPlex"
-  SOURCES sleqp_lpi_soplex.cc)
-
-add_lp_solver(
   NAME "Gurobi"
   SOURCES sleqp_lpi_gurobi.c)
+
+add_lp_solver(
+  NAME "SoPlex"
+  SOURCES sleqp_lpi_soplex.cc)
 
 set(_SLEQP_LP_SOLVER_VALUES "")
 
@@ -63,7 +63,6 @@ macro(find_lp_solver)
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
 
   if("${${RESULT_NAME}_FOUND}")
-    message(STATUS "Found ${ARGS_NAME}")
     set(SLEQP_LPS_FOUND TRUE)
     set(SLEQP_LPS_INCLUDE_DIRS "${${RESULT_NAME}_INCLUDE_DIRS}")
     set(SLEQP_LPS_LIBRARIES "${${RESULT_NAME}_LIBRARIES}")
@@ -82,6 +81,7 @@ else()
     find_lp_solver(NAME ${LP_SOLVER})
 
     if(${SLEQP_LPS_FOUND})
+      message(STATUS "Using ${LP_SOLVER} as LP solver")
       set(SLEQP_LPS ${LP_SOLVER} CACHE STRING "The LP solver used as a backend" FORCE)
       break()
     endif()

@@ -7,6 +7,7 @@ project(sleqp
 set(PROJECT_DESCRIPTION "An active set-based NLP solver")
 
 include(CMakePackageConfigHelpers)
+include(FindPackageHandleStandardArgs)
 
 # Get the current working branch
 execute_process(
