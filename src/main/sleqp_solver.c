@@ -223,8 +223,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   x));
 
   SLEQP_CALL(sleqp_sparse_vector_clip(x,
-                                      solver->scaled_problem->var_lb,
-                                      solver->scaled_problem->var_ub,
+                                      solver->problem->var_lb,
+                                      solver->problem->var_ub,
                                       zero_eps,
                                       solver->iterate->x));
 
