@@ -398,13 +398,13 @@ START_TEST(test_scaled_solve)
                                    problem,
                                    params));
 
-  ASSERT_CALL(sleqp_scaling_set_func_scale(scaling_data, 2));
+  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
 
-  ASSERT_CALL(sleqp_scaling_set_var_scale(scaling_data, 0, -2));
-  ASSERT_CALL(sleqp_scaling_set_var_scale(scaling_data, 1, 1));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling_data, 0, -2));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling_data, 1, 1));
 
-  ASSERT_CALL(sleqp_scaling_set_cons_scale(scaling_data, 0, -1));
-  ASSERT_CALL(sleqp_scaling_set_cons_scale(scaling_data, 1, 2));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling_data, 0, -1));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling_data, 1, 2));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -434,6 +434,60 @@ START_TEST(test_scaled_solve)
 }
 END_TEST
 
+START_TEST(test_auto_scaled_solve)
+{
+  SleqpSolver* solver;
+
+  SleqpScalingData* scaling_data;
+
+  SleqpIterate* iterate;
+
+  ASSERT_CALL(sleqp_iterate_create(&iterate,
+                                  problem,
+                                  x));
+
+  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
+
+  ASSERT_CALL(sleqp_scaling_create(&scaling_data,
+                                   problem,
+                                   params));
+
+  ASSERT_CALL(sleqp_func_scaling_from_gradient(scaling_data,
+                                               iterate->func_grad));
+
+  ASSERT_CALL(sleqp_scaling_from_cons_jac(scaling_data,
+                                          iterate->cons_jac));
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  x,
+                                  scaling_data));
+
+  // 100 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
+
+  SleqpIterate* solution_iterate;
+
+  ASSERT_CALL(sleqp_solver_get_solution(solver,
+                                        &solution_iterate));
+
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+
+  SleqpSparseVec* actual_solution = solution_iterate->x;
+
+  ck_assert(sleqp_sparse_vector_eq(actual_solution,
+                                   expected_solution,
+                                   1e-6));
+
+  ASSERT_CALL(sleqp_solver_free(&solver));
+
+  ASSERT_CALL(sleqp_scaling_free(&scaling_data));
+
+  ASSERT_CALL(sleqp_iterate_free(&iterate));
+}
+END_TEST
+
 Suite* constrained_test_suite()
 {
   Suite *suite;
@@ -452,6 +506,8 @@ Suite* constrained_test_suite()
   tcase_add_test(tc_cons, test_unscaled_solve);
 
   tcase_add_test(tc_cons, test_scaled_solve);
+
+  tcase_add_test(tc_cons, test_auto_scaled_solve);
 
   suite_add_tcase(suite, tc_cons);
 

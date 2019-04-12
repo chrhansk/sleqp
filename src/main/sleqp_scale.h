@@ -26,9 +26,19 @@ extern "C" {
    * \end{aligned}
    * \f]
    *
-   * defined by scaling factors \f$ \lambda \in \mathbb{R} \f$,
-   * \f$ a \in \mathbb{R}^{m} \f$,
-   * \f$ b \in \mathbb{R}^{n} \f$.
+   * defined by scaling weights \f$ \lambda \in \mathbb{R} \f$,
+   * \f$ \alpha \in \mathbb{N}^{m} \f$,
+   * \f$ \beta \in \mathbb{N}^{n} \f$.
+   *
+   * The weights \f$ \alpha, \beta \f$ yield scaling
+   * factors \f$ a, b \f$:
+   *
+   * \f[
+   * \begin{aligned}
+   * a_i := 2^{\alpha_i}      \\
+   * b_i := 2^{\beta_i}       \\
+   * \end{aligned}
+   * \f]
    *
    * The constraint scales \f$ a \f$ and variable scales
    * \f$ b \f$ yield matrices
@@ -37,15 +47,18 @@ extern "C" {
    *
    * \f[
    * \begin{aligned}
-   * f'(\cdot) &:= \lambda f(B^{-1} \cdot) \\
-   * c'(\cdot) &:= A f(B^{-1} \cdot)       \\
+   * f'(\cdot) &:= \lambda f(B \cdot)      \\
+   * c'(\cdot) &:= A f(B \cdot)            \\
    * l' &:= A l                            \\
    * u' &:= A u                            \\
-   * l_x' &:= B l_x                        \\
-   * u_x' &:= B u_x                        \\
+   * l_x' &:= B^{-1} l_x                   \\
+   * u_x' &:= B^{-1} u_x                   \\
    * \end{aligned}
    * \f]
    *
+   * Note that the scaling is exact (apart from over- / underflows)
+   * in the sense that the unscaling is inverse to the scaling
+   * even on floating points.
    *
    * @see Functions
    *
@@ -61,16 +74,16 @@ extern "C" {
 
   SleqpProblem* sleqp_scaling_get_scaled_problem(SleqpScalingData* scaling);
 
-  SLEQP_RETCODE sleqp_scaling_set_func_scale(SleqpScalingData* scaling,
-                                             int scale);
+  SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,
+                                              int weight);
 
-  SLEQP_RETCODE sleqp_scaling_set_var_scale(SleqpScalingData* scaling,
-                                            int index,
-                                            int scale);
-
-  SLEQP_RETCODE sleqp_scaling_set_cons_scale(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
                                              int index,
-                                             int scale);
+                                             int weight);
+
+  SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
+                                              int index,
+                                              int weight);
 
   SLEQP_RETCODE sleqp_scaling_flush(SleqpScalingData* scaling);
 
@@ -79,6 +92,11 @@ extern "C" {
 
   double sleqp_scale_func_val(SleqpScalingData* scaling,
                               double func_val);
+
+  /** @name Scaling
+   *  Functions to perform scaling.
+   */
+  /**@{*/
 
   SLEQP_RETCODE sleqp_scale_func_grad(SleqpScalingData* scaling,
                                       SleqpSparseVec* func_grad);
@@ -97,6 +115,13 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_scale_iterate(SleqpScalingData* scaling,
                                     SleqpIterate* iterate);
+
+  /**@}*/
+
+  /** @name Unscaling
+   *  Functions to perform unscaling.
+   */
+  /**@{*/
 
   SLEQP_RETCODE sleqp_unscale_point(SleqpScalingData* scaling,
                                     SleqpSparseVec* scaled_point);
@@ -121,6 +146,14 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_unscale_iterate(SleqpScalingData* scaling,
                                       SleqpIterate* scaled_iterate);
+
+  /**@}*/
+
+  SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
+                                                 SleqpSparseVec* gradient);
+
+  SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
+                                            SleqpSparseMatrix* cons_jac);
 
   SLEQP_RETCODE sleqp_scaling_free(SleqpScalingData** scaling);
 
