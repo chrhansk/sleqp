@@ -556,7 +556,6 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
                                            int* scaling_factors,
                                            int* prescaling)
 {
-  double* min_vals = scaling->min_cache;
   double* max_vals = scaling->max_cache;
 
   const double eps = sleqp_params_get_eps(scaling->params);
@@ -565,7 +564,6 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
 
   for(int i = 0; i < size; ++i)
   {
-    min_vals[i] = sleqp_infinity();
     max_vals[i] = 0.;
 
     scaling_factors[i] = 0;
@@ -594,8 +592,6 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
       continue;
     }
 
-    min_vals[cur_entry] = SLEQP_MIN(min_vals[cur_entry], cur_val);
-
     max_vals[cur_entry] = SLEQP_MAX(max_vals[cur_entry], cur_val);
   }
 
@@ -607,12 +603,9 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
       continue;
     }
 
-    assert(min_vals[i] > 0.);
     assert(max_vals[i] > 0.);
 
-    double ratio = (max_vals[i]) / (min_vals[i]);
-
-    frexp(1.0 / ratio, &(scaling_factors[i]));
+    frexp(1.0 / (max_vals[i]), &(scaling_factors[i]));
 
     --scaling_factors[i];
   }
