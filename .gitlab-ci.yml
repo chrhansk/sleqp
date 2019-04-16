@@ -1,4 +1,4 @@
-image: "chrh/sleqp_builddeps:v5"
+image: "chrh/sleqp_builddeps:v6"
 
 stages:
 - prepare
@@ -16,7 +16,7 @@ prepare:
   script:
     - mkdir -p build
     - cd build
-    - cmake ..
+    - cmake .. -DSLEQP_ENABLE_PYTHON=On
 
 # run make
 build:
