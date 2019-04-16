@@ -1,4 +1,4 @@
-image: "chrh/sleqp_builddeps:v6"
+image: "chrh/sleqp_builddeps:v7"
 
 stages:
 - prepare
