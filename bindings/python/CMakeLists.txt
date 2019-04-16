@@ -19,7 +19,8 @@ if(EXT_SUFFIX_NOT_FOUND)
   message(FATAL_ERROR "Extension suffix not found")
 endif()
 
-find_program(CYTHON "cython")
+find_program(CYTHON
+  NAMES "cython" "cython3")
 
 if(NOT CYTHON)
   message(FATAL_ERROR "Cython executable not found")
