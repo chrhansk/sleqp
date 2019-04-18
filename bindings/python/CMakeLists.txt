@@ -2,9 +2,14 @@ find_package(PythonInterp 3.0 REQUIRED)
 find_package(PythonLibs 3.0 REQUIRED)
 
 execute_process(COMMAND
-  ${PYTHON_EXECUTABLE} -c "import sys, numpy; sys.stdout.write(numpy.get_include())"
+  ${PYTHON_EXECUTABLE} -c "import sys,numpy; sys.stdout.write(numpy.get_include())"
   OUTPUT_VARIABLE NUMPY_INCLUDE_DIRS
   RESULT_VARIABLE NUMPY_NOT_FOUND)
+
+execute_process(COMMAND
+  ${PYTHON_EXECUTABLE} -c "import os,sys,site; sys.stdout.write(os.path.join(*site.getsitepackages(), '${PROJECT_NAME}'))"
+  OUTPUT_VARIABLE SLEQP_PY_INSTALL_DIR
+  RESULT_VARIABLE SLEQP_PY_INSTALL_DIR_NOT_FOUND)
 
 execute_process(COMMAND
   ${PYTHON_EXECUTABLE} -c "import sys,sysconfig; sys.stdout.write(sysconfig.get_config_var('EXT_SUFFIX'))"
@@ -13,6 +18,10 @@ execute_process(COMMAND
 
 if(NUMPY_NOT_FOUND)
   message(FATAL_ERROR "NumPy headers not found")
+endif()
+
+if(SLEQP_PY_INSTALL_DIR_NOT_FOUND)
+  message(FATAL_ERROR "Site package dir was not found")
 endif()
 
 if(EXT_SUFFIX_NOT_FOUND)
@@ -30,8 +39,6 @@ mark_as_advanced(CYTHON)
 
 set(CYTHON_SRC "${CMAKE_CURRENT_SOURCE_DIR}/src/sleqp_python.pyx")
 set(CYTHON_OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/sleqp_python.c")
-
-set(PYTHON_MOD_NAME "sleqp")
 
 set(CYTHON_DEPS
   src/csleqp.pxd
@@ -97,3 +104,6 @@ configure_file(
 install(SCRIPT
   "${CMAKE_CURRENT_SOURCE_DIR}/cmake/python_install.cmake"
   COMPONENT python)
+
+
+install(TARGETS sleqp_python DESTINATION "${SLEQP_PY_INSTALL_DIR}")

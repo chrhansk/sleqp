@@ -14,5 +14,4 @@ setup(name='@PROJECT_NAME@',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering :: Mathematics'
       ],
-      package_data={'@PYTHON_MOD_NAME@': ['@PYTHON_LIB_NAME@']},
       test_suite='tests')
