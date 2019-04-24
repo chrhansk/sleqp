@@ -984,8 +984,9 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   {
     const double optimality_tolerance = sleqp_params_get_optimality_tolerance(solver->params);
 
-    if(sleqp_iterate_is_optimal(solver->unscaled_iterate,
-                                solver->problem,
+    // We perform the optimality test wrt. the scaled problem
+    if(sleqp_iterate_is_optimal(iterate,
+                                solver->scaled_problem,
                                 optimality_tolerance,
                                 solver->dense_cache))
     {

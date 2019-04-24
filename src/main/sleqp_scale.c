@@ -5,6 +5,12 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
+int max_weight = 10;
+int min_weight = -10;
+
+#define CLIP_WEIGHT(w) \
+  (w) = SLEQP_MIN(SLEQP_MAX((w), min_weight), max_weight)
+
 struct SleqpScalingData
 {
   SleqpProblem* problem;
@@ -545,6 +551,11 @@ SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
     frexp(1. / max_val, scaling_factor);
 
     --(*scaling_factor);
+
+    CLIP_WEIGHT(*scaling_factor);
+
+    assert((*scaling_factor) >= min_weight);
+    assert((*scaling_factor) <= max_weight);
   }
 
   return SLEQP_OKAY;
@@ -608,6 +619,11 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
     frexp(1.0 / (max_vals[i]), &(scaling_factors[i]));
 
     --scaling_factors[i];
+
+    CLIP_WEIGHT(scaling_factors[i]);
+
+    assert(scaling_factors[i] >= min_weight);
+    assert(scaling_factors[i] <= max_weight);
   }
 
   return SLEQP_OKAY;
