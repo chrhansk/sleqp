@@ -87,7 +87,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in"
 if(SLEQP_ENABLE_UNIT_TESTS)
 
   add_test(NAME python_tests
-    COMMAND ${PYTHON_EXECUTABLE} "setup.py" "test"
+    COMMAND ${PYTHON_EXECUTABLE} "./setup.py" "test"
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
   add_dependencies(build_tests sleqp_python)
