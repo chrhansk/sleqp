@@ -5,6 +5,9 @@ stages:
 - build
 - test
 
+variables:
+  CTEST_OUTPUT_ON_FAILURE: '1'
+
 cache:
   key: "PIPELINE-$CI_PIPELINE_ID"
   paths:
