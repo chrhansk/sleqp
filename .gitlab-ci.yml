@@ -32,6 +32,7 @@ build:
 test:
   stage: test
   script:
+    - ls bindings/python
     - cd build
     - make build_tests
     - make test
