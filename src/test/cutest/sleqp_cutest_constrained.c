@@ -260,8 +260,8 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
 
       while(col > last_col)
       {
-        SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac,
-                                                  ++last_col));
+        SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
+                                                   ++last_col));
       }
 
       last_col = col;
@@ -277,8 +277,8 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
       ++last_col;
       while(cons_jac->num_cols > last_col)
       {
-        SLEQP_CALL(sleqp_sparse_matrix_add_column(cons_jac,
-                                                  last_col++));
+        SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
+                                                   last_col++));
       }
     }
   }

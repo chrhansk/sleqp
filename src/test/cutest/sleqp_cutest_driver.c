@@ -164,7 +164,8 @@ int sleqp_cutest_run(const char* filename)
   SLEQP_CALL(sleqp_solver_create(&solver,
                                  problem,
                                  params,
-                                 x));
+                                 x,
+                                 NULL));
 
   /**/
 
