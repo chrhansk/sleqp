@@ -39,6 +39,10 @@ option(SLEQP_ENABLE_CUTEST "Whether or not to include the CUTest suite" OFF)
 
 option(SLEQP_ENABLE_PYTHON "Whether or not to enable python bindings" OFF)
 
+option(SLEQP_DEBUG "Whether or not to enable debug messages" OFF)
+
+option(SLEQP_FORMAT_CODES "Whether or not to enable ANSI format codes" ON)
+
 set(SLEQP_LPS ""
   CACHE STRING "The LP solver used as a backend")
 

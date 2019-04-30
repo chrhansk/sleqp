@@ -899,32 +899,30 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-#define HEADER_FORMAT "%10s |%20s |%20s |%20s |%20s\n"
+#define HEADER_FORMAT "%10s |%20s |%20s |%20s |%20s"
 
-#define LINE_FORMAT SLEQP_BOLD "%10d " SLEQP_NO_BOLD "|%20e |%20e |%20e |%20e\n"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%20e |%20e |%20e |%20e"
 
 static SLEQP_RETCODE print_header()
 {
-  fprintf(stderr,
-          HEADER_FORMAT,
-          "iter",
-          "funcval",
-          "penalty",
-          "LP trust radius",
-          "EQP trust radius");
+  sleqp_log_info(HEADER_FORMAT,
+                 "iter",
+                 "funcval",
+                 "penalty",
+                 "LP trust radius",
+                 "EQP trust radius");
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE print_line(SleqpSolver* solver)
 {
-  fprintf(stderr,
-          LINE_FORMAT,
-          solver->iteration,
-          solver->unscaled_iterate->func_val,
-          solver->penalty_parameter,
-          solver->lp_trust_radius,
-          solver->trust_radius);
+  sleqp_log_info(LINE_FORMAT,
+                 solver->iteration,
+                 solver->unscaled_iterate->func_val,
+                 solver->penalty_parameter,
+                 solver->lp_trust_radius,
+                 solver->trust_radius);
 
   return SLEQP_OKAY;
 }
@@ -1270,18 +1268,18 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   }
 
   const char* descriptions[] = {
-    [SLEQP_FEASIBLE] = "problem is solved [feasible]",
-    [SLEQP_OPTIMAL] = "problem is solved [optimal]",
-    [SLEQP_INFEASIBLE] = "problem is solved [infeasible]",
-    [SLEQP_INVALID] = "invalid"
+    [SLEQP_FEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "feasible" SLEQP_FORMAT_RESET,
+    [SLEQP_OPTIMAL] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN "optimal" SLEQP_FORMAT_RESET,
+    [SLEQP_INFEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED "infeasible" SLEQP_FORMAT_RESET,
+    [SLEQP_INVALID] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED "Invalid" SLEQP_FORMAT_RESET
   };
 
   SleqpFunc* func = solver->problem->func;
 
-  sleqp_log_info("       Solution status: %s", descriptions[solver->status]);
-  sleqp_log_info("       Objective value: %e", solver->unscaled_iterate->func_val);
-  sleqp_log_info("             Violation: %e", violation);
-  sleqp_log_info("            Iterations: %d", solver->iteration);
+  sleqp_log_info(SLEQP_FORMAT_BOLD "       Solution status: %s" SLEQP_FORMAT_RESET, descriptions[solver->status]);
+  sleqp_log_info(SLEQP_FORMAT_BOLD "       Objective value: %e" SLEQP_FORMAT_RESET, solver->unscaled_iterate->func_val);
+  sleqp_log_info(SLEQP_FORMAT_BOLD "             Violation: %e" SLEQP_FORMAT_RESET, violation);
+  sleqp_log_info(                  "            Iterations: %d", solver->iteration);
 
   sleqp_log_info("  Function evaluations: %d", sleqp_func_get_num_func_evals(func));
   sleqp_log_info("Constraint evaluations: %d", sleqp_func_get_num_cons_evals(func));
