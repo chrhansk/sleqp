@@ -4,7 +4,8 @@
 
 int main(int argc, char *argv[])
 {
-  const char *fname = PROBLEM_OUTSDIF_D; /* CUTEst data file */
+  const char* filename = PROBLEM_OUTSDIF_D; /* CUTEst data file */
+  const char* probname = PROBLEM_NAME;
 
-  return sleqp_cutest_run(fname);
+  return sleqp_cutest_run(filename);
 }

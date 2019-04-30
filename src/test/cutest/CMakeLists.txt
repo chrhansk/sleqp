@@ -219,7 +219,9 @@ foreach(s ${SIFPROBLEMS_EXT})
     sleqp_cutest_main.c)
 
   target_compile_definitions("${SOLVER_NAME}"
-    PRIVATE PROBLEM_OUTSDIF_D="${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/OUTSDIF.d")
+    PRIVATE
+    PROBLEM_OUTSDIF_D="${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/OUTSDIF.d"
+    PROBLEM_NAME="${PROBLEM}")
 
   target_link_libraries("${SOLVER_NAME}"
     sleqp_cutest

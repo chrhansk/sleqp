@@ -5,7 +5,8 @@
 extern "C" {
 #endif
 
-  int sleqp_cutest_run(const char* filename);
+  int sleqp_cutest_run(const char* filename,
+                       const char* probname);
 
 #ifdef __cplusplus
 }

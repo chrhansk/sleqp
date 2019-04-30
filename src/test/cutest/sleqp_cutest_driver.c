@@ -7,7 +7,8 @@
 #include "sleqp_cutest_constrained.h"
 #include "sleqp_cutest_unconstrained.h"
 
-int sleqp_cutest_run(const char* filename)
+int sleqp_cutest_run(const char* filename,
+                     const char* probname)
 {
   integer funit = 42;        /* FORTRAN unit number for OUTSDIF.d */
   integer iout = 6;          /* FORTRAN unit number for error output */
@@ -181,9 +182,9 @@ int sleqp_cutest_run(const char* filename)
   if(status == SLEQP_OKAY)
   {
     const char* descriptions[] = {
-      [SLEQP_FEASIBLE] = "problem is solved [feasible]",
-      [SLEQP_OPTIMAL] = "problem is solved [optimal]",
-      [SLEQP_INFEASIBLE] = "problem is solved [infeasible]",
+      [SLEQP_FEASIBLE] = "feasible",
+      [SLEQP_OPTIMAL] = "optimal",
+      [SLEQP_INFEASIBLE] = "infeasible",
       [SLEQP_INVALID] = "invalid"
     };
 
@@ -198,11 +199,14 @@ int sleqp_cutest_run(const char* filename)
 
     double violation = sleqp_iterate_constraint_violation(iterate, problem);
 
-    printf("   Solution status: %s\n", descriptions[status]);
-    printf("   Objective value: %e\n", iterate->func_val);
-    printf("         Violation: %e\n", violation);
-    printf("        Iterations: %d\n", iterations);
-    printf("Solving time (sec): %.2f\n", elapsed_seconds);
+    fprintf(stdout,
+            "%s;%s;%f;%f;%d;%f\n",
+            probname,
+            descriptions[status],
+            iterate->func_val,
+            violation,
+            iterations,
+            elapsed_seconds);
 
     if(status == SLEQP_INVALID)
     {
