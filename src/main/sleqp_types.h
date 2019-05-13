@@ -23,29 +23,23 @@ extern "C" {
     C(SLEQP_NUM_RETCODES, 5)
 
 #define C(k, v) k = v,
-  enum SLEQP_Retcode { RETCODES };
+  typedef enum { RETCODES } SLEQP_RETCODE;
 #undef C
-
-  typedef enum SLEQP_Retcode SLEQP_RETCODE;
 
 #define C(k, v) [v] = #k,
   static const char * const sleqp_retcode_names[] = { RETCODES };
 #undef C
 #undef RETCODES
 
-  enum SLEQP_Active_State {SLEQP_INACTIVE = 0,
-                           SLEQP_ACTIVE_LOWER = (1 << 1),
-                           SLEQP_ACTIVE_UPPER = (1 << 2),
-                           SLEQP_ACTIVE_BOTH  = (1 << 3)};
+  typedef enum {SLEQP_INACTIVE = 0,
+                SLEQP_ACTIVE_LOWER = (1 << 1),
+                SLEQP_ACTIVE_UPPER = (1 << 2),
+                SLEQP_ACTIVE_BOTH  = (1 << 3)} SLEQP_ACTIVE_STATE;
 
-  typedef enum SLEQP_Active_State SLEQP_ACTIVE_STATE;
-
-  enum SLEQP_Status {SLEQP_OPTIMAL,
-                     SLEQP_FEASIBLE,
-                     SLEQP_INFEASIBLE,
-                     SLEQP_INVALID};
-
-  typedef enum SLEQP_Status SLEQP_STATUS;
+  typedef enum {SLEQP_OPTIMAL,
+                SLEQP_FEASIBLE,
+                SLEQP_INFEASIBLE,
+                SLEQP_INVALID} SLEQP_STATUS;
 
 #define SLEQP_CALL(x)                                                      \
   do                                                                       \

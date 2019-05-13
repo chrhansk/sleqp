@@ -11,22 +11,18 @@ cdef extern from "sleqp.h":
   cdef char* SLEQP_GIT_BRANCH
   cdef char* SLEQP_GIT_COMMIT_HASH
 
-  cdef enum SLEQP_Retcode:
+  ctypedef enum SLEQP_RETCODE:
     SLEQP_OKAY,
     SLEQP_NOMEM,
     SLEQP_ILLEGAL_ARGUMENT,
     SLEQP_INVALID_DERIV,
     SLEQP_INTERNAL_ERROR
 
-  ctypedef SLEQP_Retcode SLEQP_RETCODE
-
-  cdef enum SLEQP_Status:
+  ctypedef enum SLEQP_STATUS:
     SLEQP_OPTIMAL,
     SLEQP_FEASIBLE,
     SLEQP_INFEASIBLE,
     SLEQP_INVALID
-
-  ctypedef SLEQP_Status SLEQP_STATUS
 
   ctypedef struct SleqpSparseVec:
     double* data
@@ -76,6 +72,7 @@ cdef extern from "sleqp.h":
   cdef struct SleqpFunc:
     pass
 
+  # Sparse vectors
   SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,
                                            int dim,
                                            int nnz_max)
@@ -96,6 +93,7 @@ cdef extern from "sleqp.h":
                                          int idx,
                                          double value)
 
+  # Sparse matrices
   SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** matrix,
                                            int num_rows,
                                            int num_cols,
@@ -118,6 +116,7 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** matrix)
 
+  # Functions
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpSparseVec* x,
                                            int num_variables,
                                            int* func_grad_nnz,
@@ -183,6 +182,8 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
+
+  # Parameters
   double sleqp_params_get_zero_eps(SleqpParams* params)
 
   double sleqp_params_get_eps(SleqpParams* params)
