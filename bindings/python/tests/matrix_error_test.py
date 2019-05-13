@@ -27,10 +27,10 @@ class MatrixErrorFunc(sleqp.Func):
     return 1
 
   def func_grad(self):
-    return np.array([0])
+    return np.array([0]*num_variables)
 
   def hess_prod(self, func_dual, direction, cons_dual):
-    return np.array([0])
+    return np.array([0]*num_variables)
 
   def cons_jac(self):
     return self.m
@@ -40,13 +40,13 @@ class MatrixErrorTest(unittest.TestCase):
   def setUp(self):
     inf = sleqp.inf()
 
-    self.var_lb = np.array([-inf, -inf])
-    self.var_ub = np.array([inf, inf])
+    self.var_lb = np.array([-inf]*num_variables)
+    self.var_ub = np.array([inf]*num_variables)
 
-    self.cons_lb = np.array([])
-    self.cons_ub = np.array([])
+    self.cons_lb = np.array([0]*num_constraints)
+    self.cons_ub = np.array([])*num_constraints
 
-    self.x = np.array([0., 0.])
+    self.x = np.array([0.]*num_variables)
 
     self.params = sleqp.Params()
 
@@ -72,7 +72,7 @@ class MatrixErrorTest(unittest.TestCase):
 
   def test_wrong_shape(self):
     func = MatrixErrorFunc(num_variables,
-                             num_constraints)
+                           num_constraints)
 
     func.set_matrix_value(np.array((2, 2, 2)))
 

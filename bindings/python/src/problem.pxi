@@ -58,6 +58,9 @@ cdef class Problem:
   def num_variables(self):
     return self.problem.num_variables
 
+  @property
+  def num_constraints(self):
+    return self.problem.num_constraints
 
   def __dealloc__(self):
     csleqp_call(csleqp.sleqp_problem_free(&self.problem))
