@@ -61,7 +61,7 @@ class CSCIterator:
       for ind in range(self.matrix.indptr[col], self.matrix.indptr[col+1]):
         data = self.matrix.data[ind]
         if data:
-          yield self.matrix.indices[ind], col, self.matrix.data[ind]
+          yield (self.matrix.indices[ind], col), self.matrix.data[ind]
 
   def length_bound(self):
     if self._length_bound != -1:
@@ -96,9 +96,6 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
     return csleqp.SLEQP_OKAY
 
   assert mat.ndim == 2
-
-  print((matrix.num_rows, matrix.num_cols))
-  print(mat.shape)
 
   assert mat.shape == (matrix.num_rows, matrix.num_cols)
 
