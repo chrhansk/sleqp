@@ -10,6 +10,9 @@
 
 #include "sleqp_params.h"
 
+#include "sparse/sleqp_sparse_matrix.h"
+#include "sparse/sleqp_sparse_vec.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -19,6 +19,9 @@ struct SleqpFunc
 
   int num_hess_evals;
 
+  SleqpTimer* eval_timer;
+  SleqpTimer* hess_timer;
+
   SleqpSparseVec* product;
 };
 
@@ -33,6 +36,8 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
 
   SleqpFunc* func = *fstar;
 
+  *func = (SleqpFunc) {0};
+
   func->set_value = set_value;
   func->eval = eval;
   func->eval_hess_prod = eval_hess_prod;
@@ -40,13 +45,8 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   func->num_variables = num_variables;
   func->data = func_data;
 
-  func->num_func_evals = 0;
-  func->num_cons_evals = 0;
-
-  func->num_grad_evals = 0;
-  func->num_jac_evals = 0;
-
-  func->num_hess_evals = 0;
+  SLEQP_CALL(sleqp_timer_create(&func->eval_timer));
+  SLEQP_CALL(sleqp_timer_create(&func->hess_timer));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&func->product, num_variables, 0));
 
@@ -100,6 +100,8 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
 
   ++func->num_func_evals;
 
+  SLEQP_CALL(sleqp_timer_start(func->eval_timer));
+
   SLEQP_CALL(func->eval(func->num_variables,
                         cons_indices,
                         func_val,
@@ -107,6 +109,8 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
                         cons_val,
                         cons_jac,
                         func->data));
+
+  SLEQP_CALL(sleqp_timer_stop(func->eval_timer));
 
   return SLEQP_OKAY;
 }
@@ -139,6 +143,16 @@ int sleqp_func_get_num_hess_evals(SleqpFunc* func)
   return func->num_hess_evals;
 }
 
+SleqpTimer* sleqp_func_get_eval_timer(SleqpFunc* func)
+{
+  return func->eval_timer;
+}
+
+SleqpTimer* sleqp_func_get_hess_timer(SleqpFunc* func)
+{
+  return func->hess_timer;
+}
+
 SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
                                    double* func_dual,
                                    SleqpSparseVec* direction,
@@ -152,12 +166,16 @@ SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_vector_clear(product));
 
+  SLEQP_CALL(sleqp_timer_start(func->hess_timer));
+
   SLEQP_CALL(func->eval_hess_prod(func->num_variables,
                                   func_dual,
                                   direction,
                                   cons_duals,
                                   product,
                                   func->data));
+
+  SLEQP_CALL(sleqp_timer_stop(func->hess_timer));
 
   return SLEQP_OKAY;
 }
@@ -197,6 +215,9 @@ SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
   }
 
   SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
+
+  SLEQP_CALL(sleqp_timer_free(&func->hess_timer));
+  SLEQP_CALL(sleqp_timer_free(&func->eval_timer));
 
   sleqp_free(fstar);
 

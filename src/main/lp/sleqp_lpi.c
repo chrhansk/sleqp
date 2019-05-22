@@ -9,6 +9,8 @@ struct SleqpLPi
   // data
   void* lp_data;
 
+  SleqpTimer* timer;
+
   int num_variables, num_constraints;
 
   // callbacks
@@ -41,7 +43,9 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
 
   SleqpLPi* lp_interface = *lp_star;
 
-  lp_interface->lp_data = NULL;
+  *lp_interface = (SleqpLPi) {0};
+
+  SLEQP_CALL(sleqp_timer_create(&lp_interface->timer));
 
   lp_interface->create_problem = create_problem;
 
@@ -79,9 +83,15 @@ int sleqp_lpi_get_num_constraints(SleqpLPi* lp_interface)
 
 SLEQP_RETCODE sleqp_lpi_solve(SleqpLPi* lp_interface)
 {
-  return lp_interface->solve(lp_interface->lp_data,
-                             lp_interface->num_variables,
-                             lp_interface->num_constraints);
+  SLEQP_CALL(sleqp_timer_start(lp_interface->timer));
+
+  SLEQP_CALL(lp_interface->solve(lp_interface->lp_data,
+                                 lp_interface->num_variables,
+                                 lp_interface->num_constraints));
+
+  SLEQP_CALL(sleqp_timer_stop(lp_interface->timer));
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
@@ -146,6 +156,11 @@ SLEQP_RETCODE sleqp_lpi_get_consstats(SleqpLPi* lp_interface,
                                      constraint_stats);
 }
 
+SleqpTimer* sleqp_lpi_get_solve_timer(SleqpLPi* lp_interface)
+{
+  return lp_interface->timer;
+}
+
 SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_star)
 {
   SleqpLPi* lp_interface = *lp_star;
@@ -156,6 +171,8 @@ SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_star)
   }
 
   lp_interface->free_problem(&lp_interface->lp_data);
+
+  SLEQP_CALL(sleqp_timer_free(&lp_interface->timer));
 
   sleqp_free(lp_star);
 

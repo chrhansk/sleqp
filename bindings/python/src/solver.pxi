@@ -7,7 +7,8 @@ cdef class Solver:
   def __cinit__(self,
                 Problem problem,
                 Params params,
-                np.ndarray x):
+                np.ndarray x,
+                Scaling scaling=None):
 
     csleqp_call(csleqp.sleqp_sparse_vector_create(&self.x,
                                                   problem.num_variables,
@@ -19,7 +20,7 @@ cdef class Solver:
                                            problem.problem,
                                            params.params,
                                            self.x,
-                                           NULL))
+                                           scaling.scaling if scaling else NULL))
 
     array_to_sleqp_sparse_vec(x, self.x)
 

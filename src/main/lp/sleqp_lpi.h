@@ -6,9 +6,7 @@
  * @brief Definition of the LP interface.
  **/
 
-#include "sparse/sleqp_sparse_matrix.h"
-#include "sparse/sleqp_sparse_vec.h"
-
+#include "sleqp_timer.h"
 #include "sleqp_types.h"
 #include "sleqp_lpi_types.h"
 
@@ -57,6 +55,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_lpi_get_consstats(SleqpLPi* lp_interface,
                                         SLEQP_BASESTAT* constraint_stats);
+
+  SleqpTimer* sleqp_lpi_get_solve_timer(SleqpLPi* lp_interface);
 
   SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_interface);
 

@@ -8,6 +8,8 @@
 
 #include "sleqp_types.h"
 
+#include "sleqp_timer.h"
+
 #include "sparse/sleqp_sparse_matrix.h"
 #include "sparse/sleqp_sparse_vec.h"
 
@@ -147,30 +149,14 @@ extern "C" {
   int sleqp_func_get_num_variables(SleqpFunc* func);
 
   /**
-   * Returns the number of evaluations of the function \f$ f \f$.
-   **/
-  int sleqp_func_get_num_func_evals(SleqpFunc* func);
-
-  /**
-   * Returns the number of evaluations of the function \f$ c \f$.
-   **/
-  int sleqp_func_get_num_cons_evals(SleqpFunc* func);
-
-  /**
-   * Returns the number of evaluations of the gradient of \f$ f \f$.
-   **/
-  int sleqp_func_get_num_grad_evals(SleqpFunc* func);
-
-  /**
-   * Returns the number of evaluations of the Jacobian of \f$ c \f$.
-   **/
-  int sleqp_func_get_num_jac_evals(SleqpFunc* func);
-
-  /**
    * Returns the number of evaluations of Hessian products of the Lagrangian \f$ L \f$.
    *
    **/
   int sleqp_func_get_num_hess_evals(SleqpFunc* func);
+
+  SleqpTimer* sleqp_func_get_eval_timer(SleqpFunc* func);
+
+  SleqpTimer* sleqp_func_get_hess_timer(SleqpFunc* func);
 
   /**
    * Evaluates the product of the Hessian of the Lagrangian of the given function.

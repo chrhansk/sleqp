@@ -149,6 +149,31 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
 
 
+  # Scaling
+  SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** scaling,
+                                     SleqpProblem* problem,
+                                     SleqpParams* params);
+
+  SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,
+                                              int weight);
+
+  SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
+                                             int index,
+                                             int weight);
+
+  SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
+                                              int index,
+                                              int weight);
+
+  SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
+                                                 SleqpSparseVec* gradient);
+
+  SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
+                                            SleqpSparseMatrix* cons_jac);
+
+  SLEQP_RETCODE sleqp_scaling_free(SleqpScalingData** scaling);
+
+  # Solver
   SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     SleqpProblem* problem,
                                     SleqpParams* params,
