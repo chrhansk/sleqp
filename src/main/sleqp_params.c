@@ -120,6 +120,89 @@ double sleqp_params_get_accepted_reduction(SleqpParams* params)
   return params->accepted_reduction;
 }
 
+
+
+
+SLEQP_RETCODE sleqp_params_set_zero_eps(SleqpParams* params, double value)
+{
+  params->zero_eps = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_eps(SleqpParams* params, double value)
+{
+  params->eps = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_deriv_pertubation(SleqpParams* params, double value)
+{
+  params->deriv_pertubation = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_deriv_tolerance(SleqpParams* params, double value)
+{
+  params->deriv_tolerance = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_cauchy_tau(SleqpParams* params, double value)
+{
+  params->cauchy_tau = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_cauchy_eta(SleqpParams* params, double value)
+{
+  params->cauchy_eta = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_linesearch_tau(SleqpParams* params, double value)
+{
+  params->linesearch_tau = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_linesearch_eta(SleqpParams* params, double value)
+{
+  params->linesearch_eta = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_linesearch_cutoff(SleqpParams* params, double value)
+{
+  params->linesearch_cutoff = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_optimality_tolerance(SleqpParams* params, double value)
+{
+  params->optimality_tol = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double value)
+{
+  params->accepted_reduction = value;
+
+  return SLEQP_OKAY;
+}
+
+
+
+
 SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
 {
   SleqpParams* params = *star;
