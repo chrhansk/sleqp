@@ -1261,7 +1261,11 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   if(solver->status != SLEQP_OPTIMAL)
   {
-    if(sleqp_zero(violation, zero_eps))
+    const double tolerance = sleqp_params_get_optimality_tolerance(solver->params);
+
+    const bool feasible = sleqp_iterate_is_feasible(iterate, problem, tolerance);
+
+    if(feasible)
     {
       solver->status = SLEQP_FEASIBLE;
     }

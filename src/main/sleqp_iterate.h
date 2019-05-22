@@ -83,6 +83,10 @@ extern "C" {
                                            SleqpProblem* problem,
                                            double* cache);
 
+  bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
+                                 SleqpProblem* problem,
+                                 double tolerance);
+
   bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
                                 SleqpProblem* problem,
                                 double tolerance,
