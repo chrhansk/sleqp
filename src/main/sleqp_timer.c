@@ -45,7 +45,7 @@ SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
 {
   clock_t end = clock();
 
-  double elapsed = (end - timer->start) / CLOCKS_PER_SEC;
+  double elapsed = ((double) (end - timer->start)) / CLOCKS_PER_SEC;
 
   ++timer->num_runs;
 
