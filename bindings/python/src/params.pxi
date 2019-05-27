@@ -36,7 +36,7 @@ cdef class Params:
 
   @property
   def deriv_perturbation(self):
-    return csleqp.sleqp_params_get_deriv_pertubation(self.params)
+    return csleqp.sleqp_params_get_deriv_perturbation(self.params)
 
   @property
   def deriv_tolerance(self):
@@ -80,7 +80,7 @@ cdef class Params:
 
   @deriv_perturbation.setter
   def deriv_perturbation(self, value):
-    csleqp_call(csleqp.sleqp_params_set_deriv_pertubation(self.params, value))
+    csleqp_call(csleqp.sleqp_params_set_deriv_perturbation(self.params, value))
 
   @deriv_tolerance.setter
   def deriv_tolerance(self, value):

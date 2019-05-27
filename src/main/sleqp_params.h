@@ -20,7 +20,7 @@ extern "C" {
 
   double sleqp_params_get_eps(SleqpParams* params);
 
-  double sleqp_params_get_deriv_pertubation(SleqpParams* params);
+  double sleqp_params_get_deriv_perturbation(SleqpParams* params);
 
   double sleqp_params_get_deriv_tolerance(SleqpParams* params);
 
@@ -40,7 +40,7 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_params_set_eps(SleqpParams* params, double value);
 
-  SLEQP_RETCODE sleqp_params_set_deriv_pertubation(SleqpParams* params, double value);
+  SLEQP_RETCODE sleqp_params_set_deriv_perturbation(SleqpParams* params, double value);
 
   SLEQP_RETCODE sleqp_params_set_deriv_tolerance(SleqpParams* params, double value);
 

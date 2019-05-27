@@ -72,6 +72,10 @@ extern "C" {
                                  int row,
                                  int col);
 
+  bool sleqp_sparse_matrix_eq(SleqpSparseMatrix* first,
+                              SleqpSparseMatrix* second,
+                              double eps);
+
   SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix);
 
   SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,

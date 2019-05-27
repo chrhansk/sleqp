@@ -304,30 +304,26 @@ SLEQP_RETCODE sleqp_scaling_flush(SleqpScalingData* scaling)
   SLEQP_CALL(sleqp_sparse_vector_copy(problem->var_lb,
                                       scaled_problem->var_lb));
 
-  SLEQP_CALL(apply_unscaling(scaled_problem->var_lb,
-                             scaling->var_weights,
-                             0));
+  SLEQP_CALL(sleqp_scale_point(scaling,
+                               scaled_problem->var_lb));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(problem->var_ub,
                                       scaled_problem->var_ub));
 
-  SLEQP_CALL(apply_unscaling(scaled_problem->var_ub,
-                             scaling->var_weights,
-                             0));
+  SLEQP_CALL(sleqp_scale_point(scaling,
+                               scaled_problem->var_ub));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(problem->cons_lb,
                                       scaled_problem->cons_lb));
 
-  SLEQP_CALL(apply_scaling(scaled_problem->cons_lb,
-                           scaling->cons_weights,
-                           0));
+  SLEQP_CALL(sleqp_scale_cons_val(scaling,
+                                  scaled_problem->cons_lb));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(problem->cons_ub,
                                       scaled_problem->cons_ub));
 
-  SLEQP_CALL(apply_scaling(scaled_problem->cons_ub,
-                           scaling->cons_weights,
-                           0));
+  SLEQP_CALL(sleqp_scale_cons_val(scaling,
+                                  scaled_problem->cons_ub));
 
   return SLEQP_OKAY;
 }

@@ -217,6 +217,70 @@ double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
   return NULL;
 }
 
+bool sleqp_sparse_matrix_eq(SleqpSparseMatrix* first,
+                            SleqpSparseMatrix* second,
+                            double eps)
+{
+  assert(first->num_rows == second->num_rows);
+  assert(first->num_cols == second->num_cols);
+
+  for(int col = 0; col < first->num_cols; ++col)
+  {
+    int first_index = first->cols[col];
+    int second_index = second->cols[col];
+
+    bool first_valid = true;
+    bool second_valid = true;
+
+    do
+    {
+      first_valid = first_index < first->cols[col + 1];
+      second_valid = second_index < second->cols[col + 1];
+
+      bool both_valid = first_valid && second_valid;
+
+      int first_row = first_valid ? first->rows[first_index] : -1;
+      int second_row = second_valid ? second->rows[second_index] : -1;
+
+      double first_entry = first_valid ? first->data[first_index] : -1;
+      double second_entry = second_valid ? second->data[second_index] : -1;
+
+      if(both_valid && (first_row == second_row))
+      {
+        if(!sleqp_eq(first_entry, second_entry, eps))
+        {
+          return false;
+        }
+
+        ++first_index;
+        ++second_index;
+      }
+      else if(first_valid || (both_valid && (first_row < second_row)))
+      {
+        if(!sleqp_zero(first_entry, eps))
+        {
+          return false;
+        }
+
+        ++first_index;
+      }
+      else if(second_valid || (both_valid && (second_row < first_row)))
+      {
+        if(!sleqp_zero(second_entry, eps))
+        {
+          return false;
+        }
+
+        ++second_index;
+      }
+    }
+    while(first_valid || second_valid);
+
+  }
+
+  return true;
+}
+
 SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix)
 {
   matrix->nnz = 0;

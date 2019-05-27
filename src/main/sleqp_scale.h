@@ -48,7 +48,7 @@ extern "C" {
    * \f[
    * \begin{aligned}
    * f'(\cdot) &:= \lambda f(B \cdot)      \\
-   * c'(\cdot) &:= A f(B \cdot)            \\
+   * c'(\cdot) &:= A c(B \cdot)            \\
    * l' &:= A l                            \\
    * u' &:= A u                            \\
    * l_x' &:= B^{-1} l_x                   \\
@@ -87,16 +87,16 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_scaling_flush(SleqpScalingData* scaling);
 
+  /** @name Scaling
+   *  Functions to perform scaling.
+   */
+  /**@{*/
+
   SLEQP_RETCODE sleqp_scale_point(SleqpScalingData* scaling,
                                   SleqpSparseVec* point);
 
   double sleqp_scale_func_val(SleqpScalingData* scaling,
                               double func_val);
-
-  /** @name Scaling
-   *  Functions to perform scaling.
-   */
-  /**@{*/
 
   SLEQP_RETCODE sleqp_scale_func_grad(SleqpScalingData* scaling,
                                       SleqpSparseVec* func_grad);

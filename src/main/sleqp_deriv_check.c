@@ -129,7 +129,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
-  const double pertubation = get_perturbation(sleqp_params_get_deriv_pertubation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
                                               iterate->x,
                                               j);
 
@@ -140,7 +140,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->x,
                                             value_diff,
                                             1.,
-                                            pertubation,
+                                            perturbation,
                                             0.,
                                             check_iterate->x));
 
@@ -163,7 +163,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
 
   const double func_diff = check_iterate->func_val - iterate->func_val;
 
-  const double actual_value = func_diff / pertubation;
+  const double actual_value = func_diff / perturbation;
 
   double* vec_ptr = sleqp_sparse_vector_at(iterate->func_grad, j);
 
@@ -172,7 +172,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
   if(!sleqp_eq(expected_value, actual_value, tolerance))
   {
     sleqp_log_error("Derivative check failed for objective function gradient at %d: "
-                    "%.10e ~ %.10e",
+                    "%.10e != %.10e",
                     j,
                     expected_value,
                     actual_value);
@@ -200,7 +200,7 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
-  const double pertubation = get_perturbation(sleqp_params_get_deriv_pertubation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
                                               iterate->x,
                                               j);
 
@@ -211,7 +211,7 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->x,
                                             value_diff,
                                             1.,
-                                            pertubation,
+                                            perturbation,
                                             0.,
                                             check_iterate->x));
 
@@ -250,12 +250,12 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
 
     const double value_diff = upper_value - lower_value;
 
-    const double actual_value = value_diff / pertubation;
+    const double actual_value = value_diff / perturbation;
 
     if(!sleqp_eq(expected_value, actual_value, tolerance))
     {
       sleqp_log_error("Derivative check failed for %d-th constraint gradient at index %d: "
-                      "%.10e ~ %.10e",
+                      "%.10e != %.10e",
                       i,
                       j,
                       expected_value,
@@ -321,7 +321,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
-  const double pertubation = get_perturbation(sleqp_params_get_deriv_pertubation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
                                               iterate->x,
                                               j);
 
@@ -332,7 +332,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->x,
                                             value_diff,
                                             1.,
-                                            pertubation,
+                                            perturbation,
                                             0.,
                                             check_iterate->x));
 
@@ -358,7 +358,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
                                             0,
                                             data->hessian_estimate));
 
-  SLEQP_CALL(sleqp_sparse_vector_scale(data->hessian_estimate, 1./pertubation));
+  SLEQP_CALL(sleqp_sparse_vector_scale(data->hessian_estimate, 1./perturbation));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(data->multipliers));
 
@@ -401,7 +401,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
     if(!sleqp_eq(expected_value, actual_value, tolerance))
     {
       sleqp_log_error("Derivative check failed for objective function hessian at (%d, %d): "
-                      "%.10e ~ %.10e",
+                      "%.10e != %.10e",
                       k,
                       j,
                       expected_value,
@@ -437,7 +437,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
-  const double pertubation = get_perturbation(sleqp_params_get_deriv_pertubation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
                                               iterate->x,
                                               j);
 
@@ -448,7 +448,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->x,
                                             value_diff,
                                             1.,
-                                            pertubation,
+                                            perturbation,
                                             0.,
                                             check_iterate->x));
 
@@ -488,7 +488,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
                                             0,
                                             data->hessian_estimate));
 
-  SLEQP_CALL(sleqp_sparse_vector_scale(data->hessian_estimate, 1./pertubation));
+  SLEQP_CALL(sleqp_sparse_vector_scale(data->hessian_estimate, 1./perturbation));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(data->hessian_right));
 
@@ -540,7 +540,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
     if(!sleqp_eq(expected_value, actual_value, tolerance))
     {
       sleqp_log_error("Derivative check failed for %d-th constraint hessian at (%d, %d): "
-                      "%.10e ~ %.10e",
+                      "%.10e != %.10e",
                       i,
                       k,
                       j,
