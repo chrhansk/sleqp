@@ -55,6 +55,14 @@ extern "C" {
   }                                                                        \
   while(0)
 
+  typedef enum {
+    SLEQP_STEPTYPE_NONE = 0,
+    SLEQP_STEPTYPE_ACCEPTED,
+    SLEQP_STEPTYPE_ACCEPTED_FULL,
+    SLEQP_STEPTYPE_SOC_ACCEPTED,
+    SLEQP_STEPTYPE_REJECTED
+  } SLEQP_STEPTYPE;
+
 #ifdef __cplusplus
 }
 #endif

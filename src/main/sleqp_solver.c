@@ -83,6 +83,8 @@ struct SleqpSolver
 
   SleqpSparseVec* trial_direction;
 
+  SLEQP_STEPTYPE last_step_type;
+
   SleqpSparseVec* initial_trial_point;
 
   SleqpIterate* trial_iterate;
@@ -213,7 +215,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   solver->elapsed_seconds = 0.;
 
   SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_check,
-                                        solver->problem,
+                                        solver->scaled_problem,
                                         params));
 
   const double zero_eps = sleqp_params_get_zero_eps(params);
@@ -522,7 +524,8 @@ static SLEQP_RETCODE update_trust_radius(double reduction_ratio,
 }
 
 static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
-                                             double* quadratic_value)
+                                             double* quadratic_value,
+                                             bool* full_step)
 {
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
@@ -645,6 +648,10 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
     alpha *= tau;
   }
 
+  const double eps = sleqp_params_get_eps(solver->params);
+
+  *full_step = sleqp_eq(alpha, 1., eps);
+
   assert(it != max_it);
 
   sleqp_log_debug("Cauchy-Newton line search converged after %d iterations (final value: %12e)",
@@ -655,7 +662,8 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
 }
 
 static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
-                                         double* quadratic_value)
+                                         double* quadratic_value,
+                                         bool* full_step)
 {
   SleqpProblem* problem = solver->scaled_problem;
   SleqpIterate* iterate = solver->iterate;
@@ -778,7 +786,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                     solver->cauchy_newton_hessian_direction));
   }
 
-  SLEQP_CALL(compute_trial_direction(solver, quadratic_value));
+  SLEQP_CALL(compute_trial_direction(solver, quadratic_value, full_step));
 
   SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
                                      solver->trial_direction,
@@ -901,28 +909,38 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
 
 #define HEADER_FORMAT "%10s |%20s |%20s |%20s |%20s |%20s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%20e |%20e |%20e |%20e"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%20e |%20e |%20e |%20e |%20s"
 
 static SLEQP_RETCODE print_header()
 {
   sleqp_log_info(HEADER_FORMAT,
-                 "iter",
-                 "funcval",
-                 "penalty",
+                 "Iteration",
+                 "Function value",
+                 "Penalty",
                  "LP trust radius",
-                 "EQP trust radius");
+                 "EQP trust radius",
+                 "Step type");
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE print_line(SleqpSolver* solver)
 {
+  const char* steptype_descriptions[] = {
+    [SLEQP_STEPTYPE_NONE] = "",
+    [SLEQP_STEPTYPE_ACCEPTED] = "Accepted",
+    [SLEQP_STEPTYPE_ACCEPTED_FULL] = "Accepted (full)",
+    [SLEQP_STEPTYPE_SOC_ACCEPTED] = "SOC accepted",
+    [SLEQP_STEPTYPE_REJECTED] = "Rejected"
+  };
+
   sleqp_log_info(LINE_FORMAT,
                  solver->iteration,
                  solver->unscaled_iterate->func_val,
                  solver->penalty_parameter,
                  solver->lp_trust_radius,
-                 solver->trust_radius);
+                 solver->trust_radius,
+                 steptype_descriptions[solver->last_step_type]);
 
   return SLEQP_OKAY;
 }
@@ -966,7 +984,11 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   double quadratic_trial_value;
 
-  SLEQP_CALL(compute_trial_point(solver, &quadratic_trial_value));
+  bool full_step;
+
+  SLEQP_CALL(compute_trial_point(solver,
+                                 &quadratic_trial_value,
+                                 &full_step));
 
   // unscale iterate
 
@@ -1048,9 +1070,20 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   bool step_accepted = true;
   bool soc_step_accepted = false;
 
+  solver->last_step_type = SLEQP_STEPTYPE_REJECTED;
+
   if(reduction_ratio >= accepted_reduction)
   {
     sleqp_log_debug("Trial step accepted");
+
+    if(full_step)
+    {
+      solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED_FULL;
+    }
+    else
+    {
+      solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED;
+    }
   }
   else
   {
@@ -1108,6 +1141,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
       if(soc_step_accepted)
       {
+        solver->last_step_type = SLEQP_STEPTYPE_SOC_ACCEPTED;
         sleqp_log_debug("Second-order correction accepted");
       }
       else
@@ -1210,15 +1244,13 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                  eps,
                                  solver->violation));
 
-  sleqp_log_info("Initial function value: %f",
-                 solver->iterate->func_val);
-
   solver->status = SLEQP_INVALID;
 
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
   solver->iteration = 0;
   solver->elapsed_seconds = 0.;
+  solver->last_step_type = SLEQP_STEPTYPE_NONE;
 
   while(true)
   {
@@ -1285,9 +1317,15 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   SleqpFunc* func = solver->problem->func;
 
-  sleqp_log_info(SLEQP_FORMAT_BOLD "       Solution status: %s" SLEQP_FORMAT_RESET, descriptions[solver->status]);
-  sleqp_log_info(SLEQP_FORMAT_BOLD "       Objective value: %e" SLEQP_FORMAT_RESET, solver->unscaled_iterate->func_val);
-  sleqp_log_info(SLEQP_FORMAT_BOLD "             Violation: %e" SLEQP_FORMAT_RESET, violation);
+  sleqp_log_info(SLEQP_FORMAT_BOLD "       Solution status: %s" SLEQP_FORMAT_RESET,
+                 descriptions[solver->status]);
+
+  sleqp_log_info(SLEQP_FORMAT_BOLD "       Objective value: %e" SLEQP_FORMAT_RESET,
+                 solver->unscaled_iterate->func_val);
+
+  sleqp_log_info(SLEQP_FORMAT_BOLD "             Violation: %e" SLEQP_FORMAT_RESET,
+                 violation);
+
   sleqp_log_info(                  "            Iterations: %d", solver->iteration);
 
   SleqpTimer* func_timer = sleqp_func_get_eval_timer(func);
