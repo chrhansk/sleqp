@@ -9,13 +9,17 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpSparseVec* x,
 
   try:
     x_array = sleqp_sparse_vec_to_array(x)
-    (<object> func_data).set_value(x_array)
 
-    func_grad_nnz[0] = (<object> func_data).func_grad_nnz()
-    cons_val_nnz[0] = (<object> func_data).cons_val_nnz()
-    cons_jac_nnz[0] =  (<object> func_data).cons_jac_nnz()
-  except Exception:
-    traceback.print_exc()
+    func = (<object> func_data)
+
+    func.set_value(x_array)
+
+    func_grad_nnz[0] = func.func_grad_nnz()
+    cons_val_nnz[0] = func.cons_val_nnz()
+    cons_jac_nnz[0] =  func.cons_jac_nnz()
+
+  except BaseException as exception:
+    func.call_exception = exception
     return csleqp.SLEQP_INTERNAL_ERROR
 
   return csleqp.SLEQP_OKAY
@@ -29,24 +33,26 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
                                           void* func_data):
   try:
 
+    func = (<object> func_data)
+
     if func_val:
-      func_val[0] = (<object> func_data).func_val()
+      func_val[0] = func.func_val()
 
     if func_grad:
-      grad_array = (<object> func_data).func_grad()
+      grad_array = func.func_grad()
       csleqp_call(array_to_sleqp_sparse_vec(grad_array, func_grad))
 
     if cons_vals:
-      cons_array = (<object> func_data).cons_vals()
+      cons_array = func.cons_vals()
       csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
 
     if cons_jac:
-      cons_jac_mat = (<object> func_data).cons_jac()
+      cons_jac_mat = func.cons_jac()
       csleqp_call(matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac))
 
 
-  except Exception:
-    traceback.print_exc()
+  except BaseException as exception:
+    func.call_exception = exception
     return csleqp.SLEQP_INTERNAL_ERROR
 
   return csleqp.SLEQP_OKAY
@@ -64,16 +70,18 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
     assert direction
     assert product
 
+    func = (<object> func_data)
+
     f_dual = func_dual[0] if func_dual else 0.
     direction_array = sleqp_sparse_vec_to_array(direction)
     cons_dual_array = sleqp_sparse_vec_to_array(cons_dual)
 
-    product_array = (<object> func_data).hess_prod(f_dual, direction_array, cons_dual_array)
+    product_array = func.hess_prod(f_dual, direction_array, cons_dual_array)
 
     csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
-  except Exception:
-    traceback.print_exc()
+  except BaseException as exception:
+    func.call_exception = exception
     return csleqp.SLEQP_INTERNAL_ERROR
 
   return csleqp.SLEQP_OKAY
@@ -83,6 +91,8 @@ cdef class Func:
   cdef csleqp.SleqpFunc* func
   cdef int num_variables
   cdef int num_constraints
+
+  cdef public object call_exception
 
   def __cinit__(self, int num_variables,
                 int num_constraints,
@@ -97,6 +107,8 @@ cdef class Func:
 
     self.num_variables = num_variables
     self.num_constraints = num_constraints
+
+    self.call_exception = None
 
     assert(self.func)
 

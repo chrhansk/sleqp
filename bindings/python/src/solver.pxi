@@ -3,6 +3,7 @@
 cdef class Solver:
   cdef csleqp.SleqpSolver* solver
   cdef csleqp.SleqpSparseVec* x
+  cdef Problem problem
 
   def __cinit__(self,
                 Problem problem,
@@ -24,13 +25,26 @@ cdef class Solver:
 
     array_to_sleqp_sparse_vec(x, self.x)
 
+    self.problem = problem
+
   cpdef solve(self,
               int max_num_iterations,
               double time_limit):
 
-    csleqp_call(csleqp.sleqp_solver_solve(self.solver,
-                                          max_num_iterations,
-                                          time_limit))
+    try:
+      self.problem.func.call_exception = None
+
+      csleqp_call(csleqp.sleqp_solver_solve(self.solver,
+                                            max_num_iterations,
+                                            time_limit))
+
+    except Exception as exception:
+      call_exception = self.problem.func.call_exception
+      if call_exception:
+        self.problem.func.call_exception = None
+        raise exception from call_exception
+      else:
+        raise exception
 
   @property
   def status(self):
