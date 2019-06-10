@@ -45,6 +45,7 @@ set(CYTHON_DEPS
   src/call.pxi
   src/cmp.pxi
   src/func.pxi
+  src/log.pxi
   src/params.pxi
   src/problem.pxi
   src/solver.pxi

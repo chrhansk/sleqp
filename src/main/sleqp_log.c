@@ -4,9 +4,9 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
-#include <time.h>
 
 #define TIME_BUF_SIZE 128
+#define TOTAL_BUF_SIZE 2048
 
 struct LevelInfo
 {
@@ -29,30 +29,49 @@ SLEQP_LOG_LEVEL sleqp_log_level()
   return level;
 }
 
-void sleqp_log_msg_level(int level, const char *fmt, ...)
+void sleqp_log_set_level(SLEQP_LOG_LEVEL value)
 {
+  level = value;
+}
 
+static void builtin_handler(SLEQP_LOG_LEVEL level,
+                            time_t time,
+                            const char* message)
+{
   char buf[TIME_BUF_SIZE];
 
-  time_t t = time(NULL);
-  struct tm *lt = localtime(&t);
+  struct tm *lt = localtime(&time);
 
   buf[strftime(buf, TIME_BUF_SIZE - 1, "%H:%M:%S", lt)] = '\0';
 
   fprintf(stderr,
-          "[" SLEQP_FORMAT_BOLD "%s %s%5s" SLEQP_FORMAT_RESET "] ",
+          "[" SLEQP_FORMAT_BOLD "%s %s%5s" SLEQP_FORMAT_RESET "] %s\n",
           buf,
           level_infos[level].color,
-          level_infos[level].name);
+          level_infos[level].name,
+          message);
+}
+
+static SLEQP_LOG_HANDLER handler = builtin_handler;
+
+void sleqp_log_msg_level(int level, const char *fmt, ...)
+{
+  char message_buf[TOTAL_BUF_SIZE];
+
+  time_t t = time(NULL);
 
   va_list args;
 
   va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
+  vsnprintf(message_buf, TOTAL_BUF_SIZE, fmt, args);
   va_end(args);
 
-  fprintf(stderr, "\n");
+  handler(level, t, message_buf);
+}
 
+void sleqp_log_set_handler(SLEQP_LOG_HANDLER value)
+{
+  handler = value;
 }
 
 

@@ -1,6 +1,7 @@
 #cython: language_level=3
 
-from libc.stdio cimport FILE
+cimport libc.stdio
+cimport libc.time
 
 cdef extern from "sleqp.h":
 
@@ -72,13 +73,19 @@ cdef extern from "sleqp.h":
   cdef struct SleqpFunc:
     pass
 
+  ctypedef enum SLEQP_LOG_LEVEL:
+    SLEQP_LOG_ERROR = 0,
+    SLEQP_LOG_WARN = 1,
+    SLEQP_LOG_INFO = 2,
+    SLEQP_LOG_DEBUG = 3
+
   # Sparse vectors
   SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,
                                            int dim,
                                            int nnz_max)
 
   SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
-                                            FILE* output)
+                                            libc.stdio.FILE* output)
 
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec)
 
@@ -249,4 +256,17 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
 
+  # Logging
+
+  void sleqp_log_set_level(SLEQP_LOG_LEVEL value)
+
+  ctypedef void (*SLEQP_LOG_HANDLER)(SLEQP_LOG_LEVEL level,
+                                     libc.time.time_t time,
+                                     const char* message)
+
+  void sleqp_log_set_handler(SLEQP_LOG_HANDLER handler)
+
+  SLEQP_LOG_LEVEL sleqp_log_level()
+
+  # Numerics
   double sleqp_infinity()

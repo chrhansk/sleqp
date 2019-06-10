@@ -1,6 +1,8 @@
 #ifndef SLEQP_LOG_H
 #define SLEQP_LOG_H
 
+#include <time.h>
+
 #include "sleqp_defs.h"
 
 /**
@@ -39,34 +41,42 @@
 extern "C" {
 #endif
 
-typedef enum {SLEQP_LOG_ERROR = 0,
-              SLEQP_LOG_WARN = 1,
-              SLEQP_LOG_INFO = 2,
-              SLEQP_LOG_DEBUG = 3,
-              SLEQP_NUM_LOG_LEVELS = 4} SLEQP_LOG_LEVEL;
+  typedef enum {SLEQP_LOG_ERROR = 0,
+                SLEQP_LOG_WARN = 1,
+                SLEQP_LOG_INFO = 2,
+                SLEQP_LOG_DEBUG = 3,
+                SLEQP_NUM_LOG_LEVELS = 4} SLEQP_LOG_LEVEL;
 
-SLEQP_LOG_LEVEL sleqp_log_level();
+  SLEQP_LOG_LEVEL sleqp_log_level();
 
-void sleqp_log_msg_level(int level, const char *fmt, ...);
+  void sleqp_log_set_level(SLEQP_LOG_LEVEL level);
 
-void sleqp_log_trace_level(int level, const char *file, int line, const char *fmt, ...);
+  typedef void (*SLEQP_LOG_HANDLER)(SLEQP_LOG_LEVEL level,
+                                    time_t time,
+                                    const char* message);
 
-#define sleqp_log_log_trace(level, file, line, ...)                     \
-  do                                                                    \
-  {                                                                     \
-    if(sleqp_log_level() >= level)                                      \
-  {                                                                     \
-    sleqp_log_trace_level(level, file, line, __VA_ARGS__);              \
-  }                                                                     \
+  void sleqp_log_set_handler(SLEQP_LOG_HANDLER handler);
+
+  void sleqp_log_msg_level(int level, const char *fmt, ...);
+
+  void sleqp_log_trace_level(int level, const char *file, int line, const char *fmt, ...);
+
+#define sleqp_log_log_trace(level, file, line, ...)           \
+  do                                                          \
+  {                                                           \
+    if(sleqp_log_level() >= level)                            \
+    {                                                         \
+      sleqp_log_trace_level(level, file, line, __VA_ARGS__);  \
+    }                                                         \
   } while(0)
 
-#define sleqp_log_log_msg(level, ...)                           \
-  do                                                            \
-  {                                                             \
-    if(sleqp_log_level() >= level)                              \
-    {                                                           \
-      sleqp_log_msg_level(level, __VA_ARGS__);                  \
-    }                                                           \
+#define sleqp_log_log_msg(level, ...)           \
+  do                                            \
+  {                                             \
+    if(sleqp_log_level() >= level)              \
+    {                                           \
+      sleqp_log_msg_level(level, __VA_ARGS__);  \
+    }                                           \
   } while(0)
 
 #define sleqp_log_info(...)  sleqp_log_log_msg(SLEQP_LOG_INFO, __VA_ARGS__)
