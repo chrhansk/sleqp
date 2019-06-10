@@ -126,7 +126,7 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   data->problem = problem;
   data->params = params;
 
-  data->trlib_maxiter = 10 * problem->num_variables;
+  data->trlib_maxiter = problem->num_variables;
 
   trlib_int_t iwork_size, fwork_size;
 
