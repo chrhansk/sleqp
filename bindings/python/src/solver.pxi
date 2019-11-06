@@ -4,12 +4,18 @@ cdef class Solver:
   cdef csleqp.SleqpSolver* solver
   cdef csleqp.SleqpSparseVec* x
   cdef Problem problem
+  cdef Params params
+  cdef Options options
 
   def __cinit__(self,
                 Problem problem,
                 Params params,
+                Options options,
                 np.ndarray x,
                 Scaling scaling=None):
+
+    self.params = params
+    self.options = options
 
     csleqp_call(csleqp.sleqp_sparse_vector_create(&self.x,
                                                   problem.num_variables,
@@ -20,6 +26,7 @@ cdef class Solver:
     csleqp_call(csleqp.sleqp_solver_create(&self.solver,
                                            problem.problem,
                                            params.params,
+                                           options.options,
                                            self.x,
                                            scaling.scaling if scaling else NULL))
 

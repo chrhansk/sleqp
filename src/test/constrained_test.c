@@ -4,6 +4,7 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 #include "sleqp_solver.h"
+#include "sleqp_util.h"
 
 #include "test_common.h"
 
@@ -14,6 +15,7 @@ SleqpSparseVec* cons_ub;
 SleqpSparseVec* x;
 
 SleqpParams* params;
+SleqpOptions* options;
 
 SleqpSparseVec* expected_solution;
 
@@ -282,6 +284,8 @@ void constrained_setup()
 
   ASSERT_CALL(sleqp_params_create(&params));
 
+  ASSERT_CALL(sleqp_options_create(&options));
+
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    func,
                                    params,
@@ -303,6 +307,8 @@ void constrained_teardown()
   ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
+
+  ASSERT_CALL(sleqp_options_free(&options));
 
   ASSERT_CALL(sleqp_params_free(&params));
 
@@ -327,6 +333,7 @@ START_TEST(test_constrained_solve)
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
+                                  options,
                                   x,
                                   NULL));
 
@@ -363,6 +370,7 @@ START_TEST(test_unscaled_solve)
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
+                                  options,
                                   x,
                                   scaling_data));
 
@@ -409,6 +417,7 @@ START_TEST(test_scaled_solve)
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
+                                  options,
                                   x,
                                   scaling_data));
 
@@ -461,6 +470,7 @@ START_TEST(test_auto_scaled_solve)
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
+                                  options,
                                   x,
                                   scaling_data));
 

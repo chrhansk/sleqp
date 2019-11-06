@@ -1,6 +1,11 @@
 #ifndef SLEQP_H
 #define SLEQP_H
 
+/**
+ * @file sleqp.h
+ * @brief SLEQP callable libary.
+ **/
+
 #include "sleqp_active_set.h"
 #include "sleqp_aug_jacobian.h"
 #include "sleqp_bfgs.h"
@@ -12,6 +17,7 @@
 #include "sleqp_func.h"
 #include "sleqp_iterate.h"
 #include "sleqp_log.h"
+#include "sleqp_options.h"
 #include "sleqp_mem.h"
 #include "sleqp_merit.h"
 #include "sleqp_newton.h"

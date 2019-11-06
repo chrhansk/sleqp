@@ -49,6 +49,7 @@ class MatrixErrorTest(unittest.TestCase):
     self.x = np.array([0.]*num_variables)
 
     self.params = sleqp.Params()
+    self.options = sleqp.Options()
 
   def test_string_error(self):
     func = MatrixErrorFunc(num_variables,
@@ -65,6 +66,7 @@ class MatrixErrorTest(unittest.TestCase):
 
     solver = sleqp.Solver(problem,
                           self.params,
+                          self.options,
                           self.x)
 
     with self.assertRaises(sleqp.SLEQPError):
@@ -85,6 +87,7 @@ class MatrixErrorTest(unittest.TestCase):
 
     solver = sleqp.Solver(problem,
                           self.params,
+                          self.options,
                           self.x)
 
     with self.assertRaises(sleqp.SLEQPError):
@@ -107,6 +110,7 @@ class MatrixErrorTest(unittest.TestCase):
 
     solver = sleqp.Solver(problem,
                           self.params,
+                          self.options,
                           self.x)
 
     solver.solve(1, 3600)

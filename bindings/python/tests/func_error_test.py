@@ -66,6 +66,7 @@ class FuncErrorTest(unittest.TestCase):
     self.x = np.array([0., 0.])
 
     self.params = sleqp.Params()
+    self.options = sleqp.Options()
 
   def test_error_func(self):
     self.func = ErrorFunc(num_variables, num_constraints)
@@ -79,6 +80,7 @@ class FuncErrorTest(unittest.TestCase):
 
     self.solver = sleqp.Solver(self.problem,
                                self.params,
+                               self.options,
                                self.x)
 
     with self.assertRaises(sleqp.SLEQPError) as context:
@@ -96,6 +98,7 @@ class FuncErrorTest(unittest.TestCase):
 
     solver = sleqp.Solver(problem,
                           self.params,
+                          self.options,
                           self.x)
 
     with self.assertRaises(sleqp.SLEQPError) as context:
@@ -113,6 +116,7 @@ class FuncErrorTest(unittest.TestCase):
 
     solver = sleqp.Solver(problem,
                           self.params,
+                          self.options,
                           self.x)
 
     with self.assertRaises(sleqp.SLEQPError) as context:

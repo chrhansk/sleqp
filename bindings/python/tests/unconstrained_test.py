@@ -67,6 +67,8 @@ class UnconstrainedTest(unittest.TestCase):
 
     self.params = sleqp.Params()
 
+    self.options = sleqp.Options()
+
     #a = 1.
     #b = 100.
 
@@ -81,6 +83,7 @@ class UnconstrainedTest(unittest.TestCase):
 
     self.solver = sleqp.Solver(self.problem,
                                self.params,
+                               self.options,
                                x)
 
   def test_solve(self):

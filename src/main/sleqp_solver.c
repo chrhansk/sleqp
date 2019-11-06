@@ -29,11 +29,8 @@
 #include "sleqp_bfgs.h"
 #include "sleqp_sr1.h"
 
-const bool use_bfgs = false;
 const int num_bfgs_products = 5;
-const bool damped_bfgs = true;
 
-const bool use_sr1 = false;
 const int num_sr1_products = 5;
 
 const bool perform_soc = true;
@@ -55,6 +52,8 @@ struct SleqpSolver
   SLEQP_STATUS status;
 
   SleqpParams* params;
+
+  SleqpOptions* options;
 
   SleqpDerivCheckData* deriv_check;
 
@@ -137,6 +136,7 @@ struct SleqpSolver
 SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   SleqpProblem* problem,
                                   SleqpParams* params,
+                                  SleqpOptions* options,
                                   SleqpSparseVec* x,
                                   SleqpScalingData* scaling_data)
 {
@@ -154,10 +154,13 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   {
     SleqpFunc* func = problem->func;
 
-    assert(!(use_bfgs && use_sr1));
+    const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_hessian_eval(options);
 
-    if(use_bfgs)
+    if(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
+       hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
     {
+      const bool damped_bfgs = (hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS);
+
       SLEQP_CALL(sleqp_bfgs_data_create(&solver->bfgs_data,
                                         func,
                                         params,
@@ -167,7 +170,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
       func = sleqp_bfgs_get_func(solver->bfgs_data);
     }
 
-    if(use_sr1)
+    if(hessian_eval == SLEQP_HESSIAN_EVAL_SR1)
     {
       SLEQP_CALL(sleqp_sr1_data_create(&solver->sr1_data,
                                        func,
@@ -210,6 +213,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
   solver->params = params;
+  solver->options = options;
 
   solver->iteration = 0;
   solver->elapsed_seconds = 0.;
@@ -950,6 +954,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 {
   *optimal = false;
 
+  const SleqpOptions* options = solver->options;
   SleqpProblem* problem = solver->scaled_problem;
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
@@ -964,11 +969,17 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   const double accepted_reduction = sleqp_params_get_accepted_reduction(solver->params);
 
   {
-    /*
-    SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
+    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_deriv_check(options);
 
-    SLEQP_CALL(sleqp_deriv_check_second_order(solver->deriv_check, iterate));
-    */
+    if(deriv_check & SLEQP_DERIV_CHECK_FIRST)
+    {
+      SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
+    }
+
+    if(deriv_check & SLEQP_DERIV_CHECK_SEC)
+    {
+      SLEQP_CALL(sleqp_deriv_check_second_order(solver->deriv_check, iterate));
+    }
   }
 
   double exact_iterate_value, quadratic_iterate_value;

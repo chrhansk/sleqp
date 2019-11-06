@@ -13,6 +13,7 @@ set(COMMON_SRC
   sleqp_iterate.c
   sleqp_params.c
   sleqp_log.c
+  sleqp_options.c
   sleqp_newton.c
   sleqp_merit.c
   sleqp_problem.c

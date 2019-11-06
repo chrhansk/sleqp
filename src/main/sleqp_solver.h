@@ -6,7 +6,11 @@
  * @brief Definition of the solver structure.
  **/
 
-#include "sleqp.h"
+#include "sleqp_iterate.h"
+#include "sleqp_options.h"
+#include "sleqp_params.h"
+#include "sleqp_problem.h"
+#include "sleqp_scale.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +21,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     SleqpProblem* problem,
                                     SleqpParams* params,
+                                    SleqpOptions* options,
                                     SleqpSparseVec* x,
                                     SleqpScalingData* scaling_data);
 

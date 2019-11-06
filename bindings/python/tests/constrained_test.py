@@ -112,6 +112,8 @@ class ConstrainedTest(unittest.TestCase):
 
     self.params = sleqp.Params()
 
+    self.options = sleqp.Options()
+
     self.func = Func(num_variables, num_constraints)
 
     self.problem = sleqp.Problem(self.func,
@@ -123,6 +125,7 @@ class ConstrainedTest(unittest.TestCase):
 
     self.solver = sleqp.Solver(self.problem,
                                self.params,
+                               self.options,
                                x)
 
   def test_solve(self):

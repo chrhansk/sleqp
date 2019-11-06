@@ -25,6 +25,18 @@ cdef extern from "sleqp.h":
     SLEQP_INFEASIBLE,
     SLEQP_INVALID
 
+  ctypedef enum SLEQP_DERIV_CHECK:
+    SLEQP_DERIV_CHECK_SKIP,
+    SLEQP_DERIV_CHECK_FIRST,
+    SLEQP_DERIV_CHECK_SEC,
+    SLEQP_DERIV_CHECK_BOTH
+
+  ctypedef enum SLEQP_HESSIAN_EVAL:
+    SLEQP_HESSIAN_EVAL_EXACT,
+    SLEQP_HESSIAN_EVAL_SR1,
+    SLEQP_HESSIAN_EVAL_SIMPLE_BFGS,
+    SLEQP_HESSIAN_EVAL_DAMPED_BFGS
+
   ctypedef struct SleqpSparseVec:
     double* data
     int* indices
@@ -55,6 +67,9 @@ cdef extern from "sleqp.h":
     pass
 
   ctypedef struct SleqpParams:
+    pass
+
+  ctypedef struct SleqpOptions:
     pass
 
   ctypedef struct SleqpActiveSet:
@@ -184,6 +199,7 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     SleqpProblem* problem,
                                     SleqpParams* params,
+                                    SleqpOptions* options,
                                     SleqpSparseVec* x,
                                     SleqpScalingData* scaling)
 
@@ -212,10 +228,10 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star)
 
+  # Parameters
+
   SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
-
-  # Parameters
   double sleqp_params_get_zero_eps(SleqpParams* params)
 
   double sleqp_params_get_eps(SleqpParams* params)
@@ -255,6 +271,22 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double value)
 
   SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
+
+  # Options
+
+  SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
+
+  SLEQP_DERIV_CHECK sleqp_options_get_deriv_check(const SleqpOptions* options)
+
+  SLEQP_HESSIAN_EVAL sleqp_options_get_hessian_eval(const SleqpOptions* options)
+
+  SLEQP_RETCODE sleqp_options_set_deriv_check(SleqpOptions* options,
+                                              SLEQP_DERIV_CHECK value)
+
+  SLEQP_RETCODE sleqp_options_set_hessian_eval(SleqpOptions* options,
+                                               SLEQP_HESSIAN_EVAL value)
+
+  SLEQP_RETCODE sleqp_options_free(SleqpOptions** star)
 
   # Logging
 

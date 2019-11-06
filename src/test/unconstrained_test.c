@@ -15,6 +15,7 @@ START_TEST(test_unconstrained_solve)
   SleqpSparseVec* expected_solution;
 
   SleqpParams* params;
+  SleqpOptions* options;
   SleqpProblem* problem;
   SleqpSolver* solver;
 
@@ -25,6 +26,8 @@ START_TEST(test_unconstrained_solve)
   ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 1.));
 
   ASSERT_CALL(sleqp_params_create(&params));
+
+  ASSERT_CALL(sleqp_options_create(&options));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
@@ -37,6 +40,7 @@ START_TEST(test_unconstrained_solve)
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
+                                  options,
                                   rosenbrock_x,
                                   NULL));
 
@@ -68,6 +72,8 @@ START_TEST(test_unconstrained_solve)
   ASSERT_CALL(sleqp_solver_free(&solver));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
+
+  ASSERT_CALL(sleqp_options_free(&options));
 
   ASSERT_CALL(sleqp_params_free(&params));
 

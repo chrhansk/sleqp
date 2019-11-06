@@ -236,6 +236,7 @@ START_TEST(test_second_order_solve)
   SleqpSparseVec* expected_solution;
 
   SleqpParams* params;
+  SleqpOptions* options;
   SleqpSolver* solver;
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 2, 2));
@@ -244,9 +245,12 @@ START_TEST(test_second_order_solve)
 
   ASSERT_CALL(sleqp_params_create(&params));
 
+  ASSERT_CALL(sleqp_options_create(&options));
+
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
+                                  options,
                                   x,
                                   NULL));
 
@@ -267,6 +271,8 @@ START_TEST(test_second_order_solve)
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_free(&solver));
+
+  ASSERT_CALL(sleqp_options_free(&options));
 
   ASSERT_CALL(sleqp_params_free(&params));
 
