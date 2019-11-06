@@ -55,6 +55,23 @@ void scaling_setup()
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 }
 
+START_TEST(test_func_grad_invalid)
+{
+  SleqpSparseVec* func_grad;
+
+  ASSERT_CALL(sleqp_sparse_vector_create(&func_grad, 2, 2));
+
+  ASSERT_CALL(sleqp_sparse_vector_copy(iterate->func_grad, func_grad));
+
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, 10000));
+
+  SLEQP_RETCODE scale_retcode = sleqp_scale_func_grad(scaling, func_grad);
+
+  ck_assert_int_eq(scale_retcode, SLEQP_MATH_ERROR);
+
+  ASSERT_CALL(sleqp_sparse_vector_free(&func_grad));
+}
+
 START_TEST(test_func_val_inverse)
 {
   double func_val = iterate->func_val;
@@ -228,8 +245,8 @@ Suite* scaling_test_suite()
   tcase_add_checked_fixture(tc_scale_deriv,
                             scaling_setup,
                             scaling_teardown);
-
   tcase_add_test(tc_scale_inv, test_func_val_inverse);
+  tcase_add_test(tc_scale_inv, test_func_grad_invalid);
   tcase_add_test(tc_scale_inv, test_func_grad_inverse);
   tcase_add_test(tc_scale_inv, test_cons_val_inverse);
   tcase_add_test(tc_scale_inv, test_cons_jac_inverse);

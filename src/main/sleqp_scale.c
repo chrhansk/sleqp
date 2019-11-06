@@ -1,9 +1,35 @@
 #include "sleqp_scale.h"
 
 #include <math.h>
+#include <fenv.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
+
+#define INIT_MATH_ERROR_CHECK                   \
+  fenv_t fenv_current;                          \
+  if(math_errhandling & MATH_ERREXCEPT)         \
+  {                                             \
+    fegetenv(&fenv_current);                    \
+  }                                             \
+  while(false)
+
+#define MATH_ERROR_CHECK(error_flags)                  \
+  if(math_errhandling & MATH_ERREXCEPT)                \
+  {                                                    \
+    const bool has_error = fetestexcept(error_flags);  \
+                                                       \
+    fesetenv(&fenv_current);                           \
+                                                       \
+    if(has_error)                                      \
+    {                                                  \
+      return SLEQP_MATH_ERROR;                         \
+    }                                                  \
+  }                                                    \
+  while(false)
+
+#define SCALING_ERROR_FLAGS (FE_OVERFLOW | FE_UNDERFLOW)
+
 
 int max_weight = 10;
 int min_weight = -10;
@@ -40,10 +66,14 @@ static SLEQP_RETCODE apply_const_scaling(SleqpSparseVec* vec,
     return SLEQP_OKAY;
   }
 
+  INIT_MATH_ERROR_CHECK;
+
   for(int k = 0; k < vec->nnz; ++k)
   {
     vec->data[k] = ldexp(vec->data[k], scale);
   }
+
+  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
 
   return SLEQP_OKAY;
 }
@@ -52,10 +82,14 @@ static SLEQP_RETCODE apply_scaling(SleqpSparseVec* vec,
                                    int* scales,
                                    int offset)
 {
+  INIT_MATH_ERROR_CHECK;
+
   for(int k = 0; k < vec->nnz; ++k)
   {
     vec->data[k] = ldexp(vec->data[k], scales[vec->indices[k]] + offset);
   }
+
+  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
 
   return SLEQP_OKAY;
 }
@@ -64,10 +98,14 @@ static SLEQP_RETCODE apply_unscaling(SleqpSparseVec* vec,
                                      int* scales,
                                      int offset)
 {
+  INIT_MATH_ERROR_CHECK;
+
   for(int k = 0; k < vec->nnz; ++k)
   {
     vec->data[k] = ldexp(vec->data[k], -1*scales[vec->indices[k]] + offset);
   }
+
+  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
 
   return SLEQP_OKAY;
 }
@@ -75,10 +113,14 @@ static SLEQP_RETCODE apply_unscaling(SleqpSparseVec* vec,
 static SLEQP_RETCODE apply_quad_scaling(SleqpSparseVec* vec,
                                         int* scales)
 {
+  INIT_MATH_ERROR_CHECK;
+
   for(int k = 0; k < vec->nnz; ++k)
   {
     vec->data[k] = ldexp(vec->data[k], 2*scales[vec->indices[k]]);
   }
+
+  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
 
   return SLEQP_OKAY;
 }
@@ -277,7 +319,7 @@ SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
     return SLEQP_ILLEGAL_ARGUMENT;
   }
 
-  scaling->cons_weights[index] = weight;
+  scaling->var_weights[index] = weight;
 
   return SLEQP_OKAY;
 }
@@ -291,7 +333,7 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
     return SLEQP_ILLEGAL_ARGUMENT;
   }
 
-  scaling->var_weights[index] = weight;
+  scaling->cons_weights[index] = weight;
 
   return SLEQP_OKAY;
 }
@@ -365,6 +407,8 @@ SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScalingData* scaling,
 {
   int col = 0;
 
+  INIT_MATH_ERROR_CHECK;
+
   for(int index = 0; index < cons_jac->nnz; ++index)
   {
     while(index >= cons_jac->cols[col + 1])
@@ -378,6 +422,8 @@ SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScalingData* scaling,
                                   scaling->cons_weights[row] +
                                   scaling->var_weights[col]);
   }
+
+  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
 
   return SLEQP_OKAY;
 }
@@ -460,6 +506,8 @@ SLEQP_RETCODE sleqp_unscale_cons_jac(SleqpScalingData* scaling,
 {
   int col = 0;
 
+  INIT_MATH_ERROR_CHECK;
+
   for(int index = 0; index < scaled_cons_jac->nnz; ++index)
   {
     while(index >= scaled_cons_jac->cols[col + 1])
@@ -473,6 +521,8 @@ SLEQP_RETCODE sleqp_unscale_cons_jac(SleqpScalingData* scaling,
                                          - (scaling->var_weights[col] +
                                             scaling->cons_weights[row]));
   }
+
+  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
 
   return SLEQP_OKAY;
 }
@@ -578,6 +628,8 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
 
   int col = 0;
 
+  INIT_MATH_ERROR_CHECK;
+
   for(int index = 0; index < matrix->nnz; ++index)
   {
     while(index >= matrix->cols[col + 1])
@@ -621,6 +673,8 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
     assert(scaling_factors[i] >= min_weight);
     assert(scaling_factors[i] <= max_weight);
   }
+
+  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
 
   return SLEQP_OKAY;
 }
