@@ -71,6 +71,7 @@ START_TEST(test_func_grad_invalid)
 
   ASSERT_CALL(sleqp_sparse_vector_free(&func_grad));
 }
+END_TEST
 
 START_TEST(test_func_val_inverse)
 {
