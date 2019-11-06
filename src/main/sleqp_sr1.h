@@ -1,6 +1,11 @@
 #ifndef SLEQP_SR1_H
 #define SLEQP_SR1_H
 
+/**
+ * @file sleqp_sr1.h
+ * @brief Defintion of SR1 method.
+ **/
+
 #include "sleqp_func.h"
 
 #include "sleqp_iterate.h"

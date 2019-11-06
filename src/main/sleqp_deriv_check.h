@@ -1,6 +1,11 @@
 #ifndef SLEQP_DERIV_CHECK_H
 #define SLEQP_DERIV_CHECK_H
 
+/**
+ * @file sleqp_deriv_check.h
+ * @brief Definition of the derivative checker.
+ **/
+
 #include "sleqp_func.h"
 #include "sleqp_iterate.h"
 #include "sleqp_params.h"

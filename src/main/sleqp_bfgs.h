@@ -1,6 +1,11 @@
 #ifndef SLEQP_BFGS_H
 #define SLEQP_BFGS_H
 
+/**
+ * @file sleqp_bfgs.h
+ * @brief Defintion of BFGS method.
+ **/
+
 #include "sleqp_problem.h"
 
 #include "sleqp_iterate.h"

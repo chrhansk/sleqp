@@ -1,6 +1,11 @@
 #ifndef SLEQP_SPARSE_FACTORIZATION_H
 #define SLEQP_SPARSE_FACTORIZATION_H
 
+/**
+ * @file sleqp_sparse_factorization.h
+ * @brief Defintion of sparse factorization method.
+ **/
+
 #include "sleqp_types.h"
 
 #include "sleqp_sparse_matrix.h"

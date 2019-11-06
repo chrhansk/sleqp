@@ -2,8 +2,8 @@
 #define SLEQP_DUAL_ESTIMATION_H
 
 /**
- * @file sleqp_mem.h
- * @brief Definition of functions for the estimation of dual variables (aka multipliers).
+ * @file sleqp_dual_estimation.h
+ * @brief Definition of functions for the estimation of dual variables.
  **/
 
 #include "sleqp.h"

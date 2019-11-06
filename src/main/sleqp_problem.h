@@ -1,6 +1,11 @@
 #ifndef SLEQP_PROBLEM_H
 #define SLEQP_PROBLEM_H
 
+/**
+ * @file sleqp_problem.h
+ * @brief Definition of the programming problem.
+ **/
+
 #include "sleqp_func.h"
 #include "sleqp_types.h"
 #include "sleqp_params.h"
