@@ -168,6 +168,34 @@ START_TEST(test_first_order_deriv)
 }
 END_TEST
 
+START_TEST(test_second_order_deriv)
+{
+  SleqpIterate* scaled_iterate;
+
+  SleqpDerivCheckData* deriv_check_data;
+
+  ASSERT_CALL(sleqp_iterate_create(&scaled_iterate,
+                                   scaled_problem,
+                                   quadconsfunc_x));
+
+  ASSERT_CALL(sleqp_scale_point(scaling,
+                                scaled_iterate->x));
+
+  ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem, scaled_iterate));
+
+  ASSERT_CALL(sleqp_deriv_checker_create(&deriv_check_data,
+                                         scaled_problem,
+                                         params));
+
+  ASSERT_CALL(sleqp_deriv_check_second_order(deriv_check_data,
+                                             scaled_iterate));
+
+  ASSERT_CALL(sleqp_deriv_checker_free(&deriv_check_data));
+
+  ASSERT_CALL(sleqp_iterate_free(&scaled_iterate));
+}
+END_TEST
+
 void scaling_teardown()
 {
   ASSERT_CALL(sleqp_iterate_free(&iterate));
@@ -207,6 +235,7 @@ Suite* scaling_test_suite()
   tcase_add_test(tc_scale_inv, test_cons_jac_inverse);
 
   tcase_add_test(tc_scale_deriv, test_first_order_deriv);
+  tcase_add_test(tc_scale_deriv, test_second_order_deriv);
 
   suite_add_tcase(suite, tc_scale_inv);
 
