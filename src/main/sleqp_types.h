@@ -15,31 +15,30 @@ extern "C" {
 
 #include "sleqp_log.h"
 
-#define RETCODES C(SLEQP_OKAY, 0)               \
-    C(SLEQP_NOMEM, 1)                           \
-    C(SLEQP_ILLEGAL_ARGUMENT, 2)                \
-    C(SLEQP_INVALID_DERIV, 3)                   \
-    C(SLEQP_INTERNAL_ERROR, 4)                  \
-    C(SLEQP_NUM_RETCODES, 5)
+  typedef enum {
+    SLEQP_OKAY = 0,
+    SLEQP_NOMEM,
+    SLEQP_ILLEGAL_ARGUMENT,
+    SLEQP_INVALID_DERIV,
+    SLEQP_INTERNAL_ERROR,
+    SLEQP_MATH_ERROR
+  } SLEQP_RETCODE;
 
-#define C(k, v) k = v,
-  typedef enum { RETCODES } SLEQP_RETCODE;
-#undef C
+  typedef enum {
+    SLEQP_INACTIVE,
+    SLEQP_ACTIVE_LOWER,
+    SLEQP_ACTIVE_UPPER,
+    SLEQP_ACTIVE_BOTH
+  } SLEQP_ACTIVE_STATE;
 
-#define C(k, v) [v] = #k,
-  static const char * const sleqp_retcode_names[] = { RETCODES };
-#undef C
-#undef RETCODES
+  typedef enum {
+    SLEQP_OPTIMAL,
+    SLEQP_FEASIBLE,
+    SLEQP_INFEASIBLE,
+    SLEQP_INVALID
+  } SLEQP_STATUS;
 
-  typedef enum {SLEQP_INACTIVE = 0,
-                SLEQP_ACTIVE_LOWER = (1 << 1),
-                SLEQP_ACTIVE_UPPER = (1 << 2),
-                SLEQP_ACTIVE_BOTH  = (1 << 3)} SLEQP_ACTIVE_STATE;
-
-  typedef enum {SLEQP_OPTIMAL,
-                SLEQP_FEASIBLE,
-                SLEQP_INFEASIBLE,
-                SLEQP_INVALID} SLEQP_STATUS;
+  extern const char* sleqp_retcode_names[];
 
 #define SLEQP_CALL(x)                                                      \
   do                                                                       \
@@ -55,6 +54,20 @@ extern "C" {
     }                                                                      \
   }                                                                        \
   while(0)
+
+  typedef enum {
+    SLEQP_DERIV_CHECK_SKIP  = (1 << 0),
+    SLEQP_DERIV_CHECK_FIRST = (1 << 1),
+    SLEQP_DERIV_CHECK_SEC   = (1 << 2),
+    SLEQP_DERIV_CHECK_BOTH  = (SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SEC),
+  } SLEQP_DERIV_CHECK;
+
+  typedef enum {
+    SLEQP_HESSIAN_EVAL_EXACT,
+    SLEQP_HESSIAN_EVAL_SR1,
+    SLEQP_HESSIAN_EVAL_SIMPLE_BFGS,
+    SLEQP_HESSIAN_EVAL_DAMPED_BFGS,
+  } SLEQP_HESSIAN_EVAL;
 
   typedef enum {
     SLEQP_STEPTYPE_NONE = 0,
