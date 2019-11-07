@@ -239,12 +239,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
     SLEQP_CALL(sleqp_scale_point(solver->scaling_data,
                                  solver->iterate->x));
   }
-  else
-  {
-    solver->unscaled_iterate = solver->iterate;
-
-    solver->unscaled_trial_iterate = solver->trial_iterate;
-  }
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->violation,
                                         num_constraints,
@@ -341,6 +335,14 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->initial_soc_trial_point,
                                         num_variables,
                                         0));
+
+
+  if(!solver->scaling_data)
+  {
+    solver->unscaled_iterate = solver->iterate;
+
+    solver->unscaled_trial_iterate = solver->trial_iterate;
+  }
 
   SLEQP_CALL(sleqp_calloc(&solver->dense_cache, SLEQP_MAX(num_variables, num_constraints)));
 
