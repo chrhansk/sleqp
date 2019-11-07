@@ -261,7 +261,8 @@ SLEQP_RETCODE bfgs_hess_prod_range(SleqpBFGSData* data,
 }
 
 static
-SLEQP_RETCODE bfgs_initial_scale(SleqpSparseVec* step_diff,
+SLEQP_RETCODE bfgs_initial_scale(SleqpBFGSData* data,
+                                 SleqpSparseVec* step_diff,
                                  SleqpSparseVec* grad_diff,
                                  double* initial_scale)
 {
@@ -271,11 +272,18 @@ SLEQP_RETCODE bfgs_initial_scale(SleqpSparseVec* step_diff,
                                      step_diff,
                                      &step_dot));
 
-  const double step_diff_normsq = sleqp_sparse_vector_normsq(step_diff);
+  const double grad_diff_normsq = sleqp_sparse_vector_normsq(grad_diff);
 
-  assert(step_diff_normsq > 0.);
+  assert(grad_diff_normsq > 0.);
 
-  (*initial_scale) = step_dot / step_diff_normsq;
+  (*initial_scale) = grad_diff_normsq / step_dot;
+
+  if(data->damped)
+  {
+    // TODO: Find out if there is smoe better way
+    // of applying the damping to the initial approximation
+    (*initial_scale) = SLEQP_MAX((*initial_scale), 1.);
+  }
 
   return SLEQP_OKAY;
 }
@@ -288,7 +296,8 @@ SLEQP_RETCODE bfgs_compute_products(SleqpBFGSData* data)
   assert(data->len > 0);
 
   {
-    SLEQP_CALL(bfgs_initial_scale(data->step_diffs[data->curr],
+    SLEQP_CALL(bfgs_initial_scale(data,
+                                  data->step_diffs[data->curr],
                                   data->grad_diffs[data->curr],
                                   &data->initial_scale));
 
