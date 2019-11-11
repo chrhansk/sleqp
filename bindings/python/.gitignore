@@ -1,11 +1,7 @@
-__pycache__
-
-cmake/python_install.cmake
-
-dist
-
+# python extension
+**/*.c
+**/*__pycache__*
 *.egg-info
-
-*.so
-
+dist
 setup.py
+**/*.so

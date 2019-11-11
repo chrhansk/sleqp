@@ -1,1 +1,1 @@
-from .sleqp_python import *
+from .sleqp_python_extension import *

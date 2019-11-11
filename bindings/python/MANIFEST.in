@@ -1,4 +1,2 @@
-recursive-include src *.pxd
-recursive-include src *.pxi
-recursive-include src *.pyx
-recursive-include tests *.py
+include requirements.txt
+recursive-include src *.pyx *.pxd *.pxi
