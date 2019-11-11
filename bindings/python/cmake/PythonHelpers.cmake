@@ -24,8 +24,15 @@ function(add_python_project)
   set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
   set(SETUP_PY    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
 
+  set(TOX_INI_IN "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini.in")
+  set(TOX_INI    "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini")
+
   configure_file(${SETUP_PY_IN}
     ${SETUP_PY}
+    @ONLY)
+
+  configure_file(${TOX_INI_IN}
+    ${TOX_INI}
     @ONLY)
 
   add_custom_target(${TARGET_NAME} ALL)

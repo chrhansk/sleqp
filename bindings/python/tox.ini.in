@@ -2,3 +2,4 @@
 deps =
      -r{toxinidir}/requirements.txt
 commands = python -m unittest
+setenv = LD_LIBRARY_PATH=@SLEQP_LIBRARY_DIR@
