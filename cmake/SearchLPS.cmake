@@ -5,19 +5,23 @@ set(SLEQP_LPS_INCLUDE_DIRS "")
 set(SLEQP_LPS_LIBRARIES "")
 set(SLEQP_LPS_SOURCES "")
 
+set(SLEQP_LPS_DEPS_DEBIAN "")
+
 macro(add_lp_solver)
 
   cmake_parse_arguments(
     ARGS # prefix of output variables
     "" # list of names of the boolean arguments (only defined ones will be true)
     "NAME" # list of names of mono-valued arguments
-    "SOURCES" # list of names of multi-valued arguments (output variables are lists)
+    "SOURCES;DEPS_DEBIAN" # list of names of multi-valued arguments (output variables are lists)
     ${ARGN} # arguments of the function to parse, here we take the all original ones
     )
 
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
 
   set(RESULT_SOURCE_NAME "${RESULT_NAME}_SOURCES")
+
+  set("${RESULT_NAME}_DEPS_DEBIAN" "${ARGS_DEPS_DEBIAN}")
 
   set("${RESULT_SOURCE_NAME}" "")
 
@@ -34,7 +38,8 @@ add_lp_solver(
 
 add_lp_solver(
   NAME "SoPlex"
-  SOURCES sleqp_lpi_soplex.cc)
+  SOURCES sleqp_lpi_soplex.cc
+  DEPS_DEBIAN "scipoptsuite (>= 6.0.0)")
 
 set(_SLEQP_LP_SOLVER_VALUES "")
 
@@ -67,6 +72,7 @@ macro(find_lp_solver)
     set(SLEQP_LPS_INCLUDE_DIRS "${${RESULT_NAME}_INCLUDE_DIRS}")
     set(SLEQP_LPS_LIBRARIES "${${RESULT_NAME}_LIBRARIES}")
     set(SLEQP_LPS_SOURCES "${${RESULT_NAME}_SOURCES}")
+    set(SLEQP_LPS_DEPS_DEBIAN "${${RESULT_NAME}_DEPS_DEBIAN}")
   endif()
 
 endmacro()

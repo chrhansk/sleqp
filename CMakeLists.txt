@@ -50,6 +50,8 @@ set(SLEQP_LPS ""
 
 include(SearchLPS)
 
+include(Packaging)
+
 find_package(Umfpack REQUIRED)
 
 find_package(trlib REQUIRED)

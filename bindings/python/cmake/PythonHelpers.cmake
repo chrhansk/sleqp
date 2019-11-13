@@ -17,7 +17,9 @@ function(add_python_project)
     ""
     )
 
-  set(TARGET_NAME "python_${ARGS_PROJECT_NAME}")
+  set(PROJECT_NAME "${ARGS_PROJECT_NAME}")
+
+  set(TARGET_NAME "python_${PROJECT_NAME}")
 
   set(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
@@ -69,7 +71,7 @@ function(add_python_project)
       WORKING_DIRECTORY "${PROJECT_DIR}")
   endif()
 
-  set(INSTALL_SCRIPT_NAME "${CMAKE_CURRENT_BINARY_DIR}/python_install_${ARGS_PROJECT_NAME}.cmake")
+  set(INSTALL_SCRIPT_NAME "${CMAKE_CURRENT_BINARY_DIR}/python_install_${PROJECT_NAME}.cmake")
 
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/python_install.cmake.in"
     "${INSTALL_SCRIPT_NAME}"

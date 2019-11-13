@@ -1,8 +1,13 @@
 set(ROOT_DIR "/")
 
-if(DEFINED ENV{DESTDIR})
-  set(ROOT_DIR "$ENV{DESTDIR}")
+set(ENV_DESTDIR "$ENV{DESTDIR}")
+
+if(ENV_DESTDIR)
+  set(ROOT_DIR "${ENV_DESTDIR}")
 endif()
+
+#execute_process(COMMAND
+#  "/usr/bin/bash" "-c" "echo 'Installing [prefix] python project ${PROJECT_NAME}, ROOT_DIR=${ROOT_DIR}, CMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX} env destdir=${ENV_DESTDIR}'")
 
 execute_process(COMMAND
   "@PYTHON_EXECUTABLE@" setup.py install --root=${ROOT_DIR} --prefix=${CMAKE_INSTALL_PREFIX}
