@@ -50,8 +50,6 @@ set(SLEQP_LPS ""
 
 include(SearchLPS)
 
-include(Packaging)
-
 find_package(Umfpack REQUIRED)
 
 find_package(trlib REQUIRED)
@@ -104,7 +102,8 @@ install(EXPORT sleqp-targets
   NAMESPACE
   ${PROJECT_NAMESPACE}
   DESTINATION
-  ${CONFIG_DESTINATION})
+  ${CONFIG_DESTINATION}
+  COMPONENT "libraries")
 
 write_basic_package_version_file(
   ${CONFIG_VERSION_FILE}
@@ -118,4 +117,7 @@ install(
   ${CONFIG_VERSION_FILE}
   DESTINATION
   ${CONFIG_DESTINATION}
+  COMPONENT "libraries"
 )
+
+include(Packaging)

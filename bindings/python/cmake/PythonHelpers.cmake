@@ -13,7 +13,7 @@ function(add_python_project)
   cmake_parse_arguments(
     PARSE_ARGV 0 ARGS
     ""
-    "PROJECT_NAME"
+    "PROJECT_NAME;PROJECT_COMPONENT"
     ""
     )
 
@@ -77,6 +77,8 @@ function(add_python_project)
     "${INSTALL_SCRIPT_NAME}"
     @ONLY)
 
-  install(SCRIPT "${INSTALL_SCRIPT_NAME}")
+  install(
+    SCRIPT "${INSTALL_SCRIPT_NAME}"
+    COMPONENT "${ARGS_PROJECT_COMPONENT}")
 
 endfunction()

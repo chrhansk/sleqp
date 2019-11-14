@@ -4,4 +4,6 @@ find_program(TOX "tox")
 
 include(PythonHelpers)
 
-add_python_project(PROJECT_NAME sleqp)
+add_python_project(
+  PROJECT_NAME sleqp
+  PROJECT_COMPONENT "python")

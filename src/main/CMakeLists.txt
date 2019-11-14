@@ -72,7 +72,9 @@ install(TARGETS sleqp
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/main/"
   DESTINATION include/sleqp
+  COMPONENT "headers"
   FILES_MATCHING PATTERN "sleqp*.h")
 
 install(FILES "${CMAKE_BINARY_DIR}/sleqp_defs.h"
-  DESTINATION include/sleqp)
+  DESTINATION include/sleqp
+  COMPONENT "headers")
