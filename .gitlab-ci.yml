@@ -4,15 +4,10 @@ stages:
 - prepare
 - build
 - test
+- package
 
 variables:
   CTEST_OUTPUT_ON_FAILURE: '1'
-
-cache:
-  key: "PIPELINE-$CI_PIPELINE_ID"
-  paths:
-    - build
-    - bindings/python
 
 # run cmake
 prepare:
@@ -21,6 +16,10 @@ prepare:
     - mkdir -p build
     - cd build
     - cmake .. -DSLEQP_ENABLE_PYTHON=On
+  artifacts:
+    paths:
+      - build
+      - bindings/python
 
 # run make
 build:
@@ -28,6 +27,10 @@ build:
   script:
     - cd build
     - make -j$(nproc)
+  artifacts:
+    paths:
+      - build
+      - bindings/python
 
 # run tests
 test:
@@ -36,3 +39,17 @@ test:
     - cd build
     - make build_tests
     - make test
+  artifacts:
+    paths:
+      - build
+      - bindings/python
+
+package:
+  stage: package
+  script:
+    - cd build
+    - make package
+  artifacts:
+    paths:
+      - build/*.deb
+      - build/*.bz2
