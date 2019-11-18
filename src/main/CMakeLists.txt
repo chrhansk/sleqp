@@ -68,7 +68,8 @@ target_link_libraries(sleqp_bin sleqp)
 install(TARGETS sleqp
   EXPORT sleqp-targets
   ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+  LIBRARY DESTINATION lib
+  COMPONENT "libraries")
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/main/"
   DESTINATION include/sleqp
