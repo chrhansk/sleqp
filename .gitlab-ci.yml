@@ -53,3 +53,12 @@ package:
     paths:
       - build/*.deb
       - build/*.bz2
+
+package_wheel:
+  stage: package
+  script:
+    - cd build
+    - make python_sleqp_bdist_wheel
+  artifacts:
+    paths:
+      - bindings/python/dist/*.whl
