@@ -30,6 +30,7 @@ setup(name='@PROJECT_NAME@',
       ext_modules=cythonize(extensions),
       packages=find_packages(exclude=["tests"]),
       install_requires=requirements,
+      setup_requires=['wheel'],
       classifiers=[
         'Programming Language :: Cython',
         'Intended Audience :: Science/Research',
