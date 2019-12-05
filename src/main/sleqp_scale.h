@@ -22,7 +22,7 @@ extern "C" {
    * \begin{aligned}
    * \min \: & f'(x')                         \\
    * \text{s.t. } \: & l' \leq c'(x') \leq u' \\
-   * & l'_x \leq x' \leq u_x,
+   * & l'_x \leq x' \leq u'_x,
    * \end{aligned}
    * \f]
    *
