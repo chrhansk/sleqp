@@ -30,6 +30,10 @@ add_library(sleqp SHARED
   ${COMMON_SRC}
   ${SLEQP_LPS_SOURCES})
 
+set_target_properties(sleqp
+    PROPERTIES
+    VERSION ${PROJECT_VERSION})
+
 set_property(TARGET sleqp PROPERTY C_STANDARD 11)
 
 add_executable(sleqp_bin
