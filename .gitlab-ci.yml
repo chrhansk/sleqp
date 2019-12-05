@@ -16,7 +16,7 @@ prepare:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DSLEQP_ENABLE_PYTHON=On
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DSLEQP_ENABLE_PYTHON=On
   artifacts:
     paths:
       - build
