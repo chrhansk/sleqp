@@ -69,7 +69,7 @@ install_package:
   stage: install
   script:
     - cd build
-    - apt -y install *.deb
+    - apt -y install ./*.deb
 
 # install_wheel:
 #   stage: install
