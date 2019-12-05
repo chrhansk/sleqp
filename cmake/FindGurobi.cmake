@@ -17,7 +17,7 @@ find_path(GUROBI_INCLUDE_DIR
 
 # TODO: FInd a better way to get the correct version
 find_library(GUROBI_LIBRARY
-  NAMES gurobi gurobi810
+  NAMES gurobi gurobi810 gurobi811 gurobi90
   PATHS ${GUROBI_ROOT}
   PATH_SUFFIXES lib)
 
