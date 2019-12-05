@@ -5,6 +5,7 @@ stages:
 - build
 - test
 - package
+- install
 - downstream
 
 variables:
@@ -63,6 +64,17 @@ package_wheel:
   artifacts:
     paths:
       - bindings/python/dist/*.whl
+
+install_package:
+  stage: install
+  script:
+    - cd build
+    - apt -y install *.deb
+
+# install_wheel:
+#   stage: install
+#   script:
+#     - cd bindings/python/dist/*.whl
 
 trigger_downstream:
   stage: downstream
