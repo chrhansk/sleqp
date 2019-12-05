@@ -5,13 +5,15 @@ project(sleqp
   LANGUAGES C CXX)
 
 set(PROJECT_DESCRIPTION "Active set-based NLP solver")
+set(PROJECT_MAINTAINER_NAME "Christoph Hansknecht")
+set(PROJECT_MAINTAINER_EMAIL "c.hansknecht@tu-braunschweig.de")
 
-set(PROJECT_LONG_DESCRIPTION "sleqp is an open-source solver for
-large-scale nonlinear continuous optimization. sleqp is
-available as a callable library with interfaces to C++, C, and
-python. It uses an active set method based
-on a combination of successive linear programming and
-equality constrained quadratic programming.")
+set(PROJECT_LONG_DESCRIPTION "This package provides sleqp, an
+open-source solver for large-scale nonlinear continuous
+optimization. sleqp is available as a callable library with interfaces
+to C++, C, and python. It uses an active set method based on a
+combination of successive linear programming and equality constrained
+quadratic programming.")
 
 include(CMakePackageConfigHelpers)
 include(FindPackageHandleStandardArgs)
