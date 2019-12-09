@@ -2,6 +2,7 @@
 **/*.c
 **/*__pycache__*
 *.egg-info
+.eggs
 dist
 setup.py
 **/*.so
