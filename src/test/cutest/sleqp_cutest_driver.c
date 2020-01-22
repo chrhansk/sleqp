@@ -127,6 +127,7 @@ int sleqp_cutest_run(const char* filename,
   SleqpSparseVec* cons_ub;
   SleqpFunc* func;
 
+  SleqpOptions* options;
   SleqpProblem* problem;
   SleqpSolver* solver;
 
@@ -162,9 +163,12 @@ int sleqp_cutest_run(const char* filename,
                                   cons_lb,
                                   cons_ub));
 
+  SLEQP_CALL(sleqp_options_create(&options));
+
   SLEQP_CALL(sleqp_solver_create(&solver,
                                  problem,
                                  params,
+                                 options,
                                  x,
                                  NULL));
 
@@ -221,6 +225,8 @@ int sleqp_cutest_run(const char* filename,
   /**/
 
   SLEQP_CALL(sleqp_solver_free(&solver));
+
+  SLEQP_CALL(sleqp_options_free(&options));
 
   SLEQP_CALL(sleqp_problem_free(&problem));
 
