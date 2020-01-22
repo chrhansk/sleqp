@@ -90,13 +90,11 @@ SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
 
   SleqpSparseFactorization* factorization = *star;
 
+  *factorization = (SleqpSparseFactorization){0};
+
   assert(matrix->num_cols == matrix->num_rows);
 
   factorization->matrix = matrix;
-
-  factorization->numeric_factorization = NULL;
-
-  factorization->symbolic_factorization = NULL;
 
   UMFPACK_CALL(umfpack_di_symbolic(matrix->num_cols,
                                    matrix->num_rows,
