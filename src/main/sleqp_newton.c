@@ -360,23 +360,19 @@ static SLEQP_RETCODE matrix_push_column(SleqpSparseMatrix* matrix,
 {
   SLEQP_CALL(sleqp_sparse_matrix_reserve(matrix, matrix->nnz + vector->nnz));
 
-  int column = matrix->num_cols;
-
-  int index = matrix->cols[column];
-
-  for(int k = 0; k < vector->nnz; ++k)
-  {
-    matrix->rows[index] = vector->indices[k];
-    matrix->data[index] = vector->data[k] * scale;
-
-    ++index;
-  }
+  const int column = matrix->num_cols;
 
   ++matrix->num_cols;
 
-  matrix->nnz += vector->nnz;
-  matrix->cols[matrix->num_cols] = matrix->cols[matrix->num_cols - 1] + vector->nnz;
+  SLEQP_CALL(sleqp_sparse_matrix_push_column(matrix, column));
 
+  for(int k = 0; k < vector->nnz; ++k)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_push(matrix,
+                                        vector->indices[k],
+                                        column,
+                                        vector->data[k] * scale));
+  }
 
   return SLEQP_OKAY;
 }
