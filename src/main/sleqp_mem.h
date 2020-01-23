@@ -14,12 +14,12 @@
 extern "C" {
 #endif
 
-#define sleqp_allocate_memory(ptr, size)                                \
-  (((*ptr = (size > 0) ? malloc(size) : NULL), (size > 0) && ptr == NULL) \
-   ? SLEQP_NOMEM : SLEQP_OKAY)
+#define sleqp_allocate_memory(ptr, size)                                     \
+  (*(ptr) = ((size) > 0) ? malloc((size)) : NULL), (((size) > 0) && (*(ptr) == NULL)) \
+    ? SLEQP_NOMEM : SLEQP_OKAY
 
 #define sleqp_reallocate_memory(ptr, size)                              \
-  (*ptr = realloc(*ptr, size), ptr != NULL) ? SLEQP_OKAY : SLEQP_NOMEM
+  (*ptr = realloc(*ptr, size), *ptr != NULL) ? SLEQP_OKAY : SLEQP_NOMEM
 
   SLEQP_RETCODE sleqp_free(void** ptr);
 
