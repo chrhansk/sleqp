@@ -19,8 +19,9 @@ typedef struct SleqpLpiGRB
 
   int num_lp_cols;
 
-  int* row_basis;
+  int* slack_basis;
   int* col_basis;
+  int* row_basis;
 
 } SleqpLpiGRB;
 
@@ -56,19 +57,17 @@ static SLEQP_RETCODE gurobi_create_problem(void** star,
 
   SLEQP_CALL(sleqp_malloc(&lp_interface));
 
-  *star = lp_interface;
+  *lp_interface = (SleqpLpiGRB){0};
 
-  lp_interface->env = NULL;
-  lp_interface->model = NULL;
+  *star = lp_interface;
 
   lp_interface->num_cols = num_cols;
   lp_interface->num_rows = num_rows;
   lp_interface->num_lp_cols = num_rows + num_cols;
 
-  lp_interface->col_basis = NULL;
-  lp_interface->row_basis = NULL;
-
   SLEQP_CALL(sleqp_calloc(&lp_interface->col_basis, num_cols));
+  SLEQP_CALL(sleqp_calloc(&lp_interface->slack_basis, num_rows));
+
   SLEQP_CALL(sleqp_calloc(&lp_interface->row_basis, num_rows));
 
   int err = GRBloadenv(&lp_interface->env, NULL);
@@ -194,6 +193,9 @@ static SLEQP_RETCODE gurobi_set_coefficients(void* lp_data,
   GRBenv* env = lp_interface->env;
   GRBmodel* model = lp_interface->model;
 
+  assert(coeff_matrix->num_rows == num_rows);
+  assert(coeff_matrix->num_cols == num_cols);
+
   for(int col = 0; col < coeff_matrix->num_cols; ++col)
   {
     for(int k = coeff_matrix->cols[col]; k < coeff_matrix->cols[col +1]; ++k)
@@ -315,11 +317,23 @@ static SLEQP_RETCODE gurobi_get_consstats(void* lp_data,
                                     GRB_INT_ATTR_VBASIS,
                                     num_cols,
                                     num_rows,
+                                    lp_interface->slack_basis), env);
+
+  SLEQP_GRB_CALL(GRBgetintattrarray(model,
+                                    GRB_INT_ATTR_CBASIS,
+                                    0,
+                                    num_rows,
                                     lp_interface->row_basis), env);
 
   for(int i = 0; i < num_rows; ++i)
   {
-    switch(lp_interface->row_basis[i])
+    if(lp_interface->row_basis[i] == GRB_BASIC)
+    {
+      constraint_stats[i] = SLEQP_BASESTAT_BASIC;
+      continue;
+    }
+
+    switch(lp_interface->slack_basis[i])
     {
     case GRB_BASIC:
       constraint_stats[i] = SLEQP_BASESTAT_BASIC;
@@ -332,6 +346,7 @@ static SLEQP_RETCODE gurobi_get_consstats(void* lp_data,
       break;
     case GRB_SUPERBASIC:
       sleqp_log_error("Encountered a super-basic constraint");
+      return SLEQP_INTERNAL_ERROR;
     default:
       assert(false);
     }
@@ -359,6 +374,12 @@ static SLEQP_RETCODE gurobi_free(void** star)
   {
     GRBfreeenv(lp_interface->env);
   }
+
+  sleqp_free(&lp_interface->row_basis);
+
+  sleqp_free(&lp_interface->slack_basis);
+  sleqp_free(&lp_interface->col_basis);
+
 
   sleqp_free(star);
 
