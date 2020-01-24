@@ -137,11 +137,12 @@ static SLEQP_RETCODE gurobi_solve(void* lp_data,
 
   if(time_limit != -1)
   {
+    GRBenv* model_env = GRBgetenv(model);
 
-    SLEQP_GRB_CALL(GRBsetdblparam(env,
+    SLEQP_GRB_CALL(GRBsetdblparam(model_env,
                                   GRB_DBL_PAR_TIMELIMIT,
                                   time_limit),
-                   env);
+                   model_env);
   }
 
   SLEQP_GRB_CALL(GRBoptimize(model), env);
