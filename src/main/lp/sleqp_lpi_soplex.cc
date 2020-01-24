@@ -106,10 +106,16 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 
 static SLEQP_RETCODE soplex_solve(void* lp_data,
                                   int num_cols,
-                                  int num_rows)
+                                  int num_rows,
+                                  double time_limit)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
+
+  if(time_limit != -1)
+  {
+    soplex.setRealParam(soplex::SoPlex::TIMELIMIT, time_limit);
+  }
 
   soplex::SPxSolver::Status status = soplex.optimize();
 

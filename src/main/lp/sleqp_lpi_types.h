@@ -34,7 +34,8 @@ extern "C" {
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_SOLVE)(void* lp_data,
                                            int num_variables,
-                                           int num_constraints);
+                                           int num_constraints,
+                                           double time_limit);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_SET_BOUNDS)(void* lp_data,
                                                 int num_variables,

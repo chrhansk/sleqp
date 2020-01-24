@@ -126,13 +126,23 @@ static SLEQP_RETCODE gurobi_create_problem(void** star,
 
 static SLEQP_RETCODE gurobi_solve(void* lp_data,
                                   int num_cols,
-                                  int num_rows)
+                                  int num_rows,
+                                  double time_limit)
 {
   SleqpLpiGRB* lp_interface = lp_data;
   int sol_stat;
 
   GRBenv* env = lp_interface->env;
   GRBmodel* model = lp_interface->model;
+
+  if(time_limit != -1)
+  {
+
+    SLEQP_GRB_CALL(GRBsetdblparam(env,
+                                  GRB_DBL_PAR_TIMELIMIT,
+                                  time_limit),
+                   env);
+  }
 
   SLEQP_GRB_CALL(GRBoptimize(model), env);
 

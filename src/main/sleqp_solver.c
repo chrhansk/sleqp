@@ -131,7 +131,26 @@ struct SleqpSolver
   double elapsed_seconds;
 
   int iteration;
+
+  double time_limit;
+
 };
+
+static double remaining_time(SleqpSolver* solver)
+{
+  double time_limit = solver->time_limit;
+
+  if(time_limit != -1)
+  {
+    double remaining_time = time_limit - sleqp_timer_elapsed(solver->elapsed_timer);
+
+    remaining_time = SLEQP_MAX(remaining_time, 0.);
+
+    return remaining_time;
+  }
+
+  return -1;
+}
 
 SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   SleqpProblem* problem,
@@ -353,6 +372,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   solver->lp_trust_radius = .8 * (solver->trust_radius) * sqrt((double) num_variables);
 
   solver->penalty_parameter = 10.;
+
+  solver->time_limit = -1;
 
   return SLEQP_OKAY;
 }
@@ -728,6 +749,9 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
 
   // compute Newton step
   {
+    SLEQP_CALL(sleqp_newton_set_time_limit(solver->newton_data,
+                                           remaining_time(solver)));
+
     SLEQP_CALL(sleqp_newton_compute_step(solver->newton_data,
                                          solver->iterate,
                                          solver->aug_jacobian,
@@ -955,6 +979,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                              bool* optimal)
 {
   *optimal = false;
+
+  SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface, remaining_time(solver)));
 
   const SleqpOptions* options = solver->options;
   SleqpProblem* problem = solver->scaled_problem;
@@ -1260,6 +1286,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   solver->status = SLEQP_INVALID;
 
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
+
+  solver->time_limit = time_limit;
 
   solver->iteration = 0;
   solver->elapsed_seconds = 0.;

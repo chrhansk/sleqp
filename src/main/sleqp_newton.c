@@ -8,6 +8,7 @@
 #include "sleqp_iterate.h"
 #include "sleqp_log.h"
 #include "sleqp_mem.h"
+#include "sleqp_timer.h"
 
 struct SleqpNewtonData
 {
@@ -52,6 +53,8 @@ struct SleqpNewtonData
 
   SleqpSparseMatrix* Q;
 
+  SleqpTimer* timer;
+  double time_limit;
 };
 
 static SLEQP_RETCODE trlib_get_status_string(int value,
@@ -123,6 +126,8 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
 
   SleqpNewtonData* data = *star;
 
+  *data = (SleqpNewtonData) {0};
+
   data->problem = problem;
   data->params = params;
 
@@ -185,6 +190,17 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
                                         data->trlib_maxiter,
                                         0));
 
+  data->time_limit = -1;
+
+  SLEQP_CALL(sleqp_timer_create(&data->timer));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
+                                          double time_limit)
+{
+  data->time_limit = time_limit;
   return SLEQP_OKAY;
 }
 
@@ -432,6 +448,8 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
 
   trlib_int_t maxiter = data->trlib_maxiter;
   //trlib_int_t timing = 0;
+
+  SLEQP_CALL(sleqp_timer_start(data->timer));
 
   {
     init = TRLIB_CLS_INIT;
@@ -779,6 +797,12 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
       break;
     }
 
+    if(data->time_limit != -1 &&
+       sleqp_timer_elapsed(data->timer) >= data->time_limit)
+    {
+      break;
+    }
+
     /*
       if(sleqp_zero(g_dot_g))
       {
@@ -796,6 +820,8 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
       }
     */
   }
+
+  SLEQP_CALL(sleqp_timer_stop(data->timer));
 
   assert(iter + 1 == data->Q->num_cols);
 
@@ -965,6 +991,8 @@ SLEQP_RETCODE sleqp_newton_data_free(SleqpNewtonData** star)
   {
     return SLEQP_OKAY;
   }
+
+  SLEQP_CALL(sleqp_timer_free(&data->timer));
 
   SLEQP_CALL(sleqp_sparse_matrix_free(&data->Q));
 

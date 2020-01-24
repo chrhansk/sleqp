@@ -13,6 +13,8 @@ struct SleqpLPi
 
   int num_variables, num_constraints;
 
+  double time_limit;
+
   // callbacks
   SLEQP_LPI_CREATE create_problem;
   SLEQP_LPI_SOLVE solve;
@@ -63,6 +65,8 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
   lp_interface->num_variables = num_variables;
   lp_interface->num_constraints = num_constraints;
 
+  lp_interface->time_limit = -1;
+
   SLEQP_CALL(create_problem(&lp_interface->lp_data,
                             num_variables,
                             num_constraints,
@@ -87,7 +91,8 @@ SLEQP_RETCODE sleqp_lpi_solve(SleqpLPi* lp_interface)
 
   SLEQP_CALL(lp_interface->solve(lp_interface->lp_data,
                                  lp_interface->num_variables,
-                                 lp_interface->num_constraints));
+                                 lp_interface->num_constraints,
+                                 lp_interface->time_limit));
 
   SLEQP_CALL(sleqp_timer_stop(lp_interface->timer));
 
@@ -125,6 +130,14 @@ SLEQP_RETCODE sleqp_lpi_set_objective(SleqpLPi* lp_interface,
                                      lp_interface->num_variables,
                                      lp_interface->num_constraints,
                                      objective);
+}
+
+SLEQP_RETCODE sleqp_lpi_set_time_limit(SleqpLPi* lp_interface,
+                                       double time_limit)
+{
+  lp_interface->time_limit = time_limit;
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_lpi_get_solution(SleqpLPi* lp_interface,

@@ -46,6 +46,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_lpi_set_objective(SleqpLPi* lp_interface,
                                         double* objective);
 
+  SLEQP_RETCODE sleqp_lpi_set_time_limit(SleqpLPi* lp_interface,
+                                         double time_limit);
+
   SLEQP_RETCODE sleqp_lpi_get_solution(SleqpLPi* lp_interface,
                                        double* objective_value,
                                        double* solution_values);
