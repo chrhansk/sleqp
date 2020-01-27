@@ -22,7 +22,11 @@ static struct LevelInfo level_infos[SLEQP_NUM_LOG_LEVELS] =
   {"debug", SLEQP_FORMAT_BLUE}
 };
 
+#ifdef NDEBUG
+static SLEQP_LOG_LEVEL level = SLEQP_LOG_INFO;
+#else
 static SLEQP_LOG_LEVEL level = SLEQP_LOG_DEBUG;
+#endif
 
 SLEQP_LOG_LEVEL sleqp_log_level()
 {

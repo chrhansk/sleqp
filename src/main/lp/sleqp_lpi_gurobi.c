@@ -80,6 +80,13 @@ static SLEQP_RETCODE gurobi_create_problem(void** star,
     return SLEQP_INTERNAL_ERROR;
   }
 
+  if(sleqp_log_level() < SLEQP_LOG_DEBUG)
+  {
+    SLEQP_GRB_CALL(GRBsetintparam(env,
+                                  GRB_INT_PAR_OUTPUTFLAG,
+                                  0), env);
+  }
+
   SLEQP_GRB_CALL(GRBnewmodel(env,
                              &lp_interface->model,
                              "",
