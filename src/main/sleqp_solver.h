@@ -34,6 +34,11 @@ extern "C" {
   SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                           SleqpIterate** iterate);
 
+  SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
+                                                      SleqpIterate* iterate,
+                                                      int* violated_constraints,
+                                                      int* num_violated_constraints);
+
   int sleqp_solver_get_iterations(SleqpSolver* solver);
 
   double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver);

@@ -1412,6 +1412,22 @@ SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
+                                                    SleqpIterate* iterate,
+                                                    int* violated_constraints,
+                                                    int* num_violated_constraints)
+{
+  const double tolerance = sleqp_params_get_optimality_tolerance(solver->params);
+
+  SLEQP_CALL(sleqp_iterate_get_violated_constraints(iterate,
+                                                    solver->problem,
+                                                    tolerance,
+                                                    violated_constraints,
+                                                    num_violated_constraints));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
 {
   return solver->status;

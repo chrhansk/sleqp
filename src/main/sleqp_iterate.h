@@ -92,6 +92,12 @@ extern "C" {
                                 double tolerance,
                                 double* cache);
 
+  SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
+                                                       SleqpProblem* problem,
+                                                       double tolerance,
+                                                       int* violated_constraints,
+                                                       int* num_violated_constraints);
+
   SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
                                    SleqpIterate* target);
 

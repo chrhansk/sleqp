@@ -1,5 +1,7 @@
 #cython: language_level=3
 
+from libc.stdlib cimport malloc, free
+
 cdef class Solver:
   cdef csleqp.SleqpSolver* solver
   cdef csleqp.SleqpSparseVec* x
@@ -91,3 +93,29 @@ cdef class Solver:
 
   def  __dealloc__(self):
     csleqp_call(csleqp.sleqp_solver_free(&self.solver))
+
+  @property
+  def violated_cons(self):
+      num_constraints =  self.problem.num_constraints
+
+      cdef int *violated_cons = <int *> malloc(num_constraints * sizeof(double))
+      cdef int num_violated_cons
+      cdef csleqp.SleqpIterate* iterate
+
+      try:
+          csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
+
+          csleqp_call(csleqp.sleqp_solver_get_violated_constraints(self.solver,
+                                                                   iterate,
+                                                                   violated_cons,
+                                                                   &num_violated_cons))
+
+          violated = set()
+
+          for i in range(num_violated_cons):
+              violated.add(violated_cons[i])
+
+          return violated
+
+      finally:
+          free(violated_cons)

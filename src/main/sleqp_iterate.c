@@ -300,8 +300,6 @@ double sleqp_iterate_constraint_violation(SleqpIterate* iterate,
     double lb_val = valid_lb ? lb->data[k_lb] : 0.;
     double ub_val = valid_ub ? ub->data[k_ub] : 0.;
 
-    //double current_residuum = SLEQP_MIN(lb_val - x_val, 0.) * SLEQP_MIN(d_val, 0.);
-
     {
       double current_violation = SLEQP_MAX(c_val - ub_val, 0.);
 
@@ -331,6 +329,81 @@ double sleqp_iterate_constraint_violation(SleqpIterate* iterate,
   }
 
   return violation;
+}
+
+SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
+                                                     SleqpProblem* problem,
+                                                     double tolerance,
+                                                     int* violated_constraints,
+                                                     int* num_violated_constraints)
+{
+  double value_norm = 0.;
+
+  {
+    value_norm = sleqp_sparse_vector_normsq(iterate->x);
+
+    value_norm = sqrt(value_norm);
+  }
+
+  SleqpSparseVec* c = iterate->cons_val;
+  SleqpSparseVec* lb = problem->cons_lb;
+  SleqpSparseVec* ub = problem->cons_ub;
+
+  int k_c = 0, k_lb = 0, k_ub = 0;
+
+  int dim = c->dim;
+
+  *num_violated_constraints = 0;
+
+  while(k_c < c->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  {
+    bool valid_c = k_c < c->nnz;
+    bool valid_lb = k_lb < lb->nnz;
+    bool valid_ub = k_ub < ub->nnz;
+
+    int i_c = valid_c ? c->indices[k_c] : dim + 1;
+    int i_lb = valid_lb ? lb->indices[k_lb] : dim + 1;
+    int i_ub = valid_ub ? ub->indices[k_ub] : dim + 1;
+
+    int i_combined = SLEQP_MIN(i_lb, i_ub);
+    i_combined = SLEQP_MIN(i_combined, i_c);
+
+    valid_c = valid_c && (i_c == i_combined);
+    valid_lb = valid_lb && (i_lb == i_combined);
+    valid_ub = valid_ub && (i_ub == i_combined);
+
+    double c_val = valid_c ? c->data[k_c] : 0.;
+    double lb_val = valid_lb ? lb->data[k_lb] : 0.;
+    double ub_val = valid_ub ? ub->data[k_ub] : 0.;
+
+    double lower_violation = SLEQP_MAX(c_val - ub_val, 0.);
+
+    double upper_violation = SLEQP_MAX(lb_val - c_val, 0.);
+
+    double current_violation = SLEQP_MAX(lower_violation, upper_violation);
+
+    if(current_violation > tolerance * (1. + value_norm))
+    {
+      violated_constraints[(*num_violated_constraints)++] = i_combined;
+    }
+
+    if(valid_c)
+    {
+      ++k_c;
+    }
+
+    if(valid_lb)
+    {
+      ++k_lb;
+    }
+
+    if(valid_ub)
+    {
+      ++k_ub;
+    }
+  }
+
+  return SLEQP_OKAY;
 }
 
 double sleqp_iterate_optimality_residuum(SleqpIterate* iterate,
@@ -443,13 +516,13 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
     multiplier_norm = sqrt(multiplier_norm);
   }
 
-  sleqp_log_debug("Checking optimality, tolerance: %e", tolerance);
+  sleqp_log_info("Checking optimality, tolerance: %e", tolerance);
 
   const double optimality_residuum = sleqp_iterate_optimality_residuum(iterate, problem, cache);
 
   if(optimality_residuum >= tolerance * (1. + multiplier_norm))
   {
-    sleqp_log_debug("Iterate is not optimal, residuum: %e, multiplier norm: %e",
+    sleqp_log_info("Iterate is not optimal, residuum: %e, multiplier norm: %e",
                     optimality_residuum,
                     multiplier_norm);
 
@@ -460,7 +533,7 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
 
   if(slackness_residuum >= tolerance * (1. + multiplier_norm))
   {
-    sleqp_log_debug("Iterate does not satisfy complementary slackness, residuum: %e, multiplier norm: %e",
+    sleqp_log_info("Iterate does not satisfy complementary slackness, residuum: %e, multiplier norm: %e",
                     slackness_residuum,
                     multiplier_norm);
     return false;

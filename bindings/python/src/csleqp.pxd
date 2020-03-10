@@ -216,7 +216,14 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                           SleqpIterate** iterate)
 
+  SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
+                                                      SleqpIterate* iterate,
+                                                      int* violated_constraints,
+                                                      int* num_violated_constraints)
+
   SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star)
+
+  # Problem
 
   SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                      SleqpFunc* func,
