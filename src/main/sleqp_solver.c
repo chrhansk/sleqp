@@ -206,6 +206,12 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     problem->var_ub,
                                     problem->cons_lb,
                                     problem->cons_ub));
+
+    if(scaling_data)
+    {
+      SLEQP_CALL(sleqp_scaling_set_func(scaling_data,
+                                        func));
+    }
   }
 
   solver->scaling_data = scaling_data;

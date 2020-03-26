@@ -41,6 +41,7 @@ struct SleqpScalingData
 {
   SleqpProblem* problem;
   SleqpParams* params;
+  SleqpFunc* func;
 
   int func_scale;
   int* var_weights;
@@ -142,7 +143,7 @@ scaled_func_set_value(SleqpSparseVec* scaled_value,
   SLEQP_CALL(sleqp_unscale_point(scaling,
                                  scaling->unscaled_value));
 
-  SLEQP_CALL(sleqp_func_set_value(scaling->problem->func,
+  SLEQP_CALL(sleqp_func_set_value(scaling->func,
                                   scaling->unscaled_value,
                                   func_grad_nnz,
                                   cons_val_nnz,
@@ -162,7 +163,7 @@ scaled_func_eval(int num_variables,
 {
   SleqpScalingData* scaling = (SleqpScalingData*) func_data;
 
-  SLEQP_CALL(sleqp_func_eval(scaling->problem->func,
+  SLEQP_CALL(sleqp_func_eval(scaling->func,
                              cons_indices,
                              func_val,
                              func_grad,
@@ -215,7 +216,7 @@ scaled_func_hess_prod(int num_variables,
                            scaling->cons_weights,
                            -1. * scaling->func_scale));
 
-  SLEQP_CALL(sleqp_func_hess_prod(scaling->problem->func,
+  SLEQP_CALL(sleqp_func_hess_prod(scaling->func,
                                   func_dual,
                                   scaling->scaled_direction,
                                   scaling->scaled_cons_duals,
@@ -255,6 +256,8 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
   *scaling = (SleqpScalingData) {0};
 
   scaling->problem = problem;
+
+  scaling->func = problem->func;
 
   scaling->params = params;
 
@@ -334,6 +337,14 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
   }
 
   scaling->cons_weights[index] = weight;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_scaling_set_func(SleqpScalingData* scaling,
+                                     SleqpFunc* func)
+{
+  scaling->func = func;
 
   return SLEQP_OKAY;
 }

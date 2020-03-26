@@ -85,6 +85,9 @@ extern "C" {
                                               int index,
                                               int weight);
 
+  SLEQP_RETCODE sleqp_scaling_set_func(SleqpScalingData* scaling,
+                                       SleqpFunc* func);
+
   SLEQP_RETCODE sleqp_scaling_flush(SleqpScalingData* scaling);
 
   /** @name Scaling
