@@ -51,8 +51,8 @@ extern "C" {
    * c'(\cdot) &:= A c(B \cdot)            \\
    * l' &:= A l                            \\
    * u' &:= A u                            \\
-   * l_x' &:= B^{-1} l_x                   \\
-   * u_x' &:= B^{-1} u_x                   \\
+   * l_x' &:= B l_x                        \\
+   * u_x' &:= B u_x                        \\
    * \end{aligned}
    * \f]
    *

@@ -206,8 +206,9 @@ scaled_func_hess_prod(int num_variables,
   SLEQP_CALL(sleqp_sparse_vector_copy(direction,
                                       scaling->scaled_direction));
 
-  SLEQP_CALL(apply_quad_scaling(scaling->scaled_direction,
-                                scaling->var_weights));
+  SLEQP_CALL(apply_scaling(scaling->scaled_direction,
+                           scaling->var_weights,
+                           0));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(cons_duals,
                                       scaling->scaled_cons_duals));
@@ -222,7 +223,9 @@ scaled_func_hess_prod(int num_variables,
                                   scaling->scaled_cons_duals,
                                   product));
 
-  SLEQP_CALL(apply_const_scaling(product, scaling->func_scale));
+  SLEQP_CALL(apply_scaling(product,
+                           scaling->var_weights,
+                           scaling->func_scale));
 
 
   return SLEQP_OKAY;
