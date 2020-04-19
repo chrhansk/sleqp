@@ -75,8 +75,3 @@ bool sleqp_zero(double x, double eps)
 {
   return SLEQP_ABS(x) <= eps;
 }
-
-bool sleqp_is_infinity(double x)
-{
-  return x >= sleqp_infinity();
-}
