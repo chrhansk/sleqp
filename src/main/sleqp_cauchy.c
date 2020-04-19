@@ -390,7 +390,13 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
       assert(sleqp_le(lbval, xval, eps));
       assert(sleqp_le(xval, ubval, eps));
 
-      if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
+      if(sleqp_eq(lbval, ubval, eps))
+      {
+        SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
+                                                 i,
+                                                 SLEQP_ACTIVE_BOTH));
+      }
+      else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
          (-trust_radius < lbval - xval))
       {
         SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
