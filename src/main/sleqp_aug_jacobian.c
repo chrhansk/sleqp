@@ -15,6 +15,8 @@ struct SleqpAugJacobian
   SleqpSparseMatrix* augmented_matrix;
   SleqpSparseFactorization* factorization;
 
+  SleqpTimer* factorization_timer;
+
   int* col_indices;
 };
 
@@ -180,6 +182,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
 
   SLEQP_CALL(sleqp_calloc(&jacobian->col_indices, max_num_cols + 1));
 
+  SLEQP_CALL(sleqp_timer_create(&jacobian->factorization_timer));
+
   return SLEQP_OKAY;
 }
 
@@ -212,8 +216,12 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
     SLEQP_CALL(sleqp_sparse_factorization_free(&jacobian->factorization));
   }
 
+  SLEQP_CALL(sleqp_timer_start(jacobian->factorization_timer));
+
   SLEQP_CALL(sleqp_sparse_factorization_create(&jacobian->factorization,
                                                jacobian->augmented_matrix));
+
+  SLEQP_CALL(sleqp_timer_stop(jacobian->factorization_timer));
 
   {
     SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
@@ -226,6 +234,11 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   }
 
   return SLEQP_OKAY;
+}
+
+SleqpTimer* sleqp_aug_jacobian_get_factorization_timer(SleqpAugJacobian* jacobian)
+{
+  return jacobian->factorization_timer;
 }
 
 SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
@@ -332,6 +345,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_free(SleqpAugJacobian** star)
   {
     return SLEQP_OKAY;
   }
+
+  SLEQP_CALL(sleqp_timer_free(&jacobian->factorization_timer));
 
   sleqp_free(&jacobian->col_indices);
 
