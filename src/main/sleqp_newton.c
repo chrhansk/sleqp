@@ -10,6 +10,8 @@
 #include "sleqp_mem.h"
 #include "sleqp_timer.h"
 
+static const bool collect_rayleigh = false;
+
 struct SleqpNewtonData
 {
   SleqpProblem* problem;
@@ -405,6 +407,29 @@ static SLEQP_RETCODE matrix_pop_column(SleqpSparseMatrix* matrix)
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE rayleigh_quotient(SleqpSparseVec* direction,
+                                       SleqpSparseVec* product,
+                                       double eps,
+                                       double* rayleigh_factor)
+{
+  double dir_norm = sleqp_sparse_vector_normsq(direction);
+
+  if(sleqp_zero(dir_norm, eps))
+  {
+    return SLEQP_OKAY;
+  }
+
+  double dot;
+
+  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
+                                     product,
+                                     &dot));
+
+  *rayleigh_factor = SLEQP_ABS(dot) / dir_norm;
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
                                                    SleqpIterate* iterate,
                                                    SleqpAugJacobian* jacobian,
@@ -463,6 +488,9 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
 
   char* prefix = "trlib: ";
   FILE* fout = stderr;
+
+  double max_rayleigh = -sleqp_infinity();
+  double min_rayleigh = sleqp_infinity();
 
   while(1)
   {
@@ -545,6 +573,16 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
                                       data->p,
                                       data->multipliers,
                                       data->Hp));
+
+      if(collect_rayleigh)
+      {
+        double cur_rayleigh;
+
+        SLEQP_CALL(rayleigh_quotient(data->p, data->Hp, zero_eps, &cur_rayleigh));
+
+        max_rayleigh = SLEQP_MAX(max_rayleigh, cur_rayleigh);
+        min_rayleigh = SLEQP_MIN(min_rayleigh, cur_rayleigh);
+      }
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -683,6 +721,16 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
                                       data->multipliers,
                                       data->sparse_cache));
 
+      if(collect_rayleigh)
+      {
+        double cur_rayleigh;
+
+        SLEQP_CALL(rayleigh_quotient(newton_step, data->sparse_cache, zero_eps, &cur_rayleigh));
+
+        max_rayleigh = SLEQP_MAX(max_rayleigh, cur_rayleigh);
+        min_rayleigh = SLEQP_MIN(min_rayleigh, cur_rayleigh);
+      }
+
       SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache, data->gradient, zero_eps, data->l));
 
       SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->l,
@@ -735,6 +783,16 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
                                         data->multipliers,
                                         data->Hp));
 
+        if(collect_rayleigh)
+        {
+          double cur_rayleigh;
+
+          SLEQP_CALL(rayleigh_quotient(data->p, data->Hp, zero_eps, &cur_rayleigh));
+
+          max_rayleigh = SLEQP_MAX(max_rayleigh, cur_rayleigh);
+          min_rayleigh = SLEQP_MIN(min_rayleigh, cur_rayleigh);
+        }
+
         SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
       }
@@ -762,6 +820,16 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
                                         data->p,
                                         data->multipliers,
                                         data->Hp));
+
+        if(collect_rayleigh)
+        {
+          double cur_rayleigh;
+
+          SLEQP_CALL(rayleigh_quotient(data->p, data->Hp, zero_eps, &cur_rayleigh));
+
+          max_rayleigh = SLEQP_MAX(max_rayleigh, cur_rayleigh);
+          min_rayleigh = SLEQP_MIN(min_rayleigh, cur_rayleigh);
+        }
 
         SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -797,28 +865,10 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
       break;
     }
 
-    if(data->time_limit != -1 &&
-       sleqp_timer_elapsed(data->timer) >= data->time_limit)
+    if(data->time_limit != -1 && sleqp_timer_elapsed(data->timer) >= data->time_limit)
     {
       break;
     }
-
-    /*
-      if(sleqp_zero(g_dot_g))
-      {
-      g_dot_g = 0.;
-      }
-
-      if(sleqp_zero(v_dot_g))
-      {
-      v_dot_g = 0.;
-      }
-
-      if(sleqp_zero(p_dot_Hp))
-      {
-      p_dot_Hp = 0.;
-      }
-    */
   }
 
   SLEQP_CALL(sleqp_timer_stop(data->timer));
@@ -828,6 +878,16 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
   const char* trlib_status_string;
 
   SLEQP_CALL(trlib_get_status_string(ret, &trlib_status_string));
+
+  if(collect_rayleigh && !sleqp_zero(min_rayleigh, zero_eps))
+  {
+    const double cond_bound = SLEQP_ABS(max_rayleigh) / SLEQP_ABS(min_rayleigh);
+
+    sleqp_log_info("Spectrum bound: %f / %f, condition bound: %f",
+                   min_rayleigh,
+                   max_rayleigh,
+                   cond_bound);
+  }
 
   if(ret < 0)
   {
