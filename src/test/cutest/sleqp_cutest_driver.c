@@ -204,8 +204,10 @@ int sleqp_cutest_run(const char* filename,
     double violation = sleqp_iterate_constraint_violation(iterate, problem);
 
     fprintf(stdout,
-            "%s;%s;%f;%f;%d;%f\n",
+            "%s;%d;%d;%s;%f;%f;%d;%f\n",
             probname,
+            CUTEst_nvar,
+            CUTEst_ncons,
             descriptions[status],
             iterate->func_val,
             violation,
