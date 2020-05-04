@@ -81,4 +81,4 @@ trigger_downstream:
   only:
     - master
   script:
-    - curl -X POST -F token=${SLEQP_INDO_TRIGGER_TOKEN} ${CI_API_V4_URL}/projects/176/ref/master/trigger/pipeline
+    - "curl --fail -X POST -F token=${SLEQP_INDO_TRIGGER_TOKEN} ${CI_API_V4_URL}/projects/176/ref/master/trigger/pipeline"
