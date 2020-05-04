@@ -465,7 +465,7 @@ SLEQP_RETCODE sleqp_scale_var_duals(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_scale_iterate(SleqpScalingData* scaling,
                                   SleqpIterate* scaled_iterate)
 {
-  SLEQP_CALL(sleqp_scale_point(scaling, scaled_iterate->x));
+  SLEQP_CALL(sleqp_scale_point(scaling, scaled_iterate->primal));
 
   scaled_iterate->func_val = sleqp_scale_func_val(scaling, scaled_iterate->func_val);
 
@@ -564,7 +564,7 @@ SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_unscale_iterate(SleqpScalingData* scaling,
                                     SleqpIterate* scaled_iterate)
 {
-  SLEQP_CALL(sleqp_unscale_point(scaling, scaled_iterate->x));
+  SLEQP_CALL(sleqp_unscale_point(scaling, scaled_iterate->primal));
 
   scaled_iterate->func_val = sleqp_unscale_func_val(scaling, scaled_iterate->func_val);
 

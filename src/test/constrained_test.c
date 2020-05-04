@@ -350,7 +350,7 @@ START_TEST(test_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->x;
+  SleqpSparseVec* actual_solution = solution_iterate->primal;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
@@ -387,7 +387,7 @@ START_TEST(test_sr1_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->x;
+  SleqpSparseVec* actual_solution = solution_iterate->primal;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
@@ -424,7 +424,7 @@ START_TEST(test_bfgs_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->x;
+  SleqpSparseVec* actual_solution = solution_iterate->primal;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
@@ -464,7 +464,7 @@ START_TEST(test_unscaled_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->x;
+  SleqpSparseVec* actual_solution = solution_iterate->primal;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
@@ -514,7 +514,7 @@ START_TEST(test_scaled_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->x;
+  SleqpSparseVec* actual_solution = solution_iterate->primal;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
@@ -567,7 +567,7 @@ START_TEST(test_scaled_sr1_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->x;
+  SleqpSparseVec* actual_solution = solution_iterate->primal;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
@@ -620,7 +620,7 @@ START_TEST(test_scaled_bfgs_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->x;
+  SleqpSparseVec* actual_solution = solution_iterate->primal;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
@@ -676,7 +676,7 @@ START_TEST(test_auto_scaled_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->x;
+  SleqpSparseVec* actual_solution = solution_iterate->primal;
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,

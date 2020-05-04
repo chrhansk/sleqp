@@ -216,6 +216,8 @@ SLEQP_RETCODE sr1_initial_scale(SleqpSparseVec* step_diff,
 
   const double step_diff_normsq = sleqp_sparse_vector_normsq(step_diff);
 
+  assert(step_diff_normsq > 0.);
+
   (*initial_scale) = step_dot / step_diff_normsq;
 
   return SLEQP_OKAY;
@@ -360,12 +362,20 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
                                             eps,
                                             data->grad_diffs[next]));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(old_iterate->x,
-                                            new_iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(old_iterate->primal,
+                                            new_iterate->primal,
                                             -1.,
                                             1.,
                                             eps,
                                             data->step_diffs[next]));
+
+  const double step_diff_normsq = sleqp_sparse_vector_normsq(data->step_diffs[next]);
+
+  // step is too small to be used
+  if(step_diff_normsq == 0.)
+  {
+    return SLEQP_OKAY;
+  }
 
   if(data->len < data->num)
   {

@@ -130,22 +130,22 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
   const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
-                                              iterate->x,
-                                              j);
+                                               iterate->primal,
+                                               j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_push(value_diff, j, 1.));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->primal,
                                             value_diff,
                                             1.,
                                             perturbation,
                                             0.,
-                                            check_iterate->x));
+                                            check_iterate->primal));
 
   SLEQP_CALL(sleqp_func_set_value(func,
-                                  check_iterate->x,
+                                  check_iterate->primal,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -201,22 +201,22 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
   const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
-                                              iterate->x,
+                                              iterate->primal,
                                               j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_push(value_diff, j, 1.));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->primal,
                                             value_diff,
                                             1.,
                                             perturbation,
                                             0.,
-                                            check_iterate->x));
+                                            check_iterate->primal));
 
   SLEQP_CALL(sleqp_func_set_value(func,
-                                  check_iterate->x,
+                                  check_iterate->primal,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -289,7 +289,7 @@ SLEQP_RETCODE sleqp_deriv_check_first_order(SleqpDerivCheckData* data,
 
   // restore original function value...
   SLEQP_CALL(sleqp_func_set_value(func,
-                                  iterate->x,
+                                  iterate->primal,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -322,22 +322,22 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
   const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
-                                              iterate->x,
+                                              iterate->primal,
                                               j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_push(value_diff, j, 1.));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->primal,
                                             value_diff,
                                             1.,
                                             perturbation,
                                             0.,
-                                            check_iterate->x));
+                                            check_iterate->primal));
 
   SLEQP_CALL(sleqp_func_set_value(func,
-                                  check_iterate->x,
+                                  check_iterate->primal,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -371,7 +371,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
   for(int k = 0; k < num_variables; ++k)
   {
     SLEQP_CALL(sleqp_func_set_value(func,
-                                    iterate->x,
+                                    iterate->primal,
                                     &func_grad_nnz,
                                     &cons_val_nnz,
                                     &cons_jac_nnz));
@@ -438,22 +438,22 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
   const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
-                                              iterate->x,
+                                              iterate->primal,
                                               j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_push(value_diff, j, 1.));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(iterate->primal,
                                             value_diff,
                                             1.,
                                             perturbation,
                                             0.,
-                                            check_iterate->x));
+                                            check_iterate->primal));
 
   SLEQP_CALL(sleqp_func_set_value(func,
-                                  check_iterate->x,
+                                  check_iterate->primal,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -503,7 +503,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   for(int k = 0; k < num_variables; ++k)
   {
     SLEQP_CALL(sleqp_func_set_value(func,
-                                    iterate->x,
+                                    iterate->primal,
                                     &func_grad_nnz,
                                     &cons_val_nnz,
                                     &cons_jac_nnz));
@@ -582,7 +582,7 @@ SLEQP_RETCODE sleqp_deriv_check_second_order(SleqpDerivCheckData* data,
 
   // restore original function value...
   SLEQP_CALL(sleqp_func_set_value(func,
-                                  iterate->x,
+                                  iterate->primal,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));

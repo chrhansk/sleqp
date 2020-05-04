@@ -4,6 +4,18 @@
 /**
  * @file sleqp_dual_estimation.h
  * @brief Definition of functions for the estimation of dual variables.
+ *
+ * We follow the following convention:
+ *
+ * The Lagrangian is defined as
+ * \f$ L(x, \lambda, \mu) = f(x) + \langle \lambda, c \rangle + \langle 1, \mu \rangle \f$.
+ *
+ * As a result, the signs of active dual variables are
+ * non-negative for constraints / variables at their upper bounds and
+ * non-positive for constraints / variables at their lower bounds.
+ *
+ *
+
  **/
 
 #include "sleqp.h"

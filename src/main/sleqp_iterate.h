@@ -22,7 +22,7 @@ extern "C" {
     /**
      * The current point. Has dimension = num_variables.
      **/
-    SleqpSparseVec* x;
+    SleqpSparseVec* primal;
 
     /**
      * The current function value

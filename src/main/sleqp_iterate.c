@@ -18,11 +18,11 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
   int num_variables = problem->num_variables;
   int num_constraints = problem->num_constraints;
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->primal,
                                         num_variables,
                                         x->nnz));
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(x, iterate->x));
+  SLEQP_CALL(sleqp_sparse_vector_copy(x, iterate->primal));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&iterate->func_grad,
                                         num_variables,
@@ -57,7 +57,7 @@ double sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
   double residuum = 0.;
 
   {
-    SleqpSparseVec* x = iterate->x;
+    SleqpSparseVec* x = iterate->primal;
 
     SleqpSparseVec* lb = problem->var_lb;
     SleqpSparseVec* ub = problem->var_ub;
@@ -340,7 +340,7 @@ SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
   double value_norm = 0.;
 
   {
-    value_norm = sleqp_sparse_vector_normsq(iterate->x);
+    value_norm = sleqp_sparse_vector_normsq(iterate->primal);
 
     value_norm = sqrt(value_norm);
   }
@@ -478,7 +478,7 @@ bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
   double value_norm = 0.;
 
   {
-    value_norm = sleqp_sparse_vector_normsq(iterate->x);
+    value_norm = sleqp_sparse_vector_normsq(iterate->primal);
 
     value_norm = sqrt(value_norm);
   }
@@ -545,7 +545,7 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
 SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
                                  SleqpIterate* target)
 {
-  SLEQP_CALL(sleqp_sparse_vector_copy(source->x, target->x));
+  SLEQP_CALL(sleqp_sparse_vector_copy(source->primal, target->primal));
 
   target->func_val = source->func_val;
 
@@ -589,7 +589,7 @@ SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->cons_val));
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->func_grad));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&iterate->x));
+  SLEQP_CALL(sleqp_sparse_vector_free(&iterate->primal));
 
   sleqp_free(star);
 

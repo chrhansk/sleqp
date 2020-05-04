@@ -199,7 +199,7 @@ static SLEQP_RETCODE create_var_bounds(SleqpCauchyData* cauchy_data,
                                        int num_variables,
                                        int num_constraints)
 {
-  SleqpSparseVec* x = iterate->x;
+  SleqpSparseVec* x = iterate->primal;
   SleqpSparseVec* lb = cauchy_data->problem->var_lb;
   SleqpSparseVec* ub = cauchy_data->problem->var_ub;
 
@@ -354,7 +354,7 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
   const double eps = sleqp_params_get_eps(cauchy_data->params);
 
   {
-    SleqpSparseVec* x = iterate->x;
+    SleqpSparseVec* x = iterate->primal;
     SleqpSparseVec* lb = problem->var_lb;
     SleqpSparseVec* ub = problem->var_ub;
 

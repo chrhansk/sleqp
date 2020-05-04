@@ -55,14 +55,14 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
   SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->upper_diff));
   SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->upper_diff, problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_iterate->primal,
                                             problem->var_lb,
                                             -1.,
                                             1.,
                                             zero_eps,
                                             lower_diff));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_iterate->primal,
                                             problem->var_ub,
                                             -1.,
                                             1.,

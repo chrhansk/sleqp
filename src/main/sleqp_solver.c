@@ -257,12 +257,12 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                       solver->problem->var_lb,
                                       solver->problem->var_ub,
                                       zero_eps,
-                                      solver->iterate->x));
+                                      solver->iterate->primal));
 
   if(solver->scaling_data)
   {
     SLEQP_CALL(sleqp_scale_point(solver->scaling_data,
-                                 solver->iterate->x));
+                                 solver->iterate->primal));
   }
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->violation,
@@ -320,7 +320,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_iterate_create(&solver->trial_iterate,
                                   solver->scaled_problem,
-                                  solver->iterate->x));
+                                  solver->iterate->primal));
 
   SLEQP_CALL(sleqp_aug_jacobian_create(&solver->aug_jacobian,
                                        solver->scaled_problem,
@@ -611,7 +611,7 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
   {
     SleqpProblem* problem = solver->scaled_problem;
 
-    SLEQP_CALL(sleqp_sparse_vector_add(solver->iterate->x,
+    SLEQP_CALL(sleqp_sparse_vector_add(solver->iterate->primal,
                                        solver->cauchy_step,
                                        zero_eps,
                                        solver->trial_direction));
@@ -824,7 +824,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
 
   SLEQP_CALL(compute_trial_direction(solver, quadratic_value, full_step));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add(iterate->primal,
                                      solver->trial_direction,
                                      zero_eps,
                                      solver->initial_trial_point));
@@ -833,7 +833,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                       problem->var_lb,
                                       problem->var_ub,
                                       zero_eps,
-                                      solver->trial_iterate->x));
+                                      solver->trial_iterate->primal));
 
 
   return SLEQP_OKAY;
@@ -847,8 +847,8 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
-  SleqpSparseVec* current_point = iterate->x;
-  SleqpSparseVec* trial_point = trial_iterate->x;
+  SleqpSparseVec* current_point = iterate->primal;
+  SleqpSparseVec* trial_point = trial_iterate->primal;
 
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
@@ -929,7 +929,7 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
   int cons_jac_nnz = 0;
 
   SLEQP_CALL(sleqp_func_set_value(problem->func,
-                                  iterate->x,
+                                  iterate->primal,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -993,7 +993,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
-  assert(sleqp_sparse_vector_is_boxed(iterate->x,
+  assert(sleqp_sparse_vector_is_boxed(iterate->primal,
                                       problem->var_lb,
                                       problem->var_ub));
 

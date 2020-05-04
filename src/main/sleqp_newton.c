@@ -229,7 +229,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
   // variables
   {
-    SleqpSparseVec* values = iterate->x;
+    SleqpSparseVec* values = iterate->primal;
     SleqpSparseVec* var_lb = problem->var_lb;
     SleqpSparseVec* var_ub = problem->var_ub;
 
@@ -924,7 +924,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   // constraints
   {
     SLEQP_CALL(sleqp_get_violated_multipliers(problem,
-                                              iterate->x,
+                                              iterate->primal,
                                               iterate->cons_val,
                                               penalty_parameter,
                                               data->violated_multipliers,

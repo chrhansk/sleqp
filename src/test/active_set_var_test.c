@@ -56,8 +56,8 @@ void active_set_var_setup()
 
 START_TEST(test_inactive)
 {
-  iterate->x->data[0] = 1.5;
-  iterate->x->data[1] = 2.5;
+  iterate->primal->data[0] = 1.5;
+  iterate->primal->data[1] = 2.5;
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 
@@ -84,8 +84,8 @@ END_TEST
 
 START_TEST(test_active)
 {
-  iterate->x->data[0] = 1.5;
-  iterate->x->data[1] = 2.5;
+  iterate->primal->data[0] = 1.5;
+  iterate->primal->data[1] = 2.5;
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 
@@ -112,8 +112,8 @@ END_TEST
 
 START_TEST(test_first_active)
 {
-  iterate->x->data[0] = 1.;
-  iterate->x->data[1] = 2.5;
+  iterate->primal->data[0] = 1.;
+  iterate->primal->data[1] = 2.5;
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 

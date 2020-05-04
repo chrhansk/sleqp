@@ -169,7 +169,7 @@ START_TEST(test_first_order_deriv)
                                    quadconsfunc_x));
 
   ASSERT_CALL(sleqp_scale_point(scaling,
-                                scaled_iterate->x));
+                                scaled_iterate->primal));
 
   ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem, scaled_iterate));
 
@@ -197,7 +197,7 @@ START_TEST(test_second_order_deriv)
                                    quadconsfunc_x));
 
   ASSERT_CALL(sleqp_scale_point(scaling,
-                                scaled_iterate->x));
+                                scaled_iterate->primal));
 
   ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem, scaled_iterate));
 

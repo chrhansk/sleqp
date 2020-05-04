@@ -73,7 +73,7 @@ cdef class Solver:
 
     csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
 
-    return sleqp_sparse_vec_to_array(iterate.x)
+    return sleqp_sparse_vec_to_array(iterate.primal)
 
   @property
   def vars_dual(self):

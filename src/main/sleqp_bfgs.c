@@ -421,8 +421,8 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                             eps,
                                             next_grad_diff));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(old_iterate->x,
-                                            new_iterate->x,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(old_iterate->primal,
+                                            new_iterate->primal,
                                             -1.,
                                             1.,
                                             eps,

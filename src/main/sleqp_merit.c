@@ -232,7 +232,7 @@ SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
 
   const double zero_eps = sleqp_params_get_zero_eps(merit_data->params);
 
-  SleqpSparseVec* x = iterate->x;
+  SleqpSparseVec* x = iterate->primal;
   SleqpSparseVec* cons_vals = iterate->cons_val;
 
   SLEQP_CALL(sleqp_get_violated_multipliers(problem,

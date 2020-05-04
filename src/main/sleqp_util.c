@@ -12,7 +12,7 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
   int cons_jac_nnz = 0;
 
   SLEQP_CALL(sleqp_func_set_value(problem->func,
-                                  iterate->x,
+                                  iterate->primal,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));

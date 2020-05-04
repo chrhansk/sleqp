@@ -76,7 +76,7 @@ cdef extern from "sleqp.h":
     pass
 
   ctypedef struct SleqpIterate:
-    SleqpSparseVec* x
+    SleqpSparseVec* primal
     double func_val
     SleqpSparseVec* func_grad
     SleqpSparseVec* cons_val
