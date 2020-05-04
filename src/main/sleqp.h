@@ -6,7 +6,6 @@
  * @brief SLEQP callable libary.
  **/
 
-#include "sleqp_active_set.h"
 #include "sleqp_aug_jacobian.h"
 #include "sleqp_bfgs.h"
 #include "sleqp_cauchy.h"
@@ -28,6 +27,7 @@
 #include "sleqp_solver.h"
 #include "sleqp_sr1.h"
 #include "sleqp_types.h"
+#include "sleqp_working_set.h"
 #include "sleqp_util.h"
 
 #include "lp/sleqp_lpi.h"

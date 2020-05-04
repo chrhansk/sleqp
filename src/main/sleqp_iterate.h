@@ -7,7 +7,7 @@
  **/
 
 
-#include "sleqp_active_set.h"
+#include "sleqp_working_set.h"
 #include "sleqp_problem.h"
 
 #include "sparse/sleqp_sparse_matrix.h"
@@ -46,9 +46,9 @@ extern "C" {
     SleqpSparseMatrix* cons_jac;
 
     /**
-     * The current active set.
+     * The current working set.
      **/
-    SleqpActiveSet* active_set;
+    SleqpWorkingSet* working_set;
 
     /**
      * The dual values of the constraints. Has dimension = num_constraints.

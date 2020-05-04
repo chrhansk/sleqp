@@ -19,7 +19,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpIterate* iterate;
   SleqpLPi* lp_interface;
   SleqpCauchyData* cauchy_data;
-  SleqpActiveSet* active_set;
+  SleqpWorkingSet* working_set;
   SleqpAugJacobian* jacobian;
 
   SleqpDualEstimationData* estimation_data;
@@ -55,7 +55,7 @@ START_TEST(test_simply_constrained_dual_estimation)
                                        params,
                                        lp_interface));
 
-  ASSERT_CALL(sleqp_active_set_create(&active_set,
+  ASSERT_CALL(sleqp_working_set_create(&working_set,
                                       problem));
 
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
@@ -72,7 +72,7 @@ START_TEST(test_simply_constrained_dual_estimation)
                                  iterate->func_grad,
                                  penalty_parameter));
 
-  ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
                                           iterate,
                                           trust_radius));
 
@@ -97,7 +97,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
 
-  ASSERT_CALL(sleqp_active_set_free(&active_set));
+  ASSERT_CALL(sleqp_working_set_free(&working_set));
 
   ASSERT_CALL(sleqp_cauchy_data_free(&cauchy_data));
 

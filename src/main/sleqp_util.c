@@ -44,7 +44,7 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
                                              SleqpSparseVec* cons_vals,
                                              double penalty_parameter,
                                              SleqpSparseVec* multipliers,
-                                             SleqpActiveSet* active_set,
+                                             SleqpWorkingSet* working_set,
                                              double eps)
 {
   SleqpSparseVec* lb = problem->cons_lb;
@@ -91,7 +91,7 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
       ub_val = ub->data[k_ub++];
     }
 
-    if(active_set && sleqp_active_set_get_constraint_state(active_set, idx) != SLEQP_INACTIVE)
+    if(working_set && sleqp_working_set_get_constraint_state(working_set, idx) != SLEQP_INACTIVE)
     {
       continue;
     }

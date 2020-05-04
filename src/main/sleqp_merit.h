@@ -10,7 +10,7 @@
 extern "C" {
 #endif
 
-#include "sleqp_active_set.h"
+#include "sleqp_working_set.h"
 #include "sleqp_func.h"
 #include "sleqp_iterate.h"
 #include "sleqp_params.h"

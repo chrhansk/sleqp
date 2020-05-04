@@ -41,7 +41,7 @@ add_unit_test(sparse/sleqp_sparse_matrix_test)
 
 add_unit_test(lp/lpi_test)
 
-add_unit_test(active_set_var_test)
+add_unit_test(working_set_var_test)
 add_unit_test(cauchy_test)
 add_unit_test(dual_estimation_test)
 

@@ -334,11 +334,11 @@ SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
-                                          SleqpIterate* iterate,
-                                          double trust_radius)
+SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
+                                           SleqpIterate* iterate,
+                                           double trust_radius)
 {
-  SLEQP_CALL(sleqp_active_set_reset(iterate->active_set));
+  SLEQP_CALL(sleqp_working_set_reset(iterate->working_set));
 
   SLEQP_CALL(sleqp_lpi_get_varstats(cauchy_data->lp_interface,
                                     cauchy_data->var_stats));
@@ -392,23 +392,23 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
 
       if(sleqp_eq(lbval, ubval, eps))
       {
-        SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
-                                                 i,
-                                                 SLEQP_ACTIVE_BOTH));
+        SLEQP_CALL(sleqp_working_set_add_variable(iterate->working_set,
+                                                  i,
+                                                  SLEQP_ACTIVE_BOTH));
       }
       else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
-         (-trust_radius < lbval - xval))
+              (-trust_radius < lbval - xval))
       {
-        SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
-                                                 i,
-                                                 SLEQP_ACTIVE_LOWER));
+        SLEQP_CALL(sleqp_working_set_add_variable(iterate->working_set,
+                                                  i,
+                                                  SLEQP_ACTIVE_LOWER));
       }
       else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER) &&
               (ubval - xval < trust_radius))
       {
-        SLEQP_CALL(sleqp_active_set_add_variable(iterate->active_set,
-                                                 i,
-                                                 SLEQP_ACTIVE_UPPER));
+        SLEQP_CALL(sleqp_working_set_add_variable(iterate->working_set,
+                                                  i,
+                                                  SLEQP_ACTIVE_UPPER));
       }
     }
   }
@@ -466,9 +466,9 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
       {
         if(zero_slack)
         {
-          SLEQP_CALL(sleqp_active_set_add_constraint(iterate->active_set,
-                                                     i,
-                                                     SLEQP_ACTIVE_BOTH));
+          SLEQP_CALL(sleqp_working_set_add_constraint(iterate->working_set,
+                                                      i,
+                                                      SLEQP_ACTIVE_BOTH));
         }
       }
       else
@@ -481,9 +481,9 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
             // the constraint c(x) + grad(c(x))*d +I s_l -I s_u  <= u
             // is tight at i
 
-            SLEQP_CALL(sleqp_active_set_add_constraint(iterate->active_set,
-                                                       i,
-                                                       SLEQP_ACTIVE_UPPER));
+            SLEQP_CALL(sleqp_working_set_add_constraint(iterate->working_set,
+                                                        i,
+                                                        SLEQP_ACTIVE_UPPER));
           }
         }
         else if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_LOWER)
@@ -494,23 +494,23 @@ SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
             // the constraint l <= c(x) + grad(c(x))*d +I s_l -I s_u
             // is tight at i
 
-            SLEQP_CALL(sleqp_active_set_add_constraint(iterate->active_set,
-                                                       i,
-                                                       SLEQP_ACTIVE_LOWER));
+            SLEQP_CALL(sleqp_working_set_add_constraint(iterate->working_set,
+                                                        i,
+                                                        SLEQP_ACTIVE_LOWER));
           }
         }
       }
     }
   }
 
-  const int num_active_vars = sleqp_active_set_num_active_vars(iterate->active_set);
-  const int num_active_conss = sleqp_active_set_num_active_conss(iterate->active_set);
-  const int active_set_size = sleqp_active_set_size(iterate->active_set);
+  const int num_active_vars = sleqp_working_set_num_active_vars(iterate->working_set);
+  const int num_active_conss = sleqp_working_set_num_active_conss(iterate->working_set);
+  const int working_set_size = sleqp_working_set_size(iterate->working_set);
 
   assert(num_active_vars <= problem->num_variables);
   assert(num_active_conss <= problem->num_variables);
 
-  assert(active_set_size <= problem->num_variables);
+  assert(working_set_size <= problem->num_variables);
 
   sleqp_log_debug("Created an active set with %d variables, %d constraints",
                   num_active_vars,

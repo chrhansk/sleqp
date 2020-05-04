@@ -218,20 +218,20 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   SleqpProblem* problem = data->problem;
 
   SleqpSparseVec* initial_rhs = data->initial_rhs;
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
   const double eps = sleqp_params_get_eps(data->params);
 
-  const int active_set_size = sleqp_active_set_size(iterate->active_set);
+  const int working_set_size = sleqp_working_set_size(iterate->working_set);
 
-  SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, active_set_size));
+  SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, working_set_size));
 
   {
     SLEQP_CALL(sleqp_sparse_vector_clear(initial_rhs));
 
-    SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, active_set_size));
+    SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, working_set_size));
 
-    SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, active_set_size));
+    SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, working_set_size));
   }
 
   // variables
@@ -265,10 +265,10 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      int i_set = sleqp_active_set_get_variable_index(active_set, i_combined);
+      int i_set = sleqp_working_set_get_variable_index(working_set, i_combined);
 
-      SLEQP_ACTIVE_STATE var_state = sleqp_active_set_get_variable_state(active_set,
-                                                                         i_combined);
+      SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(working_set,
+                                                                          i_combined);
 
       if(var_state == SLEQP_ACTIVE_UPPER)
       {
@@ -335,10 +335,10 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      int i_set = sleqp_active_set_get_constraint_index(active_set, i_combined);
+      int i_set = sleqp_working_set_get_constraint_index(working_set, i_combined);
 
-      SLEQP_ACTIVE_STATE cons_state = sleqp_active_set_get_constraint_state(active_set,
-                                                                            i_combined);
+      SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set,
+                                                                             i_combined);
 
       if(cons_state == SLEQP_ACTIVE_UPPER)
       {
@@ -974,10 +974,10 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     }
   }
 
-  int active_set_size = sleqp_active_set_size(iterate->active_set);
+  int working_set_size = sleqp_working_set_size(iterate->working_set);
 
   // in either case the only feasible solution is the zero vector
-  if(sleqp_zero(trust_radius, zero_eps) || problem->num_variables == active_set_size)
+  if(sleqp_zero(trust_radius, zero_eps) || problem->num_variables == working_set_size)
   {
     SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_solution, newton_step));
 
@@ -993,7 +993,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                               iterate->cons_val,
                                               penalty_parameter,
                                               data->violated_multipliers,
-                                              iterate->active_set,
+                                              iterate->working_set,
                                               zero_eps));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->violated_multipliers,

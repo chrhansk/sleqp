@@ -19,7 +19,7 @@
  **/
 
 #include "sleqp.h"
-#include "sleqp_active_set.h"
+#include "sleqp_working_set.h"
 #include "sleqp_aug_jacobian.h"
 #include "sleqp_iterate.h"
 

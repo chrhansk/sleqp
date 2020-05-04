@@ -59,9 +59,9 @@ void constrained_setup()
 
 }
 
-START_TEST(test_active_set)
+START_TEST(test_working_set)
 {
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
   double trust_radius = 0.1, penalty_parameter = 1.;
 
@@ -73,12 +73,12 @@ START_TEST(test_active_set)
                                  iterate->func_grad,
                                  penalty_parameter));
 
-  ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
                                           iterate,
                                           trust_radius));
 
-  ck_assert_int_eq(sleqp_active_set_get_constraint_state(active_set, 0), SLEQP_INACTIVE);
-  ck_assert_int_eq(sleqp_active_set_get_constraint_state(active_set, 1), SLEQP_ACTIVE_UPPER);
+  ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 0), SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 1), SLEQP_ACTIVE_UPPER);
 }
 END_TEST
 
@@ -99,7 +99,7 @@ START_TEST(test_dual_variable)
                                  iterate->func_grad,
                                  penalty_parameter));
 
-  ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
                                           iterate,
                                           trust_radius));
 
@@ -164,7 +164,7 @@ Suite* constrained_test_suite()
                             constrained_setup,
                             constrained_teardown);
 
-  tcase_add_test(tc_cons, test_active_set);
+  tcase_add_test(tc_cons, test_working_set);
   tcase_add_test(tc_cons, test_dual_variable);
 
   suite_add_tcase(suite, tc_cons);

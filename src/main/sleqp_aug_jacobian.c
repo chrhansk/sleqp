@@ -9,7 +9,7 @@ struct SleqpAugJacobian
   SleqpProblem* problem;
   SleqpParams* params;
 
-  int active_set_size;
+  int working_set_size;
   int max_set_size;
 
   SleqpSparseMatrix* augmented_matrix;
@@ -30,12 +30,12 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
 
   SleqpSparseMatrix* augmented_matrix = jacobian->augmented_matrix;
 
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
   const int num_variables = problem->num_variables;
-  const int active_set_size = sleqp_active_set_size(active_set);
+  const int working_set_size = sleqp_working_set_size(working_set);
 
-  int augmented_size = num_variables + active_set_size;
+  int augmented_size = num_variables + working_set_size;
 
   SLEQP_CALL(sleqp_sparse_matrix_resize(augmented_matrix,
                                         augmented_size,
@@ -55,9 +55,9 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
     {
       // push the jacobian of the variable, if active
 
-      int variable_index = sleqp_active_set_get_variable_index(active_set, column);
+      int variable_index = sleqp_working_set_get_variable_index(working_set, column);
 
-      SLEQP_ACTIVE_STATE var_state = sleqp_active_set_get_variable_state(active_set, column);
+      SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(working_set, column);
 
       if(variable_index != -1)
       {
@@ -80,9 +80,9 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
     {
       int jac_row = cons_jac->rows[index];
 
-      int act_cons_index = sleqp_active_set_get_constraint_index(active_set, jac_row);
+      int act_cons_index = sleqp_working_set_get_constraint_index(working_set, jac_row);
 
-      SLEQP_ACTIVE_STATE cons_state = sleqp_active_set_get_constraint_state(active_set, jac_row);
+      SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set, jac_row);
 
       if(act_cons_index != -1)
       {
@@ -171,7 +171,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
   jacobian->problem = problem;
   jacobian->params = params;
 
-  jacobian->active_set_size = 0;
+  jacobian->working_set_size = 0;
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&jacobian->augmented_matrix, 0, 0, 0));
 
@@ -191,14 +191,14 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
                                              SleqpIterate* iterate)
 {
   SleqpProblem* problem = jacobian->problem;
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
-  jacobian->active_set_size = sleqp_active_set_size(active_set);
+  jacobian->working_set_size = sleqp_working_set_size(working_set);
 
   // we overestimate here...
   int constraint_nnz = iterate->cons_jac->nnz;
 
-  int variable_nnz = sleqp_active_set_num_active_vars(active_set);
+  int variable_nnz = sleqp_working_set_num_active_vars(working_set);
 
   int total_nnz = problem->num_variables // identity
     + 2*(constraint_nnz + variable_nnz); // cons jac nnz + active variables
@@ -227,7 +227,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
     SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
 
     int num_variables = problem->num_variables;
-    int total_size = num_variables + jacobian->active_set_size;
+    int total_size = num_variables + jacobian->working_set_size;
 
     assert(matrix->num_cols == matrix->num_rows);
     assert(matrix->num_cols == total_size);
@@ -295,8 +295,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
   double zero_eps = sleqp_params_get_zero_eps(jacobian->params);
 
   int num_variables = problem->num_variables;
-  int active_set_size = jacobian->active_set_size;
-  int total_size = num_variables + active_set_size;
+  int working_set_size = jacobian->working_set_size;
+  int total_size = num_variables + working_set_size;
 
   assert(rhs->dim == num_variables);
 
@@ -319,7 +319,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
 
   if(dual_sol)
   {
-    assert(dual_sol->dim == active_set_size);
+    assert(dual_sol->dim == working_set_size);
 
     SLEQP_CALL(sleqp_sparse_factorization_get_sol(factorization,
                                                   dual_sol,

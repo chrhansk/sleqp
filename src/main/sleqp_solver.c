@@ -716,9 +716,9 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                   iterate->func_grad,
                                   solver->penalty_parameter));
 
-    SLEQP_CALL(sleqp_cauchy_get_active_set(solver->cauchy_data,
-                                           iterate,
-                                           solver->lp_trust_radius));
+    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
+                                            iterate,
+                                            solver->lp_trust_radius));
 
     SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
                                               iterate));

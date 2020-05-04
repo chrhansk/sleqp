@@ -47,7 +47,7 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
   SleqpSparseVec* upper_diff = soc_data->upper_diff;
 
   SleqpSparseVec* rhs = soc_data->rhs;
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
   SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->lower_diff));
   SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->lower_diff, problem->num_variables));
@@ -89,14 +89,14 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
     const double udval = valid_ud ? upper_diff->data[k_ud] : 0.;
     const double ldval = valid_ld ? lower_diff->data[k_ld] : 0.;
 
-    const SLEQP_ACTIVE_STATE variable_state = sleqp_active_set_get_variable_state(active_set, i);
+    const SLEQP_ACTIVE_STATE variable_state = sleqp_working_set_get_variable_state(working_set, i);
 
     if(variable_state == SLEQP_INACTIVE)
     {
       continue;
     }
 
-    const int variable_index = sleqp_active_set_get_variable_index(active_set, i);
+    const int variable_index = sleqp_working_set_get_variable_index(working_set, i);
 
     if(variable_state == SLEQP_ACTIVE_UPPER && !sleqp_zero(udval, eps))
     {
@@ -130,7 +130,7 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
   SleqpSparseVec* upper_diff = soc_data->upper_diff;
 
   SleqpSparseVec* rhs = soc_data->rhs;
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
   SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->lower_diff));
   SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->lower_diff, problem->num_constraints));
@@ -173,14 +173,14 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
     const double udval = valid_ud ? upper_diff->data[k_ud] : 0.;
     const double ldval = valid_ld ? lower_diff->data[k_ld] : 0.;
 
-    const SLEQP_ACTIVE_STATE constraint_state = sleqp_active_set_get_constraint_state(active_set, i);
+    const SLEQP_ACTIVE_STATE constraint_state = sleqp_working_set_get_constraint_state(working_set, i);
 
     if(constraint_state == SLEQP_INACTIVE)
     {
       continue;
     }
 
-    const int constraint_index = sleqp_active_set_get_constraint_index(active_set, i);
+    const int constraint_index = sleqp_working_set_get_constraint_index(working_set, i);
 
     if(constraint_state == SLEQP_ACTIVE_UPPER && !sleqp_zero(udval, eps))
     {
@@ -208,15 +208,15 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
                                 SleqpSparseVec* soc_direction)
 {
   SleqpSparseVec* rhs = soc_data->rhs;
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
-  const int active_set_size = sleqp_active_set_size(active_set);
+  const int working_set_size = sleqp_working_set_size(working_set);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(rhs));
 
-  SLEQP_CALL(sleqp_sparse_vector_resize(rhs, active_set_size));
+  SLEQP_CALL(sleqp_sparse_vector_resize(rhs, working_set_size));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(rhs, active_set_size));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(rhs, working_set_size));
 
   SLEQP_CALL(add_variable_entries(soc_data, iterate, trial_iterate));
   SLEQP_CALL(add_constraint_entries(soc_data, iterate, trial_iterate));

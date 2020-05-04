@@ -2,7 +2,7 @@ set(COMMON_SRC
   sparse/sleqp_sparse_factorization.c
   sparse/sleqp_sparse_matrix.c
   sparse/sleqp_sparse_vec.c
-  sleqp_active_set.c
+  sleqp_working_set.c
   sleqp_aug_jacobian.c
   sleqp_bfgs.c
   sleqp_cauchy.c

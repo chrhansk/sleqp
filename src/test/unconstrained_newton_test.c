@@ -39,7 +39,7 @@ void newton_setup()
                                    problem,
                                    quadfunc_x));
 
-  ASSERT_CALL(sleqp_active_set_reset(iterate->active_set));
+  ASSERT_CALL(sleqp_working_set_reset(iterate->working_set));
 
   int num_lp_variables = problem->num_variables + 2*problem->num_constraints;
   int num_lp_constraints = problem->num_constraints;

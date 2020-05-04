@@ -33,9 +33,9 @@ extern "C" {
                                    SleqpSparseVec* gradient,
                                    double penalty);
 
-  SLEQP_RETCODE sleqp_cauchy_get_active_set(SleqpCauchyData* cauchy_data,
-                                            SleqpIterate* iterate,
-                                            double trust_radius);
+  SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
+                                             SleqpIterate* iterate,
+                                             double trust_radius);
 
   SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
                                            SleqpIterate* iterate,

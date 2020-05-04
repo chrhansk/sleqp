@@ -20,7 +20,7 @@ SleqpIterate* iterate;
 SleqpLPi* lp_interface;
 SleqpCauchyData* cauchy_data;
 
-void active_set_var_setup()
+void working_set_var_setup()
 {
   quadfunc_setup();
 
@@ -61,7 +61,7 @@ START_TEST(test_inactive)
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
   double trust_radius = 0.25, penalty_parameter = 1.;
 
@@ -73,12 +73,12 @@ START_TEST(test_inactive)
                                  iterate->func_grad,
                                  penalty_parameter));
 
-  ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
                                           iterate,
                                           trust_radius));
 
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 0), SLEQP_INACTIVE);
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 1), SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0), SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1), SLEQP_INACTIVE);
 }
 END_TEST
 
@@ -89,7 +89,7 @@ START_TEST(test_active)
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
   double trust_radius = 1., penalty_parameter = 1.;
 
@@ -101,12 +101,12 @@ START_TEST(test_active)
                                  iterate->func_grad,
                                  penalty_parameter));
 
-  ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
                                           iterate,
                                           trust_radius));
 
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 0), SLEQP_ACTIVE_LOWER);
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 1), SLEQP_ACTIVE_LOWER);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0), SLEQP_ACTIVE_LOWER);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1), SLEQP_ACTIVE_LOWER);
 }
 END_TEST
 
@@ -117,7 +117,7 @@ START_TEST(test_first_active)
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
 
-  SleqpActiveSet* active_set = iterate->active_set;
+  SleqpWorkingSet* working_set = iterate->working_set;
 
   double trust_radius = 0.25, penalty_parameter = 1.;
 
@@ -129,16 +129,16 @@ START_TEST(test_first_active)
                                  iterate->func_grad,
                                  penalty_parameter));
 
-  ASSERT_CALL(sleqp_cauchy_get_active_set(cauchy_data,
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
                                           iterate,
                                           trust_radius));
 
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 0), SLEQP_ACTIVE_LOWER);
-  ck_assert_int_eq(sleqp_active_set_get_variable_state(active_set, 1), SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0), SLEQP_ACTIVE_LOWER);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1), SLEQP_INACTIVE);
 }
 END_TEST
 
-void active_set_var_teardown()
+void working_set_var_teardown()
 {
   ASSERT_CALL(sleqp_cauchy_data_free(&cauchy_data));
 
@@ -153,24 +153,24 @@ void active_set_var_teardown()
   quadfunc_teardown();
 }
 
-Suite* active_set_var_test_suite()
+Suite* working_set_var_test_suite()
 {
   Suite *suite;
-  TCase *tc_active_set_var;
+  TCase *tc_working_set_var;
 
   suite = suite_create("Dual estimation tests");
 
-  tc_active_set_var = tcase_create("Simply constrained");
+  tc_working_set_var = tcase_create("Simply constrained");
 
-  tcase_add_checked_fixture(tc_active_set_var,
-                            active_set_var_setup,
-                            active_set_var_teardown);
+  tcase_add_checked_fixture(tc_working_set_var,
+                            working_set_var_setup,
+                            working_set_var_teardown);
 
-  tcase_add_test(tc_active_set_var, test_inactive);
-  tcase_add_test(tc_active_set_var, test_active);
-  tcase_add_test(tc_active_set_var, test_first_active);
+  tcase_add_test(tc_working_set_var, test_inactive);
+  tcase_add_test(tc_working_set_var, test_active);
+  tcase_add_test(tc_working_set_var, test_first_active);
 
-  suite_add_tcase(suite, tc_active_set_var);
+  suite_add_tcase(suite, tc_working_set_var);
 
   return suite;
 }
@@ -182,7 +182,7 @@ int main()
   Suite* suite;
   SRunner* srunner;
 
-  suite = active_set_var_test_suite();
+  suite = working_set_var_test_suite();
   srunner = srunner_create(suite);
 
   srunner_set_fork_status(srunner, CK_NOFORK);
