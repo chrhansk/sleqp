@@ -206,6 +206,11 @@ SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
+SleqpTimer* sleqp_newton_get_solve_timer(SleqpNewtonData* data)
+{
+  return data->timer;
+}
+
 static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
                                      SleqpIterate* iterate,
                                      SleqpAugJacobian* jacobian)
