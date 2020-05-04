@@ -323,6 +323,30 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_dump(SleqpSparseMatrix* matrix,
+                                       FILE* output)
+{
+  fprintf(output, "%%%%MatrixMarket matrix coordinate real general\n");
+  fprintf(output, "%d %d %d\n", matrix->num_rows, matrix->num_cols, matrix->nnz);
+
+  int col = 0;
+
+  for(int index = 0; index < matrix->nnz; ++index)
+  {
+    while(index >= matrix->cols[col + 1])
+    {
+      ++col;
+    }
+
+    fprintf(output, "%d %d %f\n",
+            matrix->rows[index] + 1,
+            col + 1,
+            matrix->data[index]);
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_matrix_copy(SleqpSparseMatrix* source,
                                        SleqpSparseMatrix* target)
 {
