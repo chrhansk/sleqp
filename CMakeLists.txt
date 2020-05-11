@@ -73,6 +73,12 @@ find_package(Doxygen)
 configure_file("${CMAKE_SOURCE_DIR}/src/main/sleqp_defs.h.in"
   "${CMAKE_BINARY_DIR}/sleqp_defs.h")
 
+set(PKGCONFIG_FILE "${CMAKE_BINARY_DIR}/sleqp.pc")
+
+configure_file("${CMAKE_SOURCE_DIR}/cmake/sleqp.pc.in"
+  "${PKGCONFIG_FILE}"
+  @ONLY)
+
 include_directories("${CMAKE_BINARY_DIR}")
 
 enable_testing()
@@ -101,6 +107,8 @@ endif()
 
 set(CONFIG_DESTINATION "lib/cmake/sleqp")
 
+set(PKGCONFIG_DESTINATION "lib/pkgconfig")
+
 set(CONFIG_FILE "${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake")
 set(CONFIG_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake")
 
@@ -126,6 +134,14 @@ install(
   ${CONFIG_VERSION_FILE}
   DESTINATION
   ${CONFIG_DESTINATION}
+  COMPONENT "libraries"
+)
+
+install(
+  FILES
+  "${PKGCONFIG_FILE}"
+  DESTINATION
+  ${PKGCONFIG_DESTINATION}
   COMPONENT "libraries"
 )
 
