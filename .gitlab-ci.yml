@@ -65,6 +65,15 @@ package_wheel:
     paths:
       - bindings/python/dist/*.whl
 
+package_sdist:
+  stage: package
+  script:
+    - cd build
+    - make python_sleqp_sdist
+  artifacts:
+    paths:
+      - bindings/python/dist/*.tar.gz
+
 install_package:
   stage: install
   script:

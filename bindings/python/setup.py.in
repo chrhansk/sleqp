@@ -1,8 +1,41 @@
 from setuptools import setup, find_packages
 from setuptools.extension import Extension
 from setuptools import Distribution
+
+import subprocess
+
 import numpy
 
+project_name = '@PROJECT_NAME@'
+project_version = '@PROJECT_VERSION@'
+
+local_libdirs = ['@SLEQP_LIBRARY_DIR@']
+
+local_include_dirs = ['@SLEQP_INCLUDE_DIR@',
+                      '@CMAKE_BINARY_DIR@']
+
+def pkgconfig(name):
+
+    def pkgconfig_get(flags):
+        res = subprocess.run(['pkg-config', flags, name], capture_output=True)
+
+        return res.stdout.decode().strip().split()
+
+    cflags = pkgconfig_get('--cflags-only-other')
+
+    includes = pkgconfig_get('--cflags-only-I')
+
+    libs = pkgconfig_get('--libs-only-l')
+
+    libdirs = pkgconfig_get('--libs-only-L')
+
+    return {'cflags': cflags,
+            'includes': includes,
+            'libs': libs,
+            'libdirs': libdirs}
+
+
+pkgconfig_args = pkgconfig(project_name)
 
 def cythonize(*args, **kwargs):
     from Cython.Build import cythonize
@@ -11,11 +44,11 @@ def cythonize(*args, **kwargs):
 extensions = [
     Extension("sleqp.sleqp_python_extension",
               ['src/sleqp_python_extension.pyx'],
-              include_dirs=[numpy.get_include(),
-                            '@SLEQP_INCLUDE_DIR@',
-                            '@CMAKE_BINARY_DIR@'],
-              libraries=['sleqp'],
-              library_dirs=['@SLEQP_LIBRARY_DIR@']
+              include_dirs=[numpy.get_include()] + local_include_dirs + pkgconfig_args['includes'],
+              libraries=[project_name],
+              extra_link_args=pkgconfig_args['libs'],
+              library_dirs=local_libdirs + pkgconfig_args['libdirs'],
+              extra_compile_args=pkgconfig_args['cflags']
     )]
 
 requirements = []
@@ -25,8 +58,8 @@ Distribution().fetch_build_eggs(['Cython'])
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
-setup(name='@PROJECT_NAME@',
-      version='@PROJECT_VERSION@',
+setup(name=project_name,
+      version=project_version,
       ext_modules=cythonize(extensions),
       packages=find_packages(exclude=["tests"]),
       install_requires=requirements,
