@@ -1035,17 +1035,6 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                  &quadratic_trial_value,
                                  &full_step));
 
-  // unscale iterate
-
-  if(solver->scaling_data)
-  {
-    SLEQP_CALL(sleqp_iterate_copy(iterate,
-                                  solver->unscaled_iterate));
-
-    SLEQP_CALL(sleqp_unscale_iterate(solver->scaling_data,
-                                     solver->unscaled_iterate));
-  }
-
   {
     const double optimality_tolerance = sleqp_params_get_optimality_tolerance(solver->params);
 
@@ -1226,7 +1215,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                trial_iterate->cons_val,
                                trial_iterate->cons_jac));
 
-    if((solver->bfgs_data || solver->sr1_data) && solver->scaling_data)
+    // ensure that the unscaled iterate is kept up to date
+    if(solver->scaling_data)
     {
       SLEQP_CALL(sleqp_iterate_copy(trial_iterate,
                                     solver->unscaled_trial_iterate));
@@ -1250,8 +1240,13 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                      solver->unscaled_trial_iterate));
     }
 
+    // perform simple swaps
     solver->trial_iterate = iterate;
     solver->iterate = trial_iterate;
+
+    SleqpIterate* unscaled_iterate = solver->unscaled_iterate;
+    solver->unscaled_iterate = solver->unscaled_trial_iterate;
+    solver->unscaled_trial_iterate = unscaled_iterate;
 
     SLEQP_CALL(sleqp_get_violation(solver->problem,
                                    solver->unscaled_iterate,
@@ -1282,7 +1277,15 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_set_and_evaluate(problem, iterate));
 
-  //SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
+  // ensure that the unscaled iterate is initialized
+  if(solver->scaling_data)
+  {
+    SLEQP_CALL(sleqp_iterate_copy(iterate,
+                                  solver->unscaled_iterate));
+
+    SLEQP_CALL(sleqp_unscale_iterate(solver->scaling_data,
+                                     solver->unscaled_iterate));
+  }
 
   SLEQP_CALL(sleqp_get_violation(problem,
                                  iterate,
