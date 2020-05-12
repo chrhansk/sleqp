@@ -48,7 +48,7 @@ function(add_python_project)
 
   add_custom_command(
     TARGET "${TARGET_NAME}_sdist"
-    COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} sdist
+    COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} sdist --formats=gztar
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   add_custom_target("${TARGET_NAME}_bdist")
