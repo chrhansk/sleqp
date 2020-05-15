@@ -121,3 +121,6 @@ class FuncErrorTest(unittest.TestCase):
 
     with self.assertRaises(sleqp.SLEQPError) as context:
       solver.solve(100, 3600)
+
+if __name__ == '__main__':
+    unittest.main()

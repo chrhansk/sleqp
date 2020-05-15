@@ -136,3 +136,7 @@ class ConstrainedTest(unittest.TestCase):
     s = np.array([1., 4.742999, 3.821151, 1.379408])
 
     self.assertTrue(np.allclose(s, self.solver.primal))
+
+
+if __name__ == '__main__':
+    unittest.main()

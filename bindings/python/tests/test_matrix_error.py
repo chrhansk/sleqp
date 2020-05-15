@@ -114,3 +114,7 @@ class MatrixErrorTest(unittest.TestCase):
                           self.x)
 
     solver.solve(1, 3600)
+
+
+if __name__ == '__main__':
+    unittest.main()
