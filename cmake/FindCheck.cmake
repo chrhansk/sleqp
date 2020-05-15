@@ -6,14 +6,13 @@
 #  CHECK_LIBRARIES - check library
 #
 
-INCLUDE(FindPkgConfig)
-
-#if(CHECK_INCLUDE_DIRS AND CHECK_LIBRARIES)
-#  set(CHECK_FIND_QUIETLY TRUE)
-#endif()
+find_package(PkgConfig)
 
 # Take care about check.pc settings
-PKG_SEARCH_MODULE(CHECK check)
+
+if(PKG_CONFIG_FOUND)
+  pkg_search_module(CHECK check)
+endif()
 
 if(NOT CHECK_FOUND)
   find_path(CHECK_INCLUDE_DIR NAMES check.h)
