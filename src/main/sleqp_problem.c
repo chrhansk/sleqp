@@ -8,6 +8,7 @@
 static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
                                    SleqpSparseVec* ub,
                                    double eps,
+                                   bool cons_bounds,
                                    SleqpSparseVec** adj_lbstar,
                                    SleqpSparseVec** adj_ubstar)
 {
@@ -55,7 +56,22 @@ static SLEQP_RETCODE adjust_bounds(SleqpSparseVec* lb,
 
       SLEQP_CALL(sleqp_sparse_vector_free(adj_ubstar));
 
-      return SLEQP_INVALID;
+      if(cons_bounds)
+      {
+        sleqp_log_error("Inconsistent constraint bound values at index %d: lower = %f > %f = upper",
+                        idx,
+                        lb_val,
+                        ub_val);
+      }
+      else
+      {
+        sleqp_log_error("Inconsistent variable bound values at index %d: lower = %f > %f = upper",
+                        idx,
+                        lb_val,
+                        ub_val);
+      }
+
+      return SLEQP_ILLEGAL_ARGUMENT;
     }
 
     if(valid_lb)
@@ -87,7 +103,9 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  SleqpProblem* sleqp = *star;
+  SleqpProblem* problem = *star;
+
+  *problem = (SleqpProblem) {0};
 
   assert(var_lb->dim == var_ub->dim);
   assert(cons_lb->dim == cons_ub->dim);
@@ -98,7 +116,7 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   assert(sleqp_sparse_vector_valid(cons_lb));
   assert(sleqp_sparse_vector_valid(cons_ub));
 
-  sleqp->func = func;
+  problem->func = func;
 
   SleqpSparseVec* adj_lb;
   SleqpSparseVec* adj_ub;
@@ -106,23 +124,25 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   SLEQP_CALL(adjust_bounds(var_lb,
                            var_ub,
                            sleqp_params_get_eps(params),
+                           false,
                            &adj_lb,
                            &adj_ub));
 
-  sleqp->var_lb = adj_lb;
-  sleqp->var_ub = adj_ub;
+  problem->var_lb = adj_lb;
+  problem->var_ub = adj_ub;
 
   SLEQP_CALL(adjust_bounds(cons_lb,
                            cons_ub,
                            sleqp_params_get_eps(params),
+                           false,
                            &adj_lb,
                            &adj_ub));
 
-  sleqp->cons_lb = adj_lb;
-  sleqp->cons_ub = adj_ub;
+  problem->cons_lb = adj_lb;
+  problem->cons_ub = adj_ub;
 
-  sleqp->num_variables = var_lb->dim;
-  sleqp->num_constraints = cons_lb->dim;
+  problem->num_variables = var_lb->dim;
+  problem->num_constraints = cons_lb->dim;
 
   return SLEQP_OKAY;
 }
