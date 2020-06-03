@@ -286,10 +286,15 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
                                         problem->num_constraints,
                                         0));
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = scaled_func_set_value,
+    .func_eval = scaled_func_eval,
+    .hess_prod = scaled_func_hess_prod,
+    .func_free = NULL
+  };
+
   SLEQP_CALL(sleqp_func_create(&(scaling->scaled_func),
-                               scaled_func_set_value,
-                               scaled_func_eval,
-                               scaled_func_hess_prod,
+                               &callbacks,
                                problem->num_variables,
                                scaling));
 

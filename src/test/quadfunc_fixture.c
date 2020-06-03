@@ -108,10 +108,15 @@ void quadfunc_setup()
 
   ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = quadfunc_set,
+    .func_eval = quadfunc_eval,
+    .hess_prod = quadfunc_hess_prod,
+    .func_free = NULL
+  };
+
   ASSERT_CALL(sleqp_func_create(&quadfunc,
-                                quadfunc_set,
-                                quadfunc_eval,
-                                quadfunc_hess_prod,
+                                &callbacks,
                                 2,
                                 func_data));
 

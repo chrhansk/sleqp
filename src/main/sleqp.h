@@ -16,6 +16,7 @@
 #include "sleqp_func.h"
 #include "sleqp_iterate.h"
 #include "sleqp_log.h"
+#include "sleqp_lsq.h"
 #include "sleqp_options.h"
 #include "sleqp_mem.h"
 #include "sleqp_merit.h"

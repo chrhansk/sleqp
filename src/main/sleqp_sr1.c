@@ -119,10 +119,15 @@ SLEQP_RETCODE sr1_func_create(SleqpFunc** fstar,
 
   const int num_variables = sleqp_func_get_num_variables(func);
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = sr1_func_set_value,
+    .func_eval = sr1_func_eval,
+    .hess_prod = sr1_func_hess_prod,
+    .func_free = NULL
+  };
+
   SLEQP_CALL(sleqp_func_create(fstar,
-                               sr1_func_set_value,
-                               sr1_func_eval,
-                               sr1_func_hess_prod,
+                               &callbacks,
                                num_variables,
                                sr1_data));
   return SLEQP_OKAY;

@@ -161,14 +161,52 @@ cdef extern from "sleqp.h":
                                                SleqpSparseVec* product,
                                                void* func_data)
 
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_FREE)(void* func_data)
+
+  ctypedef struct SleqpFuncCallbacks:
+    SLEQP_FUNC_SET set_value,
+    SLEQP_FUNC_EVAL func_eval,
+    SLEQP_HESS_PRODUCT hess_prod,
+    SLEQP_FUNC_FREE func_free
+
   SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
-                                  SLEQP_FUNC_SET setx,
-                                  SLEQP_FUNC_EVAL eval,
-                                  SLEQP_HESS_PRODUCT eval_hess_prod,
+                                  SleqpFuncCallbacks* callbacks,
                                   int num_variables,
                                   void* func_data)
 
   SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
+
+  # LSQ
+
+  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_EVAL)(int num_variables,
+                                           SleqpSparseVec* residual,
+                                           void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(int num_variables,
+                                                  SleqpSparseVec* forward_direction,
+                                                  SleqpSparseVec* product,
+                                                  void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_ADJOINT)(int num_variables,
+                                                  SleqpSparseVec* adjoint_direction,
+                                                  SleqpSparseVec* product,
+                                                  void* func_data)
+
+  ctypedef struct SleqpLSQCallbacks:
+    SLEQP_FUNC_SET set_value,
+    SLEQP_LSQ_EVAL lsq_eval,
+    SLEQP_LSQ_JAC_FORWARD lsq_jac_forward,
+    SLEQP_LSQ_JAC_ADJOINT lsq_jac_adjoint,
+    SLEQP_FUNC_EVAL eval_additional,
+    SLEQP_HESS_PRODUCT hess_prod_additional,
+    SLEQP_FUNC_FREE func_free
+
+  SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
+                                      SleqpLSQCallbacks* callbacks,
+                                      int num_variables,
+                                      int num_residuals,
+                                      double levenberg_marquardt,
+                                      void* func_data);
 
 
   # Scaling

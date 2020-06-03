@@ -142,10 +142,15 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = linquadfunc_set,
+    .func_eval = linquadfunc_eval,
+    .hess_prod = linquadfunc_hess_prod,
+    .func_free = NULL
+  };
+
   ASSERT_CALL(sleqp_func_create(&linquadfunc,
-                                linquadfunc_set,
-                                linquadfunc_eval,
-                                linquadfunc_hess_prod,
+                                &callbacks,
                                 2,
                                 func_data));
 

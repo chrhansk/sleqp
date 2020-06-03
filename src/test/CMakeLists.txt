@@ -52,6 +52,8 @@ add_unit_test(constrained_cauchy_test)
 
 add_unit_test(constrained_test)
 
+add_unit_test(lsq_test)
+
 add_unit_test(mem_test)
 
 add_unit_test(unconstrained_test)

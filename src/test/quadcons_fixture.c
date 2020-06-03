@@ -117,7 +117,7 @@ SLEQP_RETCODE quadconsfunc_eval(int num_variables,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE quadconsfunc_hess_prof(int num_variables,
+SLEQP_RETCODE quadconsfunc_hess_prod(int num_variables,
                                      double* func_dual,
                                      SleqpSparseVec* direction,
                                      SleqpSparseVec* cons_duals,
@@ -154,10 +154,15 @@ void quadconsfunc_setup()
 
   ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = quadconsfunc_set,
+    .func_eval = quadconsfunc_eval,
+    .hess_prod = quadconsfunc_hess_prod,
+    .func_free = NULL
+  };
+
   ASSERT_CALL(sleqp_func_create(&quadconsfunc,
-                                quadconsfunc_set,
-                                quadconsfunc_eval,
-                                quadconsfunc_hess_prof,
+                                &callbacks,
                                 2,
                                 func_data));
 

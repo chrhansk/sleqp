@@ -86,6 +86,9 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
 
   return csleqp.SLEQP_OKAY
 
+cdef csleqp.SLEQP_RETCODE sleqp_func_free(void* func_data):
+  return csleqp.SLEQP_OKAY
+
 
 cdef class Func:
   cdef csleqp.SleqpFunc* func
@@ -98,10 +101,16 @@ cdef class Func:
                 int num_constraints,
                 *args,
                 **keywords):
+
+    cdef csleqp.SleqpFuncCallbacks callbacks
+
+    callbacks.set_value = &sleqp_func_set
+    callbacks.func_eval = &sleqp_func_eval
+    callbacks.hess_prod = &sleqp_func_hess_product
+    callbacks.func_free = &sleqp_func_free
+
     csleqp_call(csleqp.sleqp_func_create(&self.func,
-                                         &sleqp_func_set,
-                                         &sleqp_func_eval,
-                                         &sleqp_func_hess_product,
+                                         &callbacks,
                                          num_variables,
                                          <void*> self))
 

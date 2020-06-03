@@ -106,10 +106,15 @@ SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
 
   const int num_variables = sleqp_func_get_num_variables(func);
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = bfgs_func_set_value,
+    .func_eval = bfgs_func_eval,
+    .hess_prod = bfgs_func_hess_product,
+    .func_free = NULL
+  };
+
   SLEQP_CALL(sleqp_func_create(fstar,
-                               bfgs_func_set_value,
-                               bfgs_func_eval,
-                               bfgs_func_hess_product,
+                               &callbacks,
                                num_variables,
                                bfgs_data));
   return SLEQP_OKAY;

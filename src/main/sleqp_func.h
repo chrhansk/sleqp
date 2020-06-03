@@ -85,7 +85,7 @@ extern "C" {
    * @param[out]    product           The resulting product
    * @param[in,out] func_data         The function data
    *
-   */
+   **/
   typedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(int num_variables,
                                               double* func_dual,
                                               SleqpSparseVec* direction,
@@ -94,19 +94,31 @@ extern "C" {
                                               void* func_data);
 
   /**
+   * Cleans up any allocated memory stored in the function data.
+   *
+   * @param[in,out] func_data  The function data
+   *
+   **/
+  typedef SLEQP_RETCODE (*SLEQP_FUNC_FREE)(void* func_data);
+
+  typedef struct {
+    SLEQP_FUNC_SET set_value;
+    SLEQP_FUNC_EVAL func_eval;
+    SLEQP_HESS_PRODUCT hess_prod;
+    SLEQP_FUNC_FREE func_free;
+  } SleqpFuncCallbacks;
+
+  /**
    * Creates a new function.
    *
    * @param[out] fstar            A pointer to the function to be created
    * @param[in]  setx             A callback to set the input vector
    * @param[in]  eval             A callback to evaluate the function and gradient
-   * @param[in]  eval_bilin       A callback to evaluate the Hessian bilinear product
    * @param[in]  num_variables    The number of variables
    * @param[in]  func_data        The function data
    **/
   SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
-                                  SLEQP_FUNC_SET setx,
-                                  SLEQP_FUNC_EVAL eval,
-                                  SLEQP_HESS_PRODUCT eval_hess_prod,
+                                  SleqpFuncCallbacks* callbacks,
                                   int num_variables,
                                   void* func_data);
 

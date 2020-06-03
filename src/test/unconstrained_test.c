@@ -44,15 +44,6 @@ START_TEST(test_unconstrained_solve)
                                   rosenbrock_x,
                                   NULL));
 
-  /*
-  ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_x));
-
-  ASSERT_CALL(sleqp_sparse_vector_reserve(rosenbrock_x, 2));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_x, 0, 10.));
-  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_x, 1, 10.));
-  */
-
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 

@@ -193,10 +193,15 @@ void second_order_setup()
   ASSERT_CALL(sleqp_calloc(&func_data->duals, num_constraints));
   ASSERT_CALL(sleqp_calloc(&func_data->direction, num_variables));
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = func_set,
+    .func_eval = func_eval,
+    .hess_prod = func_hess_prod,
+    .func_free = NULL
+  };
+
   ASSERT_CALL(sleqp_func_create(&func,
-                                func_set,
-                                func_eval,
-                                func_hess_prod,
+                                &callbacks,
                                 num_variables,
                                 func_data));
 

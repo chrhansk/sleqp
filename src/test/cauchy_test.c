@@ -113,10 +113,15 @@ void unconstrained_setup()
 
   ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = linfunc_set,
+    .func_eval = linfunc_eval,
+    .hess_prod = linfunc_hess_prod,
+    .func_free = NULL
+  };
+
   ASSERT_CALL(sleqp_func_create(&linfunc,
-                                linfunc_set,
-                                linfunc_eval,
-                                linfunc_hess_prod,
+                                &callbacks,
                                 2,
                                 func_data));
 

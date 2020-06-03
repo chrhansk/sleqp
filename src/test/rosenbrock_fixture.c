@@ -149,10 +149,15 @@ void rosenbrock_setup()
 
   ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
 
+    SleqpFuncCallbacks callbacks = {
+    .set_value = rosenbrock_set,
+    .func_eval = rosenbrock_eval,
+    .hess_prod = rosenbrock_hess_prod,
+    .func_free = NULL
+  };
+
   ASSERT_CALL(sleqp_func_create(&rosenbrock_func,
-                                rosenbrock_set,
-                                rosenbrock_eval,
-                                rosenbrock_hess_prod,
+                                &callbacks,
                                 2,
                                 func_data));
 
