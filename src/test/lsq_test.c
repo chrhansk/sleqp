@@ -30,6 +30,7 @@ static inline double sq(double v)
 static const int num_variables = 2;
 static const int num_residuals = 3;
 
+SleqpParams* params;
 SleqpFunc* rosenbrock_lsq_func;
 
 SleqpSparseVec* rosenbrock_var_lb;
@@ -154,6 +155,8 @@ void rosenbrock_setup()
 {
   const double inf = sleqp_infinity();
 
+  ASSERT_CALL(sleqp_params_create(&params));
+
   ASSERT_CALL(sleqp_malloc(&rosenbrock_func_data));
 
   ASSERT_CALL(sleqp_calloc(&rosenbrock_func_data->x, num_variables));
@@ -177,6 +180,7 @@ void rosenbrock_setup()
                                     num_variables, // num variables
                                     num_residuals, // num residuals
                                     0.,            // ML-term
+                                    params,
                                     rosenbrock_func_data));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&rosenbrock_var_lb,
@@ -230,13 +234,14 @@ void rosenbrock_teardown()
   sleqp_free(&rosenbrock_func_data->x);
 
   sleqp_free(&rosenbrock_func_data);
+
+  ASSERT_CALL(sleqp_params_free(&params));
 }
 
 START_TEST(test_unconstrained_solve)
 {
   SleqpSparseVec* expected_solution;
 
-  SleqpParams* params;
   SleqpOptions* options;
   SleqpProblem* problem;
   SleqpSolver* solver;
@@ -248,8 +253,6 @@ START_TEST(test_unconstrained_solve)
 
   ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
   ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 1.));
-
-  ASSERT_CALL(sleqp_params_create(&params));
 
   ASSERT_CALL(sleqp_params_set_optimality_tolerance(params, 1e-8));
 
@@ -293,8 +296,6 @@ START_TEST(test_unconstrained_solve)
   ASSERT_CALL(sleqp_problem_free(&problem));
 
   ASSERT_CALL(sleqp_options_free(&options));
-
-  ASSERT_CALL(sleqp_params_free(&params));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
 }

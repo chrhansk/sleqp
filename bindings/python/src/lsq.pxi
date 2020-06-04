@@ -66,7 +66,8 @@ cdef class LSQFunc:
                 int num_variables,
                 int num_constraints,
                 int num_residuals,
-                double levenberg_marquardt
+                double levenberg_marquardt,
+                Params params,
                 *args,
                 **keywords):
 
@@ -85,6 +86,7 @@ cdef class LSQFunc:
                                              num_variables,
                                              num_residuals,
                                              levenberg_marquardt,
+                                             params.params,
                                              <void*> self))
 
     self.num_variables = num_variables

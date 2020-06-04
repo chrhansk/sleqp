@@ -97,7 +97,8 @@ cdef class Func:
 
   cdef public object call_exception
 
-  def __cinit__(self, int num_variables,
+  def __cinit__(self,
+                int num_variables,
                 int num_constraints,
                 *args,
                 **keywords):

@@ -243,6 +243,7 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                     int num_variables,
                                     int num_residuals,
                                     double levenberg_marquardt,
+                                    SleqpParams* params,
                                     void* func_data)
 {
   SleqpLSQData* data = NULL;
@@ -290,7 +291,7 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                         num_variables,
                                         num_variables));
 
-  //data->eps = sleqp_params_get_eps(params);
+  data->eps = sleqp_params_get_eps(params);
 
   data->func_data = func_data;
 

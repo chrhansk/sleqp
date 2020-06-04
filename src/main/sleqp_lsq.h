@@ -82,6 +82,7 @@ extern "C" {
                                       int num_variables,
                                       int num_residuals,
                                       double levenberg_marquardt,
+                                      SleqpParams* params,
                                       void* func_data);
 
 
