@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <check.h>
+#include <math.h>
 
 #include "sleqp.h"
 #include "sleqp_cauchy.h"
