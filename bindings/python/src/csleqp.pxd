@@ -88,6 +88,10 @@ cdef extern from "sleqp.h":
   cdef struct SleqpFunc:
     pass
 
+  cdef struct SleqpHessianStruct:
+    pass
+
+
   ctypedef enum SLEQP_LOG_LEVEL:
     SLEQP_LOG_ERROR = 0,
     SLEQP_LOG_WARN = 1,
@@ -175,6 +179,29 @@ cdef extern from "sleqp.h":
                                   void* func_data)
 
   SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
+
+  SleqpHessianStruct* sleqp_func_get_hessian_struct(SleqpFunc* func)
+
+  # Hessian struct
+
+  int sleqp_hessian_struct_get_num_blocks(SleqpHessianStruct* hessian_struct)
+
+  SLEQP_RETCODE sleqp_hessian_struct_get_block_range(SleqpHessianStruct* hessian_struct,
+                                                     int block,
+                                                     int* begin,
+                                                     int* end)
+
+  SLEQP_RETCODE sleqp_hessian_struct_push_block(SleqpHessianStruct* hessian_struct,
+                                                int end)
+
+  SLEQP_RETCODE sleqp_hessian_struct_clear(SleqpHessianStruct* hessian_struct)
+
+  SLEQP_RETCODE sleqp_hessian_struct_get_linear_range(SleqpHessianStruct* hessian_struct,
+                                                      int* begin,
+                                                      int* end)
+
+  SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
+                                             libc.stdio.FILE* output)
 
   # LSQ
 

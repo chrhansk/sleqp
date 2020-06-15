@@ -1,0 +1,53 @@
+cdef class HessianStruct:
+  cdef csleqp.SleqpHessianStruct* hess_struct
+  cdef dict __dict__
+
+  def __cinit__(self, Func func):
+    self._func = func
+    self.hess_struct = csleqp.sleqp_func_get_hessian_struct(func.func)
+
+  def clear(self):
+    csleqp_call(csleqp.sleqp_hessian_struct_clear(self.hess_struct))
+
+  def push(self, int end):
+    csleqp_call(csleqp.sleqp_hessian_struct_push_block(self.hess_struct, end))
+
+  @property
+  def num_blocks(self):
+    return csleqp.sleqp_hessian_struct_get_num_blocks(self.hess_struct)
+
+  def block_range(self, int block):
+    cdef int begin = 0
+    cdef int end = 0
+
+    csleqp_call(csleqp.sleqp_hessian_struct_get_block_range(self.hess_struct,
+                                                            block,
+                                                            &begin,
+                                                            &end))
+
+    return (begin, end)
+
+  @property
+  def block_ranges(self):
+
+    num_blocks = self.num_blocks
+
+    for block in range(num_blocks):
+        yield self.block_range(block)
+
+  @property
+  def linear_range(self):
+    cdef int begin = 0
+    cdef int end = 0
+
+    csleqp_call(csleqp.sleqp_hessian_struct_get_linear_range(self.hess_struct,
+                                                             &begin,
+                                                             &end))
+
+    return (begin, end)
+
+  def __str__(self):
+    blocks = ', '.join(('[{0}, {1})'.format(*block_range)
+                        for block_range in self.block_ranges))
+
+    return 'HessianStruct: \{{0}\}'.format(', '.join(blocks))

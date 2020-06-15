@@ -21,6 +21,8 @@ struct SleqpFunc
   SleqpTimer* hess_timer;
 
   SleqpSparseVec* product;
+
+  SleqpHessianStruct* hess_struct;
 };
 
 SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
@@ -43,6 +45,10 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_timer_create(&func->hess_timer));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&func->product, num_variables, 0));
+
+  SLEQP_CALL(sleqp_hessian_struct_create(&func->hess_struct,
+                                         num_variables,
+                                         false));
 
   return SLEQP_OKAY;
 }
@@ -107,6 +113,11 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
   SLEQP_CALL(sleqp_timer_stop(func->eval_timer));
 
   return SLEQP_OKAY;
+}
+
+SleqpHessianStruct* sleqp_func_get_hessian_struct(SleqpFunc* func)
+{
+  return func->hess_struct;
 }
 
 int sleqp_func_get_num_variables(SleqpFunc* func)
@@ -213,10 +224,12 @@ SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
     SLEQP_CALL(func->callbacks.func_free(func->data));
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
-
   SLEQP_CALL(sleqp_timer_free(&func->hess_timer));
   SLEQP_CALL(sleqp_timer_free(&func->eval_timer));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
+
+  SLEQP_CALL(sleqp_hessian_struct_free(&func->hess_struct));
 
   sleqp_free(fstar);
 
