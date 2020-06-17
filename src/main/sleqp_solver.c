@@ -29,10 +29,6 @@
 #include "sleqp_bfgs.h"
 #include "sleqp_sr1.h"
 
-const int num_bfgs_products = 5;
-
-const int num_sr1_products = 5;
-
 const bool perform_soc = true;
 
 struct SleqpSolver
@@ -175,6 +171,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
     const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_hessian_eval(options);
 
+    const int num_iter = sleqp_options_get_quasi_newton_num_iterates(options);
+
     if(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
        hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
     {
@@ -183,7 +181,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
       SLEQP_CALL(sleqp_bfgs_data_create(&solver->bfgs_data,
                                         func,
                                         params,
-                                        num_bfgs_products,
+                                        num_iter,
                                         damped_bfgs));
 
       func = sleqp_bfgs_get_func(solver->bfgs_data);
@@ -194,7 +192,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
       SLEQP_CALL(sleqp_sr1_data_create(&solver->sr1_data,
                                        func,
                                        params,
-                                       num_sr1_products));
+                                       num_iter));
 
       func = sleqp_sr1_get_func(solver->sr1_data);
     }
