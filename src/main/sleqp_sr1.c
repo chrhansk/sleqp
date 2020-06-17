@@ -17,7 +17,7 @@
  * with multipliers according to \f$ x_i \f$ of the accepted steps.
  *
  * We recompute the values of \f$ a_i \f$ and the
- * products \f$ a_i^{T} s_i \f$ whenever a new pair \f$ a_i, y_i \f$
+ * products \f$ a_i^{T} s_i \f$ whenever a new pair \f$ s_i, y_i \f$
  * is pushed. Note that some pairs are actually discarded when computing \f$ B_k \f$
  * (we don't want to divide by zero). The criterion is that we only use
  * pairs where
@@ -219,11 +219,19 @@ SLEQP_RETCODE sr1_initial_scale(SleqpSparseVec* step_diff,
                                      step_diff,
                                      &step_dot));
 
-  const double step_diff_normsq = sleqp_sparse_vector_normsq(step_diff);
+  const double grad_diff_normsq = sleqp_sparse_vector_normsq(grad_diff);
 
-  assert(step_diff_normsq > 0.);
+  assert(grad_diff_normsq >= 0.);
 
-  (*initial_scale) = step_dot / step_diff_normsq;
+
+  if(grad_diff_normsq > 0)
+  {
+    (*initial_scale) = step_dot / grad_diff_normsq;
+  }
+  else
+  {
+    (*initial_scale) = 1e-4;
+  }
 
   return SLEQP_OKAY;
 }
