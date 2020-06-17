@@ -150,6 +150,10 @@ cdef class Func:
     pass
 
   @property
+  def hess_struct(self):
+      return HessianStruct(self)
+
+  @property
   def num_variables(self):
       return self.num_variables
 

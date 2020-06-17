@@ -115,7 +115,7 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SleqpHessianStruct* sleqp_func_get_hessian_struct(SleqpFunc* func)
+SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
 {
   return func->hess_struct;
 }

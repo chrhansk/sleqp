@@ -75,7 +75,7 @@ extern "C" {
                                 SleqpSparseVec* cons_val,
                                 SleqpSparseMatrix* cons_jac);
 
-  SleqpHessianStruct* sleqp_func_get_hessian_struct(SleqpFunc* func);
+  SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func);
 
   /**
    * Returns the number of variables \f$ n \f$.

@@ -180,7 +180,7 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
 
-  SleqpHessianStruct* sleqp_func_get_hessian_struct(SleqpFunc* func)
+  SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
 
   # Hessian struct
 
