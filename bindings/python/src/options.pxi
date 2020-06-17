@@ -9,7 +9,8 @@ cdef class Options:
 
   def __init__(self, **values):
     self.props = ['deriv_check',
-                  'hessian_eval']
+                  'hessian_eval',
+                  'quasi_newton_num_iterates']
 
     for key, value in values.items():
       setattr(self, key, value)
@@ -25,6 +26,10 @@ cdef class Options:
   def hessian_eval(self):
     return HessianEval(csleqp.sleqp_options_get_hessian_eval(self.options))
 
+  @property
+  def quasi_newton_num_iterates(self):
+    return csleqp.sleqp_options_get_quasi_newton_num_iterates(self.options)
+
   @deriv_check.setter
   def deriv_check(self, value):
     csleqp_call(csleqp.sleqp_options_set_deriv_check(self.options, value.value))
@@ -32,6 +37,10 @@ cdef class Options:
   @hessian_eval.setter
   def hessian_eval(self, value):
     csleqp_call(csleqp.sleqp_options_set_hessian_eval(self.options, value.value))
+
+  @quasi_newton_num_iterates.setter
+  def quasi_newton_num_iterates(self, int value):
+    csleqp_call(csleqp.sleqp_options_set_quasi_newton_num_iterates(self.options, value))
 
   def values(self):
     return {key: getattr(self, key) for key in self.props}

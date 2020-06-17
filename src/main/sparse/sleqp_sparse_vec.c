@@ -32,6 +32,9 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
 
   //assert(!(isinf(value) || isnan(value)));
 
+  assert(idx < vec->dim);
+  assert(idx >= 0);
+
   if(vec->nnz > 0)
   {
     assert(idx > vec->indices[vec->nnz - 1]);
