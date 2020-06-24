@@ -106,6 +106,14 @@ struct SleqpSolver
 
   double* dense_cache;
 
+  // residuum
+
+  double slackness_residuum;
+
+  double stationarity_residuum;
+
+  double feasibility_residuum;
+
   // BFGS related
 
   SleqpBFGSData* bfgs_data;
@@ -148,14 +156,29 @@ static double remaining_time(SleqpSolver* solver)
   return -1;
 }
 
+static void set_residuum(SleqpSolver* solver)
+{
+  solver->slackness_residuum = sleqp_iterate_slackness_residuum(solver->iterate,
+                                                                solver->problem);
+
+  solver->feasibility_residuum = sleqp_iterate_feasibility_residuum(solver->iterate,
+                                                                    solver->problem);
+
+  solver->stationarity_residuum = sleqp_iterate_stationarity_residuum(solver->iterate,
+                                                                      solver->problem,
+                                                                      solver->dense_cache);
+
+}
+
+
 SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   SleqpProblem* problem,
                                   SleqpParams* params,
                                   SleqpOptions* options,
-                                  SleqpSparseVec* x,
+                                  SleqpSparseVec* primal,
                                   SleqpScalingData* scaling_data)
 {
-  assert(sleqp_sparse_vector_valid(x));
+  assert(sleqp_sparse_vector_valid(primal));
 
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -218,11 +241,11 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   {
     SLEQP_CALL(sleqp_iterate_create(&solver->unscaled_iterate,
                                     solver->unscaled_problem,
-                                    x));
+                                    primal));
 
     SLEQP_CALL(sleqp_iterate_create(&solver->unscaled_trial_iterate,
                                     solver->unscaled_problem,
-                                    x));
+                                    primal));
 
     SLEQP_CALL(sleqp_scaling_flush(solver->scaling_data));
 
@@ -249,9 +272,9 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_iterate_create(&solver->iterate,
                                   solver->problem,
-                                  x));
+                                  primal));
 
-  SLEQP_CALL(sleqp_sparse_vector_clip(x,
+  SLEQP_CALL(sleqp_sparse_vector_clip(primal,
                                       solver->unscaled_problem->var_lb,
                                       solver->unscaled_problem->var_ub,
                                       zero_eps,
@@ -1036,13 +1059,16 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                  &full_step));
 
   {
+    set_residuum(solver);
+
     const double optimality_tolerance = sleqp_params_get_optimality_tolerance(solver->params);
 
     // We perform the optimality test wrt. the scaled problem
     if(sleqp_iterate_is_optimal(iterate,
-                                solver->problem,
-                                optimality_tolerance,
-                                solver->dense_cache))
+                                solver->feasibility_residuum,
+                                solver->slackness_residuum,
+                                solver->stationarity_residuum,
+                                optimality_tolerance))
     {
       *optimal = true;
       return SLEQP_OKAY;
@@ -1355,14 +1381,16 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     sleqp_log_warn("Reached dead point");
   }
 
-  const double violation = sleqp_iterate_constraint_violation(solver->unscaled_iterate,
+  const double violation = sleqp_iterate_feasibility_residuum(solver->unscaled_iterate,
                                                               solver->unscaled_problem);
 
   if(solver->status != SLEQP_OPTIMAL)
   {
     const double tolerance = sleqp_params_get_optimality_tolerance(solver->params);
 
-    const bool feasible = sleqp_iterate_is_feasible(iterate, problem, tolerance);
+    const bool feasible = sleqp_iterate_is_feasible(iterate,
+                                                    solver->feasibility_residuum,
+                                                    tolerance);
 
     if(feasible)
     {

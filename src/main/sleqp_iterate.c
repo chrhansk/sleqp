@@ -266,7 +266,7 @@ double sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
   return residuum;
 }
 
-double sleqp_iterate_constraint_violation(SleqpIterate* iterate,
+double sleqp_iterate_feasibility_residuum(SleqpIterate* iterate,
                                           SleqpProblem* problem)
 {
   SleqpSparseVec* c = iterate->cons_val;
@@ -406,9 +406,9 @@ SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
   return SLEQP_OKAY;
 }
 
-double sleqp_iterate_optimality_residuum(SleqpIterate* iterate,
-                                         SleqpProblem* problem,
-                                         double* cache)
+double sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
+                                           SleqpProblem* problem,
+                                           double* cache)
 {
   double residuum = 0.;
 
@@ -472,7 +472,7 @@ double sleqp_iterate_optimality_residuum(SleqpIterate* iterate,
 }
 
 bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
-                               SleqpProblem* problem,
+                               double feasibility_residuum,
                                double tolerance)
 {
   double value_norm = 0.;
@@ -483,9 +483,7 @@ bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
     value_norm = sqrt(value_norm);
   }
 
-  const double constraint_violation = sleqp_iterate_constraint_violation(iterate, problem);
-
-  if(constraint_violation > tolerance * (1. + value_norm))
+  if(feasibility_residuum > tolerance * (1. + value_norm))
   {
     sleqp_log_debug("Iterate does not satisfy feasibility, violation: %e, iterate norm: %e",
                     constraint_violation,
@@ -498,11 +496,12 @@ bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
 }
 
 bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
-                              SleqpProblem* problem,
-                              double tolerance,
-                              double* cache)
+                              double feasibility_residuum,
+                              double slackness_residuum,
+                              double stationarity_residuum,
+                              double tolerance)
 {
-  if(!sleqp_iterate_is_feasible(iterate, problem, tolerance))
+  if(!sleqp_iterate_is_feasible(iterate, feasibility_residuum, tolerance))
   {
     return false;
   }
@@ -518,18 +517,14 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
 
   sleqp_log_info("Checking optimality, tolerance: %e", tolerance);
 
-  const double optimality_residuum = sleqp_iterate_optimality_residuum(iterate, problem, cache);
-
-  if(optimality_residuum >= tolerance * (1. + multiplier_norm))
+  if(stationarity_residuum >= tolerance * (1. + multiplier_norm))
   {
     sleqp_log_info("Iterate is not optimal, residuum: %e, multiplier norm: %e",
-                    optimality_residuum,
+                    stationarity_residuum,
                     multiplier_norm);
 
     return false;
   }
-
-  const double slackness_residuum = sleqp_iterate_slackness_residuum(iterate, problem);
 
   if(slackness_residuum >= tolerance * (1. + multiplier_norm))
   {
