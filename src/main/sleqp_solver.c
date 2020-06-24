@@ -964,26 +964,40 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-#define HEADER_FORMAT "%10s |%20s | %20s |%20s |%20s |%20s |%20s"
+#define HEADER_FORMAT "%8s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%20e | %20e |%20e |%20e |%20e |%20s"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%8d " SLEQP_FORMAT_RESET "|%14e | %14e |%14e |%14e |%14e |%14e |%14e  |%14e  |%14e | %18s"
 
 static SLEQP_RETCODE print_header()
 {
   sleqp_log_info(HEADER_FORMAT,
                  "Iteration",
                  "Function value",
-                 "Violation",
+                 "Feas res",
+                 "Slack res",
+                 "Stat res",
                  "Penalty",
                  "LP trust radius",
                  "EQP trust radius",
+                 "LP cond",
+                 "Jac cond",
                  "Step type");
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE print_line(SleqpSolver* solver, double violation)
+static SLEQP_RETCODE print_line(SleqpSolver* solver)
 {
+  bool exact = false;
+  double basis_condition, aug_jac_condition;
+
+  SLEQP_CALL(sleqp_lpi_get_basis_condition(solver->lp_interface,
+                                           &exact,
+                                           &basis_condition));
+
+  SLEQP_CALL(sleqp_aug_jacobian_get_condition_estimate(solver->aug_jacobian,
+                                                       &aug_jac_condition));
+
   const char* steptype_descriptions[] = {
     [SLEQP_STEPTYPE_NONE] = "",
     [SLEQP_STEPTYPE_ACCEPTED] = "Accepted",
@@ -995,10 +1009,14 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver, double violation)
   sleqp_log_info(LINE_FORMAT,
                  solver->iteration,
                  solver->unscaled_iterate->func_val,
-                 violation,
+                 solver->feasibility_residuum,
+                 solver->slackness_residuum,
+                 solver->stationarity_residuum,
                  solver->penalty_parameter,
                  solver->lp_trust_radius,
                  solver->trust_radius,
+                 basis_condition,
+                 aug_jac_condition,
                  steptype_descriptions[solver->last_step_type]);
 
   return SLEQP_OKAY;
@@ -1080,9 +1098,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     SLEQP_CALL(print_header());
   }
 
-  double total_violation = sleqp_sparse_vector_norminf(solver->unscaled_violation);
-
-  SLEQP_CALL(print_line(solver, total_violation));
+  SLEQP_CALL(print_line(solver));
 
   double quadratic_reduction = quadratic_iterate_value - quadratic_trial_value;
 
