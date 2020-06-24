@@ -1304,6 +1304,9 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   solver->elapsed_seconds = 0.;
   solver->last_step_type = SLEQP_STEPTYPE_NONE;
 
+  const double deadpoint_bound = sleqp_params_get_deadpoint_bound(solver->params);
+  bool reached_deadpoint = false;
+
   while(true)
   {
     bool optimal;
@@ -1317,6 +1320,13 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
 
     solver->elapsed_seconds = sleqp_timer_get_ttl(solver->elapsed_timer);
+
+    if(solver->lp_trust_radius <= deadpoint_bound ||
+       solver->trust_radius <= deadpoint_bound)
+    {
+      reached_deadpoint = true;
+      break;
+    }
 
     if(optimal)
     {
@@ -1338,6 +1348,11 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     {
       break;
     }
+  }
+
+  if(reached_deadpoint)
+  {
+    sleqp_log_warn("Reached dead point");
   }
 
   const double violation = sleqp_iterate_constraint_violation(solver->unscaled_iterate,

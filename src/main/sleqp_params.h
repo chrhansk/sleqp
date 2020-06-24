@@ -35,6 +35,8 @@ extern "C" {
 
   double sleqp_params_get_accepted_reduction(SleqpParams* params);
 
+  double sleqp_params_get_deadpoint_bound(SleqpParams* params);
+
 
   SLEQP_RETCODE sleqp_params_set_zero_eps(SleqpParams* params, double value);
 
@@ -54,6 +56,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_params_set_optimality_tolerance(SleqpParams* params, double value);
 
   SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double value);
+
+  SLEQP_RETCODE sleqp_params_set_deadpoint_bound(SleqpParams* params, double value);
 
 
   SLEQP_RETCODE sleqp_params_free(SleqpParams** star);

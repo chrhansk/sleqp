@@ -17,3 +17,9 @@ cpdef enum HessianEval:
   SR1        = csleqp.SLEQP_HESSIAN_EVAL_SR1
   SimpleBFGS = csleqp.SLEQP_HESSIAN_EVAL_SIMPLE_BFGS
   DampedBFGS = csleqp.SLEQP_HESSIAN_EVAL_DAMPED_BFGS
+
+cpdef enum ActiveState:
+  Inactive    = csleqp.SLEQP_INACTIVE,
+  ActiveLower = csleqp.SLEQP_ACTIVE_LOWER,
+  ActiveUpper = csleqp.SLEQP_ACTIVE_UPPER,
+  activeBoth  = csleqp.SLEQP_ACTIVE_BOTH

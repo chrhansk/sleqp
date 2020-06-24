@@ -18,7 +18,8 @@ cdef class Params:
                   'linesearch_eta',
                   'linesearch_cutoff',
                   'optimality_tolerance',
-                  'accepted_reduction']
+                  'accepted_reduction',
+                  'deadpoint_bound']
 
     for key, value in values.items():
       setattr(self, key, value)
@@ -70,6 +71,10 @@ cdef class Params:
   def accepted_reduction(self):
     return csleqp.sleqp_params_get_accepted_reduction(self.params)
 
+  @property
+  def deadpoint_bound(self):
+    return csleqp.sleqp_params_get_deadpoint_bound(self.params)
+
   @zero_eps.setter
   def zero_eps(self, value):
     csleqp_call(csleqp.sleqp_params_set_zero_eps(self.params, value))
@@ -113,6 +118,10 @@ cdef class Params:
   @accepted_reduction.setter
   def accepted_reduction(self, value):
     csleqp_call(csleqp.sleqp_params_set_accepted_reduction(self.params, value))
+
+  @deadpoint_bound.setter
+  def deadpoint_bound(self, value):
+    csleqp_call(csleqp.sleqp_params_set_deadpoint_bound(self.params, value))
 
   def values(self):
     return {key: getattr(self, key) for key in self.props}

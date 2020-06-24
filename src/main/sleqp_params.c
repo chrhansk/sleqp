@@ -20,6 +20,8 @@ struct SleqpParams
   double optimality_tol;
 
   double accepted_reduction;
+
+  double deadpoint_bound;
 };
 
 #define ZERO_EPS_DEFAULT 1e-16
@@ -38,6 +40,8 @@ struct SleqpParams
 #define OPTIMALITY_TOL_DEFAULT 1e-6
 
 #define ACCEPTED_REDUCTION_DEFAULT 1e-8
+
+#define DEADPOINT_BOUND_DEFAULT 1e-10
 
 SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 {
@@ -61,6 +65,8 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
   params->optimality_tol = OPTIMALITY_TOL_DEFAULT;
 
   params->accepted_reduction = ACCEPTED_REDUCTION_DEFAULT;
+
+  params->deadpoint_bound = DEADPOINT_BOUND_DEFAULT;
 
   return SLEQP_OKAY;
 }
@@ -120,7 +126,10 @@ double sleqp_params_get_accepted_reduction(SleqpParams* params)
   return params->accepted_reduction;
 }
 
-
+double sleqp_params_get_deadpoint_bound(SleqpParams* params)
+{
+  return params->deadpoint_bound;
+}
 
 
 SLEQP_RETCODE sleqp_params_set_zero_eps(SleqpParams* params, double value)
@@ -200,7 +209,10 @@ SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double va
   return SLEQP_OKAY;
 }
 
-
+SLEQP_RETCODE sleqp_params_set_deadpoint_bound(SleqpParams* params, double value)
+{
+  params->deadpoint_bound = value;
+}
 
 
 SLEQP_RETCODE sleqp_params_free(SleqpParams** star)

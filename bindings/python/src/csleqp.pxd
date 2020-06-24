@@ -19,6 +19,12 @@ cdef extern from "sleqp.h":
     SLEQP_INVALID_DERIV,
     SLEQP_INTERNAL_ERROR
 
+  ctypedef enum SLEQP_ACTIVE_STATE:
+    SLEQP_INACTIVE,
+    SLEQP_ACTIVE_LOWER,
+    SLEQP_ACTIVE_UPPER,
+    SLEQP_ACTIVE_BOTH
+
   ctypedef enum SLEQP_STATUS:
     SLEQP_OPTIMAL,
     SLEQP_FEASIBLE,
@@ -72,7 +78,7 @@ cdef extern from "sleqp.h":
   ctypedef struct SleqpOptions:
     pass
 
-  ctypedef struct SleqpActiveSet:
+  ctypedef struct SleqpWorkingSet:
     pass
 
   ctypedef struct SleqpIterate:
@@ -81,7 +87,7 @@ cdef extern from "sleqp.h":
     SleqpSparseVec* func_grad
     SleqpSparseVec* cons_val
     SleqpSparseMatrix* cons_jac
-    SleqpActiveSet* active_set
+    SleqpWorkingSet* working_set
     SleqpSparseVec* cons_dual
     SleqpSparseVec* vars_dual
 
@@ -202,6 +208,10 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
                                              libc.stdio.FILE* output)
+
+  # Working set
+
+
 
   # LSQ
 
@@ -324,6 +334,8 @@ cdef extern from "sleqp.h":
 
   double sleqp_params_get_accepted_reduction(SleqpParams* params)
 
+  double sleqp_params_get_deadpoint_bound(SleqpParams* params)
+
   SLEQP_RETCODE sleqp_params_set_zero_eps(SleqpParams* params, double value)
 
   SLEQP_RETCODE sleqp_params_set_eps(SleqpParams* params, double value)
@@ -342,6 +354,8 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_params_set_optimality_tolerance(SleqpParams* params, double value)
 
   SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double value)
+
+  SLEQP_RETCODE sleqp_params_set_deadpoint_bound(SleqpParams* params, double value)
 
   SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
 
