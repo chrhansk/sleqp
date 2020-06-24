@@ -964,21 +964,21 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-#define HEADER_FORMAT "%8s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
+#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%8d " SLEQP_FORMAT_RESET "|%14e | %14e |%14e |%14e |%14e |%14e |%14e  |%14e  |%14e | %18s"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e | %18s"
 
 static SLEQP_RETCODE print_header()
 {
   sleqp_log_info(HEADER_FORMAT,
                  "Iteration",
-                 "Function value",
+                 "Func val",
                  "Feas res",
                  "Slack res",
                  "Stat res",
                  "Penalty",
-                 "LP trust radius",
-                 "EQP trust radius",
+                 "LP tr",
+                 "EQP tr",
                  "LP cond",
                  "Jac cond",
                  "Step type");
