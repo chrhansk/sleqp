@@ -504,11 +504,11 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
   }
 
   const int num_active_vars = sleqp_working_set_num_active_vars(iterate->working_set);
-  const int num_active_conss = sleqp_working_set_num_active_conss(iterate->working_set);
+  const int num_active_cons = sleqp_working_set_num_active_cons(iterate->working_set);
   const int working_set_size = sleqp_working_set_size(iterate->working_set);
 
   assert(num_active_vars <= problem->num_variables);
-  assert(num_active_conss <= problem->num_variables);
+  assert(num_active_cons <= problem->num_variables);
 
   assert(working_set_size <= problem->num_variables);
 

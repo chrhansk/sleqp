@@ -46,7 +46,7 @@ extern "C" {
 
   int sleqp_working_set_num_active_vars(SleqpWorkingSet* working_set);
 
-  int sleqp_working_set_num_active_conss(SleqpWorkingSet* working_set);
+  int sleqp_working_set_num_active_cons(SleqpWorkingSet* working_set);
 
   int sleqp_working_set_size(SleqpWorkingSet* working_set);
 

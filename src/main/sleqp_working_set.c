@@ -168,7 +168,7 @@ int sleqp_working_set_num_active_vars(SleqpWorkingSet* working_set)
   return working_set->num_active_variables;
 }
 
-int sleqp_working_set_num_active_conss(SleqpWorkingSet* working_set)
+int sleqp_working_set_num_active_cons(SleqpWorkingSet* working_set)
 {
   return working_set->num_active_constraints;
 }
