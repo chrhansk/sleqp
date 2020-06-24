@@ -13,6 +13,9 @@ struct SleqpSparseFactorization
   void* numeric_factorization;
   void* symbolic_factorization;
 
+  double control[UMFPACK_CONTROL];
+  double info[UMFPACK_INFO];
+
   double* solution;
   double* rhs;
 };
@@ -92,6 +95,8 @@ SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
 
   *factorization = (SleqpSparseFactorization){0};
 
+  umfpack_di_defaults(factorization->control);
+
   assert(matrix->num_cols == matrix->num_rows);
 
   factorization->matrix = matrix;
@@ -102,16 +107,16 @@ SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
                                    matrix->rows,
                                    matrix->data,
                                    &factorization->symbolic_factorization,
-                                   NULL,
-                                   NULL));
+                                   factorization->control,
+                                   factorization->info));
 
   UMFPACK_CALL(umfpack_di_numeric(matrix->cols,
                                   matrix->rows,
                                   matrix->data,
                                   factorization->symbolic_factorization,
                                   &factorization->numeric_factorization,
-                                  NULL,
-                                  NULL));
+                                  factorization->control,
+                                  factorization->info));
 
   if(factorization->symbolic_factorization)
   {
@@ -172,10 +177,18 @@ SLEQP_RETCODE sleqp_sparse_factorization_solve(SleqpSparseFactorization* factori
                                 factorization->solution,
                                 factorization->rhs,
                                 factorization->numeric_factorization,
-                                NULL,
-                                NULL));
+                                factorization->control,
+                                factorization->info));
 
   SLEQP_CALL(reset_cache(factorization->rhs, rhs));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_factorization_get_condition_estimate(SleqpSparseFactorization* factorization,
+                                                                double* condition_estimate)
+{
+  *(condition_estimate) = 1. / (factorization->info[UMFPACK_RCOND]);
 
   return SLEQP_OKAY;
 }

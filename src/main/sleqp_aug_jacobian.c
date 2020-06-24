@@ -17,6 +17,8 @@ struct SleqpAugJacobian
 
   SleqpTimer* factorization_timer;
 
+  double condition_estimate;
+
   int* col_indices;
 };
 
@@ -168,14 +170,14 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
 
   SleqpAugJacobian* jacobian = *star;
 
+  *jacobian = (SleqpAugJacobian){0};
+
   jacobian->problem = problem;
   jacobian->params = params;
 
-  jacobian->working_set_size = 0;
+  jacobian->condition_estimate = -1;
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&jacobian->augmented_matrix, 0, 0, 0));
-
-  jacobian->factorization = NULL;
 
   jacobian->max_set_size = problem->num_constraints + problem->num_variables;
   int max_num_cols = problem->num_variables + jacobian->max_set_size;
@@ -194,6 +196,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   SleqpWorkingSet* working_set = iterate->working_set;
 
   jacobian->working_set_size = sleqp_working_set_size(working_set);
+
+  jacobian->condition_estimate = -1;
 
   // we overestimate here...
   int constraint_nnz = iterate->cons_jac->nnz;
@@ -223,6 +227,9 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
 
   SLEQP_CALL(sleqp_timer_stop(jacobian->factorization_timer));
 
+  SLEQP_CALL(sleqp_sparse_factorization_get_condition_estimate(jacobian->factorization,
+                                                               &jacobian->condition_estimate));
+
   {
     SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
 
@@ -239,6 +246,20 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
 SleqpTimer* sleqp_aug_jacobian_get_factorization_timer(SleqpAugJacobian* jacobian)
 {
   return jacobian->factorization_timer;
+}
+
+SLEQP_RETCODE sleqp_aug_jacobian_get_condition_estimate(SleqpAugJacobian* jacobian,
+                                                        double* condition_estimate)
+{
+  if(jacobian->condition_estimate == -1)
+  {
+    sleqp_log_error("Condition not available");
+    return SLEQP_INTERNAL_ERROR;
+  }
+
+  *condition_estimate = jacobian->condition_estimate;
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,

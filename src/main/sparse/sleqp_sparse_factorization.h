@@ -22,6 +22,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_factorization_solve(SleqpSparseFactorization* factorization,
                                                  SleqpSparseVec* rhs);
 
+  SLEQP_RETCODE sleqp_sparse_factorization_get_condition_estimate(SleqpSparseFactorization* factorization,
+                                                                  double* condition_estimate);
+
   SLEQP_RETCODE sleqp_sparse_factorization_get_sol(SleqpSparseFactorization* factorization,
                                                    SleqpSparseVec* sol,
                                                    int begin,

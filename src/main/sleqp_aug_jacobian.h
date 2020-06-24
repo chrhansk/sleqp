@@ -27,6 +27,9 @@ extern "C" {
 
   SleqpTimer* sleqp_aug_jacobian_get_factorization_timer(SleqpAugJacobian* jacobian);
 
+  SLEQP_RETCODE sleqp_aug_jacobian_get_condition_estimate(SleqpAugJacobian* jacobian,
+                                                          double* condition_estimate);
+
   /**
    * computes the solution of the system \f$ A_W x = b_W \f$ with
    * minimum norm.
