@@ -18,15 +18,7 @@ extern "C" {
                                            int num_variables,
                                            int num_constraints,
                                            SleqpParams* params,
-                                           SLEQP_LPI_CREATE create_problem,
-                                           SLEQP_LPI_SOLVE solve,
-                                           SLEQP_LPI_SET_BOUNDS set_bounds,
-                                           SLEQP_LPI_SET_COEFFICIENTS set_coefficients,
-                                           SLEQP_LPI_SET_OBJECTIVE set_objective,
-                                           SLEQP_LPI_GET_SOLUTION get_solution,
-                                           SLEQP_LPI_GET_VARSTATS get_varstats,
-                                           SLEQP_LPI_GET_CONSSTATS get_consstats,
-                                           SLEQP_LPI_FREE free_problem);
+                                           SleqpLPiCallbacks* callbacks);
 
   int sleqp_lpi_get_num_variables(SleqpLPi* lp_interface);
 
@@ -60,6 +52,10 @@ extern "C" {
                                         SLEQP_BASESTAT* constraint_stats);
 
   SleqpTimer* sleqp_lpi_get_solve_timer(SleqpLPi* lp_interface);
+
+  SLEQP_RETCODE sleqp_lpi_get_basis_condition(SleqpLPi* lp_interface,
+                                              bool* exact,
+                                              double* condition);
 
   SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_interface);
 

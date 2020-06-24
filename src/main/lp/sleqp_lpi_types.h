@@ -71,7 +71,24 @@ extern "C" {
                                                    int num_constraints,
                                                    SLEQP_BASESTAT* constraintstats);
 
+  typedef SLEQP_RETCODE (*SLEQP_LPI_GET_BASIS_CONDITION)(void *lp_data,
+                                                         bool* exact,
+                                                         double* condition);
+
   typedef SLEQP_RETCODE (*SLEQP_LPI_FREE)(void** lp_data);
+
+  typedef struct {
+    SLEQP_LPI_CREATE create_problem;
+    SLEQP_LPI_SOLVE solve;
+    SLEQP_LPI_SET_BOUNDS set_bounds;
+    SLEQP_LPI_SET_COEFFICIENTS set_coefficients;
+    SLEQP_LPI_SET_OBJECTIVE set_objective;
+    SLEQP_LPI_GET_SOLUTION get_solution;
+    SLEQP_LPI_GET_VARSTATS get_varstats;
+    SLEQP_LPI_GET_CONSSTATS get_consstats;
+    SLEQP_LPI_GET_BASIS_CONDITION get_basis_condition;
+    SLEQP_LPI_FREE free_problem;
+  } SleqpLPiCallbacks;
 
 #ifdef __cplusplus
 }

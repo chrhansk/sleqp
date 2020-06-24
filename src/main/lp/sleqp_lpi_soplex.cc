@@ -359,6 +359,38 @@ static SLEQP_RETCODE soplex_get_consstats(void* lp_data,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE soplex_get_basis_condition(void* lp_data,
+                                                bool* exact,
+                                                double* condition)
+{
+  SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
+
+  soplex::SoPlex& soplex = *(spx->soplex);
+
+  if(*exact)
+  {
+    bool success = soplex.getExactCondition(*condition);
+
+    if(!success)
+    {
+      sleqp_log_error("Failed to get basis condition");
+      return SLEQP_INTERNAL_ERROR;
+    }
+  }
+  else
+  {
+    bool success = soplex.getEstimatedCondition(*condition);
+
+    if(!success)
+    {
+      sleqp_log_error("Failed to get basis condition");
+      return SLEQP_INTERNAL_ERROR;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE soplex_free(void** lp_data)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) *lp_data;
@@ -382,19 +414,24 @@ extern "C"
                                                   int num_rows,
                                                   SleqpParams* params)
   {
+    SleqpLPiCallbacks callbacks = {
+      .create_problem = soplex_create_problem,
+      .solve = soplex_solve,
+      .set_bounds = soplex_set_bounds,
+      .set_coefficients = soplex_set_coefficients,
+      .set_objective = soplex_set_objective,
+      .get_solution = soplex_get_solution,
+      .get_varstats = soplex_get_varstats,
+      .get_consstats = soplex_get_consstats,
+      .get_basis_condition = soplex_get_basis_condition,
+      .free_problem = soplex_free
+    };
+
     return sleqp_lpi_create_interface(lp_star,
                                       num_cols,
                                       num_rows,
                                       params,
-                                      soplex_create_problem,
-                                      soplex_solve,
-                                      soplex_set_bounds,
-                                      soplex_set_coefficients,
-                                      soplex_set_objective,
-                                      soplex_get_solution,
-                                      soplex_get_varstats,
-                                      soplex_get_consstats,
-                                      soplex_free);
+                                      &callbacks);
   }
 
   SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,

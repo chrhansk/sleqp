@@ -373,6 +373,27 @@ static SLEQP_RETCODE gurobi_get_consstats(void* lp_data,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE gurobi_get_basis_condition(void *lp_data,
+                                                bool* exact,
+                                                double* condition)
+{
+  SleqpLpiGRB* lp_interface = lp_data;
+
+  GRBenv* env = lp_interface->env;
+  GRBmodel* model = lp_interface->model;
+
+  if(*exact)
+  {
+    SLEQP_GRB_CALL(GRBgetdblattr(model, GRB_DBL_ATTR_KAPPA_EXACT, condition), env);
+  }
+  else
+  {
+    SLEQP_GRB_CALL(GRBgetdblattr(model, GRB_DBL_ATTR_KAPPA, condition), env);
+  }
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE gurobi_free(void** star)
 {
   SleqpLpiGRB* lp_interface = *star;
@@ -409,19 +430,24 @@ SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
                                                 int num_rows,
                                                 SleqpParams* params)
 {
+  SleqpLPiCallbacks callbacks = {
+    .create_problem = gurobi_create_problem,
+    .solve = gurobi_solve,
+    .set_bounds = gurobi_set_bounds,
+    .set_coefficients = gurobi_set_coefficients,
+    .set_objective = gurobi_set_objective,
+    .get_solution = gurobi_get_solution,
+    .get_varstats = gurobi_get_varstats,
+    .get_consstats = gurobi_get_consstats,
+    .get_basis_condition = gurobi_get_basis_condition,
+    .free_problem = gurobi_free
+  };
+
   return sleqp_lpi_create_interface(lp_star,
                                     num_cols,
                                     num_rows,
                                     params,
-                                    gurobi_create_problem,
-                                    gurobi_solve,
-                                    gurobi_set_bounds,
-                                    gurobi_set_coefficients,
-                                    gurobi_set_objective,
-                                    gurobi_get_solution,
-                                    gurobi_get_varstats,
-                                    gurobi_get_consstats,
-                                    gurobi_free);
+                                    &callbacks);
 }
 
 
