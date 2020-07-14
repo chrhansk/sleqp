@@ -15,6 +15,16 @@
 extern "C" {
 #endif
 
+  typedef enum {
+    SLEQP_VALUE_REASON_NONE,
+    SLEQP_VALUE_REASON_INIT,
+    SLEQP_VALUE_REASON_CHECKING_DERIV,
+    SLEQP_VALUE_REASON_ACCEPTED_ITERATE,
+    SLEQP_VALUE_REASON_TRYING_ITERATE,
+    SLEQP_VALUE_REASON_TRYING_SOC_ITERATE,
+    SLEQP_VALUE_REASON_REJECTED_ITERATE,
+  } SLEQP_VALUE_REASON;
+
   /**
    * Sets the current input vector
    *
@@ -26,6 +36,7 @@ extern "C" {
    * @param[in,out] func_data    The function data
    **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpSparseVec* x,
+                                          SLEQP_VALUE_REASON reason,
                                           int num_variables,
                                           int* func_grad_nnz,
                                           int* cons_val_nnz,
@@ -95,8 +106,7 @@ extern "C" {
     SLEQP_FUNC_EVAL func_eval;
     SLEQP_HESS_PRODUCT hess_prod;
     SLEQP_FUNC_FREE func_free;
-  } SleqpFuncCallbacks;  
-
+  } SleqpFuncCallbacks;
 
 #ifdef __cplusplus
 }

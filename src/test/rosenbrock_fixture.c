@@ -26,6 +26,7 @@ SleqpSparseVec* rosenbrock_x;
 
 
 static SLEQP_RETCODE rosenbrock_set(SleqpSparseVec* x,
+                                    SLEQP_VALUE_REASON reason,
                                     int num_variables,
                                     int* func_grad_nnz,
                                     int* cons_val_nnz,

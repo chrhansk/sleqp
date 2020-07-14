@@ -23,7 +23,7 @@ class LSQFunc(sleqp.Func):
         self.a = 1
         self.b = 100
 
-    def set_value(self, x):
+    def set_value(self, x, reason):
         self.x = x
 
         self.lsq_val = self.eval_lsq_func()
@@ -86,7 +86,7 @@ class LSQImplicitFunc(sleqp.Func):
         self.a = 1
         self.b = 100
 
-    def set_value(self, x):
+    def set_value(self, x, reason):
         self.x = x
 
         self.lsq_val = self.eval_lsq_func()

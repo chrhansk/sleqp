@@ -52,7 +52,9 @@ void scaling_setup()
                                    problem,
                                    quadconsfunc_x));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem,
+                                     iterate,
+                                     SLEQP_VALUE_REASON_INIT));
 }
 
 START_TEST(test_func_grad_invalid)
@@ -171,7 +173,9 @@ START_TEST(test_first_order_deriv)
   ASSERT_CALL(sleqp_scale_point(scaling,
                                 scaled_iterate->primal));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem, scaled_iterate));
+  ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
+                                     scaled_iterate,
+                                     SLEQP_VALUE_REASON_NONE));
 
   ASSERT_CALL(sleqp_deriv_checker_create(&deriv_check_data,
                                          scaled_problem,
@@ -199,7 +203,9 @@ START_TEST(test_second_order_deriv)
   ASSERT_CALL(sleqp_scale_point(scaling,
                                 scaled_iterate->primal));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem, scaled_iterate));
+  ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
+                                     scaled_iterate,
+                                     SLEQP_VALUE_REASON_NONE));
 
   ASSERT_CALL(sleqp_deriv_checker_create(&deriv_check_data,
                                          scaled_problem,

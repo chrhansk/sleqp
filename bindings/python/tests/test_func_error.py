@@ -9,7 +9,7 @@ num_variables = 2
 num_constraints = 1
 
 class ErrorFunc(sleqp.Func):
-  def set_value(self, v):
+  def set_value(self, v, reason):
     raise Exception("Error in set_value")
 
 class TypeErrorFunc(sleqp.Func):
@@ -26,7 +26,7 @@ class TypeErrorFunc(sleqp.Func):
     return "wrong"
 
 class MatrixErrorFunc(sleqp.Func):
-  def set_value(self, v):
+  def set_value(self, v, reason):
     pass
 
   def set_matrix_value(self, m):

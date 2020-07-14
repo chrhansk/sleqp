@@ -129,6 +129,7 @@ static SLEQP_RETCODE apply_quad_scaling(SleqpSparseVec* vec,
 
 static SLEQP_RETCODE
 scaled_func_set_value(SleqpSparseVec* scaled_value,
+                      SLEQP_VALUE_REASON reason,
                       int num_variables,
                       int* func_grad_nnz,
                       int* cons_val_nnz,
@@ -145,6 +146,7 @@ scaled_func_set_value(SleqpSparseVec* scaled_value,
 
   SLEQP_CALL(sleqp_func_set_value(scaling->func,
                                   scaling->unscaled_value,
+                                  reason,
                                   func_grad_nnz,
                                   cons_val_nnz,
                                   cons_jac_nnz));

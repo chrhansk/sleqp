@@ -87,6 +87,7 @@ struct SleqpSR1Data
 
 static SLEQP_RETCODE
 sr1_func_set_value(SleqpSparseVec* x,
+                   SLEQP_VALUE_REASON reason,
                    int num_variables,
                    int* func_grad_nnz,
                    int* cons_val_nnz,
@@ -97,6 +98,7 @@ sr1_func_set_value(SleqpSparseVec* x,
 
   SLEQP_CALL(sleqp_func_set_value(sr1_data->func,
                                   x,
+                                  reason,
                                   func_grad_nnz,
                                   cons_val_nnz,
                                   cons_jac_nnz));

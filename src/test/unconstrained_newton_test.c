@@ -49,7 +49,7 @@ void newton_setup()
                                                  num_lp_constraints,
                                                  params));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_INIT));
 
   ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
                                        problem,

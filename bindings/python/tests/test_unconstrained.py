@@ -14,7 +14,7 @@ class Func(sleqp.Func):
     self.a = 1
     self.b = 1
 
-  def set_value(self, v):
+  def set_value(self, v, reason):
     self.v = v
 
   def func_val(self):

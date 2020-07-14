@@ -19,7 +19,8 @@ extern "C" {
 #endif
 
   SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
-                                       SleqpIterate* iterate);
+                                       SleqpIterate* iterate,
+                                       SLEQP_VALUE_REASON reason);
 
   SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
                                                SleqpSparseVec* x,

@@ -1,6 +1,7 @@
 #cython: language_level=3
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpSparseVec* x,
+                                         csleqp.SLEQP_VALUE_REASON reason,
                                          int num_variables,
                                          int* func_grad_nnz,
                                          int* cons_val_nnz,
@@ -12,7 +13,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpSparseVec* x,
 
     func = (<object> func_data)
 
-    func.set_value(x_array)
+    func.set_value(x_array, ValueReason(reason))
 
     func_grad_nnz[0] = func.func_grad_nnz()
     cons_val_nnz[0] = func.cons_val_nnz()
@@ -122,7 +123,7 @@ cdef class Func:
 
     assert(self.func)
 
-  cpdef set_value(self, x):
+  cpdef set_value(self, x, reason):
     pass
 
   cpdef func_val(self):

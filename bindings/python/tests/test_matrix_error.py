@@ -11,7 +11,7 @@ num_variables = 2
 num_constraints = 1
 
 class MatrixErrorFunc(sleqp.Func):
-  def set_value(self, v):
+  def set_value(self, v, reason):
     pass
 
   def set_matrix_value(self, m):

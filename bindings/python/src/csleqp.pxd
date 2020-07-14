@@ -43,6 +43,15 @@ cdef extern from "sleqp.h":
     SLEQP_HESSIAN_EVAL_SIMPLE_BFGS,
     SLEQP_HESSIAN_EVAL_DAMPED_BFGS
 
+  ctypedef enum SLEQP_VALUE_REASON:
+    SLEQP_VALUE_REASON_NONE,
+    SLEQP_VALUE_REASON_INIT,
+    SLEQP_VALUE_REASON_CHECKING_DERIV,
+    SLEQP_VALUE_REASON_ACCEPTED_ITERATE,
+    SLEQP_VALUE_REASON_TRYING_ITERATE,
+    SLEQP_VALUE_REASON_TRYING_SOC_ITERATE,
+    SLEQP_VALUE_REASON_REJECTED_ITERATE
+
   ctypedef struct SleqpSparseVec:
     double* data
     int* indices
@@ -150,6 +159,7 @@ cdef extern from "sleqp.h":
 
   # Functions
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpSparseVec* x,
+                                           SLEQP_VALUE_REASON reason,
                                            int num_variables,
                                            int* func_grad_nnz,
                                            int* cons_val_nnz,

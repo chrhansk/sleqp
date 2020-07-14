@@ -5,7 +5,8 @@
 #include "sleqp_cmp.h"
 
 SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
-                                     SleqpIterate* iterate)
+                                     SleqpIterate* iterate,
+                                     SLEQP_VALUE_REASON reason)
 {
   int func_grad_nnz = 0;
   int cons_val_nnz = 0;
@@ -13,6 +14,7 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
 
   SLEQP_CALL(sleqp_func_set_value(problem->func,
                                   iterate->primal,
+                                  reason,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));

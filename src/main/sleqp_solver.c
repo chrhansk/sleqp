@@ -941,7 +941,8 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
 }
 
 static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
-                                    SleqpIterate* iterate)
+                                    SleqpIterate* iterate,
+                                    SLEQP_VALUE_REASON reason)
 {
   SleqpProblem* problem = solver->problem;
 
@@ -951,6 +952,7 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_func_set_value(problem->func,
                                   iterate->primal,
+                                  reason,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -1104,7 +1106,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   assert(!sleqp_neg(quadratic_reduction, zero_eps));
 
-  SLEQP_CALL(set_func_value(solver, trial_iterate));
+  SLEQP_CALL(set_func_value(solver, trial_iterate, SLEQP_VALUE_REASON_TRYING_ITERATE));
 
   SLEQP_CALL(sleqp_func_eval(problem->func,
                              NULL,
@@ -1175,7 +1177,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
       double soc_quadratic_reduction;
 
-      SLEQP_CALL(set_func_value(solver, iterate));
+      // SLEQP_CALL(set_func_value(solver, iterate));
 
       SLEQP_CALL(compute_soc_trial_point(solver, &quadratic_trial_value));
 
@@ -1186,7 +1188,9 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
       if(sleqp_pos(soc_quadratic_reduction, zero_eps))
       {
 
-        SLEQP_CALL(set_func_value(solver, trial_iterate));
+        SLEQP_CALL(set_func_value(solver,
+                                  trial_iterate,
+                                  SLEQP_VALUE_REASON_TRYING_SOC_ITERATE));
 
         SLEQP_CALL(sleqp_func_eval(problem->func,
                                    NULL,
@@ -1299,7 +1303,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   }
   else
   {
-    set_func_value(solver, iterate);
+    set_func_value(solver, iterate, SLEQP_VALUE_REASON_REJECTED_ITERATE);
   }
 
   return SLEQP_OKAY;
@@ -1319,7 +1323,9 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                  problem->num_variables,
                  problem->num_constraints);
 
-  SLEQP_CALL(sleqp_set_and_evaluate(problem, iterate));
+  SLEQP_CALL(sleqp_set_and_evaluate(problem,
+                                    iterate,
+                                    SLEQP_VALUE_REASON_INIT));
 
   // ensure that the unscaled iterate is initialized
   if(solver->scaling_data)

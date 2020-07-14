@@ -36,6 +36,7 @@ typedef struct SleqpLSQData
 
 
 static SLEQP_RETCODE lsq_func_set_value(SleqpSparseVec* x,
+                                        SLEQP_VALUE_REASON reason,
                                         int num_variables,
                                         int* func_grad_nnz,
                                         int* cons_val_nnz,
@@ -45,6 +46,7 @@ static SLEQP_RETCODE lsq_func_set_value(SleqpSparseVec* x,
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
 
   SLEQP_CALL(lsq_data->callbacks.set_value(x,
+                                           reason,
                                            num_variables,
                                            func_grad_nnz,
                                            cons_val_nnz,

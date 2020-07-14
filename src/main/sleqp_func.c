@@ -55,16 +55,18 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
 
 SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    SleqpSparseVec* x,
+                                   SLEQP_VALUE_REASON reason,
                                    int* func_grad_nnz,
                                    int* cons_val_nnz,
                                    int* cons_jac_nnz)
 {
   SLEQP_CALL(func->callbacks.set_value(x,
-                                        func->num_variables,
-                                        func_grad_nnz,
-                                        cons_val_nnz,
-                                        cons_jac_nnz,
-                                        func->data));
+                                       reason,
+                                       func->num_variables,
+                                       func_grad_nnz,
+                                       cons_val_nnz,
+                                       cons_jac_nnz,
+                                       func->data));
 
   return SLEQP_OKAY;
 }

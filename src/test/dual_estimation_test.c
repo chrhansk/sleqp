@@ -48,7 +48,7 @@ START_TEST(test_simply_constrained_dual_estimation)
                                                  num_lp_constraints,
                                                  params));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
   ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
                                        problem,

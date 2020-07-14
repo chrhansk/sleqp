@@ -32,6 +32,7 @@ SleqpSparseVec* linfunc_cons_ub;
 SleqpSparseVec* linfunc_x;
 
 static SLEQP_RETCODE linfunc_set(SleqpSparseVec* x,
+                                 SLEQP_VALUE_REASON reason,
                                  int num_variables,
                                  int* func_grad_nnz,
                                  int* cons_val_nnz,
@@ -210,7 +211,7 @@ START_TEST(test_unconstrained_cauchy_direction)
                                                  num_lp_constraints,
                                                  params));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&direction, 0, 0));
 

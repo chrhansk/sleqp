@@ -146,6 +146,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
 
   SLEQP_CALL(sleqp_func_set_value(func,
                                   check_iterate->primal,
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -217,6 +218,7 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
 
   SLEQP_CALL(sleqp_func_set_value(func,
                                   check_iterate->primal,
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -290,6 +292,7 @@ SLEQP_RETCODE sleqp_deriv_check_first_order(SleqpDerivCheckData* data,
   // restore original function value...
   SLEQP_CALL(sleqp_func_set_value(func,
                                   iterate->primal,
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -338,6 +341,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
 
   SLEQP_CALL(sleqp_func_set_value(func,
                                   check_iterate->primal,
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -372,6 +376,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
   {
     SLEQP_CALL(sleqp_func_set_value(func,
                                     iterate->primal,
+                                    SLEQP_VALUE_REASON_CHECKING_DERIV,
                                     &func_grad_nnz,
                                     &cons_val_nnz,
                                     &cons_jac_nnz));
@@ -454,6 +459,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
 
   SLEQP_CALL(sleqp_func_set_value(func,
                                   check_iterate->primal,
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
@@ -504,6 +510,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   {
     SLEQP_CALL(sleqp_func_set_value(func,
                                     iterate->primal,
+                                    SLEQP_VALUE_REASON_CHECKING_DERIV,
                                     &func_grad_nnz,
                                     &cons_val_nnz,
                                     &cons_jac_nnz));
@@ -583,6 +590,7 @@ SLEQP_RETCODE sleqp_deriv_check_second_order(SleqpDerivCheckData* data,
   // restore original function value...
   SLEQP_CALL(sleqp_func_set_value(func,
                                   iterate->primal,
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));

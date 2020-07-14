@@ -13,9 +13,9 @@ def sq(x):
 
 class Func(sleqp.Func):
 
-  def set_value(self, v):
+  def set_value(self, v, reason):
     print("set_value")
-    self.v= v
+    self.v = v
     print(v)
 
   def func_val(self):
