@@ -19,13 +19,13 @@ cpdef enum HessianEval:
   DampedBFGS = csleqp.SLEQP_HESSIAN_EVAL_DAMPED_BFGS
 
 cpdef enum ValueReason:
-  NoReason        = csleqp.SLEQP_VALUE_REASON_NONE
-  Init            = csleqp.SLEQP_VALUE_REASON_INIT
-  CheckDeriv      = csleqp.SLEQP_VALUE_REASON_CHECKING_DERIV
-  AcceptedIterate = csleqp.SLEQP_VALUE_REASON_ACCEPTED_ITERATE
-  TrialIterate    = csleqp.SLEQP_VALUE_REASON_TRYING_ITERATE
-  SOCTrialIterate = csleqp.SLEQP_VALUE_REASON_TRYING_SOC_ITERATE
-  RejectedIterate = csleqp.SLEQP_VALUE_REASON_REJECTED_ITERATE
+  NoReason         = csleqp.SLEQP_VALUE_REASON_NONE
+  Init             = csleqp.SLEQP_VALUE_REASON_INIT
+  CheckingDeriv    = csleqp.SLEQP_VALUE_REASON_CHECKING_DERIV
+  AcceptedIterate  = csleqp.SLEQP_VALUE_REASON_ACCEPTED_ITERATE
+  TryingIterate    = csleqp.SLEQP_VALUE_REASON_TRYING_ITERATE
+  TryingSOCIterate = csleqp.SLEQP_VALUE_REASON_TRYING_SOC_ITERATE
+  RejectedIterate  = csleqp.SLEQP_VALUE_REASON_REJECTED_ITERATE
 
 cpdef enum ActiveState:
   Inactive    = csleqp.SLEQP_INACTIVE,
