@@ -1254,6 +1254,10 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   if(step_accepted || soc_step_accepted)
   {
+    SLEQP_CALL(set_func_value(solver,
+                              trial_iterate,
+                              SLEQP_VALUE_REASON_ACCEPTED_ITERATE));
+
     // get the remaining data to fill the iterate
 
     SLEQP_CALL(sleqp_func_eval(problem->func,
