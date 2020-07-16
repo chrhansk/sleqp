@@ -12,6 +12,7 @@ cimport csleqp
 include "call.pxi"
 include "cmp.pxi"
 include "sparse.pxi"
+include "sparse_matrix.pxi"
 include "func.pxi"
 include "hess_struct.pxi"
 include "iterate.pxi"

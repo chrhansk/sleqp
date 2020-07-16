@@ -14,9 +14,7 @@ def sq(x):
 class Func(sleqp.Func):
 
   def set_value(self, v, reason):
-    print("set_value")
     self.v = v
-    print(v)
 
   def func_val(self):
     x = self.v
@@ -133,9 +131,30 @@ class ConstrainedTest(unittest.TestCase):
 
     self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
-    s = np.array([1., 4.742999, 3.821151, 1.379408])
+    expected_sol = np.array([1., 4.742999, 3.821151, 1.379408])
 
-    self.assertTrue(np.allclose(s, self.solver.solution.primal))
+    solution = self.solver.solution
+
+    self.assertTrue(np.allclose(expected_sol, solution.primal))
+
+    self.func.set_value(expected_sol, sleqp.ValueReason.NoReason)
+
+    expected_func_val = self.func.func_val()
+
+    self.assertTrue(np.allclose(np.array([expected_func_val]),
+                                np.array([solution.func_val])))
+
+    expected_cons_vals = self.func.cons_vals()
+
+    self.assertTrue(np.allclose(expected_cons_vals,
+                                solution.cons_val))
+
+    expected_cons_jac = self.func.cons_jac()
+
+    actual_cons_jac = solution.cons_jac.toarray()
+
+    self.assertTrue(np.allclose(expected_cons_jac,
+                                actual_cons_jac))
 
 
 if __name__ == '__main__':

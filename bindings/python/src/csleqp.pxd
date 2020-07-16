@@ -115,14 +115,6 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
                                            int dim)
 
-  int sleqp_sparse_matrix_get_num_cols(SleqpSparseMatrix* matrix)
-
-  int sleqp_sparse_matrix_get_num_rows(SleqpSparseMatrix* matrix)
-
-  int sleqp_sparse_matrix_get_nnz(SleqpSparseMatrix* matrix)
-
-  int sleqp_sparse_matrix_get_nnz_max(SleqpSparseMatrix* matrix)
-
   SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
                                          int idx,
                                          double value)
@@ -140,6 +132,20 @@ cdef extern from "sleqp.h":
                                            int num_rows,
                                            int num_cols)
 
+  int sleqp_sparse_matrix_get_num_cols(SleqpSparseMatrix* matrix)
+
+  int sleqp_sparse_matrix_get_num_rows(SleqpSparseMatrix* matrix)
+
+  int sleqp_sparse_matrix_get_nnz(SleqpSparseMatrix* matrix)
+
+  int sleqp_sparse_matrix_get_nnz_max(SleqpSparseMatrix* matrix)
+
+  double* sleqp_sparse_matrix_get_data(SleqpSparseMatrix* matrix)
+
+  int* sleqp_sparse_matrix_get_cols(SleqpSparseMatrix* matrix)
+
+  int* sleqp_sparse_matrix_get_rows(SleqpSparseMatrix* matrix)
+
   SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
                                          int row,
                                          int col,
@@ -147,6 +153,8 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,
                                                 int col)
+
+  SLEQP_RETCODE sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix)
 
   SLEQP_RETCODE sleqp_sparse_matrix_release(SleqpSparseMatrix** matrix)
 
@@ -245,7 +253,7 @@ cdef extern from "sleqp.h":
 
   int sleqp_working_set_num_active_cons(SleqpWorkingSet* working_set)
 
-  int sleqp_working_set_size(SleqpWorkingSet* working_set)  
+  int sleqp_working_set_size(SleqpWorkingSet* working_set)
 
   SLEQP_ACTIVE_STATE sleqp_working_set_get_variable_state(SleqpWorkingSet* working_set,
                                                           int index)

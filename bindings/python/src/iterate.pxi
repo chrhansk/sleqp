@@ -49,3 +49,21 @@ cdef class Iterate:
     working_set._set_working_set(_working_set)
 
     return working_set
+
+  @property
+  def cons_jac(self):
+    assert self.iterate
+
+    return sleqp_sparse_matrix_to_scipy(csleqp.sleqp_iterate_get_cons_jac(self.iterate))
+
+  @property
+  def func_val(self):
+    assert self.iterate
+
+    return csleqp.sleqp_iterate_get_func_val(self.iterate)
+
+  @property
+  def cons_val(self):
+    assert self.iterate
+
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_cons_val(self.iterate))
