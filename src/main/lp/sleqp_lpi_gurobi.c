@@ -211,15 +211,19 @@ static SLEQP_RETCODE gurobi_set_coefficients(void* lp_data,
   GRBenv* env = lp_interface->env;
   GRBmodel* model = lp_interface->model;
 
-  assert(coeff_matrix->num_rows == num_rows);
-  assert(coeff_matrix->num_cols == num_cols);
+  assert(sleqp_sparse_matrix_get_num_rows(coeff_matrix) == num_rows);
+  assert(sleqp_sparse_matrix_get_num_cols(coeff_matrix) == num_cols);
 
-  for(int col = 0; col < coeff_matrix->num_cols; ++col)
+  const int* coeff_matrix_cols = sleqp_sparse_matrix_get_cols(coeff_matrix);
+  const int* coeff_matrix_rows = sleqp_sparse_matrix_get_rows(coeff_matrix);
+  double* coeff_matrix_data = sleqp_sparse_matrix_get_data(coeff_matrix);
+
+  for(int col = 0; col < num_cols; ++col)
   {
-    for(int k = coeff_matrix->cols[col]; k < coeff_matrix->cols[col +1]; ++k)
+    for(int k = coeff_matrix_cols[col]; k < coeff_matrix_cols[col +1]; ++k)
     {
-      int row = coeff_matrix->rows[k];
-      double entry = coeff_matrix->data[k];
+      int row = coeff_matrix_rows[k];
+      double entry = coeff_matrix_data[k];
 
       SLEQP_GRB_CALL(GRBchgcoeffs(model,
                                   1,

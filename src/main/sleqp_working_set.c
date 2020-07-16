@@ -6,6 +6,8 @@
 
 struct SleqpWorkingSet
 {
+  int refcount;
+
   SleqpProblem* problem;
 
   SLEQP_ACTIVE_STATE* variable_states;
@@ -39,6 +41,7 @@ SLEQP_RETCODE sleqp_working_set_create(SleqpWorkingSet** star,
 
   SleqpWorkingSet* working_set = *star;
 
+  working_set->refcount = 1;
   working_set->problem = problem;
 
   SLEQP_CALL(sleqp_calloc(&working_set->variable_states, num_variables));
@@ -150,14 +153,14 @@ SLEQP_ACTIVE_STATE* sleqp_working_set_constraint_states(SleqpWorkingSet* working
 }
 
 SLEQP_ACTIVE_STATE sleqp_working_set_get_variable_state(SleqpWorkingSet* working_set,
-                                                       int j)
+                                                        int j)
 {
   assert(j < working_set->num_variables);
   return working_set->variable_states[j];
 }
 
 SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(SleqpWorkingSet* working_set,
-                                                         int i)
+                                                          int i)
 {
   assert(i < working_set->num_constraints);
   return working_set->constraint_states[i];
@@ -267,7 +270,14 @@ SLEQP_RETCODE sleqp_working_set_copy(SleqpWorkingSet* source,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_working_set_free(SleqpWorkingSet** star)
+SLEQP_RETCODE sleqp_working_set_capture(SleqpWorkingSet* working_set)
+{
+  ++working_set->refcount;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE working_set_free(SleqpWorkingSet** star)
 {
   SleqpWorkingSet* working_set = *star;
 
@@ -285,6 +295,25 @@ SLEQP_RETCODE sleqp_working_set_free(SleqpWorkingSet** star)
   sleqp_free(&working_set->variable_states);
 
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_working_set_release(SleqpWorkingSet** star)
+{
+  SleqpWorkingSet* working_set = *star;
+
+  if(!working_set)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--working_set->refcount == 0)
+  {
+    SLEQP_CALL(working_set_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

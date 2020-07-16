@@ -32,7 +32,9 @@ extern "C" {
                                           double penalty_parameter,
                                           SleqpSparseVec* newton_step);
 
-  SLEQP_RETCODE sleqp_newton_data_free(SleqpNewtonData** star);
+  SLEQP_RETCODE sleqp_newton_data_capture(SleqpNewtonData* data);
+
+  SLEQP_RETCODE sleqp_newton_data_release(SleqpNewtonData** star);
 
 #ifdef __cplusplus
 }

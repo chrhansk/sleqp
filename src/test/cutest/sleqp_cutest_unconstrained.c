@@ -171,7 +171,7 @@ SLEQP_RETCODE sleqp_cutest_uncons_func_free(SleqpFunc** star)
 
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*) sleqp_func_get_data(func);
 
-  SLEQP_CALL(sleqp_func_free(star));
+  SLEQP_CALL(sleqp_func_release(star));
 
   SLEQP_CALL(sleqp_cutest_uncons_data_free(&data));
 

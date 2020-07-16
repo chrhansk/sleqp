@@ -69,11 +69,11 @@ SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
                                double penalty_parameter,
                                double* merit_value)
 {
-  *merit_value = iterate->func_val;
+  *merit_value = sleqp_iterate_get_func_val(iterate);
 
   SleqpSparseVec* lb = merit_data->problem->cons_lb;
   SleqpSparseVec* ub = merit_data->problem->cons_ub;
-  SleqpSparseVec* c = iterate->cons_val;
+  SleqpSparseVec* c = sleqp_iterate_get_cons_val(iterate);
 
   int k_c = 0, k_lb = 0, k_ub = 0;
 
@@ -144,15 +144,15 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
 
   const double zero_eps = sleqp_params_get_zero_eps(merit_data->params);
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(iterate->func_grad,
+  SLEQP_CALL(sleqp_sparse_vector_dot(sleqp_iterate_get_func_grad(iterate),
                                      direction,
                                      merit_value));
 
-  *merit_value += iterate->func_val;
+  *merit_value += sleqp_iterate_get_func_val(iterate);
 
   reset_cache(merit_data->dense_cache, merit_data->cache_size);
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(iterate->cons_jac,
+  SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_get_cons_jac(iterate),
                                                 direction,
                                                 merit_data->dense_cache));
 
@@ -162,7 +162,7 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
                                           zero_eps));
 
   SLEQP_CALL(sleqp_sparse_vector_add(merit_data->jac_dot_sparse,
-                                     iterate->cons_val,
+                                     sleqp_iterate_get_cons_val(iterate),
                                      zero_eps,
                                      lin));
 
@@ -232,8 +232,8 @@ SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
 
   const double zero_eps = sleqp_params_get_zero_eps(merit_data->params);
 
-  SleqpSparseVec* x = iterate->primal;
-  SleqpSparseVec* cons_vals = iterate->cons_val;
+  SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
+  SleqpSparseVec* cons_vals = sleqp_iterate_get_cons_val(iterate);
 
   SLEQP_CALL(sleqp_get_violated_multipliers(problem,
                                             x,
@@ -248,13 +248,13 @@ SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
   SLEQP_CALL(sleqp_sparse_vector_resize(merit_data->sparse_cache,
                                         problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
+  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(iterate),
                                                       merit_data->multipliers,
                                                       zero_eps,
                                                       merit_data->sparse_cache));
 
   SLEQP_CALL(sleqp_sparse_vector_add(merit_data->sparse_cache,
-                                     iterate->func_grad,
+                                     sleqp_iterate_get_func_grad(iterate),
                                      zero_eps,
                                      gradient));
 

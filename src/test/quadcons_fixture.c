@@ -100,9 +100,9 @@ SLEQP_RETCODE quadconsfunc_eval(int num_variables,
 
   if(cons_jac)
   {
-    assert(cons_jac->num_rows == 2);
-    assert(cons_jac->num_cols == 2);
-    assert(cons_jac->nnz_max >= 4);
+    assert(sleqp_sparse_matrix_get_num_rows(cons_jac) == 2);
+    assert(sleqp_sparse_matrix_get_num_cols(cons_jac) == 2);
+    assert(sleqp_sparse_matrix_get_nnz_max(cons_jac) >= 4);
 
     SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 0));
 
@@ -218,7 +218,7 @@ void quadconsfunc_teardown()
   ASSERT_CALL(sleqp_sparse_vector_free(&quadconsfunc_var_lb));
 
 
-  ASSERT_CALL(sleqp_func_free(&quadconsfunc));
+  ASSERT_CALL(sleqp_func_release(&quadconsfunc));
 
   sleqp_free(&func_data->x);
 

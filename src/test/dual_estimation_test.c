@@ -69,7 +69,7 @@ START_TEST(test_simply_constrained_dual_estimation)
                                        trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 iterate->func_grad,
+                                 sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
@@ -83,7 +83,7 @@ START_TEST(test_simply_constrained_dual_estimation)
                                             NULL,
                                             jacobian));
 
-  SleqpSparseVec* vars_dual = iterate->vars_dual;
+  SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
 
   ck_assert(sleqp_sparse_vector_at(vars_dual, 0));
   ck_assert(sleqp_sparse_vector_at(vars_dual, 1));
@@ -97,13 +97,13 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
 
-  ASSERT_CALL(sleqp_working_set_free(&working_set));
+  ASSERT_CALL(sleqp_working_set_release(&working_set));
 
   ASSERT_CALL(sleqp_cauchy_data_free(&cauchy_data));
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 
-  ASSERT_CALL(sleqp_iterate_free(&iterate));
+  ASSERT_CALL(sleqp_iterate_release(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 

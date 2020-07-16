@@ -13,29 +13,40 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
   int cons_jac_nnz = 0;
 
   SLEQP_CALL(sleqp_func_set_value(problem->func,
-                                  iterate->primal,
+                                  sleqp_iterate_get_primal(iterate),
                                   reason,
                                   &func_grad_nnz,
                                   &cons_val_nnz,
                                   &cons_jac_nnz));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->func_grad, func_grad_nnz));
+  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+  SleqpSparseVec* cons_val = sleqp_iterate_get_cons_val(iterate);
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(iterate->cons_val, cons_val_nnz));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(func_grad,
+                                         func_grad_nnz));
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(iterate->cons_jac, cons_jac_nnz));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(cons_val,
+                                         cons_val_nnz));
+
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac,
+                                         cons_jac_nnz));
+
+  double func_val;
 
   SLEQP_CALL(sleqp_func_eval(problem->func,
                              NULL,
-                             &iterate->func_val,
-                             iterate->func_grad,
-                             iterate->cons_val,
-                             iterate->cons_jac));
+                             &func_val,
+                             func_grad,
+                             cons_val,
+                             cons_jac));
 
-  assert(sleqp_sparse_vector_valid(iterate->func_grad));
-  assert(sleqp_sparse_vector_valid(iterate->cons_val));
+  SLEQP_CALL(sleqp_iterate_set_func_val(iterate, func_val));
 
-  assert(sleqp_sparse_matrix_valid(iterate->cons_jac));
+  assert(sleqp_sparse_vector_valid(func_grad));
+  assert(sleqp_sparse_vector_valid(cons_val));
+
+  assert(sleqp_sparse_matrix_valid(cons_jac));
 
   return SLEQP_OKAY;
 }
@@ -245,7 +256,7 @@ SLEQP_RETCODE sleqp_get_violation(SleqpProblem* problem,
 
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
-  SleqpSparseVec* v = iterate->cons_val;
+  SleqpSparseVec* v = sleqp_iterate_get_cons_val(iterate);
 
   const int dim = v->dim;
 

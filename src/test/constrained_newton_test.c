@@ -105,8 +105,8 @@ SLEQP_RETCODE linquadfunc_eval(int num_variables,
 
   if(cons_jac)
   {
-    assert(cons_jac->nnz == 0);
-    assert(cons_jac->nnz_max >= 1);
+    assert(sleqp_sparse_matrix_get_nnz(cons_jac) == 0);
+    assert(sleqp_sparse_matrix_get_nnz_max(cons_jac) >= 1);
 
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 1.));
 
@@ -208,11 +208,12 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
-  ASSERT_CALL(sleqp_working_set_reset(iterate->working_set));
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  ASSERT_CALL(sleqp_working_set_reset(working_set));
 
   // set the cons state manually...
 
-  ASSERT_CALL(sleqp_working_set_add_constraint(iterate->working_set,
+  ASSERT_CALL(sleqp_working_set_add_constraint(working_set,
                                                0,
                                                SLEQP_ACTIVE_LOWER));
 }
@@ -261,7 +262,7 @@ START_TEST(newton_constrained_step)
 
   ck_assert(sleqp_sparse_vector_eq(actual_step, expected_step, tolerance));
 
-  ASSERT_CALL(sleqp_newton_data_free(&newton_data));
+  ASSERT_CALL(sleqp_newton_data_release(&newton_data));
 
   ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
 
@@ -275,7 +276,7 @@ END_TEST
 
 void newton_teardown()
 {
-  ASSERT_CALL(sleqp_iterate_free(&iterate));
+  ASSERT_CALL(sleqp_iterate_release(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 
@@ -291,7 +292,7 @@ void newton_teardown()
 
   ASSERT_CALL(sleqp_sparse_vector_free(&linquadfunc_var_lb));
 
-  ASSERT_CALL(sleqp_func_free(&linquadfunc));
+  ASSERT_CALL(sleqp_func_release(&linquadfunc));
 
   sleqp_free(&func_data->x);
 

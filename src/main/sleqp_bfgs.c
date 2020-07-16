@@ -38,6 +38,8 @@ typedef struct BFGSBlock
 
 struct SleqpBFGSData
 {
+  int refcount;
+
   int num_variables;
 
   SleqpParams* params;
@@ -248,6 +250,8 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
   SleqpBFGSData* data = *star;
 
   *data = (SleqpBFGSData) {0};
+
+  data->refcount = 1;
 
   const int num_variables = sleqp_func_get_num_variables(func);
 
@@ -543,7 +547,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                    SleqpIterate* current_iterate)
 {
 
-  SleqpSparseVec* cons_dual = previous_iterate->cons_dual;
+  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(previous_iterate);
 
   const double eps = sleqp_params_get_eps(data->params);
 
@@ -551,25 +555,25 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
 
   // Compute gradient difference
   {
-    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(previous_iterate->cons_jac,
+    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(previous_iterate),
                                                         cons_dual,
                                                         eps,
                                                         data->prod_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->prod_cache,
-                                       previous_iterate->func_grad,
+                                       sleqp_iterate_get_func_grad(previous_iterate),
                                        eps,
                                        data->previous_grad));
   }
 
   {
-    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(current_iterate->cons_jac,
+    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(current_iterate),
                                                         cons_dual,
                                                         eps,
                                                         data->prod_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->prod_cache,
-                                       current_iterate->func_grad,
+                                       sleqp_iterate_get_func_grad(current_iterate),
                                        eps,
                                        data->current_grad));
   }
@@ -584,8 +588,8 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
   }
 
   // Compute primal difference
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(previous_iterate->primal,
-                                            current_iterate->primal,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(previous_iterate),
+                                            sleqp_iterate_get_primal(current_iterate),
                                             -1.,
                                             1.,
                                             eps,
@@ -717,7 +721,7 @@ SLEQP_RETCODE sleqp_bfgs_data_hess_prod(SleqpBFGSData* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_bfgs_data_free(SleqpBFGSData** star)
+static SLEQP_RETCODE bfgs_data_free(SleqpBFGSData** star)
 {
   SleqpBFGSData* data = *star;
 
@@ -726,7 +730,7 @@ SLEQP_RETCODE sleqp_bfgs_data_free(SleqpBFGSData** star)
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_func_free(&data->bfgs_func));
+  SLEQP_CALL(sleqp_func_release(&data->bfgs_func));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->block_prod));
   SLEQP_CALL(sleqp_sparse_vector_free(&data->block_direction));
@@ -756,6 +760,31 @@ SLEQP_RETCODE sleqp_bfgs_data_free(SleqpBFGSData** star)
 
   sleqp_free(star);
 
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_bfgs_data_capture(SleqpBFGSData* data)
+{
+  ++data->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_bfgs_data_release(SleqpBFGSData** star)
+{
+  SleqpBFGSData* bfgs_data = *star;
+
+  if(!bfgs_data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--bfgs_data->refcount == 0)
+  {
+    SLEQP_CALL(bfgs_data_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

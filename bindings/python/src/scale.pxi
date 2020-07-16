@@ -23,7 +23,7 @@ cdef class Scaling:
 
 
   def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_sparse_matrix_free(&self.cons_jac))
+    csleqp_call(csleqp.sleqp_sparse_matrix_release(&self.cons_jac))
     csleqp_call(csleqp.sleqp_sparse_vector_free(&self.gradient))
     csleqp_call(csleqp.sleqp_scaling_free(&self.scaling))
 

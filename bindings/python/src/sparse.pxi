@@ -97,7 +97,10 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
 
   assert mat.ndim == 2
 
-  assert mat.shape == (matrix.num_rows, matrix.num_cols)
+  num_rows = csleqp.sleqp_sparse_matrix_get_num_rows(matrix)
+  num_cols = csleqp.sleqp_sparse_matrix_get_num_cols(matrix)
+
+  assert mat.shape == (num_rows, num_cols)
 
   cdef int last_col = -1
 
@@ -108,7 +111,10 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
       last_col += 1
       csleqp_call(csleqp.sleqp_sparse_matrix_push_column(matrix, last_col))
 
-    if matrix.nnz == matrix.nnz_max:
+    nnz = csleqp.sleqp_sparse_matrix_get_nnz(matrix)
+    nnz_max = csleqp.sleqp_sparse_matrix_get_nnz_max(matrix)
+
+    if nnz == nnz_max:
       print("Matrix is full. reserving {0}".format(matrix_iter.length_bound()))
       csleqp_call(csleqp.sleqp_sparse_matrix_reserve(matrix,
                                                      matrix_iter.length_bound()))
@@ -118,7 +124,7 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
                                                 col,
                                                 data))
 
-  while last_col < matrix.num_cols - 1:
+  while last_col < csleqp.sleqp_sparse_matrix_get_num_cols(matrix) - 1:
     last_col += 1
     csleqp_call(csleqp.sleqp_sparse_matrix_push_column(matrix, last_col))
 

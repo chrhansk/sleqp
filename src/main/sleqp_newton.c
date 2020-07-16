@@ -14,6 +14,7 @@ static const bool collect_rayleigh = false;
 
 struct SleqpNewtonData
 {
+  int refcount;
   SleqpProblem* problem;
   SleqpParams* params;
 
@@ -130,6 +131,8 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
 
   *data = (SleqpNewtonData) {0};
 
+  data->refcount = 1;
+
   data->problem = problem;
   data->params = params;
 
@@ -218,11 +221,11 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   SleqpProblem* problem = data->problem;
 
   SleqpSparseVec* initial_rhs = data->initial_rhs;
-  SleqpWorkingSet* working_set = iterate->working_set;
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   const double eps = sleqp_params_get_eps(data->params);
 
-  const int working_set_size = sleqp_working_set_size(iterate->working_set);
+  const int working_set_size = sleqp_working_set_size(working_set);
 
   SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, working_set_size));
 
@@ -236,7 +239,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
   // variables
   {
-    SleqpSparseVec* values = iterate->primal;
+    SleqpSparseVec* values = sleqp_iterate_get_primal(iterate);
     SleqpSparseVec* var_lb = problem->var_lb;
     SleqpSparseVec* var_ub = problem->var_ub;
 
@@ -306,7 +309,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
   // constraints
   {
-    SleqpSparseVec* values = iterate->cons_val;
+    SleqpSparseVec* values = sleqp_iterate_get_cons_val(iterate);
     SleqpSparseVec* cons_lb = problem->cons_lb;
     SleqpSparseVec* cons_ub = problem->cons_ub;
 
@@ -381,13 +384,18 @@ static SLEQP_RETCODE matrix_push_column(SleqpSparseMatrix* matrix,
                                         SleqpSparseVec* vector,
                                         double scale)
 {
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(matrix, matrix->nnz + vector->nnz));
+  const int nnz = sleqp_sparse_matrix_get_nnz(matrix);
 
-  const int column = matrix->num_cols;
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(matrix, nnz + vector->nnz));
 
-  ++matrix->num_cols;
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
+  const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(matrix, column));
+  const int column = num_cols;
+
+  SLEQP_CALL(sleqp_sparse_matrix_resize(matrix,
+                                        num_rows,
+                                        num_cols + 1));
 
   for(int k = 0; k < vector->nnz; ++k)
   {
@@ -402,12 +410,13 @@ static SLEQP_RETCODE matrix_push_column(SleqpSparseMatrix* matrix,
 
 static SLEQP_RETCODE matrix_pop_column(SleqpSparseMatrix* matrix)
 {
-  assert(matrix->num_cols > 0);
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
 
-  int col_nnz = matrix->cols[matrix->num_cols] - matrix->cols[matrix->num_cols - 1];
+  assert(num_cols > 0);
 
-  matrix->nnz -= col_nnz;
-  --matrix->num_cols;
+  const int last_col = num_cols - 1;
+
+  SLEQP_CALL(sleqp_sparse_matrix_pop_column(matrix, last_col));
 
   return SLEQP_OKAY;
 }
@@ -591,9 +600,12 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
+      const int num_rows = sleqp_sparse_matrix_get_num_rows(data->Q);
+
+      SLEQP_CALL(sleqp_sparse_matrix_resize(data->Q, num_rows, 0));
       SLEQP_CALL(sleqp_sparse_matrix_clear(data->Q));
 
-      data->Q->num_cols = 0;
+      assert(sleqp_sparse_matrix_get_num_cols(data->Q) == 0);
 
       //assert(v_dot_g > 0);
 
@@ -648,18 +660,19 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
     {
       if(ityp == TRLIB_CLT_CG)
       {
-        if(iter + 1 == data->Q->num_cols)
+        if(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q))
         {
-          matrix_pop_column(data->Q);
+          const int num_rows = sleqp_sparse_matrix_get_num_rows(data->Q);
+          SLEQP_CALL(sleqp_sparse_matrix_resize(data->Q, num_rows, iter));
         }
 
-        assert(iter == data->Q->num_cols);
+        assert(iter == sleqp_sparse_matrix_get_num_cols(data->Q));
 
         SLEQP_CALL(matrix_push_column(data->Q,
                                       data->v,
                                       flt2));
 
-        assert(iter + 1 == data->Q->num_cols);
+        assert(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q));
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->g, data->gm));
 
@@ -805,12 +818,15 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
       {
         assert(flt2 == 0.);
 
-        if(iter + 1 == data->Q->num_cols)
+        const int num_cols = sleqp_sparse_matrix_get_num_cols(data->Q);
+
+        if(iter + 1 == num_cols)
         {
-          matrix_pop_column(data->Q);
+          const int num_rows = sleqp_sparse_matrix_get_num_rows(data->Q);
+          SLEQP_CALL(sleqp_sparse_matrix_resize(data->Q, num_rows, iter));
         }
 
-        assert(iter == data->Q->num_cols);
+        assert(iter == sleqp_sparse_matrix_get_num_cols(data->Q));
 
         SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->v,
                                                   data->p,
@@ -878,7 +894,7 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
 
   SLEQP_CALL(sleqp_timer_stop(data->timer));
 
-  assert(iter + 1 == data->Q->num_cols);
+  assert(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q));
 
   const char* trlib_status_string;
 
@@ -974,7 +990,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     }
   }
 
-  int working_set_size = sleqp_working_set_size(iterate->working_set);
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  int working_set_size = sleqp_working_set_size(working_set);
 
   // in either case the only feasible solution is the zero vector
   if(sleqp_zero(trust_radius, zero_eps) || problem->num_variables == working_set_size)
@@ -989,15 +1006,15 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   // constraints
   {
     SLEQP_CALL(sleqp_get_violated_multipliers(problem,
-                                              iterate->primal,
-                                              iterate->cons_val,
+                                              sleqp_iterate_get_primal(iterate),
+                                              sleqp_iterate_get_cons_val(iterate),
                                               penalty_parameter,
                                               data->violated_multipliers,
-                                              iterate->working_set,
+                                              working_set,
                                               zero_eps));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->violated_multipliers,
-                                       iterate->cons_dual,
+                                       sleqp_iterate_get_cons_dual(iterate),
                                        zero_eps,
                                        data->multipliers));
   }
@@ -1011,8 +1028,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                     data->multipliers,
                                     data->initial_hessian_product));
 
-    SLEQP_CALL(sleqp_sparse_vector_add(iterate->func_grad,
-                                       iterate->vars_dual,
+    SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_func_grad(iterate),
+                                       sleqp_iterate_get_vars_dual(iterate),
                                        zero_eps,
                                        data->gradient));
 
@@ -1021,7 +1038,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                        zero_eps,
                                        data->sparse_cache));
 
-    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(iterate->cons_jac,
+    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(iterate),
                                                         data->multipliers,
                                                         zero_eps,
                                                         data->jacobian_product));
@@ -1048,7 +1065,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_data_free(SleqpNewtonData** star)
+static SLEQP_RETCODE newton_data_free(SleqpNewtonData** star)
 {
   SleqpNewtonData* data = *star;
 
@@ -1059,7 +1076,7 @@ SLEQP_RETCODE sleqp_newton_data_free(SleqpNewtonData** star)
 
   SLEQP_CALL(sleqp_timer_free(&data->timer));
 
-  SLEQP_CALL(sleqp_sparse_matrix_free(&data->Q));
+  SLEQP_CALL(sleqp_sparse_matrix_release(&data->Q));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->sparse_cache));
   sleqp_free(&data->dense_cache);
@@ -1096,6 +1113,32 @@ SLEQP_RETCODE sleqp_newton_data_free(SleqpNewtonData** star)
   sleqp_free(&data->trlib_iwork);
 
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_newton_data_capture(SleqpNewtonData* data)
+{
+  ++data->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_newton_data_release(SleqpNewtonData** star)
+{
+  SleqpNewtonData* data = *star;
+
+  if(!data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--data->refcount == 0)
+  {
+    SLEQP_CALL(newton_data_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

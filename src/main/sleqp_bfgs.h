@@ -33,7 +33,9 @@ extern "C" {
 
   SleqpFunc* sleqp_bfgs_get_func(SleqpBFGSData* data);
 
-  SLEQP_RETCODE sleqp_bfgs_data_free(SleqpBFGSData** star);
+  SLEQP_RETCODE sleqp_bfgs_data_capture(SleqpBFGSData* data);
+
+  SLEQP_RETCODE sleqp_bfgs_data_release(SleqpBFGSData** star);
 
 #ifdef __cplusplus
 }

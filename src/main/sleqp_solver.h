@@ -43,7 +43,9 @@ extern "C" {
 
   double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver);
 
-  SLEQP_RETCODE sleqp_solver_free(SleqpSolver** star);
+  SLEQP_RETCODE sleqp_solver_capture(SleqpSolver* solver);
+
+  SLEQP_RETCODE sleqp_solver_release(SleqpSolver** star);
 
 #ifdef __cplusplus
 }

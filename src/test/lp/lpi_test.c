@@ -33,17 +33,21 @@ START_TEST(test_simplex_solve)
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&cons_matrix, 1, 2, 2));
 
-  cons_matrix->data[0] = 1;
-  cons_matrix->data[1] = 1;
+  double* cons_data = sleqp_sparse_matrix_get_data(cons_matrix);
+  int* cons_rows = sleqp_sparse_matrix_get_rows(cons_matrix);
+  int* cons_cols = sleqp_sparse_matrix_get_cols(cons_matrix);
 
-  cons_matrix->rows[0] = 0;
-  cons_matrix->rows[1] = 0;
+  cons_data[0] = 1;
+  cons_data[1] = 1;
 
-  cons_matrix->cols[0] = 0;
-  cons_matrix->cols[1] = 1;
-  cons_matrix->cols[2] = 2;
+  cons_rows[0] = 0;
+  cons_rows[1] = 0;
 
-  cons_matrix->nnz = 2;
+  cons_cols[0] = 0;
+  cons_cols[1] = 1;
+  cons_cols[2] = 2;
+
+  ASSERT_CALL(sleqp_sparse_matrix_set_nnz(cons_matrix, 2));
 
   ASSERT_CALL(sleqp_lpi_set_bounds(lp_interface,
                                    cons_lb,
@@ -81,7 +85,7 @@ START_TEST(test_simplex_solve)
   ck_assert(variable_stats[0] == SLEQP_BASESTAT_BASIC);
   ck_assert(variable_stats[1] == SLEQP_BASESTAT_LOWER);
 
-  ASSERT_CALL(sleqp_sparse_matrix_free(&cons_matrix));
+  ASSERT_CALL(sleqp_sparse_matrix_release(&cons_matrix));
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 

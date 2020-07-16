@@ -36,15 +36,15 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
                                             SleqpAugJacobian* jacobian)
 {
   SleqpProblem* problem = estimation_data->problem;
-  SleqpWorkingSet* working_set = iterate->working_set;
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
-  SleqpSparseVec* grad = iterate->func_grad;
+  SleqpSparseVec* grad = sleqp_iterate_get_func_grad(iterate);
 
   SleqpSparseVec* dual_sol = estimation_data->solution;
   SleqpSparseVec* neg_grad = estimation_data->neg_grad;
 
   SLEQP_CALL(sleqp_sparse_vector_resize(dual_sol,
-                                        sleqp_working_set_size(iterate->working_set)));
+                                        sleqp_working_set_size(working_set)));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(neg_grad));
 
@@ -61,8 +61,8 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
                                            dual_sol));
 
   {
-    SleqpSparseVec* cons_dual = iterate->cons_dual;
-    SleqpSparseVec* vars_dual = iterate->vars_dual;
+    SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
+    SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
 
     SLEQP_CALL(sleqp_sparse_vector_reserve(cons_dual, dual_sol->nnz));
     SLEQP_CALL(sleqp_sparse_vector_reserve(vars_dual, dual_sol->nnz));

@@ -36,6 +36,11 @@ cdef class Solver:
 
     self.problem = problem
 
+  def __dealloc__(self):
+    assert self.solver
+
+    csleqp_call(csleqp.sleqp_solver_release(&self.solver))
+
   cpdef solve(self,
               int max_num_iterations,
               double time_limit):
@@ -68,33 +73,6 @@ cdef class Solver:
     return csleqp.sleqp_solver_get_elapsed_seconds(self.solver)
 
   @property
-  def primal(self):
-    cdef csleqp.SleqpIterate* iterate
-
-    csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
-
-    return sleqp_sparse_vec_to_array(iterate.primal)
-
-  @property
-  def vars_dual(self):
-    cdef csleqp.SleqpIterate* iterate
-
-    csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
-
-    return sleqp_sparse_vec_to_array(iterate.vars_dual)
-
-  @property
-  def cons_dual(self):
-    cdef csleqp.SleqpIterate* iterate
-
-    csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
-
-    return sleqp_sparse_vec_to_array(iterate.cons_dual)
-
-  def  __dealloc__(self):
-    csleqp_call(csleqp.sleqp_solver_free(&self.solver))
-
-  @property
   def violated_cons(self):
       num_constraints =  self.problem.num_constraints
 
@@ -119,3 +97,14 @@ cdef class Solver:
 
       finally:
           free(violated_cons)
+
+  @property
+  def solution(self):
+      cdef csleqp.SleqpIterate* _iterate
+      cdef Iterate iterate = Iterate()
+
+      csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &_iterate))
+
+      iterate._set_iterate(_iterate)
+
+      return iterate

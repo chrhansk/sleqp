@@ -178,7 +178,7 @@ class LSQTest(unittest.TestCase):
 
         self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-        self.assertTrue(np.allclose(self.target_sol, solver.primal))
+        self.assertTrue(np.allclose(self.target_sol, solver.solution.primal))
 
 
     def test_implicit(self):
@@ -201,7 +201,7 @@ class LSQTest(unittest.TestCase):
 
         self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-        self.assertTrue(np.allclose(self.target_sol, solver.primal))
+        self.assertTrue(np.allclose(self.target_sol, solver.solution.primal))
 
 if __name__ == "__main__":
     unittest.main()

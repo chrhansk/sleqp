@@ -226,7 +226,7 @@ int sleqp_cutest_run(const char* filename,
 
   /**/
 
-  SLEQP_CALL(sleqp_solver_free(&solver));
+  SLEQP_CALL(sleqp_solver_release(&solver));
 
   SLEQP_CALL(sleqp_options_free(&options));
 

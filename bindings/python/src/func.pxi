@@ -163,4 +163,4 @@ cdef class Func:
       return self.num_constraints
 
   def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_func_free(&self.func))
+    csleqp_call(csleqp.sleqp_func_release(&self.func))

@@ -166,7 +166,7 @@ void quadfunc_teardown()
   ASSERT_CALL(sleqp_sparse_vector_free(&quadfunc_var_lb));
 
 
-  ASSERT_CALL(sleqp_func_free(&quadfunc));
+  ASSERT_CALL(sleqp_func_release(&quadfunc));
 
   sleqp_free(&func_data->x);
 

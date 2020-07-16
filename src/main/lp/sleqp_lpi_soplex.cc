@@ -232,8 +232,12 @@ static SLEQP_RETCODE soplex_set_coefficients(void* lp_data,
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  assert(num_cols == coeff_matrix->num_cols);
-  assert(num_rows == coeff_matrix->num_rows);
+  assert(sleqp_sparse_matrix_get_num_rows(coeff_matrix) == num_rows);
+  assert(sleqp_sparse_matrix_get_num_cols(coeff_matrix) == num_cols);
+
+  const int* coeff_matrix_cols = sleqp_sparse_matrix_get_cols(coeff_matrix);
+  const int* coeff_matrix_rows = sleqp_sparse_matrix_get_rows(coeff_matrix);
+  double* coeff_matrix_data = sleqp_sparse_matrix_get_data(coeff_matrix);
 
   // Note: We save / restore the basis in order to
   //       warm-start the iteration.
@@ -244,15 +248,15 @@ static SLEQP_RETCODE soplex_set_coefficients(void* lp_data,
 
   for(int j = 0; j < num_cols; ++j)
   {
-    int num_entries = coeff_matrix->cols[j + 1] - coeff_matrix->cols[j];
+    int num_entries = coeff_matrix_cols[j + 1] - coeff_matrix_cols[j];
 
-    int offset = coeff_matrix->cols[j];
+    int offset = coeff_matrix_cols[j];
 
     soplex::DSVectorReal soplex_col(num_entries);
 
     soplex_col.add(num_entries,
-                   coeff_matrix->rows + offset,
-                   coeff_matrix->data + offset);
+                   coeff_matrix_rows + offset,
+                   coeff_matrix_data + offset);
 
     double objective = soplex.objReal(j);
 

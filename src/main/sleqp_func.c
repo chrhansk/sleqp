@@ -4,6 +4,8 @@
 
 struct SleqpFunc
 {
+  int refcount;
+
   SleqpFuncCallbacks callbacks;
 
   int num_variables;
@@ -35,6 +37,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   SleqpFunc* func = *fstar;
 
   *func = (SleqpFunc) {0};
+  func->refcount = 1;
 
   func->callbacks = *callbacks;
 
@@ -212,7 +215,7 @@ void* sleqp_func_get_data(SleqpFunc* func)
   return func->data;
 }
 
-SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
+static SLEQP_RETCODE func_free(SleqpFunc** fstar)
 {
   SleqpFunc* func = *fstar;
 
@@ -234,6 +237,32 @@ SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar)
   SLEQP_CALL(sleqp_hessian_struct_free(&func->hess_struct));
 
   sleqp_free(fstar);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_func_capture(SleqpFunc* func)
+{
+  ++func->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar)
+{
+  SleqpFunc* func = *fstar;
+
+  if(!func)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--func->refcount == 0)
+  {
+    SLEQP_CALL(func_free(fstar));
+  }
+
+  *fstar = NULL;
 
   return SLEQP_OKAY;
 }

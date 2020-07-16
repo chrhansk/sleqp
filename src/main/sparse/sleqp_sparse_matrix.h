@@ -23,18 +23,7 @@ extern "C" {
    * for \f$ k = 0, \ldots, nnz - 1 \f$
    *
    **/
-  typedef struct SleqpSparseMatrix
-  {
-    int num_rows, num_cols;
-
-    int nnz;
-    int nnz_max;
-
-    double* data;
-    int* cols;
-    int* rows;
-
-  } SleqpSparseMatrix;
+  typedef struct SleqpSparseMatrix SleqpSparseMatrix;
 
   SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** matrix,
                                            int num_rows,
@@ -47,6 +36,26 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
                                            int num_rows,
                                            int num_cols);
+
+  int sleqp_sparse_matrix_get_num_cols(SleqpSparseMatrix* matrix);
+
+  int sleqp_sparse_matrix_get_num_rows(SleqpSparseMatrix* matrix);
+
+  int sleqp_sparse_matrix_get_nnz(SleqpSparseMatrix* matrix);
+
+  int sleqp_sparse_matrix_get_nnz_max(SleqpSparseMatrix* matrix);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_set_nnz(SleqpSparseMatrix* matrix,
+                                            int nnz);
+
+  bool sleqp_sparse_matrix_is_quadratic(SleqpSparseMatrix* matrix);
+
+
+  double* sleqp_sparse_matrix_get_data(SleqpSparseMatrix* matrix);
+
+  int* sleqp_sparse_matrix_get_cols(SleqpSparseMatrix* matrix);
+
+  int* sleqp_sparse_matrix_get_rows(SleqpSparseMatrix* matrix);
 
   SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
                                          int row,
@@ -89,7 +98,9 @@ extern "C" {
 
   bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix);
 
-  SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** matrix);
+  SLEQP_RETCODE sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_release(SleqpSparseMatrix** star);
 
 #ifdef __cplusplus
 }

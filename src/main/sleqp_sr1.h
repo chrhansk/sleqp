@@ -31,7 +31,9 @@ extern "C" {
 
   SleqpFunc* sleqp_sr1_get_func(SleqpSR1Data* data);
 
-  SLEQP_RETCODE sleqp_sr1_data_free(SleqpSR1Data** star);
+  SLEQP_RETCODE sleqp_sr1_data_capture(SleqpSR1Data* data);
+
+  SLEQP_RETCODE sleqp_sr1_data_release(SleqpSR1Data** star);
 
 #ifdef __cplusplus
 }

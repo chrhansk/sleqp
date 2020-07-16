@@ -5,6 +5,52 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
+struct SleqpIterate
+{
+  int refcount;
+  /**
+   * The current point. Has dimension = num_variables.
+   **/
+  SleqpSparseVec* primal;
+
+  /**
+   * The current function value
+   **/
+  double func_val;
+
+  /**
+   * The current function gradient. Has dimension = num_variables.
+   **/
+  SleqpSparseVec* func_grad;
+
+  /**
+   * The current constraint values. Has dimension = num_constraints.
+   **/
+  SleqpSparseVec* cons_val;
+
+  /**
+   * The Jacobian of the constraitns at the current iterate.
+   * Has num_constraints many rows, num_variables many columns.
+   */
+  SleqpSparseMatrix* cons_jac;
+
+  /**
+   * The current working set.
+   **/
+  SleqpWorkingSet* working_set;
+
+  /**
+   * The dual values of the constraints. Has dimension = num_constraints.
+   */
+  SleqpSparseVec* cons_dual;
+
+  /**
+   * The dual values of the variable bounds. Has dimension = num_variables.
+   */
+  SleqpSparseVec* vars_dual;
+
+};
+
 SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
                                    SleqpProblem* problem,
                                    SleqpSparseVec* x)
@@ -14,6 +60,10 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
   assert(sleqp_sparse_vector_valid(x));
 
   SleqpIterate* iterate = *star;
+
+  *iterate = (SleqpIterate){0};
+
+  iterate->refcount = 1;
 
   int num_variables = problem->num_variables;
   int num_constraints = problem->num_constraints;
@@ -49,6 +99,57 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
                                         0));
 
   return SLEQP_OKAY;
+}
+
+
+SleqpSparseVec* sleqp_iterate_get_primal(SleqpIterate* iterate)
+{
+  return iterate->primal;
+}
+
+
+double sleqp_iterate_get_func_val(SleqpIterate* iterate)
+{
+  return iterate->func_val;
+}
+
+SLEQP_RETCODE sleqp_iterate_set_func_val(SleqpIterate* iterate,
+                                         double value)
+{
+  iterate->func_val = value;
+  return SLEQP_OKAY;
+}
+
+
+SleqpSparseVec* sleqp_iterate_get_func_grad(SleqpIterate* iterate)
+{
+  return iterate->func_grad;
+}
+
+
+SleqpSparseVec* sleqp_iterate_get_cons_val(SleqpIterate* iterate)
+{
+  return iterate->cons_val;
+}
+
+SleqpSparseMatrix* sleqp_iterate_get_cons_jac(SleqpIterate* iterate)
+{
+  return iterate->cons_jac;
+}
+
+SleqpWorkingSet* sleqp_iterate_get_working_set(SleqpIterate* iterate)
+{
+  return iterate->working_set;
+}
+
+SleqpSparseVec* sleqp_iterate_get_cons_dual(SleqpIterate* iterate)
+{
+  return iterate->cons_dual;
+}
+
+SleqpSparseVec* sleqp_iterate_get_vars_dual(SleqpIterate* iterate)
+{
+  return iterate->vars_dual;
 }
 
 double sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
@@ -421,19 +522,26 @@ double sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
   SleqpSparseVec* vars_dual = iterate->vars_dual;
   SleqpSparseVec* func_grad = iterate->func_grad;
 
-  assert(num_variables == cons_jac->num_cols);
-  assert(num_constraints == cons_jac->num_rows);
+  const int num_rows = sleqp_sparse_matrix_get_num_rows(cons_jac);
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
+
+  int* cons_jac_cols = sleqp_sparse_matrix_get_cols(cons_jac);
+  int* cons_jac_rows = sleqp_sparse_matrix_get_rows(cons_jac);
+  double* cons_jac_data = sleqp_sparse_matrix_get_data(cons_jac);
+
+  assert(num_variables == num_cols);
+  assert(num_constraints == num_rows);
 
   for(int j = 0; j < num_variables; ++j)
   {
-    int k_d = 0, k_j = cons_jac->cols[j];
+    int k_d = 0, k_j = cons_jac_cols[j];
 
     double sum = 0.;
 
-    while(k_d < cons_dual->nnz && k_j < cons_jac->cols[j + 1])
+    while(k_d < cons_dual->nnz && k_j < cons_jac_cols[j + 1])
     {
       int d_idx = cons_dual->indices[k_d];
-      int j_idx = cons_jac->rows[k_j];
+      int j_idx = cons_jac_rows[k_j];
 
       if(d_idx < j_idx)
       {
@@ -445,7 +553,7 @@ double sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
       }
       else
       {
-        sum += cons_dual->data[k_d++] * cons_jac->data[k_j++];
+        sum += cons_dual->data[k_d++] * cons_jac_data[k_j++];
       }
     }
 
@@ -565,7 +673,7 @@ SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
+static SLEQP_RETCODE iterate_free(SleqpIterate** star)
 {
   SleqpIterate* iterate = *star;
 
@@ -577,9 +685,9 @@ SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->vars_dual));
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->cons_dual));
 
-  SLEQP_CALL(sleqp_working_set_free(&iterate->working_set));
+  SLEQP_CALL(sleqp_working_set_release(&iterate->working_set));
 
-  SLEQP_CALL(sleqp_sparse_matrix_free(&iterate->cons_jac));
+  SLEQP_CALL(sleqp_sparse_matrix_release(&iterate->cons_jac));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->cons_val));
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->func_grad));
@@ -587,6 +695,32 @@ SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->primal));
 
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_iterate_capture(SleqpIterate* iterate)
+{
+  ++iterate->refcount;
+
+  return SLEQP_OKAY;
+}
+  
+SLEQP_RETCODE sleqp_iterate_release(SleqpIterate** star)
+{
+  SleqpIterate* iterate = *star;
+
+  if(!iterate)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--iterate->refcount == 0)
+  {
+    SLEQP_CALL(iterate_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

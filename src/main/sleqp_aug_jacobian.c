@@ -28,11 +28,11 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
 {
   SleqpProblem* problem = jacobian->problem;
 
-  SleqpSparseMatrix* cons_jac = iterate->cons_jac;
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
 
   SleqpSparseMatrix* augmented_matrix = jacobian->augmented_matrix;
 
-  SleqpWorkingSet* working_set = iterate->working_set;
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   const int num_variables = problem->num_variables;
   const int working_set_size = sleqp_working_set_size(working_set);
@@ -76,11 +76,15 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
       }
     }
 
-    for(int index = cons_jac->cols[column];
-        index < cons_jac->cols[column + 1];
+    int* cons_jac_cols = sleqp_sparse_matrix_get_cols(cons_jac);
+    int* cons_jac_rows = sleqp_sparse_matrix_get_rows(cons_jac);
+    double* cons_jac_data = sleqp_sparse_matrix_get_data(cons_jac);
+
+    for(int index = cons_jac_cols[column];
+        index < cons_jac_cols[column + 1];
         ++index)
     {
-      int jac_row = cons_jac->rows[index];
+      int jac_row = cons_jac_rows[index];
 
       int act_cons_index = sleqp_working_set_get_constraint_index(working_set, jac_row);
 
@@ -90,7 +94,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
       {
         assert(cons_state != SLEQP_INACTIVE);
 
-        const double value = cons_jac->data[index];
+        const double value = cons_jac_data[index];
 
         int aug_row = num_variables + act_cons_index;
 
@@ -107,55 +111,67 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
     }
   }
 
-  for(int column = num_variables + 1; column < augmented_matrix->num_cols + 1; ++column)
+  int aug_num_cols = sleqp_sparse_matrix_get_num_cols(augmented_matrix);
+  int* aug_cols = sleqp_sparse_matrix_get_cols(augmented_matrix);
+  int* aug_rows = sleqp_sparse_matrix_get_rows(augmented_matrix);
+  double* aug_data = sleqp_sparse_matrix_get_data(augmented_matrix);
+
+  for(int column = num_variables + 1; column < aug_num_cols + 1; ++column)
   {
-    augmented_matrix->cols[column] = 0;
+    aug_cols[column] = 0;
   }
 
   // count the elements in the columns
   for(int column = 0; column < num_variables; ++column)
   {
-    for(int index = augmented_matrix->cols[column]; index < augmented_matrix->cols[column + 1]; ++index)
+    for(int index = aug_cols[column]; index < aug_cols[column + 1]; ++index)
     {
-      if(augmented_matrix->rows[index] < num_variables)
+      if(aug_rows[index] < num_variables)
       {
         continue;
       }
 
-      ++augmented_matrix->cols[augmented_matrix->rows[index] + 1];
+      ++aug_cols[aug_rows[index] + 1];
     }
   }
 
   // construct the cumulative sum
-  for(int column = num_variables + 1; column < augmented_matrix->num_cols + 1; ++column)
+  for(int column = num_variables + 1; column < aug_num_cols + 1; ++column)
   {
-    augmented_matrix->cols[column] += augmented_matrix->cols[column - 1];
+    aug_cols[column] += aug_cols[column - 1];
     jacobian->col_indices[column] = 0;
   }
+
+  int aug_total_nnz = sleqp_sparse_matrix_get_nnz(augmented_matrix);
 
   // insert the entries
   for(int column = 0; column < num_variables; ++column)
   {
-    for(int index = augmented_matrix->cols[column]; index < augmented_matrix->cols[column + 1]; ++index)
+    for(int index = aug_cols[column]; index < aug_cols[column + 1]; ++index)
     {
-      if(augmented_matrix->rows[index] < num_variables)
+      if(aug_rows[index] < num_variables)
       {
         continue;
       }
 
-      // target column : augmented_matrix->rows[index]
+      // target column : aug_rows[index]
       // target row: *column*
       // target data: augmented_matrix->data[index]
-      // target index: augmented_matrix->cols[*target column*] + (col_indices[*target column*]++)
+      // target index: aug_cols[*target column*] + (col_indices[*target column*]++)
 
-      int target_column = augmented_matrix->rows[index];
-      int target_index = augmented_matrix->cols[target_column] + jacobian->col_indices[target_column + 1]++;
+      int target_column = aug_rows[index];
+      int target_index = aug_cols[target_column] + jacobian->col_indices[target_column + 1]++;
 
-      augmented_matrix->data[target_index] = augmented_matrix->data[index];
-      augmented_matrix->rows[target_index] = column;
-      ++augmented_matrix->nnz;
+      aug_data[target_index] = aug_data[index];
+      aug_rows[target_index] = column;
+      ++aug_total_nnz;
     }
   }
+
+
+
+  SLEQP_CALL(sleqp_sparse_matrix_set_nnz(augmented_matrix,
+                                         aug_total_nnz));
 
   assert(sleqp_sparse_matrix_valid(augmented_matrix));
 
@@ -193,14 +209,14 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
                                              SleqpIterate* iterate)
 {
   SleqpProblem* problem = jacobian->problem;
-  SleqpWorkingSet* working_set = iterate->working_set;
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   jacobian->working_set_size = sleqp_working_set_size(working_set);
 
   jacobian->condition_estimate = -1;
 
   // we overestimate here...
-  int constraint_nnz = iterate->cons_jac->nnz;
+  int constraint_nnz = sleqp_sparse_matrix_get_nnz(sleqp_iterate_get_cons_jac(iterate));
 
   int variable_nnz = sleqp_working_set_num_active_vars(working_set);
 
@@ -236,8 +252,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
     int num_variables = problem->num_variables;
     int total_size = num_variables + jacobian->working_set_size;
 
-    assert(matrix->num_cols == matrix->num_rows);
-    assert(matrix->num_cols == total_size);
+    assert(sleqp_sparse_matrix_is_quadratic(matrix));
+    assert(sleqp_sparse_matrix_get_num_cols(matrix) == total_size);
   }
 
   return SLEQP_OKAY;
@@ -376,7 +392,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_free(SleqpAugJacobian** star)
     SLEQP_CALL(sleqp_sparse_factorization_free(&jacobian->factorization));
   }
 
-  sleqp_sparse_matrix_free(&jacobian->augmented_matrix);
+  sleqp_sparse_matrix_release(&jacobian->augmented_matrix);
 
   sleqp_free(star);
 

@@ -56,7 +56,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_working_set_copy(SleqpWorkingSet* source,
                                        SleqpWorkingSet* target);
 
-  SLEQP_RETCODE sleqp_working_set_free(SleqpWorkingSet** star);
+  SLEQP_RETCODE sleqp_working_set_capture(SleqpWorkingSet* working_set);
+
+  SLEQP_RETCODE sleqp_working_set_release(SleqpWorkingSet** star);
 
 #ifdef __cplusplus
 }

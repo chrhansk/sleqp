@@ -223,7 +223,7 @@ void second_order_teardown()
 
   ASSERT_CALL(sleqp_params_free(&params));
 
-  ASSERT_CALL(sleqp_func_free(&func));
+  ASSERT_CALL(sleqp_func_release(&func));
 
   sleqp_free(&func_data->direction);
   sleqp_free(&func_data->duals);
@@ -270,13 +270,13 @@ START_TEST(test_second_order_solve)
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = solution_iterate->primal;
+  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
                                    expected_solution,
                                    1e-6));
 
-  ASSERT_CALL(sleqp_solver_free(&solver));
+  ASSERT_CALL(sleqp_solver_release(&solver));
 
   ASSERT_CALL(sleqp_options_free(&options));
 

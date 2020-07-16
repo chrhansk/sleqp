@@ -56,12 +56,14 @@ void working_set_var_setup()
 
 START_TEST(test_inactive)
 {
-  iterate->primal->data[0] = 1.5;
-  iterate->primal->data[1] = 2.5;
+  SleqpSparseVec* primal = sleqp_iterate_get_primal(iterate);
+
+  primal->data[0] = 1.5;
+  primal->data[1] = 2.5;
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
-  SleqpWorkingSet* working_set = iterate->working_set;
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   double trust_radius = 0.25, penalty_parameter = 1.;
 
@@ -70,7 +72,7 @@ START_TEST(test_inactive)
                                        trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 iterate->func_grad,
+                                 sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
@@ -84,12 +86,14 @@ END_TEST
 
 START_TEST(test_active)
 {
-  iterate->primal->data[0] = 1.5;
-  iterate->primal->data[1] = 2.5;
+  SleqpSparseVec* primal = sleqp_iterate_get_primal(iterate);
+
+  primal->data[0] = 1.5;
+  primal->data[1] = 2.5;
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
-  SleqpWorkingSet* working_set = iterate->working_set;
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   double trust_radius = 1., penalty_parameter = 1.;
 
@@ -98,7 +102,7 @@ START_TEST(test_active)
                                        trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 iterate->func_grad,
+                                 sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
@@ -112,12 +116,14 @@ END_TEST
 
 START_TEST(test_first_active)
 {
-  iterate->primal->data[0] = 1.;
-  iterate->primal->data[1] = 2.5;
+  SleqpSparseVec* primal = sleqp_iterate_get_primal(iterate);
+
+  primal->data[0] = 1.;
+  primal->data[1] = 2.5;
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
-  SleqpWorkingSet* working_set = iterate->working_set;
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   double trust_radius = 0.25, penalty_parameter = 1.;
 
@@ -126,7 +132,7 @@ START_TEST(test_first_active)
                                        trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 iterate->func_grad,
+                                 sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
@@ -144,7 +150,7 @@ void working_set_var_teardown()
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 
-  ASSERT_CALL(sleqp_iterate_free(&iterate));
+  ASSERT_CALL(sleqp_iterate_release(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 

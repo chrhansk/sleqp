@@ -5,6 +5,22 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
+typedef struct SleqpSparseMatrix
+{
+  int refcount;
+
+  int num_rows;
+  int num_cols;
+
+  int nnz;
+  int nnz_max;
+
+  double* data;
+  int* cols;
+  int* rows;
+
+} SleqpSparseMatrix;
+
 SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
                                          int num_rows,
                                          int num_cols,
@@ -13,6 +29,10 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
   SLEQP_CALL(sleqp_malloc(mstar));
 
   SleqpSparseMatrix* matrix = *mstar;
+
+  *matrix = (SleqpSparseMatrix){0};
+
+  matrix->refcount = 1;
 
   matrix->nnz = 0;
   matrix->nnz_max = nnz_max;
@@ -75,6 +95,53 @@ SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
   matrix->num_rows = num_rows;
 
   return SLEQP_OKAY;
+}
+
+int sleqp_sparse_matrix_get_num_cols(SleqpSparseMatrix* matrix)
+{
+  return matrix->num_cols;
+}
+
+int sleqp_sparse_matrix_get_num_rows(SleqpSparseMatrix* matrix)
+{
+  return matrix->num_rows;
+}
+
+int sleqp_sparse_matrix_get_nnz(SleqpSparseMatrix* matrix)
+{
+  return matrix->nnz;
+}
+
+int sleqp_sparse_matrix_get_nnz_max(SleqpSparseMatrix* matrix)
+{
+  return matrix->nnz_max;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_set_nnz(SleqpSparseMatrix* matrix,
+                                          int nnz)
+{
+  matrix->nnz = nnz;
+  return SLEQP_OKAY;
+}
+
+bool sleqp_sparse_matrix_is_quadratic(SleqpSparseMatrix* matrix)
+{
+  return matrix->num_rows == matrix->num_cols;
+}
+
+double* sleqp_sparse_matrix_get_data(SleqpSparseMatrix* matrix)
+{
+  return matrix->data;
+}
+
+int* sleqp_sparse_matrix_get_cols(SleqpSparseMatrix* matrix)
+{
+  return matrix->cols;
+}
+
+int* sleqp_sparse_matrix_get_rows(SleqpSparseMatrix* matrix)
+{
+  return matrix->rows;
 }
 
 SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
@@ -427,7 +494,7 @@ bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix)
   return true;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** mstar)
+static SLEQP_RETCODE sparse_matrix_free(SleqpSparseMatrix** mstar)
 {
   SleqpSparseMatrix* matrix = *mstar;
 
@@ -443,6 +510,32 @@ SLEQP_RETCODE sleqp_sparse_matrix_free(SleqpSparseMatrix** mstar)
   sleqp_free(&matrix);
 
   *mstar = NULL;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix)
+{
+  ++matrix->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_release(SleqpSparseMatrix** star)
+{
+  SleqpSparseMatrix* matrix = *star;
+
+  if(!matrix)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--matrix->refcount == 0)
+  {
+    SLEQP_CALL(sparse_matrix_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

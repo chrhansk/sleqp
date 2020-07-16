@@ -17,50 +17,7 @@
 extern "C" {
 #endif
 
-  typedef struct SleqpIterate
-  {
-    /**
-     * The current point. Has dimension = num_variables.
-     **/
-    SleqpSparseVec* primal;
-
-    /**
-     * The current function value
-     **/
-    double func_val;
-
-    /**
-     * The current function gradient. Has dimension = num_variables.
-     **/
-    SleqpSparseVec* func_grad;
-
-    /**
-     * The current constraint values. Has dimension = num_constraints.
-     **/
-    SleqpSparseVec* cons_val;
-
-    /**
-     * The Jacobian of the constraitns at the current iterate.
-     * Has num_constraints many rows, num_variables many columns.
-     */
-    SleqpSparseMatrix* cons_jac;
-
-    /**
-     * The current working set.
-     **/
-    SleqpWorkingSet* working_set;
-
-    /**
-     * The dual values of the constraints. Has dimension = num_constraints.
-     */
-    SleqpSparseVec* cons_dual;
-
-    /**
-     * The dual values of the variable bounds. Has dimension = num_variables.
-     */
-    SleqpSparseVec* vars_dual;
-
-  } SleqpIterate;
+  typedef struct SleqpIterate SleqpIterate;
 
   /**
    * Create a new iterate
@@ -72,6 +29,50 @@ extern "C" {
   SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
                                      SleqpProblem* problem,
                                      SleqpSparseVec* x);
+
+  /**
+   * The current point. Has dimension = num_variables.
+   **/
+  SleqpSparseVec* sleqp_iterate_get_primal(SleqpIterate* iterate);
+
+  /**
+   * The current function value
+   **/
+  double sleqp_iterate_get_func_val(SleqpIterate* iterate);
+
+  SLEQP_RETCODE sleqp_iterate_set_func_val(SleqpIterate* iterate,
+                                           double value);
+
+  /**
+   * The current function gradient. Has dimension = num_variables.
+   **/
+  SleqpSparseVec* sleqp_iterate_get_func_grad(SleqpIterate* iterate);
+
+  /**
+   * The current constraint values. Has dimension = num_constraints.
+   **/
+  SleqpSparseVec* sleqp_iterate_get_cons_val(SleqpIterate* iterate);
+
+  /**
+   * The Jacobian of the constraitns at the current iterate.
+   * Has num_constraints many rows, num_variables many columns.
+   */
+  SleqpSparseMatrix* sleqp_iterate_get_cons_jac(SleqpIterate* iterate);
+
+  /**
+   * The current working set.
+   **/
+  SleqpWorkingSet* sleqp_iterate_get_working_set(SleqpIterate* iterate);
+
+  /**
+   * The dual values of the constraints. Has dimension = num_constraints.
+   */
+  SleqpSparseVec* sleqp_iterate_get_cons_dual(SleqpIterate* iterate);
+
+  /**
+   * The dual values of the variable bounds. Has dimension = num_variables.
+   */
+  SleqpSparseVec* sleqp_iterate_get_vars_dual(SleqpIterate* iterate);
 
   double sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
                                           SleqpProblem* problem);
@@ -102,7 +103,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
                                    SleqpIterate* target);
 
-  SLEQP_RETCODE sleqp_iterate_free(SleqpIterate** star);
+  SLEQP_RETCODE sleqp_iterate_capture(SleqpIterate* iterate);
+  
+  SLEQP_RETCODE sleqp_iterate_release(SleqpIterate** star);
 
 
 #ifdef __cplusplus

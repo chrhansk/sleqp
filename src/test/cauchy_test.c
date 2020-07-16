@@ -170,7 +170,7 @@ void unconstrained_teardown()
 
 
 
-  ASSERT_CALL(sleqp_func_free(&linfunc));
+  ASSERT_CALL(sleqp_func_release(&linfunc));
 
   sleqp_free(&func_data->x);
 
@@ -225,7 +225,7 @@ START_TEST(test_unconstrained_cauchy_direction)
                                        trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 iterate->func_grad,
+                                 sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data,
@@ -248,7 +248,7 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 
-  ASSERT_CALL(sleqp_iterate_free(&iterate));
+  ASSERT_CALL(sleqp_iterate_release(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 

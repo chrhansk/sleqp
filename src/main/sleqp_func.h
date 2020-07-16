@@ -131,10 +131,9 @@ extern "C" {
    **/
   void* sleqp_func_get_data(SleqpFunc* func);
 
-  /**
-   * Frees a previously created function.
-   **/
-  SLEQP_RETCODE sleqp_func_free(SleqpFunc** fstar);
+  SLEQP_RETCODE sleqp_func_capture(SleqpFunc* func);
+
+  SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar);
 
   /**
    * @}

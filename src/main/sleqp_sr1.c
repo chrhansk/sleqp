@@ -58,6 +58,8 @@ typedef struct SR1Block
 
 struct SleqpSR1Data
 {
+  int refcount;
+
   int num_variables;
   SleqpParams* params;
 
@@ -220,6 +222,8 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
   SleqpSR1Data* data = *star;
 
   *data = (SleqpSR1Data) {0};
+
+  data->refcount = 1;
 
   const int num_variables = sleqp_func_get_num_variables(func);
 
@@ -477,7 +481,7 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
                                   SleqpIterate* previous_iterate,
                                   SleqpIterate* current_iterate)
 {
-  SleqpSparseVec* cons_dual = previous_iterate->cons_dual;
+  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(previous_iterate);
 
   const double eps = sleqp_params_get_eps(data->params);
 
@@ -485,25 +489,25 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
 
   // Compute gradient difference
   {
-    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(previous_iterate->cons_jac,
+    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(previous_iterate),
                                                         cons_dual,
                                                         eps,
                                                         data->prod_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->prod_cache,
-                                       previous_iterate->func_grad,
+                                       sleqp_iterate_get_func_grad(previous_iterate),
                                        eps,
                                        data->previous_grad));
   }
 
   {
-    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(current_iterate->cons_jac,
+    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(current_iterate),
                                                         cons_dual,
                                                         eps,
                                                         data->prod_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->prod_cache,
-                                       current_iterate->func_grad,
+                                       sleqp_iterate_get_func_grad(current_iterate),
                                        eps,
                                        data->current_grad));
   }
@@ -518,8 +522,8 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
   }
 
   // Compute primal difference
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(previous_iterate->primal,
-                                            current_iterate->primal,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(previous_iterate),
+                                            sleqp_iterate_get_primal(current_iterate),
                                             -1.,
                                             1.,
                                             eps,
@@ -733,7 +737,7 @@ static SLEQP_RETCODE sr1_block_free_at(SR1Block* block)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sr1_data_free(SleqpSR1Data** star)
+static SLEQP_RETCODE sr1_data_free(SleqpSR1Data** star)
 {
   SleqpSR1Data* data = *star;
 
@@ -742,7 +746,7 @@ SLEQP_RETCODE sleqp_sr1_data_free(SleqpSR1Data** star)
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_func_free(&(data->sr1_func)));
+  SLEQP_CALL(sleqp_func_release(&(data->sr1_func)));
 
   int num_blocks = data->num_blocks;
 
@@ -771,6 +775,32 @@ SLEQP_RETCODE sleqp_sr1_data_free(SleqpSR1Data** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->grad_diff)));
 
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sr1_data_capture(SleqpSR1Data* data)
+{
+  ++data->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sr1_data_release(SleqpSR1Data** star)
+{
+  SleqpSR1Data* data = *star;
+
+  if(!data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--data->refcount == 0)
+  {
+    SLEQP_CALL(sr1_data_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

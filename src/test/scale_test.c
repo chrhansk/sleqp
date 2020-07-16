@@ -63,7 +63,8 @@ START_TEST(test_func_grad_invalid)
 
   ASSERT_CALL(sleqp_sparse_vector_create(&func_grad, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_copy(iterate->func_grad, func_grad));
+  ASSERT_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_func_grad(iterate),
+                                       func_grad));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, 10000));
 
@@ -77,7 +78,7 @@ END_TEST
 
 START_TEST(test_func_val_inverse)
 {
-  double func_val = iterate->func_val;
+  double func_val = sleqp_iterate_get_func_val(iterate);
 
   double scaled_func_val = sleqp_scale_func_val(scaling, func_val);
 
@@ -94,7 +95,8 @@ START_TEST(test_func_grad_inverse)
 
   ASSERT_CALL(sleqp_sparse_vector_create(&func_grad, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_copy(iterate->func_grad, func_grad));
+  ASSERT_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_func_grad(iterate),
+                                       func_grad));
 
 
   ASSERT_CALL(sleqp_scale_func_grad(scaling,
@@ -103,7 +105,7 @@ START_TEST(test_func_grad_inverse)
   ASSERT_CALL(sleqp_unscale_func_grad(scaling,
                                       func_grad));
 
-  ck_assert(sleqp_sparse_vector_eq(iterate->func_grad,
+  ck_assert(sleqp_sparse_vector_eq(sleqp_iterate_get_func_grad(iterate),
                                    func_grad,
                                    0.));
 
@@ -117,7 +119,7 @@ START_TEST(test_cons_val_inverse)
 
   ASSERT_CALL(sleqp_sparse_vector_create(&cons_val, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_copy(iterate->cons_val, cons_val));
+  ASSERT_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_cons_val(iterate), cons_val));
 
 
   ASSERT_CALL(sleqp_scale_cons_val(scaling,
@@ -126,7 +128,7 @@ START_TEST(test_cons_val_inverse)
   ASSERT_CALL(sleqp_unscale_cons_val(scaling,
                                       cons_val));
 
-  ck_assert(sleqp_sparse_vector_eq(iterate->cons_val,
+  ck_assert(sleqp_sparse_vector_eq(sleqp_iterate_get_cons_val(iterate),
                                    cons_val,
                                    0.));
 
@@ -143,18 +145,18 @@ START_TEST(test_cons_jac_inverse)
                                          2,
                                          4));
 
-  ASSERT_CALL(sleqp_sparse_matrix_copy(iterate->cons_jac,
+  ASSERT_CALL(sleqp_sparse_matrix_copy(sleqp_iterate_get_cons_jac(iterate),
                                        cons_jac));
 
   ASSERT_CALL(sleqp_scale_cons_jac(scaling, cons_jac));
 
   ASSERT_CALL(sleqp_unscale_cons_jac(scaling, cons_jac));
 
-  ck_assert(sleqp_sparse_matrix_eq(iterate->cons_jac,
+  ck_assert(sleqp_sparse_matrix_eq(sleqp_iterate_get_cons_jac(iterate),
                                    cons_jac,
                                    0.));
 
-  ASSERT_CALL(sleqp_sparse_matrix_free(&cons_jac));
+  ASSERT_CALL(sleqp_sparse_matrix_release(&cons_jac));
 
 
 }
@@ -171,7 +173,7 @@ START_TEST(test_first_order_deriv)
                                    quadconsfunc_x));
 
   ASSERT_CALL(sleqp_scale_point(scaling,
-                                scaled_iterate->primal));
+                                sleqp_iterate_get_primal(scaled_iterate)));
 
   ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
                                      scaled_iterate,
@@ -186,7 +188,7 @@ START_TEST(test_first_order_deriv)
 
   ASSERT_CALL(sleqp_deriv_checker_free(&deriv_check_data));
 
-  ASSERT_CALL(sleqp_iterate_free(&scaled_iterate));
+  ASSERT_CALL(sleqp_iterate_release(&scaled_iterate));
 }
 END_TEST
 
@@ -201,7 +203,7 @@ START_TEST(test_second_order_deriv)
                                    quadconsfunc_x));
 
   ASSERT_CALL(sleqp_scale_point(scaling,
-                                scaled_iterate->primal));
+                                sleqp_iterate_get_primal(scaled_iterate)));
 
   ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
                                      scaled_iterate,
@@ -216,13 +218,13 @@ START_TEST(test_second_order_deriv)
 
   ASSERT_CALL(sleqp_deriv_checker_free(&deriv_check_data));
 
-  ASSERT_CALL(sleqp_iterate_free(&scaled_iterate));
+  ASSERT_CALL(sleqp_iterate_release(&scaled_iterate));
 }
 END_TEST
 
 void scaling_teardown()
 {
-  ASSERT_CALL(sleqp_iterate_free(&iterate));
+  ASSERT_CALL(sleqp_iterate_release(&iterate));
 
   ASSERT_CALL(sleqp_scaling_free(&scaling));
 
