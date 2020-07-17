@@ -15,6 +15,8 @@ START_TEST(test_simplex_solve)
 
   SleqpSparseMatrix* cons_matrix;
 
+  const double inf = sleqp_infinity();
+
   ASSERT_CALL(sleqp_params_create(&params));
 
   int num_variables = 2;
@@ -27,8 +29,8 @@ START_TEST(test_simplex_solve)
 
   double objective[] = {-1, 0};
   double vars_lb[] = {0, 0};
-  double vars_ub[] = {sleqp_infinity(), sleqp_infinity()};
-  double cons_lb[] = {-sleqp_infinity()};
+  double vars_ub[] = {inf, inf};
+  double cons_lb[] = {-inf};
   double cons_ub[] = {1};
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&cons_matrix, 1, 2, 2));
@@ -66,9 +68,9 @@ START_TEST(test_simplex_solve)
   double solution[] = {-1, -1};
   double objective_value = 0;
 
-  ASSERT_CALL(sleqp_lpi_get_solution(lp_interface,
-                                     &objective_value,
-                                     solution));
+  ASSERT_CALL(sleqp_lpi_get_primal_sol(lp_interface,
+                                       &objective_value,
+                                       solution));
 
   double tolerance = 1e-8;
 
@@ -84,6 +86,18 @@ START_TEST(test_simplex_solve)
 
   ck_assert(variable_stats[0] == SLEQP_BASESTAT_BASIC);
   ck_assert(variable_stats[1] == SLEQP_BASESTAT_LOWER);
+
+  double cons_dual = inf;
+  double vars_dual[] = {inf, inf};
+
+  ASSERT_CALL(sleqp_lpi_get_dual_sol(lp_interface,
+                                     vars_dual,
+                                     &cons_dual));
+
+  ck_assert(sleqp_eq(cons_dual, -1., tolerance));
+
+  ck_assert(sleqp_eq(vars_dual[0], 0., tolerance));
+  ck_assert(sleqp_eq(vars_dual[1], 1., tolerance));
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&cons_matrix));
 

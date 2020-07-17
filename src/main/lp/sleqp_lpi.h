@@ -4,6 +4,10 @@
 /**
  * @file sleqp_lpi.h
  * @brief Definition of the LP interface.
+ *
+ * The LP interface solves problem of the form
+ * \f$ \min \langle c, x \rangle, \textrm{ s.t. } l_x \leq x \leq u_x, l \leq A x \leq u \f$
+ *
  **/
 
 #include "sleqp_timer.h"
@@ -41,9 +45,13 @@ extern "C" {
   SLEQP_RETCODE sleqp_lpi_set_time_limit(SleqpLPi* lp_interface,
                                          double time_limit);
 
-  SLEQP_RETCODE sleqp_lpi_get_solution(SleqpLPi* lp_interface,
-                                       double* objective_value,
-                                       double* solution_values);
+  SLEQP_RETCODE sleqp_lpi_get_primal_sol(SleqpLPi* lp_interface,
+                                         double* objective_value,
+                                         double* solution_values);
+
+  SLEQP_RETCODE sleqp_lpi_get_dual_sol(SleqpLPi* lp_interface,
+                                       double* vars_dual,
+                                       double* cons_dual);
 
   SLEQP_RETCODE sleqp_lpi_get_varstats(SleqpLPi* lp_interface,
                                        SLEQP_BASESTAT* variable_stats);

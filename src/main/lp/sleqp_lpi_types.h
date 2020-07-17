@@ -55,11 +55,17 @@ extern "C" {
                                                    int num_constraints,
                                                    double* objective);
 
-  typedef SLEQP_RETCODE (*SLEQP_LPI_GET_SOLUTION)(void* lp_data,
+  typedef SLEQP_RETCODE (*SLEQP_LPI_GET_PRIMAL_SOL)(void* lp_data,
+                                                    int num_variables,
+                                                    int num_constraints,
+                                                    double* objective_value,
+                                                    double* solution_values);
+
+  typedef SLEQP_RETCODE (*SLEQP_LPI_GET_DUAL_SOL)(void* lp_data,
                                                   int num_variables,
                                                   int num_constraints,
-                                                  double* objective_value,
-                                                  double* solution_values);
+                                                  double* vars_dual,
+                                                  double* cons_dual);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_GET_VARSTATS)(void* lp_data,
                                                   int num_variables,
@@ -83,7 +89,8 @@ extern "C" {
     SLEQP_LPI_SET_BOUNDS set_bounds;
     SLEQP_LPI_SET_COEFFICIENTS set_coefficients;
     SLEQP_LPI_SET_OBJECTIVE set_objective;
-    SLEQP_LPI_GET_SOLUTION get_solution;
+    SLEQP_LPI_GET_PRIMAL_SOL get_primal_sol;
+    SLEQP_LPI_GET_DUAL_SOL get_dual_sol;
     SLEQP_LPI_GET_VARSTATS get_varstats;
     SLEQP_LPI_GET_CONSSTATS get_consstats;
     SLEQP_LPI_GET_BASIS_CONDITION get_basis_condition;

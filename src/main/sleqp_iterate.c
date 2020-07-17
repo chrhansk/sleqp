@@ -516,11 +516,11 @@ double sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
   const int num_variables = problem->num_variables;
   const int num_constraints = problem->num_constraints;
 
-  SleqpSparseMatrix* cons_jac = iterate->cons_jac;
-  SleqpSparseVec* cons_dual = iterate->cons_dual;
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
-  SleqpSparseVec* vars_dual = iterate->vars_dual;
-  SleqpSparseVec* func_grad = iterate->func_grad;
+  SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
+  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
 
   const int num_rows = sleqp_sparse_matrix_get_num_rows(cons_jac);
   const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);

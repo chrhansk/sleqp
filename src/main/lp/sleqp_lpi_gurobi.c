@@ -6,8 +6,12 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
+/*
+ * Note: We handle the constraints \f$ l \leq Ax \leq u \f$
+ * via \f$ A x - y = 0, l \leq y \leq u \f$
+ */
+
 #define GRB_BASIC 0
-#define GRB_BASE_NONBASIC -1
 
 typedef struct SleqpLpiGRB
 {
@@ -142,6 +146,8 @@ static SLEQP_RETCODE gurobi_solve(void* lp_data,
   GRBenv* env = lp_interface->env;
   GRBmodel* model = lp_interface->model;
 
+  // SLEQP_GRB_CALL(GRBwrite(model, "file.lp"), env);
+
   if(time_limit != -1)
   {
     GRBenv* model_env = GRBgetenv(model);
@@ -256,11 +262,11 @@ static SLEQP_RETCODE gurobi_set_objective(void* lp_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE gurobi_get_solution(void* lp_data,
-                                         int num_cols,
-                                         int num_rows,
-                                         double* objective_value,
-                                         double* solution_values)
+static SLEQP_RETCODE gurobi_get_primal_sol(void* lp_data,
+                                           int num_cols,
+                                           int num_rows,
+                                           double* objective_value,
+                                           double* solution_values)
 {
   SleqpLpiGRB* lp_interface = lp_data;
 
@@ -285,6 +291,41 @@ static SLEQP_RETCODE gurobi_get_solution(void* lp_data,
 
   return SLEQP_OKAY;
 }
+
+static SLEQP_RETCODE gurobi_get_dual_sol(void* lp_data,
+                                         int num_cols,
+                                         int num_rows,
+                                         double* vars_dual,
+                                         double* cons_dual)
+{
+  SleqpLpiGRB* lp_interface = lp_data;
+
+  GRBenv* env = lp_interface->env;
+  GRBmodel* model = lp_interface->model;
+
+  assert(lp_interface->num_lp_cols == num_rows + num_cols);
+
+  if(cons_dual)
+  {
+    SLEQP_GRB_CALL(GRBgetdblattrarray(model,
+                                      GRB_DBL_ATTR_PI,
+                                      0,
+                                      num_rows,
+                                      cons_dual), env);
+  }
+
+  if(vars_dual)
+  {
+    SLEQP_GRB_CALL(GRBgetdblattrarray(model,
+                                      GRB_DBL_ATTR_RC,
+                                      0,
+                                      num_cols,
+                                      vars_dual), env);
+  }
+
+  return SLEQP_OKAY;
+}
+
 
 static SLEQP_RETCODE gurobi_get_varstats(void* lp_data,
                                          int num_cols,
@@ -440,7 +481,8 @@ SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
     .set_bounds = gurobi_set_bounds,
     .set_coefficients = gurobi_set_coefficients,
     .set_objective = gurobi_set_objective,
-    .get_solution = gurobi_get_solution,
+    .get_primal_sol = gurobi_get_primal_sol,
+    .get_dual_sol = gurobi_get_dual_sol,
     .get_varstats = gurobi_get_varstats,
     .get_consstats = gurobi_get_consstats,
     .get_basis_condition = gurobi_get_basis_condition,

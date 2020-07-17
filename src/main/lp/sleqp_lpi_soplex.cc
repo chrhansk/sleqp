@@ -288,11 +288,11 @@ static SLEQP_RETCODE soplex_set_objective(void* lp_data,
 }
 
 
-static SLEQP_RETCODE soplex_get_solution(void* lp_data,
-                                         int num_cols,
-                                         int num_rows,
-                                         double* objective_value,
-                                         double* solution_values)
+static SLEQP_RETCODE soplex_get_primal_sol(void* lp_data,
+                                           int num_cols,
+                                           int num_rows,
+                                           double* objective_value,
+                                           double* solution_values)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
@@ -302,11 +302,38 @@ static SLEQP_RETCODE soplex_get_solution(void* lp_data,
     *objective_value = soplex.objValueReal();
   }
 
-  soplex::VectorReal solution(num_cols, solution_values);
-
-  bool found_solution = soplex.getPrimalReal(solution);
+  bool found_solution = soplex.getPrimalReal(solution_values,
+                                             num_cols);
 
   assert(found_solution);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE soplex_get_dual_sol(void* lp_data,
+                                         int num_cols,
+                                         int num_rows,
+                                         double* vars_dual,
+                                         double* cons_dual)
+{
+  SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
+  soplex::SoPlex& soplex = *(spx->soplex);
+
+  if(vars_dual)
+  {
+    bool found_solution = soplex.getRedCostReal(vars_dual,
+                                                num_cols);
+
+    assert(found_solution);
+  }
+
+  if(cons_dual)
+  {
+    bool found_solution = soplex.getDualReal(cons_dual,
+                                             num_rows);
+
+    assert(found_solution);
+  }
 
   return SLEQP_OKAY;
 }
@@ -424,7 +451,8 @@ extern "C"
       .set_bounds = soplex_set_bounds,
       .set_coefficients = soplex_set_coefficients,
       .set_objective = soplex_set_objective,
-      .get_solution = soplex_get_solution,
+      .get_primal_sol = soplex_get_primal_sol,
+      .get_dual_sol = soplex_get_dual_sol,
       .get_varstats = soplex_get_varstats,
       .get_consstats = soplex_get_consstats,
       .get_basis_condition = soplex_get_basis_condition,

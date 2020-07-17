@@ -536,7 +536,7 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
 {
   const double zero_eps = sleqp_params_get_zero_eps(cauchy_data->params);
 
-  SLEQP_CALL(sleqp_lpi_get_solution(cauchy_data->lp_interface,
+  SLEQP_CALL(sleqp_lpi_get_primal_sol(cauchy_data->lp_interface,
                                     NULL,
                                     cauchy_data->solution_values));
 
@@ -553,9 +553,9 @@ SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchyData* cauchy_data,
 {
   SleqpProblem* problem = cauchy_data->problem;
 
-  SLEQP_CALL(sleqp_lpi_get_solution(cauchy_data->lp_interface,
-                                    NULL,
-                                    cauchy_data->solution_values));
+  SLEQP_CALL(sleqp_lpi_get_primal_sol(cauchy_data->lp_interface,
+                                      NULL,
+                                      cauchy_data->solution_values));
 
   (*violation) = 0.;
 
