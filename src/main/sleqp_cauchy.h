@@ -41,6 +41,9 @@ extern "C" {
                                            SleqpIterate* iterate,
                                            SleqpSparseVec* direction);
 
+  SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
+                                                 SleqpIterate* iterate);
+
   /**
    * Gets the total constraint vioation of the solution at the given iterate.
    * The total violation is defined as the sum over the violations of all

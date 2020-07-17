@@ -52,6 +52,10 @@ cdef extern from "sleqp.h":
     SLEQP_VALUE_REASON_TRYING_SOC_ITERATE,
     SLEQP_VALUE_REASON_REJECTED_ITERATE
 
+  ctypedef enum SLEQP_DUAL_ESTIMATION_TYPE:
+    SLEQP_DUAL_ESTIMATION_TYPE_LP,
+    SLEQP_DUAL_ESTIMATION_TYPE_LSQ,
+
   ctypedef struct SleqpSparseVec:
     double* data
     int* indices
@@ -420,6 +424,8 @@ cdef extern from "sleqp.h":
 
   SLEQP_HESSIAN_EVAL sleqp_options_get_hessian_eval(const SleqpOptions* options)
 
+  SLEQP_DUAL_ESTIMATION_TYPE sleqp_options_get_dual_estimation_type(const SleqpOptions* options)
+
   int sleqp_options_get_quasi_newton_num_iterates(const SleqpOptions* options)
 
   SLEQP_RETCODE sleqp_options_set_deriv_check(SleqpOptions* options,
@@ -427,6 +433,9 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_options_set_hessian_eval(SleqpOptions* options,
                                                SLEQP_HESSIAN_EVAL value)
+
+  SLEQP_RETCODE sleqp_options_set_dual_estimation_type(SleqpOptions* options,
+                                                       SLEQP_DUAL_ESTIMATION_TYPE dual_estimation_type)
 
   SLEQP_RETCODE sleqp_options_set_quasi_newton_num_iterates(SleqpOptions* options,
                                                             int size)

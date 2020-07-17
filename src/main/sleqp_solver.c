@@ -719,6 +719,31 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
+                                          SleqpIterate* iterate)
+{
+  SleqpOptions* options = solver->options;
+
+  SLEQP_DUAL_ESTIMATION_TYPE estimation_type = sleqp_options_get_dual_estimation_type(options);
+
+  if(estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LSQ)
+  {
+    SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
+                                             iterate,
+                                             solver->estimation_residuum,
+                                             solver->aug_jacobian));
+  }
+  else
+  {
+    assert(estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LP);
+
+    SLEQP_CALL(sleqp_cauchy_get_dual_estimation(solver->cauchy_data,
+                                                iterate));
+  }
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                          double* quadratic_value,
                                          bool* full_step)
@@ -752,10 +777,7 @@ static SLEQP_RETCODE compute_trial_point(SleqpSolver* solver,
                                           iterate,
                                           solver->cauchy_direction));
 
-    SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
-                                             iterate,
-                                             solver->estimation_residuum,
-                                             solver->aug_jacobian));
+    SLEQP_CALL(estimate_dual_values(solver, iterate));
 
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &one,

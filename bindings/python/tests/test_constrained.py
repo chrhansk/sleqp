@@ -105,12 +105,10 @@ class ConstrainedTest(unittest.TestCase):
     cons_lb = np.array([25., 40.])
     cons_ub = np.array([inf, 40.])
 
-    x = np.array([1., 5., 5., 1.])
-
+    self.initial_sol = np.array([1., 5., 5., 1.])
+    self.expected_sol = np.array([1., 4.742999, 3.821151, 1.379408])
 
     self.params = sleqp.Params()
-
-    self.options = sleqp.Options()
 
     self.func = Func(num_variables, num_constraints)
 
@@ -121,23 +119,50 @@ class ConstrainedTest(unittest.TestCase):
                                  cons_lb,
                                  cons_ub)
 
-    self.solver = sleqp.Solver(self.problem,
-                               self.params,
-                               self.options,
-                               x)
+  def get_solver(self, options=None):
+
+    if options is None:
+      options = sleqp.Options()
+
+    return sleqp.Solver(self.problem,
+                        self.params,
+                        options,
+                        self.initial_sol)
 
   def test_solve(self):
-    self.solver.solve(10, 3600)
+    solver = self.get_solver()
+    
+    solver.solve(100, 3600)
 
-    self.assertEqual(self.solver.status, sleqp.Status.Optimal)
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    expected_sol = np.array([1., 4.742999, 3.821151, 1.379408])
+    solution = solver.solution
 
-    solution = self.solver.solution
+    self.assertTrue(np.allclose(self.expected_sol, solution.primal))
 
-    self.assertTrue(np.allclose(expected_sol, solution.primal))
+  def test_solve_lp_duals(self):
+    options = sleqp.Options(dual_estimation_type=sleqp.DualEstimationType.LP)
+    
+    solver = self.get_solver(options=options)
+    
+    solver.solve(100, 3600)
 
-    self.func.set_value(expected_sol, sleqp.ValueReason.NoReason)
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(self.expected_sol, solution.primal))    
+
+  def test_iterate(self):
+    solver = self.get_solver()
+        
+    solver.solve(100, 3600)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+    
+    self.func.set_value(solution.primal, sleqp.ValueReason.NoReason)
 
     expected_func_val = self.func.func_val()
 

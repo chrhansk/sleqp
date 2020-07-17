@@ -77,6 +77,11 @@ extern "C" {
     SLEQP_STEPTYPE_REJECTED
   } SLEQP_STEPTYPE;
 
+  typedef enum {
+    SLEQP_DUAL_ESTIMATION_TYPE_LP,
+    SLEQP_DUAL_ESTIMATION_TYPE_LSQ,
+  } SLEQP_DUAL_ESTIMATION_TYPE;
+
 #ifdef __cplusplus
 }
 #endif

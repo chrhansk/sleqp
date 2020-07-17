@@ -26,6 +26,7 @@ struct SleqpCauchyData
   double* vars_ub;
 
   double* solution_values;
+  double* dual_values;
 
   SleqpSparseVec* quadratic_gradient;
   SleqpMeritData* merit_data;
@@ -63,6 +64,10 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
   SLEQP_CALL(sleqp_calloc(&data->vars_ub, data->num_lp_variables));
 
   SLEQP_CALL(sleqp_calloc(&data->solution_values, data->num_lp_variables));
+
+  SLEQP_CALL(sleqp_calloc(&data->dual_values,
+                          SLEQP_MAX(data->num_lp_constraints,
+                                    data->num_lp_variables)));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&data->quadratic_gradient,
                                         problem->num_variables,
@@ -537,13 +542,89 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
   const double zero_eps = sleqp_params_get_zero_eps(cauchy_data->params);
 
   SLEQP_CALL(sleqp_lpi_get_primal_sol(cauchy_data->lp_interface,
-                                    NULL,
-                                    cauchy_data->solution_values));
+                                      NULL,
+                                      cauchy_data->solution_values));
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(direction,
                                           cauchy_data->solution_values,
                                           cauchy_data->problem->num_variables,
                                           zero_eps));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
+                                               SleqpIterate* iterate)
+{
+  SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
+  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
+
+  const double zero_eps = sleqp_params_get_zero_eps(cauchy_data->params);
+
+  SleqpProblem* problem = cauchy_data->problem;
+
+  const int num_variables = problem->num_variables;
+  const int num_constraints = problem->num_constraints;
+
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+
+  if(vars_dual)
+  {
+    assert(vars_dual->dim == problem->num_variables);
+
+    SLEQP_CALL(sleqp_lpi_get_dual_sol(cauchy_data->lp_interface,
+                                      cauchy_data->dual_values,
+                                      NULL));
+
+    SLEQP_CALL(sleqp_sparse_vector_from_raw(vars_dual,
+                                            cauchy_data->dual_values,
+                                            vars_dual->dim,
+                                            zero_eps));
+
+    // Note: We rescale here since sign conventions vary...
+    SLEQP_CALL(sleqp_sparse_vector_scale(vars_dual, -1.));
+
+    for(int k = 0; k < vars_dual->nnz; ++k)
+    {
+      const int i = vars_dual->indices[k];
+
+      const SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(working_set,
+                                                                                i);
+
+      if(var_state == SLEQP_INACTIVE)
+      {
+        vars_dual->data[k] = 0.;
+      }
+      else
+      {
+        if(var_state == SLEQP_ACTIVE_UPPER)
+        {
+          assert(sleqp_ge(vars_dual->data[k], 0., zero_eps));
+        }
+        else if(var_state == SLEQP_ACTIVE_LOWER)
+        {
+          assert(sleqp_le(vars_dual->data[k], 0., zero_eps));
+        }
+      }
+    }
+  }
+
+  if(cons_dual)
+  {
+    assert(cons_dual->dim == problem->num_constraints);
+
+    SLEQP_CALL(sleqp_lpi_get_dual_sol(cauchy_data->lp_interface,
+                                      NULL,
+                                      cauchy_data->dual_values));
+
+    SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_dual,
+                                            cauchy_data->dual_values,
+                                            cons_dual->dim,
+                                            zero_eps));
+
+    // Note: We rescale here since sign conventions vary...
+    SLEQP_CALL(sleqp_sparse_vector_scale(cons_dual, -1.));
+  }
 
   return SLEQP_OKAY;
 }
@@ -673,6 +754,7 @@ SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->quadratic_gradient));
 
+  sleqp_free(&data->dual_values);
   sleqp_free(&data->solution_values);
 
   sleqp_free(&data->vars_ub);
