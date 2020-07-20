@@ -624,6 +624,30 @@ SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
 
     // Note: We rescale here since sign conventions vary...
     SLEQP_CALL(sleqp_sparse_vector_scale(cons_dual, -1.));
+
+    for(int k = 0; k < cons_dual->nnz; ++k)
+    {
+      const int i = cons_dual->indices[k];
+
+      const SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_constraint_state(working_set,
+                                                                                  i);
+
+      if(var_state == SLEQP_INACTIVE)
+      {
+        cons_dual->data[k] = 0.;
+      }
+      else
+      {
+        if(var_state == SLEQP_ACTIVE_UPPER)
+        {
+          assert(sleqp_ge(cons_dual->data[k], 0., zero_eps));
+        }
+        else if(var_state == SLEQP_ACTIVE_LOWER)
+        {
+          assert(sleqp_le(cons_dual->data[k], 0., zero_eps));
+        }
+      }
+    }
   }
 
   return SLEQP_OKAY;
