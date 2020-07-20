@@ -1,4 +1,4 @@
-image: "chrh/sleqp_builddeps:v11"
+image: "moto.math.nat.tu-bs.de/code/sleqp:7.0.1"
 
 stages:
 - prepare
