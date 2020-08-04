@@ -70,13 +70,17 @@ int sleqp_options_get_quasi_newton_num_iterates(const SleqpOptions* options)
 SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options,
                                                     bool value)
 {
-  return options->perform_newton_step;
+  options->perform_newton_step = value;
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options,
                                             bool value)
 {
-  return options->perform_soc;
+  options->perform_soc = value;
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_options_set_deriv_check(SleqpOptions* options,

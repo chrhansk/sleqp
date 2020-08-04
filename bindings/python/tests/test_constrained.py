@@ -131,7 +131,7 @@ class ConstrainedTest(unittest.TestCase):
 
   def test_solve(self):
     solver = self.get_solver()
-    
+
     solver.solve(100, 3600)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
@@ -142,26 +142,39 @@ class ConstrainedTest(unittest.TestCase):
 
   def test_solve_lp_duals(self):
     options = sleqp.Options(dual_estimation_type=sleqp.DualEstimationType.LP)
-    
+
     solver = self.get_solver(options=options)
-    
+
     solver.solve(100, 3600)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
 
     solution = solver.solution
 
-    self.assertTrue(np.allclose(self.expected_sol, solution.primal))    
+    self.assertTrue(np.allclose(self.expected_sol, solution.primal))
+
+  def test_solve_no_newton(self):
+    options = sleqp.Options(perform_newton_step=False)
+
+    solver = self.get_solver(options=options)
+
+    solver.solve(1000, 3600)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(self.expected_sol, solution.primal))
 
   def test_iterate(self):
     solver = self.get_solver()
-        
+
     solver.solve(100, 3600)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
 
     solution = solver.solution
-    
+
     self.func.set_value(solution.primal, sleqp.ValueReason.NoReason)
 
     expected_func_val = self.func.func_val()

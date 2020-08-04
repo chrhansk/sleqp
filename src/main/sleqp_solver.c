@@ -1371,10 +1371,13 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   // update trust radii, penalty parameter
   {
-    SLEQP_CALL(update_trust_radius(reduction_ratio,
-                                   step_accepted,
-                                   trial_direction_norm,
-                                   &(solver->trust_radius)));
+    if(sleqp_options_get_perform_newton_step(options))
+    {
+      SLEQP_CALL(update_trust_radius(reduction_ratio,
+                                     step_accepted,
+                                     trial_direction_norm,
+                                     &(solver->trust_radius)));
+    }
 
     SLEQP_CALL(update_lp_trust_radius(step_accepted,
                                       trial_direction_infnorm,
