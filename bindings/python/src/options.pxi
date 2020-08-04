@@ -8,7 +8,9 @@ cdef class Options:
     csleqp_call(csleqp.sleqp_options_create(&self.options))
 
   def __init__(self, **values):
-    self.props = ['deriv_check',
+    self.props = ['perform_newton_step',
+                  'perform_soc',
+                  'deriv_check',
                   'hessian_eval',
                   'dual_estimation_type',
                   'quasi_newton_num_iterates']
@@ -18,6 +20,14 @@ cdef class Options:
 
   def __dealloc__(self):
     csleqp_call(csleqp.sleqp_options_free(&self.options))
+
+  @property
+  def perform_newton_step(self):
+    return csleqp.sleqp_options_get_perform_newton_step(self.options)
+
+  @property
+  def perform_soc(self):
+    return csleqp.sleqp_options_get_perform_soc(self.options)
 
   @property
   def deriv_check(self):
@@ -34,6 +44,14 @@ cdef class Options:
   @property
   def quasi_newton_num_iterates(self):
     return csleqp.sleqp_options_get_quasi_newton_num_iterates(self.options)
+
+  @perform_newton_step.setter
+  def perform_newton_step(self, value):
+    csleqp.sleqp_options_set_perform_newton_step(self.options, value)
+
+  @perform_soc.setter
+  def perform_soc(self, value):
+    csleqp.sleqp_options_set_perform_soc(self.options, value)
 
   @deriv_check.setter
   def deriv_check(self, value):
