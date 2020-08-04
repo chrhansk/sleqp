@@ -71,62 +71,62 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
   return SLEQP_OKAY;
 }
 
-double sleqp_params_get_zero_eps(SleqpParams* params)
+double sleqp_params_get_zero_eps(const SleqpParams* params)
 {
   return params->zero_eps;
 }
 
-double sleqp_params_get_eps(SleqpParams* params)
+double sleqp_params_get_eps(const SleqpParams* params)
 {
   return params->eps;
 }
 
-double sleqp_params_get_deriv_perturbation(SleqpParams* params)
+double sleqp_params_get_deriv_perturbation(const SleqpParams* params)
 {
   return params->deriv_perturbation;
 }
 
-double sleqp_params_get_deriv_tolerance(SleqpParams* params)
+double sleqp_params_get_deriv_tolerance(const SleqpParams* params)
 {
   return params->deriv_tolerance;
 }
 
-double sleqp_params_get_cauchy_tau(SleqpParams* params)
+double sleqp_params_get_cauchy_tau(const SleqpParams* params)
 {
   return params->cauchy_tau;
 }
 
-double sleqp_params_get_cauchy_eta(SleqpParams* params)
+double sleqp_params_get_cauchy_eta(const SleqpParams* params)
 {
   return params->cauchy_eta;
 }
 
-double sleqp_params_get_linesearch_tau(SleqpParams* params)
+double sleqp_params_get_linesearch_tau(const SleqpParams* params)
 {
   return params->linesearch_tau;
 }
 
-double sleqp_params_get_linesearch_eta(SleqpParams* params)
+double sleqp_params_get_linesearch_eta(const SleqpParams* params)
 {
   return params->linesearch_eta;
 }
 
-double sleqp_params_get_linesearch_cutoff(SleqpParams* params)
+double sleqp_params_get_linesearch_cutoff(const SleqpParams* params)
 {
   return params->linesearch_cutoff;
 }
 
-double sleqp_params_get_optimality_tolerance(SleqpParams* params)
+double sleqp_params_get_optimality_tolerance(const SleqpParams* params)
 {
   return params->optimality_tol;
 }
 
-double sleqp_params_get_accepted_reduction(SleqpParams* params)
+double sleqp_params_get_accepted_reduction(const SleqpParams* params)
 {
   return params->accepted_reduction;
 }
 
-double sleqp_params_get_deadpoint_bound(SleqpParams* params)
+double sleqp_params_get_deadpoint_bound(const SleqpParams* params)
 {
   return params->deadpoint_bound;
 }
