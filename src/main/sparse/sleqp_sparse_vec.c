@@ -81,7 +81,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_to_raw(SleqpSparseVec* vec,
+SLEQP_RETCODE sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec,
                                          double* values)
 {
   for(int i = 0; i < vec->dim; ++i)
@@ -97,7 +97,7 @@ SLEQP_RETCODE sleqp_sparse_vector_to_raw(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_copy(SleqpSparseVec* source,
+SLEQP_RETCODE sleqp_sparse_vector_copy(const SleqpSparseVec* source,
                                        SleqpSparseVec* target)
 {
   assert(source->dim == target->dim);
@@ -155,8 +155,8 @@ SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
-                            SleqpSparseVec* second,
+bool sleqp_sparse_vector_eq(const SleqpSparseVec* first,
+                            const SleqpSparseVec* second,
                             double eps)
 {
   assert(first->dim == second->dim);
@@ -199,8 +199,8 @@ bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
   return true;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
-                                      SleqpSparseVec* second,
+SLEQP_RETCODE sleqp_sparse_vector_dot(const SleqpSparseVec* first,
+                                      const SleqpSparseVec* second,
                                       double* product)
 {
   assert(first->dim == second->dim);
@@ -235,7 +235,7 @@ SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
 }
 
 SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
-                                        double factor)
+                                        const double factor)
 {
   //assert(!(isinf(factor) || isnan(factor)));
 
@@ -247,14 +247,14 @@ SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
   return SLEQP_OKAY;
 }
 
-double sleqp_sparse_vector_norm(SleqpSparseVec* vec)
+double sleqp_sparse_vector_norm(const SleqpSparseVec* vec)
 {
   double normsq = sleqp_sparse_vector_normsq(vec);
 
   return sqrt(normsq);
 }
 
-double sleqp_sparse_vector_normsq(SleqpSparseVec* vec)
+double sleqp_sparse_vector_normsq(const SleqpSparseVec* vec)
 {
   double normsq = 0.;
 
@@ -268,7 +268,7 @@ double sleqp_sparse_vector_normsq(SleqpSparseVec* vec)
   return normsq;
 }
 
-double sleqp_sparse_vector_norminf(SleqpSparseVec* vec)
+double sleqp_sparse_vector_norminf(const SleqpSparseVec* vec)
 {
   double norminf = 0.;
 
@@ -282,9 +282,9 @@ double sleqp_sparse_vector_norminf(SleqpSparseVec* vec)
   return norminf;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
-                                      SleqpSparseVec* second,
-                                      double eps,
+SLEQP_RETCODE sleqp_sparse_vector_add(const SleqpSparseVec* first,
+                                      const SleqpSparseVec* second,
+                                      const double eps,
                                       SleqpSparseVec* result)
 {
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(first,
@@ -297,11 +297,11 @@ SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_add_scaled(SleqpSparseVec* first,
-                                             SleqpSparseVec* second,
-                                             double first_factor,
-                                             double second_factor,
-                                             double eps,
+SLEQP_RETCODE sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
+                                             const SleqpSparseVec* second,
+                                             const double first_factor,
+                                             const double second_factor,
+                                             const double eps,
                                              SleqpSparseVec* result)
 {
   assert(first->dim == second->dim);
@@ -376,9 +376,9 @@ double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
   return NULL;
 }
 
-bool sleqp_sparse_vector_is_boxed(SleqpSparseVec* x,
-                                  SleqpSparseVec* lb,
-                                  SleqpSparseVec* ub)
+bool sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
+                                  const SleqpSparseVec* lb,
+                                  const SleqpSparseVec* ub)
 {
   const int dim = x->dim;
 
@@ -435,10 +435,10 @@ bool sleqp_sparse_vector_is_boxed(SleqpSparseVec* x,
   return true;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
-                                       SleqpSparseVec* lb,
-                                       SleqpSparseVec* ub,
-                                       double eps,
+SLEQP_RETCODE sleqp_sparse_vector_clip(const SleqpSparseVec* x,
+                                       const SleqpSparseVec* lb,
+                                       const SleqpSparseVec* ub,
+                                       const double eps,
                                        SleqpSparseVec* xclip)
 {
   const int dim = x->dim;
@@ -519,7 +519,7 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
+SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
                                           FILE* output)
 {
   fprintf(output,
@@ -537,7 +537,7 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-bool sleqp_sparse_vector_valid(SleqpSparseVec* vec)
+bool sleqp_sparse_vector_valid(const SleqpSparseVec* vec)
 {
   if(vec->nnz > vec->nnz_max || vec->nnz < 0)
   {

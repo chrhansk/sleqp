@@ -68,10 +68,10 @@ extern "C" {
                                              int dim,
                                              double eps);
 
-  SLEQP_RETCODE sleqp_sparse_vector_to_raw(SleqpSparseVec* vec,
+  SLEQP_RETCODE sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec,
                                            double* values);
 
-  SLEQP_RETCODE sleqp_sparse_vector_copy(SleqpSparseVec* source,
+  SLEQP_RETCODE sleqp_sparse_vector_copy(const SleqpSparseVec* source,
                                          SleqpSparseVec* target);
 
   SLEQP_RETCODE sleqp_sparse_vector_clear(SleqpSparseVec* vec);
@@ -88,8 +88,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
                                            int dim);
 
-  bool sleqp_sparse_vector_eq(SleqpSparseVec* first,
-                              SleqpSparseVec* second,
+  bool sleqp_sparse_vector_eq(const SleqpSparseVec* first,
+                              const SleqpSparseVec* second,
                               double eps);
 
   /**
@@ -99,18 +99,18 @@ extern "C" {
    * @param[in]  second    A pointer to the second vector
    * @param[out] product   A pointer to the result
    **/
-  SLEQP_RETCODE sleqp_sparse_vector_dot(SleqpSparseVec* first,
-                                        SleqpSparseVec* second,
+  SLEQP_RETCODE sleqp_sparse_vector_dot(const SleqpSparseVec* first,
+                                        const SleqpSparseVec* second,
                                         double* product);
 
   /**
    * Scales the sparse vector by a factor
    *
    * @param[in,out] vector   A pointer to the vector
-   * @param[out]    factor   The factor
+   * @param[in]     factor   The factor
    **/
   SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
-                                          double factor);
+                                          const double factor);
 
   /**
    * Computes the sum of two sparse vectors
@@ -119,9 +119,9 @@ extern "C" {
    * @param[in]  second        A pointer to the second vector
    * @param[out] result        A pointer to the result
    **/
-  SLEQP_RETCODE sleqp_sparse_vector_add(SleqpSparseVec* first,
-                                        SleqpSparseVec* second,
-                                        double eps,
+  SLEQP_RETCODE sleqp_sparse_vector_add(const SleqpSparseVec* first,
+                                        const SleqpSparseVec* second,
+                                        const double eps,
                                         SleqpSparseVec* result);
 
   /**
@@ -133,36 +133,36 @@ extern "C" {
    * @param[in]  second_factor A factor for the first vector
    * @param[out] result        A pointer to the result
    **/
-  SLEQP_RETCODE sleqp_sparse_vector_add_scaled(SleqpSparseVec* first,
-                                               SleqpSparseVec* second,
-                                               double first_factor,
-                                               double second_factor,
-                                               double eps,
+  SLEQP_RETCODE sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
+                                               const SleqpSparseVec* second,
+                                               const double first_factor,
+                                               const double second_factor,
+                                               const double eps,
                                                SleqpSparseVec* result);
 
-  double sleqp_sparse_vector_norm(SleqpSparseVec* vec);
+  double sleqp_sparse_vector_norm(const SleqpSparseVec* vec);
 
-  double sleqp_sparse_vector_normsq(SleqpSparseVec* vec);
+  double sleqp_sparse_vector_normsq(const SleqpSparseVec* vec);
 
-  double sleqp_sparse_vector_norminf(SleqpSparseVec* vec);
+  double sleqp_sparse_vector_norminf(const SleqpSparseVec* vec);
 
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
                                  int index);
 
-  bool sleqp_sparse_vector_is_boxed(SleqpSparseVec* x,
-                                    SleqpSparseVec* lb,
-                                    SleqpSparseVec* ub);
+  bool sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
+                                    const SleqpSparseVec* lb,
+                                    const SleqpSparseVec* ub);
 
-  SLEQP_RETCODE sleqp_sparse_vector_clip(SleqpSparseVec* x,
-                                         SleqpSparseVec* lb,
-                                         SleqpSparseVec* ub,
-                                         double eps,
+  SLEQP_RETCODE sleqp_sparse_vector_clip(const SleqpSparseVec* x,
+                                         const SleqpSparseVec* lb,
+                                         const SleqpSparseVec* ub,
+                                         const double eps,
                                          SleqpSparseVec* xclip);
 
-  SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
+  SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
                                             FILE* output);
 
-  bool sleqp_sparse_vector_valid(SleqpSparseVec* vec);
+  bool sleqp_sparse_vector_valid(const SleqpSparseVec* vec);
 
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec);
 
