@@ -593,8 +593,8 @@ bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
 
   if(feasibility_residuum > tolerance * (1. + value_norm))
   {
-    sleqp_log_debug("Iterate does not satisfy feasibility, violation: %e, iterate norm: %e",
-                    constraint_violation,
+    sleqp_log_debug("Iterate does not satisfy feasibility, residuum: %e, iterate norm: %e",
+                    feasibility_residuum,
                     value_norm);
 
     return false;

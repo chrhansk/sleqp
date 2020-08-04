@@ -529,7 +529,7 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
 
   sleqp_log_debug("Created an active set with %d variables, %d constraints",
                   num_active_vars,
-                  num_active_conss);
+                  num_active_cons);
 
 
   return SLEQP_OKAY;
