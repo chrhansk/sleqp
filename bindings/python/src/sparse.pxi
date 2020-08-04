@@ -1,6 +1,6 @@
 #cython: language_level=3
 
-cdef object sleqp_sparse_vec_to_array(csleqp.SleqpSparseVec* vec):
+cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpSparseVec* vec):
   assert vec
   values = np.zeros([vec.dim], dtype=np.float64)
 

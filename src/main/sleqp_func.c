@@ -75,7 +75,7 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
 }
 
 SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
-                              SleqpSparseVec* cons_indices,
+                              const SleqpSparseVec* cons_indices,
                               double* func_val,
                               SleqpSparseVec* func_grad,
                               SleqpSparseVec* cons_val,
@@ -164,9 +164,9 @@ SleqpTimer* sleqp_func_get_hess_timer(SleqpFunc* func)
 }
 
 SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
-                                   double* func_dual,
-                                   SleqpSparseVec* direction,
-                                   SleqpSparseVec* cons_duals,
+                                   const double* func_dual,
+                                   const SleqpSparseVec* direction,
+                                   const SleqpSparseVec* cons_duals,
                                    SleqpSparseVec* product)
 {
   assert(func->num_variables == direction->dim);

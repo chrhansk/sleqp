@@ -71,7 +71,7 @@ extern "C" {
    * @param[in,out] func_data       The function data
    **/
   SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
-                                SleqpSparseVec* cons_indices,
+                                const SleqpSparseVec* cons_indices,
                                 double* func_val,
                                 SleqpSparseVec* func_grad,
                                 SleqpSparseVec* cons_val,
@@ -105,9 +105,9 @@ extern "C" {
    *
    */
   SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
-                                     double* func_dual,
-                                     SleqpSparseVec* direction,
-                                     SleqpSparseVec* cons_duals,
+                                     const double* func_dual,
+                                     const SleqpSparseVec* direction,
+                                     const SleqpSparseVec* cons_duals,
                                      SleqpSparseVec* product);
 
   /**

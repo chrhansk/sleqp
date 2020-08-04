@@ -107,7 +107,7 @@ cdef extern from "sleqp.h":
                                            int dim,
                                            int nnz_max)
 
-  SLEQP_RETCODE sleqp_sparse_vector_fprintf(SleqpSparseVec* vec,
+  SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
                                             libc.stdio.FILE* output)
 
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec)
@@ -172,7 +172,7 @@ cdef extern from "sleqp.h":
                                            void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(int num_variables,
-                                            SleqpSparseVec* cons_indices,
+                                            const SleqpSparseVec* cons_indices,
                                             double* func_val,
                                             SleqpSparseVec* func_grad,
                                             SleqpSparseVec* cons_val,
@@ -180,9 +180,9 @@ cdef extern from "sleqp.h":
                                             void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(int num_variables,
-                                               double* func_dual,
-                                               SleqpSparseVec* direction,
-                                               SleqpSparseVec* cons_duals,
+                                               const double* func_dual,
+                                               const SleqpSparseVec* direction,
+                                               const SleqpSparseVec* cons_duals,
                                                SleqpSparseVec* product,
                                                void* func_data)
 

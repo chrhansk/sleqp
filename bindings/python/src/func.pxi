@@ -26,7 +26,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpSparseVec* x,
   return csleqp.SLEQP_OKAY
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
-                                          csleqp.SleqpSparseVec* cons_indices,
+                                          const csleqp.SleqpSparseVec* cons_indices,
                                           double* func_val,
                                           csleqp.SleqpSparseVec* func_grad,
                                           csleqp.SleqpSparseVec* cons_vals,
@@ -59,9 +59,9 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
   return csleqp.SLEQP_OKAY
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
-                                                  double* func_dual,
-                                                  csleqp.SleqpSparseVec* direction,
-                                                  csleqp.SleqpSparseVec* cons_dual,
+                                                  const double* func_dual,
+                                                  const csleqp.SleqpSparseVec* direction,
+                                                  const csleqp.SleqpSparseVec* cons_dual,
                                                   csleqp.SleqpSparseVec* product,
                                                   void* func_data):
 

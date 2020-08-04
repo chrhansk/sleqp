@@ -110,7 +110,7 @@ sr1_func_set_value(SleqpSparseVec* x,
 
 static SLEQP_RETCODE
 sr1_func_eval(int num_variables,
-              SleqpSparseVec* cons_indices,
+              const SleqpSparseVec* cons_indices,
               double* func_val,
               SleqpSparseVec* func_grad,
               SleqpSparseVec* cons_val,
@@ -131,11 +131,11 @@ sr1_func_eval(int num_variables,
 
 static SLEQP_RETCODE
 sr1_func_hess_prod(int num_variables,
-                      double* func_dual,
-                      SleqpSparseVec* direction,
-                      SleqpSparseVec* cons_duals,
-                      SleqpSparseVec* product,
-                      void* func_data)
+                   const double* func_dual,
+                   const SleqpSparseVec* direction,
+                   const SleqpSparseVec* cons_duals,
+                   SleqpSparseVec* product,
+                   void* func_data)
 {
   SleqpSR1Data* sr1_data = (SleqpSR1Data*) func_data;
 
@@ -586,7 +586,7 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
 static
 SLEQP_RETCODE sr1_block_hess_prod(SleqpSR1Data* data,
                                   SR1Block* block,
-                                  SleqpSparseVec* direction,
+                                  const SleqpSparseVec* direction,
                                   SleqpSparseVec* product)
 {
   SLEQP_CALL(sleqp_sparse_vector_copy(direction, product));
@@ -637,7 +637,7 @@ SLEQP_RETCODE sr1_block_hess_prod(SleqpSR1Data* data,
 }
 
 SLEQP_RETCODE sleqp_sr1_data_hess_prod(SleqpSR1Data* data,
-                                       SleqpSparseVec* direction,
+                                       const SleqpSparseVec* direction,
                                        SleqpSparseVec* product)
 {
   const int num_blocks = data->num_blocks;

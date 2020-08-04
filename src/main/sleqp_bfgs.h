@@ -19,7 +19,7 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
                                        SleqpFunc* func,
-                                       SleqpParams* params,
+                                       const SleqpParams* params,
                                        int num,
                                        bool damped);
 
@@ -28,7 +28,7 @@ extern "C" {
                                      SleqpIterate* new_iterate);
 
   SLEQP_RETCODE sleqp_bfgs_data_hess_prod(SleqpBFGSData* data,
-                                          SleqpSparseVec* direction,
+                                          const SleqpSparseVec* direction,
                                           SleqpSparseVec* product);
 
   SleqpFunc* sleqp_bfgs_get_func(SleqpBFGSData* data);

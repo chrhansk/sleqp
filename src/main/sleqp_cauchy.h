@@ -55,7 +55,7 @@ extern "C" {
   /**
    * Computes the Cauchy step by (approximately) minimizing the
    * quadratic penalty along a direction. The direction will
-   * be returned scaled and then returned.
+   * be scaled and then returned.
    *
    * @param[in]      cauchy_data        Cauchy data
    * @param[in]      iterate            The current iterate

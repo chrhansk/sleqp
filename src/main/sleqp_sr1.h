@@ -26,7 +26,7 @@ extern "C" {
                                     SleqpIterate* new_iterate);
 
   SLEQP_RETCODE sleqp_sr1_data_hess_prod(SleqpSR1Data* data,
-                                         SleqpSparseVec* direction,
+                                         const SleqpSparseVec* direction,
                                          SleqpSparseVec* product);
 
   SleqpFunc* sleqp_sr1_get_func(SleqpSR1Data* data);

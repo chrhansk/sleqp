@@ -42,7 +42,7 @@ struct SleqpBFGSData
 
   int num_variables;
 
-  SleqpParams* params;
+  const SleqpParams* params;
 
   int num_blocks;
   BFGSBlock* blocks;
@@ -88,7 +88,7 @@ bfgs_func_set_value(SleqpSparseVec* x,
 
 static SLEQP_RETCODE
 bfgs_func_eval(int num_variables,
-               SleqpSparseVec* cons_indices,
+               const SleqpSparseVec* cons_indices,
                double* func_val,
                SleqpSparseVec* func_grad,
                SleqpSparseVec* cons_val,
@@ -109,9 +109,9 @@ bfgs_func_eval(int num_variables,
 
 static SLEQP_RETCODE
 bfgs_func_hess_product(int num_variables,
-                       double* func_dual,
-                       SleqpSparseVec* direction,
-                       SleqpSparseVec* cons_duals,
+                       const double* func_dual,
+                       const SleqpSparseVec* direction,
+                       const SleqpSparseVec* cons_duals,
                        SleqpSparseVec* product,
                        void* func_data)
 {
@@ -152,7 +152,7 @@ SleqpFunc* sleqp_bfgs_get_func(SleqpBFGSData* data)
 
 static SLEQP_RETCODE bfgs_block_create_at(BFGSBlock* block,
                                           int dimension,
-                                          SleqpParams* params,
+                                          const SleqpParams* params,
                                           int num,
                                           bool damped)
 {
@@ -239,7 +239,7 @@ static SLEQP_RETCODE bfgs_block_free_at(BFGSBlock* block)
 
 SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
                                      SleqpFunc* func,
-                                     SleqpParams* params,
+                                     const SleqpParams* params,
                                      int num,
                                      bool damped)
 {
@@ -341,8 +341,8 @@ static int data_index(BFGSBlock* block, int index)
 
 static
 SLEQP_RETCODE bfgs_hess_prod_range(BFGSBlock* block,
-                                   SleqpParams* params,
-                                   SleqpSparseVec* direction,
+                                   const SleqpParams* params,
+                                   const SleqpSparseVec* direction,
                                    SleqpSparseVec* product,
                                    int final)
 {
@@ -424,7 +424,7 @@ SLEQP_RETCODE bfgs_initial_scale(BFGSBlock* block,
 
 static
 SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
-                                    SleqpParams* params)
+                                    const SleqpParams* params)
 {
   const double eps = sleqp_params_get_eps(params);
 
@@ -518,9 +518,9 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
 
 static
 SLEQP_RETCODE bfgs_block_push(BFGSBlock* block,
-                              SleqpParams* params,
-                              SleqpSparseVec* step_diff,
-                              SleqpSparseVec* grad_diff)
+                              const SleqpParams* params,
+                              const SleqpSparseVec* step_diff,
+                              const SleqpSparseVec* grad_diff)
 {
   const int next = data_index(block, block->curr + 1);
 
@@ -546,7 +546,6 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                    SleqpIterate* previous_iterate,
                                    SleqpIterate* current_iterate)
 {
-
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(previous_iterate);
 
   const double eps = sleqp_params_get_eps(data->params);
@@ -650,7 +649,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
 }
 
 SLEQP_RETCODE sleqp_bfgs_data_hess_prod(SleqpBFGSData* data,
-                                        SleqpSparseVec* direction,
+                                        const SleqpSparseVec* direction,
                                         SleqpSparseVec* product)
 {
   const int num_blocks = data->num_blocks;
