@@ -86,7 +86,7 @@ SLEQP_RETCODE rosenbrock_lsq_eval(int num_variables,
 }
 
 SLEQP_RETCODE rosenbrock_lsq_jac_forward(int num_variables,
-                                         SleqpSparseVec* forward_direction,
+                                         const SleqpSparseVec* forward_direction,
                                          SleqpSparseVec* product,
                                          void* func_data)
 {
@@ -120,7 +120,7 @@ SLEQP_RETCODE rosenbrock_lsq_jac_forward(int num_variables,
 }
 
 SLEQP_RETCODE rosenbrock_lsq_jac_adjoint(int num_variables,
-                                         SleqpSparseVec* adjoint_direction,
+                                         const SleqpSparseVec* adjoint_direction,
                                          SleqpSparseVec* product,
                                          void* func_data)
 {

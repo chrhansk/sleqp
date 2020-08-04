@@ -50,7 +50,7 @@ SLEQP_RETCODE quadconsfunc_set(SleqpSparseVec* x,
 }
 
 SLEQP_RETCODE quadconsfunc_eval(int num_variables,
-                                SleqpSparseVec* cons_indices,
+                                const SleqpSparseVec* cons_indices,
                                 double* func_val,
                                 SleqpSparseVec* func_grad,
                                 SleqpSparseVec* cons_val,
@@ -119,9 +119,9 @@ SLEQP_RETCODE quadconsfunc_eval(int num_variables,
 }
 
 SLEQP_RETCODE quadconsfunc_hess_prod(int num_variables,
-                                     double* func_dual,
-                                     SleqpSparseVec* direction,
-                                     SleqpSparseVec* cons_duals,
+                                     const double* func_dual,
+                                     const SleqpSparseVec* direction,
+                                     const SleqpSparseVec* cons_duals,
                                      SleqpSparseVec* result,
                                      void* func_data)
 {
