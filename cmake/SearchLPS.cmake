@@ -95,7 +95,9 @@ else()
   endforeach()
 endif()
 
-if(NOT "${SLEQP_LPS_FOUND}")
+if("${SLEQP_LPS_FOUND}")
+  message(STATUS "Using ${SLEQP_LPS} as LP solver")
+else()
   message(FATAL_ERROR "Failed to find LP solver")
 endif()
 
