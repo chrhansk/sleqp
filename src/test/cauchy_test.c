@@ -61,7 +61,7 @@ static SLEQP_RETCODE linfunc_set(SleqpSparseVec* x,
 }
 
 static SLEQP_RETCODE linfunc_eval(int num_variables,
-                                  SleqpSparseVec* indices,
+                                  const SleqpSparseVec* indices,
                                   double* func_val,
                                   SleqpSparseVec* func_grad,
                                   SleqpSparseVec* cons_val,
@@ -95,9 +95,9 @@ static SLEQP_RETCODE linfunc_eval(int num_variables,
 }
 
 static SLEQP_RETCODE linfunc_hess_prod(int num_variables,
-                                       double* func_dual,
-                                       SleqpSparseVec* direction,
-                                       SleqpSparseVec* cons_duals,
+                                       const double* func_dual,
+                                       const SleqpSparseVec* direction,
+                                       const SleqpSparseVec* cons_duals,
                                        SleqpSparseVec* product,
                                        void* func_data)
 {

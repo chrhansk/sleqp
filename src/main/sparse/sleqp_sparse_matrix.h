@@ -37,18 +37,18 @@ extern "C" {
                                            int num_rows,
                                            int num_cols);
 
-  int sleqp_sparse_matrix_get_num_cols(SleqpSparseMatrix* matrix);
+  int sleqp_sparse_matrix_get_num_cols(const SleqpSparseMatrix* matrix);
 
-  int sleqp_sparse_matrix_get_num_rows(SleqpSparseMatrix* matrix);
+  int sleqp_sparse_matrix_get_num_rows(const SleqpSparseMatrix* matrix);
 
-  int sleqp_sparse_matrix_get_nnz(SleqpSparseMatrix* matrix);
+  int sleqp_sparse_matrix_get_nnz(const SleqpSparseMatrix* matrix);
 
-  int sleqp_sparse_matrix_get_nnz_max(SleqpSparseMatrix* matrix);
+  int sleqp_sparse_matrix_get_nnz_max(const SleqpSparseMatrix* matrix);
 
   SLEQP_RETCODE sleqp_sparse_matrix_set_nnz(SleqpSparseMatrix* matrix,
                                             int nnz);
 
-  bool sleqp_sparse_matrix_is_quadratic(SleqpSparseMatrix* matrix);
+  bool sleqp_sparse_matrix_is_quadratic(const SleqpSparseMatrix* matrix);
 
 
   double* sleqp_sparse_matrix_get_data(SleqpSparseMatrix* matrix);
@@ -68,12 +68,12 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix,
                                                int col);
 
-  SLEQP_RETCODE sleqp_sparse_matrix_vector_product(SleqpSparseMatrix* matrix,
-                                                   SleqpSparseVec* vector,
+  SLEQP_RETCODE sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
+                                                   const SleqpSparseVec* vector,
                                                    double* result);
 
-  SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(SleqpSparseMatrix* matrix,
-                                                         SleqpSparseVec* vector,
+  SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* matrix,
+                                                         const SleqpSparseVec* vector,
                                                          double eps,
                                                          SleqpSparseVec* result);
 
@@ -81,22 +81,22 @@ extern "C" {
                                  int row,
                                  int col);
 
-  bool sleqp_sparse_matrix_eq(SleqpSparseMatrix* first,
-                              SleqpSparseMatrix* second,
+  bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
+                              const SleqpSparseMatrix* second,
                               double eps);
 
   SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix);
 
-  SLEQP_RETCODE sleqp_sparse_matrix_fprintf(SleqpSparseMatrix* matrix,
+  SLEQP_RETCODE sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix,
                                             FILE* output);
 
-  SLEQP_RETCODE sleqp_sparse_matrix_dump(SleqpSparseMatrix* matrix,
+  SLEQP_RETCODE sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix,
                                          FILE* output);
 
-  SLEQP_RETCODE sleqp_sparse_matrix_copy(SleqpSparseMatrix* source,
+  SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
                                          SleqpSparseMatrix* target);
 
-  bool sleqp_sparse_matrix_valid(SleqpSparseMatrix* matrix);
+  bool sleqp_sparse_matrix_valid(const SleqpSparseMatrix* matrix);
 
   SLEQP_RETCODE sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix);
 

@@ -16,7 +16,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval(int num_variables,
   return csleqp.SLEQP_OKAY
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(int num_variables,
-                                                csleqp.SleqpSparseVec* forward_direction,
+                                                const csleqp.SleqpSparseVec* forward_direction,
                                                 csleqp.SleqpSparseVec* product,
                                                 void* func_data):
   try:
@@ -36,7 +36,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(int num_variables,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(int num_variables,
-                                                csleqp.SleqpSparseVec* adjoint_direction,
+                                                const csleqp.SleqpSparseVec* adjoint_direction,
                                                 csleqp.SleqpSparseVec* product,
                                                 void* func_data):
   try:

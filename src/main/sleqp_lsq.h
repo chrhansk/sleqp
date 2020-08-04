@@ -45,7 +45,7 @@ extern "C" {
    *
    */
   typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(int num_variables,
-                                                 SleqpSparseVec* forward_direction,
+                                                 const SleqpSparseVec* forward_direction,
                                                  SleqpSparseVec* product,
                                                  void* func_data);
 
@@ -63,7 +63,7 @@ extern "C" {
    *
    */
   typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_ADJOINT)(int num_variables,
-                                                 SleqpSparseVec* adjoint_direction,
+                                                 const SleqpSparseVec* adjoint_direction,
                                                  SleqpSparseVec* product,
                                                  void* func_data);
 
