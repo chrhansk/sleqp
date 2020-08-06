@@ -10,11 +10,11 @@ set(SLEQP_LPS_DEPS_DEBIAN "")
 macro(add_lp_solver)
 
   cmake_parse_arguments(
-    ARGS # prefix of output variables
-    "" # list of names of the boolean arguments (only defined ones will be true)
-    "NAME" # list of names of mono-valued arguments
+    ARGS                  # prefix of output variables
+    ""                    # list of names of the boolean arguments (only defined ones will be true)
+    "NAME"                # list of names of mono-valued arguments
     "SOURCES;DEPS_DEBIAN" # list of names of multi-valued arguments (output variables are lists)
-    ${ARGN} # arguments of the function to parse, here we take the all original ones
+    ${ARGN}               # arguments of the function to parse, here we take the all original ones
     )
 
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
@@ -39,7 +39,7 @@ add_lp_solver(
 add_lp_solver(
   NAME "SoPlex"
   SOURCES sleqp_lpi_soplex.cc
-  DEPS_DEBIAN "scipoptsuite (>= 6.0.0)")
+  DEPS_DEBIAN "scipoptsuite (>= 7.0.0)")
 
 set(_SLEQP_LP_SOLVER_VALUES "")
 
@@ -52,18 +52,16 @@ string(REPLACE ";" ", " SLEQP_LP_SOLVER_VALUES "${_SLEQP_LP_SOLVER_VALUES}")
 
 macro(find_lp_solver)
   cmake_parse_arguments(
-    ARGS # prefix of output variables
+    ARGS       # prefix of output variables
     "REQUIRED" # list of names of the boolean arguments (only defined ones will be true)
-    "NAME" # list of names of mono-valued arguments
-    "" # list of names of multi-valued arguments (output variables are lists)
-    ${ARGN} # arguments of the function to parse, here we take the all original ones
+    "NAME"     # list of names of mono-valued arguments
+    ""         # list of names of multi-valued arguments (output variables are lists)
+    ${ARGN}    # arguments of the function to parse, here we take the all original ones
     )
 
-  if(${ARGS_REQUIRED})
-    find_package(${ARGS_NAME} REQUIRED)
-  else()
-    find_package(${ARGS_NAME})
-  endif()
+  message(STATUS "Finding LP solver ${ARGS_NAME}")
+
+  include("Search${ARGS_NAME}")
 
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
 
@@ -73,6 +71,8 @@ macro(find_lp_solver)
     set(SLEQP_LPS_LIBRARIES "${${RESULT_NAME}_LIBRARIES}")
     set(SLEQP_LPS_SOURCES "${${RESULT_NAME}_SOURCES}")
     set(SLEQP_LPS_DEPS_DEBIAN "${${RESULT_NAME}_DEPS_DEBIAN}")
+  elseif(${ARGS_REQUIRED})
+    message(FATAL_ERROR "Could not find LP solver ${ARGS_NAME}")
   endif()
 
 endmacro()
