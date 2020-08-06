@@ -565,6 +565,14 @@ bool sleqp_sparse_vector_valid(const SleqpSparseVec* vec)
     }
   }
 
+  for(int k = 0; k < vec->nnz - 1; ++k)
+  {
+    if(isnan(vec->data[k]) || isinf(vec->data[k]))
+    {
+      return false;
+    }
+  }
+
   if(vec->indices[vec->nnz - 1] >= vec->dim)
   {
     return false;

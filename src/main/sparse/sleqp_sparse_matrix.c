@@ -1,6 +1,7 @@
 #include "sleqp_sparse_matrix.h"
 
 #include <assert.h>
+#include <math.h>
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
@@ -483,6 +484,14 @@ bool sleqp_sparse_matrix_valid(const SleqpSparseMatrix* matrix)
       {
         return false;
       }
+    }
+  }
+
+  for(int index = 0; index < matrix->nnz; ++index)
+  {
+    if(isnan(matrix->data[index]) || isinf(matrix->data[index]))
+    {
+      return false;
     }
   }
 
