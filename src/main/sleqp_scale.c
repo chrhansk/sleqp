@@ -156,7 +156,7 @@ scaled_func_set_value(SleqpSparseVec* scaled_value,
 
 static SLEQP_RETCODE
 scaled_func_eval(int num_variables,
-                 SleqpSparseVec* cons_indices,
+                 const SleqpSparseVec* cons_indices,
                  double* func_val,
                  SleqpSparseVec* func_grad,
                  SleqpSparseVec* cons_val,
@@ -197,9 +197,9 @@ scaled_func_eval(int num_variables,
 
 static SLEQP_RETCODE
 scaled_func_hess_prod(int num_variables,
-                      double* func_dual,
-                      SleqpSparseVec* direction,
-                      SleqpSparseVec* cons_duals,
+                      const double* func_dual,
+                      const SleqpSparseVec* direction,
+                      const SleqpSparseVec* cons_duals,
                       SleqpSparseVec* product,
                       void* func_data)
 {
