@@ -2,8 +2,6 @@
 
 #include "sleqp_mem.h"
 
-#define INACTIVE_INDEX -1
-
 struct SleqpWorkingSet
 {
   int refcount;
