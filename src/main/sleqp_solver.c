@@ -1219,7 +1219,6 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                 optimality_tolerance))
     {
       *optimal = true;
-      return SLEQP_OKAY;
     }
   }
 
@@ -1229,6 +1228,11 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   }
 
   SLEQP_CALL(print_line(solver));
+
+  if(*optimal)
+  {
+    return SLEQP_OKAY;
+  }
 
   double quadratic_reduction = quadratic_iterate_value - quadratic_trial_value;
 
@@ -1500,6 +1504,20 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   while(true)
   {
+    if(time_limit != -1)
+    {
+      if(solver->elapsed_seconds >= time_limit)
+      {
+        break;
+      }
+    }
+
+    if(max_num_iterations != -1 &&
+       solver->iteration >= max_num_iterations)
+    {
+      break;
+    }
+
     bool optimal;
 
     SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
@@ -1523,20 +1541,6 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     {
       sleqp_log_debug("Achieved optimality");
       solver->status = SLEQP_OPTIMAL;
-      break;
-    }
-
-    if(time_limit != -1)
-    {
-      if(solver->elapsed_seconds >= time_limit)
-      {
-        break;
-      }
-    }
-
-    if(max_num_iterations != -1 &&
-       solver->iteration >= max_num_iterations)
-    {
       break;
     }
   }
