@@ -84,11 +84,7 @@ extern "C" {
 #define sleqp_log_warn(...)  sleqp_log_log_msg(SLEQP_LOG_WARN, __VA_ARGS__)
 #define sleqp_log_error(...) sleqp_log_log_msg(SLEQP_LOG_ERROR, __VA_ARGS__)
 
-#if defined SLEQP_DEBUG || defined SLEQP_DEBUG_FILE
-#define sleqp_log_debug(...) sleqp_log_log_trace(SLEQP_LOG_DEBUG, __FILE__, __LINE__, __VA_ARGS__)
-#else
-#define sleqp_log_debug(...)
-#endif
+#define sleqp_log_debug(...) sleqp_log_log_msg(SLEQP_LOG_DEBUG, __VA_ARGS__)
 
 #ifdef __cplusplus
 }
