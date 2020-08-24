@@ -41,7 +41,7 @@ cdef class Solver:
 
     csleqp_call(csleqp.sleqp_solver_release(&self.solver))
 
-  cpdef solve(self,
+  cdef _solve(self,
               int max_num_iterations,
               double time_limit):
 
@@ -59,6 +59,21 @@ cdef class Solver:
         raise exception from call_exception
       else:
         raise exception
+
+  def solve(self,
+            max_num_iterations=None,
+            time_limit=None):
+
+    cdef int max_it = -1
+    cdef double time = -1
+
+    if max_num_iterations is not None:
+      max_it = max_num_iterations
+
+    if time_limit is None:
+      time = time_limit
+
+    self._solve(max_it, time)
 
   @property
   def status(self):
