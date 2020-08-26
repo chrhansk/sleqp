@@ -93,6 +93,18 @@ struct SleqpSolver
 
   SleqpSparseVec* linear_merit_gradient;
 
+  // Primal / dual step lengths
+
+  SleqpSparseVec* primal_diff;
+
+  double primal_diff_norm;
+
+  SleqpSparseVec* cons_dual_diff;
+
+  SleqpSparseVec* vars_dual_diff;
+
+  double dual_diff_norm;
+
   // SOC related
   SleqpSOCData* soc_data;
 
@@ -361,6 +373,18 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                      params));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->linear_merit_gradient,
+                                        num_variables,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->primal_diff,
+                                        num_variables,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->cons_dual_diff,
+                                        num_constraints,
+                                        0));
+
+  SLEQP_CALL(sleqp_sparse_vector_create(&solver->vars_dual_diff,
                                         num_variables,
                                         0));
 
@@ -1082,9 +1106,9 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
+#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e | %18s"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e | %18s"
 
 static SLEQP_RETCODE print_header()
 {
@@ -1099,6 +1123,8 @@ static SLEQP_RETCODE print_header()
                  "EQP tr",
                  "LP cond",
                  "Jac cond",
+                 "Primal step",
+                 "Dual step",
                  "Step type");
 
   return SLEQP_OKAY;
@@ -1135,13 +1161,55 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
                  solver->trust_radius,
                  basis_condition,
                  aug_jac_condition,
+                 solver->primal_diff_norm,
+                 solver->dual_diff_norm,
                  steptype_descriptions[solver->last_step_type]);
 
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
+                                          SleqpIterate* previous_iterate,
+                                          SleqpIterate* iterate)
+{
+  const double eps = sleqp_params_get_eps(solver->params);
+
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(previous_iterate),
+                                            sleqp_iterate_get_primal(iterate),
+                                            1.,
+                                            -1,
+                                            eps,
+                                            solver->primal_diff));
+
+  solver->primal_diff_norm = sleqp_sparse_vector_norm(solver->primal_diff);
+
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_cons_dual(previous_iterate),
+                                            sleqp_iterate_get_cons_dual(iterate),
+                                            1.,
+                                            -1,
+                                            eps,
+                                            solver->cons_dual_diff));
+
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_vars_dual(previous_iterate),
+                                            sleqp_iterate_get_vars_dual(iterate),
+                                            1.,
+                                            -1,
+                                            eps,
+                                            solver->vars_dual_diff));
+
+  solver->dual_diff_norm = 0.;
+
+  solver->dual_diff_norm += sleqp_sparse_vector_normsq(solver->cons_dual_diff);
+  solver->dual_diff_norm += sleqp_sparse_vector_normsq(solver->vars_dual_diff);
+
+  solver->dual_diff_norm = sqrt(solver->dual_diff_norm);
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
-                                             bool* optimal)
+                                             bool* optimal,
+                                             bool has_previous_iterate)
 {
   *optimal = false;
 
@@ -1159,6 +1227,16 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
+
+  if(has_previous_iterate)
+  {
+    SLEQP_CALL(compute_step_lengths(solver, trial_iterate, iterate));
+  }
+  else
+  {
+    solver->primal_diff_norm = 0.;
+    solver->dual_diff_norm = 0.;
+  }
 
   const double accepted_reduction = sleqp_params_get_accepted_reduction(solver->params);
 
@@ -1501,7 +1579,9 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   const double deadpoint_bound = sleqp_params_get_deadpoint_bound(solver->params);
   bool reached_deadpoint = false;
+  bool has_previous_iterate = false;
 
+  // main solving loop
   while(true)
   {
     if(time_limit != -1)
@@ -1522,7 +1602,18 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
 
-    SLEQP_CALL(sleqp_perform_iteration(solver, &optimal));
+    SLEQP_CALL(sleqp_perform_iteration(solver, &optimal, has_previous_iterate));
+
+    switch(solver->last_step_type)
+    {
+    case SLEQP_STEPTYPE_ACCEPTED:
+    case SLEQP_STEPTYPE_ACCEPTED_FULL:
+    case SLEQP_STEPTYPE_SOC_ACCEPTED:
+      has_previous_iterate = true;
+      break;
+    default:
+      break;
+    }
 
     ++solver->iteration;
 
@@ -1688,6 +1779,12 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_soc_data_free(&solver->soc_data));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->linear_merit_gradient));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->vars_dual_diff));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cons_dual_diff));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->primal_diff));
 
   SLEQP_CALL(sleqp_merit_data_free(&solver->merit_data));
 
