@@ -179,7 +179,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
   if(!sleqp_eq(expected_value, actual_value, tolerance))
   {
     sleqp_log_error("Derivative check failed for objective function gradient at %d: "
-                    "%.10e != %.10e",
+                    "grad = %.10e != %.10e = findiff",
                     j,
                     expected_value,
                     actual_value);
@@ -263,7 +263,7 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
     if(!sleqp_eq(expected_value, actual_value, tolerance))
     {
       sleqp_log_error("Derivative check failed for %d-th constraint gradient at index %d: "
-                      "%.10e != %.10e",
+                      "jac = %.10e != %.10e = findiff",
                       i,
                       j,
                       expected_value,
@@ -332,7 +332,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
 
   const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
                                                sleqp_iterate_get_primal(iterate),
-                                              j);
+                                               j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
@@ -413,7 +413,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
     if(!sleqp_eq(expected_value, actual_value, tolerance))
     {
       sleqp_log_error("Derivative check failed for objective function hessian at (%d, %d): "
-                      "%.10e != %.10e",
+                      "hess = %.10e != %.10e = findiff",
                       k,
                       j,
                       expected_value,
@@ -451,7 +451,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
 
   const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
                                                sleqp_iterate_get_primal(iterate),
-                                              j);
+                                               j);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
 
@@ -556,7 +556,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
     if(!sleqp_eq(expected_value, actual_value, tolerance))
     {
       sleqp_log_error("Derivative check failed for %d-th constraint hessian at (%d, %d): "
-                      "%.10e != %.10e",
+                      "hess = %.10e != %.10e = findiff",
                       i,
                       k,
                       j,
