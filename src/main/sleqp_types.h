@@ -12,6 +12,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #include "sleqp_log.h"
 
