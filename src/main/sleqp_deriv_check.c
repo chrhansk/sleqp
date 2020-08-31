@@ -144,6 +144,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
                                             0.,
                                             sleqp_iterate_get_primal(check_iterate)));
 
+  // set check iterate...
   SLEQP_CALL(sleqp_func_set_value(func,
                                   sleqp_iterate_get_primal(check_iterate),
                                   SLEQP_VALUE_REASON_CHECKING_DERIV,
@@ -187,6 +188,14 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
     *valid = false;
   }
 
+  // restore original iterate...
+  SLEQP_CALL(sleqp_func_set_value(func,
+                                  sleqp_iterate_get_primal(iterate),
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
+                                  &func_grad_nnz,
+                                  &cons_val_nnz,
+                                  &cons_jac_nnz));
+
   return SLEQP_OKAY;
 }
 
@@ -222,6 +231,7 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
                                             0.,
                                             sleqp_iterate_get_primal(check_iterate)));
 
+  // set check iterate...
   SLEQP_CALL(sleqp_func_set_value(func,
                                   sleqp_iterate_get_primal(check_iterate),
                                   SLEQP_VALUE_REASON_CHECKING_DERIV,
@@ -272,6 +282,14 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
       *valid = false;
     }
   }
+
+  // restore original iterate...
+  SLEQP_CALL(sleqp_func_set_value(func,
+                                  sleqp_iterate_get_primal(iterate),
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
+                                  &func_grad_nnz,
+                                  &cons_val_nnz,
+                                  &cons_jac_nnz));
 
   return SLEQP_OKAY;
 }
