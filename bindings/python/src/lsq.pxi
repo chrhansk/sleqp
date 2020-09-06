@@ -97,43 +97,43 @@ cdef class LSQFunc:
     assert(self.func)
 
 
-  cpdef set_value(self, x) -> None:
+  cpdef void set_value(self, x):
     pass
 
-  cpdef func_val(self) -> float:
+  cpdef double func_val(self):
     pass
 
-  cpdef lsq_residuals(self) -> np.arry:
+  cpdef object lsq_residuals(self):
     pass
 
-  cpdef lsq_jac_forward(self, forward_direction: np.array) -> np.array:
+  cpdef object lsq_jac_forward(self, forward_direction: np.array):
     pass
 
-  cpdef lsq_jac_adjoint(self, adjoint_direction: np.array) -> np.array:
+  cpdef object lsq_jac_adjoint(self, adjoint_direction: np.array):
     pass
 
-  cpdef func_grad_nnz(self) -> int:
+  cpdef int func_grad_nnz(self):
     return 0
 
-  cpdef cons_val_nnz(self) -> int:
+  cpdef int cons_val_nnz(self):
     return 0
 
-  cpdef cons_jac_nnz(self) -> int:
+  cpdef int cons_jac_nnz(self):
     return 0
 
-  cpdef func_grad(self) -> np.array:
+  cpdef object func_grad(self):
     pass
 
-  cpdef cons_vals(self) -> np.array:
+  cpdef object cons_vals(self):
     pass
 
-  cpdef cons_jac(self) -> typing.Union[np.array, scipy.sparse.csc_matrix]:
+  cpdef object cons_jac(self):
     pass
 
-  cpdef hess_prod(self,
-                  func_dual: float,
-                  direction: np.array,
-                  cons_dual: np.array) -> np.array:
+  cpdef object hess_prod(self,
+                         func_dual: float,
+                         direction: np.array,
+                         cons_dual: np.array):
     pass
 
   @property

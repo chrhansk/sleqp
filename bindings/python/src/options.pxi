@@ -54,15 +54,15 @@ cdef class Options:
     csleqp.sleqp_options_set_perform_soc(self.options, value)
 
   @deriv_check.setter
-  def deriv_check(self, value: DerivCheck) -> None:
+  def deriv_check(self, value) -> None:
     csleqp_call(csleqp.sleqp_options_set_deriv_check(self.options, value.value))
 
   @hessian_eval.setter
-  def hessian_eval(self, value: HessianEval) -> None:
+  def hessian_eval(self, value) -> None:
     csleqp_call(csleqp.sleqp_options_set_hessian_eval(self.options, value.value))
 
   @dual_estimation_type.setter
-  def dual_estimation_type(self, value: DualEstimationType) -> None:
+  def dual_estimation_type(self, value) -> None:
     csleqp_call(csleqp.sleqp_options_set_dual_estimation_type(self.options, value.value))
 
   @quasi_newton_num_iterates.setter
