@@ -22,58 +22,58 @@ cdef class Options:
     csleqp_call(csleqp.sleqp_options_free(&self.options))
 
   @property
-  def perform_newton_step(self):
+  def perform_newton_step(self) -> bool:
     return csleqp.sleqp_options_get_perform_newton_step(self.options)
 
   @property
-  def perform_soc(self):
+  def perform_soc(self) -> bool:
     return csleqp.sleqp_options_get_perform_soc(self.options)
 
   @property
-  def deriv_check(self):
+  def deriv_check(self) -> DerivCheck:
     return DerivCheck(csleqp.sleqp_options_get_deriv_check(self.options))
 
   @property
-  def hessian_eval(self):
+  def hessian_eval(self) -> HessianEval:
     return HessianEval(csleqp.sleqp_options_get_hessian_eval(self.options))
 
   @property
-  def dual_estimation_type(self):
+  def dual_estimation_type(self) -> DualEstimationType:
     return DualEstimationType(csleqp.sleqp_options_get_dual_estimation_type(self.options))
 
   @property
-  def quasi_newton_num_iterates(self):
+  def quasi_newton_num_iterates(self) -> int:
     return csleqp.sleqp_options_get_quasi_newton_num_iterates(self.options)
 
   @perform_newton_step.setter
-  def perform_newton_step(self, value):
+  def perform_newton_step(self, value: bool) -> None:
     csleqp.sleqp_options_set_perform_newton_step(self.options, value)
 
   @perform_soc.setter
-  def perform_soc(self, value):
+  def perform_soc(self, value: bool) -> None:
     csleqp.sleqp_options_set_perform_soc(self.options, value)
 
   @deriv_check.setter
-  def deriv_check(self, value):
+  def deriv_check(self, value: DerivCheck) -> None:
     csleqp_call(csleqp.sleqp_options_set_deriv_check(self.options, value.value))
 
   @hessian_eval.setter
-  def hessian_eval(self, value):
+  def hessian_eval(self, value: HessianEval) -> None:
     csleqp_call(csleqp.sleqp_options_set_hessian_eval(self.options, value.value))
 
   @dual_estimation_type.setter
-  def dual_estimation_type(self, value):
+  def dual_estimation_type(self, value: DualEstimationType) -> None:
     csleqp_call(csleqp.sleqp_options_set_dual_estimation_type(self.options, value.value))
 
   @quasi_newton_num_iterates.setter
-  def quasi_newton_num_iterates(self, int value):
+  def quasi_newton_num_iterates(self, value: int) -> None:
     csleqp_call(csleqp.sleqp_options_set_quasi_newton_num_iterates(self.options, value))
 
-  def values(self):
+  def values(self) -> set:
     return {key: getattr(self, key) for key in self.props}
 
-  def __str__(self):
+  def __str__(self) -> str:
     return 'Options: {0}'.format(self.values())
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return 'Options({0})'.format(repr(self.values()))

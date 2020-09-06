@@ -6,17 +6,17 @@ cdef class HessianStruct:
     self._func = func
     self.hess_struct = csleqp.sleqp_func_get_hess_struct(func.func)
 
-  def clear(self):
+  def clear(self) -> None:
     csleqp_call(csleqp.sleqp_hessian_struct_clear(self.hess_struct))
 
-  def push(self, int end):
+  def push(self, int end) -> None:
     csleqp_call(csleqp.sleqp_hessian_struct_push_block(self.hess_struct, end))
 
   @property
-  def num_blocks(self):
+  def num_blocks(self) -> int:
     return csleqp.sleqp_hessian_struct_get_num_blocks(self.hess_struct)
 
-  def block_range(self, int block):
+  def block_range(self, int block) -> typing.Tuple[int, int]:
     cdef int begin = 0
     cdef int end = 0
 
@@ -28,7 +28,7 @@ cdef class HessianStruct:
     return (begin, end)
 
   @property
-  def block_ranges(self):
+  def block_ranges(self) -> typing.Iterable[typing.Tuple[int, int]]:
 
     num_blocks = self.num_blocks
 
@@ -36,7 +36,7 @@ cdef class HessianStruct:
         yield self.block_range(block)
 
   @property
-  def linear_range(self):
+  def linear_range(self) -> typing.Tuple[int, int]:
     cdef int begin = 0
     cdef int end = 0
 

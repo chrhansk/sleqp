@@ -55,11 +55,11 @@ cdef class Problem:
                                             self.cons_ub))
 
   @property
-  def num_variables(self):
+  def num_variables(self) -> int:
     return self.problem.num_variables
 
   @property
-  def num_constraints(self):
+  def num_constraints(self) -> int:
     return self.problem.num_constraints
 
   def __dealloc__(self):

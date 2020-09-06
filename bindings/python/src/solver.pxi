@@ -61,8 +61,8 @@ cdef class Solver:
         raise exception
 
   def solve(self,
-            max_num_iterations=None,
-            time_limit=None):
+            max_num_iterations : int = None,
+            time_limit : float = None) -> None:
 
     cdef int max_it = -1
     cdef double time = -1
@@ -76,19 +76,19 @@ cdef class Solver:
     self._solve(max_it, time)
 
   @property
-  def status(self):
+  def status(self) -> Status:
     return Status(csleqp.sleqp_solver_get_status(self.solver))
 
   @property
-  def iterations(self):
+  def iterations(self) -> int:
     return csleqp.sleqp_solver_get_iterations(self.solver)
 
   @property
-  def elapsed_seconds(self):
+  def elapsed_seconds(self) -> float:
     return csleqp.sleqp_solver_get_elapsed_seconds(self.solver)
 
   @property
-  def violated_cons(self):
+  def violated_cons(self) -> set:
       num_constraints =  self.problem.num_constraints
 
       cdef int *violated_cons = <int *> malloc(num_constraints * sizeof(double))
@@ -114,7 +114,7 @@ cdef class Solver:
           free(violated_cons)
 
   @property
-  def solution(self):
+  def solution(self) -> Iterate:
       cdef csleqp.SleqpIterate* _iterate
       cdef Iterate iterate = Iterate()
 

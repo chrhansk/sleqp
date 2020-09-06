@@ -7,6 +7,8 @@ import enum
 import traceback
 import scipy.sparse
 
+import typing
+
 cimport csleqp
 
 include "call.pxi"

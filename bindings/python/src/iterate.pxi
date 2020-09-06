@@ -20,25 +20,25 @@ cdef class Iterate:
     self._release()
 
   @property
-  def primal(self):
+  def primal(self) -> np.array:
     assert self.iterate
 
     return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_primal(self.iterate))
 
   @property
-  def vars_dual(self):
+  def vars_dual(self) -> np.array:
     assert self.iterate
 
     return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_vars_dual(self.iterate))
 
   @property
-  def cons_dual(self):
+  def cons_dual(self) -> np.array:
     assert self.iterate
 
     return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_cons_dual(self.iterate))
 
   @property
-  def working_set(self):
+  def working_set(self) -> WorkingSet:
     cdef csleqp.SleqpWorkingSet* _working_set
     cdef WorkingSet working_set = WorkingSet()
 
@@ -51,19 +51,19 @@ cdef class Iterate:
     return working_set
 
   @property
-  def cons_jac(self):
+  def cons_jac(self) -> scipy.sparse.csc_matrix:
     assert self.iterate
 
     return sleqp_sparse_matrix_to_scipy(csleqp.sleqp_iterate_get_cons_jac(self.iterate))
 
   @property
-  def func_val(self):
+  def func_val(self) -> float:
     assert self.iterate
 
     return csleqp.sleqp_iterate_get_func_val(self.iterate)
 
   @property
-  def cons_val(self):
+  def cons_val(self) -> np.array:
     assert self.iterate
 
     return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_cons_val(self.iterate))

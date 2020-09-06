@@ -28,106 +28,106 @@ cdef class Params:
     csleqp_call(csleqp.sleqp_params_free(&self.params))
 
   @property
-  def zero_eps(self):
+  def zero_eps(self) -> float:
     return csleqp.sleqp_params_get_zero_eps(self.params)
 
   @property
-  def eps(self):
+  def eps(self) -> float:
     return csleqp.sleqp_params_get_eps(self.params)
 
   @property
-  def deriv_perturbation(self):
+  def deriv_perturbation(self) -> float:
     return csleqp.sleqp_params_get_deriv_perturbation(self.params)
 
   @property
-  def deriv_tolerance(self):
+  def deriv_tolerance(self) -> float:
     return csleqp.sleqp_params_get_deriv_tolerance(self.params)
 
   @property
-  def cauchy_tau(self):
+  def cauchy_tau(self) -> float:
     return csleqp.sleqp_params_get_cauchy_tau(self.params)
 
   @property
-  def cauchy_eta(self):
+  def cauchy_eta(self) -> float:
     return csleqp.sleqp_params_get_cauchy_eta(self.params)
 
   @property
-  def linesearch_tau(self):
+  def linesearch_tau(self) -> float:
     return csleqp.sleqp_params_get_linesearch_tau(self.params)
 
   @property
-  def linesearch_eta(self):
+  def linesearch_eta(self) -> float:
     return csleqp.sleqp_params_get_linesearch_eta(self.params)
 
   @property
-  def linesearch_cutoff(self):
+  def linesearch_cutoff(self) -> float:
     return csleqp.sleqp_params_get_linesearch_cutoff(self.params)
 
   @property
-  def optimality_tolerance(self):
+  def optimality_tolerance(self) -> float:
     return csleqp.sleqp_params_get_optimality_tolerance(self.params)
 
   @property
-  def accepted_reduction(self):
+  def accepted_reduction(self) -> float:
     return csleqp.sleqp_params_get_accepted_reduction(self.params)
 
   @property
-  def deadpoint_bound(self):
+  def deadpoint_bound(self) -> float:
     return csleqp.sleqp_params_get_deadpoint_bound(self.params)
 
   @zero_eps.setter
-  def zero_eps(self, value):
+  def zero_eps(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_zero_eps(self.params, value))
 
   @eps.setter
-  def eps(self, value):
+  def eps(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_eps(self.params, value))
 
   @deriv_perturbation.setter
-  def deriv_perturbation(self, value):
+  def deriv_perturbation(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_deriv_perturbation(self.params, value))
 
   @deriv_tolerance.setter
-  def deriv_tolerance(self, value):
+  def deriv_tolerance(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_deriv_tolerance(self.params, value))
 
   @cauchy_tau.setter
-  def cauchy_tau(self, value):
+  def cauchy_tau(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_cauchy_tau(self.params, value))
 
   @cauchy_eta.setter
-  def cauchy_eta(self, value):
+  def cauchy_eta(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_cauchy_eta(self.params, value))
 
   @linesearch_tau.setter
-  def linesearch_tau(self, value):
+  def linesearch_tau(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_linesearch_tau(self.params, value))
 
   @linesearch_eta.setter
-  def linesearch_eta(self, value):
+  def linesearch_eta(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_linesearch_eta(self.params, value))
 
   @linesearch_cutoff.setter
-  def linesearch_cutoff(self, value):
+  def linesearch_cutoff(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_linesearch_cutoff(self.params, value))
 
   @optimality_tolerance.setter
-  def optimality_tolerance(self, value):
+  def optimality_tolerance(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_optimality_tolerance(self.params, value))
 
   @accepted_reduction.setter
-  def accepted_reduction(self, value):
+  def accepted_reduction(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_accepted_reduction(self.params, value))
 
   @deadpoint_bound.setter
-  def deadpoint_bound(self, value):
+  def deadpoint_bound(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_deadpoint_bound(self.params, value))
 
-  def values(self):
+  def values(self) -> set:
     return {key: getattr(self, key) for key in self.props}
 
-  def __str__(self):
+  def __str__(self) -> str:
     return 'Params: {0}'.format(self.values())
 
-  def __repr__(self):
+  def __repr__(self) -> str:
     return 'Params({0})'.format(repr(self.values()))

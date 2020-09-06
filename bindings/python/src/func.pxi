@@ -123,43 +123,46 @@ cdef class Func:
 
     assert(self.func)
 
-  cpdef set_value(self, x, reason):
+  cpdef set_value(self, x, reason) -> None:
     pass
 
-  cpdef func_val(self):
+  cpdef func_val(self) -> float:
     pass
 
-  cpdef func_grad_nnz(self):
+  cpdef func_grad_nnz(self) -> int:
     return 0
 
-  cpdef cons_val_nnz(self):
+  cpdef cons_val_nnz(self) -> int:
     return 0
 
-  cpdef cons_jac_nnz(self):
+  cpdef cons_jac_nnz(self) -> int:
     return 0
 
-  cpdef func_grad(self):
+  cpdef func_grad(self) -> np.array:
     pass
 
-  cpdef cons_vals(self):
+  cpdef cons_vals(self) -> np.array:
     pass
 
-  cpdef cons_jac(self):
+  cpdef cons_jac(self) -> typing.Union[np.array, scipy.sparse.csc_matrix]:
     pass
 
-  cpdef hess_prod(self, func_dual, direction, cons_dual):
+  cpdef hess_prod(self,
+                  func_dual: float,
+                  direction: np.array,
+                  cons_dual: np.array) -> np.array:
     pass
 
   @property
-  def hess_struct(self):
+  def hess_struct(self) -> HessianStruct:
       return HessianStruct(self)
 
   @property
-  def num_variables(self):
+  def num_variables(self) -> int:
       return self.num_variables
 
   @property
-  def num_constraints(self):
+  def num_constraints(self) -> int:
       return self.num_constraints
 
   def __dealloc__(self):

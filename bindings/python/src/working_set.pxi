@@ -17,18 +17,18 @@ cdef class WorkingSet:
     self.working_set = working_set
 
   @property
-  def num_active_variables(self):
+  def num_active_variables(self) -> int:
     assert self.working_set
 
     return csleqp.sleqp_working_set_num_active_vars(self.working_set)
 
   @property
-  def num_active_constraints(self):
+  def num_active_constraints(self) -> int:
     assert self.working_set
 
     return csleqp.sleqp_working_set_num_active_cons(self.working_set)
 
-  def variable_state(self, int i):
+  def variable_state(self, int i) -> ActiveState:
     assert self.working_set
 
     state = csleqp.sleqp_working_set_get_variable_state(self.working_set,
@@ -36,7 +36,7 @@ cdef class WorkingSet:
 
     return ActiveState(state)
 
-  def constraint_state(self, int i):
+  def constraint_state(self, int i) -> ActiveState:
     assert self.working_set
 
     state = csleqp.sleqp_working_set_get_constraint_state(self.working_set,
@@ -45,7 +45,7 @@ cdef class WorkingSet:
     return ActiveState(state)
 
   @property
-  def size(self):
+  def size(self) -> int:
     assert self.working_set
 
     return csleqp.sleqp_working_set_size(self.working_set)
