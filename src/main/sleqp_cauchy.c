@@ -269,9 +269,14 @@ static SLEQP_RETCODE create_objective(SleqpCauchyData* cauchy_data,
 
   assert(num_lp_variables == num_variables + 2*num_constraints);
 
-  for(int i = 0; i < num_lp_variables; ++i)
+  for(int j = 0; j < num_variables; ++j)
   {
-    cauchy_data->objective[i] = (i >= num_variables) ? penalty : 0.;
+    cauchy_data->objective[j] = 0.;
+  }
+
+  for(int j = num_variables; j < num_lp_variables; ++j)
+  {
+    cauchy_data->objective[j] = penalty;
   }
 
   if(gradient)
