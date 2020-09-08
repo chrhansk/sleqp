@@ -459,10 +459,18 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   current_violation /= num_constraints;
 
+  sleqp_log_debug("Updating penalty parameter, average violation is %.10e",
+                  current_violation);
+
   if(current_violation <= violation_tolerance)
   {
+    sleqp_log_debug("Average violation is already below the tolerance of %.10e",
+                    violation_tolerance);
+
     return SLEQP_OKAY;
   }
+
+  sleqp_log_debug("Resolving linearization to compute minimum average violation");
 
   SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                 NULL,
@@ -474,17 +482,20 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   inf_violation /= num_constraints;
 
-  sleqp_log_debug("Updating penalty parameter. Current violation: %e, inf violation: %e",
-                  current_violation,
-                  inf_violation);
+  sleqp_log_debug("Minimum average violation: %.10e", inf_violation);
 
   // assert(sleqp_ge(current_violation, inf_violation, eps));
 
   if(inf_violation <= violation_tolerance)
   {
+    sleqp_log_debug("Minimum average violation is below tolerance");
+
     for(int i = 0; i < max_increases; ++i)
     {
       solver->penalty_parameter *= penalty_increase;
+
+      sleqp_log_debug("Resolving linearization to compute average violation for penalty value %e",
+                      solver->penalty_parameter);
 
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                     sleqp_iterate_get_func_grad(iterate),
@@ -496,16 +507,31 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
       next_violation /= num_constraints;
 
+      sleqp_log_debug("Average violation for penalty value %e is %.10e",
+                      solver->penalty_parameter,
+                      next_violation);
+
       if(next_violation <= violation_tolerance)
       {
+        sleqp_log_debug("Average violation is below the tolerance of %e",
+                        solver->penalty_parameter);
+
         return SLEQP_OKAY;
+      }
+      else
+      {
+        sleqp_log_debug("Average violation is above the tolerance of %e, continuing",
+                        solver->penalty_parameter);
       }
     }
   }
   else
   {
+    sleqp_log_debug("Minimum average violation is above tolerance");
+
     if(current_violation - inf_violation <= violation_tolerance)
     {
+      sleqp_log_debug("Cannot make progress towards feasibility, aborting");
       // we can't make progress in feasibility, no need for an increase
       return SLEQP_OKAY;
     }
@@ -514,6 +540,9 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
     {
       solver->penalty_parameter *= penalty_increase;
 
+      sleqp_log_debug("Resolving linearization to compute average violation for penalty value %e",
+                      solver->penalty_parameter);
+
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                     sleqp_iterate_get_func_grad(iterate),
                                     solver->penalty_parameter));
@@ -524,9 +553,21 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
       next_violation /= num_constraints;
 
+      sleqp_log_debug("Average violation for penalty value %e is %.10e",
+                      solver->penalty_parameter,
+                      next_violation);
+
       if((current_violation - next_violation) >= min_decrease*(current_violation - inf_violation))
       {
+        sleqp_log_debug("Penalty value of %e achieves sufficiently high reduction in average violation",
+                        solver->penalty_parameter);
+
         return SLEQP_OKAY;
+      }
+      else
+      {
+        sleqp_log_debug("Penalty value of %e does not achieve sufficiently high reduction in average violation",
+                        solver->penalty_parameter);
       }
     }
   }
