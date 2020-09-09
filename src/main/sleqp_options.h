@@ -20,6 +20,8 @@ extern "C" {
 
   bool sleqp_options_get_perform_soc(const SleqpOptions* options);
 
+  bool sleqp_options_get_use_quadratic_model(const SleqpOptions* options);
+
   SLEQP_DERIV_CHECK sleqp_options_get_deriv_check(const SleqpOptions* options);
 
   SLEQP_HESSIAN_EVAL sleqp_options_get_hessian_eval(const SleqpOptions* options);
@@ -31,6 +33,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options, bool value);
 
   SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options, bool value);
+
+  SLEQP_RETCODE sleqp_options_set_use_quadratic_model(SleqpOptions* options, bool value);
 
   SLEQP_RETCODE sleqp_options_set_deriv_check(SleqpOptions* options,
                                               SLEQP_DERIV_CHECK value);

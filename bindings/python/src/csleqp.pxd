@@ -424,6 +424,8 @@ cdef extern from "sleqp.h":
 
   bint sleqp_options_get_perform_soc(const SleqpOptions* options)
 
+  bint sleqp_options_get_use_quadratic_model(const SleqpOptions* options)
+
   SLEQP_DERIV_CHECK sleqp_options_get_deriv_check(const SleqpOptions* options)
 
   SLEQP_HESSIAN_EVAL sleqp_options_get_hessian_eval(const SleqpOptions* options)
@@ -435,6 +437,8 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options, bint value)
 
   SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options, bint value)
+
+  SLEQP_RETCODE sleqp_options_set_use_quadratic_model(SleqpOptions* options, bint value)
 
   SLEQP_RETCODE sleqp_options_set_deriv_check(SleqpOptions* options,
                                               SLEQP_DERIV_CHECK value)

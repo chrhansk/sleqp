@@ -166,6 +166,33 @@ class ConstrainedTest(unittest.TestCase):
 
     self.assertTrue(np.allclose(self.expected_sol, solution.primal))
 
+  def test_solve_linear(self):
+    options = sleqp.Options(use_quadratic_model=False)
+
+    solver = self.get_solver(options=options)
+
+    solver.solve(1000, 3600)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(self.expected_sol, solution.primal))
+
+  def test_solve_linear_no_newton(self):
+    options = sleqp.Options(perform_newton_step=False,
+                            use_quadratic_model=False)
+
+    solver = self.get_solver(options=options)
+
+    solver.solve(1000, 3600)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(self.expected_sol, solution.primal))
+
   def test_iterate(self):
     solver = self.get_solver()
 

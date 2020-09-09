@@ -645,7 +645,7 @@ static SLEQP_RETCODE update_trust_radius(double reduction_ratio,
 }
 
 static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
-                                             double* quadratic_value)
+                                             double* quadratic_model_objective)
 {
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
@@ -747,7 +747,7 @@ static SLEQP_RETCODE compute_trial_direction(SleqpSolver* solver,
       alpha_func_val += .5*(alpha*alpha) * prod_ehe;
     }
 
-    (*quadratic_value) = alpha_func_val;
+    (*quadratic_model_objective) = alpha_func_val;
 
     if(alpha_func_val <= zero_func_val + eta*alpha*gradient_product)
     {
@@ -803,7 +803,8 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
 }
 
 static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
-                                                double* quadratic_value,
+                                                double* model_objective,
+                                                bool quadratic_model,
                                                 bool* full_step)
 {
   SleqpProblem* problem = solver->problem;
@@ -868,15 +869,18 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
                                   solver->iterate,
                                   trial_direction,
                                   solver->penalty_parameter,
-                                  quadratic_value));
+                                  model_objective));
+  }
 
+  if(quadratic_model)
+  {
     double hessian_prod;
 
     SLEQP_CALL(sleqp_sparse_vector_dot(trial_direction,
                                        solver->cauchy_hessian_direction,
                                        &hessian_prod));
 
-    (*quadratic_value) += .5 * hessian_prod;
+    (*model_objective) += .5 * hessian_prod;
   }
 
   SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_primal(iterate),
@@ -893,7 +897,8 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
 }
 
 static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
-                                                double* quadratic_value,
+                                                double* model_objective,
+                                                bool quadratic_model,
                                                 bool* full_step)
 {
   SleqpProblem* problem = solver->problem;
@@ -1021,7 +1026,7 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
                                     solver->cauchy_newton_hessian_direction));
   }
 
-  SLEQP_CALL(compute_trial_direction(solver, quadratic_value));
+  SLEQP_CALL(compute_trial_direction(solver, model_objective));
 
   SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_primal(iterate),
                                      solver->trial_direction,
@@ -1034,12 +1039,22 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
                                       zero_eps,
                                       sleqp_iterate_get_primal(solver->trial_iterate)));
 
+  if(!quadratic_model)
+  {
+    SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
+                                  solver->iterate,
+                                  solver->trial_direction,
+                                  solver->penalty_parameter,
+                                  model_objective));
+  }
+
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
-                                             double* soc_value)
+                                             double* soc_value,
+                                             bool quadratic_model)
 {
   SleqpProblem* problem = solver->problem;
 
@@ -1087,15 +1102,14 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
                                         trial_point));
   }
 
+  SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
+                                solver->iterate,
+                                solver->soc_corrected_direction,
+                                solver->penalty_parameter,
+                                soc_value));
+
+  if(quadratic_model)
   {
-    double soc_lin_value;
-
-    SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
-                                  solver->iterate,
-                                  solver->soc_corrected_direction,
-                                  solver->penalty_parameter,
-                                  &soc_lin_value));
-
     double one = 1.;
 
     double soc_quad_value;
@@ -1110,9 +1124,7 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
                                        solver->soc_hessian_direction,
                                        &soc_quad_value));
 
-    soc_quad_value *= .5;
-
-    *soc_value = soc_lin_value + soc_quad_value;
+    (*soc_value) += .5 * soc_quad_value;
   }
 
   return SLEQP_OKAY;
@@ -1295,7 +1307,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     }
   }
 
-  double exact_iterate_value, quadratic_iterate_value;
+  double exact_iterate_value, model_iterate_value;
 
   {
     SLEQP_CALL(sleqp_merit_func(solver->merit_data,
@@ -1303,23 +1315,27 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                 solver->penalty_parameter,
                                 &exact_iterate_value));
 
-    quadratic_iterate_value = exact_iterate_value;
+    model_iterate_value = exact_iterate_value;
   }
 
-  double quadratic_trial_value;
+  double model_trial_value;
 
   bool full_step;
+
+  const bool quadratic_model = sleqp_options_get_use_quadratic_model(options);
 
   if(sleqp_options_get_perform_newton_step(options))
   {
     SLEQP_CALL(compute_trial_point_newton(solver,
-                                          &quadratic_trial_value,
+                                          &model_trial_value,
+                                          quadratic_model,
                                           &full_step));
   }
   else
   {
     SLEQP_CALL(compute_trial_point_simple(solver,
-                                          &quadratic_trial_value,
+                                          &model_trial_value,
+                                          quadratic_model,
                                           &full_step));
   }
 
@@ -1353,9 +1369,9 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     return SLEQP_OKAY;
   }
 
-  double quadratic_reduction = quadratic_iterate_value - quadratic_trial_value;
+  double model_reduction = model_iterate_value - model_trial_value;
 
-  assert(!sleqp_neg(quadratic_reduction, zero_eps));
+  assert(!sleqp_neg(model_reduction, zero_eps));
 
   SLEQP_CALL(set_func_value(solver, trial_iterate, SLEQP_VALUE_REASON_TRYING_ITERATE));
 
@@ -1388,12 +1404,17 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   }
 
-  double reduction_ratio = actual_reduction / quadratic_reduction;
+  double reduction_ratio = 1.;
 
-  sleqp_log_debug("Reduction ratio: %e, actual: %e, quadratic: %e",
+  if(actual_reduction != model_reduction)
+  {
+    reduction_ratio = actual_reduction / model_reduction;
+  }
+
+  sleqp_log_debug("Reduction ratio: %e, actual: %e, predicted: %e",
                   reduction_ratio,
                   actual_reduction,
-                  quadratic_reduction);
+                  model_reduction);
 
   const double trial_direction_infnorm = sleqp_sparse_vector_norminf(solver->trial_direction);
   const double cauchy_step_infnorm = sleqp_sparse_vector_norminf(solver->cauchy_step);
@@ -1430,17 +1451,17 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     {
       sleqp_log_debug("Computing second-order correction");
 
-      double soc_quadratic_reduction;
+      double soc_model_reduction;
 
       // SLEQP_CALL(set_func_value(solver, iterate));
 
-      SLEQP_CALL(compute_soc_trial_point(solver, &quadratic_trial_value));
+      SLEQP_CALL(compute_soc_trial_point(solver, &model_trial_value, quadratic_model));
 
-      soc_quadratic_reduction = quadratic_iterate_value - quadratic_trial_value;
+      soc_model_reduction = model_iterate_value - model_trial_value;
 
       // in the SOC case it is not guaranteed that
       // there is a quadratic reduction
-      if(sleqp_pos(soc_quadratic_reduction, zero_eps))
+      if(sleqp_pos(soc_model_reduction, zero_eps))
       {
 
         SLEQP_CALL(set_func_value(solver,
@@ -1467,12 +1488,12 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
         double soc_actual_reduction = exact_iterate_value - soc_exact_trial_value;
 
-        double soc_reduction_ratio = soc_actual_reduction / soc_quadratic_reduction;
+        double soc_reduction_ratio = soc_actual_reduction / soc_model_reduction;
 
-        sleqp_log_debug("SOC Reduction ratio: %e, actual: %e, quadratic: %e",
+        sleqp_log_debug("SOC Reduction ratio: %e, actual: %e, predicted: %e",
                         soc_reduction_ratio,
                         soc_actual_reduction,
-                        soc_quadratic_reduction);
+                        soc_model_reduction);
 
         if(soc_reduction_ratio >= accepted_reduction)
         {

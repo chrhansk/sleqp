@@ -4,6 +4,7 @@
 
 #define PERFORM_NEWTON_DEFAULT             true
 #define PERFORM_SOC_DEFAULT                true
+#define USE_QUADRATIC_MODEL_DEFAULT        true
 #define DERIV_CHECK_DEFAULT                SLEQP_DERIV_CHECK_SKIP
 #define HESSIAN_EVAL_DEFAULT               SLEQP_HESSIAN_EVAL_EXACT
 #define SLEQP_DUAL_ESTIMATION_TYPE_DEFAULT SLEQP_DUAL_ESTIMATION_TYPE_LSQ
@@ -13,6 +14,7 @@ struct SleqpOptions
 {
   bool perform_newton_step;
   bool perform_soc;
+  bool use_quadratic_model;
   SLEQP_DERIV_CHECK deriv_check;
   SLEQP_HESSIAN_EVAL hessian_eval;
   SLEQP_DUAL_ESTIMATION_TYPE dual_estimation_type;
@@ -27,6 +29,7 @@ SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
 
   options->perform_newton_step = PERFORM_NEWTON_DEFAULT;
   options->perform_soc = PERFORM_SOC_DEFAULT;
+  options->use_quadratic_model = USE_QUADRATIC_MODEL_DEFAULT;
   options->deriv_check = DERIV_CHECK_DEFAULT;
   options->hessian_eval = HESSIAN_EVAL_DEFAULT;
   options->dual_estimation_type = SLEQP_DUAL_ESTIMATION_TYPE_DEFAULT;
@@ -43,6 +46,11 @@ bool sleqp_options_get_perform_newton_step(const SleqpOptions* options)
 bool sleqp_options_get_perform_soc(const SleqpOptions* options)
 {
   return options->perform_soc;
+}
+
+bool sleqp_options_get_use_quadratic_model(const SleqpOptions* options)
+{
+  return options->use_quadratic_model;
 }
 
 
@@ -79,6 +87,13 @@ SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options,
                                             bool value)
 {
   options->perform_soc = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_options_set_use_quadratic_model(SleqpOptions* options, bool value)
+{
+  options->use_quadratic_model = value;
 
   return SLEQP_OKAY;
 }
