@@ -103,7 +103,7 @@ START_TEST(test_dual_variable)
                                           iterate,
                                           trust_radius));
 
-  ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, iterate, cauchy_direction));
+  ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, cauchy_direction));
 
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
                                         problem,

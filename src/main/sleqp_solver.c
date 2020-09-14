@@ -832,7 +832,6 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
                                             iterate));
 
   SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
-                                        iterate,
                                         solver->cauchy_direction));
 
   SLEQP_CALL(estimate_dual_values(solver, iterate));
@@ -927,7 +926,6 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
                                               iterate));
 
     SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
-                                          iterate,
                                           solver->cauchy_direction));
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));

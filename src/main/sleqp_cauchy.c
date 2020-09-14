@@ -541,7 +541,6 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
 }
 
 SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
-                                         SleqpIterate* iterate,
                                          SleqpSparseVec* direction)
 {
   const double zero_eps = sleqp_params_get_zero_eps(cauchy_data->params);
