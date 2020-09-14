@@ -5,9 +5,7 @@ cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpSparseVec* vec):
   values = np.zeros([vec.dim], dtype=np.float64)
 
   for k in range(vec.nnz):
-    data = vec.data[k]
-    if data:
-      values[vec.indices[k]] = vec.data[k]
+    values[vec.indices[k]] = vec.data[k]
 
   return values
 
@@ -24,7 +22,10 @@ cdef csleqp.SLEQP_RETCODE array_to_sleqp_sparse_vec(np.ndarray array,
   csleqp_call(csleqp.sleqp_sparse_vector_clear(vec))
 
   for i in range(dim):
-    csleqp_call(csleqp.sleqp_sparse_vector_push(vec, i, array[i]))
+    if array[i] != 0.:
+      csleqp_call(csleqp.sleqp_sparse_vector_push(vec,
+                                                  i,
+                                                  array[i]))
 
   return csleqp.SLEQP_OKAY
 
