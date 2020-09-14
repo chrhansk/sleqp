@@ -58,3 +58,35 @@ class ProblemTest(unittest.TestCase):
 
     def test_cons_ub(self):
         self.assertTrue((self.problem.cons_ub == self.cons_ub).all())
+
+    def test_invalid_cons_bounds(self):
+
+        cons_lb = self.cons_lb[:]
+        cons_ub = self.cons_ub[:]
+
+        cons_lb[0] = 1.
+        cons_ub[0] = 0.
+
+        self.assertRaises(sleqp.SLEQPError,
+                          lambda: sleqp.Problem(self.func,
+                                                self.params,
+                                                self.var_lb,
+                                                self.var_ub,
+                                                cons_lb,
+                                                cons_ub))
+
+    def test_invalid_cons_bounds(self):
+
+        var_lb = self.var_lb[:]
+        var_ub = self.var_ub[:]
+
+        var_lb[0] = 1.
+        var_ub[0] = 0.
+
+        self.assertRaises(sleqp.SLEQPError,
+                          lambda: sleqp.Problem(self.func,
+                                                self.params,
+                                                var_lb,
+                                                var_ub,
+                                                self.cons_lb,
+                                                self.cons_ub))
