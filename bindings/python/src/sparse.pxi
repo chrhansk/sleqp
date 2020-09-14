@@ -2,7 +2,7 @@
 
 cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpSparseVec* vec):
   assert vec
-  values = np.zeros([vec.dim], dtype=np.float64)
+  values = np.zeros((vec.dim,), dtype=np.float64)
 
   for k in range(vec.nnz):
     values[vec.indices[k]] = vec.data[k]
@@ -13,13 +13,16 @@ cdef csleqp.SLEQP_RETCODE array_to_sleqp_sparse_vec(np.ndarray array,
                                                     csleqp.SleqpSparseVec* vec) except csleqp.SLEQP_INTERNAL_ERROR:
   assert vec != NULL
 
+  csleqp_call(csleqp.sleqp_sparse_vector_clear(vec))
+
   if array is None:
     return csleqp.SLEQP_OKAY
+
+  assert array.ndim == 1
 
   cdef int dim = array.shape[0]
 
   csleqp_call(csleqp.sleqp_sparse_vector_reserve(vec, dim))
-  csleqp_call(csleqp.sleqp_sparse_vector_clear(vec))
 
   for i in range(dim):
     if array[i] != 0.:

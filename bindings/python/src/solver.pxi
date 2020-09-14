@@ -61,8 +61,8 @@ cdef class Solver:
         raise exception
 
   def solve(self,
-            max_num_iterations : int = None,
-            time_limit : float = None) -> None:
+            max_num_iterations: int = None,
+            time_limit: float = None) -> None:
 
     cdef int max_it = -1
     cdef double time = -1
@@ -70,7 +70,7 @@ cdef class Solver:
     if max_num_iterations is not None:
       max_it = max_num_iterations
 
-    if time_limit is None:
+    if time_limit is not None:
       time = time_limit
 
     self._solve(max_it, time)
