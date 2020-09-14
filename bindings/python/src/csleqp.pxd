@@ -71,6 +71,12 @@ cdef extern from "sleqp.h":
     int num_variables
     int num_constraints
 
+    SleqpSparseVec* var_lb
+    SleqpSparseVec* var_ub
+
+    SleqpSparseVec* cons_lb
+    SleqpSparseVec* cons_ub
+
   ctypedef struct SleqpSolver:
     pass
 

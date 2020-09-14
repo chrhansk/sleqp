@@ -4,7 +4,7 @@ from libc.stdlib cimport malloc, free
 
 cdef class Solver:
   cdef csleqp.SleqpSolver* solver
-  cdef csleqp.SleqpSparseVec* x
+  cdef csleqp.SleqpSparseVec* primal
   cdef Problem problem
   cdef Params params
   cdef Options options
@@ -13,26 +13,26 @@ cdef class Solver:
                 Problem problem,
                 Params params,
                 Options options,
-                np.ndarray x,
+                np.ndarray primal,
                 Scaling scaling=None):
 
     self.params = params
     self.options = options
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.x,
+    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.primal,
                                                   problem.num_variables,
                                                   0))
 
-    array_to_sleqp_sparse_vec(x, self.x)
+    array_to_sleqp_sparse_vec(primal, self.primal)
 
     csleqp_call(csleqp.sleqp_solver_create(&self.solver,
                                            problem.problem,
                                            params.params,
                                            options.options,
-                                           self.x,
+                                           self.primal,
                                            scaling.scaling if scaling else NULL))
 
-    array_to_sleqp_sparse_vec(x, self.x)
+    array_to_sleqp_sparse_vec(primal, self.primal)
 
     self.problem = problem
 

@@ -62,6 +62,22 @@ cdef class Problem:
   def num_constraints(self) -> int:
     return self.problem.num_constraints
 
+  @property
+  def var_lb(self) -> np.array:
+    return sleqp_sparse_vec_to_array(self.problem.var_lb)
+
+  @property
+  def var_ub(self) -> np.array:
+    return sleqp_sparse_vec_to_array(self.problem.var_ub)
+
+  @property
+  def cons_lb(self) -> np.array:
+    return sleqp_sparse_vec_to_array(self.problem.cons_lb)
+
+  @property
+  def cons_ub(self) -> np.array:
+    return sleqp_sparse_vec_to_array(self.problem.cons_ub)
+
   def __dealloc__(self):
     csleqp_call(csleqp.sleqp_problem_free(&self.problem))
 
