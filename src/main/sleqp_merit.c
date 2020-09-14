@@ -144,11 +144,13 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
 
   const double zero_eps = sleqp_params_get_zero_eps(merit_data->params);
 
+  double objective_dot;
+
   SLEQP_CALL(sleqp_sparse_vector_dot(sleqp_iterate_get_func_grad(iterate),
                                      direction,
-                                     merit_value));
+                                     &objective_dot));
 
-  *merit_value += sleqp_iterate_get_func_val(iterate);
+  (*merit_value) = sleqp_iterate_get_func_val(iterate) + objective_dot;
 
   reset_cache(merit_data->dense_cache, merit_data->cache_size);
 
