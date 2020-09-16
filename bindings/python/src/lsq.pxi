@@ -97,7 +97,7 @@ cdef class LSQFunc:
     assert(self.func)
 
 
-  cpdef void set_value(self, x):
+  cpdef void set_value(self, value: np.array, reason: ValueReason):
     pass
 
   cpdef double func_val(self):

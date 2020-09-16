@@ -123,7 +123,7 @@ cdef class Func:
 
     assert(self.func)
 
-  cpdef void set_value(self, x, reason):
+  cpdef void set_value(self, value, reason):
     pass
 
   cpdef double func_val(self):
