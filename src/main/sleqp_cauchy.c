@@ -417,14 +417,14 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
                                                   SLEQP_ACTIVE_BOTH));
       }
       else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
-              (-trust_radius < lbval - xval))
+              ((xval - lbval) < trust_radius))
       {
         SLEQP_CALL(sleqp_working_set_add_variable(working_set,
                                                   i,
                                                   SLEQP_ACTIVE_LOWER));
       }
       else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER) &&
-              (ubval - xval < trust_radius))
+              ((ubval - xval) < trust_radius))
       {
         SLEQP_CALL(sleqp_working_set_add_variable(working_set,
                                                   i,
@@ -553,6 +553,143 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
                                           cauchy_data->solution_values,
                                           cauchy_data->problem->num_variables,
                                           zero_eps));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchyData* cauchy_data,
+                                              SleqpIterate* iterate,
+                                              double trust_radius,
+                                              bool* locally_infeasible)
+{
+  *locally_infeasible = false;
+
+  SLEQP_CALL(sleqp_lpi_get_varstats(cauchy_data->lp_interface,
+                                    cauchy_data->var_stats));
+
+  SLEQP_CALL(sleqp_lpi_get_consstats(cauchy_data->lp_interface,
+                                     cauchy_data->cons_stats));
+
+  SleqpProblem* problem = cauchy_data->problem;
+
+  const int num_variables = problem->num_variables;
+  const int num_constraints = problem->num_constraints;
+
+  const double eps = sleqp_params_get_eps(cauchy_data->params);
+
+  bool active_trust_region = false;
+
+  // Check if trust region is active
+  {
+    SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
+    SleqpSparseVec* lb = problem->var_lb;
+    SleqpSparseVec* ub = problem->var_ub;
+
+    int k_x = 0, k_lb = 0, k_ub = 0;
+
+    for(int i = 0; i < num_variables; ++i)
+    {
+      while(k_x < x->nnz && x->indices[k_x] < i)
+      {
+        ++k_x;
+      }
+
+      while(k_lb < lb->nnz && lb->indices[k_lb] < i)
+      {
+        ++k_lb;
+      }
+
+      while(k_ub < ub->nnz && ub->indices[k_ub] < i)
+      {
+        ++k_ub;
+      }
+
+      bool valid_x = (k_x < x->nnz) && (i == x->indices[k_x]);
+      bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
+      bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
+
+      double ubval = valid_ub ? ub->data[k_ub] : 0.;
+      double lbval = valid_lb ? lb->data[k_lb] : 0.;
+      double xval = valid_x ? x->data[k_x] : 0.;
+
+      assert(cauchy_data->var_stats[i] != SLEQP_BASESTAT_ZERO);
+
+      assert(sleqp_le(lbval, xval, eps));
+      assert(sleqp_le(xval, ubval, eps));
+
+      if(sleqp_eq(lbval, ubval, eps))
+      {
+        continue;
+      }
+      else if(cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER &&
+              (xval - lbval) >= trust_radius)
+      {
+        active_trust_region = true;
+        break;
+      }
+      else if(cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER &&
+              ((ubval - xval) >= trust_radius))
+      {
+        active_trust_region = true;
+        break;
+      }
+    }
+  }
+
+  bool feasible_direction = true;
+
+  {
+    int k_lb = 0, k_ub = 0;
+
+    SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
+    SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
+
+    SleqpSparseVec* lb = problem->cons_lb;
+    SleqpSparseVec* ub = problem->cons_ub;
+
+    for(int i = 0; i < num_constraints; ++i)
+    {
+      const SLEQP_BASESTAT cons_stat = cauchy_data->cons_stats[i];
+
+      if(cons_stat == SLEQP_BASESTAT_BASIC)
+      {
+        continue;
+      }
+
+      while(k_lb < lb->nnz && lb->indices[k_lb] < i)
+      {
+        ++k_lb;
+      }
+
+      while(k_ub < ub->nnz && ub->indices[k_ub] < i)
+      {
+        ++k_ub;
+      }
+
+      const bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
+      const bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
+
+      const double ubval = valid_ub ? ub->data[k_ub] : 0.;
+      const double lbval = valid_lb ? lb->data[k_lb] : 0.;
+
+      assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC ||
+             upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
+
+      bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER &&
+        upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
+
+      if(!zero_slack)
+      {
+        feasible_direction = false;
+      }
+    }
+  }
+
+  sleqp_log_debug("Trust region active: %s, feasible direction: %s",
+                  sleqp_bool_string(active_trust_region),
+                  sleqp_bool_string(feasible_direction));
+
+  *locally_infeasible = !(feasible_direction || active_trust_region);
 
   return SLEQP_OKAY;
 }

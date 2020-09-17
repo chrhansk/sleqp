@@ -74,6 +74,21 @@ extern "C" {
                                            SleqpSparseVec* direction);
 
   /**
+   * Determines whether the current iterate is locally infeasible, i.e.,
+   * no direction to feasibility in the linearization can be found while
+   * none of the trust region constraints are active.
+   *
+   * @param[in]       cauchy_data          Cauchy data
+   * @param[in]       iterate              The current iterate
+   * @param[in]       trust_radius         The trust radius
+   * @param[out]      locally_infeasible   Whether or not the iterate is locally infeasible
+   **/
+  SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchyData* cauchy_data,
+                                                SleqpIterate* iterate,
+                                                double trust_radius,
+                                                bool* locally_infeasible);
+
+  /**
    * Returns the dual estimation according to duals of the current LP solution. Duals
    * will be stored in the given iterate.
    *

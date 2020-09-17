@@ -62,6 +62,8 @@ extern "C" {
 
   void sleqp_log_trace_level(int level, const char *file, int line, const char *fmt, ...);
 
+#define sleqp_bool_string(x) ((x) ? "true" : "false")
+
 #define sleqp_log_log_trace(level, file, line, ...)           \
   do                                                          \
   {                                                           \

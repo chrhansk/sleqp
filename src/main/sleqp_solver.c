@@ -476,6 +476,20 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
                                 NULL,
                                 solver->penalty_parameter));
 
+  {
+    bool locally_infeasible;
+
+    SLEQP_CALL(sleqp_cauchy_locally_infeasible(cauchy_data,
+                                               iterate,
+                                               solver->trust_radius,
+                                               &locally_infeasible));
+
+    if(locally_infeasible)
+    {
+      sleqp_log_warn("Current iterate is locally infeasible");
+    }
+  }
+
   double inf_violation;
 
   sleqp_cauchy_get_violation(cauchy_data, &inf_violation);
