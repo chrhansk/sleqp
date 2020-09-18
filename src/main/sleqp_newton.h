@@ -7,6 +7,8 @@
  **/
 
 #include "sleqp_aug_jacobian.h"
+#include "sleqp_options.h"
+#include "sleqp_params.h"
 #include "sleqp_problem.h"
 #include "sleqp_iterate.h"
 
@@ -18,7 +20,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
                                          SleqpProblem* problem,
-                                         SleqpParams* params);
+                                         SleqpParams* params,
+                                         SleqpOptions* options);
 
   SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
                                             double time_limit);

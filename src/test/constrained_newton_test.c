@@ -224,6 +224,7 @@ START_TEST(newton_constrained_step)
   SleqpSparseVec* expected_step;
 
   SleqpParams* params;
+  SleqpOptions* options;
 
   SleqpNewtonData* newton_data;
 
@@ -241,6 +242,8 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_params_create(&params));
 
+  ASSERT_CALL(sleqp_options_create(&options));
+
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
                                         problem,
                                         params));
@@ -249,7 +252,8 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_newton_data_create(&newton_data,
                                        problem,
-                                       params));
+                                       params,
+                                       options));
 
   ASSERT_CALL(sleqp_newton_compute_step(newton_data,
                                         iterate,
@@ -265,6 +269,8 @@ START_TEST(newton_constrained_step)
   ASSERT_CALL(sleqp_newton_data_release(&newton_data));
 
   ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
+
+  ASSERT_CALL(sleqp_options_free(&options));
 
   ASSERT_CALL(sleqp_params_free(&params));
 

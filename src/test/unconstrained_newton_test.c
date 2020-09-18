@@ -14,6 +14,7 @@
 #include "quadfunc_fixture.h"
 
 SleqpParams* params;
+SleqpOptions* options;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpLPi* lp_interface;
@@ -26,6 +27,8 @@ void newton_setup()
   quadfunc_setup();
 
   ASSERT_CALL(sleqp_params_create(&params));
+
+  ASSERT_CALL(sleqp_options_create(&options));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    quadfunc,
@@ -68,6 +71,8 @@ void newton_teardown()
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 
+  ASSERT_CALL(sleqp_options_free(&options));
+
   ASSERT_CALL(sleqp_params_free(&params));
 
   quadfunc_teardown();
@@ -103,7 +108,8 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_newton_data_create(&newton_data,
                                        problem,
-                                       params));
+                                       params,
+                                       options));
 
   // we use the default (empty) active set for the Newton step,
   // trust region size should be large to ensure that
@@ -158,7 +164,8 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_newton_data_create(&newton_data,
                                        problem,
-                                       params));
+                                       params,
+                                       options));
 
   // we use the default (empty) active set for the Newton step,
   // trust region size should be so small that

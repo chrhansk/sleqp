@@ -9,6 +9,7 @@
 #define HESSIAN_EVAL_DEFAULT               SLEQP_HESSIAN_EVAL_EXACT
 #define SLEQP_DUAL_ESTIMATION_TYPE_DEFAULT SLEQP_DUAL_ESTIMATION_TYPE_LSQ
 #define QUASI_NEWTON_SIZE_DEFAULT          5
+#define MAX_NEWTON_ITERATIONS_DEFAULT      100
 
 struct SleqpOptions
 {
@@ -19,6 +20,7 @@ struct SleqpOptions
   SLEQP_HESSIAN_EVAL hessian_eval;
   SLEQP_DUAL_ESTIMATION_TYPE dual_estimation_type;
   int quasi_newton_size;
+  int max_newton_iterations;
 };
 
 SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
@@ -34,6 +36,7 @@ SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
   options->hessian_eval = HESSIAN_EVAL_DEFAULT;
   options->dual_estimation_type = SLEQP_DUAL_ESTIMATION_TYPE_DEFAULT;
   options->quasi_newton_size = QUASI_NEWTON_SIZE_DEFAULT;
+  options->max_newton_iterations = MAX_NEWTON_ITERATIONS_DEFAULT;
 
   return SLEQP_OKAY;
 }
@@ -73,6 +76,11 @@ sleqp_options_get_dual_estimation_type(const SleqpOptions* options)
 int sleqp_options_get_quasi_newton_num_iterates(const SleqpOptions* options)
 {
   return options->quasi_newton_size;
+}
+
+int sleqp_options_get_max_newton_iterations(const SleqpOptions* options)
+{
+  return options->max_newton_iterations;
 }
 
 SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options,
@@ -131,6 +139,18 @@ SLEQP_RETCODE sleqp_options_set_quasi_newton_num_iterates(SleqpOptions* options,
   }
 
   options->quasi_newton_size = size;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int iterations)
+{
+  if((iterations < 0) && (iterations != -1))
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  options->max_newton_iterations = iterations;
 
   return SLEQP_OKAY;
 }

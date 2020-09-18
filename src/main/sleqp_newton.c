@@ -17,6 +17,7 @@ struct SleqpNewtonData
   int refcount;
   SleqpProblem* problem;
   SleqpParams* params;
+  SleqpOptions* options;
 
   // trlib-related data:
   trlib_int_t trlib_maxiter;
@@ -123,7 +124,8 @@ static SLEQP_RETCODE trlib_get_status_string(int value,
 
 SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
                                        SleqpProblem* problem,
-                                       SleqpParams* params)
+                                       SleqpParams* params,
+                                       SleqpOptions* options)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -135,8 +137,16 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
 
   data->problem = problem;
   data->params = params;
+  data->options = options;
+
+  const int max_newton_iter = sleqp_options_get_max_newton_iterations(options);
 
   data->trlib_maxiter = problem->num_variables;
+
+  if(max_newton_iter != -1)
+  {
+    data->trlib_maxiter = SLEQP_MIN(data->trlib_maxiter, max_newton_iter);
+  }
 
   trlib_int_t iwork_size, fwork_size;
 
@@ -453,8 +463,10 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
   SleqpProblem* problem = data->problem;
   SleqpFunc* func = problem->func;
 
+  const double inf = sleqp_infinity();
+
   trlib_int_t equality = 0;
-  trlib_int_t maxlanczos = 100;
+  trlib_int_t maxlanczos = data->trlib_maxiter;
   trlib_int_t ctl_invariant = 0;
   trlib_int_t refine = 1;
   trlib_int_t verbose = (sleqp_log_level() >= SLEQP_LOG_DEBUG);
@@ -463,7 +475,7 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
   trlib_flt_t tol_abs_i = 0.0;
   trlib_flt_t tol_rel_b = -3.0;
   trlib_flt_t tol_abs_b = 0.0;
-  trlib_flt_t obj_lo = -1e20;
+  trlib_flt_t obj_lo = -inf;
   trlib_int_t convexify = 1;
   trlib_int_t earlyterm = 1;
 
@@ -503,8 +515,8 @@ static SLEQP_RETCODE solve_trust_region_subproblem(SleqpNewtonData* data,
   char* prefix = "trlib: ";
   FILE* fout = stderr;
 
-  double max_rayleigh = -sleqp_infinity();
-  double min_rayleigh = sleqp_infinity();
+  double max_rayleigh = -inf;
+  double min_rayleigh = inf;
 
   while(1)
   {

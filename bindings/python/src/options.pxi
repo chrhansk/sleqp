@@ -14,7 +14,8 @@ cdef class Options:
                   'deriv_check',
                   'hessian_eval',
                   'dual_estimation_type',
-                  'quasi_newton_num_iterates']
+                  'quasi_newton_num_iterates',
+                  'max_newton_iterations']
 
     for key, value in values.items():
       setattr(self, key, value)
@@ -50,6 +51,12 @@ cdef class Options:
   def quasi_newton_num_iterates(self) -> int:
     return csleqp.sleqp_options_get_quasi_newton_num_iterates(self.options)
 
+  @property
+  def max_newton_iterations(self):
+      cdef int iter = csleqp.sleqp_options_get_max_newton_iterations(self.options)
+
+      return iter if iter >= 0 else None
+
   @perform_newton_step.setter
   def perform_newton_step(self, value: bool) -> None:
     csleqp_call(csleqp.sleqp_options_set_perform_newton_step(self.options, value))
@@ -77,6 +84,13 @@ cdef class Options:
   @quasi_newton_num_iterates.setter
   def quasi_newton_num_iterates(self, value: int) -> None:
     csleqp_call(csleqp.sleqp_options_set_quasi_newton_num_iterates(self.options, value))
+
+  @max_newton_iterations.setter
+  def max_newton_iterations(self, value):
+      if value is None:
+        value = -1
+
+      csleqp_call(csleqp.sleqp_options_set_max_newton_iterations(self.options, value))
 
   def values(self) -> set:
     return {key: getattr(self, key) for key in self.props}

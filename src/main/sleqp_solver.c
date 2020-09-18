@@ -331,7 +331,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_newton_data_create(&solver->newton_data,
                                       solver->problem,
-                                      params));
+                                      params,
+                                      options));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&solver->newton_step,
                                         num_variables,

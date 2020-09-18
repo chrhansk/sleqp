@@ -440,6 +440,8 @@ cdef extern from "sleqp.h":
 
   int sleqp_options_get_quasi_newton_num_iterates(const SleqpOptions* options)
 
+  int sleqp_options_get_max_newton_iterations(const SleqpOptions* options)
+
   SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options, bint value)
 
   SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options, bint value)
@@ -457,6 +459,8 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_options_set_quasi_newton_num_iterates(SleqpOptions* options,
                                                             int size)
+
+  SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int iterations)
 
   SLEQP_RETCODE sleqp_options_free(SleqpOptions** star)
 
