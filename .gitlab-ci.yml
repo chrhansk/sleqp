@@ -40,19 +40,34 @@ build:
 # run tests
 .test_template: &test_job
   stage: test
-  before_script:
+  script:
     - mkdir -p build
     - cd build
+    - cmake .. -DSLEQP_ENABLE_PYTHON=On
+    - make build_tests
+    - PYTHONMALLOC='malloc' make test
   dependencies: []
 
 test_undefined_sanitizer:
   <<: *test_job
   variables:
-    PYTHONMALLOC: 'malloc'
-  script:
-    - cmake .. -DSLEQP_ENABLE_PYTHON=On -DCMAKE_C_FLAGS="-fsanitize=undefined"
-    - make build_tests
-    - make test
+    CFLAGS: '-g -fsanitize=undefined'
+
+test_address_sanitizer:
+  <<: *test_job
+  variables:
+    CFLAGS: '-g -fsanitize=address -fno-omit-frame-pointer'
+
+test_leak_sanitizer:
+  <<: *test_job
+  variables:
+    CFLAGS: '-g -fsanitize=leak'
+
+test_leak_sanitizer:
+  <<: *test_job
+  variables:
+    CFLAGS: '-g -fsanitize=memory'
+
 
 package:
   stage: package
