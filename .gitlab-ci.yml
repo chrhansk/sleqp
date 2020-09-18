@@ -44,6 +44,7 @@ build:
     - mkdir -p build
     - cd build
     - cmake .. -DSLEQP_ENABLE_PYTHON=On
+    - make
     - make build_tests
     - PYTHONMALLOC='malloc' make test
   dependencies: []
