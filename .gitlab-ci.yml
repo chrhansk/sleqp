@@ -44,6 +44,7 @@ build:
     - mkdir -p build
     - cd build
   after_script:
+    - make
     - make build_tests
     - make test
   dependencies: []
@@ -53,7 +54,7 @@ test_undefined_sanitizer:
   variables:
     PYTHONMALLOC: 'malloc'
   script:
-    - cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DSLEQP_ENABLE_PYTHON=On -DCMAKE_C_FLAGS="-fsanitize=undefined"
+    - cmake .. -DSLEQP_ENABLE_PYTHON=On -DCMAKE_C_FLAGS="-fsanitize=undefined"
 
 
 package:
