@@ -29,28 +29,40 @@ build:
   script:
     - cd build
     - make -j$(nproc)
+  dependencies:
+    - prepare
   artifacts:
     paths:
       - build
       - bindings/python
 
+
 # run tests
-test:
+.test_template: &test_job
   stage: test
-  script:
+  before_script:
+    - mkdir -p build
     - cd build
+  after_script:
     - make build_tests
     - make test
-  artifacts:
-    paths:
-      - build
-      - bindings/python
+  dependencies: []
+
+test_undefined_sanitizer:
+  <<: *test_job
+  variables:
+    PYTHONMALLOC: 'malloc'
+  script:
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DSLEQP_ENABLE_PYTHON=On -DCMAKE_C_FLAGS="-fsanitize=undefined"
+
 
 package:
   stage: package
   script:
     - cd build
     - make package
+  dependencies:
+    - build
   artifacts:
     paths:
       - build/*.deb
@@ -61,6 +73,8 @@ package_wheel:
   script:
     - cd build
     - make python_sleqp_bdist_wheel
+  dependencies:
+    - build
   artifacts:
     paths:
       - bindings/python/dist/*.whl
@@ -70,6 +84,8 @@ package_sdist:
   script:
     - cd build
     - make python_sleqp_sdist
+  dependencies:
+    - build
   artifacts:
     paths:
       - bindings/python/dist/*.tar.gz
@@ -79,11 +95,6 @@ install_package:
   script:
     - cd build
     - apt -y install ./*.deb
-
-# install_wheel:
-#   stage: install
-#   script:
-#     - cd bindings/python/dist/*.whl
 
 trigger_downstream:
   stage: downstream
