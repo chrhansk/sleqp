@@ -43,10 +43,6 @@ build:
   before_script:
     - mkdir -p build
     - cd build
-  after_script:
-    - make
-    - make build_tests
-    - make test
   dependencies: []
 
 test_undefined_sanitizer:
@@ -55,7 +51,8 @@ test_undefined_sanitizer:
     PYTHONMALLOC: 'malloc'
   script:
     - cmake .. -DSLEQP_ENABLE_PYTHON=On -DCMAKE_C_FLAGS="-fsanitize=undefined"
-
+    - make build_tests
+    - make test
 
 package:
   stage: package
