@@ -65,10 +65,10 @@ test_undefined_sanitizer:
 #   variables:
 #     CFLAGS: '-g -fsanitize=leak'
 
-test_memory_sanitizer:
-  <<: *test_job
-  variables:
-    CFLAGS: '-g -fsanitize=memory'
+# test_memory_sanitizer:
+#   <<: *test_job
+#   variables:
+#     CFLAGS: '-g -fsanitize=memory'
 
 
 package:
