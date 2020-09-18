@@ -54,17 +54,18 @@ test_undefined_sanitizer:
   variables:
     CFLAGS: '-g -fsanitize=undefined'
 
-test_address_sanitizer:
-  <<: *test_job
-  variables:
-    CFLAGS: '-g -fsanitize=address -fno-omit-frame-pointer'
+# Not possible due to old compiler
+# test_address_sanitizer:
+#   <<: *test_job
+#   variables:
+#     CFLAGS: '-g -fsanitize=address -fno-omit-frame-pointer'
 
-test_leak_sanitizer:
-  <<: *test_job
-  variables:
-    CFLAGS: '-g -fsanitize=leak'
+# test_leak_sanitizer:
+#   <<: *test_job
+#   variables:
+#     CFLAGS: '-g -fsanitize=leak'
 
-test_leak_sanitizer:
+test_memory_sanitizer:
   <<: *test_job
   variables:
     CFLAGS: '-g -fsanitize=memory'
