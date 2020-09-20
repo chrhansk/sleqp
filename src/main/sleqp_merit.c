@@ -238,12 +238,13 @@ SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
   SleqpSparseVec* cons_vals = sleqp_iterate_get_cons_val(iterate);
 
   SLEQP_CALL(sleqp_get_violated_multipliers(problem,
-                                            x,
                                             cons_vals,
-                                            penalty_parameter,
                                             merit_data->multipliers,
                                             NULL,
                                             zero_eps));
+
+  SLEQP_CALL(sleqp_sparse_vector_scale(merit_data->multipliers,
+                                       penalty_parameter));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(merit_data->sparse_cache));
 

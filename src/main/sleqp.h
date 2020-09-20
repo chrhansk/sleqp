@@ -28,6 +28,7 @@
 #include "sleqp_soc.h"
 #include "sleqp_solver.h"
 #include "sleqp_sr1.h"
+#include "sleqp_tr_solver.h"
 #include "sleqp_types.h"
 #include "sleqp_working_set.h"
 #include "sleqp_util.h"

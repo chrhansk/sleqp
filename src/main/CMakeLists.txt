@@ -24,6 +24,7 @@ set(COMMON_SRC
   sleqp_soc.c
   sleqp_solver.c
   sleqp_timer.c
+  sleqp_tr_solver.c
   sleqp_types.c
   sleqp_util.c
   lp/sleqp_lpi.c)

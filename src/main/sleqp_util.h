@@ -23,9 +23,7 @@ extern "C" {
                                        SLEQP_VALUE_REASON reason);
 
   SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
-                                               SleqpSparseVec* x,
                                                SleqpSparseVec* cons_vals,
-                                               double penalty_parameter,
                                                SleqpSparseVec* multipliers,
                                                SleqpWorkingSet* working_set,
                                                double eps);

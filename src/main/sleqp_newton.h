@@ -26,8 +26,6 @@ extern "C" {
   SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
                                             double time_limit);
 
-  SleqpTimer* sleqp_newton_get_solve_timer(SleqpNewtonData* data);
-
   SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                           SleqpIterate* iterate,
                                           SleqpAugJacobian* jacobian,

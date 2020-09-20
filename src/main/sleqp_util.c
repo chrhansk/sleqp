@@ -53,9 +53,7 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
 
 
 SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
-                                             SleqpSparseVec* x,
                                              SleqpSparseVec* cons_vals,
-                                             double penalty_parameter,
                                              SleqpSparseVec* multipliers,
                                              SleqpWorkingSet* working_set,
                                              double eps)
@@ -113,13 +111,13 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
-                                          penalty_parameter));
+                                          1.));
     }
     else if(sleqp_lt(c_val, lb_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
-                                          -penalty_parameter));
+                                          -1.));
     }
 
   }
