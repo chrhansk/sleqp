@@ -1,5 +1,21 @@
 #cython: language_level=3
 
+class Array(np.ndarray):
+  """
+  Thin wrapper around a numpy array, storing a
+  reference to prevent the destruction of
+  an underlying object
+  """
+  def __new__(cls, input_array, token=None):
+    obj = np.asarray(input_array).view(cls)
+    obj._token = token
+    return obj
+
+  def __array_finalize__(self, obj):
+    if obj is None:
+      return
+    self._token = getattr(obj, '_token', None)
+
 cdef class Scaling:
   cdef dict __dict__
   cdef csleqp.SleqpScalingData* scaling
@@ -42,6 +58,26 @@ cdef class Scaling:
   def func_weight(self, value):
     csleqp_call(csleqp.sleqp_scaling_set_func_weight(self.scaling,
                                                      value))
+
+  @property
+  def variable_weights(self):
+    length = self.num_variables
+    cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_get_var_weights(self.scaling)
+
+    array = np.asarray(values)
+    array.flags.writeable = False
+
+    return Array(array, self)
+
+  @property
+  def constraint_weights(self):
+    length = self.num_constraints
+    cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_get_cons_weights(self.scaling)
+
+    array = np.asarray(values)
+    array.flags.writeable = False
+
+    return Array(array, self)
 
   def set_func_weight_from_nominal(self, nominal_value):
     csleqp_call(csleqp.sleqp_scaling_set_func_weight_from_nominal(self.scaling,

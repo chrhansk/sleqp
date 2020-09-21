@@ -333,6 +333,10 @@ cdef extern from "sleqp.h":
                                               int index,
                                               int weight)
 
+  int* sleqp_scaling_get_var_weights(SleqpScalingData* scaling)
+
+  int* sleqp_scaling_get_cons_weights(SleqpScalingData* scaling)
+
   SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scaling,
                                                             double* nominal_values)
 
