@@ -25,7 +25,7 @@ class ScaledSolverTest(unittest.TestCase):
   def test_scaled_solve(self):
     scaling = sleqp.Scaling(self.problem, self.params)
 
-    scaling.func_weight = 3
+    scaling.func_weight = -3
 
     scaling.variable_weights = np.array([2, -2, 10, 1],
                                         dtype=int)

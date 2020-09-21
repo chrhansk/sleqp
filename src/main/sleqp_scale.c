@@ -219,7 +219,7 @@ scaled_func_hess_prod(int num_variables,
 
   SLEQP_CALL(apply_scaling(scaling->scaled_cons_duals,
                            scaling->cons_weights,
-                           -1. * scaling->func_weight));
+                           scaling->func_weight));
 
   SLEQP_CALL(sleqp_func_hess_prod(scaling->func,
                                   func_dual,
@@ -229,7 +229,7 @@ scaled_func_hess_prod(int num_variables,
 
   SLEQP_CALL(apply_scaling(product,
                            scaling->var_weights,
-                           scaling->func_weight));
+                           (-1.) * scaling->func_weight));
 
 
   return SLEQP_OKAY;
@@ -443,7 +443,7 @@ SLEQP_RETCODE sleqp_scaling_flush(SleqpScalingData* scaling)
 double sleqp_scale_func_val(SleqpScalingData* scaling,
                             double func_val)
 {
-  return ldexp(func_val, scaling->func_weight);
+  return ldexp(func_val, (-1.) * scaling->func_weight);
 }
 
 SLEQP_RETCODE sleqp_scale_point(SleqpScalingData* scaling,
@@ -459,7 +459,7 @@ SLEQP_RETCODE sleqp_scale_func_grad(SleqpScalingData* scaling,
 {
   SLEQP_CALL(apply_scaling(func_grad,
                            scaling->var_weights,
-                           scaling->func_weight));
+                           (-1.) * scaling->func_weight));
 
   return SLEQP_OKAY;
 }
@@ -509,7 +509,7 @@ SLEQP_RETCODE sleqp_scale_cons_duals(SleqpScalingData* scaling,
 {
   SLEQP_CALL(apply_unscaling(cons_duals,
                              scaling->cons_weights,
-                             -1* scaling->func_weight));
+                             scaling->func_weight));
 
   return SLEQP_OKAY;
 }
@@ -519,7 +519,7 @@ SLEQP_RETCODE sleqp_scale_var_duals(SleqpScalingData* scaling,
 {
   SLEQP_CALL(apply_scaling(var_duals,
                            scaling->var_weights,
-                           -1* scaling->func_weight));
+                           scaling->func_weight));
 
   return SLEQP_OKAY;
 }
@@ -554,7 +554,7 @@ SLEQP_RETCODE sleqp_scale_iterate(SleqpScalingData* scaling,
 double sleqp_unscale_func_val(SleqpScalingData* scaling,
                               double scaled_func_val)
 {
-  return ldexp(scaled_func_val, -1*scaling->func_weight);
+  return ldexp(scaled_func_val, scaling->func_weight);
 }
 
 SLEQP_RETCODE sleqp_unscale_point(SleqpScalingData* scaling,
@@ -570,7 +570,7 @@ SLEQP_RETCODE sleqp_unscale_func_grad(SleqpScalingData* scaling,
 {
   SLEQP_CALL(apply_unscaling(scaled_func_grad,
                              scaling->var_weights,
-                             (-1)*scaling->func_weight));
+                             scaling->func_weight));
 
   return SLEQP_OKAY;
 }
@@ -620,7 +620,7 @@ SLEQP_RETCODE sleqp_unscale_cons_duals(SleqpScalingData* scaling,
 {
   SLEQP_CALL(apply_scaling(scaled_cons_duals,
                            scaling->cons_weights,
-                           -1* scaling->func_weight));
+                           scaling->func_weight));
 
   return SLEQP_OKAY;
 }
@@ -630,7 +630,7 @@ SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScalingData* scaling,
 {
   SLEQP_CALL(apply_unscaling(scaled_var_duals,
                              scaling->var_weights,
-                             -1* scaling->func_weight));
+                             scaling->func_weight));
 
   return SLEQP_OKAY;
 }

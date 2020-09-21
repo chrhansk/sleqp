@@ -165,6 +165,23 @@ START_TEST(test_func_val_inverse)
 }
 END_TEST
 
+START_TEST(test_nominal_scale_func_val)
+{
+  double nominal_func_val = 17.;
+
+  const double eps = sleqp_params_get_eps(params);
+
+  ASSERT_CALL(sleqp_scaling_set_func_weight_from_nominal(scaling,
+                                                         nominal_func_val));
+
+  double scaled_func_val = sleqp_scale_func_val(scaling,
+                                                nominal_func_val);
+
+  ck_assert(sleqp_le(scaled_func_val, 1., eps));
+  ck_assert(sleqp_ge(scaled_func_val, .5, eps));
+}
+END_TEST
+
 START_TEST(test_func_grad_inverse)
 {
   SleqpSparseVec* func_grad;
@@ -342,6 +359,7 @@ Suite* scaling_test_suite()
   tcase_add_test(tc_nominal, test_nominal_scale);
   tcase_add_test(tc_nominal, test_nominal_neg);
   tcase_add_test(tc_nominal, test_nominal_small);
+  tcase_add_test(tc_nominal, test_nominal_scale_func_val);
 
   tcase_add_test(tc_scale_inv, test_func_val_inverse);
   tcase_add_test(tc_scale_inv, test_func_grad_invalid);
