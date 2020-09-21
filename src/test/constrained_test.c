@@ -478,7 +478,7 @@ START_TEST(test_unscaled_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_free(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
 }
 END_TEST
 
@@ -528,7 +528,7 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_free(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
 }
 END_TEST
 
@@ -581,7 +581,7 @@ START_TEST(test_scaled_sr1_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_free(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
 }
 END_TEST
 
@@ -634,7 +634,7 @@ START_TEST(test_scaled_bfgs_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_free(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
 }
 END_TEST
 
@@ -690,7 +690,7 @@ START_TEST(test_auto_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_free(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 }

@@ -32,11 +32,16 @@ cdef class Scaling:
   def __dealloc__(self):
     csleqp_call(csleqp.sleqp_sparse_matrix_release(&self.cons_jac))
     csleqp_call(csleqp.sleqp_sparse_vector_free(&self.gradient))
-    csleqp_call(csleqp.sleqp_scaling_free(&self.scaling))
+    csleqp_call(csleqp.sleqp_scaling_release(&self.scaling))
 
-  def set_func_weight(self, int weight):
+  @property
+  def func_weight(self):
+    return csleqp.sleqp_scaling_get_func_weight(self.scaling)
+
+  @func_weight.setter
+  def func_weight(self, value):
     csleqp_call(csleqp.sleqp_scaling_set_func_weight(self.scaling,
-                                                     weight))
+                                                     value))
 
   def set_func_weight_from_nominal(self, nominal_value):
     csleqp_call(csleqp.sleqp_scaling_set_func_weight_from_nominal(self.scaling,

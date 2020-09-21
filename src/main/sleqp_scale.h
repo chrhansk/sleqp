@@ -75,6 +75,8 @@ extern "C" {
 
   SleqpProblem* sleqp_scaling_get_scaled_problem(SleqpScalingData* scaling);
 
+  int sleqp_scaling_get_func_weight(SleqpScalingData* scaling);
+
   SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,
                                               int weight);
 
@@ -176,7 +178,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
                                             SleqpSparseMatrix* cons_jac);
 
-  SLEQP_RETCODE sleqp_scaling_free(SleqpScalingData** scaling);
+  SLEQP_RETCODE sleqp_scaling_capture(SleqpScalingData* scaling);
+
+  SLEQP_RETCODE sleqp_scaling_release(SleqpScalingData** scaling);
 
   /**
    * @}

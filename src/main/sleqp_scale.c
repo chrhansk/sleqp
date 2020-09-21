@@ -39,6 +39,8 @@ const int min_weight = -max_weight;
 
 struct SleqpScalingData
 {
+  int refcount;
+
   SleqpProblem* problem;
   SleqpParams* params;
   SleqpFunc* func;
@@ -260,6 +262,8 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
 
   *scaling = (SleqpScalingData) {0};
 
+  scaling->refcount = 1;
+
   scaling->problem = problem;
 
   scaling->func = problem->func;
@@ -314,6 +318,11 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
 SleqpProblem* sleqp_scaling_get_scaled_problem(SleqpScalingData* scaling)
 {
   return scaling->scaled_problem;
+}
+
+int sleqp_scaling_get_func_weight(SleqpScalingData* scaling)
+{
+  return scaling->func_weight;
 }
 
 SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,
@@ -897,7 +906,7 @@ SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_free(SleqpScalingData** star)
+static SLEQP_RETCODE scaling_free(SleqpScalingData** star)
 {
   SleqpScalingData* scaling = *star;
 
@@ -925,6 +934,32 @@ SLEQP_RETCODE sleqp_scaling_free(SleqpScalingData** star)
   sleqp_free(&(scaling->var_weights));
 
   sleqp_free(star);
+
+  *star = NULL;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_scaling_capture(SleqpScalingData* scaling)
+{
+  ++scaling->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_scaling_release(SleqpScalingData** star)
+{
+  SleqpScalingData* scaling = *star;
+
+  if(!scaling)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--scaling->refcount == 0)
+  {
+    SLEQP_CALL(scaling_free(star));
+  }
 
   *star = NULL;
 

@@ -300,7 +300,7 @@ void scaling_teardown()
 {
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
-  ASSERT_CALL(sleqp_scaling_free(&scaling));
+  ASSERT_CALL(sleqp_scaling_release(&scaling));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 

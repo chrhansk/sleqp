@@ -253,6 +253,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   if(solver->scaling_data)
   {
+    SLEQP_CALL(sleqp_scaling_capture(solver->scaling_data));
+
     SLEQP_CALL(sleqp_iterate_create(&solver->unscaled_iterate,
                                     solver->unscaled_problem,
                                     primal));
@@ -1911,6 +1913,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   {
     solver->unscaled_iterate = NULL;
   }
+
+  SLEQP_CALL(sleqp_scaling_release(&solver->scaling_data));
 
   SLEQP_CALL(sleqp_problem_free(&solver->unscaled_problem));
 
