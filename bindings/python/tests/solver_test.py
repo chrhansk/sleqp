@@ -5,62 +5,127 @@ import unittest
 
 import sleqp
 
-num_variables = 4
-num_constraints = 2
-
-initial_sol = np.array([1., 0., 2., 0.])
-
-class Func(sleqp.Func):
-
-    def set_value(self, values, reason):
-        assert((values == initial_sol).all())
-
-    def func_val(self):
-        return 0.
-
-    def cons_vals(self):
-        return np.zeros((num_constraints,))
-
-    def cons_jac(self):
-        return np.zeros((num_constraints, num_variables))
-
-    def hess_prod(self, func_dual, direction, cons_dual):
-        return np.zeros((num_variables,))
+from .constrained_fixture import *
 
 class SolverTest(unittest.TestCase):
 
-    def setUp(self):
-        inf = sleqp.inf()
+  def setUp(self):
+    self.params = sleqp.Params()
 
-        var_lb = np.array([-inf]*num_variables)
-        var_ub = np.array([inf]*num_variables)
+    self.func = ConstrainedFunc(num_variables, num_constraints)
 
-        cons_lb = np.array([-inf]*num_constraints)
-        cons_ub = np.array([inf]*num_constraints)
+    self.problem = sleqp.Problem(self.func,
+                                 self.params,
+                                 var_lb,
+                                 var_ub,
+                                 cons_lb,
+                                 cons_ub)
 
-        self.params = sleqp.Params()
+  def get_solver(self, options=None):
 
-        self.func = Func(num_variables, num_constraints)
+    if options is None:
+      options = sleqp.Options()
 
-        self.problem = sleqp.Problem(self.func,
-                                     self.params,
-                                     var_lb,
-                                     var_ub,
-                                     cons_lb,
-                                     cons_ub)
+    return sleqp.Solver(self.problem,
+                        self.params,
+                        options,
+                        initial_sol)
 
-        self.options = sleqp.Options()
+  def test_solve(self):
+    solver = self.get_solver()
 
-    # Solution round trip array -> sparse vec -> array
-    def test_set_solution(self):
+    solver.solve(max_num_iterations=100)
 
-        solver = sleqp.Solver(self.problem,
-                              self.params,
-                              self.options,
-                              initial_sol)
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-        solver.solve(max_num_iterations=0)
+    solution = solver.solution
 
-        sol = solver.solution.primal
+    self.assertTrue(np.allclose(expected_sol, solution.primal))
 
-        self.assertTrue((sol == initial_sol).all())
+  def test_solve_lp_duals(self):
+    options = sleqp.Options(dual_estimation_type=sleqp.DualEstimationType.LP)
+
+    solver = self.get_solver(options=options)
+
+    solver.solve(max_num_iterations=1000)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(expected_sol, solution.primal))
+
+  def test_solve_no_newton(self):
+    options = sleqp.Options(perform_newton_step=False)
+
+    solver = self.get_solver(options=options)
+
+    solver.solve(max_num_iterations=1000)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(expected_sol, solution.primal))
+
+  def test_solve_linear(self):
+    options = sleqp.Options(use_quadratic_model=False)
+
+    solver = self.get_solver(options=options)
+
+    solver.solve(max_num_iterations=1000)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(expected_sol, solution.primal))
+
+  def test_solve_linear_no_newton(self):
+    options = sleqp.Options(perform_newton_step=False,
+                            use_quadratic_model=False)
+
+    solver = self.get_solver(options=options)
+
+    solver.solve(max_num_iterations=1000)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(expected_sol, solution.primal))
+
+  def test_iterate(self):
+    solver = self.get_solver()
+
+    solver.solve(max_num_iterations=1000)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.func.set_value(solution.primal, sleqp.ValueReason.NoReason)
+
+    expected_func_val = self.func.func_val()
+
+    self.assertTrue(np.allclose(np.array([expected_func_val]),
+                                np.array([solution.func_val])))
+
+    expected_cons_vals = self.func.cons_vals()
+
+    self.assertTrue(np.allclose(expected_cons_vals,
+                                solution.cons_val))
+
+    expected_cons_jac = self.func.cons_jac()
+
+    actual_cons_jac = solution.cons_jac.toarray()
+
+    self.assertTrue(np.allclose(expected_cons_jac,
+                                actual_cons_jac))
+
+
+if __name__ == '__main__':
+  import coloredlogs
+  import logging
+  coloredlogs.install(level=logging.DEBUG)
+  unittest.main()
