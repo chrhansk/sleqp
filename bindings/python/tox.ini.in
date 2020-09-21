@@ -1,6 +1,7 @@
 [testenv]
 deps =
      -r{toxinidir}/requirements.txt
-commands = python -m unittest
+     -r{toxinidir}/test_requirements.txt
+commands = pytest
 setenv = LD_LIBRARY_PATH=@SLEQP_LIBRARY_DIR@
 passenv = GRB_LICENSE_FILE
