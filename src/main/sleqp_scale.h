@@ -52,6 +52,7 @@ extern "C" {
    * l' &:= A l                            \\
    * u' &:= A u                            \\
    * l_x' &:= B l_x                        \\
+   * x'   &:= B x                          \\
    * u_x' &:= B u_x                        \\
    * \end{aligned}
    * \f]
@@ -77,13 +78,30 @@ extern "C" {
   SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,
                                               int weight);
 
+  SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScalingData* scaling,
+                                                           double nominal_value);
+
   SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
                                              int index,
                                              int weight);
 
+  /**
+   * Sets variable scaling weights in order for the scaling of the primal values
+   * to map all of the given nominal values to [.5, 1.)
+   **/
+  SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scaling,
+                                                           double* nominal_values);
+
   SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
                                               int index,
                                               int weight);
+
+  SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scaling,
+                                                            double* nominal_values);
+
+  int* sleqp_scaling_get_var_weights(SleqpScalingData* scaling);
+
+  int* sleqp_scaling_get_cons_weights(SleqpScalingData* scaling);
 
   SLEQP_RETCODE sleqp_scaling_set_func(SleqpScalingData* scaling,
                                        SleqpFunc* func);

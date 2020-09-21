@@ -57,6 +57,80 @@ void scaling_setup()
                                      SLEQP_VALUE_REASON_INIT));
 }
 
+START_TEST(test_nominal_large)
+{
+  double nominal_values[] = {7.9, 15.9};
+
+  ASSERT_CALL(sleqp_scaling_set_var_weights_from_nominal(scaling,
+                                                         nominal_values));
+
+  int* var_weights = sleqp_scaling_get_var_weights(scaling);
+
+  ck_assert_int_eq(var_weights[0], 3);
+  ck_assert_int_eq(var_weights[1], 4);
+}
+
+START_TEST(test_nominal_scale)
+{
+  const double eps = sleqp_params_get_eps(params);
+  double nominal_values[] = {4.1, 15.9};
+
+  ASSERT_CALL(sleqp_scaling_set_var_weights_from_nominal(scaling,
+                                                         nominal_values));
+
+  ASSERT_CALL(sleqp_scaling_flush(scaling));
+
+  SleqpSparseVec* primal = sleqp_iterate_get_primal(iterate);
+
+  ASSERT_CALL(sleqp_sparse_vector_clear(primal));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(primal,
+                                       0,
+                                       nominal_values[0] - 1e-5));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(primal,
+                                       1,
+                                       nominal_values[1] - 1e-5));
+
+  ASSERT_CALL(sleqp_scale_iterate(scaling, iterate));
+
+  for(int index = 0; index < primal->nnz; ++index)
+  {
+    ck_assert(sleqp_ge(primal->data[index], .5, eps));
+    ck_assert(sleqp_le(primal->data[index], 1., eps));
+  }
+
+
+}
+END_TEST
+
+START_TEST(test_nominal_neg)
+{
+  double nominal_values[] = {-7.9, -15.9};
+
+  ASSERT_CALL(sleqp_scaling_set_var_weights_from_nominal(scaling,
+                                                         nominal_values));
+
+  int* var_weights = sleqp_scaling_get_var_weights(scaling);
+
+  ck_assert_int_eq(var_weights[0], 3);
+  ck_assert_int_eq(var_weights[1], 4);
+}
+
+START_TEST(test_nominal_small)
+{
+  double nominal_values[] = {0.51, 0.26};
+
+  ASSERT_CALL(sleqp_scaling_set_var_weights_from_nominal(scaling,
+                                                         nominal_values));
+
+  int* var_weights = sleqp_scaling_get_var_weights(scaling);
+
+  ck_assert_int_eq(var_weights[0], 0);
+  ck_assert_int_eq(var_weights[1], -1);
+}
+
+
 START_TEST(test_func_grad_invalid)
 {
   SleqpSparseVec* func_grad;
@@ -123,10 +197,10 @@ START_TEST(test_cons_val_inverse)
 
 
   ASSERT_CALL(sleqp_scale_cons_val(scaling,
-                                    cons_val));
+                                   cons_val));
 
   ASSERT_CALL(sleqp_unscale_cons_val(scaling,
-                                      cons_val));
+                                     cons_val));
 
   ck_assert(sleqp_sparse_vector_eq(sleqp_iterate_get_cons_val(iterate),
                                    cons_val,
@@ -238,14 +312,21 @@ void scaling_teardown()
 Suite* scaling_test_suite()
 {
   Suite *suite;
+  TCase *tc_nominal;
   TCase *tc_scale_inv;
   TCase* tc_scale_deriv;
 
   suite = suite_create("Scaling tests");
 
+  tc_nominal = tcase_create("Nominal values tests");
+
   tc_scale_inv = tcase_create("Scaling inverse tests");
 
   tc_scale_deriv = tcase_create("Scaling derivative tests");
+
+  tcase_add_checked_fixture(tc_nominal,
+                            scaling_setup,
+                            scaling_teardown);
 
   tcase_add_checked_fixture(tc_scale_inv,
                             scaling_setup,
@@ -254,6 +335,12 @@ Suite* scaling_test_suite()
   tcase_add_checked_fixture(tc_scale_deriv,
                             scaling_setup,
                             scaling_teardown);
+
+  tcase_add_test(tc_nominal, test_nominal_large);
+  tcase_add_test(tc_nominal, test_nominal_scale);
+  tcase_add_test(tc_nominal, test_nominal_neg);
+  tcase_add_test(tc_nominal, test_nominal_small);
+
   tcase_add_test(tc_scale_inv, test_func_val_inverse);
   tcase_add_test(tc_scale_inv, test_func_grad_invalid);
   tcase_add_test(tc_scale_inv, test_func_grad_inverse);
@@ -262,6 +349,8 @@ Suite* scaling_test_suite()
 
   tcase_add_test(tc_scale_deriv, test_first_order_deriv);
   tcase_add_test(tc_scale_deriv, test_second_order_deriv);
+
+  suite_add_tcase(suite, tc_nominal);
 
   suite_add_tcase(suite, tc_scale_inv);
 
