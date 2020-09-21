@@ -35,8 +35,6 @@ class ScaleTest(unittest.TestCase):
 
     scaling = sleqp.Scaling(self.problem, self.params)
 
-    nominal = 50.
-
     values = [(50., 6), (-50., 6), (0.75, 0), (0.3, -1)]
 
     for (nominal, expected_weight) in values:

@@ -125,7 +125,6 @@ class SolverTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  import coloredlogs
   import logging
-  coloredlogs.install(level=logging.DEBUG)
+  logging.basicConfig(level=logging.INFO)
   unittest.main()

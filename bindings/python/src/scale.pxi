@@ -69,6 +69,14 @@ cdef class Scaling:
 
     return Array(array, self)
 
+  @variable_weights.setter
+  def variable_weights(self, values):
+    assert values.shape == (self.num_variables,)
+    assert values.dtype == np.int64
+
+    for i in range(self.num_variables):
+      self.set_variable_weight(i, values[i])
+
   @property
   def constraint_weights(self):
     length = self.num_constraints
@@ -78,6 +86,14 @@ cdef class Scaling:
     array.flags.writeable = False
 
     return Array(array, self)
+
+  @constraint_weights.setter
+  def constraint_weights(self, values):
+    assert values.shape == (self.num_constraints,)
+    assert values.dtype == np.int64
+
+    for i in range(self.num_constraints):
+      self.set_constraint_weight(i, values[i])
 
   def set_func_weight_from_nominal(self, nominal_value):
     csleqp_call(csleqp.sleqp_scaling_set_func_weight_from_nominal(self.scaling,
