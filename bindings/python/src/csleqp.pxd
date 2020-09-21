@@ -305,33 +305,42 @@ cdef extern from "sleqp.h":
                                       int num_residuals,
                                       double levenberg_marquardt,
                                       SleqpParams* params,
-                                      void* func_data);
+                                      void* func_data)
 
 
   # Scaling
 
   SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** scaling,
                                      SleqpProblem* problem,
-                                     SleqpParams* params);
+                                     SleqpParams* params)
 
   SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,
-                                              int weight);
+                                              int weight)
+
+  SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScalingData* scaling,
+                                                           double nominal_value)
 
   SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
                                              int index,
-                                             int weight);
+                                             int weight)
+
+  SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scaling,
+                                                           double* nominal_values)
 
   SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
                                               int index,
-                                              int weight);
+                                              int weight)
+
+  SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scaling,
+                                                            double* nominal_values)
 
   SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
-                                                 SleqpSparseVec* gradient);
+                                                 SleqpSparseVec* gradient)
 
   SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
-                                            SleqpSparseMatrix* cons_jac);
+                                            SleqpSparseMatrix* cons_jac)
 
-  SLEQP_RETCODE sleqp_scaling_free(SleqpScalingData** scaling);
+  SLEQP_RETCODE sleqp_scaling_free(SleqpScalingData** scaling)
 
   # Solver
 
