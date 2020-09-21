@@ -69,6 +69,7 @@ START_TEST(test_nominal_large)
   ck_assert_int_eq(var_weights[0], 3);
   ck_assert_int_eq(var_weights[1], 4);
 }
+END_TEST
 
 START_TEST(test_nominal_scale)
 {
@@ -116,6 +117,7 @@ START_TEST(test_nominal_neg)
   ck_assert_int_eq(var_weights[0], 3);
   ck_assert_int_eq(var_weights[1], 4);
 }
+END_TEST
 
 START_TEST(test_nominal_small)
 {
@@ -129,7 +131,7 @@ START_TEST(test_nominal_small)
   ck_assert_int_eq(var_weights[0], 0);
   ck_assert_int_eq(var_weights[1], -1);
 }
-
+END_TEST
 
 START_TEST(test_func_grad_invalid)
 {
