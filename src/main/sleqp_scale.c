@@ -217,9 +217,9 @@ scaled_func_hess_prod(int num_variables,
   SLEQP_CALL(sleqp_sparse_vector_copy(cons_duals,
                                       scaling->scaled_cons_duals));
 
-  SLEQP_CALL(apply_scaling(scaling->scaled_cons_duals,
-                           scaling->cons_weights,
-                           scaling->func_weight));
+  SLEQP_CALL(apply_unscaling(scaling->scaled_cons_duals,
+                             scaling->cons_weights,
+                             scaling->func_weight));
 
   SLEQP_CALL(sleqp_func_hess_prod(scaling->func,
                                   func_dual,
@@ -467,7 +467,7 @@ SLEQP_RETCODE sleqp_scale_func_grad(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_scale_cons_val(SleqpScalingData* scaling,
                                    SleqpSparseVec* cons_val)
 {
-  SLEQP_CALL(apply_scaling(cons_val, scaling->cons_weights, 0));
+  SLEQP_CALL(apply_unscaling(cons_val, scaling->cons_weights, 0));
 
   return SLEQP_OKAY;
 }
@@ -495,7 +495,7 @@ SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScalingData* scaling,
     const int row = cons_jac_rows[index];
 
     cons_jac_data[index] = ldexp(cons_jac_data[index],
-                                 scaling->cons_weights[row] +
+                                 (-1) * scaling->cons_weights[row] +
                                  scaling->var_weights[col]);
   }
 
@@ -507,9 +507,9 @@ SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_scale_cons_duals(SleqpScalingData* scaling,
                                      SleqpSparseVec* cons_duals)
 {
-  SLEQP_CALL(apply_unscaling(cons_duals,
-                             scaling->cons_weights,
-                             scaling->func_weight));
+  SLEQP_CALL(apply_scaling(cons_duals,
+                           scaling->cons_weights,
+                           scaling->func_weight));
 
   return SLEQP_OKAY;
 }
@@ -578,7 +578,7 @@ SLEQP_RETCODE sleqp_unscale_func_grad(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_unscale_cons_val(SleqpScalingData* scaling,
                                      SleqpSparseVec* scaled_cons_val)
 {
-  SLEQP_CALL(apply_unscaling(scaled_cons_val, scaling->cons_weights, 0));
+  SLEQP_CALL(apply_scaling(scaled_cons_val, scaling->cons_weights, 0));
 
   return SLEQP_OKAY;
 }
@@ -606,8 +606,8 @@ SLEQP_RETCODE sleqp_unscale_cons_jac(SleqpScalingData* scaling,
     const int row = cons_jac_rows[index];
 
     cons_jac_data[index] = ldexp(cons_jac_data[index],
-                                 - (scaling->var_weights[col] +
-                                    scaling->cons_weights[row]));
+                                 (-1)*(scaling->var_weights[col]) +
+                                 scaling->cons_weights[row]);
   }
 
   MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
@@ -618,9 +618,9 @@ SLEQP_RETCODE sleqp_unscale_cons_jac(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_unscale_cons_duals(SleqpScalingData* scaling,
                                        SleqpSparseVec* scaled_cons_duals)
 {
-  SLEQP_CALL(apply_scaling(scaled_cons_duals,
-                           scaling->cons_weights,
-                           scaling->func_weight));
+  SLEQP_CALL(apply_unscaling(scaled_cons_duals,
+                             scaling->cons_weights,
+                             (-1) * scaling->func_weight));
 
   return SLEQP_OKAY;
 }

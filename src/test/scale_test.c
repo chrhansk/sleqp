@@ -182,6 +182,38 @@ START_TEST(test_nominal_scale_func_val)
 }
 END_TEST
 
+START_TEST(test_nominal_scale_cons_vals)
+{
+  double nominal_cons_vals[] = {17., .4};
+
+  const int num_constraints = 2.;
+  const double eps = sleqp_params_get_eps(params);
+
+  SleqpSparseVec* cons_vals;
+
+  ASSERT_CALL(sleqp_sparse_vector_create(&cons_vals,
+                                         num_constraints,
+                                         num_constraints));
+
+  ASSERT_CALL(sleqp_sparse_vector_from_raw(cons_vals,
+                                           nominal_cons_vals,
+                                           num_constraints,
+                                           eps));
+
+  ASSERT_CALL(sleqp_scaling_set_cons_weights_from_nominal(scaling,
+                                                          nominal_cons_vals));
+
+  ASSERT_CALL(sleqp_scale_cons_val(scaling, cons_vals));
+
+  for(int k = 0; k < cons_vals->nnz; ++k)
+  {
+    const double value = cons_vals->data[k];
+    ck_assert(sleqp_le(value, 1., eps));
+    ck_assert(sleqp_ge(value, .5, eps));
+  }
+}
+END_TEST
+
 START_TEST(test_func_grad_inverse)
 {
   SleqpSparseVec* func_grad;
@@ -360,6 +392,7 @@ Suite* scaling_test_suite()
   tcase_add_test(tc_nominal, test_nominal_neg);
   tcase_add_test(tc_nominal, test_nominal_small);
   tcase_add_test(tc_nominal, test_nominal_scale_func_val);
+  tcase_add_test(tc_nominal, test_nominal_scale_cons_vals);
 
   tcase_add_test(tc_scale_inv, test_func_val_inverse);
   tcase_add_test(tc_scale_inv, test_func_grad_invalid);
