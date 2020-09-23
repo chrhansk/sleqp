@@ -12,6 +12,7 @@
 SleqpParams* params;
 
 SleqpScalingData* scaling;
+SleqpProblemScaling* problem_scaling;
 SleqpProblem* scaled_problem;
 
 SleqpProblem* problem;
@@ -32,8 +33,8 @@ void scaling_setup()
                                    quadconsfunc_cons_ub));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   problem,
-                                   params));
+                                   problem->num_variables,
+                                   problem->num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling,
                                             2));
@@ -44,9 +45,14 @@ void scaling_setup()
   ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 0, 7));
   ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 1, -1));
 
-  ASSERT_CALL(sleqp_scaling_flush(scaling));
+  ASSERT_CALL(sleqp_problem_scaling_create(&problem_scaling,
+                                           scaling,
+                                           problem,
+                                           params));
 
-  scaled_problem = sleqp_scaling_get_scaled_problem(scaling);
+  ASSERT_CALL(sleqp_problem_scaling_flush(problem_scaling));
+
+  scaled_problem = sleqp_problem_scaling_get_problem(problem_scaling);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
@@ -78,8 +84,6 @@ START_TEST(test_nominal_scale)
 
   ASSERT_CALL(sleqp_scaling_set_var_weights_from_nominal(scaling,
                                                          nominal_values));
-
-  ASSERT_CALL(sleqp_scaling_flush(scaling));
 
   SleqpSparseVec* primal = sleqp_iterate_get_primal(iterate);
 
@@ -350,6 +354,8 @@ END_TEST
 void scaling_teardown()
 {
   ASSERT_CALL(sleqp_iterate_release(&iterate));
+
+  ASSERT_CALL(sleqp_problem_scaling_release(&problem_scaling));
 
   ASSERT_CALL(sleqp_scaling_release(&scaling));
 

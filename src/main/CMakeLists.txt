@@ -16,6 +16,7 @@ set(COMMON_SRC
   sleqp_log.c
   sleqp_lsq.c
   sleqp_options.c
+  sleqp_problem_scaling.c
   sleqp_newton.c
   sleqp_merit.c
   sleqp_problem.c

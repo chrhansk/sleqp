@@ -23,6 +23,7 @@
 #include "sleqp_iterate.h"
 #include "sleqp_merit.h"
 #include "sleqp_scale.h"
+#include "sleqp_problem_scaling.h"
 
 #include "lp/sleqp_lpi.h"
 
@@ -36,6 +37,8 @@ struct SleqpSolver
   SleqpProblem* unscaled_problem;
 
   SleqpScalingData* scaling_data;
+
+  SleqpProblemScaling* problem_scaling;
 
   SleqpIterate* unscaled_iterate;
 
@@ -203,9 +206,9 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   const int num_constraints = problem->num_constraints;
   const int num_variables = problem->num_variables;
 
-  {
-    SleqpFunc* func = problem->func;
+  SleqpFunc* func = problem->func;
 
+  {
     const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_hessian_eval(options);
 
     const int num_iter = sleqp_options_get_quasi_newton_num_iterates(options);
@@ -241,12 +244,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     problem->var_ub,
                                     problem->cons_lb,
                                     problem->cons_ub));
-
-    if(scaling_data)
-    {
-      SLEQP_CALL(sleqp_scaling_set_func(scaling_data,
-                                        func));
-    }
   }
 
   solver->scaling_data = scaling_data;
@@ -254,6 +251,14 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   if(solver->scaling_data)
   {
     SLEQP_CALL(sleqp_scaling_capture(solver->scaling_data));
+
+    SLEQP_CALL(sleqp_problem_scaling_create(&solver->problem_scaling,
+                                            solver->scaling_data,
+                                            problem,
+                                            solver->params));
+
+    SLEQP_CALL(sleqp_problem_scaling_set_func(solver->problem_scaling,
+                                              func));
 
     SLEQP_CALL(sleqp_iterate_create(&solver->unscaled_iterate,
                                     solver->unscaled_problem,
@@ -263,9 +268,9 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     solver->unscaled_problem,
                                     primal));
 
-    SLEQP_CALL(sleqp_scaling_flush(solver->scaling_data));
+    SLEQP_CALL(sleqp_problem_scaling_flush(solver->problem_scaling));
 
-    solver->problem = sleqp_scaling_get_scaled_problem(solver->scaling_data);
+    solver->problem = sleqp_problem_scaling_get_problem(solver->problem_scaling);
   }
   else
   {
@@ -1913,6 +1918,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   {
     solver->unscaled_iterate = NULL;
   }
+
+  SLEQP_CALL(sleqp_problem_scaling_release(&solver->problem_scaling));
 
   SLEQP_CALL(sleqp_scaling_release(&solver->scaling_data));
 

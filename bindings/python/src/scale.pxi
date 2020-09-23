@@ -26,23 +26,24 @@ cdef class Scaling:
   cdef int num_constraints
 
   def __cinit__(self,
-                Problem problem,
-                Params params):
+                int num_variables,
+                int num_constraints):
+
     csleqp_call(csleqp.sleqp_scaling_create(&self.scaling,
-                                            problem.problem,
-                                            params.params))
+                                            num_variables,
+                                            num_constraints))
 
     csleqp_call(csleqp.sleqp_sparse_vector_create(&self.gradient,
-                                                  problem.num_variables,
+                                                  num_variables,
                                                   0))
 
     csleqp_call(csleqp.sleqp_sparse_matrix_create(&self.cons_jac,
-                                                  problem.num_constraints,
-                                                  problem.num_variables,
+                                                  num_constraints,
+                                                  num_variables,
                                                   0))
 
-    self.num_variables = problem.num_variables
-    self.num_constraints = problem.num_constraints
+    self.num_variables = num_variables
+    self.num_constraints = num_constraints
 
 
   def __dealloc__(self):
@@ -122,17 +123,21 @@ cdef class Scaling:
                                                                    &nominal_values[0]))
 
   def set_from_gradient(self,
-                        np.ndarray grad_array):
+                        np.ndarray grad_array,
+                        float eps):
     csleqp_call(array_to_sleqp_sparse_vec(grad_array,
                                           self.gradient))
 
     csleqp_call(csleqp.sleqp_func_scaling_from_gradient(self.scaling,
-                                                        self.gradient))
+                                                        self.gradient,
+                                                        eps))
 
   def set_from_cons_jac(self,
-                        object mat):
+                        object mat,
+                        float eps):
     csleqp_call(matrix_to_sleqp_sparse_matrix(mat,
                                               self.cons_jac))
 
     csleqp_call(csleqp.sleqp_scaling_from_cons_jac(self.scaling,
-                                                   self.cons_jac))
+                                                   self.cons_jac,
+                                                   eps))

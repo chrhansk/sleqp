@@ -70,10 +70,11 @@ extern "C" {
   typedef struct SleqpScalingData SleqpScalingData;
 
   SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** scaling,
-                                     SleqpProblem* problem,
-                                     SleqpParams* params);
+                                     int num_variables,
+                                     int num_constraints);
 
-  SleqpProblem* sleqp_scaling_get_scaled_problem(SleqpScalingData* scaling);
+  int sleqp_scaling_get_num_variables(SleqpScalingData* scaling);
+  int sleqp_scaling_get_num_constraints(SleqpScalingData* scaling);
 
   int sleqp_scaling_get_func_weight(SleqpScalingData* scaling);
 
@@ -108,8 +109,6 @@ extern "C" {
   SLEQP_RETCODE sleqp_scaling_set_func(SleqpScalingData* scaling,
                                        SleqpFunc* func);
 
-  SLEQP_RETCODE sleqp_scaling_flush(SleqpScalingData* scaling);
-
   /** @name Scaling
    *  Functions to perform scaling.
    */
@@ -135,6 +134,9 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_scale_var_duals(SleqpScalingData* scaling,
                                       SleqpSparseVec* var_duals);
+
+  SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScalingData* scaling,
+                                            SleqpSparseVec* product);
 
   SLEQP_RETCODE sleqp_scale_iterate(SleqpScalingData* scaling,
                                     SleqpIterate* iterate);
@@ -167,16 +169,22 @@ extern "C" {
   SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScalingData* scaling,
                                         SleqpSparseVec* scaled_var_duals);
 
+  SLEQP_RETCODE sleqp_unscale_hessian_direction(SleqpScalingData* scaling,
+                                                SleqpSparseVec* direction,
+                                                SleqpSparseVec* cons_duals);
+
   SLEQP_RETCODE sleqp_unscale_iterate(SleqpScalingData* scaling,
                                       SleqpIterate* scaled_iterate);
 
   /**@}*/
 
   SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
-                                                 SleqpSparseVec* gradient);
+                                                 SleqpSparseVec* gradient,
+                                                 double eps);
 
   SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
-                                            SleqpSparseMatrix* cons_jac);
+                                            SleqpSparseMatrix* cons_jac,
+                                            double eps);
 
   SLEQP_RETCODE sleqp_scaling_capture(SleqpScalingData* scaling);
 

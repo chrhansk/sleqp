@@ -311,8 +311,8 @@ cdef extern from "sleqp.h":
   # Scaling
 
   SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** scaling,
-                                     SleqpProblem* problem,
-                                     SleqpParams* params)
+                                     int num_variables,
+                                     int num_constraints)
 
   int sleqp_scaling_get_func_weight(SleqpScalingData* scaling)
 
@@ -341,10 +341,12 @@ cdef extern from "sleqp.h":
                                                             double* nominal_values)
 
   SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
-                                                 SleqpSparseVec* gradient)
+                                                 SleqpSparseVec* gradient,
+                                                 double eps)
 
   SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
-                                            SleqpSparseMatrix* cons_jac)
+                                            SleqpSparseMatrix* cons_jac,
+                                            double eps)
 
   SLEQP_RETCODE sleqp_scaling_release(SleqpScalingData** scaling)
 

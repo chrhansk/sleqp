@@ -41,9 +41,8 @@ struct SleqpScalingData
 {
   int refcount;
 
-  SleqpProblem* problem;
-  SleqpParams* params;
-  SleqpFunc* func;
+  int num_variables;
+  int num_constraints;
 
   int func_weight;
   int* var_weights;
@@ -51,14 +50,6 @@ struct SleqpScalingData
 
   double* min_cache;
   double* max_cache;
-
-  SleqpSparseVec* unscaled_value;
-
-  SleqpSparseVec* scaled_direction;
-  SleqpSparseVec* scaled_cons_duals;
-
-  SleqpFunc* scaled_func;
-  SleqpProblem* scaled_problem;
 };
 
 static SLEQP_RETCODE apply_const_scaling(SleqpSparseVec* vec,
@@ -129,122 +120,15 @@ static SLEQP_RETCODE apply_quad_scaling(SleqpSparseVec* vec,
 }
 
 
-static SLEQP_RETCODE
-scaled_func_set_value(SleqpSparseVec* scaled_value,
-                      SLEQP_VALUE_REASON reason,
-                      int num_variables,
-                      int* func_grad_nnz,
-                      int* cons_val_nnz,
-                      int* cons_jac_nnz,
-                      void* func_data)
-{
-  SleqpScalingData* scaling = (SleqpScalingData*) func_data;
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(scaled_value,
-                                      scaling->unscaled_value));
-
-  SLEQP_CALL(sleqp_unscale_point(scaling,
-                                 scaling->unscaled_value));
-
-  SLEQP_CALL(sleqp_func_set_value(scaling->func,
-                                  scaling->unscaled_value,
-                                  reason,
-                                  func_grad_nnz,
-                                  cons_val_nnz,
-                                  cons_jac_nnz));
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE
-scaled_func_eval(int num_variables,
-                 const SleqpSparseVec* cons_indices,
-                 double* func_val,
-                 SleqpSparseVec* func_grad,
-                 SleqpSparseVec* cons_val,
-                 SleqpSparseMatrix* cons_jac,
-                 void* func_data)
-{
-  SleqpScalingData* scaling = (SleqpScalingData*) func_data;
-
-  SLEQP_CALL(sleqp_func_eval(scaling->func,
-                             cons_indices,
-                             func_val,
-                             func_grad,
-                             cons_val,
-                             cons_jac));
-
-  if(func_val)
-  {
-    (*func_val) = sleqp_scale_func_val(scaling, (*func_val));
-  }
-
-  if(func_grad)
-  {
-    SLEQP_CALL(sleqp_scale_func_grad(scaling, func_grad));
-  }
-
-  if(cons_val)
-  {
-    SLEQP_CALL(sleqp_scale_cons_val(scaling, cons_val));
-  }
-
-  if(cons_jac)
-  {
-    SLEQP_CALL(sleqp_scale_cons_jac(scaling, cons_jac));
-  }
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE
-scaled_func_hess_prod(int num_variables,
-                      const double* func_dual,
-                      const SleqpSparseVec* direction,
-                      const SleqpSparseVec* cons_duals,
-                      SleqpSparseVec* product,
-                      void* func_data)
-{
-  SleqpScalingData* scaling = (SleqpScalingData*) func_data;
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(direction,
-                                      scaling->scaled_direction));
-
-  SLEQP_CALL(apply_scaling(scaling->scaled_direction,
-                           scaling->var_weights,
-                           0));
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(cons_duals,
-                                      scaling->scaled_cons_duals));
-
-  SLEQP_CALL(apply_unscaling(scaling->scaled_cons_duals,
-                             scaling->cons_weights,
-                             scaling->func_weight));
-
-  SLEQP_CALL(sleqp_func_hess_prod(scaling->func,
-                                  func_dual,
-                                  scaling->scaled_direction,
-                                  scaling->scaled_cons_duals,
-                                  product));
-
-  SLEQP_CALL(apply_scaling(product,
-                           scaling->var_weights,
-                           (-1.) * scaling->func_weight));
-
-
-  return SLEQP_OKAY;
-}
 
 static SLEQP_RETCODE reset_scaling(SleqpScalingData* scaling)
 {
-  SleqpProblem* problem = scaling->problem;
-
-  for(int j = 0; j < problem->num_variables; ++j)
+  for(int j = 0; j < scaling->num_variables; ++j)
   {
     scaling->var_weights[j] = 0;
   }
 
-  for(int i = 0; i < problem->num_constraints; ++i)
+  for(int i = 0; i < scaling->num_constraints; ++i)
   {
     scaling->cons_weights[i] = 0;
   }
@@ -253,8 +137,8 @@ static SLEQP_RETCODE reset_scaling(SleqpScalingData* scaling)
 }
 
 SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
-                                   SleqpProblem* problem,
-                                   SleqpParams* params)
+                                   int num_variables,
+                                   int num_constraints)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -262,62 +146,44 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
 
   *scaling = (SleqpScalingData) {0};
 
+  if(num_variables < 0)
+  {
+    sleqp_log_error("Negative number of variables provided to scaling");
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  if(num_constraints < 0)
+  {
+    sleqp_log_error("Negative number of constraints provided to scaling");
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
   scaling->refcount = 1;
 
-  scaling->problem = problem;
-
-  scaling->func = problem->func;
-
-  scaling->params = params;
+  scaling->num_variables = num_variables;
+  scaling->num_constraints = num_constraints;
 
   SLEQP_CALL(sleqp_calloc(&(scaling->var_weights),
-                          problem->num_variables));
+                          scaling->num_variables));
 
   SLEQP_CALL(sleqp_calloc(&(scaling->cons_weights),
-                          problem->num_constraints));
+                          scaling->num_constraints));
 
   scaling->func_weight = 0;
 
   SLEQP_CALL(reset_scaling(scaling));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&(scaling->unscaled_value),
-                                        problem->num_variables,
-                                        0));
-
-  SLEQP_CALL(sleqp_sparse_vector_create(&(scaling->scaled_direction),
-                                        problem->num_variables,
-                                        0));
-
-  SLEQP_CALL(sleqp_sparse_vector_create(&(scaling->scaled_cons_duals),
-                                        problem->num_constraints,
-                                        0));
-
-  SleqpFuncCallbacks callbacks = {
-    .set_value = scaled_func_set_value,
-    .func_eval = scaled_func_eval,
-    .hess_prod = scaled_func_hess_prod,
-    .func_free = NULL
-  };
-
-  SLEQP_CALL(sleqp_func_create(&(scaling->scaled_func),
-                               &callbacks,
-                               problem->num_variables,
-                               scaling));
-
-  SLEQP_CALL(sleqp_problem_create(&(scaling->scaled_problem),
-                                  scaling->scaled_func,
-                                  params,
-                                  problem->var_lb,
-                                  problem->var_ub,
-                                  problem->cons_lb,
-                                  problem->cons_ub));
-
   return SLEQP_OKAY;
 }
 
-SleqpProblem* sleqp_scaling_get_scaled_problem(SleqpScalingData* scaling)
+int sleqp_scaling_get_num_variables(SleqpScalingData* scaling)
 {
-  return scaling->scaled_problem;
+  return scaling->num_variables;
+}
+
+int sleqp_scaling_get_num_constraints(SleqpScalingData* scaling)
+{
+  return scaling->num_constraints;
 }
 
 int sleqp_scaling_get_func_weight(SleqpScalingData* scaling)
@@ -344,7 +210,7 @@ SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
                                            int index,
                                            int weight)
 {
-  if(index < 0 || index >= scaling->problem->num_variables)
+  if(index < 0 || index >= scaling->num_variables)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -357,7 +223,7 @@ SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scaling,
                                                          double* nominal_values)
 {
-  for(int j = 0; j < scaling->problem->num_variables; ++j)
+  for(int j = 0; j < scaling->num_variables; ++j)
   {
     frexp(nominal_values[j], scaling->var_weights + j);
   }
@@ -369,7 +235,7 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
                                             int index,
                                             int weight)
 {
-  if(index < 0 || index >= scaling->problem->num_constraints)
+  if(index < 0 || index >= scaling->num_constraints)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -382,7 +248,7 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scaling,
                                                           double* nominal_values)
 {
-  for(int i = 0; i < scaling->problem->num_constraints; ++i)
+  for(int i = 0; i < scaling->num_constraints; ++i)
   {
     frexp(nominal_values[i], scaling->cons_weights + i);
   }
@@ -398,46 +264,6 @@ int* sleqp_scaling_get_var_weights(SleqpScalingData* scaling)
 int* sleqp_scaling_get_cons_weights(SleqpScalingData* scaling)
 {
   return scaling->cons_weights;
-}
-
-SLEQP_RETCODE sleqp_scaling_set_func(SleqpScalingData* scaling,
-                                     SleqpFunc* func)
-{
-  scaling->func = func;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_scaling_flush(SleqpScalingData* scaling)
-{
-  SleqpProblem* problem = scaling->problem;
-  SleqpProblem* scaled_problem = scaling->scaled_problem;
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(problem->var_lb,
-                                      scaled_problem->var_lb));
-
-  SLEQP_CALL(sleqp_scale_point(scaling,
-                               scaled_problem->var_lb));
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(problem->var_ub,
-                                      scaled_problem->var_ub));
-
-  SLEQP_CALL(sleqp_scale_point(scaling,
-                               scaled_problem->var_ub));
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(problem->cons_lb,
-                                      scaled_problem->cons_lb));
-
-  SLEQP_CALL(sleqp_scale_cons_val(scaling,
-                                  scaled_problem->cons_lb));
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(problem->cons_ub,
-                                      scaled_problem->cons_ub));
-
-  SLEQP_CALL(sleqp_scale_cons_val(scaling,
-                                  scaled_problem->cons_ub));
-
-  return SLEQP_OKAY;
 }
 
 double sleqp_scale_func_val(SleqpScalingData* scaling,
@@ -520,6 +346,16 @@ SLEQP_RETCODE sleqp_scale_var_duals(SleqpScalingData* scaling,
   SLEQP_CALL(apply_scaling(var_duals,
                            scaling->var_weights,
                            scaling->func_weight));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScalingData* scaling,
+                                          SleqpSparseVec* product)
+{
+  SLEQP_CALL(apply_scaling(product,
+                           scaling->var_weights,
+                           (-1.) * scaling->func_weight));
 
   return SLEQP_OKAY;
 }
@@ -635,6 +471,22 @@ SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_unscale_hessian_direction(SleqpScalingData* scaling,
+                                              SleqpSparseVec* direction,
+                                              SleqpSparseVec* cons_duals)
+{
+  SLEQP_CALL(apply_scaling(direction,
+                           scaling->var_weights,
+                           0));
+
+  SLEQP_CALL(apply_unscaling(cons_duals,
+                             scaling->cons_weights,
+                             scaling->func_weight));
+
+  return SLEQP_OKAY;
+}
+
+
 SLEQP_RETCODE sleqp_unscale_iterate(SleqpScalingData* scaling,
                                     SleqpIterate* scaled_iterate)
 {
@@ -665,13 +517,12 @@ SLEQP_RETCODE sleqp_unscale_iterate(SleqpScalingData* scaling,
 }
 
 SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
-                                               SleqpSparseVec* gradient)
+                                               SleqpSparseVec* gradient,
+                                               double eps)
 {
   double max_val = 0.;
 
   int* scaling_factor = &(scaling->func_weight);
-
-  const double eps = sleqp_params_get_eps(scaling->params);
 
   *scaling_factor = 0;
 
@@ -708,11 +559,10 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
                                            SleqpSparseMatrix* matrix,
                                            bool column,
                                            int* scaling_factors,
-                                           int* prescaling)
+                                           int* prescaling,
+                                           double eps)
 {
   double* max_vals = scaling->max_cache;
-
-  const double eps = sleqp_params_get_eps(scaling->params);
 
   const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
@@ -787,12 +637,11 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
 
 static double max_matrix_ratio(SleqpScalingData* scaling,
                                SleqpSparseMatrix* matrix,
-                               bool column)
+                               bool column,
+                               double eps)
 {
   double* min_vals = scaling->min_cache;
   double* max_vals = scaling->max_cache;
-
-  const double eps = sleqp_params_get_eps(scaling->params);
 
   const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
@@ -854,23 +703,22 @@ static double max_matrix_ratio(SleqpScalingData* scaling,
 }
 
 SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
-                                          SleqpSparseMatrix* cons_jac)
+                                          SleqpSparseMatrix* cons_jac,
+                                          double eps)
 {
   SLEQP_CALL(reset_scaling(scaling));
 
-  SleqpProblem* problem = scaling->problem;
-
   if(!(scaling->min_cache))
   {
-    const int size = SLEQP_MAX(problem->num_constraints,
-                               problem->num_variables);
+    const int size = SLEQP_MAX(scaling->num_constraints,
+                               scaling->num_variables);
 
     SLEQP_CALL(sleqp_calloc(&scaling->min_cache, size));
     SLEQP_CALL(sleqp_calloc(&scaling->max_cache, size));
   }
 
-  const double var_ratio = max_matrix_ratio(scaling, cons_jac, true);
-  const double cons_ratio = max_matrix_ratio(scaling, cons_jac, false);
+  const double var_ratio = max_matrix_ratio(scaling, cons_jac, true, eps);
+  const double cons_ratio = max_matrix_ratio(scaling, cons_jac, false, eps);
 
   const bool vars_first = var_ratio < cons_ratio;
 
@@ -880,13 +728,15 @@ SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
                                      cons_jac,
                                      true,
                                      scaling->var_weights,
-                                     scaling->cons_weights));
+                                     scaling->cons_weights,
+                                     eps));
 
     SLEQP_CALL(compute_scale_factors(scaling,
                                      cons_jac,
                                      false,
                                      scaling->cons_weights,
-                                     scaling->var_weights));
+                                     scaling->var_weights,
+                                     eps));
   }
   else
   {
@@ -894,13 +744,15 @@ SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
                                      cons_jac,
                                      false,
                                      scaling->cons_weights,
-                                     scaling->var_weights));
+                                     scaling->var_weights,
+                                     eps));
 
     SLEQP_CALL(compute_scale_factors(scaling,
                                      cons_jac,
                                      true,
                                      scaling->var_weights,
-                                     scaling->cons_weights));
+                                     scaling->cons_weights,
+                                     eps));
   }
 
   return SLEQP_OKAY;
@@ -914,16 +766,6 @@ static SLEQP_RETCODE scaling_free(SleqpScalingData** star)
   {
     return SLEQP_OKAY;
   }
-
-  SLEQP_CALL(sleqp_problem_free(&(scaling->scaled_problem)));
-
-  SLEQP_CALL(sleqp_func_release(&(scaling->scaled_func)));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&(scaling->scaled_cons_duals)));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&(scaling->scaled_direction)));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&(scaling->unscaled_value)));
 
   sleqp_free(&(scaling->max_cache));
 

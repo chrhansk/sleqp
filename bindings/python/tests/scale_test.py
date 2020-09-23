@@ -31,39 +31,35 @@ class ScaleTest(unittest.TestCase):
 
     self.options = sleqp.Options()
 
-  def test_nominal_func_weight(self):
+    self.scaling = sleqp.Scaling(num_variables, num_constraints)
 
-    scaling = sleqp.Scaling(self.problem, self.params)
+  def test_nominal_func_weight(self):
 
     values = [(50., 6), (-50., 6), (0.75, 0), (0.3, -1)]
 
     for (nominal, expected_weight) in values:
-      scaling.set_func_weight_from_nominal(nominal)
+      self.scaling.set_func_weight_from_nominal(nominal)
 
-      self.assertEqual(scaling.func_weight, expected_weight)
+      self.assertEqual(self.scaling.func_weight, expected_weight)
 
   def test_nominal_variable_weights(self):
 
-    scaling = sleqp.Scaling(self.problem, self.params)
-
-    scaling.set_variable_weights_from_nominal(np.array([1.9,
-                                                        0.5,
-                                                        -3.9,
-                                                        60.]))
+    self.scaling.set_variable_weights_from_nominal(np.array([1.9,
+                                                             0.5,
+                                                             -3.9,
+                                                             60.]))
 
     expected_weights = np.array([1, 0, 2, 6],dtype=int)
-    actual_weights = scaling.variable_weights
+    actual_weights = self.scaling.variable_weights
 
     self.assertTrue((expected_weights == actual_weights).all())
 
   def test_nominal_constraint_weights(self):
 
-    scaling = sleqp.Scaling(self.problem, self.params)
-
-    scaling.set_constraint_weights_from_nominal(np.array([1.9,
-                                                          -60.]))
+    self.scaling.set_constraint_weights_from_nominal(np.array([1.9,
+                                                               -60.]))
 
     expected_weights = np.array([1, 6],dtype=int)
-    actual_weights = scaling.constraint_weights
+    actual_weights = self.scaling.constraint_weights
 
     self.assertTrue((expected_weights == actual_weights).all())

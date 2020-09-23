@@ -450,8 +450,8 @@ START_TEST(test_unscaled_solve)
   SleqpScalingData* scaling_data;
 
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem,
-                                   params));
+                                   problem->num_variables,
+                                   problem->num_constraints));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -492,8 +492,8 @@ START_TEST(test_scaled_solve)
   SleqpScalingData* scaling_data;
 
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem,
-                                   params));
+                                   num_variables,
+                                   num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
 
@@ -545,8 +545,8 @@ START_TEST(test_scaled_sr1_solve)
                                              SLEQP_HESSIAN_EVAL_SR1));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem,
-                                   params));
+                                   problem->num_variables,
+                                   problem->num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
 
@@ -598,8 +598,8 @@ START_TEST(test_scaled_bfgs_solve)
                                              SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem,
-                                   params));
+                                   problem->num_variables,
+                                   problem->num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
 
@@ -649,6 +649,8 @@ START_TEST(test_auto_scaled_solve)
 
   SleqpIterate* iterate;
 
+  const double eps = sleqp_params_get_eps(params);
+
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                   problem,
                                   x));
@@ -656,14 +658,16 @@ START_TEST(test_auto_scaled_solve)
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem,
-                                   params));
+                                   problem->num_variables,
+                                   problem->num_constraints));
 
   ASSERT_CALL(sleqp_func_scaling_from_gradient(scaling_data,
-                                               sleqp_iterate_get_func_grad(iterate)));
+                                               sleqp_iterate_get_func_grad(iterate),
+                                               eps));
 
   ASSERT_CALL(sleqp_scaling_from_cons_jac(scaling_data,
-                                          sleqp_iterate_get_cons_jac(iterate)));
+                                          sleqp_iterate_get_cons_jac(iterate),
+                                          eps));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,

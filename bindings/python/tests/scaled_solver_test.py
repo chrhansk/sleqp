@@ -23,7 +23,7 @@ class ScaledSolverTest(unittest.TestCase):
     self.options = sleqp.Options()
 
   def test_scaled_solve(self):
-    scaling = sleqp.Scaling(self.problem, self.params)
+    scaling = sleqp.Scaling(num_variables, num_constraints)
 
     scaling.func_weight = -3
 
