@@ -27,7 +27,9 @@ cdef class Scaling:
 
   def __cinit__(self,
                 int num_variables,
-                int num_constraints):
+                int num_constraints,
+                *args,
+                **keywords):
 
     csleqp_call(csleqp.sleqp_scaling_create(&self.scaling,
                                             num_variables,
