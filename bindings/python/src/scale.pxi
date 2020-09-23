@@ -113,6 +113,11 @@ cdef class Scaling:
     csleqp_call(csleqp.sleqp_scaling_set_var_weights_from_nominal(self.scaling,
                                                                   &nominal_values[0]))
 
+  def set_variable_weight_from_nominal(self, int index, float nominal_value):
+    csleqp_call(csleqp.sleqp_scaling_set_var_weight_from_nominal(self.scaling,
+                                                                 index,
+                                                                 nominal_value))
+
   def set_constraint_weight(self, int index, int weight):
     csleqp_call(csleqp.sleqp_scaling_set_cons_weight(self.scaling,
                                                      index,
@@ -123,6 +128,11 @@ cdef class Scaling:
     cdef double[:] nominal_values = nominal_array
     csleqp_call(csleqp.sleqp_scaling_set_cons_weights_from_nominal(self.scaling,
                                                                    &nominal_values[0]))
+
+  def set_constraint_weight_from_nominal(self, int index, float nominal_value):
+    csleqp_call(csleqp.sleqp_scaling_set_cons_weight_from_nominal(self.scaling,
+                                                                  index,
+                                                                  nominal_value))
 
   def set_from_gradient(self,
                         np.ndarray grad_array,

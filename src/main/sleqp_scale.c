@@ -231,6 +231,20 @@ SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scali
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScalingData* scaling,
+                                                        int index,
+                                                        double nominal_value)
+{
+  if(index < 0 || index >= scaling->num_variables)
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  frexp(nominal_value, scaling->var_weights + index);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
                                             int index,
                                             int weight)
@@ -252,6 +266,20 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scal
   {
     frexp(nominal_values[i], scaling->cons_weights + i);
   }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScalingData* scaling,
+                                                         int index,
+                                                         double nominal_value)
+{
+  if(index < 0 || index >= scaling->num_constraints)
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  frexp(nominal_value, scaling->cons_weights + index);
 
   return SLEQP_OKAY;
 }

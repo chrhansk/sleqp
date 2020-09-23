@@ -326,6 +326,10 @@ cdef extern from "sleqp.h":
                                              int index,
                                              int weight)
 
+  SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScalingData* scaling,
+                                                          int index,
+                                                          double nominal_value)
+
   SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scaling,
                                                            double* nominal_values)
 
@@ -339,6 +343,10 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scaling,
                                                             double* nominal_values)
+
+  SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScalingData* scaling,
+                                                           int index,
+                                                           double nominal_value);
 
   SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
                                                  SleqpSparseVec* gradient,
