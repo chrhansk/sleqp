@@ -314,6 +314,9 @@ cdef extern from "sleqp.h":
                                      int num_variables,
                                      int num_constraints)
 
+  int sleqp_scaling_get_num_variables(SleqpScalingData* scaling)
+  int sleqp_scaling_get_num_constraints(SleqpScalingData* scaling)
+
   int sleqp_scaling_get_func_weight(SleqpScalingData* scaling)
 
   SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,

@@ -22,9 +22,6 @@ cdef class Scaling:
   cdef csleqp.SleqpSparseVec* gradient
   cdef csleqp.SleqpSparseMatrix* cons_jac
 
-  cdef int num_variables
-  cdef int num_constraints
-
   def __cinit__(self,
                 int num_variables,
                 int num_constraints,
@@ -44,9 +41,13 @@ cdef class Scaling:
                                                   num_variables,
                                                   0))
 
-    self.num_variables = num_variables
-    self.num_constraints = num_constraints
+  @property
+  def num_variables(self):
+    return csleqp.sleqp_scaling_get_num_variables(self.scaling)
 
+  @property
+  def num_constraints(self):
+    return csleqp.sleqp_scaling_get_num_constraints(self.scaling)
 
   def __dealloc__(self):
     csleqp_call(csleqp.sleqp_sparse_matrix_release(&self.cons_jac))

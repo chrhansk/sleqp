@@ -95,12 +95,20 @@ extern "C" {
   SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scaling,
                                                            double* nominal_values);
 
+  SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScalingData* scaling,
+                                                          int index,
+                                                          double nominal_value);
+
   SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
                                               int index,
                                               int weight);
 
   SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scaling,
                                                             double* nominal_values);
+
+  SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScalingData* scaling,
+                                                           int index,
+                                                           double nominal_value);
 
   int* sleqp_scaling_get_var_weights(SleqpScalingData* scaling);
 
