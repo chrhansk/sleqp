@@ -52,26 +52,6 @@ struct SleqpScalingData
   double* max_cache;
 };
 
-static SLEQP_RETCODE apply_const_scaling(SleqpSparseVec* vec,
-                                         int scale)
-{
-  if(scale == 0)
-  {
-    return SLEQP_OKAY;
-  }
-
-  INIT_MATH_ERROR_CHECK;
-
-  for(int k = 0; k < vec->nnz; ++k)
-  {
-    vec->data[k] = ldexp(vec->data[k], scale);
-  }
-
-  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
-
-  return SLEQP_OKAY;
-}
-
 static SLEQP_RETCODE apply_scaling(SleqpSparseVec* vec,
                                    int* scales,
                                    int offset)
@@ -104,23 +84,6 @@ static SLEQP_RETCODE apply_unscaling(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE apply_quad_scaling(SleqpSparseVec* vec,
-                                        int* scales)
-{
-  INIT_MATH_ERROR_CHECK;
-
-  for(int k = 0; k < vec->nnz; ++k)
-  {
-    vec->data[k] = ldexp(vec->data[k], 2*scales[vec->indices[k]]);
-  }
-
-  MATH_ERROR_CHECK(SCALING_ERROR_FLAGS);
-
-  return SLEQP_OKAY;
-}
-
-
-
 static SLEQP_RETCODE reset_scaling(SleqpScalingData* scaling)
 {
   for(int j = 0; j < scaling->num_variables; ++j)
@@ -132,6 +95,8 @@ static SLEQP_RETCODE reset_scaling(SleqpScalingData* scaling)
   {
     scaling->cons_weights[i] = 0;
   }
+
+  scaling->func_weight = 0;
 
   return SLEQP_OKAY;
 }
@@ -297,7 +262,7 @@ int* sleqp_scaling_get_cons_weights(SleqpScalingData* scaling)
 double sleqp_scale_func_val(SleqpScalingData* scaling,
                             double func_val)
 {
-  return ldexp(func_val, (-1.) * scaling->func_weight);
+  return ldexp(func_val, (-1) * scaling->func_weight);
 }
 
 SLEQP_RETCODE sleqp_scale_point(SleqpScalingData* scaling,
@@ -313,7 +278,7 @@ SLEQP_RETCODE sleqp_scale_func_grad(SleqpScalingData* scaling,
 {
   SLEQP_CALL(apply_scaling(func_grad,
                            scaling->var_weights,
-                           (-1.) * scaling->func_weight));
+                           (-1) * scaling->func_weight));
 
   return SLEQP_OKAY;
 }
@@ -383,7 +348,7 @@ SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScalingData* scaling,
 {
   SLEQP_CALL(apply_scaling(product,
                            scaling->var_weights,
-                           (-1.) * scaling->func_weight));
+                           (-1) * scaling->func_weight));
 
   return SLEQP_OKAY;
 }
