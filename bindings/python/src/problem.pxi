@@ -1,6 +1,9 @@
 #cython: language_level=3
 
 cdef class Problem:
+
+  cdef dict __dict__
+
   cdef csleqp.SleqpProblem* problem
 
   cdef csleqp.SleqpSparseVec* var_lb
@@ -9,18 +12,28 @@ cdef class Problem:
   cdef csleqp.SleqpSparseVec* cons_lb
   cdef csleqp.SleqpSparseVec* cons_ub
 
-  cdef Func func
+  cdef object _func
   cdef Params params
 
   def __cinit__(self,
-                Func func,
+                object func,
                 Params params,
                 np.ndarray var_lb,
                 np.ndarray var_ub,
                 np.ndarray cons_lb,
                 np.ndarray cons_ub):
+
+    cdef csleqp.SleqpFunc* cfunc = NULL
+
     num_constraints = cons_lb.shape[0]
     num_variables = var_lb.shape[0]
+
+    if isinstance(func, Func):
+        cfunc = (<Func> func).func
+    elif isinstance(func, LSQFunc):
+        cfunc = (<Func> func).func
+
+    assert cfunc != NULL, "Invalid function type"
 
     csleqp_call(csleqp.sleqp_sparse_vector_create(&self.var_lb,
                                                   num_variables,
@@ -43,16 +56,20 @@ cdef class Problem:
     array_to_sleqp_sparse_vec(cons_lb, self.cons_lb)
     array_to_sleqp_sparse_vec(cons_ub, self.cons_ub)
 
-    self.func = func
+    self._func = func
     self.params = params
 
     csleqp_call(csleqp.sleqp_problem_create(&self.problem,
-                                            func.func,
+                                            cfunc,
                                             params.params,
                                             self.var_lb,
                                             self.var_ub,
                                             self.cons_lb,
                                             self.cons_ub))
+
+  @property
+  def func(self):
+      return self._func
 
   @property
   def num_variables(self) -> int:

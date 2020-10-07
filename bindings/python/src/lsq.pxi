@@ -55,6 +55,9 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(int num_variables,
 
 
 cdef class LSQFunc:
+
+  cdef dict __dict__
+
   cdef csleqp.SleqpFunc* func
   cdef int num_variables
   cdef int num_constraints

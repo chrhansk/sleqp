@@ -92,6 +92,9 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_free(void* func_data):
 
 
 cdef class Func:
+
+  cdef dict __dict__
+
   cdef csleqp.SleqpFunc* func
   cdef int num_variables
   cdef int num_constraints
