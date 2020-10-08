@@ -30,9 +30,10 @@
 
 #define SCALING_ERROR_FLAGS (FE_OVERFLOW | FE_UNDERFLOW)
 
+#define MAX_WEIGHT 30
 
-const int max_weight = 30;
-const int min_weight = -max_weight;
+const int max_weight = MAX_WEIGHT;
+const int min_weight = -(MAX_WEIGHT);
 
 #define CLIP_WEIGHT(w)                                    \
   (w) = SLEQP_MIN(SLEQP_MAX((w), min_weight), max_weight)
