@@ -197,13 +197,12 @@ int sleqp_cutest_run(const char* filename,
 
     SLEQP_CALL(sleqp_solver_get_solution(solver, &iterate));
 
-    int iterations = sleqp_solver_get_iterations(solver);
+    const int iterations = sleqp_solver_get_iterations(solver);
 
-    double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
+    const double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
 
-    double violation;
-
-    SLEQP_CALL(sleqp_get_violation(problem, iterate, eps));
+    const double violation = sleqp_iterate_feasibility_residuum(iterate,
+                                                                problem);
 
     fprintf(stdout,
             "%s;%d;%d;%s;%f;%f;%d;%f\n",
