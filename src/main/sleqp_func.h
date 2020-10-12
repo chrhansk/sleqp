@@ -121,9 +121,9 @@ extern "C" {
    *
    */
   SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
-                                         double* func_dual,
-                                         SleqpSparseVec* direction,
-                                         SleqpSparseVec* cons_duals,
+                                         const double* func_dual,
+                                         const SleqpSparseVec* direction,
+                                         const SleqpSparseVec* cons_duals,
                                          double* bilinear_prod);
 
   /**
