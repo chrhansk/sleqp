@@ -824,6 +824,86 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE compute_linear_step(SleqpSolver* solver,
+                                         double* model_objective,
+                                         bool quadratic_model,
+                                         bool* full_step)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpIterate* iterate = solver->iterate;
+
+  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
+
+  const double one = 1.;
+
+  // compute Cauchy direction / step and dual estimation
+  {
+
+    SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
+                                        iterate,
+                                        solver->lp_trust_radius));
+
+    SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
+                                  sleqp_iterate_get_func_grad(iterate),
+                                  solver->penalty_parameter));
+
+    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
+                                            iterate,
+                                            solver->lp_trust_radius));
+
+    SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
+                                              iterate));
+
+    SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
+                                          solver->cauchy_direction));
+
+#if !defined(NDEBUG)
+
+    {
+      const double eps = sleqp_params_get_eps(solver->params);
+
+      bool in_working_set = false;
+
+      SLEQP_CALL(sleqp_direction_in_working_set(problem,
+                                                iterate,
+                                                solver->cauchy_direction,
+                                                solver->dense_cache,
+                                                eps,
+                                                &in_working_set));
+
+      assert(in_working_set);
+    }
+
+#endif
+
+    SLEQP_CALL(estimate_dual_values(solver, iterate));
+
+    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
+                                    &one,
+                                    solver->cauchy_direction,
+                                    sleqp_iterate_get_cons_dual(iterate),
+                                    solver->cauchy_hessian_direction));
+
+    SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_direction,
+                                        solver->cauchy_step));
+
+    SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
+                                         iterate,
+                                         solver->penalty_parameter,
+                                         solver->trust_radius,
+                                         solver->cauchy_hessian_direction,
+                                         solver->cauchy_step,
+                                         &solver->cauchy_step_length));
+
+    (*full_step) = sleqp_eq(solver->cauchy_step_length,
+                            1.,
+                            zero_eps);
+
+    SLEQP_CALL(sleqp_sparse_vector_scale(solver->cauchy_hessian_direction,
+                                         solver->cauchy_step_length));
+  }
+}
+
 static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
                                                 double* model_objective,
                                                 bool quadratic_model,
@@ -836,51 +916,10 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
 
   const double one = 1.;
 
-  // compute Cauchy direction / step and dual estimation
-
-  SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
-                                      iterate,
-                                      solver->lp_trust_radius));
-
-  SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
-                                sleqp_iterate_get_func_grad(iterate),
-                                solver->penalty_parameter));
-
-  SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
-                                          iterate,
-                                          solver->lp_trust_radius));
-
-  SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
-                                            iterate));
-
-  SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
-                                        solver->cauchy_direction));
-
-  SLEQP_CALL(estimate_dual_values(solver, iterate));
-
-  SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                  &one,
-                                  solver->cauchy_direction,
-                                  sleqp_iterate_get_cons_dual(iterate),
-                                  solver->cauchy_hessian_direction));
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_direction,
-                                      solver->cauchy_step));
-
-  SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
-                                       iterate,
-                                       solver->penalty_parameter,
-                                       solver->trust_radius,
-                                       solver->cauchy_hessian_direction,
-                                       solver->cauchy_step,
-                                       &solver->cauchy_step_length));
-
-  (*full_step) = sleqp_eq(solver->cauchy_step_length,
-                          1.,
-                          zero_eps);
-
-  SLEQP_CALL(sleqp_sparse_vector_scale(solver->cauchy_hessian_direction,
-                                       solver->cauchy_step_length));
+  SLEQP_CALL(compute_linear_step(solver,
+                                 model_objective,
+                                 quadratic_model,
+                                 full_step));
 
   const SleqpSparseVec* trial_direction = solver->cauchy_step;
 
@@ -929,53 +968,10 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
 
   const double one = 1.;
 
-  // compute Cauchy direction / step and dual estimation
-  {
-
-    SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
-                                        iterate,
-                                        solver->lp_trust_radius));
-
-    SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
-                                  sleqp_iterate_get_func_grad(iterate),
-                                  solver->penalty_parameter));
-
-    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
-                                            iterate,
-                                            solver->lp_trust_radius));
-
-    SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
-                                              iterate));
-
-    SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
-                                          solver->cauchy_direction));
-
-    SLEQP_CALL(estimate_dual_values(solver, iterate));
-
-    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                    &one,
-                                    solver->cauchy_direction,
-                                    sleqp_iterate_get_cons_dual(iterate),
-                                    solver->cauchy_hessian_direction));
-
-    SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_direction,
-                                        solver->cauchy_step));
-
-    SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
-                                         iterate,
-                                         solver->penalty_parameter,
-                                         solver->trust_radius,
-                                         solver->cauchy_hessian_direction,
-                                         solver->cauchy_step,
-                                         &solver->cauchy_step_length));
-
-    (*full_step) = sleqp_eq(solver->cauchy_step_length,
-                            1.,
-                            zero_eps);
-
-    SLEQP_CALL(sleqp_sparse_vector_scale(solver->cauchy_hessian_direction,
-                                         solver->cauchy_step_length));
-  }
+  SLEQP_CALL(compute_linear_step(solver,
+                                 model_objective,
+                                 quadratic_model,
+                                 full_step));
 
   // compute Newton step
   {

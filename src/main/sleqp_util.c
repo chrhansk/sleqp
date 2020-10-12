@@ -51,6 +51,83 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
+                                             SleqpIterate* iterate,
+                                             SleqpSparseVec* direction,
+                                             double* cache,
+                                             double eps,
+                                             bool* in_working_set)
+{
+  (*in_working_set) = true;
+
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+
+  SLEQP_CALL(sleqp_sparse_matrix_vector_product(cons_jac,
+                                                direction,
+                                                cache));
+
+  SleqpSparseVec* lb = problem->cons_lb;
+  SleqpSparseVec* ub = problem->cons_ub;
+
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+
+  SleqpSparseVec* c = sleqp_iterate_get_cons_val(iterate);
+
+  const int dim = lb->dim;
+
+  int k_lb = 0, k_c = 0, k_ub = 0;
+
+  while(k_lb < lb->nnz || k_c < c->nnz || k_ub < ub->nnz)
+  {
+    double lb_val = 0., c_val = 0, ub_val = 0.;
+
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_c = (k_c < c->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
+
+    int idx = valid_c ? c->indices[k_c] : dim + 1;
+    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
+    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
+
+    if(valid_lb && idx == lb->indices[k_lb])
+    {
+      lb_val = lb->data[k_lb++];
+    }
+
+    if(valid_c && idx == c->indices[k_c])
+    {
+      c_val = c->data[k_c++];
+    }
+
+    if(valid_ub && idx == ub->indices[k_ub])
+    {
+      ub_val = ub->data[k_ub++];
+    }
+
+    const SLEQP_ACTIVE_STATE state = sleqp_working_set_get_constraint_state(working_set,
+                                                                            idx);
+
+    const double prod_val = c_val + cache[idx];
+
+    if(state == SLEQP_INACTIVE)
+    {
+      continue;
+    }
+    else if(state == SLEQP_ACTIVE_UPPER && !sleqp_eq(prod_val, ub_val, eps))
+    {
+      (*in_working_set) = false;
+      return SLEQP_OKAY;
+    }
+    else if(state == SLEQP_ACTIVE_LOWER && !sleqp_eq(prod_val, lb_val, eps))
+    {
+      (*in_working_set) = false;
+      return SLEQP_OKAY;
+    }
+
+  }
+
+  return SLEQP_OKAY;
+}
 
 SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
                                              SleqpSparseVec* cons_vals,

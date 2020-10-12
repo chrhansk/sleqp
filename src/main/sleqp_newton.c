@@ -298,7 +298,26 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                                   data->initial_rhs,
                                                   data->initial_solution));
 
+#if !defined(NDEBUG)
+
+  // Initial direction must be in working set
+  {
+    bool in_working_set = false;
+
+    SLEQP_CALL(sleqp_direction_in_working_set(problem,
+                                              iterate,
+                                              data->initial_solution,
+                                              data->dense_cache,
+                                              eps,
+                                              &in_working_set));
+
+    assert(in_working_set);
+  }
+
+#endif
+
   const double norm_ratio = .8;
+  bool newton_step_in_working_set = true;
 
   // rescale min norm solution if required.
   {
@@ -316,7 +335,6 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
       alpha = SLEQP_MIN(alpha, 1.);
 
-
       if(sleqp_eq(alpha, 1., eps))
       {
         // no scaling required...
@@ -331,6 +349,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
       }
       else
       {
+        newton_step_in_working_set = false;
 
         SLEQP_CALL(sleqp_sparse_vector_scale(data->initial_solution, alpha));
 
@@ -431,6 +450,25 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                      data->initial_solution,
                                      zero_eps,
                                      newton_step));
+
+#if !defined(NDEBUG)
+
+  // Initial direction must be in working set
+  if(newton_step_in_working_set)
+  {
+    bool in_working_set = false;
+
+    SLEQP_CALL(sleqp_direction_in_working_set(problem,
+                                              iterate,
+                                              newton_step,
+                                              data->dense_cache,
+                                              eps,
+                                              &in_working_set));
+
+    assert(in_working_set);
+  }
+
+#endif
 
   return SLEQP_OKAY;
 }

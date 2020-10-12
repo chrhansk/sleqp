@@ -22,6 +22,13 @@ extern "C" {
                                        SleqpIterate* iterate,
                                        SLEQP_VALUE_REASON reason);
 
+  SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
+                                               SleqpIterate* iterate,
+                                               SleqpSparseVec* direction,
+                                               double* cache,
+                                               double eps,
+                                               bool* in_working_set);
+
   SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
                                                SleqpSparseVec* cons_vals,
                                                SleqpSparseVec* multipliers,
