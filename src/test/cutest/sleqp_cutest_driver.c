@@ -201,7 +201,9 @@ int sleqp_cutest_run(const char* filename,
 
     double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
 
-    double violation = sleqp_iterate_constraint_violation(iterate, problem);
+    double violation;
+
+    SLEQP_CALL(sleqp_get_violation(problem, iterate, eps));
 
     fprintf(stdout,
             "%s;%d;%d;%s;%f;%f;%d;%f\n",
@@ -209,7 +211,7 @@ int sleqp_cutest_run(const char* filename,
             CUTEst_nvar,
             CUTEst_ncons,
             descriptions[status],
-            iterate->func_val,
+            sleqp_iterate_get_func_val(iterate),
             violation,
             iterations,
             elapsed_seconds);
