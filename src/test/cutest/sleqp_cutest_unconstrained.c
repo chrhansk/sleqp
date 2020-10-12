@@ -155,10 +155,15 @@ SLEQP_RETCODE sleqp_cutest_uncons_func_create(SleqpFunc** star,
                                              num_variables,
                                              eps));
 
+  SleqpFuncCallbacks callbacks = {
+    .set_value = sleqp_cutest_uncons_func_set,
+    .func_eval = sleqp_cutest_uncons_func_eval,
+    .hess_prod = sleqp_cutest_uncons_func_hess_product,
+    .func_free = NULL
+  };
+
   SLEQP_CALL(sleqp_func_create(star,
-                               sleqp_cutest_uncons_func_set,
-                               sleqp_cutest_uncons_func_eval,
-                               sleqp_cutest_uncons_func_hess_product,
+                               &callbacks,
                                num_variables,
                                data));
 
