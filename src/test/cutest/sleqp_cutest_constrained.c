@@ -129,6 +129,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_free(CUTestConsFuncData** star)
 }
 
 static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpSparseVec* x,
+                                                SLEQP_VALUE_REASON reason,
                                                 int num_variables,
                                                 int* func_grad_nnz,
                                                 int* cons_val_nnz,
@@ -151,7 +152,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpSparseVec* x,
 }
 
 static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
-                                                 SleqpSparseVec* cons_indices,
+                                                 const SleqpSparseVec* cons_indices,
                                                  double* func_val,
                                                  SleqpSparseVec* func_grad,
                                                  SleqpSparseVec* cons_val,
@@ -227,6 +228,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
       SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
     }
 
+    const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
     int last_col = 0;
 
     for(int i = 0; i < data->jac_nnz; ++i)
@@ -275,7 +277,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
     if(cons_jac)
     {
       ++last_col;
-      while(cons_jac->num_cols > last_col)
+      while(num_cols > last_col)
       {
         SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
                                                    last_col++));
@@ -287,9 +289,9 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
 }
 
 static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(int num_variables,
-                                                         double* func_dual,
-                                                         SleqpSparseVec* direction,
-                                                         SleqpSparseVec* cons_duals,
+                                                         const double* func_dual,
+                                                         const SleqpSparseVec* direction,
+                                                         const SleqpSparseVec* cons_duals,
                                                          SleqpSparseVec* product,
                                                          void* func_data)
 {
