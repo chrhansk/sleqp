@@ -19,7 +19,8 @@ cdef class Params:
                   'linesearch_cutoff',
                   'optimality_tolerance',
                   'accepted_reduction',
-                  'deadpoint_bound']
+                  'deadpoint_bound',
+                  'newton_relative_tolerance']
 
     for key, value in values.items():
       setattr(self, key, value)
@@ -75,6 +76,10 @@ cdef class Params:
   def deadpoint_bound(self) -> float:
     return csleqp.sleqp_params_get_deadpoint_bound(self.params)
 
+  @property
+  def newton_relative_tolerance(self) -> float:
+    return csleqp.sleqp_params_get_newton_relative_tolerance(self.params)
+
   @zero_eps.setter
   def zero_eps(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_zero_eps(self.params, value))
@@ -122,6 +127,10 @@ cdef class Params:
   @deadpoint_bound.setter
   def deadpoint_bound(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_deadpoint_bound(self.params, value))
+
+  @newton_relative_tolerance.setter
+  def newton_relative_tolerance(self, value: float) -> None:
+    csleqp_call(csleqp.sleqp_params_set_newton_relative_tolerance(self.params, value))
 
   def values(self) -> set:
     return {key: getattr(self, key) for key in self.props}

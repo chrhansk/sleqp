@@ -386,8 +386,6 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
 
   //trlib_flt_t zero = TRLIB_EPS*TRLIB_EPS;
 
-  const double zero_eps = sleqp_params_get_zero_eps(data->params);
-
   trlib_flt_t zero = zero_eps;
 
   trlib_int_t iter = 0;
