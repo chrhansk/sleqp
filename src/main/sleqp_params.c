@@ -22,6 +22,8 @@ struct SleqpParams
   double accepted_reduction;
 
   double deadpoint_bound;
+
+  double newton_relative_tolerance;
 };
 
 #define ZERO_EPS_DEFAULT 1e-16
@@ -42,6 +44,8 @@ struct SleqpParams
 #define ACCEPTED_REDUCTION_DEFAULT 1e-8
 
 #define DEADPOINT_BOUND_DEFAULT 1e-10
+
+#define NEWTON_RELATIVE_TOLERANCE_DEFAULT 1e-6
 
 SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 {
@@ -67,6 +71,8 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
   params->accepted_reduction = ACCEPTED_REDUCTION_DEFAULT;
 
   params->deadpoint_bound = DEADPOINT_BOUND_DEFAULT;
+
+  params->newton_relative_tolerance = NEWTON_RELATIVE_TOLERANCE_DEFAULT;
 
   return SLEQP_OKAY;
 }
@@ -129,6 +135,11 @@ double sleqp_params_get_accepted_reduction(const SleqpParams* params)
 double sleqp_params_get_deadpoint_bound(const SleqpParams* params)
 {
   return params->deadpoint_bound;
+}
+
+double sleqp_params_get_newton_relative_tolerance(const SleqpParams* params)
+{
+  return params->newton_relative_tolerance;
 }
 
 
@@ -212,6 +223,16 @@ SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double va
 SLEQP_RETCODE sleqp_params_set_deadpoint_bound(SleqpParams* params, double value)
 {
   params->deadpoint_bound = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_newton_relative_tolerance(SleqpParams* params,
+                                                         double value)
+{
+  params->newton_relative_tolerance = value;
+
+  return SLEQP_OKAY;
 }
 
 
