@@ -347,12 +347,13 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
-                                    SleqpAugJacobian* jacobian,
-                                    SleqpSparseVec* multipliers,
-                                    SleqpSparseVec* gradient,
-                                    SleqpSparseVec* newton_step,
-                                    double trust_radius)
+
+static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
+                                   SleqpAugJacobian* jacobian,
+                                   SleqpSparseVec* multipliers,
+                                   SleqpSparseVec* gradient,
+                                   double trust_radius,
+                                   trlib_int_t* trlib_ret)
 {
   SleqpProblem* problem = data->problem;
   SleqpFunc* func = problem->func;
@@ -378,7 +379,6 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
   trlib_int_t earlyterm = 1;
 
   trlib_int_t init = 0;
-  trlib_int_t ret = 0;
 
   trlib_flt_t v_dot_g = 0.0, p_dot_Hp = 0.0, g_dot_g = 0.0, flt1, flt2, flt3;
 
@@ -417,37 +417,37 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
 
   while(1)
   {
-    ret = trlib_krylov_min(init,          // trlib_int_t init
-                           trust_radius,  // trlib_flt_t radius
-                           equality,      // trlib_int_t equality
-                           maxiter,       // trlib_int_t itmax
-                           maxlanczos,    // trlib_int_t itmax_lanczos
-                           tol_rel_i,     // trlib_flt_t tol_rel_i
-                           tol_abs_i,     // trlib_flt_t tol_abs_i
-                           tol_rel_b,     // trlib_flt_t tol_rel_b
-                           tol_abs_b,     // trlib_flt_t tol_abs_b
-                           zero,          // trlib_flt_t zero
-                           obj_lo,        // trlib_flt_t obj_lo
-                           ctl_invariant, // trlib_int_t ctl_invariant
-                           convexify,     // trlib_int_t convexify
-                           earlyterm,     // trlib_int_t earlyterm
-                           g_dot_g,       // trlib_flt_t g_dot_g
-                           v_dot_g,       // trlib_flt_t v_dot_g
-                           p_dot_Hp,      // trlib_flt_t p_dot_Hp
-                           iwork,         // trlib_int_t *iwork
-                           fwork,         // trlib_flt_t *fwork
-                           refine,        // trlib_int_t refine
-                           verbose,       // trlib_int_t verbose
-                           unicode,       // trlib_int_t unicode
-                           prefix,        // char *prefix
-                           fout,          // FILE *fout
-                           timing,        // trlib_int_t *timing
-                           &action,       // trlib_int_t *action
-                           &iter,         // trlib_int_t *iter
-                           &ityp,         // trlib_int_t *ityp
-                           &flt1,         // trlib_flt_t *flt1
-                           &flt2,         // trlib_flt_t *flt2
-                           &flt3);        // trlib_flt_t *flt3
+    (*trlib_ret) = trlib_krylov_min(init,          // trlib_int_t init
+                                    trust_radius,  // trlib_flt_t radius
+                                    equality,      // trlib_int_t equality
+                                    maxiter,       // trlib_int_t itmax
+                                    maxlanczos,    // trlib_int_t itmax_lanczos
+                                    tol_rel_i,     // trlib_flt_t tol_rel_i
+                                    tol_abs_i,     // trlib_flt_t tol_abs_i
+                                    tol_rel_b,     // trlib_flt_t tol_rel_b
+                                    tol_abs_b,     // trlib_flt_t tol_abs_b
+                                    zero,          // trlib_flt_t zero
+                                    obj_lo,        // trlib_flt_t obj_lo
+                                    ctl_invariant, // trlib_int_t ctl_invariant
+                                    convexify,     // trlib_int_t convexify
+                                    earlyterm,     // trlib_int_t earlyterm
+                                    g_dot_g,       // trlib_flt_t g_dot_g
+                                    v_dot_g,       // trlib_flt_t v_dot_g
+                                    p_dot_Hp,      // trlib_flt_t p_dot_Hp
+                                    iwork,         // trlib_int_t *iwork
+                                    fwork,         // trlib_flt_t *fwork
+                                    refine,        // trlib_int_t refine
+                                    verbose,       // trlib_int_t verbose
+                                    unicode,       // trlib_int_t unicode
+                                    prefix,        // char *prefix
+                                    fout,          // FILE *fout
+                                    timing,        // trlib_int_t *timing
+                                    &action,       // trlib_int_t *action
+                                    &iter,         // trlib_int_t *iter
+                                    &ityp,         // trlib_int_t *ityp
+                                    &flt1,         // trlib_flt_t *flt1
+                                    &flt2,         // trlib_flt_t *flt2
+                                    &flt3);        // trlib_flt_t *flt3
 
     const double one = 1.;
 
@@ -804,7 +804,7 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
     }
     }
 
-    if(ret < TRLIB_CLR_CONTINUE)
+    if((*trlib_ret) < TRLIB_CLR_CONTINUE)
     {
       break;
     }
@@ -814,6 +814,38 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
       break;
     }
   }
+
+  if(collect_rayleigh && !sleqp_zero(min_rayleigh, zero_eps))
+  {
+    const double cond_bound = SLEQP_ABS(max_rayleigh) / SLEQP_ABS(min_rayleigh);
+
+    sleqp_log_info("Spectrum bound: %f / %f, condition bound: %f",
+                   min_rayleigh,
+                   max_rayleigh,
+                   cond_bound);
+  }
+}
+
+SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
+                                    SleqpAugJacobian* jacobian,
+                                    SleqpSparseVec* multipliers,
+                                    SleqpSparseVec* gradient,
+                                    SleqpSparseVec* newton_step,
+                                    double trust_radius)
+{
+  const double eps = sleqp_params_get_eps(data->params);
+  const double zero_eps = sleqp_params_get_zero_eps(data->params);
+
+  trlib_int_t ret = 0;
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(newton_step));
+
+  SLEQP_CALL(tr_solve_loop(data,
+                           jacobian,
+                           multipliers,
+                           gradient,
+                           trust_radius,
+                           &ret));
 
   // We may loose some orthogonality in the process, reproject to
   // be sure
@@ -847,32 +879,13 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
     assert(tr_subproblem_is_optimal);
   }
 
-  if(converged_bdry)
-  {
-    assert(sleqp_eq(sleqp_sparse_vector_norm(newton_step), trust_radius, eps));
-  }
-  else
-  {
-    assert(sleqp_le(sleqp_sparse_vector_norm(newton_step), trust_radius, eps));
-  }
+  assert(sleqp_le(sleqp_sparse_vector_norm(newton_step), trust_radius, eps));
 
 #endif
-
-  assert(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q));
 
   const char* trlib_status_string;
 
   SLEQP_CALL(trlib_get_status_string(ret, &trlib_status_string));
-
-  if(collect_rayleigh && !sleqp_zero(min_rayleigh, zero_eps))
-  {
-    const double cond_bound = SLEQP_ABS(max_rayleigh) / SLEQP_ABS(min_rayleigh);
-
-    sleqp_log_info("Spectrum bound: %f / %f, condition bound: %f",
-                   min_rayleigh,
-                   max_rayleigh,
-                   cond_bound);
-  }
 
   if(!solved_optimally)
   {
