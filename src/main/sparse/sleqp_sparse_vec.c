@@ -51,13 +51,13 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
 SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
                                            double* values,
                                            int dim,
-                                           double eps)
+                                           double zero_eps)
 {
   int nnz = 0;
 
   for(int i = 0; i < dim;++i)
   {
-    if(!sleqp_zero(values[i], eps))
+    if(!sleqp_zero(values[i], zero_eps))
     {
       ++nnz;
     }
@@ -72,7 +72,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
   {
     double v = values[i];
 
-    if(!sleqp_zero(v, eps))
+    if(!sleqp_zero(v, zero_eps))
     {
       sleqp_sparse_vector_push(vec, i, v);
     }

@@ -118,6 +118,7 @@ int sleqp_cutest_run(const char* filename,
   SLEQP_CALL(sleqp_params_create(&params));
 
   const double eps = sleqp_params_get_eps(params);
+  const double zero_eps = sleqp_params_get_zero_eps(params);
 
   SleqpSparseVec* var_lb;
   SleqpSparseVec* var_ub;
@@ -138,17 +139,17 @@ int sleqp_cutest_run(const char* filename,
   SLEQP_CALL(sleqp_sparse_vector_create(&cons_lb, CUTEst_ncons, 0));
   SLEQP_CALL(sleqp_sparse_vector_create(&cons_ub, CUTEst_ncons, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(var_lb, var_lb_dense, CUTEst_nvar, eps));
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(var_ub, var_ub_dense, CUTEst_nvar, eps));
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(var_lb, var_lb_dense, CUTEst_nvar, zero_eps));
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(var_ub, var_ub_dense, CUTEst_nvar, zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(x, x_dense, CUTEst_nvar, eps));
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(x, x_dense, CUTEst_nvar, zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_lb, cons_lb_dense, CUTEst_ncons, eps));
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_ub, cons_ub_dense, CUTEst_ncons, eps));
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_lb, cons_lb_dense, CUTEst_ncons, zero_eps));
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_ub, cons_ub_dense, CUTEst_ncons, zero_eps));
 
   if(CUTest_constrained)
   {
-    SLEQP_CALL(sleqp_cutest_cons_func_create(&func, CUTEst_nvar, CUTEst_ncons, eps));
+    SLEQP_CALL(sleqp_cutest_cons_func_create(&func, CUTEst_nvar, CUTEst_ncons, params));
   }
   else
   {

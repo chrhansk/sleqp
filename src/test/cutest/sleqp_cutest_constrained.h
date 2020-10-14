@@ -10,7 +10,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
                                               int num_variables,
                                               int num_constraints,
-                                              double eps);
+                                              SleqpParams* params);
 
   SLEQP_RETCODE sleqp_cutest_cons_func_free(SleqpFunc** star);
 

@@ -31,7 +31,7 @@ extern "C" {
    * Creates a new sparse vector. Data and indices are set to
    * have size of nnz_max.
    *
-   * @param[out] vec     A pointer to the vector to be created
+   * @param[in]  vec     A pointer to the vector to be created
    * @param[in]  dim     The desired dimension of the vector
    * @param[in]  nnz_max The desired amount of nonzeros of the vector
    *
@@ -58,15 +58,15 @@ extern "C" {
    * number of entries, the dimension will be changed to
    * match that of the dense vector.
    *
-   * @param[in,out] vec    A pointer to the vector
-   * @param[in]     values A vector of values
-   * @param[in]     dim    The dimension of the values input
-   * @param[in]     eps    The numerical tolerance
+   * @param[in,out] vec         A pointer to the vector
+   * @param[in]     values      A vector of values
+   * @param[in]     dim         The dimension of the values input
+   * @param[in]     zero_eps    The numerical tolerance
    **/
   SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
                                              double* values,
                                              int dim,
-                                             double eps);
+                                             double zero_eps);
 
   SLEQP_RETCODE sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec,
                                            double* values);

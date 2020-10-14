@@ -29,7 +29,7 @@ extern "C" {
                                                    SleqpSparseVec* sol,
                                                    int begin,
                                                    int end,
-                                                   double eps);
+                                                   double zero_eps);
 
   SLEQP_RETCODE sleqp_sparse_factorization_free(SleqpSparseFactorization** star);
 

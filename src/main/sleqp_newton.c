@@ -387,7 +387,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     SLEQP_CALL(sleqp_sparse_vector_from_raw(data->sparse_cache,
                                             data->dense_cache,
                                             problem->num_constraints,
-                                            eps));
+                                            zero_eps));
 
     SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_cons_val(iterate),
                                        data->sparse_cache,

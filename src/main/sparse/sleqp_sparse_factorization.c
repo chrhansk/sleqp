@@ -198,14 +198,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_get_sol(SleqpSparseFactorization* facto
                                                  SleqpSparseVec* sol,
                                                  int begin,
                                                  int end,
-                                                 double eps)
+                                                 double zero_eps)
 {
   assert(begin <= end);
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
                                           factorization->solution + begin,
                                           end - begin,
-                                          eps));
+                                          zero_eps));
 
   return SLEQP_OKAY;
 }

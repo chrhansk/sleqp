@@ -31,7 +31,7 @@ extern "C" {
                                                           double* condition_estimate);
 
   /**
-   * computes the solution of the system \f$ A_W x = b_W \f$ with
+   * Computes the solution of the system \f$ A_W x = b_W \f$ with
    * minimum norm.
    *
    * \f[
@@ -48,7 +48,7 @@ extern "C" {
                                                      SleqpSparseVec* sol);
 
   /**
-   * Compute the projection of the right hand side onto the
+   * Computes the projection of the right hand side onto the
    * null space of the active constraints. If \f$ A_W \f$
    * is the jacobian of the working set, \f$ x_0 \f$ the
    * right hand side, then the output will contain a

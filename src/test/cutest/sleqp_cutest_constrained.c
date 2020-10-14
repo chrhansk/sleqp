@@ -7,6 +7,7 @@
 typedef struct CUTestConsFuncData
 {
   double eps;
+  double zero_eps;
 
   int num_constraints;
 
@@ -70,14 +71,16 @@ static int jac_compare(const void* f, const void* s)
 static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
                                                    int num_variables,
                                                    int num_constraints,
-                                                   double eps)
+                                                   SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   CUTestConsFuncData* data = *star;
   int status;
 
-  data->eps = eps;
+  data->eps = sleqp_params_get_eps(params);
+  data->zero_eps = sleqp_params_get_zero_eps(params);
+
   data->num_constraints = num_constraints;
   data->goth = cutest_false;
 
@@ -186,7 +189,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
       SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_val,
                                               data->cons_vals,
                                               data->num_constraints,
-                                              data->eps));
+                                              data->zero_eps));
     }
 
   }
@@ -322,7 +325,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(int num_variables,
   SLEQP_CALL(sleqp_sparse_vector_from_raw(product,
                                           data->hessian_product,
                                           num_variables,
-                                          data->eps));
+                                          data->zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -330,14 +333,14 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(int num_variables,
 SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
                                             int num_variables,
                                             int num_constraints,
-                                            double eps)
+                                            SleqpParams* params)
 {
   CUTestConsFuncData* data;
 
   SLEQP_CALL(sleqp_cutest_cons_data_create(&data,
                                            num_variables,
                                            num_constraints,
-                                           eps));
+                                           params));
 
   SleqpFuncCallbacks callbacks = {
     .set_value = sleqp_cutest_cons_func_set,
