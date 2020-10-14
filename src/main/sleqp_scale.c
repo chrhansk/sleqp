@@ -6,26 +6,38 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
-#define INIT_MATH_ERROR_CHECK                   \
-  fenv_t fenv_current;                          \
-  if(math_errhandling & MATH_ERREXCEPT)         \
-  {                                             \
-    fegetenv(&fenv_current);                    \
-  }                                             \
+#define INIT_MATH_ERROR_CHECK                     \
+  fenv_t fenv_current;                            \
+  do                                              \
+  {                                               \
+    if(math_errhandling & MATH_ERREXCEPT)         \
+    {                                             \
+      fegetenv(&fenv_current);                    \
+    }                                             \
+  }                                               \
   while(false)
 
-#define MATH_ERROR_CHECK(error_flags)                  \
-  if(math_errhandling & MATH_ERREXCEPT)                \
-  {                                                    \
-    const bool has_error = fetestexcept(error_flags);  \
-                                                       \
-    fesetenv(&fenv_current);                           \
-                                                       \
-    if(has_error)                                      \
-    {                                                  \
-      return SLEQP_MATH_ERROR;                         \
-    }                                                  \
-  }                                                    \
+#define MATH_ERROR_CHECK(error_flags)                                             \
+  do                                                                              \
+  {                                                                               \
+    if(math_errhandling & MATH_ERREXCEPT)                                         \
+    {                                                                             \
+      const bool has_error = fetestexcept(error_flags);                           \
+                                                                                  \
+      fesetenv(&fenv_current);                                                    \
+                                                                                  \
+      if(has_error)                                                               \
+      {                                                                           \
+        sleqp_log_error("Encountered floating point errors (%s, %s, %s, %s, %s)", \
+                        fetestexcept(FE_DIVBYZERO) ? "FE_DIVBYZERO" : "",         \
+                        fetestexcept(FE_INEXACT) ? "FE_INEXACT" : "",             \
+                        fetestexcept(FE_INVALID) ? "FE_INVALID" : "",             \
+                        fetestexcept(FE_OVERFLOW) ? "FE_OVERFLOW" : "",           \
+                        fetestexcept(FE_UNDERFLOW) ? "FE_UNDERFLOW" : "");        \
+        return SLEQP_MATH_ERROR;                                                  \
+      }                                                                           \
+    }                                                                             \
+  }                                                                               \
   while(false)
 
 #define SCALING_ERROR_FLAGS (FE_OVERFLOW | FE_UNDERFLOW)

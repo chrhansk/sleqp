@@ -60,6 +60,8 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
                                            residuum,
                                            dual_sol));
 
+  int num_clipped_vars = 0, num_clipped_cons = 0;
+
   {
     SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
     SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
@@ -85,11 +87,25 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
 
         if(var_state == SLEQP_ACTIVE_UPPER)
         {
-          SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, SLEQP_MAX(dual_value, 0.)));
+          if(dual_value > 0.)
+          {
+            SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, dual_value));
+          }
+          else if(dual_value < 0.)
+          {
+            ++num_clipped_vars;
+          }
         }
         else if(var_state == SLEQP_ACTIVE_LOWER)
         {
-          SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, SLEQP_MIN(dual_value, 0.)));
+          if(dual_value < 0.)
+          {
+            SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, dual_value));
+          }
+          else if(dual_value > 0.)
+          {
+            ++num_clipped_vars;
+          }
         }
         else
         {
@@ -109,11 +125,25 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
 
         if(cons_state == SLEQP_ACTIVE_UPPER)
         {
-          SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, SLEQP_MAX(dual_value, 0.)));
+          if(dual_value > 0.)
+          {
+            SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, dual_value));
+          }
+          else if(dual_value < 0.)
+          {
+            ++num_clipped_cons;
+          }
         }
         else if(cons_state == SLEQP_ACTIVE_LOWER)
         {
-          SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, SLEQP_MIN(dual_value, 0.)));
+          if(dual_value < 0.)
+          {
+            SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, dual_value));
+          }
+          else if(dual_value > 0.)
+          {
+            ++num_clipped_cons;
+          }
         }
         else
         {
@@ -122,10 +152,12 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
           SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, dual_value));
         }
       }
-
     }
-
   }
+
+  sleqp_log_debug("Dual estimation clipped %d variable and %d constraint duals",
+                  num_clipped_vars,
+                  num_clipped_cons);
 
   return SLEQP_OKAY;
 }
