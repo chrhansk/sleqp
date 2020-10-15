@@ -106,6 +106,9 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
 
   assert mat.shape == (num_rows, num_cols)
 
+  if num_rows == 0 or num_cols == 0:
+    return csleqp.SLEQP_OKAY
+
   cdef int last_col = -1
 
   matrix_iter = matrix_iterator(mat)

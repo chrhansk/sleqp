@@ -7,6 +7,9 @@ import numpy as np
 
 import sleqp
 
+num_constraints = 0
+num_variables = 2
+
 class LSQFunc(sleqp.Func):
     """
     Simple LSQ function to solve the Rosenbrock problem.
@@ -57,6 +60,12 @@ class LSQFunc(sleqp.Func):
 
     def func_grad(self):
         return np.dot(self.lsq_val, self.lsq_jac)
+
+    def cons_vals(self):
+        return np.zeros((num_constraints,))
+
+    def cons_jac(self):
+        return np.zeros((num_constraints, num_variables))
 
     def hess_prod(self, func_dual, direction, cons_dual):
 
@@ -122,6 +131,12 @@ class LSQImplicitFunc(sleqp.Func):
     def eval_lsq_jac_adjoint(self, direction):
         jac = self._eval_jac()
         return np.dot(np.transpose(jac), direction)
+
+    def cons_vals(self):
+        return np.zeros((num_constraints,))
+
+    def cons_jac(self):
+        return np.zeros((num_constraints, num_variables))
 
     def func_grad_nnz(self):
         return self.num_variables

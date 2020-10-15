@@ -39,6 +39,12 @@ class Func(sleqp.Func):
 
     return g
 
+  def cons_vals(self):
+    return np.zeros((num_constraints,))
+
+  def cons_jac(self):
+    return np.zeros((num_constraints, num_variables))
+
   def hess_prod(self, func_dual, direction, _):
     [x, y] = self.v
     (a, b) = (self.a, self.b)

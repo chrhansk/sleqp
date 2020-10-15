@@ -15,6 +15,9 @@ class ZeroFunc(sleqp.Func):
     def func_val(self):
         return 0.
 
+    def func_grad(self):
+        return np.zeros((num_variables,))
+
     def cons_vals(self):
         return np.zeros((num_constraints,))
 

@@ -26,6 +26,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(int num_variables,
 
       product_array = func.lsq_jac_forward(forward_direction_array)
 
+      assert product_array is not None, "lsq_jac_forward(...) returned 'None'"
+
       csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
   except BaseException as exception:
@@ -45,6 +47,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(int num_variables,
       adjoint_direction_array = sleqp_sparse_vec_to_array(adjoint_direction)
 
       product_array = func.lsq_jac_adjoint(adjoint_direction_array)
+
+      assert product_array is not None, "lsq_jac_adjoint(...) returned 'None'"
 
       csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
   except BaseException as exception:
@@ -107,13 +111,13 @@ cdef class LSQFunc:
     pass
 
   cpdef object lsq_residuals(self):
-    pass
+    return None
 
   cpdef object lsq_jac_forward(self, forward_direction: np.array):
-    pass
+    return None
 
   cpdef object lsq_jac_adjoint(self, adjoint_direction: np.array):
-    pass
+    return None
 
   cpdef int func_grad_nnz(self):
     return 0
@@ -125,19 +129,19 @@ cdef class LSQFunc:
     return 0
 
   cpdef object func_grad(self):
-    pass
+    return None
 
   cpdef object cons_vals(self):
-    pass
+    return None
 
   cpdef object cons_jac(self):
-    pass
+    return None
 
   cpdef object hess_prod(self,
                          func_dual: float,
                          direction: np.array,
                          cons_dual: np.array):
-    pass
+    return None
 
   @property
   def num_variables(self) -> int:

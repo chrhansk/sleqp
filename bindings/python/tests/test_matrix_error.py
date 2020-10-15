@@ -26,6 +26,12 @@ class MatrixErrorFunc(sleqp.Func):
   def cons_jac_nnz(self):
     return 1
 
+  def cons_vals(self):
+    return np.zeros((num_constraints,))
+
+  def cons_jac(self):
+    return np.zeros((num_constraints, num_variables))
+
   def func_grad(self):
     return np.array([0]*num_variables)
 

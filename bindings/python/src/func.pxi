@@ -37,18 +37,23 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
     func = (<object> func_data)
 
     if func_val:
-      func_val[0] = func.func_val()
+      result = func.func_val()
+      assert result is not None, "func_val() returned 'None'"
+      func_val[0] = result
 
     if func_grad:
       grad_array = func.func_grad()
+      assert grad_array is not None, "func_grad() returned 'None'"
       csleqp_call(array_to_sleqp_sparse_vec(grad_array, func_grad))
 
     if cons_vals:
       cons_array = func.cons_vals()
+      assert cons_array is not None, "cons_vals() returned 'None'"
       csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
 
     if cons_jac:
       cons_jac_mat = func.cons_jac()
+      assert cons_jac_mat is not None, "cons_jac() returned 'None'"
       csleqp_call(matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac))
 
 
@@ -78,6 +83,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
     cons_dual_array = sleqp_sparse_vec_to_array(cons_dual)
 
     product_array = func.hess_prod(f_dual, direction_array, cons_dual_array)
+
+    assert product_array is not None, "hess_prod(...) returned 'None'"
 
     csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
@@ -142,13 +149,13 @@ cdef class Func:
     return 0
 
   cpdef object func_grad(self):
-    pass
+    return None
 
   cpdef object cons_vals(self):
-    pass
+    return None
 
   cpdef object cons_jac(self):
-    pass
+    return None
 
   cpdef object hess_prod(self,
                          func_dual: float,
