@@ -56,12 +56,10 @@ extern "C" {
    *
    * @param[in]       cauchy_data        Cauchy data
    * @param[out]      iterate            The current iterate
-   * @param[in]       trust_radius       The trust radius
    *
    **/
   SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
-                                             SleqpIterate* iterate,
-                                             double trust_radius);
+                                             SleqpIterate* iterate);
 
   /**
    * Returns the Cauchy direction according to the current LP solution.
@@ -84,8 +82,6 @@ extern "C" {
    * @param[out]      locally_infeasible   Whether or not the iterate is locally infeasible
    **/
   SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchyData* cauchy_data,
-                                                SleqpIterate* iterate,
-                                                double trust_radius,
                                                 bool* locally_infeasible);
 
   /**

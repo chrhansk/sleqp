@@ -73,8 +73,7 @@ START_TEST(test_simply_constrained_dual_estimation)
                                  penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
-                                          iterate,
-                                          trust_radius));
+                                           iterate));
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 

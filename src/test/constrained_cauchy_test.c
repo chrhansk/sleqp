@@ -74,8 +74,7 @@ START_TEST(test_working_set)
                                  penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
-                                          iterate,
-                                          trust_radius));
+                                           iterate));
 
   ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 0), SLEQP_INACTIVE);
   ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 1), SLEQP_ACTIVE_UPPER);
@@ -100,8 +99,7 @@ START_TEST(test_dual_variable)
                                  penalty_parameter));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
-                                          iterate,
-                                          trust_radius));
+                                           iterate));
 
   ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, cauchy_direction));
 

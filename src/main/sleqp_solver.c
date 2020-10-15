@@ -488,8 +488,6 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
     bool locally_infeasible;
 
     SLEQP_CALL(sleqp_cauchy_locally_infeasible(cauchy_data,
-                                               iterate,
-                                               solver->trust_radius,
                                                &locally_infeasible));
 
     if(locally_infeasible)
@@ -848,8 +846,7 @@ static SLEQP_RETCODE compute_linear_step(SleqpSolver* solver,
                                   solver->penalty_parameter));
 
     SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
-                                            iterate,
-                                            solver->lp_trust_radius));
+                                            iterate));
 
     SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
                                               iterate));
