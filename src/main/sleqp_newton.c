@@ -453,9 +453,20 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
 #if !defined(NDEBUG)
 
-  // Initial direction must be in working set
+  // Initial direction and trust region direction
+  // must be orthogonal
+  {
+    double direction_dot;
+    sleqp_sparse_vector_dot(data->sparse_cache,
+                            data->initial_solution,
+                            &direction_dot);
+
+    assert(sleqp_zero(direction_dot, eps));
+  }
+
   if(newton_step_in_working_set)
   {
+    // Direction must be in working set
     bool in_working_set = false;
 
     SLEQP_CALL(sleqp_direction_in_working_set(problem,
