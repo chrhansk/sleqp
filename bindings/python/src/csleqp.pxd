@@ -259,16 +259,16 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_working_set_capture(SleqpWorkingSet* working_set)
 
-  int sleqp_working_set_num_active_vars(SleqpWorkingSet* working_set)
+  int sleqp_working_set_num_active_vars(const SleqpWorkingSet* working_set)
 
-  int sleqp_working_set_num_active_cons(SleqpWorkingSet* working_set)
+  int sleqp_working_set_num_active_cons(const SleqpWorkingSet* working_set)
 
-  int sleqp_working_set_size(SleqpWorkingSet* working_set)
+  int sleqp_working_set_size(const SleqpWorkingSet* working_set)
 
-  SLEQP_ACTIVE_STATE sleqp_working_set_get_variable_state(SleqpWorkingSet* working_set,
+  SLEQP_ACTIVE_STATE sleqp_working_set_get_variable_state(const SleqpWorkingSet* working_set,
                                                           int index)
 
-  SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(SleqpWorkingSet* working_set,
+  SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(const SleqpWorkingSet* working_set,
                                                             int index)
 
   SLEQP_RETCODE sleqp_working_set_release(SleqpWorkingSet** star)
