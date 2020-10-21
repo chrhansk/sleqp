@@ -128,7 +128,8 @@ extern "C" {
                                           double trust_radius,
                                           SleqpSparseVec* hessian_product,
                                           SleqpSparseVec* direction,
-                                          double* step_length);
+                                          double* step_length,
+                                          double* quadratic_merit_value);
 
 #ifdef __cplusplus
 }

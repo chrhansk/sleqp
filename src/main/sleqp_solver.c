@@ -830,6 +830,7 @@ static SLEQP_RETCODE compute_linear_step(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
+  const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   const double one = 1.;
@@ -875,14 +876,25 @@ static SLEQP_RETCODE compute_linear_step(SleqpSolver* solver,
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
 
+    SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_direction,
+                                        solver->cauchy_step));
+
+    if(!quadratic_model)
+    {
+      (*full_step) = true;
+
+      solver->cauchy_step_length = 1.;
+
+      return SLEQP_OKAY;
+    }
+
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &one,
                                     solver->cauchy_direction,
                                     sleqp_iterate_get_cons_dual(iterate),
                                     solver->cauchy_hessian_direction));
 
-    SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_direction,
-                                        solver->cauchy_step));
+    double quadratic_merit_value;
 
     SLEQP_CALL(sleqp_cauchy_compute_step(solver->cauchy_data,
                                          iterate,
@@ -890,7 +902,31 @@ static SLEQP_RETCODE compute_linear_step(SleqpSolver* solver,
                                          solver->trust_radius,
                                          solver->cauchy_hessian_direction,
                                          solver->cauchy_step,
-                                         &solver->cauchy_step_length));
+                                         &solver->cauchy_step_length,
+                                         &quadratic_merit_value));
+
+#if !defined(NDEBUG)
+
+    {
+      double actual_quadratic_merit_value;
+
+      double func_dual = 1.;
+      SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
+
+      SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
+                                       iterate,
+                                       &func_dual,
+                                       solver->cauchy_step,
+                                       cons_dual,
+                                       solver->penalty_parameter,
+                                       &actual_quadratic_merit_value));
+
+      assert(sleqp_eq(quadratic_merit_value,
+                      actual_quadratic_merit_value,
+                      eps));
+    }
+
+#endif
 
     (*full_step) = sleqp_eq(solver->cauchy_step_length,
                             1.,

@@ -1014,11 +1014,14 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                         double trust_radius,
                                         SleqpSparseVec* hessian_direction,
                                         SleqpSparseVec* direction,
-                                        double* step_length)
+                                        double* step_length,
+                                        double* quadratic_merit_value)
 {
   const double eps = sleqp_params_get_eps(cauchy_data->params);
 
   SleqpMeritData* merit_data = cauchy_data->merit_data;
+
+  (*quadratic_merit_value) = 0.;
 
   double exact_merit_value;
 
@@ -1067,9 +1070,9 @@ SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
                                     penalty_parameter,
                                     &linear_merit_value));
 
-      double quadratic_merit_value = linear_merit_value + 0.5* hessian_product;
+      (*quadratic_merit_value) = linear_merit_value + (0.5 * hessian_product);
 
-      if((exact_merit_value - quadratic_merit_value) >= eta*(exact_merit_value - linear_merit_value))
+      if((exact_merit_value - (*quadratic_merit_value)) >= eta*(exact_merit_value - linear_merit_value))
       {
         break;
       }
