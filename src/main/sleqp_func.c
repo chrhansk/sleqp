@@ -223,6 +223,9 @@ SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
                                        const SleqpSparseVec* cons_duals,
                                        double* bilinear_prod)
 {
+  ++func->num_hess_evals;
+  SLEQP_CALL(sleqp_sparse_vector_clear(func->product));
+
   SLEQP_CALL(func->callbacks.hess_prod(func->num_variables,
                                        func_dual,
                                        direction,
