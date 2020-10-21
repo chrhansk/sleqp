@@ -224,6 +224,37 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_merit_quadratic(SleqpMeritData* merit_data,
+                                    SleqpIterate* iterate,
+                                    const double* func_dual,
+                                    const SleqpSparseVec* direction,
+                                    const SleqpSparseVec* cons_duals,
+                                    double penalty_parameter,
+                                    double* merit_value)
+{
+  double linear_merit_value;
+
+  SLEQP_CALL(sleqp_merit_linear(merit_data,
+                                iterate,
+                                direction,
+                                penalty_parameter,
+                                &linear_merit_value));
+
+  SleqpFunc* func = merit_data->func;
+
+  double bilinear_product;
+
+  SLEQP_CALL(sleqp_func_hess_bilinear(func,
+                                      func_dual,
+                                      direction,
+                                      cons_duals,
+                                      &bilinear_product));
+
+  (*merit_value) = linear_merit_value + (0.5 * bilinear_product);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
                                           SleqpIterate* iterate,
                                           const SleqpSparseVec* direction,

@@ -60,7 +60,7 @@ extern "C" {
    * @param[in]  iterate           The current iterate \f$ overline{x} \f$
    * @param[in]  direction         The direction \f$ d \f$
    * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
-   * @param[out] merit_value       The linear merit value
+   * @param[out] merit_value       The linearized merit value
    *
    **/
   SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
@@ -68,6 +68,32 @@ extern "C" {
                                    const SleqpSparseVec* direction,
                                    double penalty_parameter,
                                    double* merit_value);
+
+  /**
+   * Computes the quadratic merit value at the given iterate.
+   * The quadratic merit value at \f$ \overline{x} \f$ w.r.t.
+   * a direction \f$ d \f$ is given by
+   *
+   * \f[
+   * q_v(\overline{x}, d, \mu) := \ell_v(\overline{x}, d) + 1/2 \langle d, H(\overline{x}, \mu) d \rangle
+   * \f]
+   *
+   * The computation involves the computation of one Hessian product of the underlying function
+   *
+   * @param[in]  merit_data        Merit data
+   * @param[in]  iterate           The current iterate \f$ overline{x} \f$
+   * @param[in]  direction         The direction \f$ d \f$
+   * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
+   * @param[out] merit_value       The quadratic merit value
+   *
+   **/
+  SLEQP_RETCODE sleqp_merit_quadratic(SleqpMeritData* merit_data,
+                                      SleqpIterate* iterate,
+                                      const double* func_dual,
+                                      const SleqpSparseVec* direction,
+                                      const SleqpSparseVec* cons_duals,
+                                      double penalty_parameter,
+                                      double* merit_value);
 
   SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
                                             SleqpIterate* iterate,
