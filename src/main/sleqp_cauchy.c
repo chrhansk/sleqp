@@ -718,12 +718,6 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
 
   const int num_active_vars = sleqp_working_set_num_active_vars(working_set);
   const int num_active_cons = sleqp_working_set_num_active_cons(working_set);
-  const int working_set_size = sleqp_working_set_size(working_set);
-
-  assert(num_active_vars <= problem->num_variables);
-  assert(num_active_cons <= problem->num_variables);
-
-  assert(working_set_size <= problem->num_variables);
 
   sleqp_log_debug("Created an active set with %d variables, %d constraints",
                   num_active_vars,
