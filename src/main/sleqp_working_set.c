@@ -209,6 +209,17 @@ bool sleqp_working_set_valid(const SleqpWorkingSet* working_set)
   const int working_set_size = sleqp_working_set_size(working_set);
 
   {
+    const int num_active_vars = sleqp_working_set_num_active_vars(working_set);
+    const int num_active_cons = sleqp_working_set_num_active_cons(working_set);
+    const int working_set_size = sleqp_working_set_size(working_set);
+
+    assert(num_active_vars <= working_set_size);
+    assert(num_active_cons <= working_set_size);
+
+    assert(working_set_size <= problem->num_variables);
+  }
+
+  {
     int num_active_vars = 0, num_active_cons = 0;
 
     for(int j = 0; j < num_variables; ++j)
