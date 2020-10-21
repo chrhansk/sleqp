@@ -24,6 +24,8 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 {
   SleqpLpiSoplex* spx = new SleqpLpiSoplex;
 
+  *spx = (SleqpLpiSoplex){0};
+
   spx->soplex = new soplex::SoPlex();
   soplex::SoPlex& soplex = *(spx->soplex);
 
@@ -428,8 +430,11 @@ static SLEQP_RETCODE soplex_free(void** lp_data)
 
   delete[] spx->basis_cols;
   delete[] spx->basis_rows;
+  spx->basis_cols = NULL;
+  spx->basis_rows = NULL;
 
   delete spx->soplex;
+  spx->soplex = NULL;
 
   delete spx;
 
