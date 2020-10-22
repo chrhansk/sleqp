@@ -46,6 +46,10 @@ extern "C" {
                                     double eps,
                                     SleqpSparseVec* violation);
 
+  SLEQP_RETCODE sleqp_get_total_violation(SleqpProblem* problem,
+                                          SleqpSparseVec* cons_val,
+                                          double* total_violation);
+
 #ifdef __cplusplus
 }
 #endif

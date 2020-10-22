@@ -394,3 +394,57 @@ SLEQP_RETCODE sleqp_get_violation(SleqpProblem* problem,
 
   return SLEQP_OKAY;
 }
+
+SLEQP_RETCODE sleqp_get_total_violation(SleqpProblem* problem,
+                                        SleqpSparseVec* cons_val,
+                                        double* total_violation)
+{
+  int num_constraints = problem->num_constraints;
+
+  SleqpSparseVec* lb = problem->cons_lb;
+  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* v = cons_val;
+
+  const int dim = v->dim;
+
+  assert(dim == num_constraints);
+  assert(dim == lb->dim);
+  assert(dim == ub->dim);
+
+  (*total_violation) = 0.;
+
+  int k_c = 0, k_lb = 0, k_ub = 0;
+
+  while(k_c < v->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  {
+    double c_val = 0., lb_val = 0., ub_val = 0.;
+
+    bool valid_v = (k_c < v->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
+
+    int idx = valid_v ? v->indices[k_c] : dim + 1;
+    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
+    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
+
+    if(valid_v && idx == v->indices[k_c])
+    {
+      c_val = v->data[k_c++];
+    }
+
+    if(valid_lb && idx == lb->indices[k_lb])
+    {
+      lb_val = lb->data[k_lb++];
+    }
+
+    if(valid_ub && idx == ub->indices[k_ub])
+    {
+      ub_val = ub->data[k_ub++];
+    }
+
+    (*total_violation) += SLEQP_MAX(c_val - ub_val, 0.);
+    (*total_violation) += SLEQP_MAX(lb_val - c_val, 0.);
+  }
+
+  return SLEQP_OKAY;
+}

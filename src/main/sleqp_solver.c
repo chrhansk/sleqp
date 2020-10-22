@@ -852,6 +852,8 @@ static SLEQP_RETCODE compute_linear_step(SleqpSolver* solver,
     SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
                                               iterate));
 
+    SLEQP_CALL(estimate_dual_values(solver, iterate));
+
     SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
                                           solver->cauchy_direction));
 
@@ -873,8 +875,6 @@ static SLEQP_RETCODE compute_linear_step(SleqpSolver* solver,
     }
 
 #endif
-
-    SLEQP_CALL(estimate_dual_values(solver, iterate));
 
     SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_direction,
                                         solver->cauchy_step));
