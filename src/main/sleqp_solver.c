@@ -1208,9 +1208,9 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
+#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e |%14e | %18s"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14e |%14e |%14e | %18s"
 
 static SLEQP_RETCODE print_header()
 {
@@ -1221,6 +1221,7 @@ static SLEQP_RETCODE print_header()
                  "Slack res",
                  "Stat res",
                  "Penalty",
+                 "Working set",
                  "LP tr",
                  "EQP tr",
                  "LP cond",
@@ -1252,6 +1253,16 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
     [SLEQP_STEPTYPE_REJECTED] = "Rejected"
   };
 
+  char working_set_buf[1024];
+
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(solver->iterate);
+
+  snprintf(working_set_buf,
+           1024,
+           "%dv/%dc",
+           sleqp_working_set_num_active_vars(working_set),
+           sleqp_working_set_num_active_cons(working_set));
+
   sleqp_log_info(LINE_FORMAT,
                  solver->iteration,
                  sleqp_iterate_get_func_val(solver->unscaled_iterate),
@@ -1259,6 +1270,7 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
                  solver->slackness_residuum,
                  solver->stationarity_residuum,
                  solver->penalty_parameter,
+                 working_set_buf,
                  solver->lp_trust_radius,
                  solver->trust_radius,
                  basis_condition,
