@@ -14,7 +14,6 @@ extern "C" {
 #include "sleqp_func.h"
 #include "sleqp_iterate.h"
 #include "sleqp_params.h"
-#include "sleqp.h"
 
 
   typedef struct SleqpMeritData SleqpMeritData;
@@ -101,7 +100,9 @@ extern "C" {
                                             double penalty_parameter,
                                             SleqpSparseVec* gradient);
 
-  SLEQP_RETCODE sleqp_merit_data_free(SleqpMeritData** star);
+  SLEQP_RETCODE sleqp_merit_data_capture(SleqpMeritData* merit_data);
+
+  SLEQP_RETCODE sleqp_merit_data_release(SleqpMeritData** star);
 
 
 #ifdef __cplusplus

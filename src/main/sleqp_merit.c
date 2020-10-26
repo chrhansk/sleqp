@@ -2,9 +2,12 @@
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
+#include "sleqp_util.h"
 
 struct SleqpMeritData
 {
+  int refcount;
+
   SleqpProblem* problem;
   SleqpParams* params;
 
@@ -35,6 +38,8 @@ SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpMeritData* merit_data = *star;
+
+  merit_data->refcount = 1;
 
   merit_data->problem = problem;
   merit_data->func = problem->func;
@@ -295,7 +300,7 @@ SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_merit_data_free(SleqpMeritData** star)
+static SLEQP_RETCODE merit_data_free(SleqpMeritData** star)
 {
   SleqpMeritData* merit_data = *star;
 
@@ -315,6 +320,32 @@ SLEQP_RETCODE sleqp_merit_data_free(SleqpMeritData** star)
   sleqp_free(&merit_data->dense_cache);
 
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_merit_data_capture(SleqpMeritData* merit_data)
+{
+  ++merit_data->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_merit_data_release(SleqpMeritData** star)
+{
+  SleqpMeritData* merit_data = *star;
+
+  if(!merit_data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--merit_data->refcount == 0)
+  {
+    SLEQP_CALL(merit_data_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

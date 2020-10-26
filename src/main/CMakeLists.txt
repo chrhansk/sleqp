@@ -13,6 +13,7 @@ set(COMMON_SRC
   sleqp_func.c
   sleqp_iterate.c
   sleqp_params.c
+  sleqp_linesearch.c
   sleqp_log.c
   sleqp_lsq.c
   sleqp_options.c

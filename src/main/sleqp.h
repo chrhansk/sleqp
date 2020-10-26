@@ -16,6 +16,7 @@
 #include "sleqp_func.h"
 #include "sleqp_hess_struct.h"
 #include "sleqp_iterate.h"
+#include "sleqp_linesearch.h"
 #include "sleqp_log.h"
 #include "sleqp_lsq.h"
 #include "sleqp_options.h"
