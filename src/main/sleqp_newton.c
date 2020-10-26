@@ -349,7 +349,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
       }
       else
       {
-        (*newton_step_in_working_set) = false;
+        newton_step_in_working_set = false;
 
         SLEQP_CALL(sleqp_sparse_vector_scale(data->initial_solution, alpha));
 
