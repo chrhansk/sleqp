@@ -31,12 +31,7 @@ struct SleqpCauchyData
   double* solution_values;
   double* dual_values;
 
-  double* jac_prod_cache;
-  SleqpSparseVec* jac_prod;
-  SleqpSparseVec* combined_cons_val;
-
   SleqpSparseVec* quadratic_gradient;
-  SleqpMeritData* merit_data;
 };
 
 SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
@@ -80,24 +75,9 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
                           SLEQP_MAX(data->num_lp_constraints,
                                     data->num_lp_variables)));
 
-  SLEQP_CALL(sleqp_calloc(&data->jac_prod_cache,
-                          problem->num_constraints));
-
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->jac_prod,
-                                        problem->num_constraints,
-                                        problem->num_constraints));
-
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->combined_cons_val,
-                                        problem->num_constraints,
-                                        problem->num_constraints));
-
   SLEQP_CALL(sleqp_sparse_vector_create(&data->quadratic_gradient,
                                         problem->num_variables,
                                         0));
-
-  SLEQP_CALL(sleqp_merit_data_create(&data->merit_data,
-                                     problem,
-                                     params));
 
   const double inf = sleqp_infinity();
 
@@ -1025,181 +1005,6 @@ SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchyData* cauchy_data,
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_cauchy_compute_step(SleqpCauchyData* cauchy_data,
-                                        SleqpIterate* iterate,
-                                        double penalty_parameter,
-                                        double trust_radius,
-                                        SleqpSparseVec* hessian_direction,
-                                        SleqpSparseVec* direction,
-                                        double* step_length,
-                                        double* quadratic_merit_value)
-{
-  SleqpProblem* problem = cauchy_data->problem;
-  SleqpMeritData* merit_data = cauchy_data->merit_data;
-
-  const double eps = sleqp_params_get_eps(cauchy_data->params);
-  const double zero_eps = sleqp_params_get_zero_eps(cauchy_data->params);
-
-  (*quadratic_merit_value) = 0.;
-
-  double exact_merit_value;
-
-  SLEQP_CALL(sleqp_merit_func(merit_data,
-                              iterate,
-                              penalty_parameter,
-                              &exact_merit_value));
-
-  double hessian_product;
-
-  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
-                                     hessian_direction,
-                                     &hessian_product));
-
-  double objective_dot;
-  SleqpSparseVec* jacobian_product = cauchy_data->jac_prod;
-
-  double delta = 1.;
-
-  {
-    double direction_norm = sleqp_sparse_vector_norm(direction);
-
-    double direction_factor = trust_radius / direction_norm;
-
-    if(direction_factor < 1)
-    {
-      delta = direction_factor;
-
-      hessian_product *= (delta*delta);
-
-      SLEQP_CALL(sleqp_sparse_vector_scale(direction, delta));
-    }
-  }
-
-  // prepare initial products
-  {
-    SLEQP_CALL(sleqp_sparse_vector_dot(sleqp_iterate_get_func_grad(iterate),
-                                       direction,
-                                       &objective_dot));
-
-    SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_get_cons_jac(iterate),
-                                                  direction,
-                                                  cauchy_data->jac_prod_cache));
-
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(jacobian_product,
-                                            cauchy_data->jac_prod_cache,
-                                            problem->num_constraints,
-                                            zero_eps));
-  }
-
-  const double eta = sleqp_params_get_cauchy_eta(cauchy_data->params);
-  const double tau = sleqp_params_get_cauchy_tau(cauchy_data->params);
-
-  const int max_it = 10000;
-  int it = 0;
-
-  for(it = 0; it < max_it; ++it)
-  {
-    double linear_merit_value = 0.;
-
-    // compute linear merit value
-    {
-      linear_merit_value += sleqp_iterate_get_func_val(iterate) + objective_dot;
-
-      SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_cons_val(iterate),
-                                         jacobian_product,
-                                         zero_eps,
-                                         cauchy_data->combined_cons_val));
-
-      double total_violation;
-
-      SLEQP_CALL(sleqp_get_total_violation(problem,
-                                           cauchy_data->combined_cons_val,
-                                           &total_violation));
-
-      linear_merit_value += penalty_parameter * total_violation;
-    }
-
-    // compute quadratic merit value
-    {
-      (*quadratic_merit_value) = linear_merit_value + (0.5 * hessian_product);
-    }
-
-#if !defined(NDEBUG)
-
-    {
-      {
-        double actual_linear_merit_value;
-
-        SLEQP_CALL(sleqp_merit_linear(merit_data,
-                                      iterate,
-                                      direction,
-                                      penalty_parameter,
-                                      &actual_linear_merit_value));
-
-        assert(sleqp_eq(linear_merit_value,
-                        actual_linear_merit_value,
-                        eps));
-      }
-
-      {
-        double actual_quadratic_merit_value;
-
-        double func_dual = 1.;
-        SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
-
-        SLEQP_CALL(sleqp_merit_quadratic(merit_data,
-                                         iterate,
-                                         &func_dual,
-                                         direction,
-                                         cons_dual,
-                                         penalty_parameter,
-                                         &actual_quadratic_merit_value));
-
-        assert(sleqp_eq((*quadratic_merit_value),
-                        actual_quadratic_merit_value,
-                        eps));
-      }
-    }
-
-#endif
-
-    // check condition
-    {
-      if((exact_merit_value - (*quadratic_merit_value)) >= eta*(exact_merit_value - linear_merit_value))
-      {
-        break;
-      }
-    }
-
-    // update products
-    SLEQP_CALL(sleqp_sparse_vector_scale(direction, tau));
-
-    hessian_product *= (tau*tau);
-
-    objective_dot *= tau;
-
-    SLEQP_CALL(sleqp_sparse_vector_scale(jacobian_product, tau));
-
-    delta *= tau;
-  }
-
-  assert(it != max_it);
-
-  sleqp_log_debug("Cauchy line search converged after %d iterations (final value: %12e)",
-                  it,
-                  delta);
-
-  if(step_length)
-  {
-    *step_length = delta;
-  }
-
-  assert(sleqp_le(sleqp_sparse_vector_norm(direction), trust_radius, eps));
-
-  return SLEQP_OKAY;
-}
-
 SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
 {
   SleqpCauchyData* data = *star;
@@ -1209,13 +1014,9 @@ SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_merit_data_free(&data->merit_data));
+  //SLEQP_CALL(sleqp_merit_data_free(&data->merit_data));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->quadratic_gradient));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->combined_cons_val));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->jac_prod));
-  sleqp_free(&data->jac_prod_cache);
 
   sleqp_free(&data->dual_values);
   sleqp_free(&data->solution_values);
