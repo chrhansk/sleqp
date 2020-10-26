@@ -104,7 +104,7 @@ static SLEQP_RETCODE lsq_func_eval(int num_variables,
 
   if(func_val)
   {
-    *func_val += .5 * sleqp_sparse_vector_normsq(lsq_data->lsq_residual);
+    *func_val += .5 * sleqp_sparse_vector_norm_sq(lsq_data->lsq_residual);
   }
 
   if(func_grad)

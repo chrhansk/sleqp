@@ -330,7 +330,7 @@ SLEQP_RETCODE sr1_initial_scale(SleqpSparseVec* step_diff,
                                      step_diff,
                                      &grad_step_dot));
 
-  const double grad_diff_normsq = sleqp_sparse_vector_normsq(grad_diff);
+  const double grad_diff_normsq = sleqp_sparse_vector_norm_sq(grad_diff);
 
   assert(grad_diff_normsq >= 0.);
 
@@ -566,7 +566,7 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
       ++k_grad;
     }
 
-    const double step_normsq = sleqp_sparse_vector_normsq(data->block_step_diff);
+    const double step_normsq = sleqp_sparse_vector_norm_sq(data->block_step_diff);
 
     if(!sleqp_zero(step_normsq, eps))
     {

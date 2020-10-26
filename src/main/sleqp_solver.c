@@ -1184,8 +1184,8 @@ static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
 
   solver->dual_diff_norm = 0.;
 
-  solver->dual_diff_norm += sleqp_sparse_vector_normsq(solver->cons_dual_diff);
-  solver->dual_diff_norm += sleqp_sparse_vector_normsq(solver->vars_dual_diff);
+  solver->dual_diff_norm += sleqp_sparse_vector_norm_sq(solver->cons_dual_diff);
+  solver->dual_diff_norm += sleqp_sparse_vector_norm_sq(solver->vars_dual_diff);
 
   solver->dual_diff_norm = sqrt(solver->dual_diff_norm);
 
@@ -1347,8 +1347,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                   actual_reduction,
                   model_reduction);
 
-  const double trial_step_infnorm = sleqp_sparse_vector_norminf(solver->trial_step);
-  const double cauchy_step_infnorm = sleqp_sparse_vector_norminf(solver->cauchy_step);
+  const double trial_step_infnorm = sleqp_sparse_vector_inf_norm(solver->trial_step);
+  const double cauchy_step_infnorm = sleqp_sparse_vector_inf_norm(solver->cauchy_step);
 
   double trial_step_norm = sleqp_sparse_vector_norm(solver->trial_step);
 

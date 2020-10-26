@@ -197,7 +197,7 @@ static SLEQP_RETCODE rayleigh_quotient(SleqpSparseVec* direction,
                                        double eps,
                                        double* rayleigh_factor)
 {
-  double dir_norm = sleqp_sparse_vector_normsq(direction);
+  double dir_norm = sleqp_sparse_vector_norm_sq(direction);
 
   if(sleqp_zero(dir_norm, eps))
   {
@@ -488,7 +488,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
 
       SLEQP_CALL(sleqp_sparse_vector_scale(data->p, -1.));
 
-      g_dot_g = sleqp_sparse_vector_normsq(data->g);
+      g_dot_g = sleqp_sparse_vector_norm_sq(data->g);
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->v,
                                          data->g,
@@ -605,7 +605,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
                                                  data->v,
                                                  NULL));
 
-        g_dot_g = sleqp_sparse_vector_normsq(data->g);
+        g_dot_g = sleqp_sparse_vector_norm_sq(data->g);
 
         SLEQP_CALL(sleqp_sparse_vector_dot(data->v,
                                            data->g,

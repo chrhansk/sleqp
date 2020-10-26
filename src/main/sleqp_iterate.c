@@ -441,7 +441,7 @@ SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
   double value_norm = 0.;
 
   {
-    value_norm = sleqp_sparse_vector_normsq(iterate->primal);
+    value_norm = sleqp_sparse_vector_norm_sq(iterate->primal);
 
     value_norm = sqrt(value_norm);
   }
@@ -586,7 +586,7 @@ bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
   double value_norm = 0.;
 
   {
-    value_norm = sleqp_sparse_vector_normsq(iterate->primal);
+    value_norm = sleqp_sparse_vector_norm_sq(iterate->primal);
 
     value_norm = sqrt(value_norm);
   }
@@ -617,8 +617,8 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
   double multiplier_norm = 0.;
 
   {
-    multiplier_norm += sleqp_sparse_vector_normsq(iterate->cons_dual);
-    multiplier_norm += sleqp_sparse_vector_normsq(iterate->vars_dual);
+    multiplier_norm += sleqp_sparse_vector_norm_sq(iterate->cons_dual);
+    multiplier_norm += sleqp_sparse_vector_norm_sq(iterate->vars_dual);
 
     multiplier_norm = sqrt(multiplier_norm);
   }
@@ -705,7 +705,7 @@ SLEQP_RETCODE sleqp_iterate_capture(SleqpIterate* iterate)
 
   return SLEQP_OKAY;
 }
-  
+
 SLEQP_RETCODE sleqp_iterate_release(SleqpIterate** star)
 {
   SleqpIterate* iterate = *star;

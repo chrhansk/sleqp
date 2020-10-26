@@ -400,7 +400,7 @@ SLEQP_RETCODE bfgs_initial_scale(BFGSBlock* block,
                                      step_diff,
                                      &grad_step_dot));
 
-  const double step_diff_normsq = sleqp_sparse_vector_normsq(step_diff);
+  const double step_diff_normsq = sleqp_sparse_vector_norm_sq(step_diff);
 
   assert(step_diff_normsq >= 0.);
 
@@ -631,7 +631,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
       ++k_grad;
     }
 
-    const double step_normsq = sleqp_sparse_vector_normsq(data->block_step_diff);
+    const double step_normsq = sleqp_sparse_vector_norm_sq(data->block_step_diff);
 
     if(!sleqp_zero(step_normsq, eps))
     {

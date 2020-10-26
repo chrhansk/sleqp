@@ -249,12 +249,26 @@ SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
 
 double sleqp_sparse_vector_norm(const SleqpSparseVec* vec)
 {
-  double normsq = sleqp_sparse_vector_normsq(vec);
+  double normsq = sleqp_sparse_vector_norm_sq(vec);
 
   return sqrt(normsq);
 }
 
-double sleqp_sparse_vector_normsq(const SleqpSparseVec* vec)
+double sleqp_sparse_vector_one_norm(const SleqpSparseVec* vec)
+{
+  double one_norm = 0.;
+
+  for(int k = 0; k < vec->nnz; ++k)
+  {
+    double value = SLEQP_ABS(vec->data[k]);
+
+    one_norm += value;
+  }
+
+  return one_norm;
+}
+
+double sleqp_sparse_vector_norm_sq(const SleqpSparseVec* vec)
 {
   double normsq = 0.;
 
@@ -268,7 +282,7 @@ double sleqp_sparse_vector_normsq(const SleqpSparseVec* vec)
   return normsq;
 }
 
-double sleqp_sparse_vector_norminf(const SleqpSparseVec* vec)
+double sleqp_sparse_vector_inf_norm(const SleqpSparseVec* vec)
 {
   double norminf = 0.;
 
