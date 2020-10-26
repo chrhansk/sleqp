@@ -26,7 +26,7 @@ struct SleqpParams
   double newton_relative_tolerance;
 };
 
-#define ZERO_EPS_DEFAULT 1e-16
+#define ZERO_EPS_DEFAULT 1e-20
 #define EPS_DEFAULT 1e-10
 
 #define DERIV_PERTURBATION_DEFAULT 1e-8
