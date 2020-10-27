@@ -1185,6 +1185,10 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   const SleqpOptions* options = solver->options;
 
+  const bool quadratic_model = sleqp_options_get_use_quadratic_model(options);
+
+  const bool perform_newton_step = sleqp_options_get_perform_newton_step(options) && quadratic_model;
+
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
@@ -1237,9 +1241,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   bool full_step;
 
-  const bool quadratic_model = sleqp_options_get_use_quadratic_model(options);
-
-  if(sleqp_options_get_perform_newton_step(options) && quadratic_model)
+  if(perform_newton_step)
   {
     SLEQP_CALL(compute_trial_point_newton(solver,
                                           &model_trial_value,
@@ -1429,7 +1431,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   // update trust radii, penalty parameter
   {
-    if(sleqp_options_get_perform_newton_step(options))
+    if(perform_newton_step)
     {
       SLEQP_CALL(update_trust_radius(reduction_ratio,
                                      step_accepted,
