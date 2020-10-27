@@ -74,10 +74,10 @@ START_TEST(test_simplex_solve)
 
   double tolerance = 1e-8;
 
-  ck_assert(sleqp_eq(objective_value, -1., tolerance));
+  ck_assert(sleqp_is_eq(objective_value, -1., tolerance));
 
-  ck_assert(sleqp_eq(solution[0], 1., tolerance));
-  ck_assert(sleqp_eq(solution[1], 0., tolerance));
+  ck_assert(sleqp_is_eq(solution[0], 1., tolerance));
+  ck_assert(sleqp_is_eq(solution[1], 0., tolerance));
 
   SLEQP_BASESTAT variable_stats[] = {0, 0};
 
@@ -94,10 +94,10 @@ START_TEST(test_simplex_solve)
                                      vars_dual,
                                      &cons_dual));
 
-  ck_assert(sleqp_eq(cons_dual, -1., tolerance));
+  ck_assert(sleqp_is_eq(cons_dual, -1., tolerance));
 
-  ck_assert(sleqp_eq(vars_dual[0], 0., tolerance));
-  ck_assert(sleqp_eq(vars_dual[1], 1., tolerance));
+  ck_assert(sleqp_is_eq(vars_dual[0], 0., tolerance));
+  ck_assert(sleqp_is_eq(vars_dual[1], 1., tolerance));
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&cons_matrix));
 

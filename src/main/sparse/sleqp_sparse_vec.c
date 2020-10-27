@@ -73,7 +73,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
 
   for(int i = 0; i < dim;++i)
   {
-    if(!sleqp_zero(values[i], zero_eps))
+    if(!sleqp_is_zero(values[i], zero_eps))
     {
       ++nnz;
     }
@@ -88,7 +88,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
   {
     double v = values[i];
 
-    if(!sleqp_zero(v, zero_eps))
+    if(!sleqp_is_zero(v, zero_eps))
     {
       sleqp_sparse_vector_push(vec, i, v);
     }
@@ -195,7 +195,7 @@ bool sleqp_sparse_vector_eq(const SleqpSparseVec* first,
     double first_value = valid_first ? first->data[k_first] : 0.;
     double second_value = valid_second ? second->data[k_second] : 0.;
 
-    if(!sleqp_eq(first_value, second_value, eps))
+    if(!sleqp_is_eq(first_value, second_value, eps))
     {
       return false;
     }
@@ -377,7 +377,7 @@ SLEQP_RETCODE sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
       ++k_second;
     }
 
-    if(sleqp_zero(value, eps))
+    if(sleqp_is_zero(value, eps))
     {
       continue;
     }
@@ -520,7 +520,7 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(const SleqpSparseVec* x,
     x_val = SLEQP_MIN(x_val, ub_val);
     x_val = SLEQP_MAX(x_val, lb_val);
 
-    if(!sleqp_zero(x_val, eps))
+    if(!sleqp_is_zero(x_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(xclip,
                                           i_combined,

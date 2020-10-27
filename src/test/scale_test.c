@@ -101,8 +101,8 @@ START_TEST(test_nominal_scale)
 
   for(int index = 0; index < primal->nnz; ++index)
   {
-    ck_assert(sleqp_ge(primal->data[index], .5, eps));
-    ck_assert(sleqp_le(primal->data[index], 1., eps));
+    ck_assert(sleqp_is_geq(primal->data[index], .5, eps));
+    ck_assert(sleqp_is_leq(primal->data[index], 1., eps));
   }
 
 
@@ -181,8 +181,8 @@ START_TEST(test_nominal_scale_func_val)
   double scaled_func_val = sleqp_scale_func_val(scaling,
                                                 nominal_func_val);
 
-  ck_assert(sleqp_le(scaled_func_val, 1., eps));
-  ck_assert(sleqp_ge(scaled_func_val, .5, eps));
+  ck_assert(sleqp_is_leq(scaled_func_val, 1., eps));
+  ck_assert(sleqp_is_geq(scaled_func_val, .5, eps));
 }
 END_TEST
 
@@ -212,8 +212,8 @@ START_TEST(test_nominal_scale_cons_vals)
   for(int k = 0; k < cons_vals->nnz; ++k)
   {
     const double value = cons_vals->data[k];
-    ck_assert(sleqp_le(value, 1., eps));
-    ck_assert(sleqp_ge(value, .5, eps));
+    ck_assert(sleqp_is_leq(value, 1., eps));
+    ck_assert(sleqp_is_geq(value, .5, eps));
   }
 }
 END_TEST

@@ -451,7 +451,7 @@ static SLEQP_RETCODE check_direction_bounds(SleqpCauchyData* cauchy_data,
   {
     const double dval = cauchy_data->solution_values[j];
 
-    if(sleqp_gt(dval, trust_radius, eps) || sleqp_lt(dval, -trust_radius, eps))
+    if(sleqp_is_gt(dval, trust_radius, eps) || sleqp_is_lt(dval, -trust_radius, eps))
     {
       (*valid_direction) = false;
     }
@@ -490,7 +490,7 @@ static SLEQP_RETCODE check_direction_bounds(SleqpCauchyData* cauchy_data,
       const double xval = valid_x ? x->data[k_x] : 0.;
       const double dval = cauchy_data->solution_values[j];
 
-      if(sleqp_gt(xval + dval, ubval, eps) || sleqp_lt(xval + dval, lbval, eps))
+      if(sleqp_is_gt(xval + dval, ubval, eps) || sleqp_is_lt(xval + dval, lbval, eps))
       {
         (*valid_direction) = false;
       }
@@ -597,10 +597,10 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
 
       assert(cauchy_data->var_stats[i] != SLEQP_BASESTAT_ZERO);
 
-      assert(sleqp_le(lbval, xval, eps));
-      assert(sleqp_le(xval, ubval, eps));
+      assert(sleqp_is_leq(lbval, xval, eps));
+      assert(sleqp_is_leq(xval, ubval, eps));
 
-      if(sleqp_eq(lbval, ubval, eps))
+      if(sleqp_is_eq(lbval, ubval, eps))
       {
         SLEQP_CALL(sleqp_working_set_add_variable(working_set,
                                                   i,
@@ -672,7 +672,7 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
       }
 
 
-      if(sleqp_eq(lbval, ubval, eps))
+      if(sleqp_is_eq(lbval, ubval, eps))
       {
         if(zero_slack)
         {
@@ -805,10 +805,10 @@ SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchyData* cauchy_data,
 
       assert(cauchy_data->var_stats[i] != SLEQP_BASESTAT_ZERO);
 
-      assert(sleqp_le(lbval, xval, eps));
-      assert(sleqp_le(xval, ubval, eps));
+      assert(sleqp_is_leq(lbval, xval, eps));
+      assert(sleqp_is_leq(xval, ubval, eps));
 
-      if(sleqp_eq(lbval, ubval, eps))
+      if(sleqp_is_eq(lbval, ubval, eps))
       {
         continue;
       }
@@ -931,11 +931,11 @@ SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
       {
         if(var_state == SLEQP_ACTIVE_UPPER)
         {
-          assert(sleqp_ge(vars_dual->data[k], 0., zero_eps));
+          assert(sleqp_is_geq(vars_dual->data[k], 0., zero_eps));
         }
         else if(var_state == SLEQP_ACTIVE_LOWER)
         {
-          assert(sleqp_le(vars_dual->data[k], 0., zero_eps));
+          assert(sleqp_is_leq(vars_dual->data[k], 0., zero_eps));
         }
       }
     }
@@ -972,11 +972,11 @@ SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
       {
         if(var_state == SLEQP_ACTIVE_UPPER)
         {
-          assert(sleqp_ge(cons_dual->data[k], 0., zero_eps));
+          assert(sleqp_is_geq(cons_dual->data[k], 0., zero_eps));
         }
         else if(var_state == SLEQP_ACTIVE_LOWER)
         {
-          assert(sleqp_le(cons_dual->data[k], 0., zero_eps));
+          assert(sleqp_is_leq(cons_dual->data[k], 0., zero_eps));
         }
       }
     }

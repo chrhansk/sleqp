@@ -210,7 +210,7 @@ static SLEQP_RETCODE rayleigh_quotient(SleqpSparseVec* direction,
 {
   double dir_norm = sleqp_sparse_vector_norm_sq(direction);
 
-  if(sleqp_zero(dir_norm, eps))
+  if(sleqp_is_zero(dir_norm, eps))
   {
     return SLEQP_OKAY;
   }
@@ -325,7 +325,7 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
 
   if(bdry_sol)
   {
-    if(sleqp_zero(vnorm, opt_eps))
+    if(sleqp_is_zero(vnorm, opt_eps))
     {
       return SLEQP_OKAY;
     }
@@ -340,7 +340,7 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
 
     assert(snorm > 0.);
 
-    if(!sleqp_eq(dot, vnorm*snorm, opt_eps))
+    if(!sleqp_is_eq(dot, vnorm*snorm, opt_eps))
     {
       (*is_optimal) = false;
     }
@@ -348,7 +348,7 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
   }
   else
   {
-    if(!sleqp_zero(vnorm, opt_eps))
+    if(!sleqp_is_zero(vnorm, opt_eps))
     {
       (*is_optimal) = false;
     }
@@ -490,7 +490,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
         double v_norm = sleqp_sparse_vector_norm(data->v);
 
         // We can stop directly, if the projected gradient is zero
-        if(sleqp_zero(v_norm, zero_eps))
+        if(sleqp_is_zero(v_norm, zero_eps))
         {
           return SLEQP_OKAY;
         }
@@ -534,7 +534,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
 
       double scale = sqrt(v_dot_g);
 
-      if(!sleqp_pos(scale, zero_eps))
+      if(!sleqp_is_pos(scale, zero_eps))
       {
         return SLEQP_OKAY;
       }
@@ -826,7 +826,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
     }
   }
 
-  if(collect_rayleigh && !sleqp_zero(min_rayleigh, zero_eps))
+  if(collect_rayleigh && !sleqp_is_zero(min_rayleigh, zero_eps))
   {
     const double cond_bound = SLEQP_ABS(max_rayleigh) / SLEQP_ABS(min_rayleigh);
 
@@ -891,7 +891,7 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
   }
 
   // TODO: Choose appropriate tolerance
-  // assert(sleqp_le(sleqp_sparse_vector_norm(newton_step), trust_radius, eps));
+  // assert(sleqp_is_leq(sleqp_sparse_vector_norm(newton_step), trust_radius, eps));
 
 #endif
 

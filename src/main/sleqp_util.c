@@ -113,12 +113,12 @@ SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
     {
       continue;
     }
-    else if(state == SLEQP_ACTIVE_UPPER && !sleqp_eq(prod_val, ub_val, eps))
+    else if(state == SLEQP_ACTIVE_UPPER && !sleqp_is_eq(prod_val, ub_val, eps))
     {
       (*in_working_set) = false;
       return SLEQP_OKAY;
     }
-    else if(state == SLEQP_ACTIVE_LOWER && !sleqp_eq(prod_val, lb_val, eps))
+    else if(state == SLEQP_ACTIVE_LOWER && !sleqp_is_eq(prod_val, lb_val, eps))
     {
       (*in_working_set) = false;
       return SLEQP_OKAY;
@@ -184,13 +184,13 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
       continue;
     }
 
-    if(sleqp_gt(c_val, ub_val, eps))
+    if(sleqp_is_gt(c_val, ub_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
                                           1.));
     }
-    else if(sleqp_lt(c_val, lb_val, eps))
+    else if(sleqp_is_lt(c_val, lb_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
@@ -377,13 +377,13 @@ SLEQP_RETCODE sleqp_get_violation(SleqpProblem* problem,
       ub_val = ub->data[k_ub++];
     }
 
-    if(sleqp_gt(c_val, ub_val, eps))
+    if(sleqp_is_gt(c_val, ub_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(violation,
                                           idx,
                                           c_val - ub_val));
     }
-    else if(sleqp_lt(c_val, lb_val, eps))
+    else if(sleqp_is_lt(c_val, lb_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(violation,
                                           idx,

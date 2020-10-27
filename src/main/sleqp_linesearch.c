@@ -205,9 +205,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                       penalty_parameter,
                                       &actual_linear_merit_value));
 
-        assert(sleqp_eq(linear_merit_value,
-                        actual_linear_merit_value,
-                        eps));
+        assert(sleqp_is_eq(linear_merit_value,
+                           actual_linear_merit_value,
+                           eps));
       }
 
       {
@@ -224,9 +224,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                          penalty_parameter,
                                          &actual_quadratic_merit_value));
 
-        assert(sleqp_eq((*quadratic_merit_value),
-                        actual_quadratic_merit_value,
-                        eps));
+        assert(sleqp_is_eq((*quadratic_merit_value),
+                           actual_quadratic_merit_value,
+                           eps));
       }
     }
 
@@ -264,7 +264,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
     *step_length = delta;
   }
 
-  assert(sleqp_le(sleqp_sparse_vector_norm(direction), trust_radius, eps));
+  assert(sleqp_is_leq(sleqp_sparse_vector_norm(direction), trust_radius, eps));
 
   return SLEQP_OKAY;
 }
@@ -314,9 +314,9 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                      penalty_parameter,
                                      &actual_quadratic_merit));
 
-    assert(sleqp_eq(cauchy_quadratic_merit_value,
-                    actual_quadratic_merit,
-                    eps));
+    assert(sleqp_is_eq(cauchy_quadratic_merit_value,
+                       actual_quadratic_merit,
+                       eps));
 
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &func_dual,
@@ -506,9 +506,9 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                     penalty_parameter,
                                     &actual_linear_merit));
 
-      assert(sleqp_eq(linear_merit_value,
-                      actual_linear_merit,
-                      eps));
+      assert(sleqp_is_eq(linear_merit_value,
+                         actual_linear_merit,
+                         eps));
     }
 
     // Check quadratic merit
@@ -526,9 +526,9 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                        penalty_parameter,
                                        &actual_quadratic_merit));
 
-      assert(sleqp_eq(quadratic_merit_value,
-                      actual_quadratic_merit,
-                      eps));
+      assert(sleqp_is_eq(quadratic_merit_value,
+                         actual_quadratic_merit,
+                         eps));
     }
 
 #endif

@@ -554,7 +554,7 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
 
     const double step_normsq = sleqp_sparse_vector_norm_sq(data->block_step_diff);
 
-    if(!sleqp_zero(step_normsq, eps))
+    if(!sleqp_is_zero(step_normsq, eps))
     {
       SLEQP_CALL(sr1_block_push(data,
                                 block,

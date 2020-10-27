@@ -536,7 +536,7 @@ SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
   {
     double cur_val = SLEQP_ABS(gradient->data[k]);
 
-    if(sleqp_zero(cur_val, eps))
+    if(sleqp_is_zero(cur_val, eps))
     {
       continue;
     }
@@ -608,7 +608,7 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
 
     cur_val = SLEQP_ABS(cur_val);
 
-    if(sleqp_zero(cur_val, eps))
+    if(sleqp_is_zero(cur_val, eps))
     {
       continue;
     }
@@ -678,7 +678,7 @@ static double max_matrix_ratio(SleqpScalingData* scaling,
     int row = matrix_rows[index];
     double cur_val = SLEQP_ABS(matrix_data[index]);
 
-    if(sleqp_zero(cur_val, eps))
+    if(sleqp_is_zero(cur_val, eps))
     {
       continue;
     }

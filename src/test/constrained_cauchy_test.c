@@ -121,7 +121,7 @@ START_TEST(test_dual_variable)
 
   ck_assert_int_eq(cons_dual->dim, 2);
 
-  ck_assert(sleqp_eq(cons_dual->data[0], 0.4142135623, 1e-8));
+  ck_assert(sleqp_is_eq(cons_dual->data[0], 0.4142135623, 1e-8));
 
   ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
 

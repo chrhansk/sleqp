@@ -16,18 +16,18 @@ extern "C" {
 
   bool sleqp_is_inf(double value);
 
-  bool sleqp_eq(double x, double y, double eps);
+  bool sleqp_is_eq(double x, double y, double eps);
 
-  bool sleqp_lt(double x, double y, double eps);
-  bool sleqp_gt(double x, double y, double eps);
+  bool sleqp_is_lt(double x, double y, double eps);
+  bool sleqp_is_gt(double x, double y, double eps);
 
-  bool sleqp_le(double x, double y, double eps);
-  bool sleqp_ge(double x, double y, double eps);
+  bool sleqp_is_leq(double x, double y, double eps);
+  bool sleqp_is_geq(double x, double y, double eps);
 
-  bool sleqp_neg(double x, double eps);
-  bool sleqp_pos(double x, double eps);
+  bool sleqp_is_neg(double x, double eps);
+  bool sleqp_is_pos(double x, double eps);
 
-  bool sleqp_zero(double x, double eps);
+  bool sleqp_is_zero(double x, double eps);
 
   double sleqp_eps();
 

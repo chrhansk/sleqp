@@ -146,7 +146,7 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
       double feas_tol = soplex.realParam(soplex::SoPlex::FEASTOL);
       double opt_tol = soplex.realParam(soplex::SoPlex::OPTTOL);
 
-      if(!is_primal_feasible && !sleqp_zero(feas_tol, spx->eps))
+      if(!is_primal_feasible && !sleqp_is_zero(feas_tol, spx->eps))
       {
         sleqp_log_debug("Solving again with higher feasibility tolerance");
 
@@ -158,7 +158,7 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
 
         do_resolve = true;
       }
-      else if(!is_dual_feasible && !sleqp_zero(opt_tol, spx->eps))
+      else if(!is_dual_feasible && !sleqp_is_zero(opt_tol, spx->eps))
       {
         sleqp_log_debug("Solving again with higher optimality tolerance");
 

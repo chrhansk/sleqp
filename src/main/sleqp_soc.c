@@ -98,17 +98,17 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
 
     const int variable_index = sleqp_working_set_get_variable_index(working_set, i);
 
-    if(variable_state == SLEQP_ACTIVE_UPPER && !sleqp_zero(udval, eps))
+    if(variable_state == SLEQP_ACTIVE_UPPER && !sleqp_is_zero(udval, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, udval));
     }
-    else if(variable_state == SLEQP_ACTIVE_LOWER && !sleqp_zero(ldval, eps))
+    else if(variable_state == SLEQP_ACTIVE_LOWER && !sleqp_is_zero(ldval, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, ldval));
     }
     else if(variable_state == SLEQP_ACTIVE_BOTH)
     {
-      assert(sleqp_eq(ldval, udval, eps));
+      assert(sleqp_is_eq(ldval, udval, eps));
 
       SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, udval));
     }
@@ -182,17 +182,17 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
 
     const int constraint_index = sleqp_working_set_get_constraint_index(working_set, i);
 
-    if(constraint_state == SLEQP_ACTIVE_UPPER && !sleqp_zero(udval, eps))
+    if(constraint_state == SLEQP_ACTIVE_UPPER && !sleqp_is_zero(udval, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, udval));
     }
-    else if(constraint_state == SLEQP_ACTIVE_LOWER && !sleqp_zero(ldval, eps))
+    else if(constraint_state == SLEQP_ACTIVE_LOWER && !sleqp_is_zero(ldval, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, ldval));
     }
     else if(constraint_state == SLEQP_ACTIVE_BOTH)
     {
-      assert(sleqp_eq(ldval, udval, eps));
+      assert(sleqp_is_eq(ldval, udval, eps));
 
       SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, udval));
     }

@@ -18,9 +18,9 @@ START_TEST(test_sparse_matrix_vector_product)
   int nnz_max = 4;
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&matrix,
-                                          num_rows,
-                                          num_cols,
-                                          nnz_max));
+                                         num_rows,
+                                         num_cols,
+                                         nnz_max));
 
   // row, col, val
   ASSERT_CALL(sleqp_sparse_matrix_push_column(matrix, 0));
@@ -49,8 +49,8 @@ START_TEST(test_sparse_matrix_vector_product)
 
   double tolerance = 1e-8;
 
-  ck_assert(sleqp_eq(result[0], 8., tolerance));
-  ck_assert(sleqp_eq(result[1], 17., tolerance));
+  ck_assert(sleqp_is_eq(result[0], 8., tolerance));
+  ck_assert(sleqp_is_eq(result[1], 17., tolerance));
 
   sleqp_free(&result);
 

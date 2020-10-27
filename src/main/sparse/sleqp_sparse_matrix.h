@@ -164,7 +164,7 @@ extern "C" {
    * @param[in] second     The second matrix
    * @param[in] eps        The tolerance
    *
-   * @sa sleqp_eq(double x, double y, double eps)
+   * @sa sleqp_is_eq(double x, double y, double eps)
    **/
   bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
                               const SleqpSparseMatrix* second,

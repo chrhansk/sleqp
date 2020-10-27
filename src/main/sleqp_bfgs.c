@@ -420,7 +420,7 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
                                   block->grad_diffs[block->curr],
                                   &block->initial_scale));
 
-    assert(sleqp_pos(block->initial_scale, eps));
+    assert(sleqp_is_pos(block->initial_scale, eps));
   }
 
   const int begin = block->curr - block->len + 1;
@@ -463,8 +463,8 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
       double combination_factor = (1. - damping_factor) *
         bidir_product / (bidir_product - dot_product);
 
-      assert(sleqp_pos(combination_factor, eps));
-      assert(sleqp_lt(combination_factor, 1., eps));
+      assert(sleqp_is_pos(combination_factor, eps));
+      assert(sleqp_is_lt(combination_factor, 1., eps));
 
       SLEQP_CALL(sleqp_sparse_vector_add_scaled(current_grad_diff,
                                                 product,
@@ -617,7 +617,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
 
     const double step_normsq = sleqp_sparse_vector_norm_sq(data->block_step_diff);
 
-    if(!sleqp_zero(step_normsq, eps))
+    if(!sleqp_is_zero(step_normsq, eps))
     {
       SLEQP_CALL(bfgs_block_push(block,
                                  data->params,

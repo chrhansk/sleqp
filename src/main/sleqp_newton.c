@@ -172,7 +172,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       }
       else if(var_state == SLEQP_ACTIVE_BOTH)
       {
-        assert(sleqp_eq(lower_value, upper_value, eps));
+        assert(sleqp_is_eq(lower_value, upper_value, eps));
 
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
@@ -242,7 +242,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       }
       else if(cons_state == SLEQP_ACTIVE_BOTH)
       {
-        assert(sleqp_eq(lower_value, upper_value, eps));
+        assert(sleqp_is_eq(lower_value, upper_value, eps));
 
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
@@ -339,7 +339,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
       alpha = SLEQP_MIN(alpha, 1.);
 
-      if(sleqp_eq(alpha, 1., eps))
+      if(sleqp_is_eq(alpha, 1., eps))
       {
         // no scaling required...
 
@@ -347,7 +347,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
         const double trust_radius_sq = trust_radius * trust_radius;
 
-        //assert(sleqp_lt(initial_norm_sq, trust_radius_sq, eps));
+        //assert(sleqp_is_lt(initial_norm_sq, trust_radius_sq, eps));
 
         trust_radius = sqrt(trust_radius_sq - initial_norm_sq);
       }
@@ -371,7 +371,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   int working_set_size = sleqp_working_set_size(working_set);
 
   // in either case the only feasible solution is the zero vector
-  if(sleqp_zero(trust_radius, zero_eps) || problem->num_variables == working_set_size)
+  if(sleqp_is_zero(trust_radius, zero_eps) || problem->num_variables == working_set_size)
   {
     SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_solution, newton_step));
 
@@ -465,7 +465,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                             data->initial_solution,
                             &direction_dot);
 
-    assert(sleqp_zero(direction_dot, eps));
+    assert(sleqp_is_zero(direction_dot, eps));
   }
 
   if(newton_step_in_working_set)

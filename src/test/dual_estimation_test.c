@@ -89,8 +89,8 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   double tolerance = 1e-8;
 
-  ck_assert(sleqp_eq(*sleqp_sparse_vector_at(vars_dual, 0), -2., tolerance));
-  ck_assert(sleqp_eq(*sleqp_sparse_vector_at(vars_dual, 1), -4., tolerance));
+  ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(vars_dual, 0), -2., tolerance));
+  ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(vars_dual, 1), -4., tolerance));
 
   ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
 

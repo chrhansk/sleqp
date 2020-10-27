@@ -257,7 +257,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* 
       }
     }
 
-    if(!sleqp_zero(sum, eps))
+    if(!sleqp_is_zero(sum, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(result, col, sum));
     }
@@ -315,7 +315,7 @@ bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
 
       if(both_valid && (first_row == second_row))
       {
-        if(!sleqp_eq(first_entry, second_entry, eps))
+        if(!sleqp_is_eq(first_entry, second_entry, eps))
         {
           return false;
         }
@@ -325,7 +325,7 @@ bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
       }
       else if(first_valid || (both_valid && (first_row < second_row)))
       {
-        if(!sleqp_zero(first_entry, eps))
+        if(!sleqp_is_zero(first_entry, eps))
         {
           return false;
         }
@@ -334,7 +334,7 @@ bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
       }
       else if(second_valid || (both_valid && (second_row < first_row)))
       {
-        if(!sleqp_zero(second_entry, eps))
+        if(!sleqp_is_zero(second_entry, eps))
         {
           return false;
         }

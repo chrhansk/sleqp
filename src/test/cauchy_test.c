@@ -238,8 +238,8 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   double tolerance = 1e-8;
 
-  ck_assert(sleqp_eq(*sleqp_sparse_vector_at(direction, 0), -trust_radius, tolerance));
-  ck_assert(sleqp_eq(*sleqp_sparse_vector_at(direction, 1), -trust_radius, tolerance));
+  ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(direction, 0), -trust_radius, tolerance));
+  ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(direction, 1), -trust_radius, tolerance));
 
   ASSERT_CALL(sleqp_cauchy_data_free(&cauchy_data));
 
