@@ -65,7 +65,7 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
 
   data->trlib_maxiter = problem->num_variables;
 
-  if(max_newton_iter != -1)
+  if(max_newton_iter != SLEQP_NONE)
   {
     data->trlib_maxiter = SLEQP_MIN(data->trlib_maxiter, max_newton_iter);
   }
@@ -117,7 +117,7 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
                                               problem->num_variables));
 
-  data->time_limit = -1;
+  data->time_limit = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_timer_create(&data->timer));
 }
@@ -820,7 +820,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
       break;
     }
 
-    if(data->time_limit != -1 && sleqp_timer_elapsed(data->timer) >= data->time_limit)
+    if(data->time_limit != SLEQP_NONE && sleqp_timer_elapsed(data->timer) >= data->time_limit)
     {
       break;
     }

@@ -38,7 +38,7 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
   lp_interface->num_variables = num_variables;
   lp_interface->num_constraints = num_constraints;
 
-  lp_interface->time_limit = -1;
+  lp_interface->time_limit = SLEQP_NONE;
 
   SLEQP_CALL(lp_interface->callbacks.create_problem(&lp_interface->lp_data,
                                                     num_variables,

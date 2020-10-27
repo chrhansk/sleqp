@@ -148,7 +148,7 @@ static SLEQP_RETCODE gurobi_solve(void* lp_data,
 
   // SLEQP_GRB_CALL(GRBwrite(model, "file.lp"), env);
 
-  if(time_limit != -1)
+  if(time_limit != SLEQP_NONE)
   {
     GRBenv* model_env = GRBgetenv(model);
 

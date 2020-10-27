@@ -16,6 +16,14 @@ extern "C" {
 
   typedef struct SleqpLineSearchData SleqpLineSearchData;
 
+  /**
+   * Creates a new linesearch object.
+   *
+   * @param[in] problem     The underlying problem
+   * @param[in] params      The problem parameters
+   * @param[in] merit_data  A merit-function
+   *
+   **/
   SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
                                         SleqpProblem* problem,
                                         SleqpParams* params,
@@ -57,7 +65,7 @@ extern "C" {
 
   /**
    * Computes the trial direction by (approximately) minimizing the
-   * quadratic penalty along the Cauchy-Newton direction.
+   * quadratic penalty along the Cauchy-Newton direction using an Armijo-like method.
    *
    * @param[in]      linesearch                   Linesearch data
    * @param[in]      cauchy_step                  The Cauchy step

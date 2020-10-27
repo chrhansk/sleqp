@@ -12,6 +12,9 @@ cdef extern from "sleqp.h":
   cdef char* SLEQP_GIT_BRANCH
   cdef char* SLEQP_GIT_COMMIT_HASH
 
+  cdef enum:
+    SLEQP_NONE
+
   ctypedef enum SLEQP_RETCODE:
     SLEQP_OKAY,
     SLEQP_NOMEM,

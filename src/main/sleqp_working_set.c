@@ -19,10 +19,10 @@ struct SleqpWorkingSet
   int num_active_constraints;
   int num_active_variables;
 
-  // a mapping of 0..num_variables - 1 -> pos in the active set or -1
+  // a mapping of 0..num_variables - 1 -> pos in the active set or SLEQP_NONE
   int* variable_indices;
 
-  // a mapping of 0..num_constraints - 1 -> pos in the active set or -1
+  // a mapping of 0..num_constraints - 1 -> pos in the active set or SLEQP_NONE
   int* constraint_indices;
 
   // a map of 0..set_size - 1 -> (variable index) or (num_problem_variables + constraint index)
@@ -65,13 +65,13 @@ SLEQP_RETCODE sleqp_working_set_reset(SleqpWorkingSet* working_set)
   for(int j = 0; j < working_set->num_variables; ++j)
   {
     working_set->variable_states[j] = SLEQP_INACTIVE;
-    working_set->variable_indices[j] = -1;
+    working_set->variable_indices[j] = SLEQP_NONE;
   }
 
   for(int i = 0; i < working_set->num_constraints; ++i)
   {
     working_set->constraint_states[i] = SLEQP_INACTIVE;
-    working_set->constraint_indices[i] = -1;
+    working_set->constraint_indices[i] = SLEQP_NONE;
   }
 
   working_set->num_active_constraints = 0;
@@ -252,7 +252,7 @@ bool sleqp_working_set_valid(const SleqpWorkingSet* working_set)
     {
       int j_idx = sleqp_working_set_get_variable_index(working_set, j);
 
-      if(j_idx == -1)
+      if(j_idx == SLEQP_NONE)
       {
         continue;
       }
@@ -290,7 +290,7 @@ bool sleqp_working_set_valid(const SleqpWorkingSet* working_set)
     {
       int i_idx = sleqp_working_set_get_constraint_index(working_set, i);
 
-      if(i_idx == -1)
+      if(i_idx == SLEQP_NONE)
       {
         continue;
       }

@@ -55,7 +55,7 @@ cdef class Options:
   def max_newton_iterations(self):
       cdef int iter = csleqp.sleqp_options_get_max_newton_iterations(self.options)
 
-      return iter if iter >= 0 else None
+      return iter if iter != csleqp.SLEQP_NONE else None
 
   @perform_newton_step.setter
   def perform_newton_step(self, value: bool) -> None:
@@ -88,7 +88,7 @@ cdef class Options:
   @max_newton_iterations.setter
   def max_newton_iterations(self, value):
       if value is None:
-        value = -1
+        value = csleqp.SLEQP_NONE
 
       csleqp_call(csleqp.sleqp_options_set_max_newton_iterations(self.options, value))
 

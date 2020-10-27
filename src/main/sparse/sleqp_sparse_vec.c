@@ -10,6 +10,9 @@ SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
                                          int dim,
                                          int nnz_max)
 {
+  assert(dim >= 0);
+  assert(nnz_max >= 0);
+
   SLEQP_CALL(sleqp_malloc(vstar));
 
   SleqpSparseVec *vec = *vstar;

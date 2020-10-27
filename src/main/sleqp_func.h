@@ -29,7 +29,7 @@ extern "C" {
    **/
 
   /**
-   * Creates a new function.
+   * Creates a new function
    *
    * @param[out] fstar            A pointer to the function to be created
    * @param[in]  setx             A callback to set the input vector
@@ -77,6 +77,12 @@ extern "C" {
                                 SleqpSparseVec* cons_val,
                                 SleqpSparseMatrix* cons_jac);
 
+  /**
+   * Returns the Hessian structure of this function
+   *
+   * @param[in]     func            The function
+   *
+   **/
   SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func);
 
   /**
@@ -90,8 +96,23 @@ extern "C" {
    **/
   int sleqp_func_get_num_hess_evals(SleqpFunc* func);
 
+  /**
+   * Returns the evaluation timer of this function. This timer records
+   * the evaluations of function values, constraint values, and constraint
+   * Jacobians.
+   *
+   * @param[in]     func            The function
+   *
+   **/
   SleqpTimer* sleqp_func_get_eval_timer(SleqpFunc* func);
 
+  /**
+   * Returns the Hessian timer of this function. This timer records
+   * the evaluations of Hessian products.
+   *
+   * @param[in]     func            The function
+   *
+   **/
   SleqpTimer* sleqp_func_get_hess_timer(SleqpFunc* func);
 
   /**

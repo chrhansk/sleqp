@@ -114,7 +114,7 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  if(time_limit != -1)
+  if(time_limit != SLEQP_NONE)
   {
     soplex.setRealParam(soplex::SoPlex::TIMELIMIT, time_limit);
   }

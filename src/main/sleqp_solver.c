@@ -161,7 +161,7 @@ static double remaining_time(SleqpSolver* solver)
 {
   double time_limit = solver->time_limit;
 
-  if(time_limit != -1)
+  if(time_limit != SLEQP_NONE)
   {
     double remaining_time = time_limit - sleqp_timer_elapsed(solver->elapsed_timer);
 
@@ -170,7 +170,7 @@ static double remaining_time(SleqpSolver* solver)
     return remaining_time;
   }
 
-  return -1;
+  return SLEQP_NONE;
 }
 
 static void set_residuum(SleqpSolver* solver)
@@ -420,7 +420,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   solver->penalty_parameter = 10.;
 
-  solver->time_limit = -1;
+  solver->time_limit = SLEQP_NONE;
 
   return SLEQP_OKAY;
 }
@@ -1562,7 +1562,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   // main solving loop
   while(true)
   {
-    if(time_limit != -1)
+    if(time_limit != SLEQP_NONE)
     {
       if(solver->elapsed_seconds >= time_limit)
       {
@@ -1570,7 +1570,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
       }
     }
 
-    if(max_num_iterations != -1 &&
+    if(max_num_iterations != SLEQP_NONE &&
        solver->iteration >= max_num_iterations)
     {
       break;

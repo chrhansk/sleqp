@@ -40,9 +40,25 @@ extern "C" {
                                            int dim,
                                            int nnz_max);
 
+  /**
+   * Creates a new sparse vector without allocating memory
+   * for non-zero entries
+   *
+   * @param[in]  vec     A pointer to the vector to be created
+   * @param[in]  dim     The desired dimension of the vector
+   *
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_create_empty(SleqpSparseVec** vec,
                                                  int dim);
 
+  /**
+   * Creates a new sparse vector, allocating memory sufficient
+   * for `dim` non-zero entries
+   *
+   * @param[in]  vec     A pointer to the vector to be created
+   * @param[in]  dim     The desired dimension of the vector
+   *
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_create_full(SleqpSparseVec** vec,
                                                 int dim);
 
@@ -74,12 +90,33 @@ extern "C" {
                                              int dim,
                                              double zero_eps);
 
+  /**
+   * Writes the content of this vector into an array. The
+   * array is assumed to have a size of at least the dimension
+   * of the given vector
+   *
+   * @param[in] vec     A pointer to the vector
+   * @param[in] values  A pointer to the output array
+   *
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec,
                                            double* values);
 
+  /**
+   * Copies one vector to another
+   *
+   * @param[in] source     A pointer to the copy source
+   * @param[out] target    A pointer to the copy target
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_copy(const SleqpSparseVec* source,
                                          SleqpSparseVec* target);
 
+  /**
+   * Clears the given vector, discarding all entries while
+   * keeping the dimension constant
+   *
+   * @param[in,out] vec     A pointer to the vector
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_clear(SleqpSparseVec* vec);
 
   /**
@@ -91,9 +128,26 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
                                             int nnz);
 
+  /**
+   * Resizes the vector to the given dimension, discarding
+   * entries if necessary
+   *
+   * @param[in,out] vec     A pointer to the vector
+   * @param[in]     dim     The new dimension
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
                                            int dim);
 
+  /**
+   * Returns whether all entries of the given vector are equal
+   * up to the given tolerance
+   *
+   * @param[in]  first     A pointer to the first vector
+   * @param[in]  second    A pointer to the second vector
+   * @param[in]  eps       The desred tolerance
+   *
+   * @sa sleqp_is_eq(double x, double y, double eps)
+   **/
   bool sleqp_sparse_vector_eq(const SleqpSparseVec* first,
                               const SleqpSparseVec* second,
                               double eps);
@@ -146,30 +200,93 @@ extern "C" {
                                                const double eps,
                                                SleqpSparseVec* result);
 
+  /**
+   * Returns the 2-norm of the given vector
+   *
+   * @param[in] vector   A pointer to the vector
+   **/
   double sleqp_sparse_vector_norm(const SleqpSparseVec* vec);
 
+  /**
+   * Returns the 1-norm of the given vector
+   *
+   * @param[in] vector   A pointer to the vector
+   **/
   double sleqp_sparse_vector_one_norm(const SleqpSparseVec* vec);
 
+  /**
+   * Returns the squared 2-norm of the given vector
+   *
+   * @param[in] vector   A pointer to the vector
+   **/
   double sleqp_sparse_vector_norm_sq(const SleqpSparseVec* vec);
 
+  /**
+   * Returns the oo-norm of the given vector
+   *
+   * @param[in] vector   A pointer to the vector
+   **/
   double sleqp_sparse_vector_inf_norm(const SleqpSparseVec* vec);
 
+  /**
+   * Returns a pointer to the entry of the given vector at
+   * the given index, or `NULL` if the entry is not present.
+   *
+   * @param[in] vector   A pointer to the vector
+   * @param[in] index    The desired index
+   **/
   double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
                                  int index);
 
+  /**
+   * Returns whether this vector is boxed, i.e., \f$ lb \leq x \leq ub \f$
+   * for all components.
+   *
+   * @param[in] x    A pointer to the vector
+   * @param[in] lb   A pointer to the lower bound vector
+   * @param[in] ub   A pointer to the upper bound vector
+   *
+   * @sa sleqp_sparse_vector_clip
+   **/
   bool sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
                                     const SleqpSparseVec* lb,
                                     const SleqpSparseVec* ub);
 
+  /**
+   * Clips this vector to the specified lower and upper bounds, storing
+   * the result in the pointer to a new vector, which will be boxed
+   * w.r.t. `lb` and `ub`
+   *
+   * @param[in]  x     A pointer to the vector
+   * @param[in]  lb    A pointer to the lower bound vector
+   * @param[in]  ub    A pointer to the upper bound vector
+   * @param[out] xclip A pointer to the clipped vector
+   *
+   * @sa sleqp_sparse_vector_is_boxed
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_clip(const SleqpSparseVec* x,
                                          const SleqpSparseVec* lb,
                                          const SleqpSparseVec* ub,
                                          const double eps,
                                          SleqpSparseVec* xclip);
 
+  /**
+   * Prints this vector to the given file
+   *
+   * @param[in]  vec     A pointer to the vector
+   * @param[in]  output  A pointer to an output `FILE*`
+   **/
   SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
                                             FILE* output);
 
+  /**
+   * Returns whether the given vector is *valid*, i.e., whether
+   * - `nnz` non-negative and less than or equal to `nnz_max`
+   * - all indices are non-negative and less than or equal to `dim`
+   * - the entries are ordered according to their indices
+   * - the stored `data` is free of (IEEE) infs and NaNs
+   *
+   **/
   bool sleqp_sparse_vector_valid(const SleqpSparseVec* vec);
 
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec);

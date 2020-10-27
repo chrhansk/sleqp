@@ -51,7 +51,7 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
   data->num_lp_variables = problem->num_variables + 2 * problem->num_constraints;
   data->num_lp_constraints = problem->num_constraints;
 
-  data->trust_radius = -1;
+  data->trust_radius = SLEQP_NONE;
 
   assert(data->num_lp_variables == sleqp_lpi_get_num_variables(lp_interface));
   assert(data->num_lp_constraints == sleqp_lpi_get_num_constraints(lp_interface));

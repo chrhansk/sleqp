@@ -83,6 +83,9 @@ extern "C" {
     SLEQP_DUAL_ESTIMATION_TYPE_LSQ,
   } SLEQP_DUAL_ESTIMATION_TYPE;
 
+  /**None value to be used in place of integer parameters **/
+#define SLEQP_NONE (-1)
+
 #ifdef __cplusplus
 }
 #endif

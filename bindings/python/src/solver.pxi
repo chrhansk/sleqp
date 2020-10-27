@@ -63,8 +63,8 @@ cdef class Solver:
             max_num_iterations: int = None,
             time_limit: float = None) -> None:
 
-    cdef int max_it = -1
-    cdef double time = -1
+    cdef int max_it = csleqp.SLEQP_NONE
+    cdef double time = csleqp.SLEQP_NONE
 
     if max_num_iterations is not None:
       max_it = max_num_iterations
