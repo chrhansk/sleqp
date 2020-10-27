@@ -2,8 +2,8 @@
 #define SLEQP_WORKING_SET_H
 
 /**
- * @file sleqp_active_set.h
- * @brief Definition of active sets.
+ * @file sleqp_working_set.h
+ * @brief Definition of working sets.
  **/
 
 #include "sleqp_func.h"
