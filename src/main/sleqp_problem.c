@@ -100,6 +100,8 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   problem->num_variables = var_lb->dim;
   problem->num_constraints = cons_lb->dim;
 
+  SLEQP_CALL(sleqp_func_capture(func));
+
   problem->func = func;
 
   SLEQP_CALL(sleqp_sparse_vector_create(&problem->var_lb,
@@ -144,6 +146,8 @@ SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->cons_lb));
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->cons_ub));
+
+  SLEQP_CALL(sleqp_func_release(&problem->func));
 
   sleqp_free(star);
 
