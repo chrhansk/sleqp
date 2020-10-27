@@ -41,9 +41,6 @@ set_target_properties(sleqp
 
 set_property(TARGET sleqp PROPERTY C_STANDARD 11)
 
-add_executable(sleqp_bin
-  sleqp_main.c)
-
 target_link_libraries(sleqp
   trlib::trlib
   ${SLEQP_LPS_LIBRARIES}
@@ -61,9 +58,6 @@ if(DOXYGEN_FOUND)
   doxygen_add_docs(doc ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-set_target_properties(sleqp_bin
-  PROPERTIES OUTPUT_NAME sleqp)
-
 include_directories(sleqp
   ${UMFPACK_INCLUDE_DIRS}
   ${SLEQP_LPS_INCLUDE_DIRS})
@@ -75,8 +69,6 @@ target_include_directories(sleqp
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:"include/sleqp">)
-
-target_link_libraries(sleqp_bin sleqp)
 
 install(TARGETS sleqp
   EXPORT sleqp-targets
