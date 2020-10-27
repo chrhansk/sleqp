@@ -250,39 +250,39 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
                                    num));
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->grad_diff),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->grad_diff),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->step_diff),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->step_diff),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->previous_grad),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->previous_grad),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->current_grad),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->current_grad),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->block_grad_diff),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->block_grad_diff),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->block_step_diff),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->block_step_diff),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->prod_cache),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->prod_cache),
+                                             num_variables));
 
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->inner_cache),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->inner_cache),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->outer_cache),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->outer_cache),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->block_direction),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->block_direction),
+                                             num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(data->block_prod),
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->block_prod),
+                                             num_variables));
 
   SLEQP_CALL(sr1_func_create(&(data->sr1_func),
                              func,
