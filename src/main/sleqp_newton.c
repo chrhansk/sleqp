@@ -56,33 +56,37 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   data->params = params;
   data->options = options;
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->initial_solution,
-                                        problem->num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_solution,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->initial_cons_val,
-                                        problem->num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_cons_val,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->lower_diff, problem->num_variables, 0));
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->upper_diff, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lower_diff,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->violated_multipliers, problem->num_constraints, 0));
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->multipliers, problem->num_constraints, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->upper_diff,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->gradient, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->violated_multipliers,
+                                              problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->multipliers,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->initial_rhs, problem->num_constraints, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->gradient,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->initial_hessian_product,
-                                        problem->num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_rhs,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->jacobian_product,
-                                        problem->num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_hessian_product,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->sparse_cache, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->jacobian_product,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
+                                              problem->num_variables));
 
   SLEQP_CALL(sleqp_calloc(&data->dense_cache,
                           SLEQP_MAX(problem->num_variables, problem->num_constraints)));

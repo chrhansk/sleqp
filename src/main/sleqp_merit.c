@@ -50,21 +50,17 @@ SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
 
   SLEQP_CALL(sleqp_calloc(&merit_data->dense_cache, merit_data->cache_size));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->jac_dot_sparse,
-                                        problem->num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->jac_dot_sparse,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->lin_jac_vals,
-                                        problem->num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->lin_jac_vals,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->multipliers,
-                                        problem->num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->multipliers,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&merit_data->sparse_cache,
-                                        problem->num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->sparse_cache,
+                                              problem->num_constraints));
 
   return SLEQP_OKAY;
 }

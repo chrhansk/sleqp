@@ -50,9 +50,8 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
                                         num_variables,
                                         1));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->hessian_estimate,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->hessian_estimate,
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&data->hessian_left,
                                         num_variables,
@@ -62,25 +61,20 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
                                         num_variables,
                                         1));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->hessian_prod,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->hessian_prod,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->hessian_prod_zero,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->hessian_prod_zero,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->hessian_prod_cache,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->hessian_prod_cache,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->cons_grad_iterate,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->cons_grad_iterate,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->cons_grad_check_iterate,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->cons_grad_check_iterate,
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&data->multipliers,
                                         num_constraints,

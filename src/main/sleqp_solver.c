@@ -309,10 +309,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                  sleqp_iterate_get_primal(solver->iterate)));
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->unscaled_violation,
-                                        num_constraints,
-                                        0));
-
   int num_lp_variables = num_variables + 2*num_constraints;
   int num_lp_constraints = num_constraints;
 
@@ -321,43 +317,39 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                                 num_lp_constraints,
                                                 params));
 
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->unscaled_violation,
+                                        num_constraints));
+
   SLEQP_CALL(sleqp_cauchy_data_create(&solver->cauchy_data,
                                       solver->problem,
                                       params,
                                       solver->lp_interface));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->cauchy_direction,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_direction,
+                                        num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->cauchy_step,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_step,
+                                        num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->cauchy_hessian_step,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_hessian_step,
+                                        num_variables));
 
   SLEQP_CALL(sleqp_newton_data_create(&solver->newton_data,
                                       solver->problem,
                                       params,
                                       options));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->newton_step,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->newton_step,
+                                        num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->newton_hessian_step,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->newton_hessian_step,
+                                        num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->trial_step,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->trial_step,
+                                        num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->initial_trial_point,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->initial_trial_point,
+                                        num_variables));
 
   SLEQP_CALL(sleqp_iterate_create(&solver->trial_iterate,
                                   solver->problem,
@@ -370,9 +362,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_dual_estimation_data_create(&solver->estimation_data,
                                                solver->problem));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->estimation_residuum,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->estimation_residuum,
+                                              num_variables));
 
   SLEQP_CALL(sleqp_merit_data_create(&solver->merit_data,
                                      solver->problem,
@@ -383,41 +374,33 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                      params,
                                      solver->merit_data));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->linear_merit_gradient,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->linear_merit_gradient,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->primal_diff,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->primal_diff,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->cons_dual_diff,
-                                        num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cons_dual_diff,
+                                              num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->vars_dual_diff,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->vars_dual_diff,
+                                              num_variables));
 
   SLEQP_CALL(sleqp_soc_data_create(&solver->soc_data,
                                    solver->problem,
                                    params));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->soc_direction,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_direction,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->soc_corrected_direction,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_corrected_direction,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->soc_hessian_direction,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_hessian_direction,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&solver->initial_soc_trial_point,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->initial_soc_trial_point,
+                                              num_variables));
 
 
   if(!solver->scaling_data)

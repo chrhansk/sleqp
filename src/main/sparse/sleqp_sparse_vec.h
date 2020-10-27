@@ -40,6 +40,12 @@ extern "C" {
                                            int dim,
                                            int nnz_max);
 
+  SLEQP_RETCODE sleqp_sparse_vector_create_empty(SleqpSparseVec** vec,
+                                                 int dim);
+
+  SLEQP_RETCODE sleqp_sparse_vector_create_full(SleqpSparseVec** vec,
+                                                int dim);
+
   /**
    * Pushes a new entry on top of a sparse vector. The new
    * entry is assumed to have a larger index than the existing ones.

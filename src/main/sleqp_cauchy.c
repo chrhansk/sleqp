@@ -75,9 +75,8 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
                           SLEQP_MAX(data->num_lp_constraints,
                                     data->num_lp_variables)));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->quadratic_gradient,
-                                        problem->num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->quadratic_gradient,
+                                              problem->num_variables));
 
   const double inf = sleqp_infinity();
 

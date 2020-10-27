@@ -74,13 +74,11 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
 
   SLEQP_CALL(sleqp_sparse_vector_copy(x, iterate->primal));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->func_grad,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&iterate->func_grad,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->cons_val,
-                                        num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&iterate->cons_val,
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&iterate->cons_jac,
                                         num_constraints,
@@ -90,13 +88,11 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
   SLEQP_CALL(sleqp_working_set_create(&iterate->working_set,
                                       problem));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->cons_dual,
-                                        num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&iterate->cons_dual,
+                                              num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&iterate->vars_dual,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&iterate->vars_dual,
+                                              num_variables));
 
   return SLEQP_OKAY;
 }

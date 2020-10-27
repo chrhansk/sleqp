@@ -32,9 +32,8 @@ cdef class Scaling:
                                             num_variables,
                                             num_constraints))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.gradient,
-                                                  num_variables,
-                                                  0))
+    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.gradient,
+                                                        num_variables))
 
     csleqp_call(csleqp.sleqp_sparse_matrix_create(&self.cons_jac,
                                                   num_constraints,

@@ -81,20 +81,30 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
   SLEQP_CALL(sleqp_calloc(&data->trlib_fwork, fwork_size));
   SLEQP_CALL(sleqp_calloc(&data->trlib_timinig, trlib_krylov_timing_size()));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->s, problem->num_variables, 0));
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->g, problem->num_variables, 0));
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->gm, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->s,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->g,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->gm,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->h, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->v, problem->num_variables, 0));
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->p, problem->num_variables, 0));
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->Hp, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->v,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->p,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->Hp,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->l, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->l,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->h_lhs, problem->num_variables, 0));
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->h_rhs, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_lhs,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_rhs,
+                                              problem->num_variables));
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&data->Q,
                                         problem->num_variables,
@@ -104,7 +114,8 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
   SLEQP_CALL(sleqp_calloc(&data->dense_cache,
                           SLEQP_MAX(problem->num_variables, problem->num_constraints)));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->sparse_cache, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
+                                              problem->num_variables));
 
   data->time_limit = -1;
 

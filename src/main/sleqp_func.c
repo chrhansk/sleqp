@@ -47,7 +47,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_timer_create(&func->eval_timer));
   SLEQP_CALL(sleqp_timer_create(&func->hess_timer));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&func->product, num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&func->product, num_variables));
 
   SLEQP_CALL(sleqp_hessian_struct_create(&func->hess_struct,
                                          num_variables,

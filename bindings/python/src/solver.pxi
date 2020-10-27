@@ -19,9 +19,8 @@ cdef class Solver:
     self.params = params
     self.options = options
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.primal,
-                                                  problem.num_variables,
-                                                  0))
+    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.primal,
+                                                        problem.num_variables))
 
     array_to_sleqp_sparse_vec(primal, self.primal)
 

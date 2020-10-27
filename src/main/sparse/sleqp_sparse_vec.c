@@ -24,6 +24,22 @@ SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_vector_create_empty(SleqpSparseVec** vec,
+                                               int dim)
+{
+  SLEQP_CALL(sleqp_sparse_vector_create(vec, dim, 0));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_create_full(SleqpSparseVec** vec,
+                                              int dim)
+{
+  SLEQP_CALL(sleqp_sparse_vector_create(vec, dim, dim));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
                                        int idx,
                                        double value)

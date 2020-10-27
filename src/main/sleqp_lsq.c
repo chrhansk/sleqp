@@ -261,37 +261,29 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
 
   data->levenberg_marquardt = levenberg_marquardt;
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->lsq_forward,
-                                        num_residuals,
-                                        num_residuals));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_forward,
+                                              num_residuals));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->lsq_residual,
-                                        num_residuals,
-                                        num_residuals));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_residual,
+                                              num_residuals));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->lsq_hess_prod,
-                                        num_variables,
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_hess_prod,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->lsq_grad,
-                                        num_variables,
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_grad,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->lsq_grad,
-                                        num_variables,
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_grad,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->grad_cache,
-                                        num_variables,
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->grad_cache,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->hess_prod,
-                                        num_variables,
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->hess_prod,
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->combined_hess_prod,
-                                        num_variables,
-                                        num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->combined_hess_prod,
+                                              num_variables));
 
   data->eps = sleqp_params_get_eps(params);
 

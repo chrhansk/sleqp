@@ -35,21 +35,17 @@ cdef class Problem:
 
     assert cfunc != NULL, "Invalid function type"
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.var_lb,
-                                                  num_variables,
-                                                  0))
+    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.var_lb,
+                                                        num_variables))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.var_ub,
-                                                  num_variables,
-                                                  0))
+    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.var_ub,
+                                                        num_variables))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.cons_lb,
-                                                  num_constraints,
-                                                  0))
+    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.cons_lb,
+                                                        num_constraints))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create(&self.cons_ub,
-                                                  num_constraints,
-                                                  0))
+    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.cons_ub,
+                                                        num_constraints))
 
     array_to_sleqp_sparse_vec(var_lb, self.var_lb)
     array_to_sleqp_sparse_vec(var_ub, self.var_ub)

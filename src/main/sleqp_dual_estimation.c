@@ -23,9 +23,9 @@ SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
 
   data->problem = problem;
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->solution, 0, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->solution, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->neg_grad, problem->num_variables, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->neg_grad, problem->num_variables));
 
   return SLEQP_OKAY;
 }

@@ -183,17 +183,14 @@ SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
                                   problem->cons_lb,
                                   problem->cons_ub));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&(problem_scaling->unscaled_value),
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(problem_scaling->unscaled_value),
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&(problem_scaling->scaled_direction),
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(problem_scaling->scaled_direction),
+                                              num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&(problem_scaling->scaled_cons_duals),
-                                        num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&(problem_scaling->scaled_cons_duals),
+                                              num_constraints));
 }
 
 SleqpProblem* sleqp_problem_scaling_get_problem(SleqpProblemScaling* problem_scaling)

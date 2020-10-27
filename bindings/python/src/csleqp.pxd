@@ -113,6 +113,12 @@ cdef extern from "sleqp.h":
                                            int dim,
                                            int nnz_max)
 
+  SLEQP_RETCODE sleqp_sparse_vector_create_empty(SleqpSparseVec** vec,
+                                                 int dim)
+
+  SLEQP_RETCODE sleqp_sparse_vector_create_full(SleqpSparseVec** vec,
+                                                int dim)
+
   SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
                                             libc.stdio.FILE* output)
 

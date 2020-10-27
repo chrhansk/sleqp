@@ -54,37 +54,29 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
   SLEQP_CALL(sleqp_calloc(&linesearch->prod_cache,
                           problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&linesearch->cauchy_point,
-                                        problem->num_variables,
-                                        problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_point,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&linesearch->cauchy_jacobian_prod,
-                                        problem->num_constraints,
-                                        problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_jacobian_prod,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&linesearch->newton_jacobian_prod,
-                                        problem->num_constraints,
-                                        problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->newton_jacobian_prod,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&linesearch->cauchy_cons_val,
-                                        problem->num_constraints,
-                                        problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_cons_val,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&linesearch->combined_cons_val,
-                                        problem->num_constraints,
-                                        problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->combined_cons_val,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&linesearch->cauchy_newton_direction,
-                                        problem->num_variables,
-                                        problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_newton_direction,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&linesearch->test_direction,
-                                        problem->num_variables,
-                                        problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->test_direction,
+                                              problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&linesearch->linear_merit_gradient,
-                                        problem->num_variables,
-                                        problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->linear_merit_gradient,
+                                              problem->num_variables));
 
   return SLEQP_OKAY;
 }

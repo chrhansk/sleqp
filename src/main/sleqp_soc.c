@@ -26,10 +26,10 @@ SLEQP_RETCODE sleqp_soc_data_create(SleqpSOCData** star,
   soc_data->problem = problem;
   soc_data->params = params;
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&soc_data->upper_diff, 0, 0));
-  SLEQP_CALL(sleqp_sparse_vector_create(&soc_data->lower_diff, 0, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&soc_data->upper_diff, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&soc_data->lower_diff, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create(&soc_data->rhs, 0, 0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&soc_data->rhs, 0));
 
   return SLEQP_OKAY;
 }
