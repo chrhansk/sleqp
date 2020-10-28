@@ -94,12 +94,6 @@ extern "C" {
                                       double penalty_parameter,
                                       double* merit_value);
 
-  SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
-                                            SleqpIterate* iterate,
-                                            const SleqpSparseVec* direction,
-                                            double penalty_parameter,
-                                            SleqpSparseVec* gradient);
-
   SLEQP_RETCODE sleqp_merit_data_capture(SleqpMeritData* merit_data);
 
   SLEQP_RETCODE sleqp_merit_data_release(SleqpMeritData** star);

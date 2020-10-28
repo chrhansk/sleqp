@@ -256,46 +256,6 @@ SLEQP_RETCODE sleqp_merit_quadratic(SleqpMeritData* merit_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_merit_linear_gradient(SleqpMeritData* merit_data,
-                                          SleqpIterate* iterate,
-                                          const SleqpSparseVec* direction,
-                                          double penalty_parameter,
-                                          SleqpSparseVec* gradient)
-{
-  SleqpProblem* problem = merit_data->problem;
-
-  const double zero_eps = sleqp_params_get_zero_eps(merit_data->params);
-
-  SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
-  SleqpSparseVec* cons_vals = sleqp_iterate_get_cons_val(iterate);
-
-  SLEQP_CALL(sleqp_get_violated_multipliers(problem,
-                                            cons_vals,
-                                            merit_data->multipliers,
-                                            NULL,
-                                            zero_eps));
-
-  SLEQP_CALL(sleqp_sparse_vector_scale(merit_data->multipliers,
-                                       penalty_parameter));
-
-  SLEQP_CALL(sleqp_sparse_vector_clear(merit_data->sparse_cache));
-
-  SLEQP_CALL(sleqp_sparse_vector_resize(merit_data->sparse_cache,
-                                        problem->num_variables));
-
-  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(iterate),
-                                                      merit_data->multipliers,
-                                                      zero_eps,
-                                                      merit_data->sparse_cache));
-
-  SLEQP_CALL(sleqp_sparse_vector_add(merit_data->sparse_cache,
-                                     sleqp_iterate_get_func_grad(iterate),
-                                     zero_eps,
-                                     gradient));
-
-  return SLEQP_OKAY;
-}
-
 static SLEQP_RETCODE merit_data_free(SleqpMeritData** star)
 {
   SleqpMeritData* merit_data = *star;

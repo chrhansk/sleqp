@@ -26,9 +26,9 @@ struct SleqpLineSearchData
 
   SleqpSparseVec* cauchy_newton_direction;
 
-  SleqpSparseVec* test_direction;
+  SleqpSparseVec* violated_multipliers;
 
-  SleqpSparseVec* linear_merit_gradient;
+  SleqpSparseVec* test_direction;
 };
 
 SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
@@ -72,10 +72,10 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_newton_direction,
                                               problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->test_direction,
-                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->violated_multipliers,
+                                              problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->linear_merit_gradient,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->test_direction,
                                               problem->num_variables));
 
   return SLEQP_OKAY;
@@ -362,19 +362,6 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                             zero_eps));
   }
 
-  // Compute merit gradient product
-  SLEQP_CALL(sleqp_merit_linear_gradient(linesearch->merit_data,
-                                         iterate,
-                                         cauchy_step,
-                                         linesearch->penalty_parameter,
-                                         linesearch->linear_merit_gradient));
-
-  double merit_gradient_product;
-
-  SLEQP_CALL(sleqp_sparse_vector_dot(linesearch->cauchy_newton_direction,
-                                     linesearch->linear_merit_gradient,
-                                     &merit_gradient_product));
-
   // Compute initial scalar products for the linear merit function
   double cauchy_gradient_dot;
 
@@ -427,9 +414,43 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                      problem->var_lb,
                                      problem->var_ub,
                                      &alpha));
+
+    assert(alpha >= 0);
+    assert(alpha <= 1);
   }
 
-  assert(alpha >= 0);
+  double quadratic_merit_gradient_product = 0.;
+
+  // compute merit gradient products
+  {
+    SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_cons_val(iterate),
+                                       linesearch->cauchy_jacobian_prod,
+                                       zero_eps,
+                                       linesearch->cauchy_cons_val));
+
+    // use the violated multipliers in 0, +/-1 to filter the Jacobian product
+    SLEQP_CALL(sleqp_get_violated_multipliers(problem,
+                                              linesearch->cauchy_cons_val,
+                                              linesearch->violated_multipliers,
+                                              NULL,
+                                              eps));
+
+    double jacobian_dot;
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(linesearch->violated_multipliers,
+                                       linesearch->cauchy_jacobian_prod,
+                                       &jacobian_dot));
+
+    double quadratic_merit_gradient_cauchy = cauchy_gradient_dot + jacobian_dot + cauchy_cauchy_product;
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(linesearch->violated_multipliers,
+                                       linesearch->newton_jacobian_prod,
+                                       &jacobian_dot));
+
+    double quadratic_merit_gradient_newton = newton_gradient_dot + jacobian_dot + cauchy_newton_product;
+
+    quadratic_merit_gradient_product = (quadratic_merit_gradient_newton - quadratic_merit_gradient_cauchy);
+  }
 
   if(alpha <= cutoff_threshold)
   {
@@ -535,7 +556,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
     // check convergence or abort if the stepsize becomes too small
 
-    if(quadratic_merit_value <= cauchy_quadratic_merit_value + eta*alpha*merit_gradient_product)
+    if(quadratic_merit_value <= cauchy_quadratic_merit_value + eta*alpha*quadratic_merit_gradient_product)
     {
       (*step_length) = alpha;
       (*trial_quadratic_merit_value) = quadratic_merit_value;
@@ -580,9 +601,9 @@ static SLEQP_RETCODE linesearch_free(SleqpLineSearchData** star)
 {
   SleqpLineSearchData* linesearch = *star;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&linesearch->linear_merit_gradient));
   SLEQP_CALL(sleqp_sparse_vector_free(&linesearch->test_direction));
 
+  SLEQP_CALL(sleqp_sparse_vector_free(&linesearch->violated_multipliers));
   SLEQP_CALL(sleqp_sparse_vector_free(&linesearch->cauchy_newton_direction));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&linesearch->combined_cons_val));
