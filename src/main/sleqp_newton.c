@@ -3,12 +3,13 @@
 #include <math.h>
 #include <trlib.h>
 
-#include "sleqp.h"
+#include "sleqp_assert.h"
 #include "sleqp_cmp.h"
 #include "sleqp_iterate.h"
 #include "sleqp_log.h"
 #include "sleqp_mem.h"
 #include "sleqp_timer.h"
+#include "sleqp_util.h"
 #include "sleqp_tr_solver.h"
 
 struct SleqpNewtonData
@@ -172,7 +173,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       }
       else if(var_state == SLEQP_ACTIVE_BOTH)
       {
-        assert(sleqp_is_eq(lower_value, upper_value, eps));
+        sleqp_assert_is_eq(lower_value, upper_value, eps);
 
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
@@ -242,7 +243,7 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       }
       else if(cons_state == SLEQP_ACTIVE_BOTH)
       {
-        assert(sleqp_is_eq(lower_value, upper_value, eps));
+        sleqp_assert_is_eq(lower_value, upper_value, eps);
 
         SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
                                             i_set,
@@ -315,7 +316,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                               eps,
                                               &in_working_set));
 
-    assert(in_working_set);
+    sleqp_num_assert_msg(in_working_set,
+                         "Initial Newton direction must respect working set linearization");
   }
 
 #endif
@@ -347,7 +349,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
         const double trust_radius_sq = trust_radius * trust_radius;
 
-        //assert(sleqp_is_lt(initial_norm_sq, trust_radius_sq, eps));
+        //sleqp_assert_is_lt(initial_norm_sq, trust_radius_sq, eps);
 
         trust_radius = sqrt(trust_radius_sq - initial_norm_sq);
       }
@@ -465,7 +467,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                             data->initial_solution,
                             &direction_dot);
 
-    assert(sleqp_is_zero(direction_dot, eps));
+    sleqp_assert_is_zero(direction_dot, eps);
   }
 
   if(newton_step_in_working_set)
@@ -480,7 +482,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                               eps,
                                               &in_working_set));
 
-    assert(in_working_set);
+    sleqp_num_assert_msg(in_working_set,
+                         "Newton step must respect working set linearization");
   }
 
 #endif

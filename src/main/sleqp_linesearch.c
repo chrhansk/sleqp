@@ -1,5 +1,7 @@
 #include "sleqp_linesearch.h"
 
+#include "sleqp_assert.h"
+
 #define LINESEARCH_MAX_IT 10000
 
 struct SleqpLineSearchData
@@ -205,9 +207,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                       penalty_parameter,
                                       &actual_linear_merit_value));
 
-        assert(sleqp_is_eq(linear_merit_value,
+        sleqp_assert_is_eq(linear_merit_value,
                            actual_linear_merit_value,
-                           eps));
+                           eps);
       }
 
       {
@@ -224,9 +226,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                          penalty_parameter,
                                          &actual_quadratic_merit_value));
 
-        assert(sleqp_is_eq((*quadratic_merit_value),
+        sleqp_assert_is_eq((*quadratic_merit_value),
                            actual_quadratic_merit_value,
-                           eps));
+                           eps);
       }
     }
 
@@ -264,7 +266,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
     *step_length = delta;
   }
 
-  assert(sleqp_is_leq(sleqp_sparse_vector_norm(direction), trust_radius, eps));
+  sleqp_assert_is_leq(sleqp_sparse_vector_norm(direction), trust_radius, eps);
 
   return SLEQP_OKAY;
 }
@@ -314,9 +316,9 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                      penalty_parameter,
                                      &actual_quadratic_merit));
 
-    assert(sleqp_is_eq(cauchy_quadratic_merit_value,
+    sleqp_assert_is_eq(cauchy_quadratic_merit_value,
                        actual_quadratic_merit,
-                       eps));
+                       eps);
 
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &func_dual,
@@ -324,9 +326,9 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                     cons_dual,
                                     linesearch->test_direction));
 
-    assert(sleqp_sparse_vector_eq(cauchy_hessian_step,
-                                  linesearch->test_direction,
-                                  eps));
+    sleqp_num_assert(sleqp_sparse_vector_eq(cauchy_hessian_step,
+                                            linesearch->test_direction,
+                                            eps));
 
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &func_dual,
@@ -334,9 +336,9 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                     cons_dual,
                                     linesearch->test_direction));
 
-    assert(sleqp_sparse_vector_eq(newton_hessian_step,
-                                  linesearch->test_direction,
-                                  eps));
+    sleqp_num_assert(sleqp_sparse_vector_eq(newton_hessian_step,
+                                            linesearch->test_direction,
+                                            eps));
   }
 
 #endif
@@ -527,9 +529,9 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                     penalty_parameter,
                                     &actual_linear_merit));
 
-      assert(sleqp_is_eq(linear_merit_value,
+      sleqp_assert_is_eq(linear_merit_value,
                          actual_linear_merit,
-                         eps));
+                         eps);
     }
 
     // Check quadratic merit
@@ -547,10 +549,10 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                        penalty_parameter,
                                        &actual_quadratic_merit));
 
-      assert(sleqp_is_eq(quadratic_merit_value,
+      sleqp_assert_is_eq(quadratic_merit_value,
                          actual_quadratic_merit,
-                         eps));
-    }
+                         eps);
+  }
 
 #endif
 

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "sleqp_assert.h"
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
@@ -420,7 +421,7 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
                                   block->grad_diffs[block->curr],
                                   &block->initial_scale));
 
-    assert(sleqp_is_pos(block->initial_scale, eps));
+    sleqp_assert_is_pos(block->initial_scale, eps);
   }
 
   const int begin = block->curr - block->len + 1;
@@ -463,8 +464,8 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
       double combination_factor = (1. - damping_factor) *
         bidir_product / (bidir_product - dot_product);
 
-      assert(sleqp_is_pos(combination_factor, eps));
-      assert(sleqp_is_lt(combination_factor, 1., eps));
+      sleqp_assert_is_pos(combination_factor, eps);
+      sleqp_assert_is_lt(combination_factor, 1., eps);
 
       SLEQP_CALL(sleqp_sparse_vector_add_scaled(current_grad_diff,
                                                 product,

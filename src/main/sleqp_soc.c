@@ -1,5 +1,6 @@
 #include "sleqp_soc.h"
 
+#include "sleqp_assert.h"
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
@@ -108,7 +109,7 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
     }
     else if(variable_state == SLEQP_ACTIVE_BOTH)
     {
-      assert(sleqp_is_eq(ldval, udval, eps));
+      sleqp_assert_is_eq(ldval, udval, eps);
 
       SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, udval));
     }
@@ -192,7 +193,7 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
     }
     else if(constraint_state == SLEQP_ACTIVE_BOTH)
     {
-      assert(sleqp_is_eq(ldval, udval, eps));
+      sleqp_assert_is_eq(ldval, udval, eps);
 
       SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, udval));
     }

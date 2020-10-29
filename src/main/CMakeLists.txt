@@ -2,7 +2,7 @@ set(COMMON_SRC
   sparse/sleqp_sparse_factorization.c
   sparse/sleqp_sparse_matrix.c
   sparse/sleqp_sparse_vec.c
-  sleqp_working_set.c
+  sleqp_assert.c
   sleqp_aug_jacobian.c
   sleqp_bfgs.c
   sleqp_hess_struct.c
@@ -29,6 +29,7 @@ set(COMMON_SRC
   sleqp_tr_solver.c
   sleqp_types.c
   sleqp_util.c
+  sleqp_working_set.c
   lp/sleqp_lpi.c)
 
 add_library(sleqp SHARED

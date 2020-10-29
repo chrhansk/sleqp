@@ -2,6 +2,7 @@
 
 #include <math.h>
 
+#include "sleqp_assert.h"
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 #include "sleqp_merit.h"
@@ -597,8 +598,8 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
 
       assert(cauchy_data->var_stats[i] != SLEQP_BASESTAT_ZERO);
 
-      assert(sleqp_is_leq(lbval, xval, eps));
-      assert(sleqp_is_leq(xval, ubval, eps));
+      sleqp_assert_is_leq(lbval, xval, eps);
+      sleqp_assert_is_leq(xval, ubval, eps);
 
       if(sleqp_is_eq(lbval, ubval, eps))
       {
@@ -805,8 +806,8 @@ SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchyData* cauchy_data,
 
       assert(cauchy_data->var_stats[i] != SLEQP_BASESTAT_ZERO);
 
-      assert(sleqp_is_leq(lbval, xval, eps));
-      assert(sleqp_is_leq(xval, ubval, eps));
+      sleqp_assert_is_leq(lbval, xval, eps);
+      sleqp_assert_is_leq(xval, ubval, eps);
 
       if(sleqp_is_eq(lbval, ubval, eps))
       {
@@ -931,11 +932,11 @@ SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
       {
         if(var_state == SLEQP_ACTIVE_UPPER)
         {
-          assert(sleqp_is_geq(vars_dual->data[k], 0., zero_eps));
+          sleqp_assert_is_geq(vars_dual->data[k], 0., zero_eps);
         }
         else if(var_state == SLEQP_ACTIVE_LOWER)
         {
-          assert(sleqp_is_leq(vars_dual->data[k], 0., zero_eps));
+          sleqp_assert_is_leq(vars_dual->data[k], 0., zero_eps);
         }
       }
     }
@@ -972,11 +973,11 @@ SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
       {
         if(var_state == SLEQP_ACTIVE_UPPER)
         {
-          assert(sleqp_is_geq(cons_dual->data[k], 0., zero_eps));
+          sleqp_assert_is_geq(cons_dual->data[k], 0., zero_eps);
         }
         else if(var_state == SLEQP_ACTIVE_LOWER)
         {
-          assert(sleqp_is_leq(cons_dual->data[k], 0., zero_eps));
+          sleqp_assert_is_leq(cons_dual->data[k], 0., zero_eps);
         }
       }
     }

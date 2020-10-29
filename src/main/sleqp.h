@@ -7,6 +7,7 @@
  **/
 
 #include "sleqp_aug_jacobian.h"
+#include "sleqp_assert.h"
 #include "sleqp_bfgs.h"
 #include "sleqp_cauchy.h"
 #include "sleqp_cmp.h"

@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "sleqp_assert.h"
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
@@ -490,7 +491,7 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   sleqp_log_debug("Minimum average violation: %.10e", inf_violation);
 
-  // assert(sleqp_is_geq(current_violation, inf_violation, eps));
+  // sleqp_assert_is_geq(current_violation, inf_violation, eps);
 
   if(inf_violation <= violation_tolerance)
   {
@@ -774,9 +775,9 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
                                        solver->penalty_parameter,
                                        &actual_quadratic_merit_value));
 
-      assert(sleqp_is_eq(*cauchy_merit_value,
+      sleqp_assert_is_eq(*cauchy_merit_value,
                          actual_quadratic_merit_value,
-                         eps));
+                         eps);
     }
 
 #endif
@@ -844,9 +845,9 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
                                        solver->penalty_parameter,
                                        &actual_quadratic_merit_value));
 
-      assert(sleqp_is_eq(*cauchy_merit_value,
+      sleqp_assert_is_eq(*cauchy_merit_value,
                          actual_quadratic_merit_value,
-                         eps));
+                         eps);
     }
 
 #endif
@@ -934,9 +935,9 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
                                      solver->penalty_parameter,
                                      &actual_quadratic_merit_value));
 
-    assert(sleqp_is_eq(*trial_merit_value,
+    sleqp_assert_is_eq(*trial_merit_value,
                        actual_quadratic_merit_value,
-                       eps));
+                       eps);
   }
 
 #endif
@@ -1287,7 +1288,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   double model_reduction = model_iterate_value - model_trial_value;
 
-  assert(!sleqp_is_neg(model_reduction, zero_eps));
+  sleqp_assert_is_geq(model_reduction, 0., zero_eps);
 
   SLEQP_CALL(set_func_value(solver, trial_iterate, SLEQP_VALUE_REASON_TRYING_ITERATE));
 

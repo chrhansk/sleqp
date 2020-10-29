@@ -44,6 +44,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 option(SLEQP_ENABLE_UNIT_TESTS "Whether or not to enable unit tests" ON)
 
+option(SLEQP_ENABLE_NUM_ASSERTS "Whether or not to numerical assertions" OFF)
+
 option(SLEQP_ENABLE_CUTEST "Whether or not to include the CUTest suite" OFF)
 
 option(SLEQP_ENABLE_PYTHON "Whether or not to enable python bindings" OFF)
