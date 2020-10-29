@@ -337,7 +337,7 @@ START_TEST(test_solve)
   SleqpSolver* solver;
 
   ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_BOTH));
+                                            SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -485,7 +485,7 @@ END_TEST
 START_TEST(test_scaled_solve)
 {
   ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_BOTH));
+                                            SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   SleqpSolver* solver;
 

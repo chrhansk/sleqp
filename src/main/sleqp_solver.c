@@ -1213,20 +1213,6 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   const double accepted_reduction = sleqp_params_get_accepted_reduction(solver->params);
 
-  {
-    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_deriv_check(options);
-
-    if(deriv_check & SLEQP_DERIV_CHECK_FIRST)
-    {
-      SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
-    }
-
-    if(deriv_check & SLEQP_DERIV_CHECK_SEC)
-    {
-      SLEQP_CALL(sleqp_deriv_check_second_order(solver->deriv_check, iterate));
-    }
-  }
-
   double exact_iterate_value, model_iterate_value;
 
   {
@@ -1256,7 +1242,23 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                           &full_step));
   }
 
+  {
+    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_deriv_check(options);
 
+    if(deriv_check & SLEQP_DERIV_CHECK_FIRST)
+    {
+      SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
+    }
+
+    if(deriv_check & SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE)
+    {
+      SLEQP_CALL(sleqp_deriv_check_second_order_exhaustive(solver->deriv_check, iterate));
+    }
+    else if(deriv_check & SLEQP_DERIV_CHECK_SECOND_SIMPLE)
+    {
+      SLEQP_CALL(sleqp_deriv_check_second_order_simple(solver->deriv_check, iterate));
+    }
+  }
 
   {
     set_residuum(solver);

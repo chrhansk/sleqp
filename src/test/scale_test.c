@@ -342,8 +342,8 @@ START_TEST(test_second_order_deriv)
                                          scaled_problem,
                                          params));
 
-  ASSERT_CALL(sleqp_deriv_check_second_order(deriv_check_data,
-                                             scaled_iterate));
+  ASSERT_CALL(sleqp_deriv_check_second_order_exhaustive(deriv_check_data,
+                                                        scaled_iterate));
 
   ASSERT_CALL(sleqp_deriv_checker_free(&deriv_check_data));
 

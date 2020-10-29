@@ -8,7 +8,7 @@ struct SleqpDerivCheckData
   SleqpProblem* problem;
   SleqpParams* params;
 
-  SleqpSparseVec* value_diff;
+  SleqpSparseVec* unit_direction;
 
   SleqpSparseVec* hessian_estimate;
 
@@ -22,6 +22,10 @@ struct SleqpDerivCheckData
 
   SleqpSparseVec* cons_grad_iterate;
   SleqpSparseVec* cons_grad_check_iterate;
+
+  SleqpSparseVec* transposed_jacobian_product;
+  SleqpSparseVec* combined_cons_grad_iterate;
+  SleqpSparseVec* combined_cons_grad_check_iterate;
 
   SleqpSparseVec* multipliers;
   SleqpSparseVec* multipliers_zero;
@@ -46,7 +50,7 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
   data->iterate = NULL;
 
   // this will be a unit vector
-  SLEQP_CALL(sleqp_sparse_vector_create(&data->value_diff,
+  SLEQP_CALL(sleqp_sparse_vector_create(&data->unit_direction,
                                         num_variables,
                                         1));
 
@@ -74,6 +78,15 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
                                               num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->cons_grad_check_iterate,
+                                              num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->transposed_jacobian_product,
+                                              num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->combined_cons_grad_iterate,
+                                              num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->combined_cons_grad_check_iterate,
                                               num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create(&data->multipliers,
@@ -119,7 +132,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
   int cons_val_nnz = 0;
   int cons_jac_nnz = 0;
 
-  SleqpSparseVec* value_diff = data->value_diff;
+  SleqpSparseVec* unit_direction = data->unit_direction;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
@@ -127,12 +140,12 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
+  SLEQP_CALL(sleqp_sparse_vector_clear(unit_direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(value_diff, j, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(unit_direction, j, 1.));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(iterate),
-                                            value_diff,
+                                            unit_direction,
                                             1.,
                                             perturbation,
                                             0.,
@@ -206,7 +219,7 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
   int cons_val_nnz = 0;
   int cons_jac_nnz = 0;
 
-  SleqpSparseVec* value_diff = data->value_diff;
+  SleqpSparseVec* unit_direction = data->unit_direction;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
@@ -214,12 +227,12 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
+  SLEQP_CALL(sleqp_sparse_vector_clear(unit_direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(value_diff, j, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(unit_direction, j, 1.));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(iterate),
-                                            value_diff,
+                                            unit_direction,
                                             1.,
                                             perturbation,
                                             0.,
@@ -260,9 +273,9 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
 
     const double upper_value = ptr ? (*ptr) : 0.;
 
-    const double value_diff = upper_value - lower_value;
+    const double unit_direction = upper_value - lower_value;
 
-    const double actual_value = value_diff / perturbation;
+    const double actual_value = unit_direction / perturbation;
 
     if(!sleqp_is_eq(expected_value, actual_value, tolerance))
     {
@@ -330,7 +343,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
   int cons_val_nnz = 0;
   int cons_jac_nnz = 0;
 
-  SleqpSparseVec* value_diff = data->value_diff;
+  SleqpSparseVec* unit_direction = data->unit_direction;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
@@ -338,12 +351,12 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
+  SLEQP_CALL(sleqp_sparse_vector_clear(unit_direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(value_diff, j, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(unit_direction, j, 1.));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(iterate),
-                                            value_diff,
+                                            unit_direction,
                                             1.,
                                             perturbation,
                                             0.,
@@ -381,7 +394,7 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
 
   SLEQP_CALL(sleqp_sparse_vector_push(data->hessian_right, j, 1.));
 
-  double one = 1.;
+  const double one = 1.;
 
   for(int k = 0; k < num_variables; ++k)
   {
@@ -441,7 +454,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   SleqpProblem* problem = data->problem;
   SleqpFunc* func = problem->func;
 
-  int num_variables = problem->num_variables;
+  const int num_variables = problem->num_variables;
 
   int func_grad_nnz = 0;
   int cons_val_nnz = 0;
@@ -449,7 +462,7 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
 
   double one = 1.;
 
-  SleqpSparseVec* value_diff = data->value_diff;
+  SleqpSparseVec* unit_direction = data->unit_direction;
 
   const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
 
@@ -457,12 +470,12 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(value_diff));
+  SLEQP_CALL(sleqp_sparse_vector_clear(unit_direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(value_diff, j, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(unit_direction, j, 1.));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(iterate),
-                                            value_diff,
+                                            unit_direction,
                                             1.,
                                             perturbation,
                                             0.,
@@ -575,8 +588,8 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_deriv_check_second_order(SleqpDerivCheckData* data,
-                                             SleqpIterate* iterate)
+SLEQP_RETCODE sleqp_deriv_check_second_order_exhaustive(SleqpDerivCheckData* data,
+                                                        SleqpIterate* iterate)
 {
   SleqpFunc* func = data->problem->func;
   SleqpProblem* problem = data->problem;
@@ -616,6 +629,174 @@ SLEQP_RETCODE sleqp_deriv_check_second_order(SleqpDerivCheckData* data,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE compute_combined_cons_grad(SleqpDerivCheckData* data,
+                                                SleqpSparseVec* multipliers,
+                                                SleqpIterate* iterate,
+                                                SleqpSparseVec* result)
+{
+  SleqpParams* params = data->params;
+
+  const double zero_eps = sleqp_params_get_zero_eps(params);
+
+  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(iterate),
+                                                      multipliers,
+                                                      zero_eps,
+                                                      data->transposed_jacobian_product));
+
+  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_func_grad(iterate),
+                                     data->transposed_jacobian_product,
+                                     zero_eps,
+                                     result));
+
+
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE check_second_order_at(SleqpDerivCheckData* data,
+                                           SleqpIterate* iterate,
+                                           int j,
+                                           bool* valid)
+{
+  SleqpIterate* check_iterate = data->check_iterate;
+  SleqpProblem* problem = data->problem;
+  SleqpFunc* func = problem->func;
+  SleqpSparseVec* multipliers = sleqp_iterate_get_cons_dual(iterate);
+  SleqpSparseVec* unit_direction = data->unit_direction;
+
+  const int num_variables = problem->num_variables;
+
+  int func_grad_nnz = 0;
+  int cons_val_nnz = 0;
+  int cons_jac_nnz = 0;
+
+  const double one = 1.;
+
+  const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
+
+  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
+                                               sleqp_iterate_get_primal(iterate),
+                                               j);
+
+  // Compute direction, i.e., j-th unit vector
+  {
+    SLEQP_CALL(sleqp_sparse_vector_clear(unit_direction));
+
+    SLEQP_CALL(sleqp_sparse_vector_push(unit_direction, j, 1.));
+  }
+
+  SLEQP_CALL(sleqp_func_hess_prod(func,
+                                  &one,
+                                  unit_direction,
+                                  multipliers,
+                                  data->hessian_prod));
+
+  // Compute Hessian product estimate
+  {
+    SLEQP_CALL(compute_combined_cons_grad(data,
+                                          multipliers,
+                                          iterate,
+                                          data->combined_cons_grad_iterate));
+
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(iterate),
+                                              unit_direction,
+                                              1.,
+                                              perturbation,
+                                              0.,
+                                              sleqp_iterate_get_primal(check_iterate)));
+
+    SLEQP_CALL(sleqp_func_set_value(func,
+                                    sleqp_iterate_get_primal(check_iterate),
+                                    SLEQP_VALUE_REASON_CHECKING_DERIV,
+                                    &func_grad_nnz,
+                                    &cons_val_nnz,
+                                    &cons_jac_nnz));
+
+    SLEQP_CALL(sleqp_func_eval(func,
+                               NULL,
+                               NULL,
+                               sleqp_iterate_get_func_grad(check_iterate),
+                               NULL,
+                               sleqp_iterate_get_cons_jac(check_iterate)));
+
+    SLEQP_CALL(compute_combined_cons_grad(data,
+                                          multipliers,
+                                          check_iterate,
+                                          data->combined_cons_grad_check_iterate));
+
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->combined_cons_grad_iterate,
+                                              data->combined_cons_grad_check_iterate,
+                                              -1.,
+                                              1.,
+                                              0,
+                                              data->hessian_estimate));
+
+    SLEQP_CALL(sleqp_sparse_vector_scale(data->hessian_estimate, 1./perturbation));
+  }
+
+
+  // Validation
+  {
+    for(int k = 0; k < num_variables; ++k)
+    {
+      double* vec_ptr = NULL;
+
+      vec_ptr = sleqp_sparse_vector_at(data->hessian_estimate, k);
+      const double actual_value = vec_ptr ? (*vec_ptr) : 0.;
+
+      vec_ptr = sleqp_sparse_vector_at(data->hessian_prod, k);
+      const double expected_value = vec_ptr ? (*vec_ptr) : 0.;
+
+      if(!sleqp_is_eq(expected_value, actual_value, tolerance))
+      {
+        sleqp_log_error("Derivative check failed for combined function hessian at (%d, %d): "
+                        "hess = %.10e != %.10e = findiff",
+                        k,
+                        j,
+                        expected_value,
+                        actual_value);
+
+        *valid = false;
+      }
+    }
+  }
+
+  SLEQP_CALL(sleqp_func_set_value(func,
+                                  sleqp_iterate_get_primal(iterate),
+                                  SLEQP_VALUE_REASON_CHECKING_DERIV,
+                                  &func_grad_nnz,
+                                  &cons_val_nnz,
+                                  &cons_jac_nnz));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_deriv_check_second_order_simple(SleqpDerivCheckData* data,
+                                                    SleqpIterate* iterate)
+{
+  SleqpFunc* func = data->problem->func;
+  SleqpProblem* problem = data->problem;
+
+  bool valid = true;
+
+  for(int j = 0; j < problem->num_variables; ++j)
+  {
+    SLEQP_CALL(check_second_order_at(data, iterate, j, &valid));
+  }
+
+  int func_grad_nnz = 0;
+  int cons_val_nnz = 0;
+  int cons_jac_nnz = 0;
+
+  if(!valid)
+  {
+    return SLEQP_INVALID_DERIV;
+  }
+
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_deriv_checker_free(SleqpDerivCheckData** star)
 {
   SleqpDerivCheckData* data = *star;
@@ -630,6 +811,12 @@ SLEQP_RETCODE sleqp_deriv_checker_free(SleqpDerivCheckData** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers_zero));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->combined_cons_grad_check_iterate));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->combined_cons_grad_iterate));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->transposed_jacobian_product));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->cons_grad_check_iterate));
 
@@ -647,7 +834,7 @@ SLEQP_RETCODE sleqp_deriv_checker_free(SleqpDerivCheckData** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->hessian_estimate));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->value_diff));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->unit_direction));
 
   sleqp_free(star);
 

@@ -1,16 +1,18 @@
 #cython: language_level=3
 
+from enum import Flag
+
 cpdef enum Status:
   Optimal    = csleqp.SLEQP_OPTIMAL
   Feasible   = csleqp.SLEQP_FEASIBLE
   Infeasible = csleqp.SLEQP_INFEASIBLE
   Invalid    = csleqp.SLEQP_INVALID
 
-cpdef enum DerivCheck:
-  Skip  = csleqp.SLEQP_DERIV_CHECK_SKIP
-  First = csleqp.SLEQP_DERIV_CHECK_FIRST
-  Sec   = csleqp.SLEQP_DERIV_CHECK_SEC
-  Both  = csleqp.SLEQP_DERIV_CHECK_BOTH
+class DerivCheck(Flag):
+  Skip             = csleqp.SLEQP_DERIV_CHECK_SKIP
+  First            = csleqp.SLEQP_DERIV_CHECK_FIRST
+  SecondExhaustive = csleqp.SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE
+  SecondSimple     = csleqp.SLEQP_DERIV_CHECK_SECOND_SIMPLE
 
 cpdef enum HessianEval:
   Exact      = csleqp.SLEQP_HESSIAN_EVAL_EXACT
