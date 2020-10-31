@@ -143,21 +143,23 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       bool valid_lower = (k_lower < lower_diff->nnz);
       bool valid_upper = (k_upper < upper_diff->nnz);
 
-      int i_lower = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
-      int i_upper = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
+      const int i_lower = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
+      const int i_upper = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
 
-      int i_combined = SLEQP_MIN(i_lower, i_upper);
+      const int i_combined = SLEQP_MIN(i_lower, i_upper);
 
       valid_lower = valid_lower && (i_lower == i_combined);
       valid_upper = valid_upper && (i_upper == i_combined);
 
-      double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
-      double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
+      const double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
+      const double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      int i_set = sleqp_working_set_get_variable_index(working_set, i_combined);
+      const int i_set = sleqp_working_set_get_variable_index(working_set, i_combined);
 
-      SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(working_set,
-                                                                          i_combined);
+      const SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(working_set,
+                                                                                i_combined);
+
+      assert(var_state == SLEQP_INACTIVE || i_set != SLEQP_NONE);
 
       if(var_state == SLEQP_ACTIVE_UPPER)
       {
@@ -213,21 +215,23 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
       bool valid_lower = (k_lower < lower_diff->nnz);
       bool valid_upper = (k_upper < upper_diff->nnz);
 
-      int i_lower = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
-      int i_upper = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
+      const int i_lower = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
+      const int i_upper = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
 
-      int i_combined = SLEQP_MIN(i_lower, i_upper);
+      const int i_combined = SLEQP_MIN(i_lower, i_upper);
 
       valid_lower = valid_lower && (i_lower == i_combined);
       valid_upper = valid_upper && (i_upper == i_combined);
 
-      double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
-      double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
+      const double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
+      const double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      int i_set = sleqp_working_set_get_constraint_index(working_set, i_combined);
+      const int i_set = sleqp_working_set_get_constraint_index(working_set, i_combined);
 
-      SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set,
-                                                                             i_combined);
+      const SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set,
+                                                                                   i_combined);
+
+      assert(cons_state == SLEQP_INACTIVE || i_set != SLEQP_NONE);
 
       if(cons_state == SLEQP_ACTIVE_UPPER)
       {
@@ -407,14 +411,13 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                               working_set,
                                               zero_eps));
 
-    SLEQP_CALL(sleqp_sparse_vector_scale(data->violated_multipliers,
-                                         penalty_parameter));
-
     // Finally: Add the iterate multipliers to the given ones
-    SLEQP_CALL(sleqp_sparse_vector_add(data->violated_multipliers,
-                                       sleqp_iterate_get_cons_dual(iterate),
-                                       zero_eps,
-                                       data->multipliers));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_cons_dual(iterate),
+                                              data->violated_multipliers,
+                                              1.,
+                                              penalty_parameter,
+                                              zero_eps,
+                                              data->multipliers));
   }
 
   // compute the EQP gradient. Given as the sum of the
@@ -435,7 +438,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                        data->sparse_cache));
 
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(cons_jac,
-                                                        data->violated_multipliers,
+                                                        data->multipliers,
                                                         eps,
                                                         data->jacobian_product));
 
