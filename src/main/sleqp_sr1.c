@@ -717,8 +717,10 @@ static SLEQP_RETCODE sr1_block_free_at(SR1Block* block)
 
   sleqp_free(&(block->inner_dots));
 
-  sleqp_free(block->grad_diffs);
-  sleqp_free(block->step_diffs);
+  sleqp_free(&block->inner_prods);
+
+  sleqp_free(&block->grad_diffs);
+  sleqp_free(&block->step_diffs);
 
   return SLEQP_OKAY;
 }
