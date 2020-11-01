@@ -617,11 +617,9 @@ static SLEQP_RETCODE linesearch_free(SleqpLineSearchData** star)
 
   SLEQP_CALL(sleqp_merit_data_release(&linesearch->merit_data));
 
-  if(!linesearch)
-  {
-    return SLEQP_OKAY;
-  }
+  sleqp_free(star);
 
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_linesearch_capture(SleqpLineSearchData* linesearch)
