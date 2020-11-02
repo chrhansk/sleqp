@@ -1,5 +1,6 @@
 set(COMMON_SRC
   sparse/sleqp_sparse_factorization.c
+  sparse/sleqp_sparse_factorization_umfpack.c
   sparse/sleqp_sparse_matrix.c
   sparse/sleqp_sparse_vec.c
   sleqp_assert.c

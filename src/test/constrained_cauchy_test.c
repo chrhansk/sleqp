@@ -7,6 +7,7 @@
 #include "sleqp_cmp.h"
 #include "sleqp_dual_estimation.h"
 #include "sleqp_mem.h"
+#include "sparse/sleqp_sparse_factorization_umfpack.h"
 
 #include "lp/sleqp_lpi.h"
 
@@ -85,6 +86,7 @@ START_TEST(test_dual_variable)
 {
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
+  SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
   SleqpDualEstimationData* estimation_data;
 
@@ -103,9 +105,13 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, cauchy_direction));
 
+  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+                                                        params));
+
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
                                         problem,
-                                        params));
+                                        params,
+                                        factorization));
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
@@ -125,7 +131,9 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
 
-  ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
+  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+
+  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 
 }
 END_TEST

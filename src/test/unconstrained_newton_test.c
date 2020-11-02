@@ -9,6 +9,8 @@
 #include "sleqp_mem.h"
 #include "sleqp_newton.h"
 
+#include "sparse/sleqp_sparse_factorization_umfpack.h"
+
 #include "test_common.h"
 
 #include "quadfunc_fixture.h"
@@ -85,6 +87,7 @@ START_TEST(newton_wide_step)
   SleqpSparseVec* expected_step;
   SleqpSparseVec* actual_step;
 
+  SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
 
   int num_variables = problem->num_variables;
@@ -99,10 +102,14 @@ START_TEST(newton_wide_step)
   double penalty_parameter = 1.;
   double trust_radius = 10.;
 
+  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+                                                        params));
+
   // create with empty active set
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
                                         problem,
-                                        params));
+                                        params,
+                                        factorization));
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
@@ -125,7 +132,9 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_newton_data_release(&newton_data));
 
-  ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
+  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+
+  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&actual_step));
 
@@ -140,6 +149,7 @@ START_TEST(newton_small_step)
   SleqpSparseVec* expected_step;
   SleqpSparseVec* actual_step;
 
+  SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
 
 
@@ -155,10 +165,14 @@ START_TEST(newton_small_step)
   double penalty_parameter = 1.;
   double trust_radius = 1.;
 
+  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+                                                        params));
+
   // create with empty active set
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
                                         problem,
-                                        params));
+                                        params,
+                                        factorization));
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
@@ -181,7 +195,9 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_newton_data_release(&newton_data));
 
-  ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
+  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+
+  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&actual_step));
 

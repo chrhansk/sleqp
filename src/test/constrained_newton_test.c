@@ -11,6 +11,8 @@
 #include "sleqp_newton.h"
 #include "sleqp_problem.h"
 
+#include "sparse/sleqp_sparse_factorization_umfpack.h"
+
 SleqpFunc* linquadfunc;
 
 SleqpSparseVec* linquadfunc_var_lb;
@@ -228,6 +230,7 @@ START_TEST(newton_constrained_step)
 
   SleqpNewtonData* newton_data;
 
+  SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
 
   double penalty_parameter = 1.;
@@ -244,9 +247,13 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_options_create(&options));
 
+  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+                                                        params));
+
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
                                         problem,
-                                        params));
+                                        params,
+                                        factorization));
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
@@ -268,7 +275,9 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_newton_data_release(&newton_data));
 
-  ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
+  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+
+  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 
   ASSERT_CALL(sleqp_options_free(&options));
 

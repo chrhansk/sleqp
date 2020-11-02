@@ -7,6 +7,7 @@
 #include "sleqp_cmp.h"
 #include "sleqp_dual_estimation.h"
 #include "sleqp_mem.h"
+#include "sparse/sleqp_sparse_factorization_umfpack.h"
 
 #include "test_common.h"
 
@@ -20,6 +21,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpLPi* lp_interface;
   SleqpCauchyData* cauchy_data;
   SleqpWorkingSet* working_set;
+  SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
 
   SleqpDualEstimationData* estimation_data;
@@ -58,9 +60,13 @@ START_TEST(test_simply_constrained_dual_estimation)
   ASSERT_CALL(sleqp_working_set_create(&working_set,
                                       problem));
 
+  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+                                                        params));
+
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
                                         problem,
-                                        params));
+                                        params,
+                                        factorization));
 
   ASSERT_CALL(sleqp_dual_estimation_data_create(&estimation_data, problem));
 
@@ -94,7 +100,9 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
 
-  ASSERT_CALL(sleqp_aug_jacobian_free(&jacobian));
+  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+
+  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 
   ASSERT_CALL(sleqp_working_set_release(&working_set));
 

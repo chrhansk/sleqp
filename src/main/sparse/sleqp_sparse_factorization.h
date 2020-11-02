@@ -1,37 +1,40 @@
 #ifndef SLEQP_SPARSE_FACTORIZATION_H
 #define SLEQP_SPARSE_FACTORIZATION_H
 
-/**
- * @file sleqp_sparse_factorization.h
- * @brief Defintion of sparse factorization method.
- **/
-
-#include "sleqp_types.h"
-
-#include "sleqp_sparse_matrix.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-  typedef struct SleqpSparseFactorization SleqpSparseFactorization;
+#include "sleqp_params.h"
+#include "sleqp_timer.h"
+#include "sleqp_types.h"
+#include "sleqp_sparse_factorization_types.h"
 
   SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
-                                                  SleqpSparseMatrix* matrix);
+                                                  SleqpParams* params,
+                                                  SleqpSparseFactorizationCallbacks* callbacks,
+                                                  void* factorization_data);
 
-  SLEQP_RETCODE sleqp_sparse_factorization_solve(SleqpSparseFactorization* factorization,
+  SLEQP_RETCODE sleqp_sparse_factorization_capture(SleqpSparseFactorization* sparse_factorization);
+
+  SLEQP_RETCODE sleqp_sparse_factorization_set_matrix(SleqpSparseFactorization* sparse_factorization,
+                                                      SleqpSparseMatrix* matrix);
+
+  SLEQP_RETCODE sleqp_sparse_factorization_solve(SleqpSparseFactorization* sparse_factorization,
                                                  SleqpSparseVec* rhs);
 
-  SLEQP_RETCODE sleqp_sparse_factorization_get_condition_estimate(SleqpSparseFactorization* factorization,
-                                                                  double* condition_estimate);
-
-  SLEQP_RETCODE sleqp_sparse_factorization_get_sol(SleqpSparseFactorization* factorization,
+  SLEQP_RETCODE sleqp_sparse_factorization_get_sol(SleqpSparseFactorization* sparse_factorization,
                                                    SleqpSparseVec* sol,
                                                    int begin,
                                                    int end,
                                                    double zero_eps);
 
-  SLEQP_RETCODE sleqp_sparse_factorization_free(SleqpSparseFactorization** star);
+  SLEQP_RETCODE sleqp_sparse_factorization_get_condition_estimate(SleqpSparseFactorization* sparse_factorization,
+                                                                  double* condition_estimate);
+
+  SLEQP_RETCODE sleqp_sparse_factorization_capture(SleqpSparseFactorization* sparse_factorization);
+
+  SLEQP_RETCODE sleqp_sparse_factorization_release(SleqpSparseFactorization** star);
 
 #ifdef __cplusplus
 }

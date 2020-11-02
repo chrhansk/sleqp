@@ -9,6 +9,7 @@
 #include "sleqp_problem.h"
 #include "sleqp_iterate.h"
 #include "sleqp_params.h"
+#include "sparse/sleqp_sparse_factorization.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -18,9 +19,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
                                           SleqpProblem* problem,
-                                          SleqpParams* params);
-
-  SLEQP_RETCODE sleqp_aug_jacobian_free(SleqpAugJacobian** star);
+                                          SleqpParams* params,
+                                          SleqpSparseFactorization* sparse_factorization);
 
   SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
                                                SleqpIterate* iterate);
@@ -68,6 +68,10 @@ extern "C" {
                                               SleqpSparseVec* rhs,
                                               SleqpSparseVec* primal_sol,
                                               SleqpSparseVec* dual_sol);
+
+  SLEQP_RETCODE sleqp_aug_jacobian_capture(SleqpAugJacobian* jacobian);
+
+  SLEQP_RETCODE sleqp_aug_jacobian_release(SleqpAugJacobian** star);
 
 #ifdef __cplusplus
 }

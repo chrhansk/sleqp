@@ -16,6 +16,8 @@
 #include "sleqp_cauchy.h"
 #include "sleqp_dual_estimation.h"
 
+#include "sparse/sleqp_sparse_factorization_umfpack.h"
+
 #include "sleqp_newton.h"
 
 #include "sleqp_soc.h"
@@ -87,6 +89,8 @@ struct SleqpSolver
   SleqpSparseVec* initial_trial_point;
 
   SleqpIterate* trial_iterate;
+
+  SleqpSparseFactorization* factorization;
 
   SleqpAugJacobian* aug_jacobian;
 
@@ -356,9 +360,15 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   solver->problem,
                                   sleqp_iterate_get_primal(solver->iterate)));
 
+  // create sparse factorization
+
+  SLEQP_CALL(sleqp_sparse_factorization_umfpack_create(&solver->factorization,
+                                                       params));
+
   SLEQP_CALL(sleqp_aug_jacobian_create(&solver->aug_jacobian,
                                        solver->problem,
-                                       params));
+                                       params,
+                                       solver->factorization));
 
   SLEQP_CALL(sleqp_dual_estimation_data_create(&solver->estimation_data,
                                                solver->problem));
@@ -1065,7 +1075,7 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
 
 #define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14e |%14e |%14e | %18s"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14s |%14e |%14e | %18s"
 
 static SLEQP_RETCODE print_header()
 {
@@ -1108,6 +1118,22 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
     [SLEQP_STEPTYPE_REJECTED] = "Rejected"
   };
 
+  char jac_condition_buf[1024];
+
+  if(aug_jac_condition != SLEQP_NONE)
+  {
+    snprintf(jac_condition_buf,
+             1024,
+             "%d",
+             aug_jac_condition);
+  }
+  else
+  {
+    snprintf(jac_condition_buf,
+             1024,
+             "-");
+  }
+
   char working_set_buf[1024];
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(solver->iterate);
@@ -1129,7 +1155,7 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
                  solver->lp_trust_radius,
                  solver->trust_radius,
                  basis_condition,
-                 aug_jac_condition,
+                 jac_condition_buf,
                  solver->primal_diff_norm,
                  solver->dual_diff_norm,
                  steptype_descriptions[solver->last_step_type]);
@@ -1775,7 +1801,9 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_dual_estimation_data_free(&solver->estimation_data));
 
-  SLEQP_CALL(sleqp_aug_jacobian_free(&solver->aug_jacobian));
+  SLEQP_CALL(sleqp_aug_jacobian_release(&solver->aug_jacobian));
+
+  SLEQP_CALL(sleqp_sparse_factorization_release(&solver->factorization));
 
   SLEQP_CALL(sleqp_iterate_release(&solver->trial_iterate));
 
