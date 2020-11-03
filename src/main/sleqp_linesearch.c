@@ -97,6 +97,7 @@ SLEQP_RETCODE sleqp_linesearch_set_iterate(SleqpLineSearchData* linesearch,
 
 SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                            SleqpSparseVec* direction,
+                                           SleqpSparseVec* multipliers,
                                            SleqpSparseVec* hessian_direction,
                                            double* step_length,
                                            double* quadratic_merit_value)
@@ -216,13 +217,12 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
         double actual_quadratic_merit_value;
 
         double func_dual = 1.;
-        SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
         SLEQP_CALL(sleqp_merit_quadratic(merit_data,
                                          iterate,
                                          &func_dual,
                                          direction,
-                                         cons_dual,
+                                         multipliers,
                                          penalty_parameter,
                                          &actual_quadratic_merit_value));
 
@@ -277,6 +277,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                           const double cauchy_quadratic_merit_value,
                                           SleqpSparseVec* newton_step,
                                           SleqpSparseVec* newton_hessian_step,
+                                          SleqpSparseVec* multipliers,
                                           SleqpSparseVec* trial_step,
                                           double* step_length,
                                           double* trial_quadratic_merit_value)
@@ -304,7 +305,6 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
   // Check merit and hessian products
   {
     double func_dual = 1.;
-    SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
     double actual_quadratic_merit;
 
@@ -312,7 +312,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                      iterate,
                                      &func_dual,
                                      cauchy_step,
-                                     cons_dual,
+                                     multipliers,
                                      penalty_parameter,
                                      &actual_quadratic_merit));
 
@@ -323,7 +323,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &func_dual,
                                     cauchy_step,
-                                    cons_dual,
+                                    multipliers,
                                     linesearch->test_direction));
 
     sleqp_num_assert(sleqp_sparse_vector_eq(cauchy_hessian_step,
@@ -333,7 +333,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &func_dual,
                                     newton_step,
-                                    cons_dual,
+                                    multipliers,
                                     linesearch->test_direction));
 
     sleqp_num_assert(sleqp_sparse_vector_eq(newton_hessian_step,
@@ -431,11 +431,11 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                        linesearch->cauchy_cons_val));
 
     // use the violated multipliers in 0, +/-1 to filter the Jacobian product
-    SLEQP_CALL(sleqp_get_violated_multipliers(problem,
-                                              linesearch->cauchy_cons_val,
-                                              linesearch->violated_multipliers,
-                                              NULL,
-                                              eps));
+    SLEQP_CALL(sleqp_violated_constraint_multipliers(problem,
+                                                     linesearch->cauchy_cons_val,
+                                                     linesearch->violated_multipliers,
+                                                     NULL,
+                                                     eps));
 
     double jacobian_dot;
 
@@ -537,7 +537,6 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
     // Check quadratic merit
     {
       double func_dual = 1.;
-      SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
       double actual_quadratic_merit;
 
@@ -545,7 +544,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                        iterate,
                                        &func_dual,
                                        linesearch->test_direction,
-                                       cons_dual,
+                                       multipliers,
                                        penalty_parameter,
                                        &actual_quadratic_merit));
 

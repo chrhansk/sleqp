@@ -262,11 +262,14 @@ START_TEST(newton_constrained_step)
                                        params,
                                        options));
 
+  ASSERT_CALL(sleqp_newton_set_iterate(newton_data,
+                                       iterate,
+                                       jacobian,
+                                       trust_radius,
+                                       penalty_parameter));
+
   ASSERT_CALL(sleqp_newton_compute_step(newton_data,
-                                        iterate,
-                                        jacobian,
-                                        trust_radius,
-                                        penalty_parameter,
+                                        sleqp_iterate_get_cons_dual(iterate),
                                         actual_step));
 
   const double tolerance = 1e-8;

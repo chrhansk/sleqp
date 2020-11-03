@@ -118,14 +118,17 @@ START_TEST(newton_wide_step)
                                        params,
                                        options));
 
+  ASSERT_CALL(sleqp_newton_set_iterate(newton_data,
+                                       iterate,
+                                       jacobian,
+                                       trust_radius,
+                                       penalty_parameter));
+
   // we use the default (empty) active set for the Newton step,
   // trust region size should be large to ensure that
   // the solution is that of the unrestricted step
   ASSERT_CALL(sleqp_newton_compute_step(newton_data,
-                                        iterate,
-                                        jacobian,
-                                        trust_radius,
-                                        penalty_parameter,
+                                        sleqp_iterate_get_cons_dual(iterate),
                                         actual_step));
 
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
@@ -181,14 +184,17 @@ START_TEST(newton_small_step)
                                        params,
                                        options));
 
+  ASSERT_CALL(sleqp_newton_set_iterate(newton_data,
+                                       iterate,
+                                       jacobian,
+                                       trust_radius,
+                                       penalty_parameter));
+
   // we use the default (empty) active set for the Newton step,
   // trust region size should be so small that
   // the solution is on the boundary of the feasible set
   ASSERT_CALL(sleqp_newton_compute_step(newton_data,
-                                        iterate,
-                                        jacobian,
-                                        trust_radius,
-                                        penalty_parameter,
+                                        sleqp_iterate_get_cons_dual(iterate),
                                         actual_step));
 
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));

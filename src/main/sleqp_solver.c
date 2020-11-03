@@ -76,6 +76,8 @@ struct SleqpSolver
 
   double cauchy_step_length;
 
+  SleqpSparseVec* multipliers;
+
   SleqpNewtonData* newton_data;
 
   SleqpSparseVec* newton_step;
@@ -100,8 +102,6 @@ struct SleqpSolver
   SleqpMeritData* merit_data;
 
   SleqpLineSearchData* linesearch;
-
-  SleqpSparseVec* linear_merit_gradient;
 
   // Primal / dual step lengths
 
@@ -339,6 +339,9 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_hessian_step,
                                               num_variables));
 
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->multipliers,
+                                              num_constraints));
+
   SLEQP_CALL(sleqp_newton_data_create(&solver->newton_data,
                                       solver->problem,
                                       params,
@@ -384,9 +387,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                      solver->problem,
                                      params,
                                      solver->merit_data));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->linear_merit_gradient,
-                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->primal_diff,
                                               num_variables));
@@ -683,6 +683,9 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
                                                 iterate));
   }
 
+  SLEQP_CALL(sleqp_newton_compute_multipliers(solver->newton_data,
+                                              solver->multipliers));
+
   return SLEQP_OKAY;
 }
 
@@ -715,6 +718,12 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
                                               iterate));
+
+    SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
+                                        iterate,
+                                        solver->aug_jacobian,
+                                        solver->trust_radius,
+                                        solver->penalty_parameter));
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
 
@@ -755,7 +764,7 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &one,
                                     solver->cauchy_direction,
-                                    sleqp_iterate_get_cons_dual(iterate),
+                                    solver->multipliers,
                                     solver->cauchy_hessian_step));
 
     SLEQP_CALL(sleqp_linesearch_set_iterate(solver->linesearch,
@@ -765,6 +774,7 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_linesearch_cauchy_step(solver->linesearch,
                                             solver->cauchy_step,
+                                            solver->multipliers,
                                             solver->cauchy_hessian_step,
                                             &solver->cauchy_step_length,
                                             cauchy_merit_value));
@@ -775,13 +785,12 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
       double actual_quadratic_merit_value;
 
       double func_dual = 1.;
-      SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
       SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
                                        iterate,
                                        &func_dual,
                                        solver->cauchy_step,
-                                       cons_dual,
+                                       solver->multipliers,
                                        solver->penalty_parameter,
                                        &actual_quadratic_merit_value));
 
@@ -845,13 +854,12 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
       double actual_quadratic_merit_value;
 
       double func_dual = 1.;
-      SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
       SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
                                        iterate,
                                        &func_dual,
                                        solver->cauchy_step,
-                                       cons_dual,
+                                       solver->multipliers,
                                        solver->penalty_parameter,
                                        &actual_quadratic_merit_value));
 
@@ -902,16 +910,13 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
                                            remaining_time(solver)));
 
     SLEQP_CALL(sleqp_newton_compute_step(solver->newton_data,
-                                         solver->iterate,
-                                         solver->aug_jacobian,
-                                         solver->trust_radius,
-                                         solver->penalty_parameter,
+                                         solver->multipliers,
                                          solver->newton_step));
 
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &one,
                                     solver->newton_step,
-                                    sleqp_iterate_get_cons_dual(iterate),
+                                    solver->multipliers,
                                     solver->newton_hessian_step));
   }
 
@@ -924,6 +929,7 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
                                            cauchy_merit_value,
                                            solver->newton_step,
                                            solver->newton_hessian_step,
+                                           solver->multipliers,
                                            solver->trial_step,
                                            &step_length,
                                            trial_merit_value));
@@ -935,13 +941,12 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
     double actual_quadratic_merit_value;
 
     double func_dual = 1.;
-    SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
     SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
                                      iterate,
                                      &func_dual,
                                      solver->trial_step,
-                                     cons_dual,
+                                     solver->multipliers,
                                      solver->penalty_parameter,
                                      &actual_quadratic_merit_value));
 
@@ -1031,7 +1036,7 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &one,
                                     solver->soc_corrected_direction,
-                                    sleqp_iterate_get_cons_dual(iterate),
+                                    solver->multipliers,
                                     solver->soc_hessian_direction));
 
     SLEQP_CALL(sleqp_sparse_vector_dot(solver->soc_corrected_direction,
@@ -1785,8 +1790,6 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_soc_data_free(&solver->soc_data));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->linear_merit_gradient));
-
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->vars_dual_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->cons_dual_diff));
@@ -1816,6 +1819,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->newton_step));
 
   SLEQP_CALL(sleqp_newton_data_release(&solver->newton_data));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->multipliers));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_hessian_step));
 

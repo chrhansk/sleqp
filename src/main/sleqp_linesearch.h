@@ -59,6 +59,7 @@ extern "C" {
    **/
   SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                              SleqpSparseVec* direction,
+                                             SleqpSparseVec* multipliers,
                                              SleqpSparseVec* hessian_direction,
                                              double* step_length,
                                              double* quadratic_merit_value);
@@ -73,6 +74,7 @@ extern "C" {
    * @param[in]      cauchy_quadratic_merit_value The quadratic merit value of the Cauchy step
    * @param[in]      newton_step                  The Newton step
    * @param[in]      newton_hessian_direction     The product of the Hessian with the Newton direction
+   * @param[in]      multipliers                  The Hessian multipliers
    * @param[out]     trial_step                   The trial step
    * @param[out]     step_length                  The computed step length
    * @param[out]     quadratic_merit_value        The quadratic trial value for the trial step
@@ -84,6 +86,7 @@ extern "C" {
                                             const double cauchy_quadratic_merit_value,
                                             SleqpSparseVec* newton_step,
                                             SleqpSparseVec* newton_hessian_step,
+                                            SleqpSparseVec* multipliers,
                                             SleqpSparseVec* trial_step,
                                             double* step_length,
                                             double* trial_quadratic_merit_value);

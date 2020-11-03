@@ -129,11 +129,11 @@ SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
-                                             SleqpSparseVec* cons_vals,
-                                             SleqpSparseVec* multipliers,
-                                             SleqpWorkingSet* working_set,
-                                             double eps)
+SLEQP_RETCODE sleqp_violated_constraint_multipliers(SleqpProblem* problem,
+                                                    SleqpSparseVec* cons_vals,
+                                                    SleqpSparseVec* multipliers,
+                                                    SleqpWorkingSet* working_set,
+                                                    double eps)
 {
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
@@ -141,7 +141,6 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
 
   SLEQP_CALL(sleqp_sparse_vector_clear(multipliers));
 
-  // TODO: use active set cons size instead...
   SLEQP_CALL(sleqp_sparse_vector_reserve(multipliers, problem->num_constraints));
 
   const int dim = v->dim;
@@ -191,6 +190,78 @@ SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
                                           1.));
     }
     else if(sleqp_is_lt(c_val, lb_val, eps))
+    {
+      SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
+                                          idx,
+                                          -1.));
+    }
+
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_violated_variable_multipliers(SleqpProblem* problem,
+                                                  SleqpSparseVec* primal,
+                                                  SleqpSparseVec* multipliers,
+                                                  SleqpWorkingSet* working_set,
+                                                  double eps)
+{
+  SleqpSparseVec* lb = problem->var_lb;
+  SleqpSparseVec* ub = problem->var_ub;
+  SleqpSparseVec* p = primal;
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(multipliers));
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(multipliers, problem->num_variables));
+
+  const int dim = p->dim;
+
+  assert(lb->dim == dim);
+  assert(ub->dim == dim);
+  assert(multipliers->dim == dim);
+
+  int k_p = 0, k_lb = 0, k_ub = 0;
+
+  while(k_p < p->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  {
+    double p_val = 0., lb_val = 0., ub_val = 0.;
+
+    bool valid_p = (k_p < p->nnz);
+    bool valid_lb = (k_lb < lb->nnz);
+    bool valid_ub = (k_ub < ub->nnz);
+
+    int idx = valid_p ? p->indices[k_p] : dim + 1;
+    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
+    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
+
+    if(valid_p && idx == p->indices[k_p])
+    {
+      p_val = p->data[k_p++];
+    }
+
+    if(valid_lb && idx == lb->indices[k_lb])
+    {
+      lb_val = lb->data[k_lb++];
+    }
+
+    if(valid_ub && idx == ub->indices[k_ub])
+    {
+      ub_val = ub->data[k_ub++];
+    }
+
+    if(working_set && sleqp_working_set_get_variable_state(working_set, idx) != SLEQP_INACTIVE)
+    {
+      continue;
+    }
+
+    if(sleqp_is_gt(p_val, ub_val, eps))
+    {
+      SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
+                                          idx,
+                                          1.));
+    }
+    else if(sleqp_is_lt(p_val, lb_val, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,

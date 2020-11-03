@@ -26,11 +26,20 @@ extern "C" {
   SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
                                             double time_limit);
 
+  SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
+                                         SleqpIterate* iterate,
+                                         SleqpAugJacobian* jacobian,
+                                         double trust_radius,
+                                         double penalty_parameter);
+
+  SLEQP_RETCODE newton_initial_direction(SleqpNewtonData* data,
+                                         SleqpSparseVec* initial_direction);
+
+  SLEQP_RETCODE sleqp_newton_compute_multipliers(SleqpNewtonData* data,
+                                                 SleqpSparseVec* multipliers);
+
   SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
-                                          SleqpIterate* iterate,
-                                          SleqpAugJacobian* jacobian,
-                                          double trust_radius,
-                                          double penalty_parameter,
+                                          SleqpSparseVec* multipliers,
                                           SleqpSparseVec* newton_step);
 
   SLEQP_RETCODE sleqp_newton_data_capture(SleqpNewtonData* data);

@@ -29,11 +29,17 @@ extern "C" {
                                                double eps,
                                                bool* in_working_set);
 
-  SLEQP_RETCODE sleqp_get_violated_multipliers(SleqpProblem* problem,
-                                               SleqpSparseVec* cons_vals,
-                                               SleqpSparseVec* multipliers,
-                                               SleqpWorkingSet* working_set,
-                                               double eps);
+  SLEQP_RETCODE sleqp_violated_constraint_multipliers(SleqpProblem* problem,
+                                                      SleqpSparseVec* cons_vals,
+                                                      SleqpSparseVec* multipliers,
+                                                      SleqpWorkingSet* working_set,
+                                                      double eps);
+
+  SLEQP_RETCODE sleqp_violated_variable_multipliers(SleqpProblem* problem,
+                                                    SleqpSparseVec* primal,
+                                                    SleqpSparseVec* multipliers,
+                                                    SleqpWorkingSet* working_set,
+                                                    double eps);
 
   SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
                                       SleqpSparseVec* direction,

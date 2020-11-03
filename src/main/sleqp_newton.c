@@ -19,14 +19,23 @@ struct SleqpNewtonData
   SleqpParams* params;
   SleqpOptions* options;
 
-  SleqpSparseVec* initial_solution;
+  SleqpIterate* iterate;
+  SleqpAugJacobian* jacobian;
+  double trust_radius;
+  double penalty_parameter;
+
+  SleqpSparseVec* initial_direction;
+  SleqpSparseVec* initial_point;
+
   SleqpSparseVec* initial_cons_val;
 
   SleqpSparseVec* lower_diff;
   SleqpSparseVec* upper_diff;
 
-  SleqpSparseVec* violated_multipliers;
-  SleqpSparseVec* multipliers;
+  SleqpSparseVec* violated_variable_multipliers;
+  SleqpSparseVec* violated_constraint_multipliers;
+
+  bool newton_step_in_working_set;
 
   SleqpSparseVec* gradient;
 
@@ -57,7 +66,10 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   data->params = params;
   data->options = options;
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_solution,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_direction,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_point,
                                               problem->num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_cons_val,
@@ -69,9 +81,10 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->upper_diff,
                                               problem->num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->violated_multipliers,
-                                              problem->num_constraints));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->multipliers,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->violated_variable_multipliers,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->violated_constraint_multipliers,
                                               problem->num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->gradient,
@@ -269,19 +282,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE matrix_pop_column(SleqpSparseMatrix* matrix)
-{
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
-
-  assert(num_cols > 0);
-
-  const int last_col = num_cols - 1;
-
-  SLEQP_CALL(sleqp_sparse_matrix_pop_column(matrix, last_col));
-
-  return SLEQP_OKAY;
-}
-
 SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
                                           double time_limit)
 {
@@ -289,13 +289,31 @@ SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
                                         time_limit);
 }
 
-SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
-                                        SleqpIterate* iterate,
-                                        SleqpAugJacobian* jacobian,
-                                        double trust_radius,
-                                        double penalty_parameter,
-                                        SleqpSparseVec* newton_step)
+SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
+                                       SleqpIterate* iterate,
+                                       SleqpAugJacobian* jacobian,
+                                       double trust_radius,
+                                       double penalty_parameter)
 {
+  data->trust_radius = trust_radius;
+  data->penalty_parameter = penalty_parameter;
+
+  {
+    SLEQP_CALL(sleqp_iterate_release(&data->iterate));
+
+    SLEQP_CALL(sleqp_iterate_capture(iterate));
+
+    data->iterate = iterate;
+  }
+
+  {
+    SLEQP_CALL(sleqp_aug_jacobian_release(&data->jacobian));
+
+    SLEQP_CALL(sleqp_aug_jacobian_capture(jacobian));
+
+    data->jacobian = jacobian;
+  }
+
   SleqpProblem* problem = data->problem;
 
   const double eps = sleqp_params_get_eps(data->params);
@@ -305,7 +323,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   SLEQP_CALL(sleqp_aug_jacobian_min_norm_solution(jacobian,
                                                   data->initial_rhs,
-                                                  data->initial_solution));
+                                                  data->initial_direction));
 
 #if !defined(NDEBUG)
 
@@ -315,23 +333,23 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
     SLEQP_CALL(sleqp_direction_in_working_set(problem,
                                               iterate,
-                                              data->initial_solution,
+                                              data->initial_direction,
                                               data->dense_cache,
                                               eps,
                                               &in_working_set));
 
-    sleqp_num_assert_msg(in_working_set,
-                         "Initial Newton direction must respect working set linearization");
+    sleqp_num_assert(in_working_set);
   }
 
 #endif
 
   const double norm_ratio = .8;
-  bool newton_step_in_working_set = true;
+
+  data->newton_step_in_working_set = true;
 
   // rescale min norm solution if required.
   {
-    double unscaled_norm = sleqp_sparse_vector_norm(data->initial_solution);
+    double unscaled_norm = sleqp_sparse_vector_norm(data->initial_direction);
 
     double initial_norm = unscaled_norm;
 
@@ -359,39 +377,29 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
       }
       else
       {
-        newton_step_in_working_set = false;
+        data->newton_step_in_working_set = false;
 
-        SLEQP_CALL(sleqp_sparse_vector_scale(data->initial_solution, alpha));
+        SLEQP_CALL(sleqp_sparse_vector_scale(data->initial_direction, alpha));
 
         // we know that the scaled initial solution
         // has norm equal to norm_ratio * trust_radius
-        trust_radius *= sqrt(1. - norm_ratio * norm_ratio);
+        data->trust_radius *= sqrt(1. - norm_ratio * norm_ratio);
       }
     }
   }
 
+  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_primal(iterate),
+                                     data->initial_direction,
+                                     zero_eps,
+                                     data->initial_point));
+
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
-
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
-  int working_set_size = sleqp_working_set_size(working_set);
 
-  // in either case the only feasible solution is the zero vector
-  if(sleqp_is_zero(trust_radius, zero_eps) || problem->num_variables == working_set_size)
+  // Compute linearized constraint values at initial direction
   {
-    SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_solution, newton_step));
-
-    return SLEQP_OKAY;
-  }
-
-  // compute the EQP multipliers. Given as the sum of the
-  // estimated multipliers and penalties on violated
-  // constraints
-  {
-    // First: Compute linearized constraint values according to initial solution
-
     SLEQP_CALL(sleqp_sparse_matrix_vector_product(cons_jac,
-                                                  data->initial_solution,
+                                                  data->initial_direction,
                                                   data->dense_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_from_raw(data->sparse_cache,
@@ -403,22 +411,87 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                        data->sparse_cache,
                                        eps,
                                        data->initial_cons_val));
-
-    // Second: Compute multipliers for violated constraints
-    SLEQP_CALL(sleqp_get_violated_multipliers(problem,
-                                              data->initial_cons_val,
-                                              data->violated_multipliers,
-                                              working_set,
-                                              zero_eps));
-
-    // Finally: Add the iterate multipliers to the given ones
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_cons_dual(iterate),
-                                              data->violated_multipliers,
-                                              1.,
-                                              penalty_parameter,
-                                              zero_eps,
-                                              data->multipliers));
   }
+
+  // Compute violated multipliers
+  {
+    SLEQP_CALL(sleqp_violated_variable_multipliers(problem,
+                                                   data->initial_point,
+                                                   data->violated_variable_multipliers,
+                                                   working_set,
+                                                   zero_eps));
+
+    SLEQP_CALL(sleqp_violated_constraint_multipliers(problem,
+                                                     data->initial_cons_val,
+                                                     data->violated_constraint_multipliers,
+                                                     working_set,
+                                                     zero_eps));
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE newton_initial_direction(SleqpNewtonData* data,
+                                       SleqpSparseVec* initial_direction)
+{
+  assert(data->iterate);
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_direction, initial_direction));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_newton_compute_multipliers(SleqpNewtonData* data,
+                                               SleqpSparseVec* multipliers)
+{
+  assert(data->iterate);
+
+  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(data->iterate);
+
+  const double zero_eps = sleqp_params_get_zero_eps(data->params);
+
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(cons_dual,
+                                            data->violated_constraint_multipliers,
+                                            1.,
+                                            data->penalty_parameter,
+                                            zero_eps,
+                                            multipliers));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
+                                        SleqpSparseVec* multipliers,
+                                        SleqpSparseVec* newton_step)
+{
+  assert(data->iterate);
+
+  SleqpProblem* problem = data->problem;
+  SleqpIterate* iterate = data->iterate;
+
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
+
+  SleqpAugJacobian* jacobian = data->jacobian;
+
+  const double eps = sleqp_params_get_eps(data->params);
+  const double zero_eps = sleqp_params_get_zero_eps(data->params);
+
+  const double trust_radius = data->trust_radius;
+  const double penalty_parameter = data->penalty_parameter;
+
+  // in this case the only feasible solution is the zero vector
+  if(sleqp_is_zero(trust_radius, zero_eps))
+  {
+    SLEQP_CALL(sleqp_sparse_vector_copy(data->initial_direction, newton_step));
+
+    return SLEQP_OKAY;
+  }
+
+  /*
+  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  int working_set_size = sleqp_working_set_size(working_set);
+  */
 
   // compute the EQP gradient. Given as the sum of the
   // EQP Hessian with the initial solution, the objective
@@ -428,35 +501,44 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
                                     &one,
-                                    data->initial_solution,
-                                    data->multipliers,
+                                    data->initial_direction,
+                                    multipliers,
                                     data->initial_hessian_product));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->initial_hessian_product,
                                        func_grad,
-                                       eps,
-                                       data->sparse_cache));
+                                       zero_eps,
+                                       data->gradient));
 
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(cons_jac,
-                                                        data->multipliers,
-                                                        eps,
+                                                        data->violated_constraint_multipliers,
+                                                        zero_eps,
                                                         data->jacobian_product));
 
-    SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
-                                       data->jacobian_product,
-                                       eps,
-                                       data->gradient));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->gradient,
+                                              data->jacobian_product,
+                                              1.,
+                                              penalty_parameter,
+                                              zero_eps,
+                                              data->sparse_cache));
+
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache,
+                                              data->violated_variable_multipliers,
+                                              1.,
+                                              penalty_parameter,
+                                              zero_eps,
+                                              data->gradient));
   }
 
   SLEQP_CALL(sleqp_tr_solver_solve(data->trust_region_solver,
                                    jacobian,
-                                   data->multipliers,
+                                   multipliers,
                                    data->gradient,
                                    data->sparse_cache,
                                    trust_radius));
 
   SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
-                                     data->initial_solution,
+                                     data->initial_direction,
                                      zero_eps,
                                      newton_step));
 
@@ -467,13 +549,13 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   {
     double direction_dot;
     sleqp_sparse_vector_dot(data->sparse_cache,
-                            data->initial_solution,
+                            data->initial_direction,
                             &direction_dot);
 
     sleqp_assert_is_zero(direction_dot, eps);
   }
 
-  if(newton_step_in_working_set)
+  if(data->newton_step_in_working_set)
   {
     // Direction must be in working set
     bool in_working_set = false;
@@ -485,8 +567,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                               eps,
                                               &in_working_set));
 
-    sleqp_num_assert_msg(in_working_set,
-                         "Newton step must respect working set linearization");
+    sleqp_num_assert(in_working_set);
   }
 
 #endif
@@ -515,14 +596,19 @@ static SLEQP_RETCODE newton_data_free(SleqpNewtonData** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->gradient));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->multipliers));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->violated_multipliers));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->violated_constraint_multipliers));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->violated_variable_multipliers));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->upper_diff));
   SLEQP_CALL(sleqp_sparse_vector_free(&data->lower_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_cons_val));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_solution));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_point));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->initial_direction));
+
+  SLEQP_CALL(sleqp_aug_jacobian_release(&data->jacobian));
+  SLEQP_CALL(sleqp_iterate_release(&data->iterate));
 
   sleqp_free(star);
 
