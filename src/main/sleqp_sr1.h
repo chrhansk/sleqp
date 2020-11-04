@@ -23,7 +23,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
                                     SleqpIterate* old_iterate,
-                                    SleqpIterate* new_iterate);
+                                    SleqpIterate* new_iterate,
+                                    SleqpSparseVec* multipliers);
 
   SLEQP_RETCODE sleqp_sr1_data_hess_prod(SleqpSR1Data* data,
                                          const SleqpSparseVec* direction,

@@ -16,9 +16,6 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling);
 
-  SLEQP_RETCODE sleqp_problem_scaling_set_func(SleqpProblemScaling* problem_scaling,
-                                               SleqpFunc* func);
-
   SLEQP_RETCODE sleqp_problem_scaling_capture(SleqpProblemScaling* scaling);
 
   SLEQP_RETCODE sleqp_problem_scaling_release(SleqpProblemScaling** star);

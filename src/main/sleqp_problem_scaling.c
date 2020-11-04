@@ -198,14 +198,6 @@ SleqpProblem* sleqp_problem_scaling_get_problem(SleqpProblemScaling* problem_sca
   return problem_scaling->scaled_problem;
 }
 
-SLEQP_RETCODE sleqp_problem_scaling_set_func(SleqpProblemScaling* problem_scaling,
-                                            SleqpFunc* func)
-{
-  problem_scaling->func = func;
-
-  return SLEQP_OKAY;
-}
-
 SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling)
 {
   SleqpProblem* problem = problem_scaling->problem;

@@ -25,7 +25,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                      SleqpIterate* old_iterate,
-                                     SleqpIterate* new_iterate);
+                                     SleqpIterate* new_iterate,
+                                     SleqpSparseVec* multipliers);
 
   SLEQP_RETCODE sleqp_bfgs_data_hess_prod(SleqpBFGSData* data,
                                           const SleqpSparseVec* direction,

@@ -465,10 +465,9 @@ SLEQP_RETCODE sr1_block_push(SleqpSR1Data* data,
 
 SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
                                   SleqpIterate* previous_iterate,
-                                  SleqpIterate* current_iterate)
+                                  SleqpIterate* current_iterate,
+                                  SleqpSparseVec* multipliers)
 {
-  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(previous_iterate);
-
   const double eps = sleqp_params_get_eps(data->params);
 
   const int num_blocks = data->num_blocks;
@@ -476,7 +475,7 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
   // Compute gradient difference
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(previous_iterate),
-                                                        cons_dual,
+                                                        multipliers,
                                                         eps,
                                                         data->prod_cache));
 
@@ -488,7 +487,7 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
 
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(current_iterate),
-                                                        cons_dual,
+                                                        multipliers,
                                                         eps,
                                                         data->prod_cache));
 
