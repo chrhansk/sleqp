@@ -156,6 +156,9 @@ extern "C" {
                                  int row,
                                  int col);
 
+  SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
+                                              SleqpSparseMatrix* target);
+
   /**
    * Returns whether all entries of the given matrices are equal to
    * within the specified tolerance

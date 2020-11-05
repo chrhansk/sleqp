@@ -285,6 +285,59 @@ double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
   return NULL;
 }
 
+SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
+                                            SleqpSparseMatrix* target)
+{
+  assert(source->num_rows == target->num_rows);
+  assert(source->num_cols == target->num_cols);
+  assert(sleqp_sparse_matrix_valid(source));
+
+  SLEQP_CALL(sleqp_sparse_matrix_clear(target));
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(target, source->nnz));
+
+  int target_col = 0;
+  int col = 0;
+
+  for(int index = 0; index < source->nnz; ++index)
+  {
+    while(index >= source->cols[col + 1])
+    {
+      ++col;
+    }
+
+    const int row = source->rows[index];
+    const double value = source->data[index];
+
+    if(row < col)
+    {
+      continue;
+    }
+
+    while(target_col < col)
+    {
+      ++target_col;
+      SLEQP_CALL(sleqp_sparse_matrix_push_column(target, target_col));
+    }
+
+    SLEQP_CALL(sleqp_sparse_matrix_push(target,
+                                        row,
+                                        col,
+                                        value));
+  }
+
+  ++target_col;
+
+  while(target_col < target->num_cols)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(target, target_col));
+    ++target_col;
+  }
+
+  assert(sleqp_sparse_matrix_valid(target));
+
+  return SLEQP_OKAY;
+}
+
 bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
                             const SleqpSparseMatrix* second,
                             double eps)

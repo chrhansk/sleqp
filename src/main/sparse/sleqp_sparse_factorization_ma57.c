@@ -97,6 +97,9 @@ static SLEQP_RETCODE ma57_get_error_string(int value, const char** message)
   case MA57_METIS_PACKAGE_MISSING:
     *message = "METIS package missing in MA57";
     break;
+  default:
+    *message = "(unknown error)";
+    break;
   }
 
   return SLEQP_OKAY;
