@@ -193,6 +193,9 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
 
   jacobian->refcount = 1;
   jacobian->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
+
   jacobian->params = params;
 
   jacobian->condition_estimate = -1;
@@ -387,6 +390,8 @@ static SLEQP_RETCODE aug_jacobian_free(SleqpAugJacobian** star)
   SLEQP_CALL(sleqp_sparse_factorization_release(&jacobian->factorization));
 
   sleqp_sparse_matrix_release(&jacobian->augmented_matrix);
+
+  SLEQP_CALL(sleqp_params_release(&jacobian->params));
 
   sleqp_free(star);
 

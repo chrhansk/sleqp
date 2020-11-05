@@ -4,6 +4,8 @@
 
 struct SleqpParams
 {
+  int refcount;
+
   double eps;
   double zero_eps;
 
@@ -52,6 +54,10 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpParams* params = *star;
+
+  *params = (SleqpParams){0};
+
+  params->refcount = 1;
 
   params->zero_eps = ZERO_EPS_DEFAULT;
   params->eps = EPS_DEFAULT;
@@ -236,7 +242,7 @@ SLEQP_RETCODE sleqp_params_set_newton_relative_tolerance(SleqpParams* params,
 }
 
 
-SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
+static SLEQP_RETCODE params_free(SleqpParams** star)
 {
   SleqpParams* params = *star;
 
@@ -246,6 +252,32 @@ SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
   }
 
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_capture(SleqpParams* params)
+{
+  ++params->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_release(SleqpParams** star)
+{
+  SleqpParams* params = *star;
+
+  if(!params)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--params->refcount == 0)
+  {
+    SLEQP_CALL(params_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

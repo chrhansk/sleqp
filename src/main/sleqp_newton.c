@@ -63,7 +63,11 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   data->refcount = 1;
 
   data->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
+
+  SLEQP_CALL(sleqp_options_capture(options));
   data->options = options;
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_direction,
@@ -609,6 +613,9 @@ static SLEQP_RETCODE newton_data_free(SleqpNewtonData** star)
 
   SLEQP_CALL(sleqp_aug_jacobian_release(&data->jacobian));
   SLEQP_CALL(sleqp_iterate_release(&data->iterate));
+
+  SLEQP_CALL(sleqp_options_release(&data->options));
+  SLEQP_CALL(sleqp_params_release(&data->params));
 
   sleqp_free(star);
 

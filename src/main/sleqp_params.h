@@ -63,8 +63,9 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_params_set_newton_relative_tolerance(SleqpParams* params, double value);
 
+  SLEQP_RETCODE sleqp_params_capture(SleqpParams* params);
 
-  SLEQP_RETCODE sleqp_params_free(SleqpParams** star);
+  SLEQP_RETCODE sleqp_params_release(SleqpParams** star);
 
 #ifdef __cplusplus
 }

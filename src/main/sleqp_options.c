@@ -13,6 +13,8 @@
 
 struct SleqpOptions
 {
+  int refcount;
+
   bool perform_newton_step;
   bool perform_soc;
   bool use_quadratic_model;
@@ -28,6 +30,10 @@ SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpOptions* options = *star;
+
+  *options = (SleqpOptions){0};
+
+  options->refcount = 1;
 
   options->perform_newton_step = PERFORM_NEWTON_DEFAULT;
   options->perform_soc = PERFORM_SOC_DEFAULT;
@@ -155,7 +161,7 @@ SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_options_free(SleqpOptions** star)
+SLEQP_RETCODE options_free(SleqpOptions** star)
 {
   SleqpOptions* options = *star;
 
@@ -165,6 +171,32 @@ SLEQP_RETCODE sleqp_options_free(SleqpOptions** star)
   }
 
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_options_capture(SleqpOptions* options)
+{
+  ++options->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_options_release(SleqpOptions** star)
+{
+  SleqpOptions* options = *star;
+
+  if(!options)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--options->refcount == 0)
+  {
+    SLEQP_CALL(options_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

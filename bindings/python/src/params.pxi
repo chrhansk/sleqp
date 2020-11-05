@@ -26,7 +26,7 @@ cdef class Params:
       setattr(self, key, value)
 
   def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_params_free(&self.params))
+    csleqp_call(csleqp.sleqp_params_release(&self.params))
 
   @property
   def zero_eps(self) -> float:

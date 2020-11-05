@@ -361,7 +361,7 @@ void scaling_teardown()
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 
-  ASSERT_CALL(sleqp_params_free(&params));
+  ASSERT_CALL(sleqp_params_release(&params));
 
   quadconsfunc_teardown();
 }

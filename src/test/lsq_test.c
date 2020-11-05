@@ -237,7 +237,7 @@ void rosenbrock_teardown()
 
   sleqp_free(&rosenbrock_func_data);
 
-  ASSERT_CALL(sleqp_params_free(&params));
+  ASSERT_CALL(sleqp_params_release(&params));
 }
 
 START_TEST(test_unconstrained_solve)
@@ -297,7 +297,7 @@ START_TEST(test_unconstrained_solve)
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 
-  ASSERT_CALL(sleqp_options_free(&options));
+  ASSERT_CALL(sleqp_options_release(&options));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
 }

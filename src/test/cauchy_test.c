@@ -251,7 +251,7 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 
-  ASSERT_CALL(sleqp_params_free(&params));
+  ASSERT_CALL(sleqp_params_release(&params));
 }
 END_TEST
 

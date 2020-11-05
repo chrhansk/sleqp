@@ -47,6 +47,8 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
   linesearch->refcount = 1;
 
   linesearch->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
   linesearch->params = params;
 
   SLEQP_CALL(sleqp_merit_data_capture(merit_data));
@@ -615,6 +617,8 @@ static SLEQP_RETCODE linesearch_free(SleqpLineSearchData** star)
   sleqp_free(&linesearch->prod_cache);
 
   SLEQP_CALL(sleqp_merit_data_release(&linesearch->merit_data));
+
+  SLEQP_CALL(sleqp_params_release(&linesearch->params));
 
   sleqp_free(star);
 

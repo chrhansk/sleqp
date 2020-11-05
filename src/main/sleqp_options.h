@@ -52,7 +52,9 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int iterations);
 
-  SLEQP_RETCODE sleqp_options_free(SleqpOptions** star);
+  SLEQP_RETCODE sleqp_options_capture(SleqpOptions* options);
+
+  SLEQP_RETCODE sleqp_options_release(SleqpOptions** star);
 
 #ifdef __cplusplus
 }

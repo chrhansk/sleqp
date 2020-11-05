@@ -103,7 +103,7 @@ START_TEST(test_simplex_solve)
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 
-  ASSERT_CALL(sleqp_params_free(&params));
+  ASSERT_CALL(sleqp_params_release(&params));
 }
 END_TEST
 

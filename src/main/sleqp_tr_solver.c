@@ -58,7 +58,10 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
   *data = (SleqpTRSolver) {0};
 
   data->refcount = 1;
+
   data->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
 
   const int max_newton_iter = sleqp_options_get_max_newton_iterations(options);
@@ -156,6 +159,8 @@ static SLEQP_RETCODE tr_solver_free(SleqpTRSolver** star)
   sleqp_free(&data->trlib_timinig);
   sleqp_free(&data->trlib_fwork);
   sleqp_free(&data->trlib_iwork);
+
+  SLEQP_CALL(sleqp_params_release(&data->params));
 
   sleqp_free(star);
 

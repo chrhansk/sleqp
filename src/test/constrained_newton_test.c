@@ -282,9 +282,9 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 
-  ASSERT_CALL(sleqp_options_free(&options));
+  ASSERT_CALL(sleqp_options_release(&options));
 
-  ASSERT_CALL(sleqp_params_free(&params));
+  ASSERT_CALL(sleqp_params_release(&params));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&expected_step));
 
@@ -298,7 +298,7 @@ void newton_teardown()
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 
-  ASSERT_CALL(sleqp_params_free(&params));
+  ASSERT_CALL(sleqp_params_release(&params));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&linquadfunc_x));
 

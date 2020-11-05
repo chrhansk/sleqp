@@ -19,7 +19,7 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
                                        SleqpFunc* func,
-                                       const SleqpParams* params,
+                                       SleqpParams* params,
                                        int num,
                                        bool damped);
 

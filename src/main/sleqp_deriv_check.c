@@ -46,7 +46,10 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
   int num_variables = problem->num_variables;
 
   data->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
+
   data->iterate = NULL;
 
   // this will be a unit vector
@@ -835,6 +838,8 @@ SLEQP_RETCODE sleqp_deriv_checker_free(SleqpDerivCheckData** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&data->hessian_estimate));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->unit_direction));
+
+  SLEQP_CALL(sleqp_params_release(&data->params));
 
   sleqp_free(star);
 

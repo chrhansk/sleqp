@@ -21,7 +21,7 @@ cdef class Options:
       setattr(self, key, value)
 
   def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_options_free(&self.options))
+    csleqp_call(csleqp.sleqp_options_release(&self.options))
 
   @property
   def perform_newton_step(self) -> bool:

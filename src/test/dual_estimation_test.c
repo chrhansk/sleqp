@@ -114,7 +114,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_problem_free(&problem));
 
-  ASSERT_CALL(sleqp_params_free(&params));
+  ASSERT_CALL(sleqp_params_release(&params));
 }
 END_TEST
 

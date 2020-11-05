@@ -157,6 +157,7 @@ SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   problem_scaling->func = problem->func;
 
+  SLEQP_CALL(sleqp_params_capture(params));
   problem_scaling->params = params;
 
   problem_scaling->scaling_data = scaling_data;
@@ -251,6 +252,8 @@ static SLEQP_RETCODE problem_scaling_free(SleqpProblemScaling** star)
   SLEQP_CALL(sleqp_func_release(&(problem_scaling->scaled_func)));
 
   SLEQP_CALL(sleqp_scaling_release(&problem_scaling->scaling_data));
+
+  SLEQP_CALL(sleqp_params_release(&problem_scaling->params));
 
   sleqp_free(star);
 

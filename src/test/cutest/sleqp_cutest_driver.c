@@ -230,7 +230,7 @@ int sleqp_cutest_run(const char* filename,
 
   SLEQP_CALL(sleqp_solver_release(&solver));
 
-  SLEQP_CALL(sleqp_options_free(&options));
+  SLEQP_CALL(sleqp_options_release(&options));
 
   SLEQP_CALL(sleqp_problem_free(&problem));
 
@@ -250,7 +250,7 @@ int sleqp_cutest_run(const char* filename,
   SLEQP_CALL(sleqp_sparse_vector_free(&var_ub));
   SLEQP_CALL(sleqp_sparse_vector_free(&var_lb));
 
-  SLEQP_CALL(sleqp_params_free(&params));
+  SLEQP_CALL(sleqp_params_release(&params));
 
   sleqp_free(&v);
   sleqp_free(&linear);

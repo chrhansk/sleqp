@@ -6,6 +6,8 @@
 
 struct SleqpSOCData
 {
+  int refcount;
+
   SleqpProblem* problem;
   SleqpParams* params;
 
@@ -24,7 +26,12 @@ SLEQP_RETCODE sleqp_soc_data_create(SleqpSOCData** star,
 
   SleqpSOCData* soc_data = *star;
 
+  *soc_data = (SleqpSOCData){0};
+  soc_data->refcount = 1;
+
   soc_data->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
   soc_data->params = params;
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&soc_data->upper_diff, 0));
@@ -227,7 +234,7 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_soc_data_free(SleqpSOCData** star)
+SLEQP_RETCODE soc_data_free(SleqpSOCData** star)
 {
   SleqpSOCData* soc_data = *star;
 
@@ -241,7 +248,35 @@ SLEQP_RETCODE sleqp_soc_data_free(SleqpSOCData** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->rhs));
 
+  SLEQP_CALL(sleqp_params_release(&soc_data->params));
+
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_soc_data_capture(SleqpSOCData* soc_data)
+{
+  ++soc_data->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_soc_data_release(SleqpSOCData** star)
+{
+  SleqpSOCData* soc_data = *star;
+
+  if(!soc_data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--soc_data->refcount == 0)
+  {
+    SLEQP_CALL(soc_data_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

@@ -43,7 +43,7 @@ struct SleqpBFGSData
 
   int num_variables;
 
-  const SleqpParams* params;
+  SleqpParams* params;
 
   int num_blocks;
   BFGSBlock* blocks;
@@ -233,7 +233,7 @@ static SLEQP_RETCODE bfgs_block_free_at(BFGSBlock* block)
 
 SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
                                      SleqpFunc* func,
-                                     const SleqpParams* params,
+                                     SleqpParams* params,
                                      int num,
                                      bool damped)
 {
@@ -256,6 +256,8 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
   data->num_variables = num_variables;
   data->num_blocks = num_blocks;
   data->func = func;
+
+  SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
 
   sleqp_calloc(&data->blocks, num_blocks);
@@ -740,6 +742,8 @@ static SLEQP_RETCODE bfgs_data_free(SleqpBFGSData** star)
   }
 
   sleqp_free(&data->blocks);
+
+  SLEQP_CALL(sleqp_params_release(&data->params));
 
   sleqp_free(star);
 

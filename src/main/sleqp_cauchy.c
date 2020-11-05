@@ -47,6 +47,8 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
   *data = (SleqpCauchyData){0};
 
   data->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
 
   data->num_lp_variables = problem->num_variables + 2 * problem->num_constraints;
@@ -1033,6 +1035,8 @@ SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
   sleqp_free(&data->var_stats);
 
   SLEQP_CALL(sleqp_iterate_release(&data->iterate));
+
+  SLEQP_CALL(sleqp_params_release(&data->params));
 
   sleqp_free(star);
 

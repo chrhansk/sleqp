@@ -230,6 +230,8 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
 
   data->num_blocks = num_blocks;
   data->num_variables = num_variables;
+
+  SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
 
   sleqp_calloc(&data->blocks, num_blocks);
@@ -760,6 +762,8 @@ static SLEQP_RETCODE sr1_data_free(SleqpSR1Data** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->step_diff)));
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->grad_diff)));
+
+  SLEQP_CALL(sleqp_params_release(&data->params));
 
   sleqp_free(star);
 

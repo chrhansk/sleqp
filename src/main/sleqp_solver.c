@@ -285,7 +285,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
+  SLEQP_CALL(sleqp_params_capture(params));
   solver->params = params;
+
+  SLEQP_CALL(sleqp_options_capture(options));
   solver->options = options;
 
   solver->iteration = 0;
@@ -1788,7 +1791,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_direction));
 
-  SLEQP_CALL(sleqp_soc_data_free(&solver->soc_data));
+  SLEQP_CALL(sleqp_soc_data_release(&solver->soc_data));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->vars_dual_diff));
 
@@ -1837,6 +1840,9 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_iterate_release(&solver->iterate));
 
   SLEQP_CALL(sleqp_deriv_checker_free(&solver->deriv_check));
+
+  SLEQP_CALL(sleqp_options_release(&solver->options));
+  SLEQP_CALL(sleqp_params_release(&solver->params));
 
   SLEQP_CALL(sleqp_timer_free(&solver->elapsed_timer));
 

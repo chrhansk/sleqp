@@ -461,7 +461,7 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_params_set_newton_relative_tolerance(SleqpParams* params, double value)
 
-  SLEQP_RETCODE sleqp_params_free(SleqpParams** star)
+  SLEQP_RETCODE sleqp_params_release(SleqpParams** star)
 
   # Options
 
@@ -503,7 +503,7 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int iterations)
 
-  SLEQP_RETCODE sleqp_options_free(SleqpOptions** star)
+  SLEQP_RETCODE sleqp_options_release(SleqpOptions** star)
 
   # Logging
 

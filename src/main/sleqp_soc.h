@@ -27,7 +27,9 @@ extern "C" {
                                   SleqpIterate* trial_iterate,
                                   SleqpSparseVec* soc_direction);
 
-  SLEQP_RETCODE sleqp_soc_data_free(SleqpSOCData** star);
+  SLEQP_RETCODE sleqp_soc_data_capture(SleqpSOCData* soc_data);
+
+  SLEQP_RETCODE sleqp_soc_data_release(SleqpSOCData** star);
 
 #ifdef __cplusplus
 }
