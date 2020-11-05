@@ -8,7 +8,7 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
-static const bool ma57_verbose = true;
+static const bool ma57_verbose = false;
 
 static const double ma57_size_factor = 1.2;
 

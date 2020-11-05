@@ -7,6 +7,8 @@
 
 #include "sleqp_mem.h"
 
+static const bool ma86_verbose = false;
+
 typedef enum {
 
   MA86_ERROR_ALLOCATION                = -1,
@@ -28,11 +30,11 @@ typedef enum {
 } MA866_STATUS;
 
 typedef enum {
-  MC86_ORDER_APX_MINDEG = 1,
-  MC86_ORDER_MINDEG     = 2,
-  MC86_ORDER_METIS      = 3,
-  MC86_ORDER_MA47       = 4,
-} MC86_ORDER;
+  MC68_ORDER_APX_MINDEG = 1,
+  MC68_ORDER_MINDEG     = 2,
+  MC68_ORDER_METIS      = 3,
+  MC68_ORDER_MA47       = 4,
+} MC68_ORDER;
 
 static SLEQP_RETCODE ma86_get_error_string(int value, const char** message)
 {
@@ -43,7 +45,7 @@ static SLEQP_RETCODE ma86_get_error_string(int value, const char** message)
     *message = "Allocation error";
     break;
   case MA86_ERROR_INVALID_ELIMINATION_ORDER:
-    *message = "Error in user-specified elimination error";
+    *message = "Error in user-specified elimination order";
     break;
   case MA86_ERROR_SINGULAR_MATRIX:
     *message = "Matrix is singular";
@@ -52,7 +54,7 @@ static SLEQP_RETCODE ma86_get_error_string(int value, const char** message)
     *message = "Error in size of array";
     break;
   case MA86_ERROR_INVALID_DATA:
-    *message = "Infinities found in factorization";
+    *message = "Infinities found in matrix data";
     break;
   case MA86_ERROR_JOB_OUT_OF_RANGE:
     *message = "Job is out of range";
@@ -107,7 +109,12 @@ static SLEQP_RETCODE ma86_get_error_string(int value, const char** message)
                       ma86_error_string,                                 \
                       __func__);                                         \
                                                                          \
-      return SLEQP_ILLEGAL_ARGUMENT;                                     \
+      if(ma86_status == MA86_ERROR_ALLOCATION)                           \
+      {                                                                  \
+        return SLEQP_NOMEM;                                              \
+      }                                                                  \
+                                                                         \
+      return SLEQP_INTERNAL_ERROR;                                       \
     }                                                                    \
     else                                                                 \
     {                                                                    \
@@ -153,6 +160,15 @@ static SLEQP_RETCODE ma86_data_create(MA86Data** star)
   // error out otherwise
   ma86_data->control.action = 0;
 
+  if(ma86_verbose)
+  {
+    ma86_data->control.diagnostics_level = 2;
+  }
+  else
+  {
+    ma86_data->control.diagnostics_level = 0;
+  }
+
   mc68_default_control(&(ma86_data->control_c));
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&(ma86_data->matrix), 1, 1, 0));
@@ -191,7 +207,7 @@ static SLEQP_RETCODE ma86_data_set_matrix(void* factorization_data,
   int* rows = sleqp_sparse_matrix_get_rows(ma86_data->matrix);
   double* data = sleqp_sparse_matrix_get_data(ma86_data->matrix);
 
-  mc68_order(MC86_ORDER_APX_MINDEG,
+  mc68_order(MC68_ORDER_APX_MINDEG,
              dim,
              cols,
              rows,
