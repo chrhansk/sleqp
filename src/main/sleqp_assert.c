@@ -1,5 +1,6 @@
 #include "sleqp_assert.h"
 
+#include <assert.h>
 #include <stdarg.h>
 
 #include "sleqp_log.h"
@@ -16,6 +17,8 @@ void sleqp_log_assert_fail(const char *assertion,
                   line,
                   function,
                   assertion);
+
+  assert(false);
 }
 
 void sleqp_log_assert_fail_msg(const char *file,
@@ -37,4 +40,6 @@ void sleqp_log_assert_fail_msg(const char *file,
                   line,
                   function,
                   message_buf);
+
+  assert(false);
 }

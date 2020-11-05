@@ -64,140 +64,140 @@ extern "C" {
 #define sleqp_num_assert(expr)                  \
   sleqp_assert(expr)
 
-#define sleqp_num_assert_msg(expr, format, args...)     \
+#define sleqp_num_assert_msg(expr, format, args...) \
   sleqp_assert_msg(expr, format, args)
 
-#define sleqp_assert_is_eq(x, y, eps)                                     \
-  do                                                                      \
-  {                                                                       \
-    if(!sleqp_is_eq(x, y, eps))                                           \
-    {                                                                     \
-      sleqp_log_assert_fail_msg(__FILE__,                                 \
-                                __LINE__,                                 \
-                                __PRETTY_FUNCTION__,                      \
-                                "%s (= %f) == %s (= %f) [tolerance: %f]", \
-                                #x,                                       \
-                                x,                                        \
-                                #y,                                       \
-                                y,                                        \
-                                eps);                                     \
-    }                                                                     \
+#define sleqp_assert_is_eq(x, y, eps)                                              \
+  do                                                                               \
+  {                                                                                \
+    if(!sleqp_is_eq(x, y, eps))                                                    \
+    {                                                                              \
+      sleqp_log_assert_fail_msg(__FILE__,                                          \
+                                __LINE__,                                          \
+                                __PRETTY_FUNCTION__,                               \
+                                "%s (= %.14f) == %s (= %.14f) [tolerance: %.14f]", \
+                                #x,                                                \
+                                x,                                                 \
+                                #y,                                                \
+                                y,                                                 \
+                                eps);                                              \
+    }                                                                              \
   } while(false)
 
-#define sleqp_assert_is_lt(x, y, eps)                                     \
-  do                                                                      \
-  {                                                                       \
-    if(!sleqp_is_lt(x, y, eps))                                           \
-    {                                                                     \
-      sleqp_log_assert_fail_msg(__FILE__,                                 \
-                                __LINE__,                                 \
-                                __PRETTY_FUNCTION__,                      \
-                                "%s (= %f) < %s (= %f) [tolerance: %f]",  \
-                                #x,                                       \
-                                x,                                        \
-                                #y,                                       \
-                                y,                                        \
-                                eps);                                     \
-    }                                                                     \
+#define sleqp_assert_is_lt(x, y, eps)                                              \
+  do                                                                               \
+  {                                                                                \
+    if(!sleqp_is_lt(x, y, eps))                                                    \
+    {                                                                              \
+      sleqp_log_assert_fail_msg(__FILE__,                                          \
+                                __LINE__,                                          \
+                                __PRETTY_FUNCTION__,                               \
+                                "%s (= %.14f) < %s (= %.14f) [tolerance: %.14f]",  \
+                                #x,                                                \
+                                x,                                                 \
+                                #y,                                                \
+                                y,                                                 \
+                                eps);                                              \
+    }                                                                              \
   } while(false)
 
-#define sleqp_assert_is_gt(x, y, eps)                                     \
-  do                                                                      \
-  {                                                                       \
-    if(!sleqp_is_gt(x, y, eps))                                           \
-    {                                                                     \
-      sleqp_log_assert_fail_msg(__FILE__,                                 \
-                                __LINE__,                                 \
-                                __PRETTY_FUNCTION__,                      \
-                                "%s (= %f) > %s (= %f) [tolerance: %f]",  \
-                                #x,                                       \
-                                x,                                        \
-                                #y,                                       \
-                                y,                                        \
-                                eps);                                     \
-    }                                                                     \
-  } while(false)
-
-
-#define sleqp_assert_is_leq(x, y, eps)                                    \
-  do                                                                      \
-  {                                                                       \
-    if(!sleqp_is_leq(x, y, eps))                                          \
-    {                                                                     \
-      sleqp_log_assert_fail_msg(__FILE__,                                 \
-                                __LINE__,                                 \
-                                __PRETTY_FUNCTION__,                      \
-                                "%s (= %f) <= %s (= %f) [tolerance: %f]", \
-                                #x,                                       \
-                                x,                                        \
-                                #y,                                       \
-                                y,                                        \
-                                eps);                                     \
-    }                                                                     \
-  } while(false)
-
-#define sleqp_assert_is_geq(x, y, eps)                                    \
-  do                                                                      \
-  {                                                                       \
-    if(!sleqp_is_geq(x, y, eps))                                          \
-    {                                                                     \
-      sleqp_log_assert_fail_msg(__FILE__,                                 \
-                                __LINE__,                                 \
-                                __PRETTY_FUNCTION__,                      \
-                                "%s (= %f) >= %s (= %f) [tolerance: %f]", \
-                                #x,                                       \
-                                x,                                        \
-                                #y,                                       \
-                                y,                                        \
-                                eps);                                     \
-    }                                                                     \
+#define sleqp_assert_is_gt(x, y, eps)                                              \
+  do                                                                               \
+  {                                                                                \
+    if(!sleqp_is_gt(x, y, eps))                                                    \
+    {                                                                              \
+      sleqp_log_assert_fail_msg(__FILE__,                                          \
+                                __LINE__,                                          \
+                                __PRETTY_FUNCTION__,                               \
+                                "%s (= %.14f) > %s (= %.14f) [tolerance: %.14f]",  \
+                                #x,                                                \
+                                x,                                                 \
+                                #y,                                                \
+                                y,                                                 \
+                                eps);                                              \
+    }                                                                              \
   } while(false)
 
 
-#define sleqp_assert_is_neg(x, eps)                                       \
-  do                                                                      \
-  {                                                                       \
-    if(!sleqp_is_neg(x, eps))                                             \
-    {                                                                     \
-      sleqp_log_assert_fail_msg(__FILE__,                                 \
-                                __LINE__,                                 \
-                                __PRETTY_FUNCTION__,                      \
-                                "%s (= %f) < 0 [tolerance: %f]",          \
-                                #x,                                       \
-                                x,                                        \
-                                eps);                                     \
-    }                                                                     \
+#define sleqp_assert_is_leq(x, y, eps)                                             \
+  do                                                                               \
+  {                                                                                \
+    if(!sleqp_is_leq(x, y, eps))                                                   \
+    {                                                                              \
+      sleqp_log_assert_fail_msg(__FILE__,                                          \
+                                __LINE__,                                          \
+                                __PRETTY_FUNCTION__,                               \
+                                "%s (= %.14f) <= %s (= %.14f) [tolerance: %.14f]", \
+                                #x,                                                \
+                                x,                                                 \
+                                #y,                                                \
+                                y,                                                 \
+                                eps);                                              \
+    }                                                                              \
+  } while(false)
+
+#define sleqp_assert_is_geq(x, y, eps)                                             \
+  do                                                                               \
+  {                                                                                \
+    if(!sleqp_is_geq(x, y, eps))                                                   \
+    {                                                                              \
+      sleqp_log_assert_fail_msg(__FILE__,                                          \
+                                __LINE__,                                          \
+                                __PRETTY_FUNCTION__,                               \
+                                "%s (= %.14f) >= %s (= %.14f) [tolerance: %.14f]", \
+                                #x,                                                \
+                                x,                                                 \
+                                #y,                                                \
+                                y,                                                 \
+                                eps);                                              \
+    }                                                                              \
   } while(false)
 
 
-#define sleqp_assert_is_pos(x, eps)                                       \
-  do                                                                      \
-  {                                                                       \
-    if(!sleqp_is_pos(x, eps))                                             \
-    {                                                                     \
-      sleqp_log_assert_fail_msg(__FILE__,                                 \
-                                __LINE__,                                 \
-                                __PRETTY_FUNCTION__,                      \
-                                "%s (= %f) > 0 [tolerance: %f]",          \
-                                #x,                                       \
-                                x,                                        \
-                                eps);                                     \
-    }                                                                     \
+#define sleqp_assert_is_neg(x, eps)                                                \
+  do                                                                               \
+  {                                                                                \
+    if(!sleqp_is_neg(x, eps))                                                      \
+    {                                                                              \
+      sleqp_log_assert_fail_msg(__FILE__,                                          \
+                                __LINE__,                                          \
+                                __PRETTY_FUNCTION__,                               \
+                                "%s (= %.14f) < 0 [tolerance: %.14f]",             \
+                                #x,                                                \
+                                x,                                                 \
+                                eps);                                              \
+    }                                                                              \
   } while(false)
 
-#define sleqp_assert_is_zero(x, eps)                                      \
-  do                                                                      \
-  {                                                                       \
-    if(!sleqp_is_zero(x, eps))                                            \
-    {                                                                     \
-      sleqp_log_assert_fail_msg(__FILE__,                                 \
-                                __LINE__,                                 \
-                                __PRETTY_FUNCTION__,                      \
-                                "%s (= %f) = 0 [tolerance: %f]",          \
-                                #x,                                       \
-                                x,                                        \
-                                eps);                                     \
-    }                                                                     \
+
+#define sleqp_assert_is_pos(x, eps)                                                \
+  do                                                                               \
+  {                                                                                \
+    if(!sleqp_is_pos(x, eps))                                                      \
+    {                                                                              \
+      sleqp_log_assert_fail_msg(__FILE__,                                          \
+                                __LINE__,                                          \
+                                __PRETTY_FUNCTION__,                               \
+                                "%s (= %.14f) > 0 [tolerance: %.14f]",             \
+                                #x,                                                \
+                                x,                                                 \
+                                eps);                                              \
+    }                                                                              \
+  } while(false)
+
+#define sleqp_assert_is_zero(x, eps)                                               \
+  do                                                                               \
+  {                                                                                \
+    if(!sleqp_is_zero(x, eps))                                                     \
+    {                                                                              \
+      sleqp_log_assert_fail_msg(__FILE__,                                          \
+                                __LINE__,                                          \
+                                __PRETTY_FUNCTION__,                               \
+                                "%s (= %.14f) = 0 [tolerance: %.14f]",             \
+                                #x,                                                \
+                                x,                                                 \
+                                eps);                                              \
+    }                                                                              \
   } while(false)
 
 #endif // SLEQP_ENABLE_NUM_ASSERTS
