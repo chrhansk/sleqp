@@ -36,6 +36,9 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
 
     func = (<object> func_data)
 
+    num_variables = func.num_variables
+    num_constraints = func.num_constraints
+
     if func_val:
       result = func.func_val()
       assert result is not None, "func_val() returned 'None'"
@@ -44,16 +47,19 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
     if func_grad:
       grad_array = func.func_grad()
       assert grad_array is not None, "func_grad() returned 'None'"
+      assert grad_array.shape == (num_variables,)
       csleqp_call(array_to_sleqp_sparse_vec(grad_array, func_grad))
 
     if cons_vals:
       cons_array = func.cons_vals()
       assert cons_array is not None, "cons_vals() returned 'None'"
+      assert cons_array.shape == (num_constraints,)
       csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
 
     if cons_jac:
       cons_jac_mat = func.cons_jac()
       assert cons_jac_mat is not None, "cons_jac() returned 'None'"
+      assert cons_jac_mat.shape == (num_constraints, num_variables,)
       csleqp_call(matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac))
 
 
