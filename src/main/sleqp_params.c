@@ -19,7 +19,11 @@ struct SleqpParams
   double linesearch_eta;
   double linesearch_cutoff;
 
-  double optimality_tol;
+  double feasibility_tol;
+
+  double slackness_tol;
+
+  double stationarity_tol;
 
   double accepted_reduction;
 
@@ -41,7 +45,9 @@ struct SleqpParams
 #define LINESEARCH_ETA_DEFAULT 1e-4
 #define LINESEARCH_CUTOFF_DEFAULT 1e-20
 
-#define OPTIMALITY_TOL_DEFAULT 1e-6
+#define FEASIBILITY_TOL_DEFAULT 1e-6
+#define SLACKNESS_TOL_DEFAULT 1e-6
+#define STATIONARITY_TOL_DEFAULT 1e-6
 
 #define ACCEPTED_REDUCTION_DEFAULT 1e-8
 
@@ -72,7 +78,9 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
   params->linesearch_eta = LINESEARCH_ETA_DEFAULT;
   params->linesearch_cutoff = LINESEARCH_CUTOFF_DEFAULT;
 
-  params->optimality_tol = OPTIMALITY_TOL_DEFAULT;
+  params->feasibility_tol = FEASIBILITY_TOL_DEFAULT;
+  params->slackness_tol = SLACKNESS_TOL_DEFAULT;
+  params->stationarity_tol = STATIONARITY_TOL_DEFAULT;
 
   params->accepted_reduction = ACCEPTED_REDUCTION_DEFAULT;
 
@@ -128,9 +136,19 @@ double sleqp_params_get_linesearch_cutoff(const SleqpParams* params)
   return params->linesearch_cutoff;
 }
 
-double sleqp_params_get_optimality_tolerance(const SleqpParams* params)
+double sleqp_params_get_feasibility_tolerance(const SleqpParams* params)
 {
-  return params->optimality_tol;
+  return params->feasibility_tol;
+}
+
+double sleqp_params_get_slackness_tolerance(const SleqpParams* params)
+{
+  return params->slackness_tol;
+}
+
+double sleqp_params_get_stationarity_tolerance(const SleqpParams* params)
+{
+  return params->stationarity_tol;
 }
 
 double sleqp_params_get_accepted_reduction(const SleqpParams* params)
@@ -212,9 +230,23 @@ SLEQP_RETCODE sleqp_params_set_linesearch_cutoff(SleqpParams* params, double val
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_params_set_optimality_tolerance(SleqpParams* params, double value)
+SLEQP_RETCODE sleqp_params_set_feasibility_tolerance(SleqpParams* params, double value)
 {
-  params->optimality_tol = value;
+  params->feasibility_tol = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_slackness_tolerance(SleqpParams* params, double value)
+{
+  params->slackness_tol = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_params_set_stationarity_tolerance(SleqpParams* params, double value)
+{
+  params->stationarity_tol = value;
 
   return SLEQP_OKAY;
 }

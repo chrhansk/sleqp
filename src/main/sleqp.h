@@ -14,6 +14,7 @@
 #include "sleqp_defs.h"
 #include "sleqp_deriv_check.h"
 #include "sleqp_dual_estimation.h"
+#include "sleqp_feas.h"
 #include "sleqp_func.h"
 #include "sleqp_hess_struct.h"
 #include "sleqp_iterate.h"

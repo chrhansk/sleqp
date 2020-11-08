@@ -11,6 +11,7 @@ set(COMMON_SRC
   sleqp_cmp.c
   sleqp_deriv_check.c
   sleqp_dual_estimation.c
+  sleqp_feas.c
   sleqp_func.c
   sleqp_iterate.c
   sleqp_params.c

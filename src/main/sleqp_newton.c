@@ -5,6 +5,7 @@
 
 #include "sleqp_assert.h"
 #include "sleqp_cmp.h"
+#include "sleqp_feas.h"
 #include "sleqp_iterate.h"
 #include "sleqp_log.h"
 #include "sleqp_mem.h"
@@ -322,6 +323,7 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
 
   const double eps = sleqp_params_get_eps(data->params);
   const double zero_eps = sleqp_params_get_zero_eps(data->params);
+  const double feas_eps = sleqp_params_get_feasibility_tolerance(data->params);
 
   SLEQP_CALL(get_initial_rhs(data, iterate, jacobian));
 
@@ -423,13 +425,13 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
                                                    data->initial_point,
                                                    data->violated_variable_multipliers,
                                                    working_set,
-                                                   zero_eps));
+                                                   feas_eps));
 
     SLEQP_CALL(sleqp_violated_constraint_multipliers(problem,
                                                      data->initial_cons_val,
                                                      data->violated_constraint_multipliers,
                                                      working_set,
-                                                     zero_eps));
+                                                     feas_eps));
   }
 
   return SLEQP_OKAY;

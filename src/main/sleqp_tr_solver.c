@@ -3,6 +3,7 @@
 #include <math.h>
 #include <trlib.h>
 
+#include "sleqp_assert.h"
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
@@ -303,8 +304,7 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
   SleqpProblem* problem = data->problem;
   SleqpFunc* func = problem->func;
 
-  const double eps = sleqp_params_get_eps(data->params);
-  const double opt_eps = sleqp_params_get_optimality_tolerance(data->params);
+  const double eps = sleqp_params_get_stationarity_tolerance(data->params);
   const double zero_eps = sleqp_params_get_zero_eps(data->params);
   const double one = 1.;
 
@@ -330,7 +330,7 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
 
   if(bdry_sol)
   {
-    if(sleqp_is_zero(vnorm, opt_eps))
+    if(sleqp_is_zero(vnorm, eps))
     {
       return SLEQP_OKAY;
     }
@@ -345,7 +345,7 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
 
     assert(snorm > 0.);
 
-    if(!sleqp_is_eq(dot, vnorm*snorm, opt_eps))
+    if(!sleqp_is_eq(dot, vnorm*snorm, eps))
     {
       (*is_optimal) = false;
     }
@@ -353,7 +353,7 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
   }
   else
   {
-    if(!sleqp_is_zero(vnorm, opt_eps))
+    if(!sleqp_is_zero(vnorm, eps))
     {
       (*is_optimal) = false;
     }
@@ -892,7 +892,7 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
                                 converged_bdry,
                                 &tr_subproblem_is_optimal));
 
-    assert(tr_subproblem_is_optimal);
+    sleqp_num_assert(tr_subproblem_is_optimal);
   }
 
   // TODO: Choose appropriate tolerance

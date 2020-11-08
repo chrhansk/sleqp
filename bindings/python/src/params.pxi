@@ -17,7 +17,9 @@ cdef class Params:
                   'linesearch_tau',
                   'linesearch_eta',
                   'linesearch_cutoff',
-                  'optimality_tolerance',
+                  'feasibility_tolerance',
+                  'slackness_tolerance',
+                  'stationarity_tolerance',
                   'accepted_reduction',
                   'deadpoint_bound',
                   'newton_relative_tolerance']
@@ -65,8 +67,16 @@ cdef class Params:
     return csleqp.sleqp_params_get_linesearch_cutoff(self.params)
 
   @property
-  def optimality_tolerance(self) -> float:
-    return csleqp.sleqp_params_get_optimality_tolerance(self.params)
+  def feasibility_tolerance(self) -> float:
+    return csleqp.sleqp_params_get_feasibility_tolerance(self.params)
+
+  @property
+  def slackness_tolerance(self) -> float:
+    return csleqp.sleqp_params_get_slackness_tolerance(self.params)
+
+  @property
+  def stationarity_tolerance(self) -> float:
+    return csleqp.sleqp_params_get_stationarity_tolerance(self.params)
 
   @property
   def accepted_reduction(self) -> float:
@@ -116,9 +126,17 @@ cdef class Params:
   def linesearch_cutoff(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set_linesearch_cutoff(self.params, value))
 
-  @optimality_tolerance.setter
-  def optimality_tolerance(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set_optimality_tolerance(self.params, value))
+  @feasibility_tolerance.setter
+  def feasibility_tolerance(self, value: float) -> None:
+    csleqp_call(csleqp.sleqp_params_set_feasibility_tolerance(self.params, value))
+
+  @slackness_tolerance.setter
+  def slackness_tolerance(self, value: float) -> None:
+    csleqp_call(csleqp.sleqp_params_set_slackness_tolerance(self.params, value))
+
+  @stationarity_tolerance.setter
+  def stationarity_tolerance(self, value: float) -> None:
+    csleqp_call(csleqp.sleqp_params_set_stationarity_tolerance(self.params, value))
 
   @accepted_reduction.setter
   def accepted_reduction(self, value: float) -> None:

@@ -430,7 +430,11 @@ cdef extern from "sleqp.h":
   double sleqp_params_get_linesearch_eta(const SleqpParams* params)
   double sleqp_params_get_linesearch_cutoff(const SleqpParams* params)
 
-  double sleqp_params_get_optimality_tolerance(const SleqpParams* params)
+  double sleqp_params_get_feasibility_tolerance(const SleqpParams* params)
+
+  double sleqp_params_get_slackness_tolerance(const SleqpParams* params)
+
+  double sleqp_params_get_stationarity_tolerance(const SleqpParams* params)
 
   double sleqp_params_get_accepted_reduction(const SleqpParams* params)
 
@@ -453,7 +457,11 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_params_set_linesearch_eta(SleqpParams* params, double value)
   SLEQP_RETCODE sleqp_params_set_linesearch_cutoff(SleqpParams* params, double value)
 
-  SLEQP_RETCODE sleqp_params_set_optimality_tolerance(SleqpParams* params, double value)
+  SLEQP_RETCODE sleqp_params_set_feasibility_tolerance(SleqpParams* params, double value)
+
+  SLEQP_RETCODE sleqp_params_set_slackness_tolerance(SleqpParams* params, double value)
+
+  SLEQP_RETCODE sleqp_params_set_stationarity_tolerance(SleqpParams* params, double value)
 
   SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double value)
 

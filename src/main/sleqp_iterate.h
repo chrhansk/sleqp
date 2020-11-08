@@ -74,37 +74,41 @@ extern "C" {
    */
   SleqpSparseVec* sleqp_iterate_get_vars_dual(SleqpIterate* iterate);
 
-  double sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
-                                          SleqpProblem* problem);
+  SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
+                                                 SleqpProblem* problem,
+                                                 double* slackness_residuum);
 
-  double sleqp_iterate_feasibility_residuum(SleqpIterate* iterate,
-                                            SleqpProblem* problem);
+  SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpIterate* iterate,
+                                                   SleqpProblem* problem,
+                                                   double feas_eps,
+                                                   double* feasibility_residuum);
 
-  double sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
-                                             SleqpProblem* problem,
-                                             double* cache);
+  SLEQP_RETCODE sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
+                                                    SleqpProblem* problem,
+                                                    double* cache,
+                                                    double* stationarity_residuum);
 
   bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
                                  double feasibility_residuum,
-                                 double tolerance);
+                                 double feasibility_tolerance);
 
   bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
+                                SleqpParams* params,
                                 double feasibility_residuum,
                                 double slackness_residuum,
-                                double stationarity_residuum,
-                                double tolerance);
+                                double stationarity_residuum);
 
   SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
                                                        SleqpProblem* problem,
-                                                       double tolerance,
                                                        int* violated_constraints,
-                                                       int* num_violated_constraints);
+                                                       int* num_violated_constraints,
+                                                       double feas_eps);
 
   SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
                                    SleqpIterate* target);
 
   SLEQP_RETCODE sleqp_iterate_capture(SleqpIterate* iterate);
-  
+
   SLEQP_RETCODE sleqp_iterate_release(SleqpIterate** star);
 
 

@@ -1,6 +1,7 @@
 #include "sleqp_linesearch.h"
 
 #include "sleqp_assert.h"
+#include "sleqp_feas.h"
 
 #define LINESEARCH_MAX_IT 10000
 
@@ -186,9 +187,10 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
       double total_violation;
 
-      SLEQP_CALL(sleqp_get_total_violation(problem,
-                                           linesearch->combined_cons_val,
-                                           &total_violation));
+      SLEQP_CALL(sleqp_violation_one_norm(problem,
+                                          linesearch->combined_cons_val,
+                                          zero_eps,
+                                          &total_violation));
 
       linear_merit_value += penalty_parameter * total_violation;
     }
@@ -493,9 +495,10 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
       double total_violation;
 
-      SLEQP_CALL(sleqp_get_total_violation(problem,
-                                           linesearch->combined_cons_val,
-                                           &total_violation));
+      SLEQP_CALL(sleqp_violation_one_norm(problem,
+                                          linesearch->combined_cons_val,
+                                          zero_eps,
+                                          &total_violation));
 
       linear_merit_value += penalty_parameter * total_violation;
     }
