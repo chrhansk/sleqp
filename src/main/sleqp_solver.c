@@ -1544,7 +1544,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_violation_values(solver->unscaled_problem,
                                       solver->unscaled_iterate,
-                                      eps,
+                                      zero_eps,
                                       solver->unscaled_violation));
   }
   else

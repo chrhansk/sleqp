@@ -111,6 +111,26 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
   const double eps = sleqp_params_get_eps(linesearch->params);
   const double zero_eps = sleqp_params_get_zero_eps(linesearch->params);
 
+#if !defined(NDEBUG)
+
+  // Check Hessian product
+  {
+    double func_dual = 1.;
+
+    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
+                                    &func_dual,
+                                    direction,
+                                    multipliers,
+                                    linesearch->test_direction));
+
+    sleqp_num_assert(sleqp_sparse_vector_eq(hessian_direction,
+                                            linesearch->test_direction,
+                                            eps));
+
+  }
+
+#endif
+
   SleqpIterate* iterate = linesearch->iterate;
   const double penalty_parameter = linesearch->penalty_parameter;
   const double trust_radius = linesearch->trust_radius;

@@ -1,6 +1,7 @@
 #include "sleqp_merit.h"
 
 #include "sleqp_cmp.h"
+#include "sleqp_feas.h"
 #include "sleqp_mem.h"
 #include "sleqp_util.h"
 
@@ -15,21 +16,13 @@ struct SleqpMeritData
   int cache_size;
 
   SleqpSparseVec* jac_dot_sparse;
-  SleqpSparseVec* lin_jac_vals;
+  SleqpSparseVec* combined_cons_val;
 
   SleqpSparseVec* multipliers;
   SleqpSparseVec* sparse_cache;
 
   SleqpFunc* func;
 };
-
-static void reset_cache(double* values, int size)
-{
-  for(int i = 0; i < size; ++i)
-  {
-    values[i] = 0.;
-  }
-}
 
 SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
                                       SleqpProblem* problem,
@@ -55,7 +48,7 @@ SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->jac_dot_sparse,
                                               problem->num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->lin_jac_vals,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->combined_cons_val,
                                               problem->num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->multipliers,
@@ -141,7 +134,6 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
 {
   SleqpProblem* problem = merit_data->problem;
 
-  SleqpSparseVec* lin = merit_data->lin_jac_vals;
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
 
@@ -155,8 +147,6 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
 
   (*merit_value) = sleqp_iterate_get_func_val(iterate) + objective_dot;
 
-  reset_cache(merit_data->dense_cache, merit_data->cache_size);
-
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_get_cons_jac(iterate),
                                                 direction,
                                                 merit_data->dense_cache));
@@ -169,60 +159,16 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
   SLEQP_CALL(sleqp_sparse_vector_add(merit_data->jac_dot_sparse,
                                      sleqp_iterate_get_cons_val(iterate),
                                      zero_eps,
-                                     lin));
+                                     merit_data->combined_cons_val));
 
-  int k_l = 0, k_lb = 0, k_ub = 0;
+  double total_violation;
 
-  while(k_l < lin->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
-  {
-    int i = lin->dim + 1;
+  SLEQP_CALL(sleqp_violation_one_norm(problem,
+                                      merit_data->combined_cons_val,
+                                      zero_eps,
+                                      &total_violation));
 
-    bool valid_lb = (k_lb < lb->nnz);
-    bool valid_ub = (k_ub < ub->nnz);
-    bool valid_lin = (k_l < lin->nnz);
-
-    if(valid_lb)
-    {
-      i = SLEQP_MIN(i, lb->indices[k_lb]);
-    }
-
-    if(valid_ub)
-    {
-      i = SLEQP_MIN(i, ub->indices[k_ub]);
-    }
-
-    if(valid_lin)
-    {
-      i = SLEQP_MIN(i, lin->indices[k_l]);
-    }
-
-    valid_lb = valid_lb && lb->indices[k_lb] == i;
-    valid_ub = valid_ub && ub->indices[k_ub] == i;
-    valid_lin = valid_lin && lin->indices[k_l] == i;
-
-    double val_lb = valid_lb ? lb->data[k_lb] : 0;
-    double val_ub = valid_ub ? ub->data[k_ub] : 0;
-    double val_lin = valid_lin ? lin->data[k_l] : 0;
-
-
-    *merit_value += penalty_parameter * SLEQP_MAX(val_lin - val_ub, 0);
-    *merit_value += penalty_parameter * SLEQP_MAX(val_lb - val_lin, 0);
-
-    if(valid_lb)
-    {
-      ++k_lb;
-    }
-
-    if(valid_ub)
-    {
-      ++k_ub;
-    }
-
-    if(valid_lin)
-    {
-      ++k_l;
-    }
-  }
+  (*merit_value) += penalty_parameter * total_violation;
 
   return SLEQP_OKAY;
 }
@@ -271,7 +217,7 @@ static SLEQP_RETCODE merit_data_free(SleqpMeritData** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->multipliers));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->lin_jac_vals));
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->combined_cons_val));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->jac_dot_sparse));
 

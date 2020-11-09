@@ -228,9 +228,9 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
 
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
-  SleqpSparseVec* v = sleqp_iterate_get_cons_val(iterate);
+  SleqpSparseVec* c = sleqp_iterate_get_cons_val(iterate);
 
-  const int dim = v->dim;
+  const int dim = c->dim;
 
   assert(dim == num_constraints);
   assert(dim == lb->dim);
@@ -238,7 +238,7 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
   assert(dim == violation->dim);
 
   {
-    int max_size = lb->nnz + ub->nnz + v->nnz;
+    int max_size = lb->nnz + ub->nnz + c->nnz;
     max_size = SLEQP_MIN(max_size, num_constraints);
 
     SLEQP_CALL(sleqp_sparse_vector_clear(violation));
@@ -247,21 +247,21 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
 
   int k_c = 0, k_lb = 0, k_ub = 0;
 
-  while(k_c < v->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  while(k_c < c->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
   {
     double c_val = 0., lb_val = 0., ub_val = 0.;
 
-    bool valid_v = (k_c < v->nnz);
+    bool valid_c = (k_c < c->nnz);
     bool valid_lb = (k_lb < lb->nnz);
     bool valid_ub = (k_ub < ub->nnz);
 
-    int idx = valid_v ? v->indices[k_c] : dim + 1;
+    int idx = valid_c ? c->indices[k_c] : dim + 1;
     idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
     idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
 
-    if(valid_v && idx == v->indices[k_c])
+    if(valid_c && idx == c->indices[k_c])
     {
-      c_val = v->data[k_c++];
+      c_val = c->data[k_c++];
     }
 
     if(valid_lb && idx == lb->indices[k_lb])
@@ -304,9 +304,9 @@ SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,
 
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
-  SleqpSparseVec* v = cons_val;
+  SleqpSparseVec* c = cons_val;
 
-  const int dim = v->dim;
+  const int dim = c->dim;
 
   assert(dim == num_constraints);
   assert(dim == lb->dim);
@@ -316,21 +316,21 @@ SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,
 
   int k_c = 0, k_lb = 0, k_ub = 0;
 
-  while(k_c < v->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  while(k_c < c->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
   {
     double c_val = 0., lb_val = 0., ub_val = 0.;
 
-    bool valid_v = (k_c < v->nnz);
+    bool valid_c = (k_c < c->nnz);
     bool valid_lb = (k_lb < lb->nnz);
     bool valid_ub = (k_ub < ub->nnz);
 
-    int idx = valid_v ? v->indices[k_c] : dim + 1;
+    int idx = valid_c ? c->indices[k_c] : dim + 1;
     idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
     idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
 
-    if(valid_v && idx == v->indices[k_c])
+    if(valid_c && idx == c->indices[k_c])
     {
-      c_val = v->data[k_c++];
+      c_val = c->data[k_c++];
     }
 
     if(valid_lb && idx == lb->indices[k_lb])
@@ -369,9 +369,9 @@ SLEQP_RETCODE sleqp_violation_one_norm(SleqpProblem* problem,
 
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
-  SleqpSparseVec* v = cons_val;
+  SleqpSparseVec* c = cons_val;
 
-  const int dim = v->dim;
+  const int dim = c->dim;
 
   assert(dim == num_constraints);
   assert(dim == lb->dim);
@@ -381,21 +381,21 @@ SLEQP_RETCODE sleqp_violation_one_norm(SleqpProblem* problem,
 
   int k_c = 0, k_lb = 0, k_ub = 0;
 
-  while(k_c < v->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
+  while(k_c < c->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
   {
     double c_val = 0., lb_val = 0., ub_val = 0.;
 
-    bool valid_v = (k_c < v->nnz);
+    bool valid_c = (k_c < c->nnz);
     bool valid_lb = (k_lb < lb->nnz);
     bool valid_ub = (k_ub < ub->nnz);
 
-    int idx = valid_v ? v->indices[k_c] : dim + 1;
+    int idx = valid_c ? c->indices[k_c] : dim + 1;
     idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
     idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
 
-    if(valid_v && idx == v->indices[k_c])
+    if(valid_c && idx == c->indices[k_c])
     {
-      c_val = v->data[k_c++];
+      c_val = c->data[k_c++];
     }
 
     if(valid_lb && idx == lb->indices[k_lb])
@@ -417,7 +417,7 @@ SLEQP_RETCODE sleqp_violation_one_norm(SleqpProblem* problem,
     }
     else if(sleqp_is_pos(lower_violation, zero_eps))
     {
-      (*total_violation) = lower_violation;
+      (*total_violation) += lower_violation;
     }
   }
 
