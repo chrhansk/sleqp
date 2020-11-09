@@ -29,6 +29,14 @@ function(add_python_project)
   set(TOX_INI_IN "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini.in")
   set(TOX_INI    "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini")
 
+  set(PYTHON_CFLAGS "")
+
+  if(CMAKE_C_FLAGS)
+    set(PYTHON_CFLAGS "${CMAKE_C_FLAGS}")
+  elseif(CMAKE_BUILD_TYPE)
+    set(PYTHON_CFLAGS "${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE}}")
+  endif()
+
   configure_file(${SETUP_PY_IN}
     ${SETUP_PY}
     @ONLY)
@@ -41,33 +49,33 @@ function(add_python_project)
 
   add_custom_command(
     TARGET ${TARGET_NAME}
-    COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} build build_ext --inplace
+    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} build build_ext --inplace
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   add_custom_target("${TARGET_NAME}_sdist")
 
   add_custom_command(
     TARGET "${TARGET_NAME}_sdist"
-    COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} sdist --formats=gztar
+    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} sdist --formats=gztar
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   add_custom_target("${TARGET_NAME}_bdist")
 
   add_custom_command(
     TARGET "${TARGET_NAME}_bdist"
-    COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist
+    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   add_custom_target("${TARGET_NAME}_bdist_wheel")
 
   add_custom_command(
     TARGET "${TARGET_NAME}_bdist_wheel"
-    COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   if(ENABLE_UNIT_TESTS)
     add_test(NAME "${TARGET_NAME}_tests"
-      COMMAND "${TOX}"
+      COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} "${TOX}"
       WORKING_DIRECTORY "${PROJECT_DIR}")
   endif()
 

@@ -46,20 +46,31 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
 
     if func_grad:
       grad_array = func.func_grad()
+
       assert grad_array is not None, "func_grad() returned 'None'"
-      assert grad_array.shape == (num_variables,)
+      assert grad_array.ndim == 1, "Gradient must be a vector"
+      assert grad_array.size == num_variables, "Gradient has wrong size"
+
       csleqp_call(array_to_sleqp_sparse_vec(grad_array, func_grad))
 
     if cons_vals:
       cons_array = func.cons_vals()
+
       assert cons_array is not None, "cons_vals() returned 'None'"
-      assert cons_array.shape == (num_constraints,)
+      assert cons_array.ndim == 1, "Constraint values must be a vector"
+      assert cons_array.size == num_constraints, "Constraint values have wrong size"
+
       csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
 
     if cons_jac:
       cons_jac_mat = func.cons_jac()
+
+      expected_shape = (num_constraints, num_variables)
+
       assert cons_jac_mat is not None, "cons_jac() returned 'None'"
-      assert cons_jac_mat.shape == (num_constraints, num_variables,)
+      assert cons_jac_mat.ndim == 2, "Constraint Jacobian must be a matrix"
+      assert cons_jac_mat.shape == expected_shape, "Constraint Jacobian has wrong shape"
+
       csleqp_call(matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac))
 
 
@@ -84,6 +95,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
 
     func = (<object> func_data)
 
+    num_variables = func.num_variables
+
     f_dual = func_dual[0] if func_dual else 0.
     direction_array = sleqp_sparse_vec_to_array(direction)
     cons_dual_array = sleqp_sparse_vec_to_array(cons_dual)
@@ -91,6 +104,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
     product_array = func.hess_prod(f_dual, direction_array, cons_dual_array)
 
     assert product_array is not None, "hess_prod(...) returned 'None'"
+    assert product_array.ndim == 1, "Hessian product must be a vector"
+    assert product_array.size == num_variables, "Hessian product has wrong size"
 
     csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
