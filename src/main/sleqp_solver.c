@@ -1141,7 +1141,7 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
   {
     snprintf(jac_condition_buf,
              1024,
-             "%d",
+             "%f",
              aug_jac_condition);
   }
   else
