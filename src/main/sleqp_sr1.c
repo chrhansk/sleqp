@@ -165,6 +165,12 @@ SLEQP_RETCODE sr1_func_create(SleqpFunc** fstar,
                                &callbacks,
                                num_variables,
                                sr1_data));
+
+  SleqpFunc* sr1_func = *fstar;
+
+  SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(func),
+                                       sleqp_func_get_hess_struct(sr1_func)));
+
   return SLEQP_OKAY;
 }
 

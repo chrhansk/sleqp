@@ -264,7 +264,7 @@ static SLEQP_RETCODE func_free(SleqpFunc** fstar)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
 
-  SLEQP_CALL(sleqp_hessian_struct_free(&func->hess_struct));
+  SLEQP_CALL(sleqp_hessian_struct_release(&func->hess_struct));
 
   sleqp_free(fstar);
 

@@ -5,6 +5,10 @@ cdef class HessianStruct:
   def __cinit__(self, Func func):
     self._func = func
     self.hess_struct = csleqp.sleqp_func_get_hess_struct(func.func)
+    csleqp_call(csleqp.sleqp_hessian_struct_capture(self.hess_struct))
+
+  def __dealloc__(self):
+    csleqp_call(csleqp.sleqp_hessian_struct_release(&self.hess_struct))
 
   def clear(self) -> None:
     csleqp_call(csleqp.sleqp_hessian_struct_clear(self.hess_struct))

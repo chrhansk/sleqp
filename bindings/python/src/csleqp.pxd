@@ -239,6 +239,10 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
                                              libc.stdio.FILE* output)
 
+  SLEQP_RETCODE sleqp_hessian_struct_capture(SleqpHessianStruct* hessian_struct)
+
+  SLEQP_RETCODE sleqp_hessian_struct_release(SleqpHessianStruct** star)
+
   # Iterate
 
   SLEQP_RETCODE sleqp_iterate_capture(SleqpIterate* iterate)

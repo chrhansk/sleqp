@@ -143,6 +143,13 @@ SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
                                &callbacks,
                                num_variables,
                                bfgs_data));
+
+  SleqpFunc* bfgs_func = *fstar;
+
+  SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(func),
+                                       sleqp_func_get_hess_struct(bfgs_func)));
+
+
   return SLEQP_OKAY;
 }
 

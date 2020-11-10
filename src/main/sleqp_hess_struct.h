@@ -42,7 +42,7 @@ extern "C" {
    * @param[in]  hessian_struct  The Hessian structure
    * @returns                    The number \f$ k \f$ of blocks
    **/
-  int sleqp_hessian_struct_get_num_blocks(SleqpHessianStruct* hessian_struct);
+  int sleqp_hessian_struct_get_num_blocks(const SleqpHessianStruct* hessian_struct);
 
   /**
    * Returns the \f$ l \f$-th block of the Hessian
@@ -52,7 +52,7 @@ extern "C" {
    * @param[out] begin           The 0-based index \f$ j_l \f$
    * @param[out] end             The 0-based index \f$ j_{l+1} \f$
    **/
-  SLEQP_RETCODE sleqp_hessian_struct_get_block_range(SleqpHessianStruct* hessian_struct,
+  SLEQP_RETCODE sleqp_hessian_struct_get_block_range(const SleqpHessianStruct* hessian_struct,
                                                      int block,
                                                      int* begin,
                                                      int* end);
@@ -81,9 +81,12 @@ extern "C" {
    * @param[out]  end             The value \f$ n \f$
    *
    **/
-  SLEQP_RETCODE sleqp_hessian_struct_get_linear_range(SleqpHessianStruct* hessian_struct,
+  SLEQP_RETCODE sleqp_hessian_struct_get_linear_range(const SleqpHessianStruct* hessian_struct,
                                                       int* begin,
                                                       int* end);
+
+  SLEQP_RETCODE sleqp_hessian_struct_copy(const SleqpHessianStruct* source,
+                                          SleqpHessianStruct* target);
 
   /**
    * Prints the Hessian structure
@@ -91,10 +94,9 @@ extern "C" {
   SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
                                              FILE* output);
 
-  /**
-   * Frees the Hessian structure
-   **/
-  SLEQP_RETCODE sleqp_hessian_struct_free(SleqpHessianStruct** star);
+  SLEQP_RETCODE sleqp_hessian_struct_capture(SleqpHessianStruct* hessian_struct);
+
+  SLEQP_RETCODE sleqp_hessian_struct_release(SleqpHessianStruct** star);
 
 
 #ifdef __cplusplus
