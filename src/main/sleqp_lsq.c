@@ -224,15 +224,19 @@ static SLEQP_RETCODE lsq_func_free(void* func_data)
     SLEQP_CALL(lsq_data->callbacks.func_free(lsq_data->func_data));
   }
 
-  sleqp_sparse_vector_free(&lsq_data->lsq_forward);
-  sleqp_sparse_vector_free(&lsq_data->lsq_residual);
-
-  sleqp_sparse_vector_free(&lsq_data->lsq_hess_prod);
-  sleqp_sparse_vector_free(&lsq_data->lsq_grad);
-  sleqp_sparse_vector_free(&lsq_data->grad_cache);
+  sleqp_sparse_vector_free(&lsq_data->combined_hess_prod);
 
   sleqp_sparse_vector_free(&lsq_data->hess_prod);
-  sleqp_sparse_vector_free(&lsq_data->combined_hess_prod);
+
+  sleqp_sparse_vector_free(&lsq_data->grad_cache);
+
+  sleqp_sparse_vector_free(&lsq_data->lsq_grad);
+
+  sleqp_sparse_vector_free(&lsq_data->lsq_hess_prod);
+
+  sleqp_sparse_vector_free(&lsq_data->lsq_residual);
+
+  sleqp_sparse_vector_free(&lsq_data->lsq_forward);
 
   sleqp_free(&lsq_data);
 
@@ -268,9 +272,6 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                               num_residuals));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_hess_prod,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_grad,
                                               num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_grad,

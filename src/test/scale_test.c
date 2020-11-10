@@ -150,9 +150,9 @@ START_TEST(test_func_grad_invalid)
 
   SLEQP_RETCODE scale_retcode = sleqp_scale_func_grad(scaling, func_grad);
 
-  ck_assert_int_eq(scale_retcode, SLEQP_MATH_ERROR);
-
   ASSERT_CALL(sleqp_sparse_vector_free(&func_grad));
+
+  ck_assert_int_eq(scale_retcode, SLEQP_MATH_ERROR);
 }
 END_TEST
 
@@ -215,6 +215,8 @@ START_TEST(test_nominal_scale_cons_vals)
     ck_assert(sleqp_is_leq(value, 1., eps));
     ck_assert(sleqp_is_geq(value, .5, eps));
   }
+
+  ASSERT_CALL(sleqp_sparse_vector_free(&cons_vals));
 }
 END_TEST
 
