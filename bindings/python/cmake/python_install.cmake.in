@@ -2,12 +2,8 @@ set(ROOT_DIR "/")
 
 set(ENV_DESTDIR "$ENV{DESTDIR}")
 
-set(ORIGINAL_PREFIX "@CMAKE_INSTALL_PREFIX@")
-
-if(ENV_DESTDIR AND NOT (ENV_DESTDIR EQUAL ""))
+if(ENV_DESTDIR)
   set(ROOT_DIR "${ENV_DESTDIR}")
-else()
-  set(ROOT_DIR "${CMAKE_INSTALL_PREFIX}")
 endif()
 
 # macro(debug_message)
@@ -20,5 +16,5 @@ endif()
 # debug_message("Executing \"@PYTHON_EXECUTABLE@\" setup.py install --root=\"${ROOT_DIR}\" in @PROJECT_DIR@")
 
 execute_process(COMMAND
-  "@PYTHON_EXECUTABLE@" setup.py install --root=${ROOT_DIR} --prefix=${ORIGINAL_PREFIX}
+  "@PYTHON_EXECUTABLE@" setup.py install --root=${ROOT_DIR}
   WORKING_DIRECTORY "@PROJECT_DIR@")
