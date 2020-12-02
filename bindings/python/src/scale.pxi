@@ -53,6 +53,34 @@ cdef class Scaling:
     csleqp_call(csleqp.sleqp_sparse_vector_free(&self.gradient))
     csleqp_call(csleqp.sleqp_scaling_release(&self.scaling))
 
+  def __str__(self):
+    val = "Scaling(num_variables={0}, num_constraints={1})\n".format(self.num_variables,
+                                                                     self.num_constraints)
+
+    val += "Function weight: {0}\n".format(self.func_weight)
+
+    val += "Variable weights: {0}\n".format(self.variable_weights)
+
+    val += "Constraint weights: {0}\n".format(self.variable_weights)
+
+    return val
+
+  @staticmethod
+  def weights_to_nominal_values(weights):
+    return np.ldexp(np.ones(weights.shape), weights)
+
+  @staticmethod
+  def nominal_values_to_weights(nominal_values):
+    return np.frexp(nominal_values)[1]
+
+  @staticmethod
+  def nominal_value_to_weight(nominal_value):
+    return np.frexp(np.array([nominal_value]))[1].item()
+
+  @staticmethod
+  def weight_to_nominal_value(weight):
+    return np.ldexp(np.ones(1), np.array([weight])).item()
+
   @property
   def func_weight(self):
     return csleqp.sleqp_scaling_get_func_weight(self.scaling)
