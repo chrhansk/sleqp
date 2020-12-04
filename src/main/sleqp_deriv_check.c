@@ -319,10 +319,6 @@ SLEQP_RETCODE sleqp_deriv_check_first_order(SleqpDerivCheckData* data,
     SLEQP_CALL(check_cons_first_order_at(data, iterate, j, &valid));
   }
 
-  int func_grad_nnz = 0;
-  int cons_val_nnz = 0;
-  int cons_jac_nnz = 0;
-
   if(!valid)
   {
     return SLEQP_INVALID_DERIV;

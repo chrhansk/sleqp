@@ -258,6 +258,11 @@ SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
 {
   //assert(!(isinf(factor) || isnan(factor)));
 
+  if(factor == 0.)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_clear(vector));
+  }
+
   for(int k = 0; k < vector->nnz; ++k)
   {
     vector->data[k] *= factor;

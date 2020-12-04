@@ -274,6 +274,12 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
     SLEQP_CALL(sleqp_sparse_vector_scale(jacobian_product, tau));
 
     delta *= tau;
+
+    if(sleqp_is_zero(delta, eps))
+    {
+      delta = 0.;
+      break;
+    }
   }
 
   SLEQP_CALL(sleqp_sparse_vector_scale(hessian_direction, delta));
