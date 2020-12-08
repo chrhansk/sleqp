@@ -62,6 +62,8 @@ add_unit_test(second_order_test)
 
 add_unit_test(scale_test)
 
+add_unit_test(problem_scaling_test)
+
 if(SLEQP_ENABLE_CUTEST)
   add_subdirectory(cutest)
 endif()

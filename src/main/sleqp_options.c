@@ -1,5 +1,9 @@
 #include "sleqp_options.h"
 
+#include <fenv.h>
+#include <math.h>
+
+#include "sleqp_log.h"
 #include "sleqp_mem.h"
 
 #define PERFORM_NEWTON_DEFAULT             true
@@ -10,6 +14,18 @@
 #define SLEQP_DUAL_ESTIMATION_TYPE_DEFAULT SLEQP_DUAL_ESTIMATION_TYPE_LSQ
 #define QUASI_NEWTON_SIZE_DEFAULT          5
 #define MAX_NEWTON_ITERATIONS_DEFAULT      100
+#define FLOAT_WARN_FLAGS_DEFAULT           FE_ALL_EXCEPT
+#define FLOAT_ERR_FLAGS_DEFAULT            (FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID)
+
+#define CHECK_FLOAT_ENV                                                                             \
+  do                                                                                                \
+  {                                                                                                 \
+    if(!(math_errhandling & MATH_ERREXCEPT))                                                        \
+    {                                                                                               \
+      sleqp_log_warn("Float point error handling is not supported, setting options has no effect"); \
+    }                                                                                               \
+  }                                                                                                 \
+  while(false)
 
 struct SleqpOptions
 {
@@ -23,6 +39,9 @@ struct SleqpOptions
   SLEQP_DUAL_ESTIMATION_TYPE dual_estimation_type;
   int quasi_newton_size;
   int max_newton_iterations;
+
+  int float_warn_flags;
+  int float_err_flags;
 };
 
 SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
@@ -43,6 +62,9 @@ SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
   options->dual_estimation_type = SLEQP_DUAL_ESTIMATION_TYPE_DEFAULT;
   options->quasi_newton_size = QUASI_NEWTON_SIZE_DEFAULT;
   options->max_newton_iterations = MAX_NEWTON_ITERATIONS_DEFAULT;
+
+  options->float_warn_flags = FLOAT_WARN_FLAGS_DEFAULT;
+  options->float_err_flags = FLOAT_ERR_FLAGS_DEFAULT;
 
   return SLEQP_OKAY;
 }
@@ -87,6 +109,16 @@ int sleqp_options_get_quasi_newton_num_iterates(const SleqpOptions* options)
 int sleqp_options_get_max_newton_iterations(const SleqpOptions* options)
 {
   return options->max_newton_iterations;
+}
+
+int sleqp_options_get_float_warning_flags(const SleqpOptions* options)
+{
+  return options->float_warn_flags;
+}
+
+int sleqp_options_get_float_error_flags(const SleqpOptions* options)
+{
+  return options->float_err_flags;
 }
 
 SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options,
@@ -158,6 +190,23 @@ SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int
 
   options->max_newton_iterations = iterations;
 
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_options_set_float_warning_flags(SleqpOptions* options, int flags)
+{
+  CHECK_FLOAT_ENV;
+
+  options->float_warn_flags = flags;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_options_set_float_error_flags(SleqpOptions* options, int flags)
+{
+  CHECK_FLOAT_ENV;
+
+  options->float_err_flags = flags;
   return SLEQP_OKAY;
 }
 

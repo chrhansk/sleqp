@@ -2,6 +2,7 @@
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
+#include "sleqp_math_error.h"
 
 struct SleqpProblemScaling
 {
@@ -10,6 +11,7 @@ struct SleqpProblemScaling
   SleqpScalingData* scaling_data;
   SleqpProblem* problem;
   SleqpParams* params;
+  SleqpOptions* options;
   SleqpFunc* func;
 
   SleqpFunc* scaled_func;
@@ -33,11 +35,20 @@ scaled_func_set_value(SleqpSparseVec* scaled_value,
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
   SleqpScalingData* scaling_data = problem_scaling->scaling_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(scaled_value,
-                                      problem_scaling->unscaled_value));
+  {
+    const int error_flags = sleqp_options_get_float_error_flags(problem_scaling->options);
+    const int warn_flags = sleqp_options_get_float_warning_flags(problem_scaling->options);
 
-  SLEQP_CALL(sleqp_unscale_point(scaling_data,
-                                 problem_scaling->unscaled_value));
+    SLEQP_INIT_MATH_CHECK;
+
+    SLEQP_CALL(sleqp_sparse_vector_copy(scaled_value,
+                                        problem_scaling->unscaled_value));
+
+    SLEQP_CALL(sleqp_unscale_point(scaling_data,
+                                   problem_scaling->unscaled_value));
+
+    SLEQP_MATH_CHECK(error_flags, warn_flags);
+  }
 
   SLEQP_CALL(sleqp_func_set_value(problem_scaling->func,
                                   problem_scaling->unscaled_value,
@@ -68,6 +79,11 @@ scaled_func_eval(int num_variables,
                              cons_val,
                              cons_jac));
 
+  const int error_flags = sleqp_options_get_float_error_flags(problem_scaling->options);
+  const int warn_flags = sleqp_options_get_float_warning_flags(problem_scaling->options);
+
+  SLEQP_INIT_MATH_CHECK;
+
   if(func_val)
   {
     (*func_val) = sleqp_scale_func_val(scaling_data, (*func_val));
@@ -88,6 +104,8 @@ scaled_func_eval(int num_variables,
     SLEQP_CALL(sleqp_scale_cons_jac(scaling_data, cons_jac));
   }
 
+  SLEQP_MATH_CHECK(error_flags, warn_flags);
+
   return SLEQP_OKAY;
 }
 
@@ -102,15 +120,24 @@ scaled_func_hess_prod(int num_variables,
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
   SleqpScalingData* scaling_data = problem_scaling->scaling_data;
 
+  const int error_flags = sleqp_options_get_float_error_flags(problem_scaling->options);
+  const int warn_flags = sleqp_options_get_float_warning_flags(problem_scaling->options);
+
   SLEQP_CALL(sleqp_sparse_vector_copy(direction,
                                       problem_scaling->scaled_direction));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(cons_duals,
                                       problem_scaling->scaled_cons_duals));
 
-  SLEQP_CALL(sleqp_unscale_hessian_direction(scaling_data,
-                                             problem_scaling->scaled_direction,
-                                             problem_scaling->scaled_cons_duals));
+  {
+    SLEQP_INIT_MATH_CHECK;
+
+    SLEQP_CALL(sleqp_unscale_hessian_direction(scaling_data,
+                                               problem_scaling->scaled_direction,
+                                               problem_scaling->scaled_cons_duals));
+
+    SLEQP_MATH_CHECK(error_flags, warn_flags);
+  }
 
   SLEQP_CALL(sleqp_func_hess_prod(problem_scaling->func,
                                   func_dual,
@@ -118,17 +145,24 @@ scaled_func_hess_prod(int num_variables,
                                   problem_scaling->scaled_cons_duals,
                                   product));
 
-  SLEQP_CALL(sleqp_scale_hessian_product(scaling_data,
-                                         product));
+  {
+    SLEQP_INIT_MATH_CHECK;
+
+    SLEQP_CALL(sleqp_scale_hessian_product(scaling_data,
+                                           product));
+
+    SLEQP_MATH_CHECK(error_flags, warn_flags);
+  }
 
   return SLEQP_OKAY;
 }
 
 
 SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
-                                          SleqpScalingData* scaling_data,
-                                          SleqpProblem* problem,
-                                          SleqpParams* params)
+                                           SleqpScalingData* scaling_data,
+                                           SleqpProblem* problem,
+                                           SleqpParams* params,
+                                           SleqpOptions* options)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -159,6 +193,9 @@ SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   SLEQP_CALL(sleqp_params_capture(params));
   problem_scaling->params = params;
+
+  SLEQP_CALL(sleqp_options_capture(options));
+  problem_scaling->options = options;
 
   problem_scaling->scaling_data = scaling_data;
 
@@ -208,6 +245,11 @@ SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling)
   SleqpScalingData* scaling_data = problem_scaling->scaling_data;
   SleqpProblem* scaled_problem = problem_scaling->scaled_problem;
 
+  const int error_flags = sleqp_options_get_float_error_flags(problem_scaling->options);
+  const int warn_flags = sleqp_options_get_float_warning_flags(problem_scaling->options);
+
+  SLEQP_INIT_MATH_CHECK;
+
   SLEQP_CALL(sleqp_sparse_vector_copy(problem->var_lb,
                                       scaled_problem->var_lb));
 
@@ -232,6 +274,8 @@ SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling)
   SLEQP_CALL(sleqp_scale_cons_val(scaling_data,
                                   scaled_problem->cons_ub));
 
+  SLEQP_MATH_CHECK(error_flags, warn_flags);
+
   return SLEQP_OKAY;
 }
 
@@ -255,6 +299,8 @@ static SLEQP_RETCODE problem_scaling_free(SleqpProblemScaling** star)
   SLEQP_CALL(sleqp_func_release(&(problem_scaling->scaled_func)));
 
   SLEQP_CALL(sleqp_scaling_release(&problem_scaling->scaling_data));
+
+  SLEQP_CALL(sleqp_options_release(&problem_scaling->options));
 
   SLEQP_CALL(sleqp_params_release(&problem_scaling->params));
 

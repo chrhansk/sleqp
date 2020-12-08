@@ -12,8 +12,6 @@
 SleqpParams* params;
 
 SleqpScalingData* scaling;
-SleqpProblemScaling* problem_scaling;
-SleqpProblem* scaled_problem;
 
 SleqpProblem* problem;
 SleqpIterate* iterate;
@@ -44,15 +42,6 @@ void scaling_setup()
 
   ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 0, 7));
   ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 1, -1));
-
-  ASSERT_CALL(sleqp_problem_scaling_create(&problem_scaling,
-                                           scaling,
-                                           problem,
-                                           params));
-
-  ASSERT_CALL(sleqp_problem_scaling_flush(problem_scaling));
-
-  scaled_problem = sleqp_problem_scaling_get_problem(problem_scaling);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
@@ -293,71 +282,9 @@ START_TEST(test_cons_jac_inverse)
 }
 END_TEST
 
-START_TEST(test_first_order_deriv)
-{
-  SleqpIterate* scaled_iterate;
-
-  SleqpDerivCheckData* deriv_check_data;
-
-  ASSERT_CALL(sleqp_iterate_create(&scaled_iterate,
-                                   scaled_problem,
-                                   quadconsfunc_x));
-
-  ASSERT_CALL(sleqp_scale_point(scaling,
-                                sleqp_iterate_get_primal(scaled_iterate)));
-
-  ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
-                                     scaled_iterate,
-                                     SLEQP_VALUE_REASON_NONE));
-
-  ASSERT_CALL(sleqp_deriv_checker_create(&deriv_check_data,
-                                         scaled_problem,
-                                         params));
-
-  ASSERT_CALL(sleqp_deriv_check_first_order(deriv_check_data,
-                                            scaled_iterate));
-
-  ASSERT_CALL(sleqp_deriv_checker_free(&deriv_check_data));
-
-  ASSERT_CALL(sleqp_iterate_release(&scaled_iterate));
-}
-END_TEST
-
-START_TEST(test_second_order_deriv)
-{
-  SleqpIterate* scaled_iterate;
-
-  SleqpDerivCheckData* deriv_check_data;
-
-  ASSERT_CALL(sleqp_iterate_create(&scaled_iterate,
-                                   scaled_problem,
-                                   quadconsfunc_x));
-
-  ASSERT_CALL(sleqp_scale_point(scaling,
-                                sleqp_iterate_get_primal(scaled_iterate)));
-
-  ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
-                                     scaled_iterate,
-                                     SLEQP_VALUE_REASON_NONE));
-
-  ASSERT_CALL(sleqp_deriv_checker_create(&deriv_check_data,
-                                         scaled_problem,
-                                         params));
-
-  ASSERT_CALL(sleqp_deriv_check_second_order_exhaustive(deriv_check_data,
-                                                        scaled_iterate));
-
-  ASSERT_CALL(sleqp_deriv_checker_free(&deriv_check_data));
-
-  ASSERT_CALL(sleqp_iterate_release(&scaled_iterate));
-}
-END_TEST
-
 void scaling_teardown()
 {
   ASSERT_CALL(sleqp_iterate_release(&iterate));
-
-  ASSERT_CALL(sleqp_problem_scaling_release(&problem_scaling));
 
   ASSERT_CALL(sleqp_scaling_release(&scaling));
 
@@ -373,7 +300,6 @@ Suite* scaling_test_suite()
   Suite *suite;
   TCase *tc_nominal;
   TCase *tc_scale_inv;
-  TCase* tc_scale_deriv;
 
   suite = suite_create("Scaling tests");
 
@@ -381,17 +307,11 @@ Suite* scaling_test_suite()
 
   tc_scale_inv = tcase_create("Scaling inverse tests");
 
-  tc_scale_deriv = tcase_create("Scaling derivative tests");
-
   tcase_add_checked_fixture(tc_nominal,
                             scaling_setup,
                             scaling_teardown);
 
   tcase_add_checked_fixture(tc_scale_inv,
-                            scaling_setup,
-                            scaling_teardown);
-
-  tcase_add_checked_fixture(tc_scale_deriv,
                             scaling_setup,
                             scaling_teardown);
 
@@ -408,14 +328,9 @@ Suite* scaling_test_suite()
   tcase_add_test(tc_scale_inv, test_cons_val_inverse);
   tcase_add_test(tc_scale_inv, test_cons_jac_inverse);
 
-  tcase_add_test(tc_scale_deriv, test_first_order_deriv);
-  tcase_add_test(tc_scale_deriv, test_second_order_deriv);
-
   suite_add_tcase(suite, tc_nominal);
 
   suite_add_tcase(suite, tc_scale_inv);
-
-  suite_add_tcase(suite, tc_scale_deriv);
 
   return suite;
 }

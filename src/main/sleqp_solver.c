@@ -234,7 +234,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
     SLEQP_CALL(sleqp_problem_scaling_create(&solver->problem_scaling,
                                             solver->scaling_data,
                                             problem,
-                                            params));
+                                            params,
+                                            options));
 
     SLEQP_CALL(sleqp_iterate_create(&solver->unscaled_iterate,
                                     solver->unscaled_problem,

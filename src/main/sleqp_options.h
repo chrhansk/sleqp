@@ -32,6 +32,10 @@ extern "C" {
 
   int sleqp_options_get_max_newton_iterations(const SleqpOptions* options);
 
+  int sleqp_options_get_float_warning_flags(const SleqpOptions* options);
+
+  int sleqp_options_get_float_error_flags(const SleqpOptions* options);
+
   SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options, bool value);
 
   SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options, bool value);
@@ -51,6 +55,10 @@ extern "C" {
                                                             int size);
 
   SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int iterations);
+
+  SLEQP_RETCODE sleqp_options_set_float_warning_flags(SleqpOptions* options, int flags);
+
+  SLEQP_RETCODE sleqp_options_set_float_error_flags(SleqpOptions* options, int flags);
 
   SLEQP_RETCODE sleqp_options_capture(SleqpOptions* options);
 

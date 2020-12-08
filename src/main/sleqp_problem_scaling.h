@@ -2,6 +2,8 @@
 #define SLEQP_PROBLEM_SCALING_H
 
 #include "sleqp_scale.h"
+#include "sleqp_options.h"
+#include "sleqp_params.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,7 +14,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** problem_scaling,
                                              SleqpScalingData* scaling_data,
                                              SleqpProblem* problem,
-                                             SleqpParams* params);
+                                             SleqpParams* params,
+                                             SleqpOptions* options);
 
   SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling);
 
