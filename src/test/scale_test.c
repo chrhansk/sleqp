@@ -304,7 +304,6 @@ Suite* scaling_test_suite()
   tcase_add_test(tc_nominal, test_nominal_scale_cons_vals);
 
   tcase_add_test(tc_scale_inv, test_func_val_inverse);
-  tcase_add_test(tc_scale_inv, test_func_grad_invalid);
   tcase_add_test(tc_scale_inv, test_func_grad_inverse);
   tcase_add_test(tc_scale_inv, test_cons_val_inverse);
   tcase_add_test(tc_scale_inv, test_cons_jac_inverse);
