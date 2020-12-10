@@ -126,25 +126,6 @@ START_TEST(test_nominal_small)
 }
 END_TEST
 
-START_TEST(test_func_grad_invalid)
-{
-  SleqpSparseVec* func_grad;
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&func_grad, 2, 2));
-
-  ASSERT_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_func_grad(iterate),
-                                       func_grad));
-
-  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, 10000));
-
-  SLEQP_RETCODE scale_retcode = sleqp_scale_func_grad(scaling, func_grad);
-
-  ASSERT_CALL(sleqp_sparse_vector_free(&func_grad));
-
-  ck_assert_int_eq(scale_retcode, SLEQP_MATH_ERROR);
-}
-END_TEST
-
 START_TEST(test_func_val_inverse)
 {
   double func_val = sleqp_iterate_get_func_val(iterate);
