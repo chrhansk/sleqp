@@ -1612,6 +1612,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     {
       if(solver->elapsed_seconds >= time_limit)
       {
+        sleqp_log_info("Exhausted time limit, terminating");
         break;
       }
     }
@@ -1619,6 +1620,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     if(max_num_iterations != SLEQP_NONE &&
        solver->iteration >= max_num_iterations)
     {
+      sleqp_log_info("Reached iteration limit, terminating");
       break;
     }
 
