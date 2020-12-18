@@ -6,6 +6,8 @@
  * @brief Defintion of BFGS method.
  **/
 
+#include "sleqp_options.h"
+#include "sleqp_params.h"
 #include "sleqp_problem.h"
 
 #include "sleqp_iterate.h"
@@ -20,8 +22,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
                                        SleqpFunc* func,
                                        SleqpParams* params,
-                                       int num,
-                                       bool damped);
+                                       SleqpOptions* options);
 
   SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                      SleqpIterate* old_iterate,

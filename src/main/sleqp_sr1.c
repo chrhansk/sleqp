@@ -61,7 +61,9 @@ struct SleqpSR1Data
   int refcount;
 
   int num_variables;
+
   SleqpParams* params;
+  SleqpOptions* options;
 
   SleqpSparseVec* grad_diff;
   SleqpSparseVec* step_diff;
@@ -216,10 +218,8 @@ SLEQP_RETCODE sr1_block_create_at(SR1Block* block,
 SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
                                     SleqpFunc* func,
                                     SleqpParams* params,
-                                    int num)
+                                    SleqpOptions* options)
 {
-  assert(num > 0);
-
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpSR1Data* data = *star;
@@ -227,6 +227,15 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
   *data = (SleqpSR1Data) {0};
 
   data->refcount = 1;
+
+  SLEQP_CALL(sleqp_params_capture(params));
+  data->params = params;
+
+  SLEQP_CALL(sleqp_options_capture(options));
+  data->options = options;
+
+  const int num_iter = sleqp_options_get_quasi_newton_num_iterates(options);
+  assert(num_iter > 0);
 
   const int num_variables = sleqp_func_get_num_variables(func);
 
@@ -236,9 +245,6 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
 
   data->num_blocks = num_blocks;
   data->num_variables = num_variables;
-
-  SLEQP_CALL(sleqp_params_capture(params));
-  data->params = params;
 
   sleqp_calloc(&data->blocks, num_blocks);
 
@@ -255,7 +261,7 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
 
     SLEQP_CALL(sr1_block_create_at(data->blocks + block,
                                    block_dimension,
-                                   num));
+                                   num_iter));
   }
 
   SLEQP_CALL(sleqp_sparse_vector_create_full(&(data->grad_diff),
@@ -769,6 +775,7 @@ static SLEQP_RETCODE sr1_data_free(SleqpSR1Data** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->step_diff)));
   SLEQP_CALL(sleqp_sparse_vector_free(&(data->grad_diff)));
 
+  SLEQP_CALL(sleqp_options_release(&data->options));
   SLEQP_CALL(sleqp_params_release(&data->params));
 
   sleqp_free(star);

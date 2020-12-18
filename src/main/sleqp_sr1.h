@@ -7,8 +7,9 @@
  **/
 
 #include "sleqp_func.h"
-
 #include "sleqp_iterate.h"
+#include "sleqp_options.h"
+#include "sleqp_params.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +20,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
                                       SleqpFunc* func,
                                       SleqpParams* params,
-                                      int num);
+                                      SleqpOptions* options);
 
   SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
                                     SleqpIterate* old_iterate,

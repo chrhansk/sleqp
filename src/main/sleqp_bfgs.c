@@ -44,6 +44,7 @@ struct SleqpBFGSData
   int num_variables;
 
   SleqpParams* params;
+  SleqpOptions* options;
 
   int num_blocks;
   BFGSBlock* blocks;
@@ -241,11 +242,8 @@ static SLEQP_RETCODE bfgs_block_free_at(BFGSBlock* block)
 SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
                                      SleqpFunc* func,
                                      SleqpParams* params,
-                                     int num,
-                                     bool damped)
+                                     SleqpOptions* options)
 {
-  assert(num > 0);
-
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpBFGSData* data = *star;
@@ -253,6 +251,22 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
   *data = (SleqpBFGSData) {0};
 
   data->refcount = 1;
+
+  SLEQP_CALL(sleqp_params_capture(params));
+  data->params = params;
+
+  SLEQP_CALL(sleqp_options_capture(options));
+  data->options = options;
+
+  const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_hessian_eval(options);
+
+  assert(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
+         hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS);
+
+  const bool damped = (hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS);
+  const int num = sleqp_options_get_quasi_newton_num_iterates(options);
+
+  assert(num > 0);
 
   const int num_variables = sleqp_func_get_num_variables(func);
 
@@ -263,9 +277,6 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
   data->num_variables = num_variables;
   data->num_blocks = num_blocks;
   data->func = func;
-
-  SLEQP_CALL(sleqp_params_capture(params));
-  data->params = params;
 
   sleqp_calloc(&data->blocks, num_blocks);
 
@@ -749,6 +760,8 @@ static SLEQP_RETCODE bfgs_data_free(SleqpBFGSData** star)
   }
 
   sleqp_free(&data->blocks);
+
+  SLEQP_CALL(sleqp_options_release(&data->options));
 
   SLEQP_CALL(sleqp_params_release(&data->params));
 

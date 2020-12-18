@@ -259,18 +259,13 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   {
     const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_hessian_eval(options);
 
-    const int num_iter = sleqp_options_get_quasi_newton_num_iterates(options);
-
     if(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
        hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
     {
-      const bool damped_bfgs = (hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS);
-
       SLEQP_CALL(sleqp_bfgs_data_create(&solver->bfgs_data,
                                         func,
                                         params,
-                                        num_iter,
-                                        damped_bfgs));
+                                        options));
 
       func = sleqp_bfgs_get_func(solver->bfgs_data);
     }
@@ -280,7 +275,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
       SLEQP_CALL(sleqp_sr1_data_create(&solver->sr1_data,
                                        func,
                                        params,
-                                       num_iter));
+                                       options));
 
       func = sleqp_sr1_get_func(solver->sr1_data);
     }
