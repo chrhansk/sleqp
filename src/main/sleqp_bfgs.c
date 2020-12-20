@@ -354,21 +354,28 @@ SLEQP_RETCODE bfgs_hess_prod_range(BFGSBlock* block,
   const double eps = sleqp_params_get_eps(params);
   const int begin = block->curr - block->len + 1;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(direction, product));
+  // Initially apply scaled identity
+  {
+    SLEQP_CALL(sleqp_sparse_vector_copy(direction, product));
 
-  SLEQP_CALL(sleqp_sparse_vector_scale(product, block->initial_scale));
+    SLEQP_CALL(sleqp_sparse_vector_scale(product, block->initial_scale));
+  }
 
+  // invariant: after iteration k, "product" contains
+  // product of given "direction" with the approximate
+  // Hessian consisting of the first k terms
   for(int prev = begin; prev <= final; ++prev)
   {
-    int j = data_index(block, prev);
+    const int j = data_index(block, prev);
 
-    SleqpSparseVec* inner_prod = block->inner_prods[j];
-    SleqpSparseVec* outer_prod = block->outer_prods[j];
+    const SleqpSparseVec* current_step_diff = block->step_diffs[j];
+    const SleqpSparseVec* inner_prod = block->inner_prods[j];
+    const SleqpSparseVec* outer_prod = block->outer_prods[j];
 
     double inner_dot, outer_dot;
 
-    SLEQP_CALL(sleqp_sparse_vector_dot(inner_prod,
-                                       direction,
+    SLEQP_CALL(sleqp_sparse_vector_dot(current_step_diff,
+                                       product,
                                        &inner_dot));
 
     SLEQP_CALL(sleqp_sparse_vector_dot(outer_prod,
@@ -501,6 +508,10 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
     else
     {
       SLEQP_CALL(sleqp_sparse_vector_copy(current_grad_diff, current_outer_prod));
+
+      SLEQP_CALL(sleqp_sparse_vector_dot(current_outer_prod,
+                                         current_step_diff,
+                                         &dot_product));
     }
 
     // set outer product
@@ -652,7 +663,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_bfgs_data_hess_prod(SleqpBFGSData* data,
+SLEQP_RETCODE sleqp_bfgs_data_hess_prod(const SleqpBFGSData* data,
                                         const SleqpSparseVec* direction,
                                         SleqpSparseVec* product)
 {
