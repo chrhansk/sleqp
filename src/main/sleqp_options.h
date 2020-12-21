@@ -36,6 +36,8 @@ extern "C" {
 
   int sleqp_options_get_float_error_flags(const SleqpOptions* options);
 
+  SLEQP_BFGS_SIZING sleqp_options_get_bfgs_sizing(const SleqpOptions* options);
+
   SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options, bool value);
 
   SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options, bool value);
@@ -59,6 +61,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_options_set_float_warning_flags(SleqpOptions* options, int flags);
 
   SLEQP_RETCODE sleqp_options_set_float_error_flags(SleqpOptions* options, int flags);
+
+  SLEQP_RETCODE sleqp_options_set_bfgs_sizing(SleqpOptions* options, SLEQP_BFGS_SIZING sizing);
 
   SLEQP_RETCODE sleqp_options_capture(SleqpOptions* options);
 

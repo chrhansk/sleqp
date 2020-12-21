@@ -403,10 +403,53 @@ START_TEST(test_sr1_solve)
 }
 END_TEST
 
-START_TEST(test_bfgs_solve)
+START_TEST(test_bfgs_solve_no_sizing)
 {
   ASSERT_CALL(sleqp_options_set_deriv_check(options,
                                             SLEQP_DERIV_CHECK_FIRST));
+
+  ASSERT_CALL(sleqp_options_set_bfgs_sizing(options,
+                                            SLEQP_BFGS_SIZING_NONE));
+
+  ASSERT_CALL(sleqp_options_set_hessian_eval(options,
+                                             SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
+
+  SleqpSolver* solver;
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  options,
+                                  x,
+                                  NULL));
+
+  // 100 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
+
+  SleqpIterate* solution_iterate;
+
+  ASSERT_CALL(sleqp_solver_get_solution(solver,
+                                        &solution_iterate));
+
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+
+  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+
+  ck_assert(sleqp_sparse_vector_eq(actual_solution,
+                                   expected_solution,
+                                   1e-6));
+
+  ASSERT_CALL(sleqp_solver_release(&solver));
+}
+END_TEST
+
+START_TEST(test_bfgs_solve_centered_ol_sizing)
+{
+  ASSERT_CALL(sleqp_options_set_deriv_check(options,
+                                            SLEQP_DERIV_CHECK_FIRST));
+
+  ASSERT_CALL(sleqp_options_set_bfgs_sizing(options,
+                                            SLEQP_BFGS_SIZING_CENTERED_OL));
 
   ASSERT_CALL(sleqp_options_set_hessian_eval(options,
                                              SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
@@ -717,7 +760,9 @@ Suite* constrained_test_suite()
 
   tcase_add_test(tc_cons, test_sr1_solve);
 
-  tcase_add_test(tc_cons, test_bfgs_solve);
+  tcase_add_test(tc_cons, test_bfgs_solve_no_sizing);
+
+  tcase_add_test(tc_cons, test_bfgs_solve_centered_ol_sizing);
 
   tcase_add_test(tc_cons, test_unscaled_solve);
 

@@ -72,6 +72,11 @@ extern "C" {
   } SLEQP_HESSIAN_EVAL;
 
   typedef enum {
+    SLEQP_BFGS_SIZING_NONE = 0,     // No sizing
+    SLEQP_BFGS_SIZING_CENTERED_OL,  // Centered Oren–Luenberger
+  } SLEQP_BFGS_SIZING;
+
+  typedef enum {
     SLEQP_STEPTYPE_NONE = 0,
     SLEQP_STEPTYPE_ACCEPTED,
     SLEQP_STEPTYPE_ACCEPTED_FULL,

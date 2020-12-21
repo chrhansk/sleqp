@@ -16,6 +16,7 @@
 #define MAX_NEWTON_ITERATIONS_DEFAULT      100
 #define FLOAT_WARN_FLAGS_DEFAULT           FE_ALL_EXCEPT
 #define FLOAT_ERR_FLAGS_DEFAULT            (FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID)
+#define BFGS_SIZING_DEFAULT                SLEQP_BFGS_SIZING_CENTERED_OL
 
 #define CHECK_FLOAT_ENV                                                                             \
   do                                                                                                \
@@ -42,6 +43,8 @@ struct SleqpOptions
 
   int float_warn_flags;
   int float_err_flags;
+
+  SLEQP_BFGS_SIZING bfgs_sizing;
 };
 
 SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
@@ -52,19 +55,23 @@ SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
 
   *options = (SleqpOptions){0};
 
-  options->refcount = 1;
+  *options = (SleqpOptions) {
+    .refcount = 1,
 
-  options->perform_newton_step = PERFORM_NEWTON_DEFAULT;
-  options->perform_soc = PERFORM_SOC_DEFAULT;
-  options->use_quadratic_model = USE_QUADRATIC_MODEL_DEFAULT;
-  options->deriv_check = DERIV_CHECK_DEFAULT;
-  options->hessian_eval = HESSIAN_EVAL_DEFAULT;
-  options->dual_estimation_type = SLEQP_DUAL_ESTIMATION_TYPE_DEFAULT;
-  options->quasi_newton_size = QUASI_NEWTON_SIZE_DEFAULT;
-  options->max_newton_iterations = MAX_NEWTON_ITERATIONS_DEFAULT;
+    .perform_newton_step = PERFORM_NEWTON_DEFAULT,
+    .perform_soc = PERFORM_SOC_DEFAULT,
+    .use_quadratic_model = USE_QUADRATIC_MODEL_DEFAULT,
+    .deriv_check = DERIV_CHECK_DEFAULT,
+    .hessian_eval = HESSIAN_EVAL_DEFAULT,
+    .dual_estimation_type = SLEQP_DUAL_ESTIMATION_TYPE_DEFAULT,
+    .quasi_newton_size = QUASI_NEWTON_SIZE_DEFAULT,
+    .max_newton_iterations = MAX_NEWTON_ITERATIONS_DEFAULT,
 
-  options->float_warn_flags = FLOAT_WARN_FLAGS_DEFAULT;
-  options->float_err_flags = FLOAT_ERR_FLAGS_DEFAULT;
+    .float_warn_flags = FLOAT_WARN_FLAGS_DEFAULT,
+    .float_err_flags = FLOAT_ERR_FLAGS_DEFAULT,
+
+    .bfgs_sizing = BFGS_SIZING_DEFAULT,
+  };
 
   return SLEQP_OKAY;
 }
@@ -119,6 +126,11 @@ int sleqp_options_get_float_warning_flags(const SleqpOptions* options)
 int sleqp_options_get_float_error_flags(const SleqpOptions* options)
 {
   return options->float_err_flags;
+}
+
+SLEQP_BFGS_SIZING sleqp_options_get_bfgs_sizing(const SleqpOptions* options)
+{
+  return options->bfgs_sizing;
 }
 
 SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options,
@@ -207,6 +219,14 @@ SLEQP_RETCODE sleqp_options_set_float_error_flags(SleqpOptions* options, int fla
   CHECK_FLOAT_ENV;
 
   options->float_err_flags = flags;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_options_set_bfgs_sizing(SleqpOptions* options, SLEQP_BFGS_SIZING sizing)
+{
+  options->bfgs_sizing = sizing;
+
   return SLEQP_OKAY;
 }
 
