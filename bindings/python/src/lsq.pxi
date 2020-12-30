@@ -15,6 +15,16 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval(int num_variables,
 
   return csleqp.SLEQP_OKAY
 
+
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval_nogil(int num_variables,
+                                               csleqp.SleqpSparseVec* residual,
+                                               void* func_data) nogil:
+  with gil:
+    return sleqp_lsq_eval(num_variables,
+                          residual,
+                          func_data)
+
+
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(int num_variables,
                                                 const csleqp.SleqpSparseVec* forward_direction,
                                                 csleqp.SleqpSparseVec* product,
@@ -37,6 +47,17 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(int num_variables,
   return csleqp.SLEQP_OKAY
 
 
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward_nogil(int num_variables,
+                                                      const csleqp.SleqpSparseVec* forward_direction,
+                                                      csleqp.SleqpSparseVec* product,
+                                                      void* func_data) nogil:
+  with gil:
+    return sleqp_lsq_jac_forward(num_variables,
+                                 forward_direction,
+                                 product,
+                                 func_data)
+
+
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(int num_variables,
                                                 const csleqp.SleqpSparseVec* adjoint_direction,
                                                 csleqp.SleqpSparseVec* product,
@@ -56,6 +77,52 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(int num_variables,
     return csleqp.SLEQP_INTERNAL_ERROR
 
   return csleqp.SLEQP_OKAY
+
+
+cdef object lsq_funcs = weakref.WeakSet()
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint_nogil(int num_variables,
+                                                      const csleqp.SleqpSparseVec* adjoint_direction,
+                                                      csleqp.SleqpSparseVec* product,
+                                                      void* func_data) nogil:
+  with gil:
+    return sleqp_lsq_jac_adjoint(num_variables,
+                                 adjoint_direction,
+                                 product,
+                                 func_data)
+
+
+cdef set_lsq_func_callbacks(csleqp.SleqpLSQCallbacks* callbacks):
+  if release_gil:
+    callbacks.set_value            = &sleqp_func_set_nogil
+    callbacks.lsq_eval             = &sleqp_lsq_eval_nogil
+    callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward_nogil
+    callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint_nogil
+    callbacks.eval_additional      = &sleqp_func_eval_nogil
+    callbacks.hess_prod_additional = &sleqp_func_hess_product_nogil
+  else:
+    callbacks.set_value            = &sleqp_func_set
+    callbacks.lsq_eval             = &sleqp_lsq_eval
+    callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward
+    callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint
+    callbacks.eval_additional      = &sleqp_func_eval
+    callbacks.hess_prod_additional = &sleqp_func_hess_product
+
+  callbacks.func_free = &sleqp_func_free
+
+
+cdef update_lsq_func_callbacks():
+  cdef LSQFunc func
+  cdef csleqp.SleqpLSQCallbacks callbacks
+
+  set_lsq_func_callbacks(&callbacks)
+
+  for obj in lsq_funcs:
+    func = <LSQFunc> obj
+
+    csleqp_call(csleqp.sleqp_lsq_func_set_callbacks(func.func,
+                                                    &callbacks))
 
 
 cdef class LSQFunc:
@@ -80,13 +147,7 @@ cdef class LSQFunc:
 
     cdef csleqp.SleqpLSQCallbacks callbacks
 
-    callbacks.set_value            = &sleqp_func_set
-    callbacks.lsq_eval             = &sleqp_lsq_eval
-    callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward
-    callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint
-    callbacks.eval_additional      = &sleqp_func_eval
-    callbacks.hess_prod_additional = &sleqp_func_hess_product
-    callbacks.func_free            = &sleqp_func_free
+    set_lsq_func_callbacks(&callbacks)
 
     csleqp_call(csleqp.sleqp_lsq_func_create(&self.func,
                                              &callbacks,
@@ -100,6 +161,8 @@ cdef class LSQFunc:
     self.num_constraints = num_constraints
 
     self.call_exception = None
+
+    lsq_funcs.add(self)
 
     assert(self.func)
 

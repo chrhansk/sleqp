@@ -85,6 +85,12 @@ extern "C" {
                                       SleqpParams* params,
                                       void* func_data);
 
+  /**
+   * Sets the callbacks of this LSQ function to the specified ones
+   **/
+  SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
+                                             SleqpLSQCallbacks* callbacks);
+
 
 #ifdef __cplusplus
 }

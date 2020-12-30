@@ -174,20 +174,25 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_free(void* func_data):
 
 cdef object funcs = weakref.WeakSet()
 
-cdef update_callbacks():
+
+cdef set_func_callbacks(csleqp.SleqpFuncCallbacks* callbacks):
+  if release_gil:
+    callbacks[0].set_value = &sleqp_func_set_nogil
+    callbacks[0].func_eval = &sleqp_func_eval_nogil
+    callbacks[0].hess_prod = &sleqp_func_hess_product_nogil
+  else:
+    callbacks[0].set_value = &sleqp_func_set
+    callbacks[0].func_eval = &sleqp_func_eval
+    callbacks[0].hess_prod = &sleqp_func_hess_product
+
+  callbacks.func_free = &sleqp_func_free
+
+
+cdef update_func_callbacks():
   cdef Func func
   cdef csleqp.SleqpFuncCallbacks callbacks
 
-  if release_gil:
-    callbacks.set_value = &sleqp_func_set_nogil
-    callbacks.func_eval = &sleqp_func_eval_nogil
-    callbacks.hess_prod = &sleqp_func_hess_product_nogil
-  else:
-    callbacks.set_value = &sleqp_func_set
-    callbacks.func_eval = &sleqp_func_eval
-    callbacks.hess_prod = &sleqp_func_hess_product
-
-  callbacks.func_free = &sleqp_func_free
+  set_func_callbacks(&callbacks)
 
   for obj in funcs:
     func = <Func> obj
@@ -214,16 +219,7 @@ cdef class Func:
 
     cdef csleqp.SleqpFuncCallbacks callbacks
 
-    if release_gil:
-      callbacks.set_value = &sleqp_func_set_nogil
-      callbacks.func_eval = &sleqp_func_eval_nogil
-      callbacks.hess_prod = &sleqp_func_hess_product_nogil
-    else:
-      callbacks.set_value = &sleqp_func_set
-      callbacks.func_eval = &sleqp_func_eval
-      callbacks.hess_prod = &sleqp_func_hess_product
-
-    callbacks.func_free = &sleqp_func_free
+    set_func_callbacks(&callbacks)
 
     csleqp_call(csleqp.sleqp_func_create(&self.func,
                                          &callbacks,

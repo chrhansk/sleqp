@@ -1,65 +1,98 @@
 #!/usr/bin/env python
 
-import numpy as np
+import math
 import unittest
+
+import numpy as np
 
 import sleqp
 
 num_variables = 2
+num_residuals = 2
 num_constraints = 0
 
-class Func(sleqp.Func):
+class Func(sleqp.LSQFunc):
 
-  def __init__(self, num_variables, num_constraints):
+  def __init__(self,
+               num_variables,
+               num_constraints,
+               num_residuals,
+               levenberg_marquardt,
+               params,
+               *args,
+               **keywords):
     self.a = 1
     self.b = 1
+    self.values = np.zeros((num_variables,))
 
-  def set_value(self, v, reason):
-    self.v = v
+
+  def set_value(self, values, reason):
+    self.values[:] = values
 
   def func_val(self):
-    [x, y] = self.v
-    (a, b) = (self.a, self.b)
+    # No additional function value beside lsq residuals
+    return 0.
 
-    xsq = x**2
 
-    return (a - x)**2 + b*(y - xsq)**2
+  def lsq_residuals(self):
+    x0 = self.values[0]
+    x1 = self.values[1]
+
+    return np.array([self.a - x0,
+                     math.sqrt(self.b)*(x1 - (x0*x0))])
+
+
+  def lsq_jac_forward(self, forward_direction):
+    x0 = self.values[0]
+    x1 = self.values[1]
+
+    d0 = forward_direction[0]
+    d1 = forward_direction[1]
+
+    return np.array([-1. * d0,
+                     math.sqrt(self.b)*(-2.*x0*d0 + d1)])
+
+
+  def lsq_jac_adjoint(self, adjoint_direction):
+    x0 = self.values[0]
+    x1 = self.values[1]
+
+    d0 = adjoint_direction[0]
+    d1 = adjoint_direction[1]
+
+    return np.array([-1.*d0 - 2*math.sqrt(self.b)*x0*d1,
+                     math.sqrt(self.b)*(d1)])
+
 
   def func_grad_nnz(self):
-    return 2
+    return 0
+
+
+  def cons_val_nnz(self):
+    return 0
+
+
+  def cons_jac_nnz(self):
+    return 0
+
 
   def func_grad(self):
-    [x, y] = self.v
-    (a, b) = (self.a, self.b)
+    return np.zeros((num_variables,))
 
-    xsq = x**2
-
-    g = np.array([(4*b*x*(xsq - y)) + 2*x - 2*a,
-                  -2*b*(xsq - y)])
-
-    return g
 
   def cons_vals(self):
     return np.zeros((num_constraints,))
 
+
   def cons_jac(self):
     return np.zeros((num_constraints, num_variables))
 
-  def hess_prod(self, func_dual, direction, _):
-    [x, y] = self.v
-    (a, b) = (self.a, self.b)
-    [dx, dy] = direction
 
-    xsq = x**2
-
-    product = np.array([((8.*b*xsq + 4.*b*(xsq - y) + 2.)*dx - (4.*b*x)*dy)*func_dual,
-                        ((-4.*b*x)*dx + (2.*b)*dy)*func_dual])
-
-    return product
+  def hess_prod(self, func_dual, direction, cons_dual):
+    return np.zeros((num_variables,))
 
 
-class UnconstrainedTest(unittest.TestCase):
-
+class LSQTest(unittest.TestCase):
   def setUp(self):
     inf = sleqp.inf()
 
@@ -75,7 +108,7 @@ class UnconstrainedTest(unittest.TestCase):
 
     self.options = sleqp.Options()
 
-    func = Func(num_variables, num_constraints)
+    func = Func(num_variables, num_constraints, num_residuals, 0., self.params)
 
     problem = sleqp.Problem(func,
                             self.params,
@@ -117,4 +150,4 @@ class UnconstrainedTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+  unittest.main()

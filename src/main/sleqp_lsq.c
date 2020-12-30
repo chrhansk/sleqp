@@ -304,3 +304,20 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
 
   return SLEQP_OKAY;
 }
+
+SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
+                                           SleqpLSQCallbacks* callbacks)
+{
+  void* func_data = sleqp_func_get_data(func);
+
+  if(!func_data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  lsq_data->callbacks = *callbacks;
+
+  return SLEQP_OKAY;
+}

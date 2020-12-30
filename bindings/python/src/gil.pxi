@@ -11,4 +11,5 @@ cpdef set_release_gil(bint value):
 
   release_gil = value
   update_log_handler()
-  update_callbacks()
+  update_func_callbacks()
+  update_lsq_func_callbacks()
