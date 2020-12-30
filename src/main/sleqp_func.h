@@ -35,11 +35,13 @@ extern "C" {
    * @param[in]  setx             A callback to set the input vector
    * @param[in]  eval             A callback to evaluate the function and gradient
    * @param[in]  num_variables    The number of variables
+   * @param[in]  num_constraints  The number of constraints
    * @param[in]  func_data        The function data
    **/
   SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
                                   SleqpFuncCallbacks* callbacks,
                                   int num_variables,
+                                  int num_constraints,
                                   void* func_data);
 
   /**
@@ -95,6 +97,11 @@ extern "C" {
    * Returns the number of variables \f$ n \f$.
    **/
   int sleqp_func_get_num_variables(SleqpFunc* func);
+
+  /**
+   * Returns the number of constraints \f$ m \f$.
+   **/
+  int sleqp_func_get_num_constraints(SleqpFunc* func);
 
   /**
    * Returns the number of evaluations of Hessian products of the Lagrangian \f$ L \f$.

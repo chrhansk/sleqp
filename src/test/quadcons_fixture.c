@@ -8,6 +8,9 @@ SleqpSparseVec* quadconsfunc_cons_lb;
 SleqpSparseVec* quadconsfunc_cons_ub;
 SleqpSparseVec* quadconsfunc_x;
 
+static const int num_variables = 2;
+static const int num_constraints = 2;
+
 typedef struct SquareFuncData
 {
   double* x;
@@ -164,7 +167,8 @@ void quadconsfunc_setup()
 
   ASSERT_CALL(sleqp_func_create(&quadconsfunc,
                                 &callbacks,
-                                2,
+                                num_variables,
+                                num_constraints,
                                 func_data));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&quadconsfunc_var_lb,

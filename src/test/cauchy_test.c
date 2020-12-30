@@ -10,6 +10,9 @@
 
 #include "test_common.h"
 
+const int num_variables = 2;
+const int num_constraints = 0;
+
 SleqpFunc* linfunc;
 
 SleqpSparseVec* var_lb;
@@ -123,34 +126,30 @@ void unconstrained_setup()
 
   ASSERT_CALL(sleqp_func_create(&linfunc,
                                 &callbacks,
-                                2,
+                                num_variables,
+                                num_constraints,
                                 func_data));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linfunc_var_lb,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&linfunc_var_lb,
+                                              num_variables));
 
   ASSERT_CALL(sleqp_sparse_vector_push(linfunc_var_lb, 0, -inf));
   ASSERT_CALL(sleqp_sparse_vector_push(linfunc_var_lb, 1, -inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linfunc_var_ub,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&linfunc_var_ub,
+                                              num_variables));
 
   ASSERT_CALL(sleqp_sparse_vector_push(linfunc_var_ub, 0, inf));
   ASSERT_CALL(sleqp_sparse_vector_push(linfunc_var_ub, 1, inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linfunc_cons_lb,
-                                         0,
-                                         0));
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(&linfunc_cons_lb,
+                                               num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linfunc_cons_ub,
-                                         0,
-                                         0));
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(&linfunc_cons_ub,
+                                               num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linfunc_x,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&linfunc_x,
+                                              num_variables));
 
   ASSERT_CALL(sleqp_sparse_vector_push(linfunc_x, 0, 0.));
   ASSERT_CALL(sleqp_sparse_vector_push(linfunc_x, 1, 0.));

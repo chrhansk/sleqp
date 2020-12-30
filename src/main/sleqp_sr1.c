@@ -155,6 +155,7 @@ SLEQP_RETCODE sr1_func_create(SleqpFunc** fstar,
 {
 
   const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_constraints = sleqp_func_get_num_constraints(func);
 
   SleqpFuncCallbacks callbacks = {
     .set_value = sr1_func_set_value,
@@ -166,6 +167,7 @@ SLEQP_RETCODE sr1_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_func_create(fstar,
                                &callbacks,
                                num_variables,
+                               num_constraints,
                                sr1_data));
 
   SleqpFunc* sr1_func = *fstar;

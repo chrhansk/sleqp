@@ -286,6 +286,7 @@ void constrained_setup()
   ASSERT_CALL(sleqp_func_create(&func,
                                 &callbacks,
                                 num_variables,
+                                num_constraints,
                                 func_data));
 
   ASSERT_CALL(sleqp_params_create(&params));

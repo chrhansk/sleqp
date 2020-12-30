@@ -9,6 +9,8 @@ struct SleqpFunc
   SleqpFuncCallbacks callbacks;
 
   int num_variables;
+  int num_constraints;
+
   void* data;
 
   int num_func_evals;
@@ -30,6 +32,7 @@ struct SleqpFunc
 SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
                                 SleqpFuncCallbacks* callbacks,
                                 int num_variables,
+                                int num_constraints,
                                 void* func_data)
 {
   SLEQP_CALL(sleqp_malloc(fstar));
@@ -42,6 +45,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   func->callbacks = *callbacks;
 
   func->num_variables = num_variables;
+  func->num_constraints = num_constraints;
   func->data = func_data;
 
   SLEQP_CALL(sleqp_timer_create(&func->eval_timer));
@@ -154,6 +158,11 @@ SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
 int sleqp_func_get_num_variables(SleqpFunc* func)
 {
   return func->num_variables;
+}
+
+int sleqp_func_get_num_constraints(SleqpFunc* func)
+{
+  return func->num_constraints;
 }
 
 int sleqp_func_get_num_func_evals(SleqpFunc* func)

@@ -152,6 +152,7 @@ cdef class LSQFunc:
     csleqp_call(csleqp.sleqp_lsq_func_create(&self.func,
                                              &callbacks,
                                              num_variables,
+                                             num_constraints,
                                              num_residuals,
                                              levenberg_marquardt,
                                              params.params,

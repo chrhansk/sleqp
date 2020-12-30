@@ -91,14 +91,23 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   assert(sleqp_sparse_vector_valid(cons_lb));
   assert(sleqp_sparse_vector_valid(cons_ub));
 
+  const int num_constraints = sleqp_func_get_num_constraints(func);
+  const int num_variables = sleqp_func_get_num_variables(func);
+
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpProblem* problem = *star;
 
   *problem = (SleqpProblem) {0};
 
-  problem->num_variables = var_lb->dim;
-  problem->num_constraints = cons_lb->dim;
+  problem->num_variables = num_variables;
+  problem->num_constraints = num_constraints;
+
+  assert(var_lb->dim == num_variables);
+  assert(var_ub->dim == num_variables);
+
+  assert(cons_lb->dim == num_constraints);
+  assert(cons_ub->dim == num_constraints);
 
   SLEQP_CALL(sleqp_func_capture(func));
 

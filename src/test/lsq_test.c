@@ -29,6 +29,7 @@ static inline double sq(double v)
 }
 
 static const int num_variables = 2;
+static const int num_constraints = 0;
 static const int num_residuals = 3;
 
 SleqpParams* params;
@@ -179,8 +180,9 @@ void rosenbrock_setup()
 
   ASSERT_CALL(sleqp_lsq_func_create(&rosenbrock_lsq_func,
                                     &callbacks,
-                                    num_variables, // num variables
-                                    num_residuals, // num residuals
+                                    num_variables,   // num variables
+                                    num_constraints, // num constraints
+                                    num_residuals,   // num residuals
                                     0.,            // ML-term
                                     params,
                                     rosenbrock_func_data));

@@ -155,8 +155,8 @@ SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
                                SleqpFunc* func,
                                SleqpBFGSData* bfgs_data)
 {
-
   const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_constraints = sleqp_func_get_num_constraints(func);
 
   SleqpFuncCallbacks callbacks = {
     .set_value = bfgs_func_set_value,
@@ -168,6 +168,7 @@ SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_func_create(fstar,
                                &callbacks,
                                num_variables,
+                               num_constraints,
                                bfgs_data));
 
   SleqpFunc* bfgs_func = *fstar;

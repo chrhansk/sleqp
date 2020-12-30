@@ -211,6 +211,7 @@ SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
   SLEQP_CALL(sleqp_func_create(&(problem_scaling->scaled_func),
                                &callbacks,
                                num_variables,
+                               num_constraints,
                                problem_scaling));
 
   SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(problem->func),

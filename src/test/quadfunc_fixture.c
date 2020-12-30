@@ -1,5 +1,8 @@
 #include "quadfunc_fixture.h"
 
+const int num_variables = 2;
+const int num_constraints = 0;
+
 SleqpFunc* quadfunc;
 
 SleqpSparseVec* quadfunc_var_lb;
@@ -118,34 +121,30 @@ void quadfunc_setup()
 
   ASSERT_CALL(sleqp_func_create(&quadfunc,
                                 &callbacks,
-                                2,
+                                num_variables,
+                                num_constraints,
                                 func_data));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadfunc_var_lb,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&quadfunc_var_lb,
+                                              num_variables));
 
   ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_lb, 0, 1.));
   ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_lb, 1, 2.));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadfunc_var_ub,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&quadfunc_var_ub,
+                                              num_variables));
 
   ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_ub, 0, 2.));
   ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_var_ub, 1, 3.));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadfunc_cons_lb,
-                                         0,
-                                         0));
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(&quadfunc_cons_lb,
+                                               num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadfunc_cons_ub,
-                                         0,
-                                         0));
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(&quadfunc_cons_ub,
+                                               num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadfunc_x,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&quadfunc_x,
+                                              num_variables));
 
 
   ASSERT_CALL(sleqp_sparse_vector_push(quadfunc_x, 0, 1.));

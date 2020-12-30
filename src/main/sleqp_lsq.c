@@ -247,6 +247,7 @@ static SLEQP_RETCODE lsq_func_free(void* func_data)
 SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                     SleqpLSQCallbacks* callbacks,
                                     int num_variables,
+                                    int num_constraints,
                                     int num_residuals,
                                     double levenberg_marquardt,
                                     SleqpParams* params,
@@ -300,6 +301,7 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_func_create(fstar,
                                &func_callbacks,
                                num_variables,
+                               num_constraints,
                                data));
 
   return SLEQP_OKAY;

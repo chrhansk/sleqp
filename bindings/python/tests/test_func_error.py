@@ -6,7 +6,7 @@ import unittest
 import sleqp
 
 num_variables = 2
-num_constraints = 1
+num_constraints = 0
 
 class ErrorFunc(sleqp.Func):
   def set_value(self, v, reason):

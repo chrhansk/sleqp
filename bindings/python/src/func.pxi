@@ -224,6 +224,7 @@ cdef class Func:
     csleqp_call(csleqp.sleqp_func_create(&self.func,
                                          &callbacks,
                                          num_variables,
+                                         num_constraints,
                                          <void*> self))
 
     self.num_variables = num_variables

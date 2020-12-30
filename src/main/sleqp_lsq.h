@@ -80,6 +80,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                       SleqpLSQCallbacks* callbacks,
                                       int num_variables,
+                                      int num_constraints,
                                       int num_residuals,
                                       double levenberg_marquardt,
                                       SleqpParams* params,

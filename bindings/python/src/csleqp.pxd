@@ -212,6 +212,7 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
                                   SleqpFuncCallbacks* callbacks,
                                   int num_variables,
+                                  int num_constraints,
                                   void* func_data)
 
   SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
@@ -318,11 +319,14 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                       SleqpLSQCallbacks* callbacks,
                                       int num_variables,
+                                      int num_constraints,
                                       int num_residuals,
                                       double levenberg_marquardt,
                                       SleqpParams* params,
                                       void* func_data)
 
+  SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
+                                             SleqpLSQCallbacks* callbacks)
 
   # Scaling
 

@@ -13,6 +13,9 @@
 
 #include "sparse/sleqp_sparse_factorization_umfpack.h"
 
+static const int num_variables = 2;
+static const int num_constraints = 1;
+
 SleqpFunc* linquadfunc;
 
 SleqpSparseVec* linquadfunc_var_lb;
@@ -154,40 +157,36 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_func_create(&linquadfunc,
                                 &callbacks,
-                                2,
+                                num_variables,
+                                num_constraints,
                                 func_data));
 
   double inf = sleqp_infinity();
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linquadfunc_var_lb,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&linquadfunc_var_lb,
+                                              num_variables));
 
   ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_var_lb, 0, -inf));
   ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_var_lb, 1, -inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linquadfunc_var_ub,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&linquadfunc_var_ub,
+                                              num_variables));
 
   ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_var_ub, 0, inf));
   ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_var_ub, 1, inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linquadfunc_cons_lb,
-                                         1,
-                                         1));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&linquadfunc_cons_lb,
+                                              num_constraints));
 
   ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_cons_lb, 0, 2.));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linquadfunc_cons_ub,
-                                         1,
-                                         1));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&linquadfunc_cons_ub,
+                                              num_constraints));
 
   ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_cons_ub, 0, inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&linquadfunc_x,
-                                         2,
-                                         2));
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&linquadfunc_x,
+                                              num_variables));
 
 
   ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_x, 0, 1.));
