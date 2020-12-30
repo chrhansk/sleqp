@@ -5,12 +5,14 @@ cimport numpy as np
 
 import enum
 import traceback
-import scipy.sparse
-
 import typing
+import weakref
+
+import scipy.sparse
 
 cimport csleqp
 
+include "gil.pxi"
 include "call.pxi"
 include "cmp.pxi"
 include "sparse.pxi"

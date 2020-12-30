@@ -214,6 +214,9 @@ cdef extern from "sleqp.h":
                                   int num_variables,
                                   void* func_data)
 
+  SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
+                                         SleqpFuncCallbacks* callbacks)
+
   SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar)
 
   SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
@@ -385,7 +388,7 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                    int max_num_iterations,
-                                   double time_limit)
+                                   double time_limit) nogil
 
   SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
 

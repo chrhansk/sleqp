@@ -44,14 +44,23 @@ cdef class Solver:
               int max_num_iterations,
               double time_limit):
 
-    try:
-      self.problem.func.call_exception = None
+    cdef csleqp.SleqpSolver* solver = self.solver
+    cdef int retcode = csleqp.SLEQP_OKAY
 
-      csleqp_call(csleqp.sleqp_solver_solve(self.solver,
+    self.problem.func.call_exception = None
+
+    if release_gil:
+      with nogil:
+        retcode = csleqp.sleqp_solver_solve(self.solver,
                                             max_num_iterations,
-                                            time_limit))
+                                            time_limit)
+    else:
+      retcode = csleqp.sleqp_solver_solve(self.solver,
+                                          max_num_iterations,
+                                          time_limit)
 
-    except Exception as exception:
+    if retcode != csleqp.SLEQP_OKAY:
+      exception = SLEQPError(retcode)
       call_exception = self.problem.func.call_exception
       if call_exception:
         self.problem.func.call_exception = None

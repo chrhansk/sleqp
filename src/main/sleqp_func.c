@@ -138,6 +138,14 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
+                                       SleqpFuncCallbacks* callbacks)
+{
+  func->callbacks = *callbacks;
+
+  return SLEQP_OKAY;
+}
+
 SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
 {
   return func->hess_struct;

@@ -78,6 +78,12 @@ extern "C" {
                                 SleqpSparseMatrix* cons_jac);
 
   /**
+   * Sets the callbacks of this function to the specified ones
+   **/
+  SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
+                                         SleqpFuncCallbacks* callbacks);
+
+  /**
    * Returns the Hessian structure of this function
    *
    * @param[in]     func            The function

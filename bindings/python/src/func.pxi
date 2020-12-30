@@ -1,5 +1,6 @@
 #cython: language_level=3
 
+
 cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpSparseVec* x,
                                          csleqp.SLEQP_VALUE_REASON reason,
                                          int num_variables,
@@ -24,6 +25,24 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpSparseVec* x,
     return csleqp.SLEQP_INTERNAL_ERROR
 
   return csleqp.SLEQP_OKAY
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpSparseVec* x,
+                                               csleqp.SLEQP_VALUE_REASON reason,
+                                               int num_variables,
+                                               int* func_grad_nnz,
+                                               int* cons_val_nnz,
+                                               int* cons_jac_nnz,
+                                               void* func_data) nogil:
+  with gil:
+    return sleqp_func_set(x,
+                          reason,
+                          num_variables,
+                          func_grad_nnz,
+                          cons_val_nnz,
+                          cons_jac_nnz,
+                          func_data)
+
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
                                           const csleqp.SleqpSparseVec* cons_indices,
@@ -80,6 +99,24 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(int num_variables,
 
   return csleqp.SLEQP_OKAY
 
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_eval_nogil(int num_variables,
+                                                const csleqp.SleqpSparseVec* cons_indices,
+                                                double* func_val,
+                                                csleqp.SleqpSparseVec* func_grad,
+                                                csleqp.SleqpSparseVec* cons_vals,
+                                                csleqp.SleqpSparseMatrix* cons_jac,
+                                                void* func_data) nogil:
+  with gil:
+    return sleqp_func_eval(num_variables,
+                           cons_indices,
+                           func_val,
+                           func_grad,
+                           cons_vals,
+                           cons_jac,
+                           func_data)
+
+
 cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
                                                   const double* func_dual,
                                                   const csleqp.SleqpSparseVec* direction,
@@ -115,8 +152,48 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(int num_variables,
 
   return csleqp.SLEQP_OKAY
 
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product_nogil(int num_variables,
+                                                        const double* func_dual,
+                                                        const csleqp.SleqpSparseVec* direction,
+                                                        const csleqp.SleqpSparseVec* cons_dual,
+                                                        csleqp.SleqpSparseVec* product,
+                                                        void* func_data) nogil:
+  with gil:
+    return sleqp_func_hess_product(num_variables,
+                                   func_dual,
+                                   direction,
+                                   cons_dual,
+                                   product,
+                                   func_data)
+
+
 cdef csleqp.SLEQP_RETCODE sleqp_func_free(void* func_data):
   return csleqp.SLEQP_OKAY
+
+
+cdef object funcs = weakref.WeakSet()
+
+cdef update_callbacks():
+  cdef Func func
+  cdef csleqp.SleqpFuncCallbacks callbacks
+
+  if release_gil:
+    callbacks.set_value = &sleqp_func_set_nogil
+    callbacks.func_eval = &sleqp_func_eval_nogil
+    callbacks.hess_prod = &sleqp_func_hess_product_nogil
+  else:
+    callbacks.set_value = &sleqp_func_set
+    callbacks.func_eval = &sleqp_func_eval
+    callbacks.hess_prod = &sleqp_func_hess_product
+
+  callbacks.func_free = &sleqp_func_free
+
+  for obj in funcs:
+    func = <Func> obj
+
+    csleqp_call(csleqp.sleqp_func_set_callbacks(func.func,
+                                                &callbacks))
 
 
 cdef class Func:
@@ -137,9 +214,15 @@ cdef class Func:
 
     cdef csleqp.SleqpFuncCallbacks callbacks
 
-    callbacks.set_value = &sleqp_func_set
-    callbacks.func_eval = &sleqp_func_eval
-    callbacks.hess_prod = &sleqp_func_hess_product
+    if release_gil:
+      callbacks.set_value = &sleqp_func_set_nogil
+      callbacks.func_eval = &sleqp_func_eval_nogil
+      callbacks.hess_prod = &sleqp_func_hess_product_nogil
+    else:
+      callbacks.set_value = &sleqp_func_set
+      callbacks.func_eval = &sleqp_func_eval
+      callbacks.hess_prod = &sleqp_func_hess_product
+
     callbacks.func_free = &sleqp_func_free
 
     csleqp_call(csleqp.sleqp_func_create(&self.func,
@@ -151,6 +234,8 @@ cdef class Func:
     self.num_constraints = num_constraints
 
     self.call_exception = None
+
+    funcs.add(self)
 
     assert(self.func)
 

@@ -69,7 +69,7 @@ class UnconstrainedTest(unittest.TestCase):
     cons_lb = np.array([])
     cons_ub = np.array([])
 
-    x = np.array([0., 0.])
+    self.initial_sol = np.array([0., 0.])
 
     self.params = sleqp.Params()
 
@@ -78,28 +78,46 @@ class UnconstrainedTest(unittest.TestCase):
     #a = 1.
     #b = 100.
 
-    self.func = Func(num_variables, num_constraints)
+    func = Func(num_variables, num_constraints)
 
-    self.problem = sleqp.Problem(self.func,
-                                 self.params,
-                                 var_lb,
-                                 var_ub,
-                                 cons_lb,
-                                 cons_ub)
+    problem = sleqp.Problem(func,
+                            self.params,
+                            var_lb,
+                            var_ub,
+                            cons_lb,
+                            cons_ub)
 
-    self.solver = sleqp.Solver(self.problem,
+    self.solver = sleqp.Solver(problem,
                                self.params,
                                self.options,
-                               x)
+                               self.initial_sol)
+
+    self.expected_sol = np.array([1., 1.])
+
 
   def test_solve(self):
     self.solver.solve(100, 3600)
 
     self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
-    s = np.array([1., 1.])
+    self.assertTrue(np.allclose(self.expected_sol,
+                                self.solver.solution.primal))
 
-    self.assertTrue(np.allclose(s, self.solver.solution.primal))
+
+  def test_solve_nogil(self):
+    sleqp.set_release_gil(True)
+
+    try:
+      self.solver.solve(100, 3600)
+
+      self.assertEqual(self.solver.status, sleqp.Status.Optimal)
+
+      self.assertTrue(np.allclose(self.expected_sol,
+                                  self.solver.solution.primal))
+
+    finally:
+      sleqp.set_release_gil(False)
+
 
 if __name__ == '__main__':
     unittest.main()
