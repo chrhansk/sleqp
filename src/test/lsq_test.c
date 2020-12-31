@@ -41,9 +41,9 @@ SleqpSparseVec* rosenbrock_cons_lb;
 SleqpSparseVec* rosenbrock_cons_ub;
 SleqpSparseVec* rosenbrock_x;
 
-static SLEQP_RETCODE rosenbrock_lsq_set(SleqpSparseVec* x,
+static SLEQP_RETCODE rosenbrock_lsq_set(SleqpFunc* func,
+                                        SleqpSparseVec* x,
                                         SLEQP_VALUE_REASON reason,
-                                        int num_variables,
                                         int* func_grad_nnz,
                                         int* cons_val_nnz,
                                         int* cons_jac_nnz,
@@ -60,7 +60,7 @@ static SLEQP_RETCODE rosenbrock_lsq_set(SleqpSparseVec* x,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE rosenbrock_lsq_eval(int num_variables,
+SLEQP_RETCODE rosenbrock_lsq_eval(SleqpFunc* func,
                                   SleqpSparseVec* residual,
                                   void* func_data)
 {
@@ -86,7 +86,7 @@ SLEQP_RETCODE rosenbrock_lsq_eval(int num_variables,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE rosenbrock_lsq_jac_forward(int num_variables,
+SLEQP_RETCODE rosenbrock_lsq_jac_forward(SleqpFunc* func,
                                          const SleqpSparseVec* forward_direction,
                                          SleqpSparseVec* product,
                                          void* func_data)
@@ -120,7 +120,7 @@ SLEQP_RETCODE rosenbrock_lsq_jac_forward(int num_variables,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE rosenbrock_lsq_jac_adjoint(int num_variables,
+SLEQP_RETCODE rosenbrock_lsq_jac_adjoint(SleqpFunc* func,
                                          const SleqpSparseVec* adjoint_direction,
                                          SleqpSparseVec* product,
                                          void* func_data)

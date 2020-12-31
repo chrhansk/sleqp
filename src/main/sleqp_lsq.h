@@ -22,12 +22,12 @@ extern "C" {
    * \f]
    * This is useful when the constraints part is used to represent a least-squares residual.
    *
-   * @param[in]     num_variables     The number of variables
+   * @param[in]     func              The function
    * @param[out]    residual          The resulting residual
    * @param[in,out] func_data         The function data
    *
    */
-  typedef SLEQP_RETCODE (*SLEQP_LSQ_EVAL)(int num_variables,
+  typedef SLEQP_RETCODE (*SLEQP_LSQ_EVAL)(SleqpFunc* func,
                                           SleqpSparseVec* residual,
                                           void* func_data);
 
@@ -38,13 +38,13 @@ extern "C" {
    * \f]
    * This is useful when the constraints part is used to represent a least-squares residual.
    *
-   * @param[in]     num_variables     The number of variables
+   * @param[in]     func              The function
    * @param[in]     forward_direction The direction \f$ d \f$
    * @param[out]    product           The resulting product
    * @param[in,out] func_data         The function data
    *
    */
-  typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(int num_variables,
+  typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(SleqpFunc* func,
                                                  const SleqpSparseVec* forward_direction,
                                                  SleqpSparseVec* product,
                                                  void* func_data);
@@ -56,13 +56,13 @@ extern "C" {
    * \f]
    * This is useful when the constraints part is used to represent a least-squares residual.
    *
-   * @param[in]     num_variables     The number of variables
+   * @param[in]     func              The function
    * @param[in]     adjoint_direction The direction \f$ d \f$
    * @param[out]    product           The resulting product
    * @param[in,out] func_data         The function data
    *
    */
-  typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_ADJOINT)(int num_variables,
+  typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_ADJOINT)(SleqpFunc* func,
                                                  const SleqpSparseVec* adjoint_direction,
                                                  SleqpSparseVec* product,
                                                  void* func_data);

@@ -28,9 +28,9 @@ SleqpSparseVec* rosenbrock_cons_ub;
 SleqpSparseVec* rosenbrock_x;
 
 
-static SLEQP_RETCODE rosenbrock_set(SleqpSparseVec* x,
+static SLEQP_RETCODE rosenbrock_set(SleqpFunc* func,
+                                    SleqpSparseVec* x,
                                     SLEQP_VALUE_REASON reason,
-                                    int num_variables,
                                     int* func_grad_nnz,
                                     int* cons_val_nnz,
                                     int* cons_jac_nnz,
@@ -57,7 +57,7 @@ static SLEQP_RETCODE rosenbrock_set(SleqpSparseVec* x,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE rosenbrock_eval(int num_variables,
+static SLEQP_RETCODE rosenbrock_eval(SleqpFunc* func,
                                      const SleqpSparseVec* cons_indices,
                                      double* func_val,
                                      SleqpSparseVec* func_grad,
@@ -102,7 +102,7 @@ static SLEQP_RETCODE rosenbrock_eval(int num_variables,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE rosenbrock_hess_prod(int num_variables,
+static SLEQP_RETCODE rosenbrock_hess_prod(SleqpFunc* func,
                                           const double* func_dual,
                                           const SleqpSparseVec* direction,
                                           const SleqpSparseVec* cons_duals,

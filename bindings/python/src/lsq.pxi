@@ -1,79 +1,79 @@
 #cython: language_level=3
 
-cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval(int num_variables,
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval(csleqp.SleqpFunc* func,
                                          csleqp.SleqpSparseVec* residual,
                                          void* func_data):
   try:
-    func = (<object> func_data)
+    func_obj = (<object> func_data)
 
-    array = func.lsq_residuals()
+    array = func_obj.lsq_residuals()
     csleqp_call(array_to_sleqp_sparse_vec(array, residual))
 
   except BaseException as exception:
-    func.call_exception = exception
+    func_obj.call_exception = exception
     return csleqp.SLEQP_INTERNAL_ERROR
 
   return csleqp.SLEQP_OKAY
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval_nogil(int num_variables,
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval_nogil(csleqp.SleqpFunc* func,
                                                csleqp.SleqpSparseVec* residual,
                                                void* func_data) nogil:
   with gil:
-    return sleqp_lsq_eval(num_variables,
+    return sleqp_lsq_eval(func,
                           residual,
                           func_data)
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(int num_variables,
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(csleqp.SleqpFunc* func,
                                                 const csleqp.SleqpSparseVec* forward_direction,
                                                 csleqp.SleqpSparseVec* product,
                                                 void* func_data):
   try:
-      func = (<object> func_data)
+      func_obj = (<object> func_data)
 
       forward_direction_array = sleqp_sparse_vec_to_array(forward_direction)
 
-      product_array = func.lsq_jac_forward(forward_direction_array)
+      product_array = func_obj.lsq_jac_forward(forward_direction_array)
 
       assert product_array is not None, "lsq_jac_forward(...) returned 'None'"
 
       csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
   except BaseException as exception:
-    func.call_exception = exception
+    func_obj.call_exception = exception
     return csleqp.SLEQP_INTERNAL_ERROR
 
   return csleqp.SLEQP_OKAY
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward_nogil(int num_variables,
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward_nogil(csleqp.SleqpFunc* func,
                                                       const csleqp.SleqpSparseVec* forward_direction,
                                                       csleqp.SleqpSparseVec* product,
                                                       void* func_data) nogil:
   with gil:
-    return sleqp_lsq_jac_forward(num_variables,
+    return sleqp_lsq_jac_forward(func,
                                  forward_direction,
                                  product,
                                  func_data)
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(int num_variables,
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(csleqp.SleqpFunc* func,
                                                 const csleqp.SleqpSparseVec* adjoint_direction,
                                                 csleqp.SleqpSparseVec* product,
                                                 void* func_data):
   try:
-      func = (<object> func_data)
+      func_obj = (<object> func_data)
 
       adjoint_direction_array = sleqp_sparse_vec_to_array(adjoint_direction)
 
-      product_array = func.lsq_jac_adjoint(adjoint_direction_array)
+      product_array = func_obj.lsq_jac_adjoint(adjoint_direction_array)
 
       assert product_array is not None, "lsq_jac_adjoint(...) returned 'None'"
 
       csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
   except BaseException as exception:
-    func.call_exception = exception
+    func_obj.call_exception = exception
     return csleqp.SLEQP_INTERNAL_ERROR
 
   return csleqp.SLEQP_OKAY
@@ -82,12 +82,12 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(int num_variables,
 cdef object lsq_funcs = weakref.WeakSet()
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint_nogil(int num_variables,
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint_nogil(csleqp.SleqpFunc* func,
                                                       const csleqp.SleqpSparseVec* adjoint_direction,
                                                       csleqp.SleqpSparseVec* product,
                                                       void* func_data) nogil:
   with gil:
-    return sleqp_lsq_jac_adjoint(num_variables,
+    return sleqp_lsq_jac_adjoint(func,
                                  adjoint_direction,
                                  product,
                                  func_data)

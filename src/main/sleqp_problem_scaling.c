@@ -24,9 +24,9 @@ struct SleqpProblemScaling
 };
 
 static SLEQP_RETCODE
-scaled_func_set_value(SleqpSparseVec* scaled_value,
+scaled_func_set_value(SleqpFunc* func,
+                      SleqpSparseVec* scaled_value,
                       SLEQP_VALUE_REASON reason,
-                      int num_variables,
                       int* func_grad_nnz,
                       int* cons_val_nnz,
                       int* cons_jac_nnz,
@@ -61,7 +61,7 @@ scaled_func_set_value(SleqpSparseVec* scaled_value,
 }
 
 static SLEQP_RETCODE
-scaled_func_eval(int num_variables,
+scaled_func_eval(SleqpFunc* func,
                  const SleqpSparseVec* cons_indices,
                  double* func_val,
                  SleqpSparseVec* func_grad,
@@ -110,7 +110,7 @@ scaled_func_eval(int num_variables,
 }
 
 static SLEQP_RETCODE
-scaled_func_hess_prod(int num_variables,
+scaled_func_hess_prod(SleqpFunc* func,
                       const double* func_dual,
                       const SleqpSparseVec* direction,
                       const SleqpSparseVec* cons_duals,

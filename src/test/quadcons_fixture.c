@@ -23,9 +23,9 @@ static inline double square(double v)
   return v*v;
 }
 
-SLEQP_RETCODE quadconsfunc_set(SleqpSparseVec* x,
+SLEQP_RETCODE quadconsfunc_set(SleqpFunc* func,
+                               SleqpSparseVec* x,
                                SLEQP_VALUE_REASON reason,
-                               int num_variables,
                                int* func_grad_nnz,
                                int* cons_val_nnz,
                                int* cons_jac_nnz,
@@ -52,7 +52,7 @@ SLEQP_RETCODE quadconsfunc_set(SleqpSparseVec* x,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE quadconsfunc_eval(int num_variables,
+SLEQP_RETCODE quadconsfunc_eval(SleqpFunc* func,
                                 const SleqpSparseVec* cons_indices,
                                 double* func_val,
                                 SleqpSparseVec* func_grad,
@@ -121,7 +121,7 @@ SLEQP_RETCODE quadconsfunc_eval(int num_variables,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE quadconsfunc_hess_prod(int num_variables,
+SLEQP_RETCODE quadconsfunc_hess_prod(SleqpFunc* func,
                                      const double* func_dual,
                                      const SleqpSparseVec* direction,
                                      const SleqpSparseVec* cons_duals,

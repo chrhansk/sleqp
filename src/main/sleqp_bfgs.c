@@ -93,9 +93,9 @@ struct SleqpBFGSData
 };
 
 static SLEQP_RETCODE
-bfgs_func_set_value(SleqpSparseVec* x,
+bfgs_func_set_value(SleqpFunc* func,
+                    SleqpSparseVec* x,
                     SLEQP_VALUE_REASON reason,
-                    int num_variables,
                     int* func_grad_nnz,
                     int* cons_val_nnz,
                     int* cons_jac_nnz,
@@ -114,7 +114,7 @@ bfgs_func_set_value(SleqpSparseVec* x,
 }
 
 static SLEQP_RETCODE
-bfgs_func_eval(int num_variables,
+bfgs_func_eval(SleqpFunc* func,
                const SleqpSparseVec* cons_indices,
                double* func_val,
                SleqpSparseVec* func_grad,
@@ -135,7 +135,7 @@ bfgs_func_eval(int num_variables,
 }
 
 static SLEQP_RETCODE
-bfgs_func_hess_product(int num_variables,
+bfgs_func_hess_product(SleqpFunc* func,
                        const double* func_dual,
                        const SleqpSparseVec* direction,
                        const SleqpSparseVec* cons_duals,

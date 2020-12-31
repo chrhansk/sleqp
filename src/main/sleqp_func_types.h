@@ -15,6 +15,9 @@
 extern "C" {
 #endif
 
+  // forwrad declaration
+  typedef struct SleqpFunc SleqpFunc;
+
   typedef enum {
     SLEQP_VALUE_REASON_NONE,
     SLEQP_VALUE_REASON_INIT,
@@ -28,16 +31,16 @@ extern "C" {
   /**
    * Sets the current input vector
    *
-   * @param[in]  x               The input vector \f$ x \f$
-   * @param[in]  num_variables   The number of variables
-   * @param[out] func_grad_nnz   The number of nonzeros of the function gradient \f$ \nabla f(x) \f$
-   * @param[out] cons_val_nnz    The number of nonzeros of the constraint function \f$ c(x) \f$
-   * @param[out] cons_jac_nnz    The number of nonzeros of the constraint Jacobian \f$ J_c(x) \f$
-   * @param[in,out] func_data    The function data
+   * @param[in]     func            The function
+   * @param[in]     value           The value
+   * @param[out]    func_grad_nnz   The number of nonzeros of the function gradient \f$ \nabla f(x) \f$
+   * @param[out]    cons_val_nnz    The number of nonzeros of the constraint function \f$ c(x) \f$
+   * @param[out]    cons_jac_nnz    The number of nonzeros of the constraint Jacobian \f$ J_c(x) \f$
+   * @param[in,out] func_data       The function data
    **/
-  typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpSparseVec* x,
+  typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
+                                          SleqpSparseVec* value,
                                           SLEQP_VALUE_REASON reason,
-                                          int num_variables,
                                           int* func_grad_nnz,
                                           int* cons_val_nnz,
                                           int* cons_jac_nnz,
@@ -46,7 +49,7 @@ extern "C" {
   /**
    * Evaluates the function and its gradient at the current input vector
    *
-   * @param[in]     num_variables   The number of variables
+   * @param[in]     func            The function
    * @param[in]     cons_indices    The indices of the constraint function
    *                                to be evaluated
    * @param[out]    func_val        The function value \f$ f(x) \f$
@@ -55,7 +58,7 @@ extern "C" {
    * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
    * @param[in,out] func_data       The function data
    **/
-  typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(int num_variables,
+  typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(SleqpFunc* func,
                                            const SleqpSparseVec* cons_indices,
                                            double* func_val,
                                            SleqpSparseVec* func_grad,
@@ -78,7 +81,7 @@ extern "C" {
    *   + \sum_{i=1}^{m} \lambda_i  \nabla_{xx} c_i(x) d \right)
    * \f]
    *
-   * @param[in]     num_variables     The number of variables
+   * @param[in]     func              The function
    * @param[in]     func_dual         The value \f$ \lambda_0 \f$
    * @param[in]     direction         The direction \f$ d \f$
    * @param[in]     cons_duals        The values \f$ \lambda \f$
@@ -86,7 +89,7 @@ extern "C" {
    * @param[in,out] func_data         The function data
    *
    **/
-  typedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(int num_variables,
+  typedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(SleqpFunc* func,
                                               const double* func_dual,
                                               const SleqpSparseVec* direction,
                                               const SleqpSparseVec* cons_duals,

@@ -67,9 +67,9 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    int* cons_val_nnz,
                                    int* cons_jac_nnz)
 {
-  SLEQP_CALL(func->callbacks.set_value(x,
+  SLEQP_CALL(func->callbacks.set_value(func,
+                                       x,
                                        reason,
-                                       func->num_variables,
                                        func_grad_nnz,
                                        cons_val_nnz,
                                        cons_jac_nnz,
@@ -111,7 +111,7 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_timer_start(func->eval_timer));
 
-  SLEQP_CALL(func->callbacks.func_eval(func->num_variables,
+  SLEQP_CALL(func->callbacks.func_eval(func,
                                        cons_indices,
                                        func_val,
                                        func_grad,
@@ -216,7 +216,7 @@ SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_timer_start(func->hess_timer));
 
-  SLEQP_CALL(func->callbacks.hess_prod(func->num_variables,
+  SLEQP_CALL(func->callbacks.hess_prod(func,
                                        func_dual,
                                        direction,
                                        cons_duals,
@@ -243,7 +243,7 @@ SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
   ++func->num_hess_evals;
   SLEQP_CALL(sleqp_sparse_vector_clear(func->product));
 
-  SLEQP_CALL(func->callbacks.hess_prod(func->num_variables,
+  SLEQP_CALL(func->callbacks.hess_prod(func,
                                        func_dual,
                                        direction,
                                        cons_duals,

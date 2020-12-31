@@ -178,15 +178,15 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_sparse_matrix_release(SleqpSparseMatrix** matrix)
 
   # Functions
-  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpSparseVec* x,
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
+                                           SleqpSparseVec* x,
                                            SLEQP_VALUE_REASON reason,
-                                           int num_variables,
                                            int* func_grad_nnz,
                                            int* cons_val_nnz,
                                            int* cons_jac_nnz,
                                            void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(int num_variables,
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(SleqpFunc* func,
                                             const SleqpSparseVec* cons_indices,
                                             double* func_val,
                                             SleqpSparseVec* func_grad,
@@ -194,7 +194,7 @@ cdef extern from "sleqp.h":
                                             SleqpSparseMatrix* cons_jac,
                                             void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(int num_variables,
+  ctypedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(SleqpFunc* func,
                                                const double* func_dual,
                                                const SleqpSparseVec* direction,
                                                const SleqpSparseVec* cons_duals,
@@ -217,6 +217,10 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
                                          SleqpFuncCallbacks* callbacks)
+
+  int sleqp_func_get_num_variables(SleqpFunc* func)
+
+  int sleqp_func_get_num_constraints(SleqpFunc* func)
 
   SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar)
 
@@ -293,16 +297,16 @@ cdef extern from "sleqp.h":
 
   # LSQ
 
-  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_EVAL)(int num_variables,
+  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_EVAL)(SleqpFunc* func,
                                            SleqpSparseVec* residual,
                                            void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(int num_variables,
+  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(SleqpFunc* func,
                                                   SleqpSparseVec* forward_direction,
                                                   SleqpSparseVec* product,
                                                   void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_ADJOINT)(int num_variables,
+  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_ADJOINT)(SleqpFunc* func,
                                                   SleqpSparseVec* adjoint_direction,
                                                   SleqpSparseVec* product,
                                                   void* func_data)
