@@ -31,7 +31,7 @@ cdef class Problem:
     if isinstance(func, Func):
         cfunc = (<Func> func).func
     elif isinstance(func, LSQFunc):
-        cfunc = (<Func> func).func
+        cfunc = (<LSQFunc> func).func
 
     assert cfunc != NULL, "Invalid function type"
 
