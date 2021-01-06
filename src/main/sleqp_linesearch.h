@@ -8,8 +8,6 @@
 
 #include "sleqp_merit.h"
 
-#include "sleqp.h"
-
 #ifdef __cplusplus
 extern "C" {
 #endif

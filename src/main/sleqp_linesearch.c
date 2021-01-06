@@ -1,7 +1,10 @@
 #include "sleqp_linesearch.h"
 
 #include "sleqp_assert.h"
+#include "sleqp_cmp.h"
 #include "sleqp_feas.h"
+#include "sleqp_mem.h"
+#include "sleqp_util.h"
 
 #define LINESEARCH_MAX_IT 10000
 
