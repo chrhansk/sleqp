@@ -33,7 +33,7 @@ cpdef enum ActiveState:
   Inactive    = csleqp.SLEQP_INACTIVE,
   ActiveLower = csleqp.SLEQP_ACTIVE_LOWER,
   ActiveUpper = csleqp.SLEQP_ACTIVE_UPPER,
-  activeBoth  = csleqp.SLEQP_ACTIVE_BOTH
+  ActiveBoth  = csleqp.SLEQP_ACTIVE_BOTH
 
 cpdef enum DualEstimationType:
   LP      = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LP,

@@ -184,6 +184,11 @@ SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(const SleqpWorkingSet*
   return working_set->constraint_states[i];
 }
 
+SleqpProblem* sleqp_working_set_get_problem(const SleqpWorkingSet* working_set)
+{
+  return working_set->problem;
+}
+
 int sleqp_working_set_num_active_vars(const SleqpWorkingSet* working_set)
 {
   return working_set->num_active_variables;

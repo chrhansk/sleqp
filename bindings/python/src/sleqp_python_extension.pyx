@@ -6,6 +6,7 @@ cimport numpy as np
 import enum
 import traceback
 import typing
+import collections.abc
 import weakref
 
 import scipy.sparse

@@ -111,6 +111,13 @@ extern "C" {
                                                             int index);
 
   /**
+   * Returns the problem underling the given working set
+   *
+   * @param[in]  working_set           The working set
+   **/
+  SleqpProblem* sleqp_working_set_get_problem(const SleqpWorkingSet* working_set);
+
+  /**
    * Returns the number of variables contained in the given working set
    *
    * @param[in]  working_set           The working set
