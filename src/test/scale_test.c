@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "sleqp.h"
+#include "sleqp_util.h"
 
 #include "lp/sleqp_lpi.h"
 

@@ -2,7 +2,9 @@
 #include <check.h>
 #include <fenv.h>
 
-#include "sleqp.h"
+#include "sleqp_problem_scaling.h"
+#include "sleqp_deriv_check.h"
+#include "sleqp_util.h"
 
 #include "lp/sleqp_lpi.h"
 

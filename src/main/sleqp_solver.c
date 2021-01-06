@@ -29,6 +29,7 @@
 #include "sleqp_merit.h"
 #include "sleqp_scale.h"
 #include "sleqp_problem_scaling.h"
+#include "sleqp_util.h"
 
 #include "lp/sleqp_lpi.h"
 
