@@ -6,8 +6,6 @@
  * @brief Definition of Cauchy step-related functions.
  **/
 
-#include "sleqp.h"
-
 #include "sleqp_iterate.h"
 
 #include "lp/sleqp_lpi.h"
