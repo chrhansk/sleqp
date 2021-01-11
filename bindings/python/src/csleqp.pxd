@@ -286,6 +286,8 @@ cdef extern from "sleqp.h":
 
   int sleqp_working_set_size(const SleqpWorkingSet* working_set)
 
+  SleqpProblem* sleqp_working_set_get_problem(const SleqpWorkingSet* working_set)
+
   SLEQP_ACTIVE_STATE sleqp_working_set_get_variable_state(const SleqpWorkingSet* working_set,
                                                           int index)
 
