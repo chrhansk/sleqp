@@ -63,6 +63,12 @@ cdef class Iterate:
     return csleqp.sleqp_iterate_get_func_val(self.iterate)
 
   @property
+  def func_grad(self) -> np.array:
+    assert self.iterate
+
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_func_grad(self.iterate))
+
+  @property
   def cons_val(self) -> np.array:
     assert self.iterate
 

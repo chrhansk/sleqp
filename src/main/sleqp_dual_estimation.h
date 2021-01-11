@@ -8,7 +8,7 @@
  * We follow the following convention:
  *
  * The Lagrangian is defined as
- * \f$ L(x, \lambda, \mu) = f(x) + \langle \lambda, c \rangle + \langle 1, \mu \rangle \f$.
+ * \f$ L(x, \lambda, \mu) = f(x) + \langle \lambda, c \rangle + \langle x, \mu \rangle \f$.
  *
  * As a result, the signs of active dual variables are
  * non-negative for constraints / variables at their upper bounds and
