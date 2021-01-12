@@ -458,8 +458,6 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   const double penalty_increase = 10.;
 
-  const double eps = sleqp_params_get_eps(solver->params);
-
   if(num_constraints == 0)
   {
     return SLEQP_OKAY;
@@ -706,7 +704,6 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   const double one = 1.;
@@ -826,10 +823,7 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
-
-  const double one = 1.;
 
   SLEQP_CALL(compute_cauchy_step(solver,
                                  cauchy_merit_value,
@@ -892,6 +886,7 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
                                       zero_eps,
                                       sleqp_iterate_get_primal(solver->trial_iterate)));
 
+  return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
@@ -901,7 +896,6 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   const double one = 1.;
@@ -1238,7 +1232,6 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                       problem->var_lb,
                                       problem->var_ub));
 
-  const double eps = sleqp_params_get_eps(solver->params);
   const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   if(has_previous_iterate)
@@ -1562,7 +1555,6 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   SleqpIterate* iterate = solver->iterate;
 
   const double eps = sleqp_params_get_eps(solver->params);
-  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
 
   sleqp_log_info("Solving a problem with %d variables, %d constraints",
                  problem->num_variables,

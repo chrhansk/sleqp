@@ -174,7 +174,6 @@ static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
 
   SleqpSparseVec* val = sleqp_iterate_get_cons_val(iterate);
 
-  const double eps = sleqp_params_get_eps(cauchy_data->params);
   const double inf = sleqp_infinity();
 
   for(int i = 0; i < num_constraints; ++i)
@@ -242,8 +241,6 @@ static SLEQP_RETCODE create_var_bounds(SleqpCauchyData* cauchy_data,
   const double trust_radius = cauchy_data->trust_radius;
 
   assert(trust_radius > 0.);
-
-  const double eps = sleqp_params_get_eps(cauchy_data->params);
 
   int k_x = 0, k_lb = 0, k_ub = 0;
 
@@ -427,6 +424,7 @@ static SLEQP_RETCODE check_basis(SleqpCauchyData* cauchy_data,
   return SLEQP_OKAY;
 }
 
+/*
 static SLEQP_RETCODE check_direction_bounds(SleqpCauchyData* cauchy_data,
                                             bool* valid_direction)
 {
@@ -502,6 +500,7 @@ static SLEQP_RETCODE check_direction_bounds(SleqpCauchyData* cauchy_data,
 
   return SLEQP_OKAY;
 }
+*/
 
 SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
                                  SleqpSparseVec* gradient,
@@ -860,12 +859,6 @@ SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchyData* cauchy_data,
         ++k_ub;
       }
 
-      const bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
-      const bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
-
-      const double ubval = valid_ub ? ub->data[k_ub] : 0.;
-      const double lbval = valid_lb ? lb->data[k_lb] : 0.;
-
       assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC ||
              upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
 
@@ -897,9 +890,6 @@ SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
   const double zero_eps = sleqp_params_get_zero_eps(cauchy_data->params);
 
   SleqpProblem* problem = cauchy_data->problem;
-
-  const int num_variables = problem->num_variables;
-  const int num_constraints = problem->num_constraints;
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 

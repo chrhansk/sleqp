@@ -308,7 +308,6 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
 SLEQP_RETCODE sleqp_deriv_check_first_order(SleqpDerivCheckData* data,
                                             SleqpIterate* iterate)
 {
-  SleqpFunc* func = data->problem->func;
   SleqpProblem* problem = data->problem;
 
   bool valid = true;
@@ -773,7 +772,6 @@ static SLEQP_RETCODE check_second_order_at(SleqpDerivCheckData* data,
 SLEQP_RETCODE sleqp_deriv_check_second_order_simple(SleqpDerivCheckData* data,
                                                     SleqpIterate* iterate)
 {
-  SleqpFunc* func = data->problem->func;
   SleqpProblem* problem = data->problem;
 
   bool valid = true;
@@ -783,15 +781,10 @@ SLEQP_RETCODE sleqp_deriv_check_second_order_simple(SleqpDerivCheckData* data,
     SLEQP_CALL(check_second_order_at(data, iterate, j, &valid));
   }
 
-  int func_grad_nnz = 0;
-  int cons_val_nnz = 0;
-  int cons_jac_nnz = 0;
-
   if(!valid)
   {
     return SLEQP_INVALID_DERIV;
   }
-
 
   return SLEQP_OKAY;
 }

@@ -233,6 +233,8 @@ SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&(problem_scaling->scaled_cons_duals),
                                               num_constraints));
+
+  return SLEQP_OKAY;
 }
 
 SleqpProblem* sleqp_problem_scaling_get_problem(SleqpProblemScaling* problem_scaling)

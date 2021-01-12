@@ -134,9 +134,6 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
 {
   SleqpProblem* problem = merit_data->problem;
 
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
-
   const double zero_eps = sleqp_params_get_zero_eps(merit_data->params);
 
   double objective_dot;

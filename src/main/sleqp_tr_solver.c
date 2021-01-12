@@ -124,6 +124,8 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
   data->time_limit = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_timer_create(&data->timer));
+
+  return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE tr_solver_free(SleqpTRSolver** star)
@@ -376,7 +378,6 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
 
   const double inf = sleqp_infinity();
 
-  const double eps = sleqp_params_get_eps(data->params);
   const double zero_eps = sleqp_params_get_zero_eps(data->params);
   const double rel_tol = sleqp_params_get_newton_relative_tolerance(data->params);
 
@@ -840,6 +841,8 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
                    max_rayleigh,
                    cond_bound);
   }
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
@@ -849,9 +852,6 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
                                     SleqpSparseVec* newton_step,
                                     double trust_radius)
 {
-  const double eps = sleqp_params_get_eps(data->params);
-  const double zero_eps = sleqp_params_get_zero_eps(data->params);
-
   trlib_int_t ret = 0;
 
   SLEQP_CALL(sleqp_sparse_vector_clear(newton_step));

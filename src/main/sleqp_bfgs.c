@@ -551,8 +551,6 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
 
   const int begin = block->curr - block->len + 1;
 
-  bool prev_damped = false;
-
   for(int val = begin; val <= block->curr; ++val)
   {
     const int i = data_index(block, val);
@@ -652,8 +650,6 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
                                               eps));
     }
 #endif
-
-    prev_damped = is_damped;
   }
 
   return SLEQP_OKAY;
@@ -783,6 +779,9 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
     }
 
     const double point_normsq = sleqp_sparse_vector_norm_sq(data->block_point_diff);
+
+    assert(sleqp_sparse_vector_valid(data->block_point_diff));
+    assert(sleqp_sparse_vector_valid(data->block_grad_diff));
 
     if(!sleqp_is_zero(point_normsq, eps))
     {
