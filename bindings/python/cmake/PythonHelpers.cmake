@@ -1,6 +1,3 @@
-find_package(PythonInterp "3" REQUIRED)
-find_package(PythonLibs "3" REQUIRED)
-
 set(ENABLE_UNIT_TESTS On)
 
 if(NOT TOX)

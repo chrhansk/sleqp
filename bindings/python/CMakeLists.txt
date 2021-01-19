@@ -1,9 +1,17 @@
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_program(TOX "tox")
+find_package(PythonInterp "3")
+find_package(PythonLibs "3")
 
-include(PythonHelpers)
+if(PythonInterp_FOUND AND PythonLibs_FOUND)
+  find_program(TOX "tox")
 
-add_python_project(
-  PROJECT_NAME sleqp
-  PROJECT_COMPONENT "python")
+  include(PythonHelpers)
+
+  add_python_project(
+    PROJECT_NAME sleqp
+    PROJECT_COMPONENT "python")
+
+else()
+  message(STATUS "Could not find python, extension will not be built")
+endif()

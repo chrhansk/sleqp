@@ -48,7 +48,7 @@ option(SLEQP_ENABLE_NUM_ASSERTS "Whether or not to numerical assertions" OFF)
 
 option(SLEQP_ENABLE_CUTEST "Whether or not to include the CUTest suite" OFF)
 
-option(SLEQP_ENABLE_PYTHON "Whether or not to enable python bindings" OFF)
+option(SLEQP_ENABLE_PYTHON "Whether or not to enable python bindings" ON)
 
 option(SLEQP_DEBUG "Whether or not to enable debug messages" OFF)
 
