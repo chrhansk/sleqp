@@ -1,4 +1,4 @@
-image: "moto.math.nat.tu-bs.de:5050/code/sleqp:7.0.1"
+image: "moto.math.nat.tu-bs.de:5050/code/images/sleqp_builddeps:latest"
 
 stages:
 - prepare
