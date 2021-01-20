@@ -6,6 +6,7 @@
  * @brief Definition of working sets.
  **/
 
+#include "sleqp_export.h"
 #include "sleqp_func.h"
 #include "sleqp_problem.h"
 #include "sleqp_types.h"
@@ -22,15 +23,15 @@ extern "C" {
    * @param[out] star            A pointer to the working set to be created
    * @param[int] problem         The underlying problem
    **/
-  SLEQP_RETCODE sleqp_working_set_create(SleqpWorkingSet** star,
-                                         SleqpProblem* problem);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_create(SleqpWorkingSet** star,
+                                                      SleqpProblem* problem);
 
   /**
    * Resets this working set by removing all variables and constraints from it
    *
    * @param[in]  working_set           The working set
    **/
-  SLEQP_RETCODE sleqp_working_set_reset(SleqpWorkingSet* working_set);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_reset(SleqpWorkingSet* working_set);
 
   /**
    * Adds a variable to the given working set
@@ -42,9 +43,9 @@ extern "C" {
    * @note The `state` must not be @ref SLEQP_INACTIVE
    * @note Variables must be added before constraints
    **/
-  SLEQP_RETCODE sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
-                                               int index,
-                                               SLEQP_ACTIVE_STATE state);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
+                                                            int index,
+                                                            SLEQP_ACTIVE_STATE state);
 
   /**
    * Adds a constraint to the given working set
@@ -56,9 +57,9 @@ extern "C" {
    * @note The `state` must not be @ref SLEQP_INACTIVE
    * @note Variables must be added before constraints
    **/
-  SLEQP_RETCODE sleqp_working_set_add_constraint(SleqpWorkingSet* working_set,
-                                                 int index,
-                                                 SLEQP_ACTIVE_STATE state);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_add_constraint(SleqpWorkingSet* working_set,
+                                                              int index,
+                                                              SLEQP_ACTIVE_STATE state);
 
   /**
    * Returns the index of the given constraint with respect to the given
@@ -68,8 +69,8 @@ extern "C" {
    * @param[in]  working_set           The working set
    * @param[in]  index                 The constraint index
    **/
-  int sleqp_working_set_get_constraint_index(const SleqpWorkingSet* working_set,
-                                             int index);
+  SLEQP_EXPORT int sleqp_working_set_get_constraint_index(const SleqpWorkingSet* working_set,
+                                                          int index);
 
   /**
    * Returns the index of the given variable with respect to the given
@@ -79,18 +80,18 @@ extern "C" {
    * @param[in]  working_set           The working set
    * @param[in]  index                 The variable index
    **/
-  int sleqp_working_set_get_variable_index(const SleqpWorkingSet* working_set,
-                                           int index);
+  SLEQP_EXPORT int sleqp_working_set_get_variable_index(const SleqpWorkingSet* working_set,
+                                                        int index);
 
   /**
    * Returns the content of the working set at the given working set index,
-   * which must be at least zero and less than @ref sleqp_working_set_size
+   SLEQP_EXPORT * which must be at least zero and less than @ref sleqp_working_set_size
    *
    * @param[in]  working_set           The working set
    * @param[in]  index                 The working set index
    **/
-  int sleqp_working_set_get_content(const SleqpWorkingSet* working_set,
-                                    int index);
+  SLEQP_EXPORT int sleqp_working_set_get_content(const SleqpWorkingSet* working_set,
+                                                 int index);
 
   /**
    * Returns the state of the given variable with respect to the given working set
@@ -98,8 +99,8 @@ extern "C" {
    * @param[in]  working_set           The working set
    * @param[in]  index                 The variable index
    **/
-  SLEQP_ACTIVE_STATE sleqp_working_set_get_variable_state(const SleqpWorkingSet* working_set,
-                                                          int index);
+  SLEQP_EXPORT SLEQP_ACTIVE_STATE sleqp_working_set_get_variable_state(const SleqpWorkingSet* working_set,
+                                                                       int index);
 
   /**
    * Returns the state of the given constraint with respect to the given working set
@@ -107,29 +108,29 @@ extern "C" {
    * @param[in]  working_set           The working set
    * @param[in]  index                 The constraint index
    **/
-  SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(const SleqpWorkingSet* working_set,
-                                                            int index);
+  SLEQP_EXPORT SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(const SleqpWorkingSet* working_set,
+                                                                         int index);
 
   /**
    * Returns the problem underling the given working set
    *
    * @param[in]  working_set           The working set
    **/
-  SleqpProblem* sleqp_working_set_get_problem(const SleqpWorkingSet* working_set);
+  SLEQP_EXPORT SleqpProblem* sleqp_working_set_get_problem(const SleqpWorkingSet* working_set);
 
   /**
    * Returns the number of variables contained in the given working set
    *
    * @param[in]  working_set           The working set
    **/
-  int sleqp_working_set_num_active_vars(const SleqpWorkingSet* working_set);
+  SLEQP_EXPORT int sleqp_working_set_num_active_vars(const SleqpWorkingSet* working_set);
 
   /**
    * Returns the number of constraints contained in the given working set
    *
    * @param[in]  working_set           The working set
    **/
-  int sleqp_working_set_num_active_cons(const SleqpWorkingSet* working_set);
+  SLEQP_EXPORT int sleqp_working_set_num_active_cons(const SleqpWorkingSet* working_set);
 
   /**
    * Returns the size of the given set, i.e. the number of contained variables plus
@@ -137,7 +138,7 @@ extern "C" {
    *
    * @param[in]  working_set           The working set
    **/
-  int sleqp_working_set_size(const SleqpWorkingSet* working_set);
+  SLEQP_EXPORT int sleqp_working_set_size(const SleqpWorkingSet* working_set);
 
   /**
    * Returns whether the given working set is *valid*, i.e., whether
@@ -147,7 +148,7 @@ extern "C" {
    *
    * @param[in]  working_set           The working set
    **/
-  bool sleqp_working_set_valid(const SleqpWorkingSet* working_set);
+  SLEQP_EXPORT bool sleqp_working_set_valid(const SleqpWorkingSet* working_set);
 
   /**
    * Prints the given working set to the given file
@@ -155,8 +156,8 @@ extern "C" {
    * @param[in]  vec     A pointer to the vector
    * @param[in]  output  A pointer to an output `FILE*`
    **/
-  SLEQP_RETCODE sleqp_working_set_fprintf(const SleqpWorkingSet* working_set,
-                                          FILE* output);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_fprintf(const SleqpWorkingSet* working_set,
+                                                       FILE* output);
 
   /**
    * Copies one working set to another
@@ -164,12 +165,12 @@ extern "C" {
    * @param[in]  source  A pointer to the copy source
    * @param[in]  target  A pointer to the copy target
    **/
-  SLEQP_RETCODE sleqp_working_set_copy(const SleqpWorkingSet* source,
-                                       SleqpWorkingSet* target);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_copy(const SleqpWorkingSet* source,
+                                                    SleqpWorkingSet* target);
 
-  SLEQP_RETCODE sleqp_working_set_capture(SleqpWorkingSet* working_set);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_capture(SleqpWorkingSet* working_set);
 
-  SLEQP_RETCODE sleqp_working_set_release(SleqpWorkingSet** star);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_release(SleqpWorkingSet** star);
 
 #ifdef __cplusplus
 }

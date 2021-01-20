@@ -1,6 +1,7 @@
 #ifndef SLEQP_HESS_STRUCT_H
 #define SLEQP_HESS_STRUCT_H
 
+#include "sleqp_export.h"
 #include "sleqp_types.h"
 
 /**
@@ -32,9 +33,9 @@ extern "C" {
    **/
   typedef struct SleqpHessianStruct SleqpHessianStruct;
 
-  SLEQP_RETCODE sleqp_hessian_struct_create(SleqpHessianStruct** star,
-                                            int dimension,
-                                            bool empty);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_create(SleqpHessianStruct** star,
+                                                         int dimension,
+                                                         bool empty);
 
   /**
    * Returns the number \f$ k \f$ of blocks.
@@ -42,7 +43,7 @@ extern "C" {
    * @param[in]  hessian_struct  The Hessian structure
    * @returns                    The number \f$ k \f$ of blocks
    **/
-  int sleqp_hessian_struct_get_num_blocks(const SleqpHessianStruct* hessian_struct);
+  SLEQP_EXPORT int sleqp_hessian_struct_get_num_blocks(const SleqpHessianStruct* hessian_struct);
 
   /**
    * Returns the \f$ l \f$-th block of the Hessian
@@ -52,10 +53,10 @@ extern "C" {
    * @param[out] begin           The 0-based index \f$ j_l \f$
    * @param[out] end             The 0-based index \f$ j_{l+1} \f$
    **/
-  SLEQP_RETCODE sleqp_hessian_struct_get_block_range(const SleqpHessianStruct* hessian_struct,
-                                                     int block,
-                                                     int* begin,
-                                                     int* end);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_get_block_range(const SleqpHessianStruct* hessian_struct,
+                                                                  int block,
+                                                                  int* begin,
+                                                                  int* end);
 
   /**
    * Pushes a new block into the Hessian
@@ -63,15 +64,15 @@ extern "C" {
    * @param[in]  hessian_struct  The Hessian structure
    * @param[out] end             The 0-based index \f$ j_{l+1} \f$
    **/
-  SLEQP_RETCODE sleqp_hessian_struct_push_block(SleqpHessianStruct* hessian_struct,
-                                                int end);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_push_block(SleqpHessianStruct* hessian_struct,
+                                                             int end);
 
   /**
    * Clears the Hessian structure, i.e., sets \f$ k = 0 \f$
    *
    * @param[in]  hessian_struct  The Hessian structure
    **/
-  SLEQP_RETCODE sleqp_hessian_struct_clear(SleqpHessianStruct* hessian_struct);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_clear(SleqpHessianStruct* hessian_struct);
 
   /**
    * Returns the linear range
@@ -81,22 +82,22 @@ extern "C" {
    * @param[out]  end             The value \f$ n \f$
    *
    **/
-  SLEQP_RETCODE sleqp_hessian_struct_get_linear_range(const SleqpHessianStruct* hessian_struct,
-                                                      int* begin,
-                                                      int* end);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_get_linear_range(const SleqpHessianStruct* hessian_struct,
+                                                                   int* begin,
+                                                                   int* end);
 
-  SLEQP_RETCODE sleqp_hessian_struct_copy(const SleqpHessianStruct* source,
-                                          SleqpHessianStruct* target);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_copy(const SleqpHessianStruct* source,
+                                                       SleqpHessianStruct* target);
 
   /**
    * Prints the Hessian structure
    **/
-  SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
-                                             FILE* output);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
+                                                          FILE* output);
 
-  SLEQP_RETCODE sleqp_hessian_struct_capture(SleqpHessianStruct* hessian_struct);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_capture(SleqpHessianStruct* hessian_struct);
 
-  SLEQP_RETCODE sleqp_hessian_struct_release(SleqpHessianStruct** star);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_hessian_struct_release(SleqpHessianStruct** star);
 
 
 #ifdef __cplusplus

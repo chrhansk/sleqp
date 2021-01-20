@@ -6,13 +6,14 @@
  * @brief Definition of numerical comparison functions.
  **/
 
+#include "sleqp_export.h"
 #include "sleqp_types.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-  double sleqp_infinity();
+  SLEQP_EXPORT double sleqp_infinity();
 
   bool sleqp_is_inf(double value);
 

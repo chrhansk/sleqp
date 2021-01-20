@@ -31,7 +31,7 @@ function(add_unit_test TEST_NAME)
     m
     ${CHECK_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
-    sleqp)
+    sleqp_objects)
 
   add_dependencies(build_tests ${BASE_NAME})
 

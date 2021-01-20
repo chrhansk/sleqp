@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "sleqp_defs.h"
+#include "sleqp_export.h"
 
 /**
  * @file sleqp_log.h
@@ -50,13 +51,13 @@ extern "C" {
 
   SLEQP_LOG_LEVEL sleqp_log_level();
 
-  void sleqp_log_set_level(SLEQP_LOG_LEVEL level);
+  SLEQP_EXPORT void sleqp_log_set_level(SLEQP_LOG_LEVEL level);
 
   typedef void (*SLEQP_LOG_HANDLER)(SLEQP_LOG_LEVEL level,
                                     time_t time,
                                     const char* message);
 
-  void sleqp_log_set_handler(SLEQP_LOG_HANDLER handler);
+  SLEQP_EXPORT void sleqp_log_set_handler(SLEQP_LOG_HANDLER handler);
 
   void sleqp_log_msg_level(int level, const char *fmt, ...);
 

@@ -6,9 +6,9 @@
  * @brief Defintion of least squares functions.
  **/
 
-#include "sleqp_problem.h"
-
+#include "sleqp_export.h"
 #include "sleqp_iterate.h"
+#include "sleqp_problem.h"
 #include "sparse/sleqp_sparse_vec.h"
 
 #ifdef __cplusplus
@@ -77,20 +77,20 @@ extern "C" {
     SLEQP_FUNC_FREE func_free;
   } SleqpLSQCallbacks;
 
-  SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
-                                      SleqpLSQCallbacks* callbacks,
-                                      int num_variables,
-                                      int num_constraints,
-                                      int num_residuals,
-                                      double levenberg_marquardt,
-                                      SleqpParams* params,
-                                      void* func_data);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
+                                                   SleqpLSQCallbacks* callbacks,
+                                                   int num_variables,
+                                                   int num_constraints,
+                                                   int num_residuals,
+                                                   double levenberg_marquardt,
+                                                   SleqpParams* params,
+                                                   void* func_data);
 
   /**
    * Sets the callbacks of this LSQ function to the specified ones
    **/
-  SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
-                                             SleqpLSQCallbacks* callbacks);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
+                                                          SleqpLSQCallbacks* callbacks);
 
 
 #ifdef __cplusplus

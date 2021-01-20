@@ -34,17 +34,14 @@ set(COMMON_SRC
   sleqp_working_set.c
   lp/sleqp_lpi.c)
 
-add_library(sleqp SHARED
+
+add_library(sleqp_objects OBJECT
   ${COMMON_SRC}
   ${SLEQP_LPS_SOURCES})
 
-set_target_properties(sleqp
-    PROPERTIES
-    VERSION ${PROJECT_VERSION})
+set_property(TARGET sleqp_objects PROPERTY C_STANDARD 11)
 
-set_property(TARGET sleqp PROPERTY C_STANDARD 11)
-
-target_link_libraries(sleqp
+target_link_libraries(sleqp_objects
   PRIVATE
   trlib::trlib
   ${SLEQP_LPS_LIBRARIES}
@@ -52,10 +49,15 @@ target_link_libraries(sleqp
   m)
 
 if(UNIX AND NOT APPLE)
-  target_link_libraries(sleqp
+  target_link_libraries(sleqp_objects
     PRIVATE
     rt)
 endif()
+
+set_target_properties(sleqp_objects
+  PROPERTIES
+  C_VISIBILITY_PRESET hidden
+  VISIBILITY_INLINES_HIDDEN ON)
 
 if(DOXYGEN_FOUND)
   set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/doc")
@@ -64,17 +66,33 @@ if(DOXYGEN_FOUND)
   doxygen_add_docs(doc ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-include_directories(sleqp
+include_directories(sleqp_objects
   ${UMFPACK_INCLUDE_DIRS}
   ${SLEQP_LPS_INCLUDE_DIRS})
 
 set(SLEQP_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "" FORCE)
 set(SLEQP_LIBRARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" CACHE STRING "" FORCE)
 
-target_include_directories(sleqp
+target_include_directories(sleqp_objects
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
   $<INSTALL_INTERFACE:"include/sleqp">)
+
+add_library(sleqp SHARED
+  sleqp.c)
+
+target_link_libraries(sleqp
+  PRIVATE
+  sleqp_objects)
+
+set_target_properties(sleqp
+    PROPERTIES
+    VERSION ${PROJECT_VERSION})
+
+set(SLEQP_EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/sleqp_export.h")
+
+generate_export_header(sleqp
+  EXPORT_FILE_NAME SLEQP_EXPORT_FILE_NAME)
 
 install(TARGETS sleqp
   EXPORT sleqp-targets
@@ -87,6 +105,9 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/main/"
   COMPONENT "headers"
   FILES_MATCHING PATTERN "sleqp*.h")
 
-install(FILES "${CMAKE_BINARY_DIR}/sleqp_defs.h"
+install(
+  FILES
+  "${CMAKE_BINARY_DIR}/sleqp_defs.h"
+  "${SLEQP_EXPORT_FILE_NAME}"
   DESTINATION include/sleqp
   COMPONENT "headers")

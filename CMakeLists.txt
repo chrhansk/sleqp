@@ -17,6 +17,7 @@ quadratic programming.")
 
 include(CMakePackageConfigHelpers)
 include(FindPackageHandleStandardArgs)
+include(GenerateExportHeader)
 
 # Get the current working branch
 execute_process(

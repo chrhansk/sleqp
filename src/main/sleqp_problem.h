@@ -90,18 +90,18 @@ extern "C" {
    * The upper / lower bound vectors are copied.
    *
    **/
-  SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
-                                     SleqpFunc* func,
-                                     SleqpParams* params,
-                                     SleqpSparseVec* var_lb,
-                                     SleqpSparseVec* var_ub,
-                                     SleqpSparseVec* cons_lb,
-                                     SleqpSparseVec* cons_ub);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
+                                                  SleqpFunc* func,
+                                                  SleqpParams* params,
+                                                  SleqpSparseVec* var_lb,
+                                                  SleqpSparseVec* var_ub,
+                                                  SleqpSparseVec* cons_lb,
+                                                  SleqpSparseVec* cons_ub);
 
   /**
    * Frees a previously created problem.
    **/
-  SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star);
 
   /**
    * @}
