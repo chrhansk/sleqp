@@ -45,13 +45,16 @@ set_target_properties(sleqp
 set_property(TARGET sleqp PROPERTY C_STANDARD 11)
 
 target_link_libraries(sleqp
+  PRIVATE
   trlib::trlib
   ${SLEQP_LPS_LIBRARIES}
   ${UMFPACK_LIBRARIES}
   m)
 
 if(UNIX AND NOT APPLE)
-  target_link_libraries(sleqp rt)
+  target_link_libraries(sleqp
+    PRIVATE
+    rt)
 endif()
 
 if(DOXYGEN_FOUND)
