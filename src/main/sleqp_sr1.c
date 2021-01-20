@@ -149,9 +149,9 @@ sr1_func_hess_prod(SleqpFunc* func,
 }
 
 
-SLEQP_RETCODE sr1_func_create(SleqpFunc** fstar,
-                              SleqpFunc* func,
-                              SleqpSR1Data* sr1_data)
+static SLEQP_RETCODE sr1_func_create(SleqpFunc** fstar,
+                                     SleqpFunc* func,
+                                     SleqpSR1Data* sr1_data)
 {
 
   const int num_variables = sleqp_func_get_num_variables(func);

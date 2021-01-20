@@ -234,7 +234,7 @@ SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE soc_data_free(SleqpSOCData** star)
+static SLEQP_RETCODE soc_data_free(SleqpSOCData** star)
 {
   SleqpSOCData* soc_data = *star;
 

@@ -230,7 +230,7 @@ SLEQP_RETCODE sleqp_options_set_bfgs_sizing(SleqpOptions* options, SLEQP_BFGS_SI
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE options_free(SleqpOptions** star)
+static SLEQP_RETCODE options_free(SleqpOptions** star)
 {
   SleqpOptions* options = *star;
 

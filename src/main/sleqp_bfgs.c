@@ -151,9 +151,9 @@ bfgs_func_hess_product(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
-                               SleqpFunc* func,
-                               SleqpBFGSData* bfgs_data)
+static SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
+                                      SleqpFunc* func,
+                                      SleqpBFGSData* bfgs_data)
 {
   const int num_variables = sleqp_func_get_num_variables(func);
   const int num_constraints = sleqp_func_get_num_constraints(func);

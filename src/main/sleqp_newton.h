@@ -32,9 +32,6 @@ extern "C" {
                                          double trust_radius,
                                          double penalty_parameter);
 
-  SLEQP_RETCODE newton_initial_direction(SleqpNewtonData* data,
-                                         SleqpSparseVec* initial_direction);
-
   SLEQP_RETCODE sleqp_newton_compute_multipliers(SleqpNewtonData* data,
                                                  SleqpSparseVec* multipliers);
 

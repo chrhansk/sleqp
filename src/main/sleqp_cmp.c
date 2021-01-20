@@ -2,7 +2,7 @@
 
 const double inf = 1e100;
 
-double rel_diff(double x, double y)
+static double rel_diff(double x, double y)
 {
   double d = x - y;
 

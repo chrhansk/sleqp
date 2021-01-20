@@ -437,8 +437,8 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE newton_initial_direction(SleqpNewtonData* data,
-                                       SleqpSparseVec* initial_direction)
+static SLEQP_RETCODE newton_initial_direction(SleqpNewtonData* data,
+                                              SleqpSparseVec* initial_direction)
 {
   assert(data->iterate);
 
