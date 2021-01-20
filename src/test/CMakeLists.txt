@@ -22,6 +22,7 @@ add_custom_target(run_tests
 
 function(add_unit_test TEST_NAME)
   get_filename_component(BASE_NAME ${TEST_NAME} NAME)
+
   add_executable(${BASE_NAME}
     EXCLUDE_FROM_ALL
     "${TEST_NAME}.c")
@@ -32,6 +33,8 @@ function(add_unit_test TEST_NAME)
     ${CHECK_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     sleqp_objects)
+
+  target_compile_options(${BASE_NAME} PRIVATE ${CHECK_CFLAGS})
 
   add_dependencies(build_tests ${BASE_NAME})
 
