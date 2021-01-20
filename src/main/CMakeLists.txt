@@ -94,7 +94,7 @@ set_target_properties(sleqp
 set(SLEQP_EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/sleqp_export.h")
 
 generate_export_header(sleqp
-  EXPORT_FILE_NAME SLEQP_EXPORT_FILE_NAME)
+  EXPORT_FILE_NAME ${SLEQP_EXPORT_FILE_NAME})
 
 install(TARGETS sleqp
   EXPORT sleqp-targets
