@@ -66,7 +66,9 @@ if(DOXYGEN_FOUND)
   doxygen_add_docs(doc ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
-include_directories(sleqp_objects
+target_include_directories(sleqp_objects
+  PRIVATE
+  ${CMAKE_BINARY_DIR}
   ${UMFPACK_INCLUDE_DIRS}
   ${SLEQP_LPS_INCLUDE_DIRS})
 
