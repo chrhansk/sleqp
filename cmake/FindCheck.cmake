@@ -23,6 +23,18 @@ if(NOT CHECK_FOUND)
 
   set(CHECK_INCLUDE_DIRS ${CHECK_INCLUDE_DIR})
   set(CHECK_LIBRARIES ${CHECK_LIBRARY})
+
+  if(UNIX AND NOT APPLE)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads)
+
+    if(Threads_FOUND)
+      set(CHECK_LIBRARIES "${CHECK_LIBRARIES};Threads::Threads")
+    else()
+      set(CHECK_FOUND FALSE)
+    endif()
+  endif()
+
 endif()
 
 # hide advanced variables from CMake GUIs
