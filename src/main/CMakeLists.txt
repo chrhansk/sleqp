@@ -43,16 +43,7 @@ set_property(TARGET sleqp_objects PROPERTY C_STANDARD 11)
 
 target_link_libraries(sleqp_objects
   PRIVATE
-  trlib::trlib
-  ${SLEQP_LPS_LIBRARIES}
-  ${UMFPACK_LIBRARIES}
-  m)
-
-if(UNIX AND NOT APPLE)
-  target_link_libraries(sleqp_objects
-    PRIVATE
-    rt)
-endif()
+  ${SLEQP_DEPENDENCIES})
 
 set_target_properties(sleqp_objects
   PROPERTIES

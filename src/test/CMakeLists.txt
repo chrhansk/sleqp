@@ -16,6 +16,12 @@ add_library(test_common
   EXCLUDE_FROM_ALL
   ${TEST_COMMON_SRC})
 
+target_link_libraries(test_common
+  ${SLEQP_DEPENDENCIES}
+  ${CHECK_LIBRARIES}
+  m
+  sleqp_objects)
+
 add_custom_target(run_tests
   COMMAND ${CMAKE_CTEST_COMMAND}
   DEPENDS build_tests)
@@ -28,11 +34,7 @@ function(add_unit_test TEST_NAME)
     "${TEST_NAME}.c")
 
   target_link_libraries(${BASE_NAME}
-    test_common
-    m
-    ${CHECK_LIBRARIES}
-    ${CMAKE_THREAD_LIBS_INIT}
-    sleqp_objects)
+    test_common)
 
   target_compile_options(${BASE_NAME} PRIVATE ${CHECK_CFLAGS})
 

@@ -71,7 +71,21 @@ find_package(Threads)
 
 add_library(trlib INTERFACE IMPORTED)
 
+set(SLEQP_DEPENDENCIES
+  trlib::trlib
+  ${SLEQP_LPS_LIBRARIES}
+  ${UMFPACK_LIBRARIES}
+  m)
+
+if(UNIX AND NOT APPLE)
+  list(APPEND SLEQP_DEPENDENCIES rt)
+endif()
+
+# Documentation
+
 find_package(Doxygen)
+
+# Config files
 
 configure_file("${CMAKE_SOURCE_DIR}/src/main/sleqp_defs.h.in"
   "${CMAKE_BINARY_DIR}/sleqp_defs.h")
@@ -83,6 +97,8 @@ configure_file("${CMAKE_SOURCE_DIR}/cmake/sleqp.pc.in"
   @ONLY)
 
 include_directories("${CMAKE_BINARY_DIR}")
+
+# Testing
 
 enable_testing()
 

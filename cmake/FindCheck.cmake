@@ -14,27 +14,33 @@ if(PKG_CONFIG_FOUND)
   pkg_search_module(CHECK check)
 endif()
 
+if(UNIX AND NOT APPLE)
+  find_library(PTHREAD_LIBRARY NAMES pthread)
+
+  find_package_handle_standard_args(Check
+    REQUIRED_VARS PTHREAD_LIBRARY)
+endif()
+
 if(NOT CHECK_FOUND)
   find_path(CHECK_INCLUDE_DIR NAMES check.h)
   find_library(CHECK_LIBRARY NAMES check)
 
-  find_package_handle_standard_args(CHECK
-    REQUIRED_VARS CHECK_INCLUDE_DIR CHECK_LIBRARY)
+  set(REQUIRED_VARS
+    CHECK_INCLUDE_DIR CHECK_LIBRARY)
 
-  set(CHECK_INCLUDE_DIRS ${CHECK_INCLUDE_DIR})
   set(CHECK_LIBRARIES ${CHECK_LIBRARY})
 
-  if(UNIX AND NOT APPLE)
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads)
+  find_package_handle_standard_args(Check
+    REQUIRED_VARS ${REQUIRED_VARS})
 
-    if(Threads_FOUND)
-      set(CHECK_LIBRARIES "${CHECK_LIBRARIES};Threads::Threads")
-    else()
-      set(CHECK_FOUND FALSE)
-    endif()
-  endif()
+  message(STATUS ${CHECK_LIBRARIES})
 
+  set(CHECK_INCLUDE_DIRS ${CHECK_INCLUDE_DIR})
+
+endif()
+
+if(UNIX AND NOT APPLE)
+  list(APPEND CHECK_LIBRARIES ${PTHREAD_LIBRARY})
 endif()
 
 # hide advanced variables from CMake GUIs
