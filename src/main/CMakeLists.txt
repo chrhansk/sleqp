@@ -76,7 +76,8 @@ add_library(sleqp SHARED
 
 target_link_libraries(sleqp
   PRIVATE
-  sleqp_objects)
+  sleqp_objects
+  ${SLEQP_DEPENDENCIES})
 
 set_target_properties(sleqp
     PROPERTIES
