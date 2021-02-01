@@ -430,7 +430,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
     solver->unscaled_trial_iterate = solver->trial_iterate;
   }
 
-  SLEQP_CALL(sleqp_calloc(&solver->dense_cache, SLEQP_MAX(num_variables, num_constraints)));
+  SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache, SLEQP_MAX(num_variables, num_constraints)));
 
   // initial trust region radii as suggested,
   // penalty parameter as suggested:

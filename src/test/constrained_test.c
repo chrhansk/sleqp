@@ -286,9 +286,9 @@ void constrained_setup()
 
   ASSERT_CALL(sleqp_malloc(&func_data));
 
-  ASSERT_CALL(sleqp_calloc(&func_data->values, num_variables));
-  ASSERT_CALL(sleqp_calloc(&func_data->duals, num_constraints));
-  ASSERT_CALL(sleqp_calloc(&func_data->direction, num_variables));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->values, num_variables));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->duals, num_constraints));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->direction, num_variables));
 
   SleqpFuncCallbacks callbacks = {
     .set_value = func_set,
@@ -713,8 +713,8 @@ START_TEST(test_auto_scaled_solve)
   const double eps = sleqp_params_get_eps(params);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
-                                  problem,
-                                  x));
+                                   problem,
+                                   x));
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 

@@ -138,7 +138,7 @@ static SLEQP_RETCODE ma57_get_error_string(int value, const char** message)
       }                                                                 \
       if (ma57_status == MA57_INSUFFICIENT_REAL_SPACE                   \
           || ma57_status == MA57_INSUFFICIENT_INTEGER_SPACE)            \
-      return SLEQP_INTERNAL_ERROR;                                      \
+        return SLEQP_INTERNAL_ERROR;                                    \
     }                                                                   \
   } while(0)
 
@@ -357,7 +357,7 @@ static SLEQP_RETCODE ma57_increase_factor_size(MA57Data* ma57_data)
 
   assert(new_factor_size > factor_size);
 
-  SLEQP_CALL(sleqp_calloc(&new_factor, new_factor_size));
+  SLEQP_CALL(sleqp_alloc_array(&new_factor, new_factor_size));
 
   int32_t empty_int = 0;
 
@@ -620,10 +620,10 @@ static SLEQP_RETCODE ma57_solve(void* factorization_data,
 }
 
 static SLEQP_RETCODE ma57_get_sol(void* factorization_data,
-                                       SleqpSparseVec* sol,
-                                       int begin,
-                                       int end,
-                                       double zero_eps)
+                                  SleqpSparseVec* sol,
+                                  int begin,
+                                  int end,
+                                  double zero_eps)
 {
   MA57Data* ma57_data = (MA57Data*) factorization_data;
 

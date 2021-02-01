@@ -209,7 +209,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
 
   jacobian->factorization = sparse_factorization;
 
-  SLEQP_CALL(sleqp_calloc(&jacobian->col_indices, max_num_cols + 1));
+  SLEQP_CALL(sleqp_alloc_array(&jacobian->col_indices, max_num_cols + 1));
 
   SLEQP_CALL(sleqp_timer_create(&jacobian->factorization_timer));
 

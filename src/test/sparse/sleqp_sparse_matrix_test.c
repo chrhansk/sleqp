@@ -41,7 +41,7 @@ START_TEST(test_sparse_matrix_vector_product)
   ASSERT_CALL(sleqp_sparse_vector_push(vector, 1, 4.));
   ASSERT_CALL(sleqp_sparse_vector_push(vector, 2, 3.));
 
-  ASSERT_CALL(sleqp_calloc(&result, 2));
+  ASSERT_CALL(sleqp_alloc_array(&result, 2));
 
   ASSERT_CALL(sleqp_sparse_matrix_vector_product(matrix,
                                                  vector,

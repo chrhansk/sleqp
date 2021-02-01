@@ -41,9 +41,9 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
   matrix->num_cols = num_cols;
   matrix->num_rows = num_rows;
 
-  SLEQP_CALL(sleqp_calloc(&matrix->data, nnz_max));
-  SLEQP_CALL(sleqp_calloc(&matrix->cols, num_cols + 1));
-  SLEQP_CALL(sleqp_calloc(&matrix->rows, nnz_max));
+  SLEQP_CALL(sleqp_alloc_array(&matrix->data, nnz_max));
+  SLEQP_CALL(sleqp_alloc_array(&matrix->cols, num_cols + 1));
+  SLEQP_CALL(sleqp_alloc_array(&matrix->rows, nnz_max));
 
   for(int i = 0; i < num_cols + 1; ++i)
   {

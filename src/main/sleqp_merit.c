@@ -43,7 +43,7 @@ SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
   merit_data->cache_size = SLEQP_MAX(problem->num_constraints,
                                      problem->num_variables);
 
-  SLEQP_CALL(sleqp_calloc(&merit_data->dense_cache, merit_data->cache_size));
+  SLEQP_CALL(sleqp_alloc_array(&merit_data->dense_cache, merit_data->cache_size));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->jac_dot_sparse,
                                               problem->num_constraints));

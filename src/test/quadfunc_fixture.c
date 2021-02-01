@@ -53,8 +53,8 @@ SLEQP_RETCODE quadfunc_set(SleqpFunc* func,
 }
 
 SLEQP_RETCODE quadfunc_val(SleqpFunc* func,
-                            double* func_val,
-                            void* func_data)
+                           double* func_val,
+                           void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*) func_data;
 
@@ -108,7 +108,7 @@ void quadfunc_setup()
 {
   ASSERT_CALL(sleqp_malloc(&func_data));
 
-  ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->x, 2));
 
   SleqpFuncCallbacks callbacks = {
     .set_value = quadfunc_set,

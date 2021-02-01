@@ -53,19 +53,19 @@ int sleqp_cutest_run(const char* filename,
   // constraint types) at this point
   integer e_order = 0, l_order = 0, v_order = 0;
 
-  SLEQP_CALL(sleqp_calloc(&x_dense, CUTEst_nvar));
-  SLEQP_CALL(sleqp_calloc(&var_lb_dense, CUTEst_nvar));
-  SLEQP_CALL(sleqp_calloc(&var_ub_dense, CUTEst_nvar));
+  SLEQP_CALL(sleqp_alloc_array(&x_dense, CUTEst_nvar));
+  SLEQP_CALL(sleqp_alloc_array(&var_lb_dense, CUTEst_nvar));
+  SLEQP_CALL(sleqp_alloc_array(&var_ub_dense, CUTEst_nvar));
 
   if(CUTest_constrained)
   {
-    SLEQP_CALL(sleqp_calloc(&cons_lb_dense, CUTEst_ncons + 1));
-    SLEQP_CALL(sleqp_calloc(&cons_ub_dense, CUTEst_ncons + 1));
+    SLEQP_CALL(sleqp_alloc_array(&cons_lb_dense, CUTEst_ncons + 1));
+    SLEQP_CALL(sleqp_alloc_array(&cons_ub_dense, CUTEst_ncons + 1));
 
-    SLEQP_CALL(sleqp_calloc(&equatn, CUTEst_ncons + 1));
-    SLEQP_CALL(sleqp_calloc(&linear, CUTEst_ncons + 1));
+    SLEQP_CALL(sleqp_alloc_array(&equatn, CUTEst_ncons + 1));
+    SLEQP_CALL(sleqp_alloc_array(&linear, CUTEst_ncons + 1));
 
-    SLEQP_CALL(sleqp_calloc(&v, CUTEst_ncons + CUTEst_nvar + 1));
+    SLEQP_CALL(sleqp_alloc_array(&v, CUTEst_ncons + CUTEst_nvar + 1));
 
     CUTEST_csetup(&cutest_status, &funit, &iout, &io_buffer,
                   &CUTEst_nvar, &CUTEst_ncons,

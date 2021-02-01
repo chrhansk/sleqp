@@ -59,8 +59,8 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
 
   linesearch->merit_data = merit_data;
 
-  SLEQP_CALL(sleqp_calloc(&linesearch->prod_cache,
-                          problem->num_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&linesearch->prod_cache,
+                               problem->num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_point,
                                               problem->num_variables));
@@ -585,7 +585,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
       sleqp_assert_is_eq(quadratic_merit_value,
                          actual_quadratic_merit,
                          eps);
-  }
+    }
 
 #endif
 

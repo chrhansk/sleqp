@@ -27,7 +27,7 @@ START_TEST(test_calloc)
 {
   int* ptr = (int*) 1;
 
-  ASSERT_CALL(sleqp_calloc(&ptr, 100));
+  ASSERT_CALL(sleqp_alloc_array(&ptr, 100));
 
   ck_assert(ptr != NULL);
 
@@ -41,31 +41,31 @@ START_TEST(test_calloc_zero)
 {
   int* ptr = (int*) 1;
 
-  ASSERT_CALL(sleqp_calloc(&ptr, 0));
+  ASSERT_CALL(sleqp_alloc_array(&ptr, 0));
 
   ck_assert(ptr == NULL);
 }
 END_TEST
 
 /*
-START_TEST(test_alloc_nomem)
-{
+  START_TEST(test_alloc_nomem)
+  {
   int* ptr = (int*) 1;
 
-  SLEQP_RETCODE retcode = (sleqp_calloc(&ptr, INT_MAX / sizeof(int)));
+  SLEQP_RETCODE retcode = (sleqp_alloc_array(&ptr, INT_MAX / sizeof(int)));
 
   ck_assert_int_eq(retcode, SLEQP_NOMEM);
 
   ck_assert(ptr == NULL);
-}
-END_TEST
+  }
+  END_TEST
 */
 
 START_TEST(test_realloc)
 {
   int* ptr = (int*) 1;
 
-  ASSERT_CALL(sleqp_calloc(&ptr, 100));
+  ASSERT_CALL(sleqp_alloc_array(&ptr, 100));
 
   ck_assert(ptr != NULL);
 
@@ -80,11 +80,11 @@ START_TEST(test_realloc)
 END_TEST
 
 /*
-START_TEST(test_realloc_nomem)
-{
+  START_TEST(test_realloc_nomem)
+  {
   int* ptr = (int*) 1;
 
-  ASSERT_CALL(sleqp_calloc(&ptr, 100));
+  ASSERT_CALL(sleqp_alloc_array(&ptr, 100));
 
   ck_assert(ptr != NULL);
 
@@ -93,8 +93,8 @@ START_TEST(test_realloc_nomem)
   ck_assert(ptr == NULL);
 
   ck_assert_int_eq(retcode, SLEQP_NOMEM);
-}
-END_TEST
+  }
+  END_TEST
 */
 
 Suite* mem_test_suite()

@@ -43,19 +43,19 @@ SLEQP_RETCODE sleqp_working_set_create(SleqpWorkingSet** star,
   working_set->refcount = 1;
   working_set->problem = problem;
 
-  SLEQP_CALL(sleqp_calloc(&working_set->variable_states, num_variables));
-  SLEQP_CALL(sleqp_calloc(&working_set->constraint_states, num_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&working_set->variable_states, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&working_set->constraint_states, num_constraints));
 
   working_set->num_variables = num_variables;
   working_set->num_constraints = num_constraints;
 
   working_set->max_set_size = num_variables + num_constraints;
 
-  SLEQP_CALL(sleqp_calloc(&working_set->variable_indices, num_variables));
-  SLEQP_CALL(sleqp_calloc(&working_set->constraint_indices, num_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&working_set->variable_indices, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&working_set->constraint_indices, num_constraints));
 
-  SLEQP_CALL(sleqp_calloc(&working_set->content_indices,
-                          working_set->max_set_size));
+  SLEQP_CALL(sleqp_alloc_array(&working_set->content_indices,
+                               working_set->max_set_size));
 
   return SLEQP_OKAY;
 }

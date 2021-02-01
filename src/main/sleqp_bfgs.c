@@ -243,26 +243,26 @@ static SLEQP_RETCODE bfgs_block_create_at(BFGSBlock* block,
   block->damped = damped;
   block->sizing = sizing;
 
-  SLEQP_CALL(sleqp_calloc(&(block->point_diffs), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->point_diffs), num));
 
-  SLEQP_CALL(sleqp_calloc(&(block->grad_diffs), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->grad_diffs), num));
 
-  SLEQP_CALL(sleqp_calloc(&(block->point_products), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->point_products), num));
 
-  SLEQP_CALL(sleqp_calloc(&(block->damped_grad_diffs), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->damped_grad_diffs), num));
 
-  SLEQP_CALL(sleqp_calloc(&(block->damped_grad_point_diff_dots), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->damped_grad_point_diff_dots), num));
 
   if(sizing != SLEQP_BFGS_SIZING_NONE)
   {
-    SLEQP_CALL(sleqp_calloc(&(block->grad_point_diff_dots), num));
+    SLEQP_CALL(sleqp_alloc_array(&(block->grad_point_diff_dots), num));
 
-    SLEQP_CALL(sleqp_calloc(&(block->point_diff_inner_dots), num));
+    SLEQP_CALL(sleqp_alloc_array(&(block->point_diff_inner_dots), num));
   }
 
-  SLEQP_CALL(sleqp_calloc(&(block->bidir_products), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->bidir_products), num));
 
-  SLEQP_CALL(sleqp_calloc(&(block->sizing_factors), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->sizing_factors), num));
 
   for(int i = 0; i < num; ++i)
   {
@@ -367,7 +367,7 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
   data->num_blocks = num_blocks;
   data->func = func;
 
-  sleqp_calloc(&data->blocks, num_blocks);
+  sleqp_alloc_array(&data->blocks, num_blocks);
 
   for(int block = 0; block < num_blocks; ++block)
   {

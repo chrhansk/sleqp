@@ -70,8 +70,8 @@ SLEQP_RETCODE linquadfunc_set(SleqpFunc* func,
 }
 
 SLEQP_RETCODE linquadfunc_val(SleqpFunc* func,
-                               double* func_val,
-                               void* func_data)
+                              double* func_val,
+                              void* func_data)
 {
   LinQuadFuncData* data = (LinQuadFuncData*) func_data;
 
@@ -156,7 +156,7 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_malloc(&func_data));
 
-  ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->x, 2));
 
   SleqpFuncCallbacks callbacks = {
     .set_value = linquadfunc_set,

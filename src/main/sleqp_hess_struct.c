@@ -22,7 +22,7 @@ SLEQP_RETCODE sleqp_hessian_struct_create(SleqpHessianStruct** star,
 
   hessian_struct->refcount = 1;
 
-  SLEQP_CALL(sleqp_calloc(&hessian_struct->block_ends, dimension));
+  SLEQP_CALL(sleqp_alloc_array(&hessian_struct->block_ends, dimension));
 
   hessian_struct->dimension = dimension;
 

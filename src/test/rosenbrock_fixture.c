@@ -157,9 +157,9 @@ void rosenbrock_setup()
   func_data->a = 1.;
   func_data->b = 100.;
 
-  ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->x, 2));
 
-    SleqpFuncCallbacks callbacks = {
+  SleqpFuncCallbacks callbacks = {
     .set_value = rosenbrock_set,
     .func_val  = rosenbrock_val,
     .func_grad = rosenbrock_grad,

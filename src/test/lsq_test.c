@@ -158,8 +158,8 @@ void rosenbrock_setup()
 
   ASSERT_CALL(sleqp_malloc(&rosenbrock_func_data));
 
-  ASSERT_CALL(sleqp_calloc(&rosenbrock_func_data->x, num_variables));
-  ASSERT_CALL(sleqp_calloc(&rosenbrock_func_data->d, num_residuals));
+  ASSERT_CALL(sleqp_alloc_array(&rosenbrock_func_data->x, num_variables));
+  ASSERT_CALL(sleqp_alloc_array(&rosenbrock_func_data->d, num_residuals));
 
   rosenbrock_func_data->a = 1.;
   rosenbrock_func_data->b = 100.;

@@ -21,8 +21,8 @@ SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vstar,
   vec->dim = dim;
   vec->nnz_max = nnz_max;
 
-  SLEQP_CALL(sleqp_calloc(&vec->data, nnz_max));
-  SLEQP_CALL(sleqp_calloc(&vec->indices, nnz_max));
+  SLEQP_CALL(sleqp_alloc_array(&vec->data, nnz_max));
+  SLEQP_CALL(sleqp_alloc_array(&vec->indices, nnz_max));
 
   return SLEQP_OKAY;
 }

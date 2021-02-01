@@ -215,9 +215,9 @@ void second_order_setup()
 
   ASSERT_CALL(sleqp_malloc(&func_data));
 
-  ASSERT_CALL(sleqp_calloc(&func_data->values, num_variables));
-  ASSERT_CALL(sleqp_calloc(&func_data->duals, num_constraints));
-  ASSERT_CALL(sleqp_calloc(&func_data->direction, num_variables));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->values, num_variables));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->duals, num_constraints));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->direction, num_variables));
 
   SleqpFuncCallbacks callbacks = {
     .set_value = func_set,

@@ -59,24 +59,24 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
   assert(data->num_lp_variables == sleqp_lpi_get_num_variables(lp_interface));
   assert(data->num_lp_constraints == sleqp_lpi_get_num_constraints(lp_interface));
 
-  SLEQP_CALL(sleqp_calloc(&data->var_stats, data->num_lp_variables));
-  SLEQP_CALL(sleqp_calloc(&data->cons_stats, data->num_lp_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&data->var_stats, data->num_lp_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->cons_stats, data->num_lp_constraints));
 
   data->lp_interface = lp_interface;
 
-  SLEQP_CALL(sleqp_calloc(&data->objective, data->num_lp_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->objective, data->num_lp_variables));
 
-  SLEQP_CALL(sleqp_calloc(&data->cons_lb, data->num_lp_constraints));
-  SLEQP_CALL(sleqp_calloc(&data->cons_ub, data->num_lp_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&data->cons_lb, data->num_lp_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&data->cons_ub, data->num_lp_constraints));
 
-  SLEQP_CALL(sleqp_calloc(&data->vars_lb, data->num_lp_variables));
-  SLEQP_CALL(sleqp_calloc(&data->vars_ub, data->num_lp_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->vars_lb, data->num_lp_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->vars_ub, data->num_lp_variables));
 
-  SLEQP_CALL(sleqp_calloc(&data->solution_values, data->num_lp_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->solution_values, data->num_lp_variables));
 
-  SLEQP_CALL(sleqp_calloc(&data->dual_values,
-                          SLEQP_MAX(data->num_lp_constraints,
-                                    data->num_lp_variables)));
+  SLEQP_CALL(sleqp_alloc_array(&data->dual_values,
+                               SLEQP_MAX(data->num_lp_constraints,
+                                         data->num_lp_variables)));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->quadratic_gradient,
                                               problem->num_variables));
@@ -425,9 +425,9 @@ static SLEQP_RETCODE check_basis(SleqpCauchyData* cauchy_data,
 }
 
 /*
-static SLEQP_RETCODE check_direction_bounds(SleqpCauchyData* cauchy_data,
-                                            bool* valid_direction)
-{
+  static SLEQP_RETCODE check_direction_bounds(SleqpCauchyData* cauchy_data,
+  bool* valid_direction)
+  {
   SleqpProblem* problem = cauchy_data->problem;
 
   SleqpIterate* iterate = cauchy_data->iterate;
@@ -443,63 +443,63 @@ static SLEQP_RETCODE check_direction_bounds(SleqpCauchyData* cauchy_data,
   const int num_variables = problem->num_variables;
 
   SLEQP_CALL(sleqp_lpi_get_primal_sol(cauchy_data->lp_interface,
-                                      NULL,
-                                      cauchy_data->solution_values));
+  NULL,
+  cauchy_data->solution_values));
 
   (*valid_direction) = true;
 
   for(int j = 0; j < num_variables; ++j)
   {
-    const double dval = cauchy_data->solution_values[j];
+  const double dval = cauchy_data->solution_values[j];
 
-    if(sleqp_is_gt(dval, trust_radius, eps) || sleqp_is_lt(dval, -trust_radius, eps))
-    {
-      (*valid_direction) = false;
-    }
+  if(sleqp_is_gt(dval, trust_radius, eps) || sleqp_is_lt(dval, -trust_radius, eps))
+  {
+  (*valid_direction) = false;
+  }
   }
 
   {
-    SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
-    SleqpSparseVec* lb = problem->var_lb;
-    SleqpSparseVec* ub = problem->var_ub;
+  SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
+  SleqpSparseVec* lb = problem->var_lb;
+  SleqpSparseVec* ub = problem->var_ub;
 
-    int k_x = 0, k_lb = 0, k_ub = 0;
+  int k_x = 0, k_lb = 0, k_ub = 0;
 
-    for(int j = 0; j < num_variables; ++j)
-    {
-      while(k_x < x->nnz && x->indices[k_x] < j)
-      {
-        ++k_x;
-      }
+  for(int j = 0; j < num_variables; ++j)
+  {
+  while(k_x < x->nnz && x->indices[k_x] < j)
+  {
+  ++k_x;
+  }
 
-      while(k_lb < lb->nnz && lb->indices[k_lb] < j)
-      {
-        ++k_lb;
-      }
+  while(k_lb < lb->nnz && lb->indices[k_lb] < j)
+  {
+  ++k_lb;
+  }
 
-      while(k_ub < ub->nnz && ub->indices[k_ub] < j)
-      {
-        ++k_ub;
-      }
+  while(k_ub < ub->nnz && ub->indices[k_ub] < j)
+  {
+  ++k_ub;
+  }
 
-      const bool valid_x = (k_x < x->nnz) && (j == x->indices[k_x]);
-      const bool valid_ub = (k_ub < ub->nnz) && (j == ub->indices[k_ub]);
-      const bool valid_lb = (k_lb < lb->nnz) && (j == lb->indices[k_lb]);
+  const bool valid_x = (k_x < x->nnz) && (j == x->indices[k_x]);
+  const bool valid_ub = (k_ub < ub->nnz) && (j == ub->indices[k_ub]);
+  const bool valid_lb = (k_lb < lb->nnz) && (j == lb->indices[k_lb]);
 
-      const double ubval = valid_ub ? ub->data[k_ub] : 0.;
-      const double lbval = valid_lb ? lb->data[k_lb] : 0.;
-      const double xval = valid_x ? x->data[k_x] : 0.;
-      const double dval = cauchy_data->solution_values[j];
+  const double ubval = valid_ub ? ub->data[k_ub] : 0.;
+  const double lbval = valid_lb ? lb->data[k_lb] : 0.;
+  const double xval = valid_x ? x->data[k_x] : 0.;
+  const double dval = cauchy_data->solution_values[j];
 
-      if(sleqp_is_gt(xval + dval, ubval, eps) || sleqp_is_lt(xval + dval, lbval, eps))
-      {
-        (*valid_direction) = false;
-      }
-    }
+  if(sleqp_is_gt(xval + dval, ubval, eps) || sleqp_is_lt(xval + dval, lbval, eps))
+  {
+  (*valid_direction) = false;
+  }
+  }
   }
 
   return SLEQP_OKAY;
-}
+  }
 */
 
 SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
@@ -526,13 +526,13 @@ SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
 
   // TODO: Find out about tolerance guarantees given by the LP solvers
   /*
-  {
+    {
     bool valid_direction = false;
 
     SLEQP_CALL(check_direction_bounds(cauchy_data, &valid_direction));
 
     assert(valid_direction);
-  }
+    }
   */
 #endif
 

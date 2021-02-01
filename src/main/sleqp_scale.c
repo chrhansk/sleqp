@@ -97,11 +97,11 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
   scaling->num_variables = num_variables;
   scaling->num_constraints = num_constraints;
 
-  SLEQP_CALL(sleqp_calloc(&(scaling->var_weights),
-                          scaling->num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&(scaling->var_weights),
+                               scaling->num_variables));
 
-  SLEQP_CALL(sleqp_calloc(&(scaling->cons_weights),
-                          scaling->num_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&(scaling->cons_weights),
+                               scaling->num_constraints));
 
   scaling->func_weight = 0;
 
@@ -663,8 +663,8 @@ SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
     const int size = SLEQP_MAX(scaling->num_constraints,
                                scaling->num_variables);
 
-    SLEQP_CALL(sleqp_calloc(&scaling->min_cache, size));
-    SLEQP_CALL(sleqp_calloc(&scaling->max_cache, size));
+    SLEQP_CALL(sleqp_alloc_array(&scaling->min_cache, size));
+    SLEQP_CALL(sleqp_alloc_array(&scaling->max_cache, size));
   }
 
   const double var_ratio = max_matrix_ratio(scaling, cons_jac, true, eps);

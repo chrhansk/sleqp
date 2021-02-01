@@ -84,24 +84,24 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
   data->num_constraints = num_constraints;
   data->goth = cutest_false;
 
-  SLEQP_CALL(sleqp_calloc(&data->x, num_variables));
-  SLEQP_CALL(sleqp_calloc(&data->cons_vals, num_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&data->x, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->cons_vals, num_constraints));
 
-  SLEQP_CALL(sleqp_calloc(&data->func_grad, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->func_grad, num_variables));
 
-  SLEQP_CALL(sleqp_calloc(&data->direction, num_variables));
-  SLEQP_CALL(sleqp_calloc(&data->multipliers, data->num_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&data->direction, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->multipliers, data->num_constraints));
 
-  SLEQP_CALL(sleqp_calloc(&data->hessian_product, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->hessian_product, num_variables));
 
   CUTEST_cdimsj(&status, &(data->jac_nnz_max));
 
   SLEQP_CUTEST_CHECK_STATUS(status);
 
-  SLEQP_CALL(sleqp_calloc(&data->jac_rows, data->jac_nnz_max));
-  SLEQP_CALL(sleqp_calloc(&data->jac_cols, data->jac_nnz_max));
-  SLEQP_CALL(sleqp_calloc(&data->jac_vals, data->jac_nnz_max));
-  SLEQP_CALL(sleqp_calloc(&data->jac_indices, data->jac_nnz_max));
+  SLEQP_CALL(sleqp_alloc_array(&data->jac_rows, data->jac_nnz_max));
+  SLEQP_CALL(sleqp_alloc_array(&data->jac_cols, data->jac_nnz_max));
+  SLEQP_CALL(sleqp_alloc_array(&data->jac_vals, data->jac_nnz_max));
+  SLEQP_CALL(sleqp_alloc_array(&data->jac_indices, data->jac_nnz_max));
 
 
   return SLEQP_OKAY;

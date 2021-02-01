@@ -107,8 +107,8 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
                                               problem->num_variables));
 
-  SLEQP_CALL(sleqp_calloc(&data->dense_cache,
-                          SLEQP_MAX(problem->num_variables, problem->num_constraints)));
+  SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
+                               SLEQP_MAX(problem->num_variables, problem->num_constraints)));
 
   SLEQP_CALL(sleqp_tr_solver_create(&data->trust_region_solver,
                                     problem,
@@ -495,8 +495,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   }
 
   /*
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
-  int working_set_size = sleqp_working_set_size(working_set);
+    SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+    int working_set_size = sleqp_working_set_size(working_set);
   */
 
   // compute the EQP gradient. Given as the sum of the

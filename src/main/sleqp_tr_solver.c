@@ -81,9 +81,9 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
                            &fwork_size,
                            &data->trlib_h_pointer);
 
-  SLEQP_CALL(sleqp_calloc(&data->trlib_iwork, iwork_size));
-  SLEQP_CALL(sleqp_calloc(&data->trlib_fwork, fwork_size));
-  SLEQP_CALL(sleqp_calloc(&data->trlib_timinig, trlib_krylov_timing_size()));
+  SLEQP_CALL(sleqp_alloc_array(&data->trlib_iwork, iwork_size));
+  SLEQP_CALL(sleqp_alloc_array(&data->trlib_fwork, fwork_size));
+  SLEQP_CALL(sleqp_alloc_array(&data->trlib_timinig, trlib_krylov_timing_size()));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->s,
                                               problem->num_variables));
@@ -115,8 +115,8 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
                                         data->trlib_maxiter + 1,
                                         0));
 
-  SLEQP_CALL(sleqp_calloc(&data->dense_cache,
-                          SLEQP_MAX(problem->num_variables, problem->num_constraints)));
+  SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
+                               SLEQP_MAX(problem->num_variables, problem->num_constraints)));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
                                               problem->num_variables));

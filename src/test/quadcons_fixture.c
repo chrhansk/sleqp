@@ -167,7 +167,7 @@ void quadconsfunc_setup()
 
   ASSERT_CALL(sleqp_malloc(&func_data));
 
-  ASSERT_CALL(sleqp_calloc(&func_data->x, 2));
+  ASSERT_CALL(sleqp_alloc_array(&func_data->x, 2));
 
   SleqpFuncCallbacks callbacks = {
     .set_value = quadconsfunc_set,

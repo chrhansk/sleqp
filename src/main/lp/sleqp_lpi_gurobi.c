@@ -69,10 +69,10 @@ static SLEQP_RETCODE gurobi_create_problem(void** star,
   lp_interface->num_rows = num_rows;
   lp_interface->num_lp_cols = num_rows + num_cols;
 
-  SLEQP_CALL(sleqp_calloc(&lp_interface->col_basis, num_cols));
-  SLEQP_CALL(sleqp_calloc(&lp_interface->slack_basis, num_rows));
+  SLEQP_CALL(sleqp_alloc_array(&lp_interface->col_basis, num_cols));
+  SLEQP_CALL(sleqp_alloc_array(&lp_interface->slack_basis, num_rows));
 
-  SLEQP_CALL(sleqp_calloc(&lp_interface->row_basis, num_rows));
+  SLEQP_CALL(sleqp_alloc_array(&lp_interface->row_basis, num_rows));
 
   int err = GRBloadenv(&lp_interface->env, NULL);
 

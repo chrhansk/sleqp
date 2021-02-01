@@ -111,26 +111,26 @@ sr1_func_set_value(SleqpFunc* func,
 }
 
 /*
-static SLEQP_RETCODE
-sr1_func_eval(SleqpFunc* func,
-              const SleqpSparseVec* cons_indices,
-              double* func_val,
-              SleqpSparseVec* func_grad,
-              SleqpSparseVec* cons_val,
-              SleqpSparseMatrix* cons_jac,
-              void* func_data)
-{
+  static SLEQP_RETCODE
+  sr1_func_eval(SleqpFunc* func,
+  const SleqpSparseVec* cons_indices,
+  double* func_val,
+  SleqpSparseVec* func_grad,
+  SleqpSparseVec* cons_val,
+  SleqpSparseMatrix* cons_jac,
+  void* func_data)
+  {
   SleqpSR1Data* sr1_data = (SleqpSR1Data*) func_data;
 
   SLEQP_CALL(sleqp_func_eval(sr1_data->func,
-                             cons_indices,
-                             func_val,
-                             func_grad,
-                             cons_val,
-                             cons_jac));
+  cons_indices,
+  func_val,
+  func_grad,
+  cons_val,
+  cons_jac));
 
   return SLEQP_OKAY;
-}
+  }
 */
 
 static SLEQP_RETCODE
@@ -255,13 +255,13 @@ SLEQP_RETCODE sr1_block_create_at(SR1Block* block,
   block->len = 0;
   block->curr = -1;
 
-  SLEQP_CALL(sleqp_calloc(&(block->step_diffs), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->step_diffs), num));
 
-  SLEQP_CALL(sleqp_calloc(&(block->grad_diffs), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->grad_diffs), num));
 
-  SLEQP_CALL(sleqp_calloc(&(block->inner_prods), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->inner_prods), num));
 
-  SLEQP_CALL(sleqp_calloc(&(block->inner_dots), num));
+  SLEQP_CALL(sleqp_alloc_array(&(block->inner_dots), num));
 
   for(int i = 0; i < num; ++i)
   {
@@ -309,7 +309,7 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
   data->num_blocks = num_blocks;
   data->num_variables = num_variables;
 
-  sleqp_calloc(&data->blocks, num_blocks);
+  sleqp_alloc_array(&data->blocks, num_blocks);
 
   for(int block = 0; block < num_blocks; ++block)
   {

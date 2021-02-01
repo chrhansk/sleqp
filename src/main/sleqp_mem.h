@@ -14,7 +14,7 @@
 extern "C" {
 #endif
 
-#define sleqp_allocate_memory(ptr, size)                                     \
+#define sleqp_allocate_memory(ptr, size)                                \
   (*(ptr) = ((size) > 0) ? malloc((size)) : NULL), (((size) > 0) && (*(ptr) == NULL)) \
     ? SLEQP_NOMEM : SLEQP_OKAY
 
@@ -26,10 +26,10 @@ extern "C" {
 #define sleqp_malloc(ptr)                       \
   sleqp_allocate_memory(ptr, sizeof(**ptr))
 
-#define sleqp_calloc(ptr, count)                        \
+#define sleqp_alloc_array(ptr, count)                   \
   sleqp_allocate_memory(ptr, ((count) * sizeof(**ptr)))
 
-#define sleqp_realloc(ptr, count)                               \
+#define sleqp_realloc(ptr, count)                         \
   sleqp_reallocate_memory(ptr, ((count) * sizeof(**ptr)))
 
 #define sleqp_free(ptr)                         \

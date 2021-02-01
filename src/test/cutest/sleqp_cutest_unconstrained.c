@@ -27,12 +27,12 @@ static SLEQP_RETCODE sleqp_cutest_uncons_data_create(CUTestUnconsFuncData** star
   data->eps = eps;
   data->goth = cutest_false;
 
-  SLEQP_CALL(sleqp_calloc(&data->x, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->x, num_variables));
 
-  SLEQP_CALL(sleqp_calloc(&data->func_grad, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->func_grad, num_variables));
 
-  SLEQP_CALL(sleqp_calloc(&data->direction, num_variables));
-  SLEQP_CALL(sleqp_calloc(&data->hessian_product, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->direction, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->hessian_product, num_variables));
 
   return SLEQP_OKAY;
 }
