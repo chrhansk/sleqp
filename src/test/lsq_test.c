@@ -98,11 +98,9 @@ SLEQP_RETCODE rosenbrock_lsq_jac_forward(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(forward_direction, data->d));
 
-  const double a = data->a;
   const double b = data->b;
 
   const double x0 = data->x[0];
-  const double x1 = data->x[1];
 
   const double d0 = data->d[0];
   const double d1 = data->d[1];
@@ -132,11 +130,9 @@ SLEQP_RETCODE rosenbrock_lsq_jac_adjoint(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(adjoint_direction, data->d));
 
-  const double a = data->a;
   const double b = data->b;
 
   const double x0 = data->x[0];
-  const double x1 = data->x[1];
 
   const double d0 = data->d[0];
   const double d1 = data->d[1];
@@ -169,13 +165,16 @@ void rosenbrock_setup()
   rosenbrock_func_data->b = 100.;
 
   SleqpLSQCallbacks callbacks = {
-    .set_value = rosenbrock_lsq_set,
-    .lsq_eval = rosenbrock_lsq_eval,
-    .lsq_jac_forward = rosenbrock_lsq_jac_forward,
-    .lsq_jac_adjoint = rosenbrock_lsq_jac_adjoint,
-    .eval_additional = NULL,
-    .hess_prod_additional = NULL,
-    .func_free = NULL
+    .set_value            = rosenbrock_lsq_set,
+    .lsq_eval             = rosenbrock_lsq_eval,
+    .lsq_jac_forward      = rosenbrock_lsq_jac_forward,
+    .lsq_jac_adjoint      = rosenbrock_lsq_jac_adjoint,
+    .additional_func_val  = NULL,
+    .additional_func_grad = NULL,
+    .additional_cons_val  = NULL,
+    .additional_cons_jac  = NULL,
+    .additional_hess_prod = NULL,
+    .func_free            = NULL
   };
 
   ASSERT_CALL(sleqp_lsq_func_create(&rosenbrock_lsq_func,

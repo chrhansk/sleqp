@@ -110,6 +110,7 @@ sr1_func_set_value(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+/*
 static SLEQP_RETCODE
 sr1_func_eval(SleqpFunc* func,
               const SleqpSparseVec* cons_indices,
@@ -127,6 +128,63 @@ sr1_func_eval(SleqpFunc* func,
                              func_grad,
                              cons_val,
                              cons_jac));
+
+  return SLEQP_OKAY;
+}
+*/
+
+static SLEQP_RETCODE
+sr1_func_val(SleqpFunc* func,
+             double* func_val,
+             void* func_data)
+{
+  SleqpSR1Data* sr1_data = (SleqpSR1Data*) func_data;
+
+  SLEQP_CALL(sleqp_func_val(sr1_data->func,
+                            func_val));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+sr1_func_grad(SleqpFunc* func,
+              SleqpSparseVec* func_grad,
+              void* func_data)
+{
+  SleqpSR1Data* sr1_data = (SleqpSR1Data*) func_data;
+
+  SLEQP_CALL(sleqp_func_grad(sr1_data->func,
+                             func_grad));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+sr1_func_cons_val(SleqpFunc* func,
+                  const SleqpSparseVec* cons_indices,
+                  SleqpSparseVec* cons_val,
+                  void* func_data)
+{
+  SleqpSR1Data* sr1_data = (SleqpSR1Data*) func_data;
+
+  SLEQP_CALL(sleqp_func_cons_val(sr1_data->func,
+                                 cons_indices,
+                                 cons_val));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+sr1_func_cons_jac(SleqpFunc* func,
+                  const SleqpSparseVec* cons_indices,
+                  SleqpSparseMatrix* cons_jac,
+                  void* func_data)
+{
+  SleqpSR1Data* sr1_data = (SleqpSR1Data*) func_data;
+
+  SLEQP_CALL(sleqp_func_cons_jac(sr1_data->func,
+                                 cons_indices,
+                                 cons_jac));
 
   return SLEQP_OKAY;
 }
@@ -159,7 +217,10 @@ static SLEQP_RETCODE sr1_func_create(SleqpFunc** fstar,
 
   SleqpFuncCallbacks callbacks = {
     .set_value = sr1_func_set_value,
-    .func_eval = sr1_func_eval,
+    .func_val = sr1_func_val,
+    .func_grad = sr1_func_grad,
+    .cons_val = sr1_func_cons_val,
+    .cons_jac = sr1_func_cons_jac,
     .hess_prod = sr1_func_hess_prod,
     .func_free = NULL
   };

@@ -99,15 +99,22 @@ cdef set_lsq_func_callbacks(csleqp.SleqpLSQCallbacks* callbacks):
     callbacks.lsq_eval             = &sleqp_lsq_eval_nogil
     callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward_nogil
     callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint_nogil
-    callbacks.eval_additional      = &sleqp_func_eval_nogil
-    callbacks.hess_prod_additional = &sleqp_func_hess_product_nogil
+    callbacks.additional_func_val  = &sleqp_func_val_nogil
+    callbacks.additional_func_grad = &sleqp_func_grad_nogil
+    callbacks.additional_cons_val  = &sleqp_func_cons_val_nogil
+    callbacks.additional_cons_jac  = &sleqp_func_cons_jac_nogil
+    callbacks.additional_hess_prod = &sleqp_func_hess_product_nogil
+    callbacks.additional_hess_prod = &sleqp_func_hess_product_nogil
   else:
     callbacks.set_value            = &sleqp_func_set
     callbacks.lsq_eval             = &sleqp_lsq_eval
     callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward
     callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint
-    callbacks.eval_additional      = &sleqp_func_eval
-    callbacks.hess_prod_additional = &sleqp_func_hess_product
+    callbacks.additional_func_val  = &sleqp_func_val
+    callbacks.additional_func_grad = &sleqp_func_grad
+    callbacks.additional_cons_val  = &sleqp_func_cons_val
+    callbacks.additional_cons_jac  = &sleqp_func_cons_jac
+    callbacks.additional_hess_prod = &sleqp_func_hess_product
 
   callbacks.func_free = &sleqp_func_free
 

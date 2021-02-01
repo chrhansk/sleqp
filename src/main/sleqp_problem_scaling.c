@@ -60,51 +60,60 @@ scaled_func_set_value(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE
-scaled_func_eval(SleqpFunc* func,
-                 const SleqpSparseVec* cons_indices,
-                 double* func_val,
-                 SleqpSparseVec* func_grad,
-                 SleqpSparseVec* cons_val,
-                 SleqpSparseMatrix* cons_jac,
-                 void* func_data)
+SLEQP_RETCODE scaled_func_val(SleqpFunc* func,
+                              double* func_val,
+                              void* func_data)
 {
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
   SleqpScalingData* scaling_data = problem_scaling->scaling_data;
 
-  SLEQP_CALL(sleqp_func_eval(problem_scaling->func,
-                             cons_indices,
-                             func_val,
-                             func_grad,
-                             cons_val,
-                             cons_jac));
+  SLEQP_CALL(sleqp_func_val(problem_scaling->func, func_val));
 
-  const int error_flags = sleqp_options_get_float_error_flags(problem_scaling->options);
-  const int warn_flags = sleqp_options_get_float_warning_flags(problem_scaling->options);
+  (*func_val) = sleqp_scale_func_val(scaling_data, (*func_val));
 
-  SLEQP_INIT_MATH_CHECK;
+  return SLEQP_OKAY;
+}
 
-  if(func_val)
-  {
-    (*func_val) = sleqp_scale_func_val(scaling_data, (*func_val));
-  }
+SLEQP_RETCODE scaled_func_grad(SleqpFunc* func,
+                               SleqpSparseVec* func_grad,
+                               void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
+  SleqpScalingData* scaling_data = problem_scaling->scaling_data;
 
-  if(func_grad)
-  {
-    SLEQP_CALL(sleqp_scale_func_grad(scaling_data, func_grad));
-  }
+  SLEQP_CALL(sleqp_func_grad(problem_scaling->func, func_grad));
 
-  if(cons_val)
-  {
-    SLEQP_CALL(sleqp_scale_cons_val(scaling_data, cons_val));
-  }
+  SLEQP_CALL(sleqp_scale_func_grad(scaling_data, func_grad));
 
-  if(cons_jac)
-  {
-    SLEQP_CALL(sleqp_scale_cons_jac(scaling_data, cons_jac));
-  }
+  return SLEQP_OKAY;
+}
 
-  SLEQP_MATH_CHECK(error_flags, warn_flags);
+SLEQP_RETCODE scaled_func_cons_val(SleqpFunc* func,
+                                   const SleqpSparseVec* cons_indices,
+                                   SleqpSparseVec* cons_val,
+                                   void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
+  SleqpScalingData* scaling_data = problem_scaling->scaling_data;
+
+  SLEQP_CALL(sleqp_func_cons_val(problem_scaling->func, cons_indices, cons_val));
+
+  SLEQP_CALL(sleqp_scale_cons_val(scaling_data, cons_val));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE scaled_func_cons_jac(SleqpFunc* func,
+                                   const SleqpSparseVec* cons_indices,
+                                   SleqpSparseMatrix* cons_jac,
+                                   void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
+  SleqpScalingData* scaling_data = problem_scaling->scaling_data;
+
+  SLEQP_CALL(sleqp_func_cons_jac(problem_scaling->func, cons_indices, cons_jac));
+
+  SLEQP_CALL(sleqp_scale_cons_jac(scaling_data, cons_jac));
 
   return SLEQP_OKAY;
 }
@@ -203,7 +212,10 @@ SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   SleqpFuncCallbacks callbacks = {
     .set_value = scaled_func_set_value,
-    .func_eval = scaled_func_eval,
+    .func_val = scaled_func_val,
+    .func_grad = scaled_func_grad,
+    .cons_val = scaled_func_cons_val,
+    .cons_jac = scaled_func_cons_jac,
     .hess_prod = scaled_func_hess_prod,
     .func_free = NULL
   };

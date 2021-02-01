@@ -58,13 +58,31 @@ extern "C" {
    * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
    * @param[in,out] func_data       The function data
    **/
-  typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(SleqpFunc* func,
+  /*typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(SleqpFunc* func,
                                            const SleqpSparseVec* cons_indices,
                                            double* func_val,
                                            SleqpSparseVec* func_grad,
                                            SleqpSparseVec* cons_val,
                                            SleqpSparseMatrix* cons_jac,
+                                           void* func_data);*/
+
+  typedef SLEQP_RETCODE (*SLEQP_FUNC_VAL)(SleqpFunc* func,
+                                          double* func_val,
+                                          void* func_data);
+
+  typedef SLEQP_RETCODE (*SLEQP_FUNC_GRAD)(SleqpFunc* func,
+                                           SleqpSparseVec* func_grad,
                                            void* func_data);
+
+  typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
+                                               const SleqpSparseVec* cons_indices,
+                                               SleqpSparseVec* cons_val,
+                                               void* func_data);
+
+  typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
+                                               const SleqpSparseVec* cons_indices,
+                                               SleqpSparseMatrix* cons_jac,
+                                               void* func_data);
 
   /**
    * Evaluates the product of the Hessian of the Lagrangian function.
@@ -89,12 +107,12 @@ extern "C" {
    * @param[in,out] func_data         The function data
    *
    **/
-  typedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(SleqpFunc* func,
-                                              const double* func_dual,
-                                              const SleqpSparseVec* direction,
-                                              const SleqpSparseVec* cons_duals,
-                                              SleqpSparseVec* product,
-                                              void* func_data);
+  typedef SLEQP_RETCODE (*SLEQP_HESS_PROD)(SleqpFunc* func,
+                                           const double* func_dual,
+                                           const SleqpSparseVec* direction,
+                                           const SleqpSparseVec* cons_duals,
+                                           SleqpSparseVec* product,
+                                           void* func_data);
 
   /**
    * Cleans up any allocated memory stored in the function data.
@@ -106,8 +124,11 @@ extern "C" {
 
   typedef struct {
     SLEQP_FUNC_SET set_value;
-    SLEQP_FUNC_EVAL func_eval;
-    SLEQP_HESS_PRODUCT hess_prod;
+    SLEQP_FUNC_VAL func_val;
+    SLEQP_FUNC_GRAD func_grad;
+    SLEQP_FUNC_CONS_VAL cons_val;
+    SLEQP_FUNC_CONS_JAC cons_jac;
+    SLEQP_HESS_PROD hess_prod;
     SLEQP_FUNC_FREE func_free;
   } SleqpFuncCallbacks;
 

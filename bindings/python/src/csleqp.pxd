@@ -186,27 +186,40 @@ cdef extern from "sleqp.h":
                                            int* cons_jac_nnz,
                                            void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(SleqpFunc* func,
-                                            const SleqpSparseVec* cons_indices,
-                                            double* func_val,
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_VAL)(SleqpFunc* func,
+                                           double* func_val,
+                                           void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_GRAD)(SleqpFunc* func,
                                             SleqpSparseVec* func_grad,
-                                            SleqpSparseVec* cons_val,
-                                            SleqpSparseMatrix* cons_jac,
                                             void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_HESS_PRODUCT)(SleqpFunc* func,
-                                               const double* func_dual,
-                                               const SleqpSparseVec* direction,
-                                               const SleqpSparseVec* cons_duals,
-                                               SleqpSparseVec* product,
-                                               void* func_data)
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
+                                                const SleqpSparseVec* cons_indices,
+                                                SleqpSparseVec* cons_val,
+                                                void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
+                                                const SleqpSparseVec* cons_indices,
+                                                SleqpSparseMatrix* cons_jac,
+                                                void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_HESS_PROD)(SleqpFunc* func,
+                                            const double* func_dual,
+                                            const SleqpSparseVec* direction,
+                                            const SleqpSparseVec* cons_duals,
+                                            SleqpSparseVec* product,
+                                            void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_FREE)(void* func_data)
 
   ctypedef struct SleqpFuncCallbacks:
-    SLEQP_FUNC_SET set_value,
-    SLEQP_FUNC_EVAL func_eval,
-    SLEQP_HESS_PRODUCT hess_prod,
+    SLEQP_FUNC_SET set_value
+    SLEQP_FUNC_VAL func_val
+    SLEQP_FUNC_GRAD func_grad
+    SLEQP_FUNC_CONS_VAL cons_val
+    SLEQP_FUNC_CONS_JAC cons_jac
+    SLEQP_HESS_PROD hess_prod
     SLEQP_FUNC_FREE func_free
 
   SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
@@ -318,8 +331,11 @@ cdef extern from "sleqp.h":
     SLEQP_LSQ_EVAL lsq_eval,
     SLEQP_LSQ_JAC_FORWARD lsq_jac_forward,
     SLEQP_LSQ_JAC_ADJOINT lsq_jac_adjoint,
-    SLEQP_FUNC_EVAL eval_additional,
-    SLEQP_HESS_PRODUCT hess_prod_additional,
+    SLEQP_FUNC_VAL additional_func_val,
+    SLEQP_FUNC_GRAD additional_func_grad,
+    SLEQP_FUNC_CONS_VAL additional_cons_val,
+    SLEQP_FUNC_CONS_JAC additional_cons_jac,
+    SLEQP_HESS_PROD additional_hess_prod,
     SLEQP_FUNC_FREE func_free
 
   SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,

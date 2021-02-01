@@ -63,36 +63,32 @@ static SLEQP_RETCODE linfunc_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE linfunc_eval(SleqpFunc* func,
-                                  const SleqpSparseVec* indices,
-                                  double* func_val,
-                                  SleqpSparseVec* func_grad,
-                                  SleqpSparseVec* cons_val,
-                                  SleqpSparseMatrix* cons_jac,
-                                  void* func_data)
+static SLEQP_RETCODE linfunc_val(SleqpFunc* func,
+                                 double* func_val,
+                                 void* func_data)
 {
   LinFuncData* data = (LinFuncData*) func_data;
 
-  if(func_val)
-  {
-    *func_val = data->x[0] + data->x[1];
-  }
+  *func_val = data->x[0] + data->x[1];
 
-  if(func_grad)
-  {
-    assert(func_grad->dim == 2);
+  return SLEQP_OKAY;
+}
 
-    func_grad->nnz = 0;
+static SLEQP_RETCODE linfunc_grad(SleqpFunc* func,
+                                  SleqpSparseVec* func_grad,
+                                  void* func_data)
+{
+  assert(func_grad->dim == 2);
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        0,
-                                        1.));
+  func_grad->nnz = 0;
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        1,
-                                        1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      0,
+                                      1.));
 
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      1,
+                                      1.));
 
   return SLEQP_OKAY;
 }
@@ -119,7 +115,10 @@ void unconstrained_setup()
 
   SleqpFuncCallbacks callbacks = {
     .set_value = linfunc_set,
-    .func_eval = linfunc_eval,
+    .func_val  = linfunc_val,
+    .func_grad = linfunc_grad,
+    .cons_val  = NULL,
+    .cons_jac  = NULL,
     .hess_prod = linfunc_hess_prod,
     .func_free = NULL
   };

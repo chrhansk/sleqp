@@ -72,8 +72,11 @@ extern "C" {
     SLEQP_LSQ_EVAL lsq_eval;
     SLEQP_LSQ_JAC_FORWARD lsq_jac_forward;
     SLEQP_LSQ_JAC_ADJOINT lsq_jac_adjoint;
-    SLEQP_FUNC_EVAL eval_additional;
-    SLEQP_HESS_PRODUCT hess_prod_additional;
+    SLEQP_FUNC_VAL additional_func_val;
+    SLEQP_FUNC_GRAD additional_func_grad;
+    SLEQP_FUNC_CONS_VAL additional_cons_val;
+    SLEQP_FUNC_CONS_JAC additional_cons_jac;
+    SLEQP_HESS_PROD additional_hess_prod;
     SLEQP_FUNC_FREE func_free;
   } SleqpLSQCallbacks;
 

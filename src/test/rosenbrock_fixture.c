@@ -57,13 +57,9 @@ static SLEQP_RETCODE rosenbrock_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE rosenbrock_eval(SleqpFunc* func,
-                                     const SleqpSparseVec* cons_indices,
-                                     double* func_val,
-                                     SleqpSparseVec* func_grad,
-                                     SleqpSparseVec* cons_val,
-                                     SleqpSparseMatrix* cons_jac,
-                                     void* func_data)
+static SLEQP_RETCODE rosenbrock_val(SleqpFunc* func,
+                                    double* func_val,
+                                    void* func_data)
 {
   RosenbrockData* data = (RosenbrockData*) func_data;
 
@@ -75,29 +71,39 @@ static SLEQP_RETCODE rosenbrock_eval(SleqpFunc* func,
 
   double xsq = sq(x);
 
-  if(func_val)
-  {
-    *func_val = sq(a - x) + b * sq(y - xsq);
-  }
+  *func_val = sq(a - x) + b * sq(y - xsq);
 
-  if(func_grad)
-  {
-    assert(func_grad->nnz == 0);
-    assert(func_grad->dim == 2);
+  return SLEQP_OKAY;
+}
 
-    double gradx = (4.*b*x*(xsq - y)) + 2.*x - 2.*a;
+static SLEQP_RETCODE rosenbrock_grad(SleqpFunc* func,
+                                     SleqpSparseVec* func_grad,
+                                     void* func_data)
+{
+  RosenbrockData* data = (RosenbrockData*) func_data;
 
-    double grady = -2.*b*(xsq - y);
+  assert(func_grad->nnz == 0);
+  assert(func_grad->dim == 2);
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        0,
-                                        gradx));
+  double x = data->x[0];
+  double y = data->x[1];
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        1,
-                                        grady));
+  double a = data->a;
+  double b = data->b;
 
-  }
+  double xsq = sq(x);
+
+  double gradx = (4.*b*x*(xsq - y)) + 2.*x - 2.*a;
+
+  double grady = -2.*b*(xsq - y);
+
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      0,
+                                      gradx));
+
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      1,
+                                      grady));
 
   return SLEQP_OKAY;
 }
@@ -155,7 +161,10 @@ void rosenbrock_setup()
 
     SleqpFuncCallbacks callbacks = {
     .set_value = rosenbrock_set,
-    .func_eval = rosenbrock_eval,
+    .func_val  = rosenbrock_val,
+    .func_grad = rosenbrock_grad,
+    .cons_val  = NULL,
+    .cons_jac  = NULL,
     .hess_prod = rosenbrock_hess_prod,
     .func_free = NULL
   };

@@ -19,6 +19,7 @@ typedef struct SleqpLSQData
   // num_residuals
   SleqpSparseVec* lsq_forward;
   SleqpSparseVec* lsq_residual;
+  bool has_lsq_residual;
 
   // num_variables
   SleqpSparseVec* lsq_hess_prod;
@@ -53,66 +54,73 @@ static SLEQP_RETCODE lsq_func_set_value(SleqpFunc* func,
                                            cons_jac_nnz,
                                            lsq_data->func_data));
 
+  lsq_data->has_lsq_residual = false;
+
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE lsq_func_eval(SleqpFunc* func,
-                                   const SleqpSparseVec* cons_indices,
-                                   double* func_val,
-                                   SleqpSparseVec* func_grad,
-                                   SleqpSparseVec* cons_val,
-                                   SleqpSparseMatrix* cons_jac,
-                                   void* func_data)
+static SLEQP_RETCODE compute_lsq_residual(SleqpFunc* func,
+                                          SleqpLSQData* lsq_data)
 {
-
-  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
-
-  SLEQP_CALL(sleqp_sparse_vector_clear(lsq_data->lsq_residual));
-  SLEQP_CALL(sleqp_sparse_vector_clear(lsq_data->lsq_grad));
-
-  if(func_val)
-  {
-    *func_val = 0.;
-  }
-
-  if(lsq_data->callbacks.eval_additional)
-  {
-    SleqpSparseVec* grad = NULL;
-
-    if(func_grad)
-    {
-      grad = lsq_data->grad_cache;
-    }
-
-    SLEQP_CALL(lsq_data->callbacks.eval_additional(func,
-                                                   cons_indices,
-                                                   func_val,
-                                                   grad,
-                                                   cons_val,
-                                                   cons_jac,
-                                                   lsq_data->func_data));
-  }
-
-  if(func_val || func_grad)
+  if(!(lsq_data->has_lsq_residual))
   {
     SLEQP_CALL(sleqp_sparse_vector_clear(lsq_data->lsq_residual));
 
     SLEQP_CALL(lsq_data->callbacks.lsq_eval(func,
                                             lsq_data->lsq_residual,
                                             lsq_data->func_data));
+
+    lsq_data->has_lsq_residual = true;
   }
 
-  if(func_val)
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE lsq_func_val(SleqpFunc* func,
+                                  double* func_val,
+                                  void* func_data)
+{
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  *func_val = 0.;
+
+  if(lsq_data->callbacks.additional_func_val)
   {
-    *func_val += .5 * sleqp_sparse_vector_norm_sq(lsq_data->lsq_residual);
+    //lsq_data->func_data
+    //SLEQP_CALL(sleqp_func_val(lsq_data->func, &additional_func_val));
+    SLEQP_CALL(lsq_data->callbacks.additional_func_val(func,
+                                                       func_val,
+                                                       lsq_data->func_data));
   }
 
-  if(func_grad)
+  SLEQP_CALL(compute_lsq_residual(func, lsq_data));
+
+  *func_val += .5 * sleqp_sparse_vector_norm_sq(lsq_data->lsq_residual);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+lsq_func_grad(SleqpFunc* func,
+              SleqpSparseVec* func_grad,
+              void* func_data)
+{
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
+
+  SLEQP_CALL(compute_lsq_residual(func, lsq_data));
+
+  if(lsq_data->callbacks.additional_func_grad)
   {
     SLEQP_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
                                                    lsq_data->lsq_residual,
                                                    lsq_data->lsq_grad,
                                                    lsq_data->func_data));
+
+    SLEQP_CALL(lsq_data->callbacks.additional_func_grad(func,
+                                                        lsq_data->grad_cache,
+                                                        lsq_data->func_data));
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(lsq_data->grad_cache,
                                               lsq_data->lsq_grad,
@@ -120,10 +128,61 @@ static SLEQP_RETCODE lsq_func_eval(SleqpFunc* func,
                                               1.,
                                               lsq_data->eps,
                                               func_grad));
+
+  }
+  else
+  {
+    SLEQP_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
+                                                   lsq_data->lsq_residual,
+                                                   func_grad,
+                                                   lsq_data->func_data));
   }
 
   return SLEQP_OKAY;
 }
+
+static SLEQP_RETCODE
+lsq_func_cons_val(SleqpFunc* func,
+                  const SleqpSparseVec* cons_indices,
+                  SleqpSparseVec* cons_val,
+                  void* func_data)
+{
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
+
+  if(lsq_data->callbacks.additional_cons_val)
+  {
+    SLEQP_CALL(lsq_data->callbacks.additional_cons_val(func,
+                                                       cons_indices,
+                                                       cons_val,
+                                                       lsq_data->func_data));
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+lsq_func_cons_jac(SleqpFunc* func,
+                  const SleqpSparseVec* cons_indices,
+                  SleqpSparseMatrix* cons_jac,
+                  void* func_data)
+{
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
+
+  if(lsq_data->callbacks.additional_cons_jac)
+  {
+    SLEQP_CALL(lsq_data->callbacks.additional_cons_jac(func,
+                                                       cons_indices,
+                                                       cons_jac,
+                                                       lsq_data->func_data));
+  }
+
+  return SLEQP_OKAY;
+}
+
 
 static SLEQP_RETCODE lsq_func_hess_product(SleqpFunc* func,
                                            const double* func_dual,
@@ -148,9 +207,9 @@ static SLEQP_RETCODE lsq_func_hess_product(SleqpFunc* func,
 
   if(func_dual)
   {
-    if(lsq_data->callbacks.hess_prod_additional)
+    if(lsq_data->callbacks.additional_hess_prod)
     {
-      SLEQP_CALL(lsq_data->callbacks.hess_prod_additional(func,
+      SLEQP_CALL(lsq_data->callbacks.additional_hess_prod(func,
                                                           func_dual,
                                                           direction,
                                                           cons_duals,
@@ -187,9 +246,9 @@ static SLEQP_RETCODE lsq_func_hess_product(SleqpFunc* func,
                                                      lsq_data->func_data));
     }
   }
-  else if(lsq_data->callbacks.hess_prod_additional)
+  else if(lsq_data->callbacks.additional_hess_prod)
   {
-    SLEQP_CALL(lsq_data->callbacks.hess_prod_additional(func,
+    SLEQP_CALL(lsq_data->callbacks.additional_hess_prod(func,
                                                         func_dual,
                                                         direction,
                                                         cons_duals,
@@ -262,6 +321,8 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
   data->num_variables = num_variables;
   data->num_residuals = num_residuals;
 
+  data->has_lsq_residual = false;
+
   data->callbacks = *callbacks;
 
   data->levenberg_marquardt = levenberg_marquardt;
@@ -293,7 +354,10 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
 
   SleqpFuncCallbacks func_callbacks = {
     .set_value = lsq_func_set_value,
-    .func_eval = lsq_func_eval,
+    .func_val  = lsq_func_val,
+    .func_grad = lsq_func_grad,
+    .cons_val  = lsq_func_cons_val,
+    .cons_jac  = lsq_func_cons_jac,
     .hess_prod = lsq_func_hess_product,
     .func_free = lsq_func_free
   };

@@ -78,6 +78,84 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_func_val(SleqpFunc* func,
+                             double* func_val)
+{
+  if(func_val)
+  {
+    SLEQP_CALL(func->callbacks.func_val(func,
+                                        func_val,
+                                        func->data));
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_func_grad(SleqpFunc* func,
+                              SleqpSparseVec* func_grad)
+{
+  if(func_grad)
+  {
+    ++func->num_grad_evals;
+
+    SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
+
+    SLEQP_CALL(func->callbacks.func_grad(func,
+                                         func_grad,
+                                         func->data));
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_func_cons_val(SleqpFunc* func,
+                                  const SleqpSparseVec* cons_indices,
+                                  SleqpSparseVec* cons_val)
+{
+  const int num_constraints = sleqp_func_get_num_constraints(func);
+
+  if(cons_val)
+  {
+    ++func->num_cons_evals;
+
+    SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
+
+    if((num_constraints != 0) && (func->callbacks.cons_val))
+    {
+      SLEQP_CALL(func->callbacks.cons_val(func,
+                                          cons_indices,
+                                          cons_val,
+                                          func->data));
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_func_cons_jac(SleqpFunc* func,
+                                  const SleqpSparseVec* cons_indices,
+                                  SleqpSparseMatrix* cons_jac)
+{
+  const int num_constraints = sleqp_func_get_num_constraints(func);
+
+  if(cons_jac)
+  {
+    ++func->num_jac_evals;
+
+    SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
+
+    if((num_constraints != 0) && (func->callbacks.cons_jac))
+    {
+      SLEQP_CALL(func->callbacks.cons_jac(func,
+                                          cons_indices,
+                                          cons_jac,
+                                          func->data));
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
                               const SleqpSparseVec* cons_indices,
                               double* func_val,
@@ -85,41 +163,13 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
                               SleqpSparseVec* cons_val,
                               SleqpSparseMatrix* cons_jac)
 {
-  if(func_grad)
-  {
-    ++func->num_grad_evals;
+  SLEQP_CALL(sleqp_func_val(func, func_val));
 
-    SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
-  }
+  SLEQP_CALL(sleqp_func_grad(func, func_grad));
 
-  if(cons_val)
-  {
-    ++func->num_cons_evals;
+  SLEQP_CALL(sleqp_func_cons_val(func, cons_indices, cons_val));
 
-    SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
-  }
-
-  if(cons_jac)
-  {
-    ++func->num_jac_evals;
-
-    SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
-  }
-
-
-  ++func->num_func_evals;
-
-  SLEQP_CALL(sleqp_timer_start(func->eval_timer));
-
-  SLEQP_CALL(func->callbacks.func_eval(func,
-                                       cons_indices,
-                                       func_val,
-                                       func_grad,
-                                       cons_val,
-                                       cons_jac,
-                                       func->data));
-
-  SLEQP_CALL(sleqp_timer_stop(func->eval_timer));
+  SLEQP_CALL(sleqp_func_cons_jac(func, cons_indices, cons_jac));
 
   if(func_grad && !sleqp_sparse_vector_valid(func_grad))
   {

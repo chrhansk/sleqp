@@ -52,37 +52,35 @@ SLEQP_RETCODE quadfunc_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE quadfunc_eval(SleqpFunc* func,
-                            const SleqpSparseVec* cons_indices,
+SLEQP_RETCODE quadfunc_val(SleqpFunc* func,
                             double* func_val,
-                            SleqpSparseVec* func_grad,
-                            SleqpSparseVec* cons_val,
-                            SleqpSparseMatrix* cons_jac,
                             void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*) func_data;
 
-  if(func_val)
-  {
-    *func_val = square(data->x[0]) + square(data->x[1]);
-  }
+  *func_val = square(data->x[0]) + square(data->x[1]);
 
-  if(func_grad)
-  {
-    assert(func_grad->dim == 2);
-    assert(func_grad->nnz_max >= 2);
+  return SLEQP_OKAY;
+}
 
-    func_grad->nnz = 0;
+SLEQP_RETCODE quadfunc_grad(SleqpFunc* func,
+                            SleqpSparseVec* func_grad,
+                            void* func_data)
+{
+  SquareFuncData* data = (SquareFuncData*) func_data;
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        0,
-                                        2.*data->x[0]));
+  assert(func_grad->dim == 2);
+  assert(func_grad->nnz_max >= 2);
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        1,
-                                        2.*data->x[1]));
+  func_grad->nnz = 0;
 
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      0,
+                                      2.*data->x[0]));
+
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      1,
+                                      2.*data->x[1]));
 
   return SLEQP_OKAY;
 }
@@ -114,7 +112,10 @@ void quadfunc_setup()
 
   SleqpFuncCallbacks callbacks = {
     .set_value = quadfunc_set,
-    .func_eval = quadfunc_eval,
+    .func_val  = quadfunc_val,
+    .func_grad = quadfunc_grad,
+    .cons_val  = NULL,
+    .cons_jac  = NULL,
     .hess_prod = quadfunc_hess_prod,
     .func_free = NULL
   };

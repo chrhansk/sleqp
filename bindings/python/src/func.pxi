@@ -44,12 +44,40 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpFunc* func,
                           func_data)
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_eval(csleqp.SleqpFunc* func,
-                                          const csleqp.SleqpSparseVec* cons_indices,
-                                          double* func_val,
+cdef csleqp.SLEQP_RETCODE sleqp_func_val(csleqp.SleqpFunc* func,
+                                         double* func_val,
+                                         void* func_data):
+  cdef int num_variables
+  cdef int num_constraints
+  try:
+
+    func_obj = (<object> func_data)
+
+    num_variables = csleqp.sleqp_func_get_num_variables(func)
+    num_constraints = csleqp.sleqp_func_get_num_constraints(func)
+
+    result = func_obj.func_val()
+    assert result is not None, "func_val() returned 'None'"
+    func_val[0] = result
+
+  except BaseException as exception:
+    func_obj.call_exception = exception
+    return csleqp.SLEQP_INTERNAL_ERROR
+
+  return csleqp.SLEQP_OKAY
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_val_nogil(csleqp.SleqpFunc* func,
+                                                double* func_val,
+                                                void* func_data) nogil:
+  with gil:
+    return sleqp_func_val(func,
+                          func_val,
+                          func_data)
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_grad(csleqp.SleqpFunc* func,
                                           csleqp.SleqpSparseVec* func_grad,
-                                          csleqp.SleqpSparseVec* cons_vals,
-                                          csleqp.SleqpSparseMatrix* cons_jac,
                                           void* func_data):
   cdef int num_variables
   cdef int num_constraints
@@ -60,39 +88,91 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(csleqp.SleqpFunc* func,
     num_variables = csleqp.sleqp_func_get_num_variables(func)
     num_constraints = csleqp.sleqp_func_get_num_constraints(func)
 
-    if func_val:
-      result = func_obj.func_val()
-      assert result is not None, "func_val() returned 'None'"
-      func_val[0] = result
+    grad_array = func_obj.func_grad()
 
-    if func_grad:
-      grad_array = func_obj.func_grad()
+    assert grad_array is not None, "func_grad() returned 'None'"
+    assert grad_array.ndim == 1, "Gradient must be a vector"
+    assert grad_array.size == num_variables, "Gradient has wrong size"
 
-      assert grad_array is not None, "func_grad() returned 'None'"
-      assert grad_array.ndim == 1, "Gradient must be a vector"
-      assert grad_array.size == num_variables, "Gradient has wrong size"
+    csleqp_call(array_to_sleqp_sparse_vec(grad_array, func_grad))
 
-      csleqp_call(array_to_sleqp_sparse_vec(grad_array, func_grad))
+  except BaseException as exception:
+    func_obj.call_exception = exception
+    return csleqp.SLEQP_INTERNAL_ERROR
 
-    if cons_vals:
-      cons_array = func_obj.cons_vals()
+  return csleqp.SLEQP_OKAY
 
-      assert cons_array is not None, "cons_vals() returned 'None'"
-      assert cons_array.ndim == 1, "Constraint values must be a vector"
-      assert cons_array.size == num_constraints, "Constraint values have wrong size"
 
-      csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
+cdef csleqp.SLEQP_RETCODE sleqp_func_grad_nogil(csleqp.SleqpFunc* func,
+                                                csleqp.SleqpSparseVec* func_grad,
+                                                void* func_data) nogil:
+  with gil:
+    return sleqp_func_grad(func,
+                           func_grad,
+                           func_data)
 
-    if cons_jac:
-      cons_jac_mat = func_obj.cons_jac()
 
-      expected_shape = (num_constraints, num_variables)
+cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
+                                              const csleqp.SleqpSparseVec* cons_indices,
+                                              csleqp.SleqpSparseVec* cons_vals,
+                                              void* func_data):
+  cdef int num_variables
+  cdef int num_constraints
+  try:
 
-      assert cons_jac_mat is not None, "cons_jac() returned 'None'"
-      assert cons_jac_mat.ndim == 2, "Constraint Jacobian must be a matrix"
-      assert cons_jac_mat.shape == expected_shape, "Constraint Jacobian has wrong shape"
+    func_obj = (<object> func_data)
 
-      csleqp_call(matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac))
+    num_variables = csleqp.sleqp_func_get_num_variables(func)
+    num_constraints = csleqp.sleqp_func_get_num_constraints(func)
+
+    cons_array = func_obj.cons_vals()
+
+    assert cons_array is not None, "cons_vals() returned 'None'"
+    assert cons_array.ndim == 1, "Constraint values must be a vector"
+    assert cons_array.size == num_constraints, "Constraint values have wrong size"
+
+    csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
+
+  except BaseException as exception:
+    func_obj.call_exception = exception
+    return csleqp.SLEQP_INTERNAL_ERROR
+
+  return csleqp.SLEQP_OKAY
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val_nogil(csleqp.SleqpFunc* func,
+                                                    const csleqp.SleqpSparseVec* cons_indices,
+                                                    csleqp.SleqpSparseVec* cons_vals,
+                                                    void* func_data) nogil:
+  with gil:
+    return sleqp_func_cons_val(func,
+                               cons_indices,
+                               cons_vals,
+                               func_data)
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
+                                              const csleqp.SleqpSparseVec* cons_indices,
+                                              csleqp.SleqpSparseMatrix* cons_jac,
+                                              void* func_data):
+  cdef int num_variables
+  cdef int num_constraints
+  try:
+
+    func_obj = (<object> func_data)
+
+    num_variables = csleqp.sleqp_func_get_num_variables(func)
+    num_constraints = csleqp.sleqp_func_get_num_constraints(func)
+
+    cons_jac_mat = func_obj.cons_jac()
+
+    expected_shape = (num_constraints, num_variables)
+
+    assert cons_jac_mat is not None, "cons_jac() returned 'None'"
+    assert cons_jac_mat.ndim == 2, "Constraint Jacobian must be a matrix"
+    assert cons_jac_mat.shape == expected_shape, "Constraint Jacobian has wrong shape"
+
+    csleqp_call(matrix_to_sleqp_sparse_matrix(cons_jac_mat, cons_jac))
 
 
   except BaseException as exception:
@@ -102,21 +182,15 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_eval(csleqp.SleqpFunc* func,
   return csleqp.SLEQP_OKAY
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_eval_nogil(csleqp.SleqpFunc* func,
-                                                const csleqp.SleqpSparseVec* cons_indices,
-                                                double* func_val,
-                                                csleqp.SleqpSparseVec* func_grad,
-                                                csleqp.SleqpSparseVec* cons_vals,
-                                                csleqp.SleqpSparseMatrix* cons_jac,
-                                                void* func_data) nogil:
+cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac_nogil(csleqp.SleqpFunc* func,
+                                                    const csleqp.SleqpSparseVec* cons_indices,
+                                                    csleqp.SleqpSparseMatrix* cons_jac,
+                                                    void* func_data) nogil:
   with gil:
-    return sleqp_func_eval(func,
-                           cons_indices,
-                           func_val,
-                           func_grad,
-                           cons_vals,
-                           cons_jac,
-                           func_data)
+    return sleqp_func_cons_jac(func,
+                               cons_indices,
+                               cons_jac,
+                               func_data)
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
@@ -182,11 +256,17 @@ cdef object funcs = weakref.WeakSet()
 cdef set_func_callbacks(csleqp.SleqpFuncCallbacks* callbacks):
   if release_gil:
     callbacks[0].set_value = &sleqp_func_set_nogil
-    callbacks[0].func_eval = &sleqp_func_eval_nogil
+    callbacks[0].func_val = &sleqp_func_val_nogil
+    callbacks[0].func_grad = &sleqp_func_grad_nogil
+    callbacks[0].cons_val = &sleqp_func_cons_val_nogil
+    callbacks[0].cons_jac = &sleqp_func_cons_jac_nogil
     callbacks[0].hess_prod = &sleqp_func_hess_product_nogil
   else:
     callbacks[0].set_value = &sleqp_func_set
-    callbacks[0].func_eval = &sleqp_func_eval
+    callbacks[0].func_val = &sleqp_func_val
+    callbacks[0].func_grad = &sleqp_func_grad
+    callbacks[0].cons_val = &sleqp_func_cons_val
+    callbacks[0].cons_jac = &sleqp_func_cons_jac
     callbacks[0].hess_prod = &sleqp_func_hess_product
 
   callbacks.func_free = &sleqp_func_free

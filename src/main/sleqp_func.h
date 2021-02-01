@@ -80,6 +80,20 @@ extern "C" {
                                              SleqpSparseVec* cons_val,
                                              SleqpSparseMatrix* cons_jac);
 
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_val(SleqpFunc* func,
+                                             double* func_val);
+
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_grad(SleqpFunc* func,
+                                             SleqpSparseVec* func_grad);
+
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_cons_val(SleqpFunc* func,
+                                                 const SleqpSparseVec* cons_indices,
+                                                 SleqpSparseVec* cons_val);
+
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_cons_jac(SleqpFunc* func,
+                                                 const SleqpSparseVec* cons_indices,
+                                                 SleqpSparseMatrix* cons_jac);
+
   /**
    * Sets the callbacks of this function to the specified ones
    **/

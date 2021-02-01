@@ -54,102 +54,116 @@ static SLEQP_RETCODE func_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE func_eval(SleqpFunc* func,
-                               const SleqpSparseVec* cons_indices,
-                               double* func_val,
+static SLEQP_RETCODE func_val(SleqpFunc* func,
+                              double* func_val,
+                              void* func_data)
+{
+  FuncData* data = (FuncData*) func_data;
+  double* x = data->values;
+
+  (*func_val) = x[0]*x[3]*(x[0] + x[1]+ x[2]) + x[2];
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE func_grad(SleqpFunc* func,
                                SleqpSparseVec* func_grad,
-                               SleqpSparseVec* cons_val,
-                               SleqpSparseMatrix* cons_jac,
                                void* func_data)
 {
   FuncData* data = (FuncData*) func_data;
   double* x = data->values;
 
-  if(func_val)
-  {
-    (*func_val) = x[0]*x[3]*(x[0] + x[1]+ x[2]) + x[2];
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      0,
+                                      (x[0] + x[1] + x[2])*x[3] + x[0]*x[3]));
 
-  if(cons_val)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                        0,
-                                        x[0]*x[1]*x[2]*x[3]));
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      1,
+                                      x[0]*x[3]));
 
-    SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                        1,
-                                        sq(x[0]) + sq(x[1]) + sq(x[2]) +  sq(x[3])));
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      2,
+                                      x[0]*x[3] + 1));
 
-  if(func_grad)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        0,
-                                        (x[0] + x[1] + x[2])*x[3] + x[0]*x[3]));
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      3,
+                                      (x[0] + x[1] + x[2])*x[0]));
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        1,
-                                        x[0]*x[3]));
+  return SLEQP_OKAY;
+}
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        2,
-                                        x[0]*x[3] + 1));
+static SLEQP_RETCODE cons_val(SleqpFunc* func,
+                              const SleqpSparseVec* cons_indices,
+                              SleqpSparseVec* cons_val,
+                              void* func_data)
+{
+  FuncData* data = (FuncData*) func_data;
+  double* x = data->values;
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        3,
-                                        (x[0] + x[1] + x[2])*x[0]));
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
+                                      0,
+                                      x[0]*x[1]*x[2]*x[3]));
 
-  if(cons_jac)
-  {
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        0,
-                                        0,
-                                        x[1]*x[2]*x[3]));
+  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
+                                      1,
+                                      sq(x[0]) + sq(x[1]) + sq(x[2]) +  sq(x[3])));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        1,
-                                        0,
-                                        2*x[0]));
+  return SLEQP_OKAY;
+}
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
+static SLEQP_RETCODE cons_jac(SleqpFunc* func,
+                              const SleqpSparseVec* cons_indices,
+                              SleqpSparseMatrix* cons_jac,
+                              void* func_data)
+{
+  FuncData* data = (FuncData*) func_data;
+  double* x = data->values;
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        0,
-                                        1,
-                                        x[0]*x[2]*x[3]));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      0,
+                                      0,
+                                      x[1]*x[2]*x[3]));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        1,
-                                        1,
-                                        2*x[1]));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      1,
+                                      0,
+                                      2*x[0]));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 2));
+  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        0,
-                                        2,
-                                        x[0]*x[1]*x[3]));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      0,
+                                      1,
+                                      x[0]*x[2]*x[3]));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        1,
-                                        2,
-                                        2*x[2]));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      1,
+                                      1,
+                                      2*x[1]));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 3));
+  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 2));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        0,
-                                        3,
-                                        x[0]*x[1]*x[2]));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      0,
+                                      2,
+                                      x[0]*x[1]*x[3]));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        1,
-                                        3,
-                                        2*x[3]));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      1,
+                                      2,
+                                      2*x[2]));
 
-  }
+  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 3));
 
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      0,
+                                      3,
+                                      x[0]*x[1]*x[2]));
+
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      1,
+                                      3,
+                                      2*x[3]));
 
   return SLEQP_OKAY;
 }
@@ -278,7 +292,10 @@ void constrained_setup()
 
   SleqpFuncCallbacks callbacks = {
     .set_value = func_set,
-    .func_eval = func_eval,
+    .func_val  = func_val,
+    .func_grad = func_grad,
+    .cons_val  = cons_val,
+    .cons_jac  = cons_jac,
     .hess_prod = func_hess_prod,
     .func_free = NULL
   };
@@ -770,6 +787,8 @@ Suite* constrained_test_suite()
   tcase_add_test(tc_cons, test_scaled_solve);
 
   tcase_add_test(tc_cons, test_scaled_sr1_solve);
+
+  // tcase_add_test(tc_cons, test_scaled_bfgs_solve);
 
   tcase_add_test(tc_cons, test_auto_scaled_solve);
 

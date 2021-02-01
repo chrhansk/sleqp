@@ -48,13 +48,9 @@ static SLEQP_RETCODE func_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE func_eval(SleqpFunc* func,
-                               const SleqpSparseVec* cons_indices,
-                               double* func_val,
-                               SleqpSparseVec* func_grad,
-                               SleqpSparseVec* cons_val,
-                               SleqpSparseMatrix* cons_jac,
-                               void* func_data)
+static SLEQP_RETCODE func_val(SleqpFunc* func,
+                              double* func_val,
+                              void* func_data)
 {
   FuncData* data = (FuncData*) func_data;
 
@@ -65,44 +61,73 @@ static SLEQP_RETCODE func_eval(SleqpFunc* func,
   const double ysq = sq(y);
 
 
-  if(func_val)
-  {
-    (*func_val) = 2*(xsq + ysq - 1) - x;
-  }
+  (*func_val) = 2*(xsq + ysq - 1) - x;
 
-  if(cons_val)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                        0,
-                                        xsq + ysq - 1));
-  }
+  return SLEQP_OKAY;
+}
 
-  if(func_grad)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        0,
-                                        4*x - 1));
+static SLEQP_RETCODE func_grad(SleqpFunc* func,
+                               SleqpSparseVec* func_grad,
+                               void* func_data)
+{
+  FuncData* data = (FuncData*) func_data;
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        1,
-                                        4*y));
-  }
+  const double x = data->values[0];
+  const double y = data->values[1];
 
-  if(cons_jac)
-  {
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        0,
-                                        0,
-                                        2*x));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      0,
+                                      4*x - 1));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        0,
-                                        1,
-                                        2*y));
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      1,
+                                      4*y));
 
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE func_cons_val(SleqpFunc* func,
+                                   const SleqpSparseVec* cons_indices,
+                                   SleqpSparseVec* cons_val,
+                                   void* func_data)
+{
+  FuncData* data = (FuncData*) func_data;
+
+  const double x = data->values[0];
+  const double y = data->values[1];
+
+  const double xsq = sq(x);
+  const double ysq = sq(y);
+
+  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
+                                      0,
+                                      xsq + ysq - 1));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE func_cons_jac(SleqpFunc* func,
+                                   const SleqpSparseVec* cons_indices,
+                                   SleqpSparseMatrix* cons_jac,
+                                   void* func_data)
+{
+  FuncData* data = (FuncData*) func_data;
+
+  const double x = data->values[0];
+  const double y = data->values[1];
+
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      0,
+                                      0,
+                                      2*x));
+
+  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
+
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
+                                      0,
+                                      1,
+                                      2*y));
 
   return SLEQP_OKAY;
 }
@@ -196,7 +221,10 @@ void second_order_setup()
 
   SleqpFuncCallbacks callbacks = {
     .set_value = func_set,
-    .func_eval = func_eval,
+    .func_val  = func_val,
+    .func_grad = func_grad,
+    .cons_val  = func_cons_val,
+    .cons_jac  = func_cons_jac,
     .hess_prod = func_hess_prod,
     .func_free = NULL
   };

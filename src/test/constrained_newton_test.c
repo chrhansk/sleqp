@@ -69,54 +69,64 @@ SLEQP_RETCODE linquadfunc_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE linquadfunc_eval(SleqpFunc* func,
-                               const SleqpSparseVec* cons_indices,
+SLEQP_RETCODE linquadfunc_val(SleqpFunc* func,
                                double* func_val,
-                               SleqpSparseVec* func_grad,
-                               SleqpSparseVec* cons_val,
-                               SleqpSparseMatrix* cons_jac,
                                void* func_data)
 {
   LinQuadFuncData* data = (LinQuadFuncData*) func_data;
 
-  if(func_val)
-  {
-    *func_val = square(data->x[0]) + square(data->x[1]);
-  }
+  *func_val = square(data->x[0]) + square(data->x[1]);
 
-  if(func_grad)
-  {
-    assert(func_grad->dim == 2);
-    assert(func_grad->nnz_max >= 2);
+  return SLEQP_OKAY;
+}
 
-    func_grad->nnz = 0;
+SLEQP_RETCODE linquadfunc_grad(SleqpFunc* func,
+                               SleqpSparseVec* func_grad,
+                               void* func_data)
+{
+  LinQuadFuncData* data = (LinQuadFuncData*) func_data;
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        0,
-                                        2.*data->x[0]));
+  assert(func_grad->dim == 2);
+  assert(func_grad->nnz_max >= 2);
 
-    SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                        1,
-                                        2.*data->x[1]));
+  func_grad->nnz = 0;
 
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      0,
+                                      2.*data->x[0]));
 
-  if(cons_val)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                        0,
-                                        data->x[1]));
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
+                                      1,
+                                      2.*data->x[1]));
 
-  if(cons_jac)
-  {
-    assert(sleqp_sparse_matrix_get_nnz(cons_jac) == 0);
-    assert(sleqp_sparse_matrix_get_nnz_max(cons_jac) >= 1);
+  return SLEQP_OKAY;
+}
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 1.));
+SLEQP_RETCODE linquadfunc_cons_val(SleqpFunc* func,
+                                   const SleqpSparseVec* cons_indices,
+                                   SleqpSparseVec* cons_val,
+                                   void* func_data)
+{
+  LinQuadFuncData* data = (LinQuadFuncData*) func_data;
 
-    assert(sleqp_sparse_matrix_valid(cons_jac));
-  }
+  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
+                                      0,
+                                      data->x[1]));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE linquadfunc_cons_jac(SleqpFunc* func,
+                                   const SleqpSparseVec* cons_indices,
+                                   SleqpSparseMatrix* cons_jac,
+                                   void* func_data)
+{
+  assert(sleqp_sparse_matrix_get_nnz(cons_jac) == 0);
+  assert(sleqp_sparse_matrix_get_nnz_max(cons_jac) >= 1);
+
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 1.));
+
+  assert(sleqp_sparse_matrix_valid(cons_jac));
 
   return SLEQP_OKAY;
 }
@@ -150,7 +160,10 @@ void newton_setup()
 
   SleqpFuncCallbacks callbacks = {
     .set_value = linquadfunc_set,
-    .func_eval = linquadfunc_eval,
+    .func_val  = linquadfunc_val,
+    .func_grad = linquadfunc_grad,
+    .cons_val  = linquadfunc_cons_val,
+    .cons_jac  = linquadfunc_cons_jac,
     .hess_prod = linquadfunc_hess_prod,
     .func_free = NULL
   };
