@@ -110,29 +110,6 @@ sr1_func_set_value(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-/*
-  static SLEQP_RETCODE
-  sr1_func_eval(SleqpFunc* func,
-  const SleqpSparseVec* cons_indices,
-  double* func_val,
-  SleqpSparseVec* func_grad,
-  SleqpSparseVec* cons_val,
-  SleqpSparseMatrix* cons_jac,
-  void* func_data)
-  {
-  SleqpSR1Data* sr1_data = (SleqpSR1Data*) func_data;
-
-  SLEQP_CALL(sleqp_func_eval(sr1_data->func,
-  cons_indices,
-  func_val,
-  func_grad,
-  cons_val,
-  cons_jac));
-
-  return SLEQP_OKAY;
-  }
-*/
-
 static SLEQP_RETCODE
 sr1_func_val(SleqpFunc* func,
              double* func_val,
@@ -309,7 +286,7 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
   data->num_blocks = num_blocks;
   data->num_variables = num_variables;
 
-  sleqp_alloc_array(&data->blocks, num_blocks);
+  SLEQP_CALL(sleqp_alloc_array(&data->blocks, num_blocks));
 
   for(int block = 0; block < num_blocks; ++block)
   {

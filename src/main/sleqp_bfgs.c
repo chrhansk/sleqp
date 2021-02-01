@@ -367,7 +367,7 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
   data->num_blocks = num_blocks;
   data->func = func;
 
-  sleqp_alloc_array(&data->blocks, num_blocks);
+  SLEQP_CALL(sleqp_alloc_array(&data->blocks, num_blocks));
 
   for(int block = 0; block < num_blocks; ++block)
   {
