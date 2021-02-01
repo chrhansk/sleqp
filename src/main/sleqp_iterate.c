@@ -479,9 +479,14 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
                               double slackness_residuum,
                               double stationarity_residuum)
 {
-  const double feas_eps = sleqp_params_get_feasibility_tolerance(params);
-  const double slack_eps = sleqp_params_get_slackness_tolerance(params);
-  const double stat_eps = sleqp_params_get_stationarity_tolerance(params);
+  const double feas_eps = sleqp_params_get(params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
+
+  const double slack_eps = sleqp_params_get(params,
+                                            SLEQP_PARAM_SLACKNESS_TOL);
+
+  const double stat_eps = sleqp_params_get(params,
+                                           SLEQP_PARAM_STATIONARITY_TOL);
 
   if(!sleqp_iterate_is_feasible(iterate, feasibility_residuum, feas_eps))
   {

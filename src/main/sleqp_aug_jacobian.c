@@ -287,7 +287,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
   SleqpProblem* problem = jacobian->problem;
   SleqpSparseFactorization* factorization = jacobian->factorization;
 
-  double zero_eps = sleqp_params_get_zero_eps(jacobian->params);
+  double zero_eps = sleqp_params_get(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
   int num_variables = problem->num_variables;
 
@@ -329,7 +329,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
   SleqpProblem* problem = jacobian->problem;
   SleqpSparseFactorization* factorization = jacobian->factorization;
 
-  double zero_eps = sleqp_params_get_zero_eps(jacobian->params);
+  double zero_eps = sleqp_params_get(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
   int num_variables = problem->num_variables;
   int working_set_size = jacobian->working_set_size;

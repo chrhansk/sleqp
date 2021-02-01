@@ -127,7 +127,8 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   SleqpSparseVec* initial_rhs = data->initial_rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
-  const double eps = sleqp_params_get_eps(data->params);
+  const double eps = sleqp_params_get(data->params,
+                                      SLEQP_PARAM_EPS);
 
   const int working_set_size = sleqp_working_set_size(working_set);
 
@@ -321,9 +322,14 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
 
   SleqpProblem* problem = data->problem;
 
-  const double eps = sleqp_params_get_eps(data->params);
-  const double zero_eps = sleqp_params_get_zero_eps(data->params);
-  const double feas_eps = sleqp_params_get_feasibility_tolerance(data->params);
+  const double eps = sleqp_params_get(data->params,
+                                      SLEQP_PARAM_EPS);
+
+  const double zero_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  const double feas_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
 
   SLEQP_CALL(get_initial_rhs(data, iterate, jacobian));
 
@@ -444,7 +450,8 @@ SLEQP_RETCODE sleqp_newton_compute_multipliers(SleqpNewtonData* data,
 
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(data->iterate);
 
-  const double zero_eps = sleqp_params_get_zero_eps(data->params);
+  const double zero_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(cons_dual,
                                             data->violated_constraint_multipliers,
@@ -470,8 +477,11 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   SleqpAugJacobian* jacobian = data->jacobian;
 
-  const double eps = sleqp_params_get_eps(data->params);
-  const double zero_eps = sleqp_params_get_zero_eps(data->params);
+  const double eps = sleqp_params_get(data->params,
+                                      SLEQP_PARAM_EPS);
+
+  const double zero_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   const double trust_radius = data->trust_radius;
   const double penalty_parameter = data->penalty_parameter;

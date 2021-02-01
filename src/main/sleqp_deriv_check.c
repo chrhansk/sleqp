@@ -137,9 +137,9 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
 
   SleqpSparseVec* unit_direction = data->unit_direction;
 
-  const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
+  const double tolerance = sleqp_params_get(data->params, SLEQP_PARAM_DERIV_TOL);
 
-  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get(data->params, SLEQP_PARAM_DERIV_PERTURBATION),
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 
@@ -224,9 +224,10 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
 
   SleqpSparseVec* unit_direction = data->unit_direction;
 
-  const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
+  const double tolerance = sleqp_params_get(data->params,
+                                            SLEQP_PARAM_DERIV_TOL);
 
-  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get(data->params, SLEQP_PARAM_DERIV_PERTURBATION),
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 
@@ -343,9 +344,10 @@ static SLEQP_RETCODE check_func_second_order_at(SleqpDerivCheckData* data,
 
   SleqpSparseVec* unit_direction = data->unit_direction;
 
-  const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
+  const double tolerance = sleqp_params_get(data->params,
+                                            SLEQP_PARAM_DERIV_TOL);
 
-  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get(data->params, SLEQP_PARAM_DERIV_PERTURBATION),
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 
@@ -462,9 +464,9 @@ static SLEQP_RETCODE check_cons_second_order_at(SleqpDerivCheckData* data,
 
   SleqpSparseVec* unit_direction = data->unit_direction;
 
-  const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
+  const double tolerance = sleqp_params_get(data->params, SLEQP_PARAM_DERIV_TOL);
 
-  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get(data->params, SLEQP_PARAM_DERIV_PERTURBATION),
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 
@@ -634,7 +636,7 @@ static SLEQP_RETCODE compute_combined_cons_grad(SleqpDerivCheckData* data,
 {
   SleqpParams* params = data->params;
 
-  const double zero_eps = sleqp_params_get_zero_eps(params);
+  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(iterate),
                                                       multipliers,
@@ -670,9 +672,10 @@ static SLEQP_RETCODE check_second_order_at(SleqpDerivCheckData* data,
 
   const double one = 1.;
 
-  const double tolerance = sleqp_params_get_deriv_tolerance(data->params);
+  const double tolerance = sleqp_params_get(data->params,
+                                            SLEQP_PARAM_DERIV_TOL);
 
-  const double perturbation = get_perturbation(sleqp_params_get_deriv_perturbation(data->params),
+  const double perturbation = get_perturbation(sleqp_params_get(data->params, SLEQP_PARAM_DERIV_PERTURBATION),
                                                sleqp_iterate_get_primal(iterate),
                                                j);
 

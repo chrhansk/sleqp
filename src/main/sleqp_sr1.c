@@ -394,7 +394,8 @@ SLEQP_RETCODE sr1_compute_inner_products(SleqpSR1Data* data,
 
   const int first = block->curr - block->len + 1;
 
-  const double eps = sleqp_params_get_eps(data->params);
+  const double eps = sleqp_params_get(data->params,
+                                      SLEQP_PARAM_EPS);
 
   {
     int i = data_index(block, block->curr);
@@ -522,7 +523,8 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
                                   SleqpIterate* current_iterate,
                                   SleqpSparseVec* multipliers)
 {
-  const double eps = sleqp_params_get_eps(data->params);
+  const double eps = sleqp_params_get(data->params,
+                                      SLEQP_PARAM_EPS);
 
   const int num_blocks = data->num_blocks;
 
@@ -641,7 +643,8 @@ SLEQP_RETCODE sr1_block_hess_prod(SleqpSR1Data* data,
     return SLEQP_OKAY;
   }
 
-  const double eps = sleqp_params_get_eps(data->params);
+  const double eps = sleqp_params_get(data->params,
+                                      SLEQP_PARAM_EPS);
 
   // Note: We have already computed the required inner products / dots
 

@@ -43,7 +43,8 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 
   soplex.spxout = spxout;
 
-  const double zero_eps = sleqp_params_get_zero_eps(params);
+  const double zero_eps = sleqp_params_get(params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   soplex.setRealParam(soplex::SoPlex::EPSILON_ZERO, zero_eps);
 

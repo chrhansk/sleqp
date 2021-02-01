@@ -1,42 +1,22 @@
 #include "sleqp_params.h"
 
+#include <assert.h>
+
 #include "sleqp_mem.h"
 
 struct SleqpParams
 {
   int refcount;
 
-  double eps;
-  double zero_eps;
+  double values[SLEQP_NUM_PARAMS];
 
-  double deriv_perturbation;
-  double deriv_tolerance;
-
-  double cauchy_tau;
-  double cauchy_eta;
-
-  double linesearch_tau;
-  double linesearch_eta;
-  double linesearch_cutoff;
-
-  double feasibility_tol;
-
-  double slackness_tol;
-
-  double stationarity_tol;
-
-  double accepted_reduction;
-
-  double deadpoint_bound;
-
-  double newton_relative_tolerance;
 };
 
 #define ZERO_EPS_DEFAULT 1e-20
 #define EPS_DEFAULT 1e-10
 
 #define DERIV_PERTURBATION_DEFAULT 1e-8
-#define DERIV_TOLERANCE_DEFAULT 1e-4
+#define DERIV_TOL_DEFAULT 1e-4
 
 #define CAUCHY_TAU_DEFAULT 0.5
 #define CAUCHY_ETA_DEFAULT 0.1
@@ -53,7 +33,7 @@ struct SleqpParams
 
 #define DEADPOINT_BOUND_DEFAULT 1e-10
 
-#define NEWTON_RELATIVE_TOLERANCE_DEFAULT 1e-6
+#define NEWTON_RELATIVE_TOL_DEFAULT 1e-6
 
 SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 {
@@ -65,214 +45,55 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
   params->refcount = 1;
 
-  params->zero_eps = ZERO_EPS_DEFAULT;
-  params->eps = EPS_DEFAULT;
-
-  params->deriv_perturbation = DERIV_PERTURBATION_DEFAULT;
-  params->deriv_tolerance = DERIV_TOLERANCE_DEFAULT;
-
-  params->cauchy_tau = CAUCHY_TAU_DEFAULT;
-  params->cauchy_eta = CAUCHY_ETA_DEFAULT;
-
-  params->linesearch_tau = LINESEARCH_TAU_DEFAULT;
-  params->linesearch_eta = LINESEARCH_ETA_DEFAULT;
-  params->linesearch_cutoff = LINESEARCH_CUTOFF_DEFAULT;
-
-  params->feasibility_tol = FEASIBILITY_TOL_DEFAULT;
-  params->slackness_tol = SLACKNESS_TOL_DEFAULT;
-  params->stationarity_tol = STATIONARITY_TOL_DEFAULT;
-
-  params->accepted_reduction = ACCEPTED_REDUCTION_DEFAULT;
-
-  params->deadpoint_bound = DEADPOINT_BOUND_DEFAULT;
-
-  params->newton_relative_tolerance = NEWTON_RELATIVE_TOLERANCE_DEFAULT;
+  params->values[SLEQP_PARAM_ZERO_EPS] = ZERO_EPS_DEFAULT;
+  params->values[SLEQP_PARAM_EPS] = EPS_DEFAULT;
+  params->values[SLEQP_PARAM_DERIV_PERTURBATION] = DERIV_PERTURBATION_DEFAULT;
+  params->values[SLEQP_PARAM_DERIV_TOL] = DERIV_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_CAUCHY_TAU] = CAUCHY_TAU_DEFAULT;
+  params->values[SLEQP_PARAM_CAUCHY_ETA] = CAUCHY_ETA_DEFAULT;
+  params->values[SLEQP_PARAM_LINESEARCH_TAU] = LINESEARCH_TAU_DEFAULT;
+  params->values[SLEQP_PARAM_LINESEARCH_ETA] = LINESEARCH_ETA_DEFAULT;
+  params->values[SLEQP_PARAM_LINESEARCH_CUTOFF] = LINESEARCH_CUTOFF_DEFAULT;
+  params->values[SLEQP_PARAM_FEASIBILITY_TOL] = FEASIBILITY_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_SLACKNESS_TOL] = SLACKNESS_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_STATIONARITY_TOL] = STATIONARITY_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_ACCEPTED_REDUCTION] = ACCEPTED_REDUCTION_DEFAULT;
+  params->values[SLEQP_PARAM_DEADPOINT_BOUND] = DEADPOINT_BOUND_DEFAULT;
+  params->values[SLEQP_PARAM_NEWTON_RELATIVE_TOL] = NEWTON_RELATIVE_TOL_DEFAULT;
 
   return SLEQP_OKAY;
 }
 
-double sleqp_params_get_zero_eps(const SleqpParams* params)
+double sleqp_params_get(const SleqpParams* params,
+                        SLEQP_PARAM param)
 {
-  return params->zero_eps;
+  assert(param >= 0);
+  assert(param < SLEQP_NUM_PARAMS);
+
+  return params->values[param];
 }
 
-double sleqp_params_get_eps(const SleqpParams* params)
+SLEQP_RETCODE sleqp_params_set(SleqpParams* params,
+                               SLEQP_PARAM param,
+                               double value)
 {
-  return params->eps;
-}
+  assert(param >= 0);
+  assert(param < SLEQP_NUM_PARAMS);
 
-double sleqp_params_get_deriv_perturbation(const SleqpParams* params)
-{
-  return params->deriv_perturbation;
-}
+  if(param <= 0.)
+  {
+    sleqp_log_error("Wrong value ofr parameter %d: %f",
+                    param,
+                    value);
 
-double sleqp_params_get_deriv_tolerance(const SleqpParams* params)
-{
-  return params->deriv_tolerance;
-}
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
 
-double sleqp_params_get_cauchy_tau(const SleqpParams* params)
-{
-  return params->cauchy_tau;
-}
-
-double sleqp_params_get_cauchy_eta(const SleqpParams* params)
-{
-  return params->cauchy_eta;
-}
-
-double sleqp_params_get_linesearch_tau(const SleqpParams* params)
-{
-  return params->linesearch_tau;
-}
-
-double sleqp_params_get_linesearch_eta(const SleqpParams* params)
-{
-  return params->linesearch_eta;
-}
-
-double sleqp_params_get_linesearch_cutoff(const SleqpParams* params)
-{
-  return params->linesearch_cutoff;
-}
-
-double sleqp_params_get_feasibility_tolerance(const SleqpParams* params)
-{
-  return params->feasibility_tol;
-}
-
-double sleqp_params_get_slackness_tolerance(const SleqpParams* params)
-{
-  return params->slackness_tol;
-}
-
-double sleqp_params_get_stationarity_tolerance(const SleqpParams* params)
-{
-  return params->stationarity_tol;
-}
-
-double sleqp_params_get_accepted_reduction(const SleqpParams* params)
-{
-  return params->accepted_reduction;
-}
-
-double sleqp_params_get_deadpoint_bound(const SleqpParams* params)
-{
-  return params->deadpoint_bound;
-}
-
-double sleqp_params_get_newton_relative_tolerance(const SleqpParams* params)
-{
-  return params->newton_relative_tolerance;
-}
-
-
-SLEQP_RETCODE sleqp_params_set_zero_eps(SleqpParams* params, double value)
-{
-  params->zero_eps = value;
+  params->values[param] = value;
 
   return SLEQP_OKAY;
+
 }
-
-SLEQP_RETCODE sleqp_params_set_eps(SleqpParams* params, double value)
-{
-  params->eps = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_deriv_perturbation(SleqpParams* params, double value)
-{
-  params->deriv_perturbation = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_deriv_tolerance(SleqpParams* params, double value)
-{
-  params->deriv_tolerance = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_cauchy_tau(SleqpParams* params, double value)
-{
-  params->cauchy_tau = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_cauchy_eta(SleqpParams* params, double value)
-{
-  params->cauchy_eta = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_linesearch_tau(SleqpParams* params, double value)
-{
-  params->linesearch_tau = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_linesearch_eta(SleqpParams* params, double value)
-{
-  params->linesearch_eta = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_linesearch_cutoff(SleqpParams* params, double value)
-{
-  params->linesearch_cutoff = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_feasibility_tolerance(SleqpParams* params, double value)
-{
-  params->feasibility_tol = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_slackness_tolerance(SleqpParams* params, double value)
-{
-  params->slackness_tol = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_stationarity_tolerance(SleqpParams* params, double value)
-{
-  params->stationarity_tol = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double value)
-{
-  params->accepted_reduction = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_deadpoint_bound(SleqpParams* params, double value)
-{
-  params->deadpoint_bound = value;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_params_set_newton_relative_tolerance(SleqpParams* params,
-                                                         double value)
-{
-  params->newton_relative_tolerance = value;
-
-  return SLEQP_OKAY;
-}
-
 
 static SLEQP_RETCODE params_free(SleqpParams** star)
 {

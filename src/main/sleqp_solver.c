@@ -182,7 +182,8 @@ static double remaining_time(SleqpSolver* solver)
 
 static SLEQP_RETCODE set_residuum(SleqpSolver* solver)
 {
-  const double feas_eps = sleqp_params_get_feasibility_tolerance(solver->params);
+  const double feas_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
 
   SLEQP_CALL(sleqp_iterate_slackness_residuum(solver->iterate,
                                               solver->problem,
@@ -305,7 +306,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                         solver->problem,
                                         params));
 
-  const double zero_eps = sleqp_params_get_zero_eps(params);
+  const double zero_eps = sleqp_params_get(params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_iterate_create(&solver->iterate,
                                   solver->problem,
@@ -704,7 +706,8 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   const double one = 1.;
 
@@ -739,7 +742,8 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
 #if !defined(NDEBUG)
 
     {
-      const double eps = sleqp_params_get_eps(solver->params);
+      const double eps = sleqp_params_get(solver->params,
+                                          SLEQP_PARAM_EPS);
 
       bool in_working_set = false;
 
@@ -823,7 +827,8 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(compute_cauchy_step(solver,
                                  cauchy_merit_value,
@@ -896,7 +901,8 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   const double one = 1.;
 
@@ -986,7 +992,8 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
   SleqpSparseVec* current_point = sleqp_iterate_get_primal(iterate);
   SleqpSparseVec* trial_point = sleqp_iterate_get_primal(trial_iterate);
 
-  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_soc_compute(solver->soc_data,
                                solver->aug_jacobian,
@@ -1175,7 +1182,8 @@ static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
                                           SleqpIterate* previous_iterate,
                                           SleqpIterate* iterate)
 {
-  const double eps = sleqp_params_get_eps(solver->params);
+  const double eps = sleqp_params_get(solver->params,
+                                      SLEQP_PARAM_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(previous_iterate),
                                             sleqp_iterate_get_primal(iterate),
@@ -1232,7 +1240,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                       problem->var_lb,
                                       problem->var_ub));
 
-  const double zero_eps = sleqp_params_get_zero_eps(solver->params);
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   if(has_previous_iterate)
   {
@@ -1244,7 +1253,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     solver->dual_diff_norm = 0.;
   }
 
-  const double accepted_reduction = sleqp_params_get_accepted_reduction(solver->params);
+  const double accepted_reduction = sleqp_params_get(solver->params,
+                                                     SLEQP_PARAM_ACCEPTED_REDUCTION);
 
   double exact_iterate_value, model_iterate_value;
 
@@ -1554,7 +1564,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get_eps(solver->params);
+  const double eps = sleqp_params_get(solver->params,
+                                      SLEQP_PARAM_EPS);
 
   sleqp_log_info("Solving a problem with %d variables, %d constraints",
                  problem->num_variables,
@@ -1589,7 +1600,9 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   solver->elapsed_seconds = 0.;
   solver->last_step_type = SLEQP_STEPTYPE_NONE;
 
-  const double deadpoint_bound = sleqp_params_get_deadpoint_bound(solver->params);
+  const double deadpoint_bound = sleqp_params_get(solver->params,
+                                                  SLEQP_PARAM_DEADPOINT_BOUND);
+
   bool reached_deadpoint = false;
   bool has_previous_iterate = false;
 
@@ -1657,7 +1670,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   double violation;
 
-  const double feas_eps = sleqp_params_get_feasibility_tolerance(solver->params);
+  const double feas_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
 
   SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->unscaled_iterate,
                                                 solver->unscaled_problem,
@@ -1767,7 +1781,8 @@ SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
                                                     int* violated_constraints,
                                                     int* num_violated_constraints)
 {
-  const double feas_eps = sleqp_params_get_feasibility_tolerance(solver->params);
+  const double feas_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
 
   SLEQP_CALL(sleqp_iterate_get_violated_constraints(iterate,
                                                     solver->unscaled_problem,

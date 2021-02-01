@@ -306,8 +306,11 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
   SleqpProblem* problem = data->problem;
   SleqpFunc* func = problem->func;
 
-  const double eps = sleqp_params_get_stationarity_tolerance(data->params);
-  const double zero_eps = sleqp_params_get_zero_eps(data->params);
+  const double eps = sleqp_params_get(data->params,
+                                      SLEQP_PARAM_STATIONARITY_TOL);
+
+  const double zero_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
   const double one = 1.;
 
   (*is_optimal) = true;
@@ -378,8 +381,11 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
 
   const double inf = sleqp_infinity();
 
-  const double zero_eps = sleqp_params_get_zero_eps(data->params);
-  const double rel_tol = sleqp_params_get_newton_relative_tolerance(data->params);
+  const double zero_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  const double rel_tol = sleqp_params_get(data->params,
+                                          SLEQP_PARAM_NEWTON_RELATIVE_TOL);
 
   trlib_int_t equality = 0;
   trlib_int_t maxlanczos = data->trlib_maxiter;

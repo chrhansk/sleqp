@@ -68,7 +68,7 @@ END_TEST
 
 START_TEST(test_nominal_scale)
 {
-  const double eps = sleqp_params_get_eps(params);
+  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
   double nominal_values[] = {4.1, 15.9};
 
   ASSERT_CALL(sleqp_scaling_set_var_weights_from_nominal(scaling,
@@ -143,7 +143,8 @@ START_TEST(test_nominal_scale_func_val)
 {
   double nominal_func_val = 17.;
 
-  const double eps = sleqp_params_get_eps(params);
+  const double eps = sleqp_params_get(params,
+                                      SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_scaling_set_func_weight_from_nominal(scaling,
                                                          nominal_func_val));
@@ -161,7 +162,8 @@ START_TEST(test_nominal_scale_cons_vals)
   double nominal_cons_vals[] = {17., .4};
 
   const int num_constraints = 2.;
-  const double eps = sleqp_params_get_eps(params);
+  const double eps = sleqp_params_get(params,
+                                      SLEQP_PARAM_EPS);
 
   SleqpSparseVec* cons_vals;
 

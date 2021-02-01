@@ -111,8 +111,11 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
   SleqpProblem* problem = linesearch->problem;
   SleqpMeritData* merit_data = linesearch->merit_data;
 
-  const double eps = sleqp_params_get_eps(linesearch->params);
-  const double zero_eps = sleqp_params_get_zero_eps(linesearch->params);
+  const double eps = sleqp_params_get(linesearch->params,
+                                      SLEQP_PARAM_EPS);
+
+  const double zero_eps = sleqp_params_get(linesearch->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
 #if !defined(NDEBUG)
 
@@ -189,8 +192,8 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                             zero_eps));
   }
 
-  const double eta = sleqp_params_get_cauchy_eta(linesearch->params);
-  const double tau = sleqp_params_get_cauchy_tau(linesearch->params);
+  const double eta = sleqp_params_get(linesearch->params, SLEQP_PARAM_CAUCHY_ETA);
+  const double tau = sleqp_params_get(linesearch->params, SLEQP_PARAM_CAUCHY_TAU);
 
 
   int iteration = 0;
@@ -320,8 +323,11 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
   SleqpIterate* iterate = linesearch->iterate;
   const double penalty_parameter = linesearch->penalty_parameter;
 
-  const double eps = sleqp_params_get_eps(linesearch->params);
-  const double zero_eps = sleqp_params_get_zero_eps(linesearch->params);
+  const double eps = sleqp_params_get(linesearch->params,
+                                      SLEQP_PARAM_EPS);
+
+  const double zero_eps = sleqp_params_get(linesearch->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   // Compute Cauchy-Newton direction
   {
@@ -429,9 +435,14 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                      newton_hessian_step,
                                      &newton_newton_product));
 
-  const double eta = sleqp_params_get_linesearch_eta(linesearch->params);
-  const double tau = sleqp_params_get_linesearch_tau(linesearch->params);
-  const double cutoff_threshold = sleqp_params_get_linesearch_cutoff(linesearch->params);
+  const double eta = sleqp_params_get(linesearch->params,
+                                      SLEQP_PARAM_LINESEARCH_ETA);
+
+  const double tau = sleqp_params_get(linesearch->params,
+                                      SLEQP_PARAM_LINESEARCH_TAU);
+
+  const double cutoff_threshold = sleqp_params_get(linesearch->params,
+                                                   SLEQP_PARAM_LINESEARCH_CUTOFF);
 
   int iteration = 0;
 

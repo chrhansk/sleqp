@@ -48,8 +48,11 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
 {
   SleqpProblem* problem = soc_data->problem;
 
-  const double eps = sleqp_params_get_eps(soc_data->params);
-  const double zero_eps = sleqp_params_get_zero_eps(soc_data->params);
+  const double eps = sleqp_params_get(soc_data->params,
+                                      SLEQP_PARAM_EPS);
+
+  const double zero_eps = sleqp_params_get(soc_data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   SleqpSparseVec* lower_diff = soc_data->lower_diff;
   SleqpSparseVec* upper_diff = soc_data->upper_diff;
@@ -131,8 +134,11 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
 {
   SleqpProblem* problem = soc_data->problem;
 
-  const double eps = sleqp_params_get_eps(soc_data->params);
-  const double zero_eps = sleqp_params_get_zero_eps(soc_data->params);
+  const double eps = sleqp_params_get(soc_data->params,
+                                      SLEQP_PARAM_EPS);
+
+  const double zero_eps = sleqp_params_get(soc_data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
   SleqpSparseVec* lower_diff = soc_data->lower_diff;
   SleqpSparseVec* upper_diff = soc_data->upper_diff;

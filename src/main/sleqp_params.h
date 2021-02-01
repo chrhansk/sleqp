@@ -13,64 +13,35 @@
 extern "C" {
 #endif
 
+  typedef enum {
+    SLEQP_PARAM_ZERO_EPS = 0,
+    SLEQP_PARAM_EPS,
+    SLEQP_PARAM_DERIV_PERTURBATION,
+    SLEQP_PARAM_DERIV_TOL,
+    SLEQP_PARAM_CAUCHY_TAU,
+    SLEQP_PARAM_CAUCHY_ETA,
+    SLEQP_PARAM_LINESEARCH_TAU,
+    SLEQP_PARAM_LINESEARCH_ETA,
+    SLEQP_PARAM_LINESEARCH_CUTOFF,
+    SLEQP_PARAM_FEASIBILITY_TOL,
+    SLEQP_PARAM_SLACKNESS_TOL,
+    SLEQP_PARAM_STATIONARITY_TOL,
+    SLEQP_PARAM_ACCEPTED_REDUCTION,
+    SLEQP_PARAM_DEADPOINT_BOUND,
+    SLEQP_PARAM_NEWTON_RELATIVE_TOL,
+    SLEQP_NUM_PARAMS
+  } SLEQP_PARAM;
+
   typedef struct SleqpParams SleqpParams;
 
   SLEQP_EXPORT SLEQP_RETCODE sleqp_params_create(SleqpParams** star);
 
-  SLEQP_EXPORT double sleqp_params_get_zero_eps(const SleqpParams* params);
+  SLEQP_EXPORT double sleqp_params_get(const SleqpParams* params,
+                                       SLEQP_PARAM param);
 
-  SLEQP_EXPORT double sleqp_params_get_eps(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_deriv_perturbation(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_deriv_tolerance(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_cauchy_tau(const SleqpParams* params);
-  SLEQP_EXPORT double sleqp_params_get_cauchy_eta(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_linesearch_tau(const SleqpParams* params);
-  SLEQP_EXPORT double sleqp_params_get_linesearch_eta(const SleqpParams* params);
-  SLEQP_EXPORT double sleqp_params_get_linesearch_cutoff(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_feasibility_tolerance(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_slackness_tolerance(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_stationarity_tolerance(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_accepted_reduction(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_deadpoint_bound(const SleqpParams* params);
-
-  SLEQP_EXPORT double sleqp_params_get_newton_relative_tolerance(const SleqpParams* params);
-
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_zero_eps(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_eps(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_deriv_perturbation(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_deriv_tolerance(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_cauchy_tau(SleqpParams* params, double value);
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_cauchy_eta(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_linesearch_tau(SleqpParams* params, double value);
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_linesearch_eta(SleqpParams* params, double value);
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_linesearch_cutoff(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_feasibility_tolerance(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_slackness_tolerance(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_stationarity_tolerance(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_accepted_reduction(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_deadpoint_bound(SleqpParams* params, double value);
-
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set_newton_relative_tolerance(SleqpParams* params, double value);
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set(SleqpParams* params,
+                                              SLEQP_PARAM param,
+                                              double value);
 
   SLEQP_EXPORT SLEQP_RETCODE sleqp_params_capture(SleqpParams* params);
 

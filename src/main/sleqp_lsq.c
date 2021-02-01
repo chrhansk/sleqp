@@ -348,7 +348,7 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->combined_hess_prod,
                                               num_variables));
 
-  data->eps = sleqp_params_get_eps(params);
+  data->eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
 
   data->func_data = func_data;
 

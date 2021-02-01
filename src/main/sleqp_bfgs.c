@@ -441,7 +441,7 @@ SLEQP_RETCODE bfgs_hess_prod_range(BFGSBlock* block,
                                    SleqpSparseVec* product,
                                    int final)
 {
-  const double eps = sleqp_params_get_eps(params);
+  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
   const int begin = block->curr - block->len + 1;
 
   // Initially apply scaled identity
@@ -574,7 +574,7 @@ static
 SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
                                     const SleqpParams* params)
 {
-  const double eps = sleqp_params_get_eps(params);
+  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
 
   assert(block->len > 0);
 
@@ -733,7 +733,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                    SleqpIterate* current_iterate,
                                    SleqpSparseVec* multipliers)
 {
-  const double eps = sleqp_params_get_eps(data->params);
+  const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
 
   const int num_blocks = data->num_blocks;
 

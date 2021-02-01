@@ -710,7 +710,8 @@ START_TEST(test_auto_scaled_solve)
 
   SleqpIterate* iterate;
 
-  const double eps = sleqp_params_get_eps(params);
+  const double eps = sleqp_params_get(params,
+                                      SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
