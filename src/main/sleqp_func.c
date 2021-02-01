@@ -13,15 +13,12 @@ struct SleqpFunc
 
   void* data;
 
-  int num_func_evals;
-  int num_cons_evals;
+  SleqpTimer* val_timer;
+  SleqpTimer* grad_timer;
 
-  int num_grad_evals;
-  int num_jac_evals;
+  SleqpTimer* cons_val_timer;
+  SleqpTimer* cons_jac_timer;
 
-  int num_hess_evals;
-
-  SleqpTimer* eval_timer;
   SleqpTimer* hess_timer;
 
   SleqpSparseVec* product;
@@ -48,7 +45,12 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   func->num_constraints = num_constraints;
   func->data = func_data;
 
-  SLEQP_CALL(sleqp_timer_create(&func->eval_timer));
+  SLEQP_CALL(sleqp_timer_create(&func->val_timer));
+  SLEQP_CALL(sleqp_timer_create(&func->grad_timer));
+
+  SLEQP_CALL(sleqp_timer_create(&func->cons_val_timer));
+  SLEQP_CALL(sleqp_timer_create(&func->cons_jac_timer));
+
   SLEQP_CALL(sleqp_timer_create(&func->hess_timer));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&func->product, num_variables));
@@ -83,9 +85,13 @@ SLEQP_RETCODE sleqp_func_val(SleqpFunc* func,
 {
   if(func_val)
   {
+    SLEQP_CALL(sleqp_timer_start(func->val_timer));
+
     SLEQP_CALL(func->callbacks.func_val(func,
                                         func_val,
                                         func->data));
+
+    SLEQP_CALL(sleqp_timer_stop(func->val_timer));
   }
 
   return SLEQP_OKAY;
@@ -96,13 +102,15 @@ SLEQP_RETCODE sleqp_func_grad(SleqpFunc* func,
 {
   if(func_grad)
   {
-    ++func->num_grad_evals;
-
     SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
+
+    SLEQP_CALL(sleqp_timer_start(func->grad_timer));
 
     SLEQP_CALL(func->callbacks.func_grad(func,
                                          func_grad,
                                          func->data));
+
+    SLEQP_CALL(sleqp_timer_stop(func->grad_timer));
   }
 
   return SLEQP_OKAY;
@@ -116,16 +124,18 @@ SLEQP_RETCODE sleqp_func_cons_val(SleqpFunc* func,
 
   if(cons_val)
   {
-    ++func->num_cons_evals;
-
     SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
 
     if((num_constraints != 0) && (func->callbacks.cons_val))
     {
+      SLEQP_CALL(sleqp_timer_start(func->cons_val_timer));
+
       SLEQP_CALL(func->callbacks.cons_val(func,
                                           cons_indices,
                                           cons_val,
                                           func->data));
+
+      SLEQP_CALL(sleqp_timer_stop(func->cons_val_timer));
     }
   }
 
@@ -140,16 +150,18 @@ SLEQP_RETCODE sleqp_func_cons_jac(SleqpFunc* func,
 
   if(cons_jac)
   {
-    ++func->num_jac_evals;
-
     SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
 
     if((num_constraints != 0) && (func->callbacks.cons_jac))
     {
+      SLEQP_CALL(sleqp_timer_start(func->cons_jac_timer));
+
       SLEQP_CALL(func->callbacks.cons_jac(func,
                                           cons_indices,
                                           cons_jac,
                                           func->data));
+
+      SLEQP_CALL(sleqp_timer_stop(func->cons_jac_timer));
     }
   }
 
@@ -215,32 +227,24 @@ int sleqp_func_get_num_constraints(SleqpFunc* func)
   return func->num_constraints;
 }
 
-int sleqp_func_get_num_func_evals(SleqpFunc* func)
+SleqpTimer* sleqp_func_get_val_timer(SleqpFunc* func)
 {
-  return func->num_func_evals;
-}
-int sleqp_func_get_num_cons_evals(SleqpFunc* func)
-{
-  return func->num_cons_evals;
+  return func->val_timer;
 }
 
-int sleqp_func_get_num_grad_evals(SleqpFunc* func)
+SleqpTimer* sleqp_func_get_grad_timer(SleqpFunc* func)
 {
-  return func->num_grad_evals;
-}
-int sleqp_func_get_num_jac_evals(SleqpFunc* func)
-{
-  return func->num_jac_evals;
+  return func->grad_timer;
 }
 
-int sleqp_func_get_num_hess_evals(SleqpFunc* func)
+SleqpTimer* sleqp_func_get_cons_val_timer(SleqpFunc* func)
 {
-  return func->num_hess_evals;
+  return func->cons_val_timer;
 }
 
-SleqpTimer* sleqp_func_get_eval_timer(SleqpFunc* func)
+SleqpTimer* sleqp_func_get_cons_jac_timer(SleqpFunc* func)
 {
-  return func->eval_timer;
+  return func->cons_jac_timer;
 }
 
 SleqpTimer* sleqp_func_get_hess_timer(SleqpFunc* func)
@@ -259,8 +263,6 @@ SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
 
   assert(sleqp_sparse_vector_valid(direction));
   assert(sleqp_sparse_vector_valid(cons_duals));
-
-  ++func->num_hess_evals;
 
   SLEQP_CALL(sleqp_sparse_vector_clear(product));
 
@@ -290,7 +292,6 @@ SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
                                        const SleqpSparseVec* cons_duals,
                                        double* bilinear_prod)
 {
-  ++func->num_hess_evals;
   SLEQP_CALL(sleqp_sparse_vector_clear(func->product));
 
   SLEQP_CALL(func->callbacks.hess_prod(func,
@@ -327,7 +328,12 @@ static SLEQP_RETCODE func_free(SleqpFunc** fstar)
   }
 
   SLEQP_CALL(sleqp_timer_free(&func->hess_timer));
-  SLEQP_CALL(sleqp_timer_free(&func->eval_timer));
+
+  SLEQP_CALL(sleqp_timer_free(&func->cons_jac_timer));
+  SLEQP_CALL(sleqp_timer_free(&func->cons_val_timer));
+
+  SLEQP_CALL(sleqp_timer_free(&func->grad_timer));
+  SLEQP_CALL(sleqp_timer_free(&func->val_timer));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
 

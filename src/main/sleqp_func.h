@@ -119,20 +119,40 @@ extern "C" {
   SLEQP_EXPORT int sleqp_func_get_num_constraints(SleqpFunc* func);
 
   /**
-   * Returns the number of evaluations of Hessian products of the Lagrangian \f$ L \f$.
-   *
-   **/
-  SLEQP_EXPORT int sleqp_func_get_num_hess_evals(SleqpFunc* func);
-
-  /**
    * Returns the evaluation timer of this function. This timer records
-   * the evaluations of function values, constraint values, and constraint
-   * Jacobians.
+   * the evaluations of function values.
    *
    * @param[in]     func            The function
    *
    **/
-  SLEQP_EXPORT SleqpTimer* sleqp_func_get_eval_timer(SleqpFunc* func);
+  SleqpTimer* sleqp_func_get_val_timer(SleqpFunc* func);
+
+  /**
+   * Returns the gradient timer of this function. This timer records
+   * the evaluations of function gradients.
+   *
+   * @param[in]     func            The function
+   *
+   **/
+  SleqpTimer* sleqp_func_get_grad_timer(SleqpFunc* func);
+
+  /**
+   * Returns the constraint timer of this function. This timer records
+   * the evaluations of constraint values.
+   *
+   * @param[in]     func            The function
+   *
+   **/
+  SleqpTimer* sleqp_func_get_cons_val_timer(SleqpFunc* func);
+
+  /**
+   * Returns the Jacobian timer of this function. This timer records
+   * the evaluations of constraint Jacobians.
+   *
+   * @param[in]     func            The function
+   *
+   **/
+  SleqpTimer* sleqp_func_get_cons_jac_timer(SleqpFunc* func);
 
   /**
    * Returns the Hessian timer of this function. This timer records

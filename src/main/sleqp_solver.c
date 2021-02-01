@@ -1701,15 +1701,33 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   sleqp_log_info(                  "            Iterations: %d", solver->iteration);
 
-  SleqpTimer* func_timer = sleqp_func_get_eval_timer(func);
+  SleqpTimer* val_timer = sleqp_func_get_val_timer(func);
+
+  SleqpTimer* grad_timer = sleqp_func_get_grad_timer(func);
+
+  SleqpTimer* cons_val_timer = sleqp_func_get_cons_val_timer(func);
+
+  SleqpTimer* cons_jac_timer = sleqp_func_get_cons_jac_timer(func);
 
   SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
 
   SleqpTimer* lp_timer = sleqp_lpi_get_solve_timer(solver->lp_interface);
 
   sleqp_log_info("  Function evaluations: %4d (%fs avg)",
-                 sleqp_timer_get_num_runs(func_timer),
-                 sleqp_timer_get_avg(func_timer));
+                 sleqp_timer_get_num_runs(val_timer),
+                 sleqp_timer_get_avg(val_timer));
+
+  sleqp_log_info("  Gradient evaluations: %4d (%fs avg)",
+                 sleqp_timer_get_num_runs(grad_timer),
+                 sleqp_timer_get_avg(grad_timer));
+
+  sleqp_log_info("Constraint evaluations: %4d (%fs avg)",
+                 sleqp_timer_get_num_runs(cons_val_timer),
+                 sleqp_timer_get_avg(cons_val_timer));
+
+  sleqp_log_info("  Jacobian evaluations: %4d (%fs avg)",
+                 sleqp_timer_get_num_runs(cons_jac_timer),
+                 sleqp_timer_get_avg(cons_jac_timer));
 
   sleqp_log_info("   Hessian evaluations: %4d (%fs avg)",
                  sleqp_timer_get_num_runs(hess_timer),
