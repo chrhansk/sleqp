@@ -14,7 +14,8 @@ extern SleqpSparseVec* rosenbrock_var_lb;
 extern SleqpSparseVec* rosenbrock_var_ub;
 extern SleqpSparseVec* rosenbrock_cons_lb;
 extern SleqpSparseVec* rosenbrock_cons_ub;
-extern SleqpSparseVec* rosenbrock_x;
+extern SleqpSparseVec* rosenbrock_initial;
+extern SleqpSparseVec* rosenbrock_optimal;
 
 void rosenbrock_setup();
 

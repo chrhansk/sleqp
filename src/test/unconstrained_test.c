@@ -12,18 +12,10 @@
 
 START_TEST(test_unconstrained_solve)
 {
-  SleqpSparseVec* expected_solution;
-
   SleqpParams* params;
   SleqpOptions* options;
   SleqpProblem* problem;
   SleqpSolver* solver;
-
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 2, 2));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 1.));
 
   ASSERT_CALL(sleqp_params_create(&params));
 
@@ -41,7 +33,7 @@ START_TEST(test_unconstrained_solve)
                                   problem,
                                   params,
                                   options,
-                                  rosenbrock_x,
+                                  rosenbrock_initial,
                                   NULL));
 
   // 100 iterations should be plenty...
@@ -57,7 +49,7 @@ START_TEST(test_unconstrained_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   rosenbrock_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -67,8 +59,6 @@ START_TEST(test_unconstrained_solve)
   ASSERT_CALL(sleqp_options_release(&options));
 
   ASSERT_CALL(sleqp_params_release(&params));
-
-  ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
 }
 END_TEST
 

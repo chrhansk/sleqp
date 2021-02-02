@@ -12,6 +12,8 @@
 
 #include "test_common.h"
 
+#include "rosenbrock_fixture.h"
+
 typedef struct RosenbrockData
 {
   double a, b;
@@ -34,12 +36,6 @@ static const int num_residuals = 3;
 
 SleqpParams* params;
 SleqpFunc* rosenbrock_lsq_func;
-
-SleqpSparseVec* rosenbrock_var_lb;
-SleqpSparseVec* rosenbrock_var_ub;
-SleqpSparseVec* rosenbrock_cons_lb;
-SleqpSparseVec* rosenbrock_cons_ub;
-SleqpSparseVec* rosenbrock_x;
 
 static SLEQP_RETCODE rosenbrock_lsq_set(SleqpFunc* func,
                                         SleqpSparseVec* x,
@@ -150,9 +146,9 @@ SLEQP_RETCODE rosenbrock_lsq_jac_adjoint(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-void rosenbrock_setup()
+void rosenbrock_lsq_setup()
 {
-  const double inf = sleqp_infinity();
+  rosenbrock_setup();
 
   ASSERT_CALL(sleqp_params_create(&params));
 
@@ -185,51 +181,10 @@ void rosenbrock_setup()
                                     0.,            // ML-term
                                     params,
                                     rosenbrock_func_data));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&rosenbrock_var_lb,
-                                         num_variables,
-                                         num_variables));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_var_lb, 0, -inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_var_lb, 1, -inf));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&rosenbrock_var_ub,
-                                         num_variables,
-                                         num_variables));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_var_ub, 0, inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_var_ub, 1, inf));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&rosenbrock_cons_lb,
-                                         0,
-                                         0));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&rosenbrock_cons_ub,
-                                         0,
-                                         0));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&rosenbrock_x,
-                                         num_variables,
-                                         num_variables));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_x, 0, 0.));
-  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_x, 1, 0.));
 }
 
-void rosenbrock_teardown()
+void rosenbrock_lsq_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_x));
-
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_cons_ub));
-
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_cons_lb));
-
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_var_ub));
-
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_var_lb));
-
-
-
   ASSERT_CALL(sleqp_func_release(&rosenbrock_lsq_func));
 
   sleqp_free(&rosenbrock_func_data->d);
@@ -239,6 +194,8 @@ void rosenbrock_teardown()
   sleqp_free(&rosenbrock_func_data);
 
   ASSERT_CALL(sleqp_params_release(&params));
+
+  rosenbrock_teardown();
 }
 
 START_TEST(test_unconstrained_solve)
@@ -273,7 +230,7 @@ START_TEST(test_unconstrained_solve)
                                   problem,
                                   params,
                                   options,
-                                  rosenbrock_x,
+                                  rosenbrock_initial,
                                   NULL));
 
   // 100 iterations should be plenty...
@@ -312,8 +269,8 @@ Suite* lsq_test_suite()
   tc_uncons = tcase_create("LSQ solution test");
 
   tcase_add_checked_fixture(tc_uncons,
-                            rosenbrock_setup,
-                            rosenbrock_teardown);
+                            rosenbrock_lsq_setup,
+                            rosenbrock_lsq_teardown);
 
   tcase_add_test(tc_uncons, test_unconstrained_solve);
   suite_add_tcase(suite, tc_uncons);
