@@ -24,6 +24,7 @@
 #include "sleqp_soc.h"
 #include "sleqp_timer.h"
 
+#include "sleqp_callback_handler.h"
 #include "sleqp_iterate.h"
 #include "sleqp_linesearch.h"
 #include "sleqp_merit.h"
@@ -104,6 +105,8 @@ struct SleqpSolver
   SleqpMeritData* merit_data;
 
   SleqpLineSearchData* linesearch;
+
+  SleqpCallbackHandler** callback_handlers;
 
   // Primal / dual step lengths
 
@@ -398,6 +401,14 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                      solver->problem,
                                      params,
                                      solver->merit_data));
+
+  SLEQP_CALL(sleqp_alloc_array(&solver->callback_handlers,
+                               SLEQP_SOLVER_NUM_EVENTS));
+
+  for(int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
+  {
+    SLEQP_CALL(sleqp_callback_handler_create(solver->callback_handlers + i));
+  }
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->primal_diff,
                                               num_variables));
@@ -1536,6 +1547,11 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                      solver->multipliers));
     }
 
+    SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE],
+                                   SLEQP_ACCEPTED_ITERATE,
+                                   solver,
+                                   solver->unscaled_trial_iterate);
+
     // perform simple swaps
     solver->trial_iterate = iterate;
     solver->iterate = trial_iterate;
@@ -1808,6 +1824,40 @@ double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver)
   return solver->elapsed_seconds;
 }
 
+SLEQP_RETCODE sleqp_solver_add_callback(SleqpSolver* solver,
+                                        SLEQP_SOLVER_EVENT solver_event,
+                                        void* callback_func,
+                                        void* callback_data)
+{
+  if(solver_event < 0 || solver_event >= SLEQP_SOLVER_NUM_EVENTS)
+  {
+    sleqp_log_error("Invalid callback");
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  SLEQP_CALL(sleqp_callback_handler_add(solver->callback_handlers[solver_event],
+                                        callback_func,
+                                        callback_data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_solver_remove_callback(SleqpSolver* solver,
+                                           SLEQP_SOLVER_EVENT solver_event,
+                                           void* callback_func)
+{
+  if(solver_event < 0 || solver_event >= SLEQP_SOLVER_NUM_EVENTS)
+  {
+    sleqp_log_error("Invalid callback");
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  SLEQP_CALL(sleqp_callback_handler_remove(solver->callback_handlers[solver_event],
+                                           callback_func));
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE solver_free(SleqpSolver** star)
 {
   SleqpSolver* solver = *star;
@@ -1834,6 +1884,13 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->cons_dual_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->primal_diff));
+
+  for(int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
+  {
+    SLEQP_CALL(sleqp_callback_handler_release(solver->callback_handlers + i));
+  }
+
+  sleqp_free(&solver->callback_handlers);
 
   SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
 

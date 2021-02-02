@@ -6,6 +6,7 @@
  * @brief Definition of the solver structure.
  **/
 
+#include "sleqp_callback_types.h"
 #include "sleqp_export.h"
 #include "sleqp_iterate.h"
 #include "sleqp_options.h"
@@ -85,6 +86,15 @@ extern "C" {
    *
    **/
   SLEQP_EXPORT double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver);
+
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_add_callback(SleqpSolver* solver,
+                                                       SLEQP_SOLVER_EVENT solver_event,
+                                                       void* callback_func,
+                                                       void* callback_data);
+
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_remove_callback(SleqpSolver* solver,
+                                                          SLEQP_SOLVER_EVENT solver_event,
+                                                          void* callback_func);
 
   SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_capture(SleqpSolver* solver);
 

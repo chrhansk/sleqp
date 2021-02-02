@@ -89,6 +89,11 @@ extern "C" {
     SLEQP_DUAL_ESTIMATION_TYPE_LSQ,
   } SLEQP_DUAL_ESTIMATION_TYPE;
 
+  typedef enum {
+    SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE = 0,
+    SLEQP_SOLVER_NUM_EVENTS
+  } SLEQP_SOLVER_EVENT;
+
   /**None value to be used in place of integer parameters **/
 #define SLEQP_NONE (-1)
 

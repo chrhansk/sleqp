@@ -7,6 +7,7 @@ set(COMMON_SRC
   sleqp_aug_jacobian.c
   sleqp_bfgs.c
   sleqp_hess_struct.c
+  sleqp_callback_handler.c
   sleqp_cauchy.c
   sleqp_cmp.c
   sleqp_deriv_check.c

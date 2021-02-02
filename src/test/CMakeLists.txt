@@ -56,6 +56,8 @@ add_unit_test(unconstrained_newton_test)
 
 add_unit_test(constrained_cauchy_test)
 
+add_unit_test(callback_test)
+
 add_unit_test(constrained_test)
 
 add_unit_test(lsq_test)
