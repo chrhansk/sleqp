@@ -58,27 +58,52 @@ extern "C" {
    * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
    * @param[in,out] func_data       The function data
    **/
-  /*typedef SLEQP_RETCODE (*SLEQP_FUNC_EVAL)(SleqpFunc* func,
-                                           const SleqpSparseVec* cons_indices,
-                                           double* func_val,
-                                           SleqpSparseVec* func_grad,
-                                           SleqpSparseVec* cons_val,
-                                           SleqpSparseMatrix* cons_jac,
-                                           void* func_data);*/
 
+  /**
+   * Evaluates the function at the current input vector
+   *
+   * @param[in]     func            The function
+   * @param[out]    func_val        The function value \f$ f(x) \f$
+   * @param[in,out] func_data       The function data
+   **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_VAL)(SleqpFunc* func,
                                           double* func_val,
                                           void* func_data);
 
+  /**
+   * Evaluates the function gradient at the current input vector
+   *
+   * @param[in]     func            The function
+   * @param[out]    func_grad       The function gradient \f$ \nabla f(x) \f$
+   * @param[in,out] func_data       The function data
+   **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_GRAD)(SleqpFunc* func,
                                            SleqpSparseVec* func_grad,
                                            void* func_data);
 
+  /**
+   * Evaluates the constraints at the current input vector
+   *
+   * @param[in]     func            The function
+   * @param[in]     cons_indices    The indices of the constraint function
+   *                                to be evaluated
+   * @param[out]    cons_val        The value of the constraint function \f$ c(x) \f$
+   * @param[in,out] func_data       The function data
+   **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
                                                const SleqpSparseVec* cons_indices,
                                                SleqpSparseVec* cons_val,
                                                void* func_data);
 
+  /**
+   * Evaluates the constraing Jacobian at the current input vector
+   *
+   * @param[in]     func            The function
+   * @param[in]     cons_indices    The indices of the constraint function
+   *                                to be evaluated
+   * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
+   * @param[in,out] func_data       The function data
+   **/
   typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
                                                const SleqpSparseVec* cons_indices,
                                                SleqpSparseMatrix* cons_jac,
