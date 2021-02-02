@@ -111,7 +111,8 @@ START_TEST(test_remove_callback)
 
   ASSERT_CALL(sleqp_solver_remove_callback(solver,
                                            SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
-                                           accepted_iterate));
+                                           accepted_iterate,
+                                           &callback_data));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));

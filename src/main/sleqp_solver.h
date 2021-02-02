@@ -94,7 +94,8 @@ extern "C" {
 
   SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_remove_callback(SleqpSolver* solver,
                                                           SLEQP_SOLVER_EVENT solver_event,
-                                                          void* callback_func);
+                                                          void* callback_func,
+                                                          void* callback_data);
 
   SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_capture(SleqpSolver* solver);
 

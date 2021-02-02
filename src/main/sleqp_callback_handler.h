@@ -25,7 +25,8 @@ extern "C" {
                                            void* callback_data);
 
   SLEQP_RETCODE sleqp_callback_handler_remove(SleqpCallbackHandler* handler,
-                                              void* callback);
+                                              void* callback,
+                                              void* callback_data);
 
   SLEQP_RETCODE sleqp_callback_handler_release(SleqpCallbackHandler** star);
 

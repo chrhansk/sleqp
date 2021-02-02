@@ -101,7 +101,8 @@ SLEQP_RETCODE sleqp_callback_handler_add(SleqpCallbackHandler* handler,
 }
 
 SLEQP_RETCODE sleqp_callback_handler_remove(SleqpCallbackHandler* handler,
-                                            void* callback)
+                                            void* callback,
+                                            void* callback_data)
 {
   bool found = false;
 
@@ -109,7 +110,8 @@ SLEQP_RETCODE sleqp_callback_handler_remove(SleqpCallbackHandler* handler,
 
   for(pos = 0; pos < handler->size;++pos)
   {
-    if(handler->callbacks[pos].callback == callback)
+    if((handler->callbacks[pos].callback == callback) &&
+       (handler->callbacks[pos].callback_data == callback_data))
     {
       found = true;
       break;
