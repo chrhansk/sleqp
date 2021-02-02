@@ -15,6 +15,7 @@ cimport csleqp
 
 include "gil.pxi"
 include "call.pxi"
+include "callback.pxi"
 include "cmp.pxi"
 include "sparse.pxi"
 include "sparse_matrix.pxi"

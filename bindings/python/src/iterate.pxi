@@ -5,6 +5,10 @@ cdef class Iterate:
 
   cdef dict __dict__
 
+  def __cinit__(self, **properties):
+      if not "_create" in properties:
+          raise Exception("Manually called constructor")
+
   cdef _release(self):
     if self.iterate:
       csleqp_call(csleqp.sleqp_iterate_release(&self.iterate))

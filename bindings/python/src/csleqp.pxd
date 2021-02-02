@@ -76,6 +76,9 @@ cdef extern from "sleqp.h":
     SLEQP_PARAM_DEADPOINT_BOUND,
     SLEQP_PARAM_NEWTON_RELATIVE_TOL,
 
+  ctypedef enum SLEQP_SOLVER_EVENT:
+    SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
+
   ctypedef struct SleqpSparseVec:
     double* data
     int* indices
@@ -438,6 +441,16 @@ cdef extern from "sleqp.h":
   int sleqp_solver_get_iterations(SleqpSolver* solver)
 
   double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver)
+
+  SLEQP_RETCODE sleqp_solver_add_callback(SleqpSolver* solver,
+                                          SLEQP_SOLVER_EVENT solver_event,
+                                          void* callback_func,
+                                          void* callback_data)
+
+  SLEQP_RETCODE sleqp_solver_remove_callback(SleqpSolver* solver,
+                                             SLEQP_SOLVER_EVENT solver_event,
+                                             void* callback_func,
+                                             void* callback_data)
 
   SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                           SleqpIterate** iterate)

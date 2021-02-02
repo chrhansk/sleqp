@@ -2,11 +2,20 @@
 
 from libc.stdlib cimport malloc, free
 
+cdef object solvers = weakref.WeakSet()
+
 cdef class Solver:
+
+  cdef dict __dict__
+
+  cdef object __weakref__
+
   cdef csleqp.SleqpSolver* solver
   cdef Problem problem
   cdef Params params
   cdef Options options
+
+  cdef list callback_handles
 
   def __cinit__(self,
                 Problem problem,
@@ -19,6 +28,7 @@ cdef class Solver:
 
     self.params = params
     self.options = options
+    self.callback_handles = []
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&primal_vec,
                                                         problem.num_variables))
@@ -36,6 +46,8 @@ cdef class Solver:
 
     self.problem = problem
 
+    solvers.add(self)
+
   def __dealloc__(self):
     assert self.solver
 
@@ -50,15 +62,18 @@ cdef class Solver:
 
     self.problem.func.call_exception = None
 
+    for obj in self.callback_handles:
+      (<CallbackHandle> obj).call_exception = None
+
     if release_gil:
       with nogil:
         retcode = csleqp.sleqp_solver_solve(self.solver,
+                                              max_num_iterations,
+                                              time_limit)
+    else:
+        retcode = csleqp.sleqp_solver_solve(self.solver,
                                             max_num_iterations,
                                             time_limit)
-    else:
-      retcode = csleqp.sleqp_solver_solve(self.solver,
-                                          max_num_iterations,
-                                          time_limit)
 
     if retcode != csleqp.SLEQP_OKAY:
       exception = SLEQPError(retcode)
@@ -67,6 +82,12 @@ cdef class Solver:
         self.problem.func.call_exception = None
         raise exception from call_exception
       else:
+        for obj in self.callback_handles:
+          call_exception = (<CallbackHandle> obj).call_exception
+          if call_exception is not None:
+            raise exception from call_exception
+
+        # raise default
         raise exception
 
   def solve(self,
@@ -98,37 +119,87 @@ cdef class Solver:
 
   @property
   def violated_cons(self) -> set:
-      num_constraints =  self.problem.num_constraints
+    num_constraints =  self.problem.num_constraints
 
-      cdef int *violated_cons = <int *> malloc(num_constraints * sizeof(double))
-      cdef int num_violated_cons
-      cdef csleqp.SleqpIterate* iterate
+    cdef int *violated_cons = <int *> malloc(num_constraints * sizeof(double))
+    cdef int num_violated_cons
+    cdef csleqp.SleqpIterate* iterate
 
-      try:
-          csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
+    try:
+      csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
 
-          csleqp_call(csleqp.sleqp_solver_get_violated_constraints(self.solver,
-                                                                   iterate,
-                                                                   violated_cons,
-                                                                   &num_violated_cons))
+      csleqp_call(csleqp.sleqp_solver_get_violated_constraints(self.solver,
+                                                               iterate,
+                                                               violated_cons,
+                                                               &num_violated_cons))
 
-          violated = set()
+      violated = set()
 
-          for i in range(num_violated_cons):
-              violated.add(violated_cons[i])
+      for i in range(num_violated_cons):
+        violated.add(violated_cons[i])
 
-          return violated
+      return violated
 
-      finally:
-          free(violated_cons)
+    finally:
+      free(violated_cons)
 
   @property
   def solution(self) -> Iterate:
-      cdef csleqp.SleqpIterate* _iterate
-      cdef Iterate iterate = Iterate()
+    cdef csleqp.SleqpIterate* _iterate
+    cdef Iterate iterate = Iterate(_create=True)
 
-      csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &_iterate))
+    csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &_iterate))
 
-      iterate._set_iterate(_iterate)
+    iterate._set_iterate(_iterate)
 
-      return iterate
+    return iterate
+
+
+  def add_callback(self, event, function):
+    cdef CallbackHandle callback_handle = CallbackHandle(self, event.value, function)
+
+    callback_handle.function_pointer = get_callback_function_pointer(event)
+
+    csleqp_call(csleqp.sleqp_solver_add_callback(self.solver,
+                                                 callback_handle.event,
+                                                 callback_handle.function_pointer,
+                                                 <void*> callback_handle))
+
+    self.callback_handles.append(callback_handle)
+
+    return callback_handle
+
+  def remove_callback(self, CallbackHandle callback_handle):
+
+    csleqp_call(csleqp.sleqp_solver_remove_callback(self.solver,
+                                                    callback_handle.event,
+                                                    callback_handle.function_pointer,
+                                                    <void*> callback_handle))
+
+    self.callback_handles.remove(callback_handle)
+
+  cdef update_callbacks(self):
+    cdef CallbackHandle callback_handle
+
+    for obj in self.callback_handles:
+      callback_handle = <CallbackHandle> obj
+
+      csleqp_call(csleqp.sleqp_solver_remove_callback(self.solver,
+                                                      callback_handle.event,
+                                                      callback_handle.function_pointer,
+                                                      <void*> callback_handle))
+
+      callback_handle.function_pointer = get_callback_function_pointer(callback_handle.event)
+
+      csleqp_call(csleqp.sleqp_solver_add_callback(self.solver,
+                                                   callback_handle.event,
+                                                   callback_handle.function_pointer,
+                                                   <void*> callback_handle))
+
+
+cdef update_solver_callbacks():
+  cdef Solver solver
+  for obj in solvers:
+    solver = <Solver> obj
+
+    solver.update_callbacks()

@@ -1,6 +1,6 @@
 #cython: language_level=3
 
-from enum import Flag
+from enum import Enum, Flag
 
 cpdef enum Status:
   Optimal    = csleqp.SLEQP_OPTIMAL
@@ -30,11 +30,14 @@ cpdef enum ValueReason:
   RejectedIterate  = csleqp.SLEQP_VALUE_REASON_REJECTED_ITERATE
 
 cpdef enum ActiveState:
-  Inactive    = csleqp.SLEQP_INACTIVE,
-  ActiveLower = csleqp.SLEQP_ACTIVE_LOWER,
-  ActiveUpper = csleqp.SLEQP_ACTIVE_UPPER,
+  Inactive    = csleqp.SLEQP_INACTIVE
+  ActiveLower = csleqp.SLEQP_ACTIVE_LOWER
+  ActiveUpper = csleqp.SLEQP_ACTIVE_UPPER
   ActiveBoth  = csleqp.SLEQP_ACTIVE_BOTH
 
 cpdef enum DualEstimationType:
-  LP      = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LP,
-  LSQ     = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LSQ,
+  LP      = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LP
+  LSQ     = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LSQ
+
+class SolverEvent(Enum):
+  AcceptedIterate = csleqp.SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE
