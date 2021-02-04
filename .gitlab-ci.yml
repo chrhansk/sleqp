@@ -1,11 +1,11 @@
 image: "moto.math.nat.tu-bs.de:5050/code/images/sleqp_builddeps:latest"
 
 stages:
-- test
-- build
-- package
-- install
-- downstream
+  - test
+  - build
+  - package
+  - install
+  - downstream
 
 variables:
   CTEST_OUTPUT_ON_FAILURE: '1'
@@ -52,8 +52,6 @@ build:
     - cd build
     - cmake .. -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_CXX_FLAGS="-O3 -g" -DSLEQP_ENABLE_UNIT_TESTS=Off -DSLEQP_ENABLE_PYTHON=On
     - make -j$(nproc)
-  dependencies:
-    - prepare
   artifacts:
     paths:
       - build
@@ -63,6 +61,8 @@ package:
   stage: package
   only:
     - master
+  dependencies:
+    - build
   script:
     - cd build
     - make package
@@ -77,6 +77,8 @@ package_wheel:
   stage: package
   only:
     - master
+  dependencies:
+    - build
   script:
     - cd build
     - make python_sleqp_bdist_wheel
@@ -90,6 +92,8 @@ package_sdist:
   stage: package
   only:
     - master
+  dependencies:
+    - build
   script:
     - cd build
     - make python_sleqp_sdist
