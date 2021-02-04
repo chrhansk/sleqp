@@ -1,41 +1,14 @@
 image: "moto.math.nat.tu-bs.de:5050/code/images/sleqp_builddeps:latest"
 
 stages:
-- prepare
-- build
 - test
+- build
 - package
 - install
 - downstream
 
 variables:
   CTEST_OUTPUT_ON_FAILURE: '1'
-
-# run cmake
-prepare:
-  stage: prepare
-  script:
-    - mkdir -p build
-    - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=/usr
-  artifacts:
-    paths:
-      - build
-      - bindings/python
-
-# run make
-build:
-  stage: build
-  script:
-    - cd build
-    - make -j$(nproc)
-  dependencies:
-    - prepare
-  artifacts:
-    paths:
-      - build
-      - bindings/python
-
 
 # run tests
 .test_template: &test_job
@@ -70,9 +43,26 @@ test_undefined_sanitizer:
 #   variables:
 #     CFLAGS: '-g -fsanitize=memory'
 
+build:
+  stage: build
+  only:
+    - master
+  script:
+    - mkdir -p build
+    - cd build
+    - cmake .. -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_CXX_FLAGS="-O3 -g" -DSLEQP_ENABLE_UNIT_TESTS=Off -DSLEQP_ENABLE_PYTHON=On
+    - make -j$(nproc)
+  dependencies:
+    - prepare
+  artifacts:
+    paths:
+      - build
+      - bindings/python
 
 package:
   stage: package
+  only:
+    - master
   script:
     - cd build
     - make package
@@ -85,6 +75,8 @@ package:
 
 package_wheel:
   stage: package
+  only:
+    - master
   script:
     - cd build
     - make python_sleqp_bdist_wheel
@@ -96,6 +88,8 @@ package_wheel:
 
 package_sdist:
   stage: package
+  only:
+    - master
   script:
     - cd build
     - make python_sleqp_sdist
@@ -107,6 +101,8 @@ package_sdist:
 
 install_package:
   stage: install
+  only:
+    - master
   script:
     - cd build
     - apt -y install ./*.deb
