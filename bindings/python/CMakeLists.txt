@@ -9,8 +9,10 @@ if(PythonInterp_FOUND AND PythonLibs_FOUND)
   include(PythonHelpers)
 
   add_python_project(
-    PROJECT_NAME sleqp
+    PROJECT_NAME "sleqp"
     PROJECT_COMPONENT "python")
+
+  add_dependencies(python_sleqp sleqp)
 
 else()
   message(STATUS "Could not find python, extension will not be built")
