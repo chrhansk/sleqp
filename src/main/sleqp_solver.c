@@ -1759,11 +1759,11 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                  sleqp_timer_get_num_runs(cons_jac_timer),
                  sleqp_timer_get_avg(cons_jac_timer));
 
-  sleqp_log_info("   Hessian evaluations: %4d (%fs avg)",
+  sleqp_log_info("      Hessian products: %4d (%fs avg)",
                  sleqp_timer_get_num_runs(hess_timer),
                  sleqp_timer_get_avg(hess_timer));
 
-  sleqp_log_info("         LP iterations: %4d (%fs avg)",
+  sleqp_log_info("            Solved LPs: %4d (%fs avg)",
                  sleqp_timer_get_num_runs(lp_timer),
                  sleqp_timer_get_avg(lp_timer));
 
@@ -1887,9 +1887,12 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->primal_diff));
 
-  for(int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
+  if(solver->callback_handlers)
   {
-    SLEQP_CALL(sleqp_callback_handler_release(solver->callback_handlers + i));
+    for(int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
+    {
+      SLEQP_CALL(sleqp_callback_handler_release(solver->callback_handlers + i));
+    }
   }
 
   sleqp_free(&solver->callback_handlers);
