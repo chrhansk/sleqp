@@ -1573,6 +1573,118 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
+                                        double violation)
+{
+  const char* descriptions[] = {
+    [SLEQP_FEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "feasible" SLEQP_FORMAT_RESET,
+    [SLEQP_OPTIMAL] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN "optimal" SLEQP_FORMAT_RESET,
+    [SLEQP_INFEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED "infeasible" SLEQP_FORMAT_RESET,
+    [SLEQP_INVALID] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED "Invalid" SLEQP_FORMAT_RESET
+  };
+
+  SleqpFunc* unscaled_func = solver->unscaled_problem->func;
+  SleqpFunc* func = solver->problem->func;
+
+  const bool with_hessian = !(solver->sr1_data || solver->bfgs_data);
+
+  sleqp_log_info(SLEQP_FORMAT_BOLD "       Solution status: %s" SLEQP_FORMAT_RESET,
+                 descriptions[solver->status]);
+
+  sleqp_log_info(SLEQP_FORMAT_BOLD "       Objective value: %e" SLEQP_FORMAT_RESET,
+                 sleqp_iterate_get_func_val(solver->unscaled_iterate));
+
+  sleqp_log_info(SLEQP_FORMAT_BOLD "             Violation: %e" SLEQP_FORMAT_RESET,
+                 violation);
+
+  sleqp_log_info(                  "            Iterations: %d", solver->iteration);
+
+  SleqpTimer* val_timer = sleqp_func_get_val_timer(unscaled_func);
+
+  SleqpTimer* grad_timer = sleqp_func_get_grad_timer(unscaled_func);
+
+  SleqpTimer* cons_val_timer = sleqp_func_get_cons_val_timer(unscaled_func);
+
+  SleqpTimer* cons_jac_timer = sleqp_func_get_cons_jac_timer(unscaled_func);
+
+  SleqpTimer* lp_timer = sleqp_lpi_get_solve_timer(solver->lp_interface);
+
+  sleqp_log_info("  Function evaluations: %5d (%fs avg)",
+                 sleqp_timer_get_num_runs(val_timer),
+                 sleqp_timer_get_avg(val_timer));
+
+  sleqp_log_info("  Gradient evaluations: %5d (%fs avg)",
+                 sleqp_timer_get_num_runs(grad_timer),
+                 sleqp_timer_get_avg(grad_timer));
+
+  sleqp_log_info("Constraint evaluations: %5d (%fs avg)",
+                 sleqp_timer_get_num_runs(cons_val_timer),
+                 sleqp_timer_get_avg(cons_val_timer));
+
+  sleqp_log_info("  Jacobian evaluations: %5d (%fs avg)",
+                 sleqp_timer_get_num_runs(cons_jac_timer),
+                 sleqp_timer_get_avg(cons_jac_timer));
+
+  if(with_hessian)
+  {
+    SleqpTimer* hess_timer = sleqp_func_get_hess_timer(unscaled_func);
+
+    sleqp_log_info("      Hessian products: %5d (%fs avg)",
+                   sleqp_timer_get_num_runs(hess_timer),
+                   sleqp_timer_get_avg(hess_timer));
+  }
+
+  if(solver->bfgs_data)
+  {
+    SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
+
+    sleqp_log_info("         BFGS products: %5d (%fs avg)",
+                   sleqp_timer_get_num_runs(hess_timer),
+                   sleqp_timer_get_avg(hess_timer));
+
+    SleqpTimer* bfgs_update_timer = sleqp_bfgs_update_timer(solver->bfgs_data);
+
+    sleqp_log_info("          BFGS Updates: %5d (%fs avg)",
+                   sleqp_timer_get_num_runs(bfgs_update_timer),
+                   sleqp_timer_get_avg(bfgs_update_timer));
+  }
+
+  if(solver->sr1_data)
+  {
+    SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
+
+    sleqp_log_info("          SR1 products: %5d (%fs avg)",
+                   sleqp_timer_get_num_runs(hess_timer),
+                   sleqp_timer_get_avg(hess_timer));
+
+    SleqpTimer* sr1_timer = sleqp_sr1_update_timer(solver->sr1_data);
+
+    sleqp_log_info("           SR1 Updates: %5d (%fs avg)",
+                   sleqp_timer_get_num_runs(sr1_timer),
+                   sleqp_timer_get_avg(sr1_timer));
+  }
+
+  sleqp_log_info("            Solved LPs: %5d (%fs avg)",
+                 sleqp_timer_get_num_runs(lp_timer),
+                 sleqp_timer_get_avg(lp_timer));
+
+  sleqp_log_info("          Solving time: %.2fs", solver->elapsed_seconds);
+
+  if(solver->status == SLEQP_INFEASIBLE)
+  {
+    sleqp_log_info("Violations: ");
+
+    for(int index = 0; index < solver->unscaled_violation->nnz; ++index)
+    {
+      sleqp_log_info("(%d) = %e",
+                     solver->unscaled_violation->indices[index],
+                     solver->unscaled_violation->data[index]);
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                  int max_num_iterations,
                                  double time_limit)
@@ -1711,75 +1823,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   }
 
-  const char* descriptions[] = {
-    [SLEQP_FEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "feasible" SLEQP_FORMAT_RESET,
-    [SLEQP_OPTIMAL] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN "optimal" SLEQP_FORMAT_RESET,
-    [SLEQP_INFEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED "infeasible" SLEQP_FORMAT_RESET,
-    [SLEQP_INVALID] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED "Invalid" SLEQP_FORMAT_RESET
-  };
-
-  SleqpFunc* func = solver->unscaled_problem->func;
-
-  sleqp_log_info(SLEQP_FORMAT_BOLD "       Solution status: %s" SLEQP_FORMAT_RESET,
-                 descriptions[solver->status]);
-
-  sleqp_log_info(SLEQP_FORMAT_BOLD "       Objective value: %e" SLEQP_FORMAT_RESET,
-                 sleqp_iterate_get_func_val(solver->unscaled_iterate));
-
-  sleqp_log_info(SLEQP_FORMAT_BOLD "             Violation: %e" SLEQP_FORMAT_RESET,
-                 violation);
-
-  sleqp_log_info(                  "            Iterations: %d", solver->iteration);
-
-  SleqpTimer* val_timer = sleqp_func_get_val_timer(func);
-
-  SleqpTimer* grad_timer = sleqp_func_get_grad_timer(func);
-
-  SleqpTimer* cons_val_timer = sleqp_func_get_cons_val_timer(func);
-
-  SleqpTimer* cons_jac_timer = sleqp_func_get_cons_jac_timer(func);
-
-  SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
-
-  SleqpTimer* lp_timer = sleqp_lpi_get_solve_timer(solver->lp_interface);
-
-  sleqp_log_info("  Function evaluations: %4d (%fs avg)",
-                 sleqp_timer_get_num_runs(val_timer),
-                 sleqp_timer_get_avg(val_timer));
-
-  sleqp_log_info("  Gradient evaluations: %4d (%fs avg)",
-                 sleqp_timer_get_num_runs(grad_timer),
-                 sleqp_timer_get_avg(grad_timer));
-
-  sleqp_log_info("Constraint evaluations: %4d (%fs avg)",
-                 sleqp_timer_get_num_runs(cons_val_timer),
-                 sleqp_timer_get_avg(cons_val_timer));
-
-  sleqp_log_info("  Jacobian evaluations: %4d (%fs avg)",
-                 sleqp_timer_get_num_runs(cons_jac_timer),
-                 sleqp_timer_get_avg(cons_jac_timer));
-
-  sleqp_log_info("      Hessian products: %4d (%fs avg)",
-                 sleqp_timer_get_num_runs(hess_timer),
-                 sleqp_timer_get_avg(hess_timer));
-
-  sleqp_log_info("            Solved LPs: %4d (%fs avg)",
-                 sleqp_timer_get_num_runs(lp_timer),
-                 sleqp_timer_get_avg(lp_timer));
-
-  sleqp_log_info("          Solving time: %.2fs", solver->elapsed_seconds);
-
-  if(solver->status == SLEQP_INFEASIBLE)
-  {
-    sleqp_log_info("Violations: ");
-
-    for(int index = 0; index < solver->unscaled_violation->nnz; ++index)
-    {
-      sleqp_log_info("(%d) = %e",
-                     solver->unscaled_violation->indices[index],
-                     solver->unscaled_violation->data[index]);
-    }
-  }
+  SLEQP_CALL(solver_print_stats(solver, violation));
 
   return SLEQP_OKAY;
 }

@@ -6,11 +6,12 @@
  * @brief Defintion of BFGS method.
  **/
 
+#include "sleqp_iterate.h"
 #include "sleqp_options.h"
 #include "sleqp_params.h"
 #include "sleqp_problem.h"
+#include "sleqp_timer.h"
 
-#include "sleqp_iterate.h"
 #include "sparse/sleqp_sparse_vec.h"
 
 #ifdef __cplusplus
@@ -68,6 +69,8 @@ extern "C" {
                                           SleqpSparseVec* product);
 
   SleqpFunc* sleqp_bfgs_get_func(SleqpBFGSData* data);
+
+  SleqpTimer* sleqp_bfgs_update_timer(SleqpBFGSData* data);
 
   SLEQP_RETCODE sleqp_bfgs_data_capture(SleqpBFGSData* data);
 

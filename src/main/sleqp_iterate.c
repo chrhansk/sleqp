@@ -504,7 +504,7 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
 
   if(stationarity_residuum >= stat_eps * (1. + multiplier_norm))
   {
-    sleqp_log_info("Iterate is not optimal, residuum: %e, multiplier norm: %e",
+    sleqp_log_debug("Iterate is not optimal, residuum: %e, multiplier norm: %e",
                     stationarity_residuum,
                     multiplier_norm);
 
@@ -513,7 +513,7 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
 
   if(slackness_residuum >= slack_eps * (1. + multiplier_norm))
   {
-    sleqp_log_info("Iterate does not satisfy complementary slackness, residuum: %e, multiplier norm: %e",
+    sleqp_log_debug("Iterate does not satisfy complementary slackness, residuum: %e, multiplier norm: %e",
                     slackness_residuum,
                     multiplier_norm);
     return false;

@@ -87,6 +87,8 @@ struct SleqpSR1Data
 
   SleqpFunc* sr1_func;
   SleqpFunc* func;
+
+  SleqpTimer* update_timer;
 };
 
 static SLEQP_RETCODE
@@ -344,6 +346,8 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
 
   data->func = func;
 
+  SLEQP_CALL(sleqp_timer_create(&(data->update_timer)));
+
   return SLEQP_OKAY;
 }
 
@@ -528,6 +532,8 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
 
   const int num_blocks = data->num_blocks;
 
+  SLEQP_CALL(sleqp_timer_start(data->update_timer));
+
   // Compute gradient difference
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(previous_iterate),
@@ -623,6 +629,8 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
 
     offset = next_offset;
   }
+
+  SLEQP_CALL(sleqp_timer_stop(data->update_timer));
 
   return SLEQP_OKAY;
 }
@@ -797,6 +805,8 @@ static SLEQP_RETCODE sr1_data_free(SleqpSR1Data** star)
     return SLEQP_OKAY;
   }
 
+  SLEQP_CALL(sleqp_timer_free(&(data->update_timer)));
+
   SLEQP_CALL(sleqp_func_release(&(data->sr1_func)));
 
   int num_blocks = data->num_blocks;
@@ -831,6 +841,11 @@ static SLEQP_RETCODE sr1_data_free(SleqpSR1Data** star)
   sleqp_free(star);
 
   return SLEQP_OKAY;
+}
+
+SleqpTimer* sleqp_sr1_update_timer(SleqpSR1Data* data)
+{
+  return data->update_timer;
 }
 
 SLEQP_RETCODE sleqp_sr1_data_capture(SleqpSR1Data* data)

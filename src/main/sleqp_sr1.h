@@ -10,6 +10,7 @@
 #include "sleqp_iterate.h"
 #include "sleqp_options.h"
 #include "sleqp_params.h"
+#include "sleqp_timer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,6 +31,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_sr1_data_hess_prod(SleqpSR1Data* data,
                                          const SleqpSparseVec* direction,
                                          SleqpSparseVec* product);
+
+  SleqpTimer* sleqp_sr1_update_timer(SleqpSR1Data* data);
 
   SleqpFunc* sleqp_sr1_get_func(SleqpSR1Data* data);
 
