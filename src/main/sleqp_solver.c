@@ -1680,23 +1680,23 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
   }
 
   solver_print_timer(sleqp_aug_jacobian_get_factorization_timer(solver->aug_jacobian),
-                     "Number of factorizations",
+                     "Factorizations",
                      solver->elapsed_seconds);
 
   solver_print_timer(sleqp_aug_jacobian_get_substitution_timer(solver->aug_jacobian),
-                     "Number of substitutions",
+                     "Substitutions",
                      solver->elapsed_seconds);
 
   solver_print_timer(sleqp_lpi_get_solve_timer(solver->lp_interface),
-                     "Number of solved LPs",
+                     "Solved LPs",
                      solver->elapsed_seconds);
 
   solver_print_timer(sleqp_newton_get_timer(solver->newton_data),
-                     "Number of solved EQPs",
+                     "Solved EQPs",
                      solver->elapsed_seconds);
 
   solver_print_timer(sleqp_linesearch_get_timer(solver->linesearch),
-                     "Number of line searches",
+                     "Line searches",
                      solver->elapsed_seconds);
 
   sleqp_log_info("%30s: %8.2fs", "Solving time", solver->elapsed_seconds);

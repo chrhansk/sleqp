@@ -510,7 +510,10 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   SleqpTimer* hess_timer = sleqp_func_get_hess_timer(problem->func);
 
+  SleqpTimer* subst_timer = sleqp_aug_jacobian_get_substitution_timer(data->jacobian);
+
   const double hess_before = sleqp_timer_elapsed(hess_timer);
+  const double subst_before = sleqp_timer_elapsed(subst_timer);
 
   SLEQP_CALL(sleqp_timer_start(data->timer));
 
@@ -596,8 +599,9 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   SLEQP_CALL(sleqp_timer_stop(data->timer));
 
   const double hess_elapsed = sleqp_timer_elapsed(hess_timer) - hess_before;
+  const double subst_elapsed = sleqp_timer_elapsed(subst_timer) - subst_before;
 
-  SLEQP_CALL(sleqp_timer_add(data->timer, -hess_elapsed));
+  SLEQP_CALL(sleqp_timer_add(data->timer, -(hess_elapsed + subst_elapsed)));
 
   return SLEQP_OKAY;
 }
