@@ -48,6 +48,8 @@ struct SleqpNewtonData
   double* dense_cache;
 
   SleqpTRSolver* trust_region_solver;
+
+  SleqpTimer* timer;
 };
 
 SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
@@ -114,6 +116,8 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
                                     problem,
                                     params,
                                     options));
+
+  SLEQP_CALL(sleqp_timer_create(&(data->timer)));
 
   return SLEQP_OKAY;
 }
@@ -293,6 +297,11 @@ SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
 {
   return sleqp_tr_solver_set_time_limit(data->trust_region_solver,
                                         time_limit);
+}
+
+SleqpTimer* sleqp_newton_get_timer(SleqpNewtonData* data)
+{
+  return data->timer;
 }
 
 SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
@@ -499,6 +508,12 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     int working_set_size = sleqp_working_set_size(working_set);
   */
 
+  SleqpTimer* hess_timer = sleqp_func_get_hess_timer(problem->func);
+
+  const double hess_before = sleqp_timer_elapsed(hess_timer);
+
+  SLEQP_CALL(sleqp_timer_start(data->timer));
+
   // compute the EQP gradient. Given as the sum of the
   // EQP Hessian with the initial solution, the objective
   // function gradient and the violated multipliers
@@ -578,6 +593,12 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
 #endif
 
+  SLEQP_CALL(sleqp_timer_stop(data->timer));
+
+  const double hess_elapsed = sleqp_timer_elapsed(hess_timer) - hess_before;
+
+  SLEQP_CALL(sleqp_timer_add(data->timer, -hess_elapsed));
+
   return SLEQP_OKAY;
 }
 
@@ -589,6 +610,8 @@ static SLEQP_RETCODE newton_data_free(SleqpNewtonData** star)
   {
     return SLEQP_OKAY;
   }
+
+  SLEQP_CALL(sleqp_timer_free(&(data->timer)));
 
   SLEQP_CALL(sleqp_tr_solver_release(&data->trust_region_solver));
 

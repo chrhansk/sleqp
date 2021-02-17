@@ -57,6 +57,16 @@ SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_timer_add(SleqpTimer* timer, double value)
+{
+  timer->last_elapsed += value;
+
+  timer->total_elapsed += value;
+  timer->total_elapsed_squared += value*value;
+
+  return SLEQP_OKAY;
+}
+
 double sleqp_timer_elapsed(SleqpTimer* timer)
 {
   return timer->last_elapsed;

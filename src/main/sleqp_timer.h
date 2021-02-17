@@ -22,6 +22,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer);
 
+  SLEQP_RETCODE sleqp_timer_add(SleqpTimer* timer, double value);
+
   double sleqp_timer_elapsed(SleqpTimer* timer);
 
   double sleqp_timer_get_avg(SleqpTimer* timer);

@@ -18,6 +18,7 @@ struct SleqpAugJacobian
   SleqpSparseFactorization* factorization;
 
   SleqpTimer* factorization_timer;
+  SleqpTimer* substitution_timer;
 
   double condition_estimate;
 
@@ -213,6 +214,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
 
   SLEQP_CALL(sleqp_timer_create(&jacobian->factorization_timer));
 
+  SLEQP_CALL(sleqp_timer_create(&jacobian->substitution_timer));
+
   return SLEQP_OKAY;
 }
 
@@ -270,6 +273,11 @@ SleqpTimer* sleqp_aug_jacobian_get_factorization_timer(SleqpAugJacobian* jacobia
   return jacobian->factorization_timer;
 }
 
+SleqpTimer* sleqp_aug_jacobian_get_substitution_timer(SleqpAugJacobian* jacobian)
+{
+  return jacobian->substitution_timer;
+}
+
 SLEQP_RETCODE sleqp_aug_jacobian_get_condition_estimate(SleqpAugJacobian* jacobian,
                                                         double* condition_estimate)
 {
@@ -283,6 +291,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
                                                    SleqpSparseVec* sol)
 {
   assert(jacobian->factorization);
+
+  SLEQP_CALL(sleqp_timer_start(jacobian->substitution_timer));
 
   SleqpProblem* problem = jacobian->problem;
   SleqpSparseFactorization* factorization = jacobian->factorization;
@@ -316,6 +326,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
     rhs->indices[k] -= num_variables;
   }
 
+  SLEQP_CALL(sleqp_timer_stop(jacobian->substitution_timer));
+
   return SLEQP_OKAY;
 }
 
@@ -325,6 +337,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
                                             SleqpSparseVec* dual_sol)
 {
   assert(jacobian->factorization);
+
+  SLEQP_CALL(sleqp_timer_start(jacobian->substitution_timer));
 
   SleqpProblem* problem = jacobian->problem;
   SleqpSparseFactorization* factorization = jacobian->factorization;
@@ -371,6 +385,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
   // erase the zeros
   SLEQP_CALL(sleqp_sparse_vector_resize(rhs, num_variables));
 
+  SLEQP_CALL(sleqp_timer_stop(jacobian->substitution_timer));
+
   return SLEQP_OKAY;
 }
 
@@ -382,6 +398,8 @@ static SLEQP_RETCODE aug_jacobian_free(SleqpAugJacobian** star)
   {
     return SLEQP_OKAY;
   }
+
+  SLEQP_CALL(sleqp_timer_free(&jacobian->substitution_timer));
 
   SLEQP_CALL(sleqp_timer_free(&jacobian->factorization_timer));
 

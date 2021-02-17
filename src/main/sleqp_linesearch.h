@@ -7,6 +7,7 @@
  **/
 
 #include "sleqp_merit.h"
+#include "sleqp_timer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -88,6 +89,8 @@ extern "C" {
                                             SleqpSparseVec* trial_step,
                                             double* step_length,
                                             double* trial_quadratic_merit_value);
+
+  SleqpTimer* sleqp_linesearch_get_timer(SleqpLineSearchData* linesearch);
 
   SLEQP_RETCODE sleqp_linesearch_capture(SleqpLineSearchData* solver);
 

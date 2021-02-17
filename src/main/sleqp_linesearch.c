@@ -35,6 +35,8 @@ struct SleqpLineSearchData
   SleqpSparseVec* violated_multipliers;
 
   SleqpSparseVec* test_direction;
+
+  SleqpTimer* timer;
 };
 
 SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
@@ -86,6 +88,8 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->test_direction,
                                               problem->num_variables));
 
+  SLEQP_CALL(sleqp_timer_create(&linesearch->timer));
+
   return SLEQP_OKAY;
 }
 
@@ -116,6 +120,8 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
   const double zero_eps = sleqp_params_get(linesearch->params,
                                            SLEQP_PARAM_ZERO_EPS);
+
+  SLEQP_CALL(sleqp_timer_start(linesearch->timer));
 
 #if !defined(NDEBUG)
 
@@ -304,6 +310,8 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
   sleqp_assert_is_leq(sleqp_sparse_vector_norm(direction), trust_radius, eps);
 
+  SLEQP_CALL(sleqp_timer_stop(linesearch->timer));
+
   return SLEQP_OKAY;
 }
 
@@ -328,6 +336,8 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
   const double zero_eps = sleqp_params_get(linesearch->params,
                                            SLEQP_PARAM_ZERO_EPS);
+
+  SLEQP_CALL(sleqp_timer_start(linesearch->timer));
 
   // Compute Cauchy-Newton direction
   {
@@ -505,6 +515,8 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
     SLEQP_CALL(sleqp_sparse_vector_copy(cauchy_step, trial_step));
 
+    SLEQP_CALL(sleqp_timer_stop(linesearch->timer));
+
     return SLEQP_OKAY;
   }
 
@@ -633,6 +645,8 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
   }
 
+  SLEQP_CALL(sleqp_timer_stop(linesearch->timer));
+
   assert(iteration != LINESEARCH_MAX_IT);
 
   sleqp_log_debug("Cauchy-Newton line search terminated after %d iterations (step length: %f, quadratic merit: %f)",
@@ -646,6 +660,8 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 static SLEQP_RETCODE linesearch_free(SleqpLineSearchData** star)
 {
   SleqpLineSearchData* linesearch = *star;
+
+  SLEQP_CALL(sleqp_timer_free(&linesearch->timer));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&linesearch->test_direction));
 
@@ -666,6 +682,11 @@ static SLEQP_RETCODE linesearch_free(SleqpLineSearchData** star)
   sleqp_free(star);
 
   return SLEQP_OKAY;
+}
+
+SleqpTimer* sleqp_linesearch_get_timer(SleqpLineSearchData* linesearch)
+{
+  return linesearch->timer;
 }
 
 SLEQP_RETCODE sleqp_linesearch_capture(SleqpLineSearchData* linesearch)

@@ -27,6 +27,8 @@ extern "C" {
 
   SleqpTimer* sleqp_aug_jacobian_get_factorization_timer(SleqpAugJacobian* jacobian);
 
+  SleqpTimer* sleqp_aug_jacobian_get_substitution_timer(SleqpAugJacobian* jacobian);
+
   SLEQP_RETCODE sleqp_aug_jacobian_get_condition_estimate(SleqpAugJacobian* jacobian,
                                                           double* condition_estimate);
 

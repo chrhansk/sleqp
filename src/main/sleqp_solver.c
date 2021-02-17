@@ -1573,6 +1573,32 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE solver_print_timer(SleqpTimer* timer,
+                                        const char* message,
+                                        double total_elapsed)
+{
+  const int buf_size = 4096;
+  char buffer[buf_size];
+
+  const int num_runs = sleqp_timer_get_num_runs(timer);
+  const double avg_time = sleqp_timer_get_avg(timer);
+  const double total_time = sleqp_timer_get_ttl(timer);
+  const double percent = (total_time / total_elapsed) * 100.;
+
+  snprintf(buffer,
+           buf_size,
+           "%30s: %5d (%.6fs avg, %8.2fs total = %5.2f%%)",
+           message,
+           num_runs,
+           avg_time,
+           total_time,
+           percent);
+
+  sleqp_log_info(buffer);
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
                                         double violation)
 {
@@ -1588,87 +1614,88 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
 
   const bool with_hessian = !(solver->sr1_data || solver->bfgs_data);
 
-  sleqp_log_info(SLEQP_FORMAT_BOLD "       Solution status: %s" SLEQP_FORMAT_RESET,
+  sleqp_log_info(SLEQP_FORMAT_BOLD "%30s: %s" SLEQP_FORMAT_RESET,
+                 "Solution status",
                  descriptions[solver->status]);
 
-  sleqp_log_info(SLEQP_FORMAT_BOLD "       Objective value: %e" SLEQP_FORMAT_RESET,
+  sleqp_log_info(SLEQP_FORMAT_BOLD "%30s: %e" SLEQP_FORMAT_RESET,
+                 "Objective value",
                  sleqp_iterate_get_func_val(solver->unscaled_iterate));
 
-  sleqp_log_info(SLEQP_FORMAT_BOLD "             Violation: %e" SLEQP_FORMAT_RESET,
+  sleqp_log_info(SLEQP_FORMAT_BOLD "%30s: %e" SLEQP_FORMAT_RESET,
+                 "Violation",
                  violation);
 
-  sleqp_log_info(                  "            Iterations: %d", solver->iteration);
+  sleqp_log_info("%30s: %5d",
+                 "Iterations",
+                 solver->iteration);
 
-  SleqpTimer* val_timer = sleqp_func_get_val_timer(unscaled_func);
+  solver_print_timer(sleqp_func_get_val_timer(unscaled_func),
+                     "Function evaluations",
+                     solver->elapsed_seconds);
 
-  SleqpTimer* grad_timer = sleqp_func_get_grad_timer(unscaled_func);
+  solver_print_timer(sleqp_func_get_grad_timer(unscaled_func),
+                     "Gradient evaluations",
+                     solver->elapsed_seconds);
 
-  SleqpTimer* cons_val_timer = sleqp_func_get_cons_val_timer(unscaled_func);
+  solver_print_timer(sleqp_func_get_cons_val_timer(unscaled_func),
+                     "Constraint evaluations",
+                     solver->elapsed_seconds);
 
-  SleqpTimer* cons_jac_timer = sleqp_func_get_cons_jac_timer(unscaled_func);
-
-  SleqpTimer* lp_timer = sleqp_lpi_get_solve_timer(solver->lp_interface);
-
-  sleqp_log_info("  Function evaluations: %5d (%fs avg)",
-                 sleqp_timer_get_num_runs(val_timer),
-                 sleqp_timer_get_avg(val_timer));
-
-  sleqp_log_info("  Gradient evaluations: %5d (%fs avg)",
-                 sleqp_timer_get_num_runs(grad_timer),
-                 sleqp_timer_get_avg(grad_timer));
-
-  sleqp_log_info("Constraint evaluations: %5d (%fs avg)",
-                 sleqp_timer_get_num_runs(cons_val_timer),
-                 sleqp_timer_get_avg(cons_val_timer));
-
-  sleqp_log_info("  Jacobian evaluations: %5d (%fs avg)",
-                 sleqp_timer_get_num_runs(cons_jac_timer),
-                 sleqp_timer_get_avg(cons_jac_timer));
+  solver_print_timer(sleqp_func_get_cons_jac_timer(unscaled_func),
+                     "Jacobian evaluations",
+                     solver->elapsed_seconds);
 
   if(with_hessian)
   {
-    SleqpTimer* hess_timer = sleqp_func_get_hess_timer(unscaled_func);
-
-    sleqp_log_info("      Hessian products: %5d (%fs avg)",
-                   sleqp_timer_get_num_runs(hess_timer),
-                   sleqp_timer_get_avg(hess_timer));
+    solver_print_timer(sleqp_func_get_hess_timer(unscaled_func),
+                       "Hessian products",
+                       solver->elapsed_seconds);
   }
 
   if(solver->bfgs_data)
   {
-    SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
+    solver_print_timer(sleqp_func_get_hess_timer(func),
+                       "BFGS products",
+                       solver->elapsed_seconds);
 
-    sleqp_log_info("         BFGS products: %5d (%fs avg)",
-                   sleqp_timer_get_num_runs(hess_timer),
-                   sleqp_timer_get_avg(hess_timer));
-
-    SleqpTimer* bfgs_update_timer = sleqp_bfgs_update_timer(solver->bfgs_data);
-
-    sleqp_log_info("          BFGS Updates: %5d (%fs avg)",
-                   sleqp_timer_get_num_runs(bfgs_update_timer),
-                   sleqp_timer_get_avg(bfgs_update_timer));
+    solver_print_timer(sleqp_bfgs_update_timer(solver->bfgs_data),
+                       "BFGS updates",
+                       solver->elapsed_seconds);
   }
 
   if(solver->sr1_data)
   {
-    SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
+    solver_print_timer(sleqp_func_get_hess_timer(func),
+                       "SR1 products",
+                       solver->elapsed_seconds);
 
-    sleqp_log_info("          SR1 products: %5d (%fs avg)",
-                   sleqp_timer_get_num_runs(hess_timer),
-                   sleqp_timer_get_avg(hess_timer));
-
-    SleqpTimer* sr1_timer = sleqp_sr1_update_timer(solver->sr1_data);
-
-    sleqp_log_info("           SR1 Updates: %5d (%fs avg)",
-                   sleqp_timer_get_num_runs(sr1_timer),
-                   sleqp_timer_get_avg(sr1_timer));
+    solver_print_timer(sleqp_sr1_update_timer(solver->sr1_data),
+                       "SR1 updates",
+                       solver->elapsed_seconds);
   }
 
-  sleqp_log_info("            Solved LPs: %5d (%fs avg)",
-                 sleqp_timer_get_num_runs(lp_timer),
-                 sleqp_timer_get_avg(lp_timer));
+  solver_print_timer(sleqp_aug_jacobian_get_factorization_timer(solver->aug_jacobian),
+                     "Number of factorizations",
+                     solver->elapsed_seconds);
 
-  sleqp_log_info("          Solving time: %.2fs", solver->elapsed_seconds);
+  solver_print_timer(sleqp_aug_jacobian_get_substitution_timer(solver->aug_jacobian),
+                     "Number of substitutions",
+                     solver->elapsed_seconds);
+
+  solver_print_timer(sleqp_lpi_get_solve_timer(solver->lp_interface),
+                     "Number of solved LPs",
+                     solver->elapsed_seconds);
+
+  solver_print_timer(sleqp_newton_get_timer(solver->newton_data),
+                     "Number of solved EQPs",
+                     solver->elapsed_seconds);
+
+  solver_print_timer(sleqp_linesearch_get_timer(solver->linesearch),
+                     "Number of line searches",
+                     solver->elapsed_seconds);
+
+  sleqp_log_info("%30s: %8.2fs", "Solving time", solver->elapsed_seconds);
 
   if(solver->status == SLEQP_INFEASIBLE)
   {

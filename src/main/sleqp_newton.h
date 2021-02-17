@@ -11,6 +11,7 @@
 #include "sleqp_params.h"
 #include "sleqp_problem.h"
 #include "sleqp_iterate.h"
+#include "sleqp_timer.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,6 +26,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
                                             double time_limit);
+
+  SleqpTimer* sleqp_newton_get_timer(SleqpNewtonData* data);
 
   SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
                                          SleqpIterate* iterate,
