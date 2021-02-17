@@ -119,6 +119,15 @@ extern "C" {
   SLEQP_EXPORT int sleqp_func_get_num_constraints(SleqpFunc* func);
 
   /**
+   * Returns the setting timer of this function. This timer records
+   * the setting of function values.
+   *
+   * @param[in]     func            The function
+   *
+   **/
+  SleqpTimer* sleqp_func_get_set_timer(SleqpFunc* func);
+
+  /**
    * Returns the evaluation timer of this function. This timer records
    * the evaluations of function values.
    *

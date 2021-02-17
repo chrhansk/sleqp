@@ -1630,6 +1630,10 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
                  "Iterations",
                  solver->iteration);
 
+  solver_print_timer(sleqp_func_get_set_timer(unscaled_func),
+                     "Setting function values",
+                     solver->elapsed_seconds);
+
   solver_print_timer(sleqp_func_get_val_timer(unscaled_func),
                      "Function evaluations",
                      solver->elapsed_seconds);

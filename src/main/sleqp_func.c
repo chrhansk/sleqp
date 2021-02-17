@@ -13,6 +13,7 @@ struct SleqpFunc
 
   void* data;
 
+  SleqpTimer* set_timer;
   SleqpTimer* val_timer;
   SleqpTimer* grad_timer;
 
@@ -45,6 +46,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   func->num_constraints = num_constraints;
   func->data = func_data;
 
+  SLEQP_CALL(sleqp_timer_create(&func->set_timer));
   SLEQP_CALL(sleqp_timer_create(&func->val_timer));
   SLEQP_CALL(sleqp_timer_create(&func->grad_timer));
 
@@ -69,6 +71,8 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    int* cons_val_nnz,
                                    int* cons_jac_nnz)
 {
+  SLEQP_CALL(sleqp_timer_start(func->set_timer));
+
   SLEQP_CALL(func->callbacks.set_value(func,
                                        x,
                                        reason,
@@ -76,6 +80,8 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                        cons_val_nnz,
                                        cons_jac_nnz,
                                        func->data));
+
+  SLEQP_CALL(sleqp_timer_stop(func->set_timer));
 
   return SLEQP_OKAY;
 }
@@ -227,6 +233,11 @@ int sleqp_func_get_num_constraints(SleqpFunc* func)
   return func->num_constraints;
 }
 
+SleqpTimer* sleqp_func_get_set_timer(SleqpFunc* func)
+{
+  return func->set_timer;
+}
+
 SleqpTimer* sleqp_func_get_val_timer(SleqpFunc* func)
 {
   return func->val_timer;
@@ -294,12 +305,11 @@ SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
 {
   SLEQP_CALL(sleqp_sparse_vector_clear(func->product));
 
-  SLEQP_CALL(func->callbacks.hess_prod(func,
-                                       func_dual,
-                                       direction,
-                                       cons_duals,
-                                       func->product,
-                                       func->data));
+  SLEQP_CALL(sleqp_func_hess_prod(func,
+                                  func_dual,
+                                  direction,
+                                  cons_duals,
+                                  func->product));
 
   SLEQP_CALL(sleqp_sparse_vector_dot(direction,
                                      func->product,
@@ -334,6 +344,7 @@ static SLEQP_RETCODE func_free(SleqpFunc** fstar)
 
   SLEQP_CALL(sleqp_timer_free(&func->grad_timer));
   SLEQP_CALL(sleqp_timer_free(&func->val_timer));
+  SLEQP_CALL(sleqp_timer_free(&func->set_timer));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
 
