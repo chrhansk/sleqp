@@ -490,6 +490,9 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
 
   if(!sleqp_iterate_is_feasible(iterate, feasibility_residuum, feas_eps))
   {
+    sleqp_log_debug("Iterate is not feasible, residuum: %e",
+                    stationarity_residuum);
+
     return false;
   }
 

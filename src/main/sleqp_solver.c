@@ -1230,8 +1230,7 @@ static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
 }
 
 static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
-                                             bool* optimal,
-                                             bool has_previous_iterate)
+                                             bool* optimal)
 {
   *optimal = false;
 
@@ -1254,16 +1253,6 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
-  if(has_previous_iterate)
-  {
-    SLEQP_CALL(compute_step_lengths(solver, trial_iterate, iterate));
-  }
-  else
-  {
-    solver->primal_diff_norm = 0.;
-    solver->dual_diff_norm = 0.;
-  }
-
   const double accepted_reduction = sleqp_params_get(solver->params,
                                                      SLEQP_PARAM_ACCEPTED_REDUCTION);
 
@@ -1282,20 +1271,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   bool full_step;
 
-  if(perform_newton_step)
-  {
-    SLEQP_CALL(compute_trial_point_newton(solver,
-                                          &model_trial_value,
-                                          &full_step));
-  }
-  else
-  {
-    SLEQP_CALL(compute_trial_point_simple(solver,
-                                          &model_trial_value,
-                                          quadratic_model,
-                                          &full_step));
-  }
-
+  // Derivative check
   {
     const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_deriv_check(options);
 
@@ -1314,10 +1290,10 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     }
   }
 
+  // Optimality check with respect to scaled problem
   {
     SLEQP_CALL(set_residuum(solver));
 
-    // We perform the optimality test wrt. the scaled problem
     if(sleqp_iterate_is_optimal(iterate,
                                 solver->params,
                                 solver->feasibility_residuum,
@@ -1328,17 +1304,27 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     }
   }
 
-  if(solver->iteration % 25 == 0)
-  {
-    SLEQP_CALL(print_header());
-  }
-
-  SLEQP_CALL(print_line(solver));
-
   if(*optimal)
   {
     return SLEQP_OKAY;
   }
+
+  // Step computation
+  if(perform_newton_step)
+  {
+    SLEQP_CALL(compute_trial_point_newton(solver,
+                                          &model_trial_value,
+                                          &full_step));
+  }
+  else
+  {
+    SLEQP_CALL(compute_trial_point_simple(solver,
+                                          &model_trial_value,
+                                          quadratic_model,
+                                          &full_step));
+  }
+
+  SLEQP_CALL(compute_step_lengths(solver, trial_iterate, iterate));
 
   double model_reduction = model_iterate_value - model_trial_value;
 
@@ -1483,6 +1469,15 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
       }
     }
   }
+
+  ++solver->iteration;
+
+  if(solver->iteration % 25 == 0)
+  {
+    SLEQP_CALL(print_header());
+  }
+
+  SLEQP_CALL(print_line(solver));
 
   // update trust radii, penalty parameter
   {
@@ -1763,7 +1758,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                                   SLEQP_PARAM_DEADPOINT_BOUND);
 
   bool reached_deadpoint = false;
-  bool has_previous_iterate = false;
+
+  SLEQP_CALL(print_header());
 
   // main solving loop
   while(true)
@@ -1788,20 +1784,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
 
-    SLEQP_CALL(sleqp_perform_iteration(solver, &optimal, has_previous_iterate));
-
-    switch(solver->last_step_type)
-    {
-    case SLEQP_STEPTYPE_ACCEPTED:
-    case SLEQP_STEPTYPE_ACCEPTED_FULL:
-    case SLEQP_STEPTYPE_SOC_ACCEPTED:
-      has_previous_iterate = true;
-      break;
-    default:
-      break;
-    }
-
-    ++solver->iteration;
+    SLEQP_CALL(sleqp_perform_iteration(solver, &optimal));
 
     SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
 
