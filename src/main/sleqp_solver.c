@@ -1175,7 +1175,7 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
 
   sleqp_log_info(LINE_FORMAT,
                  solver->iteration,
-                 sleqp_iterate_get_func_val(solver->unscaled_iterate),
+                 sleqp_iterate_get_func_val(solver->iterate),
                  solver->current_merit_value,
                  solver->feasibility_residuum,
                  solver->slackness_residuum,
