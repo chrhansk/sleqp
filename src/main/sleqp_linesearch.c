@@ -232,6 +232,12 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
       (*quadratic_merit_value) = linear_merit_value + (0.5 * hessian_product);
     }
 
+    sleqp_log_debug("Cauchy line search iteration %d, exact merit value: %f, linear merit value: %f, quadratic merit value: %f",
+                    iteration,
+                    exact_merit_value,
+                    linear_merit_value,
+                    *quadratic_merit_value);
+
 #if !defined(NDEBUG)
 
     {
