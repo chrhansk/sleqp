@@ -120,6 +120,8 @@ struct SleqpSolver
 
   double dual_diff_norm;
 
+  double current_merit_value;
+
   // SOC related
   SleqpSOCData* soc_data;
 
@@ -1099,15 +1101,16 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
+#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14s |%14e |%14e | %18s"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14s |%14e |%14e | %18s"
 
 static SLEQP_RETCODE print_header()
 {
   sleqp_log_info(HEADER_FORMAT,
                  "Iteration",
                  "Func val",
+                 "Merit val",
                  "Feas res",
                  "Slack res",
                  "Stat res",
@@ -1173,6 +1176,7 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
   sleqp_log_info(LINE_FORMAT,
                  solver->iteration,
                  sleqp_iterate_get_func_val(solver->unscaled_iterate),
+                 solver->current_merit_value,
                  solver->feasibility_residuum,
                  solver->slackness_residuum,
                  solver->stationarity_residuum,
@@ -1264,7 +1268,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                 solver->penalty_parameter,
                                 &exact_iterate_value));
 
-    model_iterate_value = exact_iterate_value;
+    solver->current_merit_value = model_iterate_value = exact_iterate_value;
   }
 
   double model_trial_value;
