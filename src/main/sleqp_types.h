@@ -26,6 +26,12 @@ extern "C" {
     SLEQP_MATH_ERROR
   } SLEQP_RETCODE;
 
+#ifdef SLEQP_HAVE_WARN_UNUSED_RESULT
+#define SLEQP_NODISCARD __attribute__((warn_unused_result))
+#else
+#define SLEQP_NODISCARD
+#endif
+
   typedef enum {
     SLEQP_INACTIVE,
     SLEQP_ACTIVE_LOWER,
