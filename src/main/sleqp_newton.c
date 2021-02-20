@@ -572,9 +572,10 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   // must be orthogonal
   {
     double direction_dot;
-    sleqp_sparse_vector_dot(data->sparse_cache,
-                            data->initial_direction,
-                            &direction_dot);
+
+    SLEQP_CALL(sleqp_sparse_vector_dot(data->sparse_cache,
+                                       data->initial_direction,
+                                       &direction_dot));
 
     sleqp_assert_is_zero(direction_dot, eps);
   }

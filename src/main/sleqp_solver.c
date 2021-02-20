@@ -482,7 +482,7 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   double current_violation;
 
-  sleqp_cauchy_get_violation(cauchy_data, &current_violation);
+  SLEQP_CALL(sleqp_cauchy_get_violation(cauchy_data, &current_violation));
 
   current_violation /= num_constraints;
 
@@ -517,7 +517,7 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   double inf_violation;
 
-  sleqp_cauchy_get_violation(cauchy_data, &inf_violation);
+  SLEQP_CALL(sleqp_cauchy_get_violation(cauchy_data, &inf_violation));
 
   inf_violation /= num_constraints;
 
@@ -542,7 +542,7 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
       double next_violation;
 
-      sleqp_cauchy_get_violation(cauchy_data, &next_violation);
+      SLEQP_CALL(sleqp_cauchy_get_violation(cauchy_data, &next_violation));
 
       next_violation /= num_constraints;
 
@@ -588,7 +588,7 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
       double next_violation;
 
-      sleqp_cauchy_get_violation(cauchy_data, &next_violation);
+      SLEQP_CALL(sleqp_cauchy_get_violation(cauchy_data, &next_violation));
 
       next_violation /= num_constraints;
 
@@ -1345,7 +1345,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                              sleqp_iterate_get_cons_val(trial_iterate),
                              NULL));
 
-  sleqp_iterate_set_func_val(trial_iterate, func_val);
+  SLEQP_CALL(sleqp_iterate_set_func_val(trial_iterate, func_val));
 
   double actual_reduction = 0.;
 

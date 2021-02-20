@@ -715,9 +715,9 @@ SLEQP_RETCODE bfgs_block_push(BFGSBlock* block,
   {
     block->point_diff_inner_dots[next] = sleqp_sparse_vector_norm_sq(point_diff);
 
-    sleqp_sparse_vector_dot(point_diff,
-                            grad_diff,
-                            block->grad_point_diff_dots + next);
+    SLEQP_CALL(sleqp_sparse_vector_dot(point_diff,
+                                       grad_diff,
+                                       block->grad_point_diff_dots + next));
   }
 
   if(block->len < block->num)

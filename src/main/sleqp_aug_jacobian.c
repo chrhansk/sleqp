@@ -407,7 +407,7 @@ static SLEQP_RETCODE aug_jacobian_free(SleqpAugJacobian** star)
 
   SLEQP_CALL(sleqp_sparse_factorization_release(&jacobian->factorization));
 
-  sleqp_sparse_matrix_release(&jacobian->augmented_matrix);
+  SLEQP_CALL(sleqp_sparse_matrix_release(&jacobian->augmented_matrix));
 
   SLEQP_CALL(sleqp_params_release(&jacobian->params));
 

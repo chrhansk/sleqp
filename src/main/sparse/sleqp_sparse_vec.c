@@ -93,7 +93,7 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
 
     if(!sleqp_is_zero(v, zero_eps))
     {
-      sleqp_sparse_vector_push(vec, i, v);
+      SLEQP_CALL(sleqp_sparse_vector_push(vec, i, v));
     }
   }
 

@@ -323,8 +323,10 @@ SLEQP_RETCODE sleqp_scale_iterate(SleqpScalingData* scaling,
 {
   SLEQP_CALL(sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
 
-  sleqp_iterate_set_func_val(scaled_iterate,
-                             sleqp_scale_func_val(scaling, sleqp_iterate_get_func_val(scaled_iterate)));
+  const double scaled_func_val = sleqp_scale_func_val(scaling,
+                                                      sleqp_iterate_get_func_val(scaled_iterate));
+
+  SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, scaled_func_val));
 
   SLEQP_CALL(sleqp_scale_func_grad(scaling,
                                    sleqp_iterate_get_func_grad(scaled_iterate)));
@@ -449,8 +451,8 @@ SLEQP_RETCODE sleqp_unscale_iterate(SleqpScalingData* scaling,
 
   double func_val = sleqp_iterate_get_func_val(scaled_iterate);
 
-  sleqp_iterate_set_func_val(scaled_iterate,
-                             sleqp_unscale_func_val(scaling, func_val));
+  SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate,
+                                        sleqp_unscale_func_val(scaling, func_val)));
 
   SLEQP_CALL(sleqp_unscale_func_grad(scaling,
                                      sleqp_iterate_get_func_grad(scaled_iterate)));
