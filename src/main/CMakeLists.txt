@@ -42,6 +42,14 @@ add_library(sleqp_objects OBJECT
 
 set_property(TARGET sleqp_objects PROPERTY C_STANDARD 11)
 
+if(HAVE_MACRO_PREFIX_MAP)
+  target_compile_options(sleqp_objects PRIVATE "-fmacro-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}=.")
+endif()
+
+if(HAVE_FILE_PREFIX_MAP)
+  target_compile_options(sleqp_objects PRIVATE "-ffile-prefix-map=${CMAKE_CURRENT_SOURCE_DIR}=.")
+endif()
+
 target_link_libraries(sleqp_objects
   PRIVATE
   ${SLEQP_DEPENDENCIES})

@@ -18,6 +18,7 @@ quadratic programming.")
 include(CMakePackageConfigHelpers)
 include(FindPackageHandleStandardArgs)
 include(GenerateExportHeader)
+include(CheckCCompilerFlag)
 
 # Get the current working branch
 execute_process(
@@ -114,7 +115,14 @@ if(SLEQP_ENABLE_CUTEST)
   set(SLEQP_ENABLE_UNIT_TESTS ON)
 endif()
 
+# Compiler options
+
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+check_c_compiler_flag("-fmacro-prefix-map=.=." HAVE_MACRO_PREFIX_MAP)
+check_c_compiler_flag("-ffile-prefix-map=.=." HAVE_FILE_PREFIX_MAP)
+
+# Subdirectories
 
 add_subdirectory(src)
 
