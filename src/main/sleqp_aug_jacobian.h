@@ -17,11 +17,13 @@ extern "C" {
 
   typedef struct SleqpAugJacobian SleqpAugJacobian;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
                                           SleqpProblem* problem,
                                           SleqpParams* params,
                                           SleqpSparseFactorization* sparse_factorization);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
                                                SleqpIterate* iterate);
 
@@ -29,6 +31,7 @@ extern "C" {
 
   SleqpTimer* sleqp_aug_jacobian_get_substitution_timer(SleqpAugJacobian* jacobian);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_aug_jacobian_get_condition_estimate(SleqpAugJacobian* jacobian,
                                                           double* condition_estimate);
 
@@ -45,6 +48,7 @@ extern "C" {
    * @param[out] sol        The solution \f$ x \f$
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
                                                      SleqpSparseVec* rhs,
                                                      SleqpSparseVec* sol);
@@ -66,13 +70,16 @@ extern "C" {
    * @param[out] dual_sol    The dual solution
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
                                               SleqpSparseVec* rhs,
                                               SleqpSparseVec* primal_sol,
                                               SleqpSparseVec* dual_sol);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_aug_jacobian_capture(SleqpAugJacobian* jacobian);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_aug_jacobian_release(SleqpAugJacobian** star);
 
 #ifdef __cplusplus

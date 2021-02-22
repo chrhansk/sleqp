@@ -9,6 +9,7 @@
 extern "C" {
 #endif
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_factorization_mumps_create(SleqpSparseFactorization** star,
                                                         SleqpParams* params);
 

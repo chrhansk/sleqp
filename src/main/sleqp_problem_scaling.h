@@ -11,16 +11,20 @@ extern "C" {
 
   typedef struct SleqpProblemScaling SleqpProblemScaling;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** problem_scaling,
                                              SleqpScalingData* scaling_data,
                                              SleqpProblem* problem,
                                              SleqpParams* params,
                                              SleqpOptions* options);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_scaling_capture(SleqpProblemScaling* scaling);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_scaling_release(SleqpProblemScaling** star);
 
   SleqpProblem* sleqp_problem_scaling_get_problem(SleqpProblemScaling* scaling);

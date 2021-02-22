@@ -34,18 +34,22 @@ extern "C" {
 
   typedef struct SleqpParams SleqpParams;
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_create(SleqpParams** star);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_params_create(SleqpParams** star);
 
   SLEQP_EXPORT double sleqp_params_get(const SleqpParams* params,
                                        SLEQP_PARAM param);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_set(SleqpParams* params,
-                                              SLEQP_PARAM param,
-                                              double value);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_params_set(SleqpParams* params,
+                                 SLEQP_PARAM param,
+                                 double value);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_capture(SleqpParams* params);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_params_capture(SleqpParams* params);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_params_release(SleqpParams** star);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_params_release(SleqpParams** star);
 
 #ifdef __cplusplus
 }

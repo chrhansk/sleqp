@@ -9,25 +9,31 @@ extern "C" {
 
   typedef struct SleqpCallbackHandler SleqpCallbackHandler;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_callback_handler_create(SleqpCallbackHandler** star);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_callback_handler_capture(SleqpCallbackHandler* handler);
 
   int sleqp_callback_handler_size(SleqpCallbackHandler* handler);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_callback_handler_get(SleqpCallbackHandler* handler,
                                            int pos,
                                            void** callback,
                                            void** callback_data);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_callback_handler_add(SleqpCallbackHandler* handler,
                                            void* callback,
                                            void* callback_data);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_callback_handler_remove(SleqpCallbackHandler* handler,
                                               void* callback,
                                               void* callback_data);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_callback_handler_release(SleqpCallbackHandler** star);
 
 #define SLEQP_CALLBACK_HANDLER_EXECUTE(handler, func_type, ...)                   \

@@ -18,9 +18,10 @@ extern "C" {
 
   typedef struct SleqpMeritData SleqpMeritData;
 
-  SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
-                                        SleqpProblem* problem,
-                                        SleqpParams* params);
+  SLEQP_NODISCARD SLEQP_RETCODE
+  sleqp_merit_data_create(SleqpMeritData** star,
+                          SleqpProblem* problem,
+                          SleqpParams* params);
 
   /**
    * Computes the exact merit value at the given
@@ -38,10 +39,11 @@ extern "C" {
    * @param[out] merit_value       The exact merit value
    *
    **/
-  SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
-                                 SleqpIterate* iterate,
-                                 double penalty_parameter,
-                                 double* merit_value);
+  SLEQP_NODISCARD SLEQP_RETCODE
+  sleqp_merit_func(SleqpMeritData* merit_data,
+                   SleqpIterate* iterate,
+                   double penalty_parameter,
+                   double* merit_value);
 
   /**
    * Computes the linearized merit value at the given iterate.
@@ -62,11 +64,12 @@ extern "C" {
    * @param[out] merit_value       The linearized merit value
    *
    **/
-  SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
-                                   SleqpIterate* iterate,
-                                   const SleqpSparseVec* direction,
-                                   double penalty_parameter,
-                                   double* merit_value);
+  SLEQP_NODISCARD SLEQP_RETCODE
+  sleqp_merit_linear(SleqpMeritData* merit_data,
+                     SleqpIterate* iterate,
+                     const SleqpSparseVec* direction,
+                     double penalty_parameter,
+                     double* merit_value);
 
   /**
    * Computes the quadratic merit value at the given iterate.
@@ -86,17 +89,20 @@ extern "C" {
    * @param[out] merit_value       The quadratic merit value
    *
    **/
-  SLEQP_RETCODE sleqp_merit_quadratic(SleqpMeritData* merit_data,
-                                      SleqpIterate* iterate,
-                                      const double* func_dual,
-                                      const SleqpSparseVec* direction,
-                                      const SleqpSparseVec* cons_duals,
-                                      double penalty_parameter,
-                                      double* merit_value);
+  SLEQP_NODISCARD SLEQP_RETCODE
+  sleqp_merit_quadratic(SleqpMeritData* merit_data,
+                        SleqpIterate* iterate,
+                        const double* func_dual,
+                        const SleqpSparseVec* direction,
+                        const SleqpSparseVec* cons_duals,
+                        double penalty_parameter,
+                        double* merit_value);
 
-  SLEQP_RETCODE sleqp_merit_data_capture(SleqpMeritData* merit_data);
+  SLEQP_NODISCARD SLEQP_RETCODE
+  sleqp_merit_data_capture(SleqpMeritData* merit_data);
 
-  SLEQP_RETCODE sleqp_merit_data_release(SleqpMeritData** star);
+  SLEQP_NODISCARD SLEQP_RETCODE
+  sleqp_merit_data_release(SleqpMeritData** star);
 
 
 #ifdef __cplusplus

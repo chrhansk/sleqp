@@ -23,15 +23,17 @@ extern "C" {
    * @param[out] star            A pointer to the working set to be created
    * @param[int] problem         The underlying problem
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_create(SleqpWorkingSet** star,
-                                                      SleqpProblem* problem);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_create(SleqpWorkingSet** star,
+                                         SleqpProblem* problem);
 
   /**
    * Resets this working set by removing all variables and constraints from it
    *
    * @param[in]  working_set           The working set
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_reset(SleqpWorkingSet* working_set);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_reset(SleqpWorkingSet* working_set);
 
   /**
    * Adds a variable to the given working set
@@ -43,9 +45,10 @@ extern "C" {
    * @note The `state` must not be @ref SLEQP_INACTIVE
    * @note Variables must be added before constraints
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
-                                                            int index,
-                                                            SLEQP_ACTIVE_STATE state);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
+                                               int index,
+                                               SLEQP_ACTIVE_STATE state);
 
   /**
    * Adds a constraint to the given working set
@@ -57,9 +60,10 @@ extern "C" {
    * @note The `state` must not be @ref SLEQP_INACTIVE
    * @note Variables must be added before constraints
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_add_constraint(SleqpWorkingSet* working_set,
-                                                              int index,
-                                                              SLEQP_ACTIVE_STATE state);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_add_constraint(SleqpWorkingSet* working_set,
+                                                 int index,
+                                                 SLEQP_ACTIVE_STATE state);
 
   /**
    * Returns the index of the given constraint with respect to the given
@@ -156,8 +160,9 @@ extern "C" {
    * @param[in]  vec     A pointer to the vector
    * @param[in]  output  A pointer to an output `FILE*`
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_fprintf(const SleqpWorkingSet* working_set,
-                                                       FILE* output);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_fprintf(const SleqpWorkingSet* working_set,
+                                          FILE* output);
 
   /**
    * Copies one working set to another
@@ -165,12 +170,15 @@ extern "C" {
    * @param[in]  source  A pointer to the copy source
    * @param[in]  target  A pointer to the copy target
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_copy(const SleqpWorkingSet* source,
-                                                    SleqpWorkingSet* target);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_copy(const SleqpWorkingSet* source,
+                                       SleqpWorkingSet* target);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_capture(SleqpWorkingSet* working_set);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_capture(SleqpWorkingSet* working_set);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_working_set_release(SleqpWorkingSet** star);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_release(SleqpWorkingSet** star);
 
 #ifdef __cplusplus
 }

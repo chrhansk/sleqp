@@ -21,7 +21,7 @@ extern "C" {
 #define sleqp_reallocate_memory(ptr, size)                              \
   (*ptr = realloc(*ptr, size), *ptr != NULL) ? SLEQP_OKAY : SLEQP_NOMEM
 
-  SLEQP_RETCODE sleqp_free(void** ptr);
+  SLEQP_NODISCARD SLEQP_RETCODE sleqp_free(void** ptr);
 
 #define sleqp_malloc(ptr)                       \
   sleqp_allocate_memory(ptr, sizeof(**ptr))

@@ -18,16 +18,19 @@ extern "C" {
 
   typedef struct SleqpTRSolver SleqpTRSolver;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
                                        SleqpProblem* problem,
                                        SleqpParams* params,
                                        SleqpOptions* options);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_set_time_limit(SleqpTRSolver* solver,
                                                double time_limit);
 
   SleqpTimer* sleqp_tr_solver_get_solve_timer(SleqpTRSolver* solver);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* solver,
                                       SleqpAugJacobian* jacobian,
                                       SleqpSparseVec* multipliers,
@@ -35,8 +38,10 @@ extern "C" {
                                       SleqpSparseVec* newton_step,
                                       double trust_radius);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_capture(SleqpTRSolver* solver);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_release(SleqpTRSolver** star);
 
 #ifdef __cplusplus

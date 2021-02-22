@@ -12,11 +12,13 @@
 extern "C" {
 #endif
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
                                                   int num_variables,
                                                   int num_constraints,
                                                   SleqpParams* params);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
                                                    int num_variables,
                                                    int num_constraints,

@@ -23,6 +23,7 @@ extern "C" {
    * @param[in] merit_data  A merit-function
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
                                         SleqpProblem* problem,
                                         SleqpParams* params,
@@ -39,6 +40,7 @@ extern "C" {
    * @note The trust radius is supposed to be the EQP trust radius, note the LP trust radius
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_linesearch_set_iterate(SleqpLineSearchData* linesearch,
                                              SleqpIterate* iterate,
                                              double penalty_parameter,
@@ -56,6 +58,7 @@ extern "C" {
    * @param[out]     quadratic_merit_value The quadratic trial value for the Cauchy step
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                              SleqpSparseVec* direction,
                                              SleqpSparseVec* multipliers,
@@ -79,6 +82,7 @@ extern "C" {
    * @param[out]     quadratic_merit_value        The quadratic trial value for the trial step
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                             SleqpSparseVec* cauchy_step,
                                             SleqpSparseVec* cauchy_hessian_step,
@@ -92,8 +96,10 @@ extern "C" {
 
   SleqpTimer* sleqp_linesearch_get_timer(SleqpLineSearchData* linesearch);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_linesearch_capture(SleqpLineSearchData* solver);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_linesearch_release(SleqpLineSearchData** star);
 
 #ifdef __cplusplus

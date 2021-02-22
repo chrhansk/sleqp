@@ -18,16 +18,19 @@ extern "C" {
 
   typedef struct SleqpSR1Data SleqpSR1Data;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
                                       SleqpFunc* func,
                                       SleqpParams* params,
                                       SleqpOptions* options);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
                                     SleqpIterate* old_iterate,
                                     SleqpIterate* new_iterate,
                                     SleqpSparseVec* multipliers);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sr1_data_hess_prod(SleqpSR1Data* data,
                                          const SleqpSparseVec* direction,
                                          SleqpSparseVec* product);
@@ -36,9 +39,9 @@ extern "C" {
 
   SleqpFunc* sleqp_sr1_get_func(SleqpSR1Data* data);
 
-  SLEQP_RETCODE sleqp_sr1_data_capture(SleqpSR1Data* data);
+  SLEQP_NODISCARD SLEQP_RETCODE sleqp_sr1_data_capture(SleqpSR1Data* data);
 
-  SLEQP_RETCODE sleqp_sr1_data_release(SleqpSR1Data** star);
+  SLEQP_NODISCARD SLEQP_RETCODE sleqp_sr1_data_release(SleqpSR1Data** star);
 
 #ifdef __cplusplus
 }

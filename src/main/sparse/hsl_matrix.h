@@ -22,9 +22,11 @@ extern "C" {
 
   } HSLMatrix;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE hsl_matrix_set(HSLMatrix* hsl_matrix,
                                SleqpSparseMatrix* matrix);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE hsl_matrix_clear(HSLMatrix* hsl_matrix);
 
 #ifdef __cplusplus

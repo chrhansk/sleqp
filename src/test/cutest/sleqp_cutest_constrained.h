@@ -7,11 +7,13 @@
 extern "C" {
 #endif
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
                                               int num_variables,
                                               int num_constraints,
                                               SleqpParams* params);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_cutest_cons_func_free(SleqpFunc** star);
 
 #ifdef __cplusplus

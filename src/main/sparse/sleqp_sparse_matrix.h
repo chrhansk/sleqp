@@ -33,10 +33,11 @@ extern "C" {
    * @param[in] num_cols   The desired number of columns
    * @param[in] nnz_max    The desired number of nonzeros
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** matrix,
-                                                        int num_rows,
-                                                        int num_cols,
-                                                        int nnz_max);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** matrix,
+                                           int num_rows,
+                                           int num_cols,
+                                           int nnz_max);
 
   /**
    * Reserves a number of nonzeros for the given matrix
@@ -44,8 +45,9 @@ extern "C" {
    * @param[in] matrix   The matrix
    * @param[in] nnz      The desired number of nonzeros
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
-                                                         int nnz);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
+                                            int nnz);
 
   /**
    * Resizes the given matrix
@@ -56,9 +58,10 @@ extern "C" {
    * @param[in] num_rows   The desired number of rows
    * @param[in] num_cols   The desired number of columns
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
-                                                        int num_rows,
-                                                        int num_cols);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
+                                           int num_rows,
+                                           int num_cols);
 
   /**
    * Returns the number of columns of the given matrix
@@ -83,8 +86,9 @@ extern "C" {
   /**
    * Sets the number of nonzeros of the given matrix
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_set_nnz(SleqpSparseMatrix* matrix,
-                                                         int nnz);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_set_nnz(SleqpSparseMatrix* matrix,
+                                            int nnz);
 
   /**
    * Returns whether the given matrix is rectangular
@@ -109,16 +113,19 @@ extern "C" {
   /**
    * Pushes a new entry to the matrix. Fails if the matrix is at capacity
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
-                                                      int row,
-                                                      int col,
-                                                      double value);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
+                                         int row,
+                                         int col,
+                                         double value);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,
-                                                             int col);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,
+                                                int col);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix,
-                                                            int col);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix,
+                                               int col);
 
   /**
    * Computes the product of the given matrix with the given vector
@@ -126,9 +133,10 @@ extern "C" {
    * @param[in]  vector     The input vector (dimension equal to the number of rows of the matrix)
    * @param[out] result     The result array (size equal to the number of columns of the matrix)
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
-                                                                const SleqpSparseVec* vector,
-                                                                double* result);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
+                                                   const SleqpSparseVec* vector,
+                                                   double* result);
 
   /**
    * Computes the product of the transposed matrix with the given vector
@@ -138,10 +146,11 @@ extern "C" {
    * @param[in]  eps        The given tolerance
    * @param[out] result     The result vector (dimension equal to the number of rows of the matrix)
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* matrix,
-                                                                      const SleqpSparseVec* vector,
-                                                                      double eps,
-                                                                      SleqpSparseVec* result);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* matrix,
+                                                         const SleqpSparseVec* vector,
+                                                         double eps,
+                                                         SleqpSparseVec* result);
 
   /**
    * Returns a pointer to the entry to the given element of the matrix
@@ -156,6 +165,7 @@ extern "C" {
                                               int row,
                                               int col);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
                                               SleqpSparseMatrix* target);
 
@@ -178,7 +188,8 @@ extern "C" {
    *
    * @param[in] matrix     The matrix
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix);
 
   /**
    * Prints the matrix to the given file
@@ -186,8 +197,9 @@ extern "C" {
    * @param[in] matrix     The matrix
    * @param[in] output     The output file
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix,
-                                                         FILE* output);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix,
+                                            FILE* output);
 
   /**
    * Dumps the matrix to the given file using the MatrixMarket format
@@ -195,8 +207,9 @@ extern "C" {
    * @param[in] matrix     The matrix
    * @param[in] output     The output file
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix,
-                                                      FILE* output);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix,
+                                         FILE* output);
 
   /**
    * Copies the given matrix
@@ -204,8 +217,9 @@ extern "C" {
    * @param[in]     source     The source matrix
    * @param[in,out] target     The target matrix
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
-                                                      SleqpSparseMatrix* target);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
+                                         SleqpSparseMatrix* target);
 
   /**
    * Returns whether the given matrix is valid, i.e. whether the
@@ -218,13 +232,15 @@ extern "C" {
   /**
    * Increases the reference count of the given matrix
    */
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix);
 
   /**
    * Decreases the reference count of the given matrix, freeing it
    * if the reference count reaches count
    */
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_sparse_matrix_release(SleqpSparseMatrix** star);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_release(SleqpSparseMatrix** star);
 
 #ifdef __cplusplus
 }

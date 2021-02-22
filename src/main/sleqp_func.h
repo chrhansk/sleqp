@@ -39,11 +39,11 @@ extern "C" {
    * @param[in]  num_constraints  The number of constraints
    * @param[in]  func_data        The function data
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
-                                               SleqpFuncCallbacks* callbacks,
-                                               int num_variables,
-                                               int num_constraints,
-                                               void* func_data);
+  SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
+                                                               SleqpFuncCallbacks* callbacks,
+                                                               int num_variables,
+                                                               int num_constraints,
+                                                               void* func_data);
 
   /**
    * Sets the current input vector of a function
@@ -55,12 +55,12 @@ extern "C" {
    * @param[out] cons_val_nnz    The number of nonzeros of the constraint function \f$ c(x) \f$
    * @param[out] cons_jac_nnz    The number of nonzeros of the constraint Jacobian \f$ J_c(x) \f$
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
-                                                  SleqpSparseVec* x,
-                                                  SLEQP_VALUE_REASON reason,
-                                                  int* func_grad_nnz,
-                                                  int* cons_val_nnz,
-                                                  int* cons_jac_nnz);
+  SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
+                                                                  SleqpSparseVec* x,
+                                                                  SLEQP_VALUE_REASON reason,
+                                                                  int* func_grad_nnz,
+                                                                  int* cons_val_nnz,
+                                                                  int* cons_jac_nnz);
 
   /**
    * Evaluates the function and its gradient at the current input vector
@@ -73,32 +73,32 @@ extern "C" {
    * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
    * @param[in,out] func_data       The function data
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
-                                             const SleqpSparseVec* cons_indices,
-                                             double* func_val,
-                                             SleqpSparseVec* func_grad,
-                                             SleqpSparseVec* cons_val,
-                                             SleqpSparseMatrix* cons_jac);
+  SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
+                                                             const SleqpSparseVec* cons_indices,
+                                                             double* func_val,
+                                                             SleqpSparseVec* func_grad,
+                                                             SleqpSparseVec* cons_val,
+                                                             SleqpSparseMatrix* cons_jac);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_val(SleqpFunc* func,
-                                             double* func_val);
+  SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_val(SleqpFunc* func,
+                                                            double* func_val);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_grad(SleqpFunc* func,
-                                             SleqpSparseVec* func_grad);
+  SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_grad(SleqpFunc* func,
+                                                             SleqpSparseVec* func_grad);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_cons_val(SleqpFunc* func,
-                                                 const SleqpSparseVec* cons_indices,
-                                                 SleqpSparseVec* cons_val);
+  SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_cons_val(SleqpFunc* func,
+                                                                 const SleqpSparseVec* cons_indices,
+                                                                 SleqpSparseVec* cons_val);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_cons_jac(SleqpFunc* func,
-                                                 const SleqpSparseVec* cons_indices,
-                                                 SleqpSparseMatrix* cons_jac);
+  SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_cons_jac(SleqpFunc* func,
+                                                                 const SleqpSparseVec* cons_indices,
+                                                                 SleqpSparseMatrix* cons_jac);
 
   /**
    * Sets the callbacks of this function to the specified ones
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
-                                                      SleqpFuncCallbacks* callbacks);
+  SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
+                                                                      SleqpFuncCallbacks* callbacks);
 
   /**
    * Returns the Hessian structure of this function
@@ -170,7 +170,8 @@ extern "C" {
    * @param[in]     func            The function
    *
    **/
-  SLEQP_EXPORT SleqpTimer* sleqp_func_get_hess_timer(SleqpFunc* func);
+  SLEQP_EXPORT
+  SleqpTimer* sleqp_func_get_hess_timer(SleqpFunc* func);
 
   /**
    * Evaluates the product of the Hessian of the Lagrangian of the given function.
@@ -182,11 +183,12 @@ extern "C" {
    * @param[out]    product           The resulting product
    *
    */
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
-                                                  const double* func_dual,
-                                                  const SleqpSparseVec* direction,
-                                                  const SleqpSparseVec* cons_duals,
-                                                  SleqpSparseVec* product);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
+                                     const double* func_dual,
+                                     const SleqpSparseVec* direction,
+                                     const SleqpSparseVec* cons_duals,
+                                     SleqpSparseVec* product);
 
   /**
    * Evaluates the bilinear product of the Hessian of the Lagrangian of the given function.
@@ -198,20 +200,23 @@ extern "C" {
    * @param[out]    bilinear_prod     The resulting bilinear product
    *
    */
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
-                                                      const double* func_dual,
-                                                      const SleqpSparseVec* direction,
-                                                      const SleqpSparseVec* cons_duals,
-                                                      double* bilinear_prod);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_func_hess_bilinear(SleqpFunc* func,
+                                         const double* func_dual,
+                                         const SleqpSparseVec* direction,
+                                         const SleqpSparseVec* cons_duals,
+                                         double* bilinear_prod);
 
   /**
    * Returns the function data associated with the given function.
    **/
   SLEQP_EXPORT void* sleqp_func_get_data(SleqpFunc* func);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_capture(SleqpFunc* func);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_func_capture(SleqpFunc* func);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar);
 
   /**
    * @}

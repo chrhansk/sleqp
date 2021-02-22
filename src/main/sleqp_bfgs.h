@@ -32,6 +32,7 @@ extern "C" {
 
   typedef struct SleqpBFGSData SleqpBFGSData;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
                                        SleqpFunc* func,
                                        SleqpParams* params,
@@ -51,6 +52,7 @@ extern "C" {
    * @param multipliers  The multipliers used to compute \f$ y_k \f$
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                      SleqpIterate* old_iterate,
                                      SleqpIterate* new_iterate,
@@ -64,6 +66,7 @@ extern "C" {
    * @param[out] product      The product
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_bfgs_data_hess_prod(const SleqpBFGSData* data,
                                           const SleqpSparseVec* direction,
                                           SleqpSparseVec* product);
@@ -72,8 +75,10 @@ extern "C" {
 
   SleqpTimer* sleqp_bfgs_update_timer(SleqpBFGSData* data);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_bfgs_data_capture(SleqpBFGSData* data);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_bfgs_data_release(SleqpBFGSData** star);
 
 #ifdef __cplusplus

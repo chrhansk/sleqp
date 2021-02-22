@@ -28,6 +28,7 @@ extern "C" {
 
   typedef struct SleqpDualEstimationData SleqpDualEstimationData;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
                                                   SleqpProblem* problem);
 
@@ -41,11 +42,13 @@ extern "C" {
    * @param[in]     aug_jacobian     The augmented Jacobian
    *
    **/
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_data,
                                               SleqpIterate* iterate,
                                               SleqpSparseVec* residuum,
                                               SleqpAugJacobian* aug_jacobian);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_dual_estimation_data_free(SleqpDualEstimationData** star);
 
 #ifdef __cplusplus

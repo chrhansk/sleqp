@@ -30,12 +30,13 @@ extern "C" {
    * @param[in]  x               The initial solution
    * @param[in]  scaling_data    The scaling to be used (may be `NULL`)
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
-                                                 SleqpProblem* problem,
-                                                 SleqpParams* params,
-                                                 SleqpOptions* options,
-                                                 SleqpSparseVec* x,
-                                                 SleqpScalingData* scaling_data);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
+                                    SleqpProblem* problem,
+                                    SleqpParams* params,
+                                    SleqpOptions* options,
+                                    SleqpSparseVec* x,
+                                    SleqpScalingData* scaling_data);
 
   /**
    * Solves the problem by performing iteration starting from the current solution
@@ -44,9 +45,10 @@ extern "C" {
    * @param[in]  num_iterations   The number of iterations to be performed, or @ref SLEQP_NONE
    * @param[in]  time_limit       A time limit in seconds, or @ref SLEQP_NONE
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
-                                                int max_num_iterations,
-                                                double time_limit);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
+                                   int max_num_iterations,
+                                   double time_limit);
 
   /**
    * Returns the status of the last call to @ref sleqp_solver_solve
@@ -63,13 +65,15 @@ extern "C" {
    * @param[out] iterate          A pointer to the current iterate
    *
    **/
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
-                                                       SleqpIterate** iterate);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
+                                          SleqpIterate** iterate);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
-                                                                   SleqpIterate* iterate,
-                                                                   int* violated_constraints,
-                                                                   int* num_violated_constraints);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
+                                                      SleqpIterate* iterate,
+                                                      int* violated_constraints,
+                                                      int* num_violated_constraints);
 
   /**
    * Returns the number of iterations performed during the last call to @ref sleqp_solver_solve
@@ -87,19 +91,23 @@ extern "C" {
    **/
   SLEQP_EXPORT double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_add_callback(SleqpSolver* solver,
-                                                       SLEQP_SOLVER_EVENT solver_event,
-                                                       void* callback_func,
-                                                       void* callback_data);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_add_callback(SleqpSolver* solver,
+                                          SLEQP_SOLVER_EVENT solver_event,
+                                          void* callback_func,
+                                          void* callback_data);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_remove_callback(SleqpSolver* solver,
-                                                          SLEQP_SOLVER_EVENT solver_event,
-                                                          void* callback_func,
-                                                          void* callback_data);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_remove_callback(SleqpSolver* solver,
+                                             SLEQP_SOLVER_EVENT solver_event,
+                                             void* callback_func,
+                                             void* callback_data);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_capture(SleqpSolver* solver);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_capture(SleqpSolver* solver);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_release(SleqpSolver** star);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_release(SleqpSolver** star);
 
 #ifdef __cplusplus
 }

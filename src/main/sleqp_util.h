@@ -18,10 +18,12 @@
 extern "C" {
 #endif
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                        SleqpIterate* iterate,
                                        SLEQP_VALUE_REASON reason);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
                                                SleqpIterate* iterate,
                                                SleqpSparseVec* direction,
@@ -29,6 +31,7 @@ extern "C" {
                                                double eps,
                                                bool* in_working_set);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
                                       SleqpSparseVec* direction,
                                       SleqpSparseVec* var_lb,

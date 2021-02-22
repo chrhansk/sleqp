@@ -19,31 +19,38 @@ extern "C" {
 
   typedef struct SleqpNewtonData SleqpNewtonData;
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
                                          SleqpProblem* problem,
                                          SleqpParams* params,
                                          SleqpOptions* options);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
                                             double time_limit);
 
   SleqpTimer* sleqp_newton_get_timer(SleqpNewtonData* data);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
                                          SleqpIterate* iterate,
                                          SleqpAugJacobian* jacobian,
                                          double trust_radius,
                                          double penalty_parameter);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_compute_multipliers(SleqpNewtonData* data,
                                                  SleqpSparseVec* multipliers);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                           SleqpSparseVec* multipliers,
                                           SleqpSparseVec* newton_step);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_data_capture(SleqpNewtonData* data);
 
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_data_release(SleqpNewtonData** star);
 
 #ifdef __cplusplus
