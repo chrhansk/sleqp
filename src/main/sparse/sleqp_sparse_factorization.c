@@ -81,7 +81,7 @@ static SLEQP_RETCODE sparse_factorization_free(SleqpSparseFactorization** star)
 {
   SleqpSparseFactorization* sparse_factorization = *star;
 
-  sparse_factorization->callbacks.free(&(sparse_factorization->factorization_data));
+  SLEQP_CALL(sparse_factorization->callbacks.free(&(sparse_factorization->factorization_data)));
 
   sleqp_free(star);
 
