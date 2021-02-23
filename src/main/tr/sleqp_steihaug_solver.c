@@ -81,6 +81,8 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
 
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
 
+  const double rel_tol_sq = rel_tol*rel_tol;
+
   double dBd;
   double alpha;
   double beta;
@@ -114,7 +116,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   // if ||d0|| < eps_k: return p_k = P[z_0] = 0
   d_nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
 
-  if (d_nrm_sq < rel_tol*rel_tol)
+  if(d_nrm_sq < rel_tol_sq)
   {
     SLEQP_CALL(sleqp_sparse_vector_copy(solver->z, newton_step));
     SLEQP_CALL(sleqp_timer_stop(solver->timer));
@@ -140,8 +142,11 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
     }
 
     // if |r_{j+1}^T * g_{j+1}| < eps_k:
-    if(fabs(r_dot_g) < rel_tol)
+    if(fabs(r_dot_g) < rel_tol_sq)
     {
+      sleqp_log_debug("CG solver found interior solution after %d iterations",
+                      iteration);
+
       // return p_k = z_{j+1}
       SLEQP_CALL(sleqp_sparse_vector_copy(solver->z, newton_step));
       break;
@@ -183,6 +188,9 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                                 tau,
                                                 eps,
                                                 newton_step));
+
+      sleqp_log_debug("CG solver found negative curvature direction after %d iterations",
+                      iteration);
 
       break;
     }
@@ -233,6 +241,9 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
       sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(newton_step),
                                    trust_radius,
                                    eps));
+
+      sleqp_log_debug("CG solver found boundary solution after %d iterations",
+                      iteration);
 
       break;
     }

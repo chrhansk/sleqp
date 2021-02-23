@@ -204,6 +204,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
   int iteration = 0;
 
+  sleqp_log_debug("Beginning Cauchy line search, exact merit value: %f",
+                  exact_merit_value);
+
   for(iteration = 0; iteration < LINESEARCH_MAX_IT; ++iteration)
   {
     double linear_merit_value = 0.;
@@ -232,9 +235,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
       (*quadratic_merit_value) = linear_merit_value + (0.5 * hessian_product);
     }
 
-    sleqp_log_debug("Cauchy line search iteration %d, exact merit value: %f, linear merit value: %f, quadratic merit value: %f",
+    sleqp_log_debug("Cauchy line search iteration %d, step length: %f, linear merit value: %f, quadratic merit value: %f",
                     iteration,
-                    exact_merit_value,
+                    delta,
                     linear_merit_value,
                     *quadratic_merit_value);
 
