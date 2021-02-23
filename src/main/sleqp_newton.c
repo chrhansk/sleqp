@@ -115,17 +115,38 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
                                SLEQP_MAX(problem->num_variables, problem->num_constraints)));
 
-  SLEQP_CALL(sleqp_trlib_solver_create(&data->trust_region_solver,
-                                       problem,
-                                       params,
-                                       options));
+  SLEQP_TR_SOLVER tr_solver = sleqp_options_get_tr_solver(options);
 
-  /*
-  SLEQP_CALL(sleqp_steihaug_solver_create(&data->trust_region_solver,
-                                          problem,
-                                          params,
-                                          options));
-  */
+  if(tr_solver == SLEQP_TR_SOLVER_AUTO)
+  {
+    SleqpFunc* func = problem->func;
+
+    if(sleqp_func_has_psd_hessian(func))
+    {
+      tr_solver = SLEQP_TR_SOLVER_CG;
+    }
+    else
+    {
+      tr_solver = SLEQP_TR_SOLVER_TRLIB;
+    }
+  }
+
+  if(tr_solver == SLEQP_TR_SOLVER_CG)
+  {
+    SLEQP_CALL(sleqp_steihaug_solver_create(&data->trust_region_solver,
+                                            problem,
+                                            params,
+                                            options));
+  }
+  else
+  {
+    assert(tr_solver == SLEQP_TR_SOLVER_TRLIB);
+
+    SLEQP_CALL(sleqp_trlib_solver_create(&data->trust_region_solver,
+                                         problem,
+                                         params,
+                                         options));
+  }
 
   SLEQP_CALL(sleqp_timer_create(&(data->timer)));
 

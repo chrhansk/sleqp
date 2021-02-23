@@ -108,6 +108,12 @@ extern "C" {
    **/
   SLEQP_EXPORT SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func);
 
+  SLEQP_EXPORT bool sleqp_func_has_psd_hessian(SleqpFunc* func);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_func_set_psd_hessian(SleqpFunc* func,
+                                           bool value);
+
   /**
    * Returns the number of variables \f$ n \f$.
    **/

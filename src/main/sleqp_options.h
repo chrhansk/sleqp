@@ -50,6 +50,9 @@ extern "C" {
   SLEQP_EXPORT
   SLEQP_BFGS_SIZING sleqp_options_get_bfgs_sizing(const SleqpOptions* options);
 
+  SLEQP_EXPORT
+  SLEQP_TR_SOLVER sleqp_options_get_tr_solver(const SleqpOptions* options);
+
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options, bool value);
 
@@ -86,6 +89,9 @@ extern "C" {
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_options_set_bfgs_sizing(SleqpOptions* options, SLEQP_BFGS_SIZING sizing);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_options_set_tr_solver(SleqpOptions* options, SLEQP_TR_SOLVER solver);
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_options_capture(SleqpOptions* options);

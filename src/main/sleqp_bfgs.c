@@ -216,6 +216,7 @@ static SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(func),
                                        sleqp_func_get_hess_struct(bfgs_func)));
 
+  SLEQP_CALL(sleqp_func_set_psd_hessian(func, true));
 
   return SLEQP_OKAY;
 }

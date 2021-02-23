@@ -17,6 +17,7 @@
 #define FLOAT_WARN_FLAGS_DEFAULT           FE_ALL_EXCEPT
 #define FLOAT_ERR_FLAGS_DEFAULT            (FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID)
 #define BFGS_SIZING_DEFAULT                SLEQP_BFGS_SIZING_CENTERED_OL
+#define TR_SOLVER_DEFAULT                  SLEQP_TR_SOLVER_AUTO
 
 #define CHECK_FLOAT_ENV                                                                             \
   do                                                                                                \
@@ -45,6 +46,7 @@ struct SleqpOptions
   int float_err_flags;
 
   SLEQP_BFGS_SIZING bfgs_sizing;
+  SLEQP_TR_SOLVER tr_solver;
 };
 
 SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
@@ -71,6 +73,7 @@ SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
     .float_err_flags = FLOAT_ERR_FLAGS_DEFAULT,
 
     .bfgs_sizing = BFGS_SIZING_DEFAULT,
+    .tr_solver = TR_SOLVER_DEFAULT
   };
 
   return SLEQP_OKAY;
@@ -131,6 +134,11 @@ int sleqp_options_get_float_error_flags(const SleqpOptions* options)
 SLEQP_BFGS_SIZING sleqp_options_get_bfgs_sizing(const SleqpOptions* options)
 {
   return options->bfgs_sizing;
+}
+
+SLEQP_TR_SOLVER sleqp_options_get_tr_solver(const SleqpOptions* options)
+{
+  return options->tr_solver;
 }
 
 SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options,
@@ -226,6 +234,14 @@ SLEQP_RETCODE sleqp_options_set_float_error_flags(SleqpOptions* options, int fla
 SLEQP_RETCODE sleqp_options_set_bfgs_sizing(SleqpOptions* options, SLEQP_BFGS_SIZING sizing)
 {
   options->bfgs_sizing = sizing;
+
+  return SLEQP_OKAY;
+}
+
+
+SLEQP_RETCODE sleqp_options_set_tr_solver(SleqpOptions* options, SLEQP_TR_SOLVER solver)
+{
+  options->tr_solver = solver;
 
   return SLEQP_OKAY;
 }

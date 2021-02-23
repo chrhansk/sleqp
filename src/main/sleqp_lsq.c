@@ -368,6 +368,10 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                num_constraints,
                                data));
 
+  SleqpFunc* func = *fstar;
+
+  SLEQP_CALL(sleqp_func_set_psd_hessian(func, true));
+
   return SLEQP_OKAY;
 }
 

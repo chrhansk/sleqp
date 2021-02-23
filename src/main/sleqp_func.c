@@ -8,6 +8,8 @@ struct SleqpFunc
 
   SleqpFuncCallbacks callbacks;
 
+  bool hessian_psd;
+
   int num_variables;
   int num_constraints;
 
@@ -41,6 +43,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   func->refcount = 1;
 
   func->callbacks = *callbacks;
+  func->hessian_psd = false;
 
   func->num_variables = num_variables;
   func->num_constraints = num_constraints;
@@ -221,6 +224,19 @@ SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
 SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
 {
   return func->hess_struct;
+}
+
+bool sleqp_func_has_psd_hessian(SleqpFunc* func)
+{
+  return func->hessian_psd;
+}
+
+SLEQP_RETCODE sleqp_func_set_psd_hessian(SleqpFunc* func,
+                                         bool value)
+{
+  func->hessian_psd = value;
+
+  return SLEQP_OKAY;
 }
 
 int sleqp_func_get_num_variables(SleqpFunc* func)
