@@ -15,7 +15,6 @@
 
 typedef struct SleqpSteihaugSolver SleqpSteihaugSolver;
 
-
 struct SleqpSteihaugSolver
 {
   int refcount;
@@ -87,9 +86,6 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   double alpha;
   double beta;
   double d_nrm_sq;
-  double tau;
-  double tau1;
-  double tau2;
   double gd;
   double zBd;
 
@@ -167,19 +163,29 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
       // subject to  ||p_k|| = Delta
 
       // solving for tau results in tau = - z^T * d / ||d||^2 \pm Delta / ||d||
-      SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->d, &tau));
+      double z_dot_d;
+      SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->d, &z_dot_d));
+
       const double d_nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
-      tau1 = - tau / d_nrm_sq + trust_radius / sqrt (d_nrm_sq);        /// @todo verify again
-      tau2 = - tau / d_nrm_sq - trust_radius / sqrt (d_nrm_sq);
+      const double z_nrm_sq = z_curr_nrm_sq;
+
+      assert(d_nrm_sq > 0.);
+
+      const double inner = z_dot_d*z_dot_d - d_nrm_sq*(z_nrm_sq - trust_radius*trust_radius);
+
+      const double tau_min = 1./d_nrm_sq * (-z_dot_d - sqrt(inner));
+      const double tau_max = 1./d_nrm_sq * (-z_dot_d + sqrt(inner));
 
       // compute dot products g^T * d and z^T * (B * d)
       SLEQP_CALL(sleqp_sparse_vector_dot(gradient, solver->d, &gd));
       SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->Bd, &zBd));
 
+      const double tau_min_obj = tau_min*((gd + zBd) + 0.5 * tau_min * dBd);
+      const double tau_max_obj = tau_max*((gd + zBd) + 0.5 * tau_max * dBd);
+
       // pick the boundary intersection with smaller quadratic model value
       // q(p) = tau * (g^T * d + z^T * B * d) + 0.5 * tau^2 * d^T * B * d + const.
-      tau = (tau1*((gd + zBd) + 0.5*tau1*dBd) < tau2*((gd + zBd) + 0.5*tau2*dBd) )
-        ? tau1 : tau2;
+      const double tau = (tau_min_obj < tau_max_obj) ? tau_min : tau_max;
 
       // return p_k
       SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->z,
@@ -188,6 +194,10 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                                 tau,
                                                 eps,
                                                 newton_step));
+
+      sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(newton_step),
+                                   trust_radius,
+                                   eps));
 
       sleqp_log_debug("CG solver found negative curvature direction after %d iterations",
                       iteration);
