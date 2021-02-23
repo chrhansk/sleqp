@@ -3,6 +3,9 @@ set(COMMON_SRC
   sparse/sleqp_sparse_factorization_umfpack.c
   sparse/sleqp_sparse_matrix.c
   sparse/sleqp_sparse_vec.c
+  tr/sleqp_tr_solver.c
+  tr/sleqp_trlib_solver.c
+  tr/sleqp_steihaug_solver.c
   sleqp_assert.c
   sleqp_aug_jacobian.c
   sleqp_bfgs.c
@@ -29,7 +32,6 @@ set(COMMON_SRC
   sleqp_soc.c
   sleqp_solver.c
   sleqp_timer.c
-  sleqp_tr_solver.c
   sleqp_types.c
   sleqp_util.c
   sleqp_working_set.c

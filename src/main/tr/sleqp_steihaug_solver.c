@@ -32,49 +32,14 @@ struct SleqpSteihaugSolver
   SleqpSparseVec* z;            // CG iterate
 
   SleqpSparseVec* sparse_cache; // a temporary t for computing t <- a*x + b*y; x <- t
+
   SleqpTimer* timer;
 };
 
 
-SLEQP_RETCODE
-sleqp_steihaug_solver_create(SleqpSteihaugSolver** star,
-                             SleqpProblem* problem,
-                             SleqpParams* params,
-                             SleqpOptions* options)
+static SLEQP_RETCODE steihaug_solver_free(void **star)
 {
-  SLEQP_CALL(sleqp_malloc(star));
-
-  SleqpSteihaugSolver *solver = *star;
-
-  *solver = (SleqpSteihaugSolver) {0};
-
-  solver->refcount = 1;
-
-  solver->problem = problem;
-
-  SLEQP_CALL(sleqp_params_capture(params));
-  solver->params = params;
-
-  solver->max_iter = sleqp_options_get_max_newton_iterations (options);
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->Bd, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->g, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->r, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->z, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache, problem->num_variables));
-
-  solver->time_limit = SLEQP_NONE;
-
-  SLEQP_CALL (sleqp_timer_create(&solver->timer));
-
-  return SLEQP_OKAY;
-}
-
-
-static SLEQP_RETCODE steihaug_solver_free (SleqpSteihaugSolver **star)
-{
-  SleqpSteihaugSolver* solver = *star;
+  SleqpSteihaugSolver* solver = (SleqpSteihaugSolver*) (*star);
 
   if (!solver)
   {
@@ -97,58 +62,16 @@ static SLEQP_RETCODE steihaug_solver_free (SleqpSteihaugSolver **star)
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_steihaug_solver_set_time_limit(SleqpSteihaugSolver* solver,
-                                                   double time_limit)
-
+SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
+                                    SleqpSparseVec* multipliers,
+                                    SleqpSparseVec* gradient,
+                                    SleqpSparseVec* newton_step,
+                                    double trust_radius,
+                                    double time_limit,
+                                    void* solver_data)
 {
-  solver->time_limit = time_limit;
+  SleqpSteihaugSolver* solver = (SleqpSteihaugSolver*) solver_data;
 
-  return SLEQP_OKAY;
-}
-
-
-SleqpTimer* sleqp_steihaug_solver_get_solve_timer(SleqpSteihaugSolver* solver)
-{
-  return solver->timer;
-}
-
-
-SLEQP_RETCODE sleqp_steihaug_solver_capture(SleqpSteihaugSolver* solver)
-{
-  ++(solver->refcount);
-
-  return SLEQP_OKAY;
-}
-
-
-SLEQP_RETCODE sleqp_steihaug_solver_release(SleqpSteihaugSolver** star)
-{
-  SleqpSteihaugSolver* data = *star;
-
-  if(!data)
-  {
-    return SLEQP_OKAY;
-  }
-
-  if(--(data->refcount) == 0)
-  {
-    SLEQP_CALL(steihaug_solver_free(star));
-  }
-
-  *star = NULL;
-
-  return SLEQP_OKAY;
-}
-
-
-SLEQP_RETCODE sleqp_steihaug_solver_solve(SleqpSteihaugSolver* solver,
-                                          SleqpAugJacobian* jacobian,
-                                          SleqpSparseVec* multipliers,
-                                          SleqpSparseVec* gradient,
-                                          SleqpSparseVec* newton_step,
-                                          double trust_radius)
-{
   const double one = 1.;
   const double rel_tol = sleqp_params_get (solver->params, SLEQP_PARAM_NEWTON_RELATIVE_TOL);
 
@@ -205,6 +128,11 @@ SLEQP_RETCODE sleqp_steihaug_solver_solve(SleqpSteihaugSolver* solver,
   for(int iteration = 0;; ++iteration)
   {
     if(solver->max_iter != SLEQP_NONE && iteration >= solver->max_iter)
+    {
+      break;
+    }
+
+    if(time_limit != SLEQP_NONE && sleqp_timer_elapsed(solver->timer) >= time_limit)
     {
       break;
     }
@@ -291,6 +219,10 @@ SLEQP_RETCODE sleqp_steihaug_solver_solve(SleqpSteihaugSolver* solver,
                                                 tau-alpha,
                                                 eps,
                                                 newton_step));
+
+      sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(newton_step),
+                                   trust_radius,
+                                   eps));
       break;
     }
 
@@ -323,10 +255,59 @@ SLEQP_RETCODE sleqp_steihaug_solver_solve(SleqpSteihaugSolver* solver,
                                               -1.,
                                               beta,
                                               eps,
-                                              solver->d));
+                                              solver->sparse_cache));
+
+    SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache,
+                                        solver->d));
   }
   // end loop
 
+  sleqp_num_assert(sleqp_is_leq(sleqp_sparse_vector_norm(newton_step),
+                                trust_radius,
+                                eps));
+
   SLEQP_CALL(sleqp_timer_stop(solver->timer));
+
+  return SLEQP_OKAY;
+}
+
+
+SLEQP_RETCODE
+sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
+                             SleqpProblem* problem,
+                             SleqpParams* params,
+                             SleqpOptions* options)
+{
+  SleqpSteihaugSolver *solver = NULL;
+
+  SLEQP_CALL(sleqp_malloc(&solver));
+
+  *solver = (SleqpSteihaugSolver) {0};
+
+  solver->refcount = 1;
+
+  solver->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
+  solver->params = params;
+
+  solver->max_iter = sleqp_options_get_max_newton_iterations(options);
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->Bd, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->g, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->r, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->z, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache, problem->num_variables));
+
+  SLEQP_CALL(sleqp_timer_create(&solver->timer));
+
+  SleqpTRCallbacks callbacks = {
+    .solve = steihaug_solver_solve,
+    .free = steihaug_solver_free
+  };
+
+  SLEQP_CALL(sleqp_tr_solver_create(solver_star, problem, params, &callbacks, (void*) solver));
+
   return SLEQP_OKAY;
 }

@@ -11,7 +11,10 @@
 #include "sleqp_mem.h"
 #include "sleqp_timer.h"
 #include "sleqp_util.h"
-#include "sleqp_tr_solver.h"
+
+#include "tr/sleqp_tr_solver.h"
+#include "tr/sleqp_trlib_solver.h"
+#include "tr/sleqp_steihaug_solver.h"
 
 struct SleqpNewtonData
 {
@@ -112,10 +115,17 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
                                SLEQP_MAX(problem->num_variables, problem->num_constraints)));
 
-  SLEQP_CALL(sleqp_tr_solver_create(&data->trust_region_solver,
-                                    problem,
-                                    params,
-                                    options));
+  SLEQP_CALL(sleqp_trlib_solver_create(&data->trust_region_solver,
+                                       problem,
+                                       params,
+                                       options));
+
+  /*
+  SLEQP_CALL(sleqp_steihaug_solver_create(&data->trust_region_solver,
+                                          problem,
+                                          params,
+                                          options));
+  */
 
   SLEQP_CALL(sleqp_timer_create(&(data->timer)));
 

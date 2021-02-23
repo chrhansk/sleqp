@@ -12,6 +12,8 @@
 #include "sleqp_problem.h"
 #include "sleqp_iterate.h"
 
+#include "sleqp_tr_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -22,7 +24,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
                                        SleqpProblem* problem,
                                        SleqpParams* params,
-                                       SleqpOptions* options);
+                                       SleqpTRCallbacks* callbacks,
+                                       void* solver_data);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_set_time_limit(SleqpTRSolver* solver,

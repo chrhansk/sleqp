@@ -9,10 +9,8 @@
 
 static const bool collect_rayleigh = false;
 
-struct SleqpTRSolver
+typedef struct
 {
-  int refcount;
-
   SleqpProblem* problem;
   SleqpParams* params;
 
@@ -43,94 +41,12 @@ struct SleqpTRSolver
   SleqpSparseVec* sparse_cache;
 
   SleqpTimer* timer;
-  double time_limit;
-};
+} SolverData;
 
 
-SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
-                                     SleqpProblem* problem,
-                                     SleqpParams* params,
-                                     SleqpOptions* options)
+static SLEQP_RETCODE trlib_free(void** star)
 {
-  SLEQP_CALL(sleqp_malloc(star));
-
-  SleqpTRSolver* data = *star;
-
-  *data = (SleqpTRSolver) {0};
-
-  data->refcount = 1;
-
-  data->problem = problem;
-
-  SLEQP_CALL(sleqp_params_capture(params));
-  data->params = params;
-
-  const int max_newton_iter = sleqp_options_get_max_newton_iterations(options);
-
-  data->trlib_maxiter = problem->num_variables;
-
-  if(max_newton_iter != SLEQP_NONE)
-  {
-    data->trlib_maxiter = SLEQP_MIN(data->trlib_maxiter, max_newton_iter);
-  }
-
-  trlib_int_t iwork_size, fwork_size;
-
-  trlib_krylov_memory_size(data->trlib_maxiter,
-                           &iwork_size,
-                           &fwork_size,
-                           &data->trlib_h_pointer);
-
-  SLEQP_CALL(sleqp_alloc_array(&data->trlib_iwork, iwork_size));
-  SLEQP_CALL(sleqp_alloc_array(&data->trlib_fwork, fwork_size));
-  SLEQP_CALL(sleqp_alloc_array(&data->trlib_timinig, trlib_krylov_timing_size()));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->s,
-                                              problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->g,
-                                              problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->gm,
-                                              problem->num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h,
-                                              problem->num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->v,
-                                              problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->p,
-                                              problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->Hp,
-                                              problem->num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->l,
-                                              problem->num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_lhs,
-                                              problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_rhs,
-                                              problem->num_variables));
-
-  SLEQP_CALL(sleqp_sparse_matrix_create(&data->Q,
-                                        problem->num_variables,
-                                        data->trlib_maxiter + 1,
-                                        0));
-
-  SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
-                               SLEQP_MAX(problem->num_variables, problem->num_constraints)));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
-                                              problem->num_variables));
-
-  data->time_limit = SLEQP_NONE;
-
-  SLEQP_CALL(sleqp_timer_create(&data->timer));
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE tr_solver_free(SleqpTRSolver** star)
-{
-  SleqpTRSolver* data = *star;
+  SolverData* data = (SolverData*) *star;
 
   if(!data)
   {
@@ -168,19 +84,6 @@ static SLEQP_RETCODE tr_solver_free(SleqpTRSolver** star)
   sleqp_free(star);
 
   return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_tr_solver_set_time_limit(SleqpTRSolver* data,
-                                             double time_limit)
-{
-  data->time_limit = time_limit;
-
-  return SLEQP_OKAY;
-}
-
-SleqpTimer* sleqp_tr_solver_get_solve_timer(SleqpTRSolver* data)
-{
-  return data->timer;
 }
 
 static SLEQP_RETCODE matrix_push_column(SleqpSparseMatrix* matrix,
@@ -295,7 +198,7 @@ static SLEQP_RETCODE trlib_get_status_string(int value,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
+static SLEQP_RETCODE check_optimality(SolverData* data,
                                       SleqpAugJacobian* jacobian,
                                       SleqpSparseVec* multipliers,
                                       SleqpSparseVec* gradient,
@@ -369,12 +272,13 @@ static SLEQP_RETCODE check_optimality(SleqpTRSolver* data,
 }
 
 
-static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
-                                   SleqpAugJacobian* jacobian,
-                                   SleqpSparseVec* multipliers,
-                                   SleqpSparseVec* gradient,
-                                   double trust_radius,
-                                   trlib_int_t* trlib_ret)
+static SLEQP_RETCODE trlib_loop(SolverData* data,
+                                SleqpAugJacobian* jacobian,
+                                SleqpSparseVec* multipliers,
+                                SleqpSparseVec* gradient,
+                                double trust_radius,
+                                double time_limit,
+                                trlib_int_t* trlib_ret)
 {
   SleqpProblem* problem = data->problem;
   SleqpFunc* func = problem->func;
@@ -504,6 +408,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
         // We can stop directly, if the projected gradient is zero
         if(sleqp_is_zero(v_norm, zero_eps))
         {
+          SLEQP_CALL(sleqp_timer_stop(data->timer));
           return SLEQP_OKAY;
         }
 
@@ -548,6 +453,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
 
       if(!sleqp_is_pos(scale, zero_eps))
       {
+        SLEQP_CALL(sleqp_timer_stop(data->timer));
         return SLEQP_OKAY;
       }
 
@@ -832,7 +738,7 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
       break;
     }
 
-    if(data->time_limit != SLEQP_NONE && sleqp_timer_elapsed(data->timer) >= data->time_limit)
+    if(time_limit != SLEQP_NONE && sleqp_timer_elapsed(data->timer) >= time_limit)
     {
       break;
     }
@@ -848,26 +754,32 @@ static SLEQP_RETCODE tr_solve_loop(SleqpTRSolver* data,
                    cond_bound);
   }
 
+  SLEQP_CALL(sleqp_timer_stop(data->timer));
+
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
-                                    SleqpAugJacobian* jacobian,
-                                    SleqpSparseVec* multipliers,
-                                    SleqpSparseVec* gradient,
-                                    SleqpSparseVec* newton_step,
-                                    double trust_radius)
+static SLEQP_RETCODE trlib_solve(SleqpAugJacobian* jacobian,
+                                 SleqpSparseVec* multipliers,
+                                 SleqpSparseVec* gradient,
+                                 SleqpSparseVec* newton_step,
+                                 double trust_radius,
+                                 double time_limit,
+                                 void* solver_data)
 {
   trlib_int_t ret = 0;
 
+  SolverData* data = (SolverData*) solver_data;
+
   SLEQP_CALL(sleqp_sparse_vector_clear(newton_step));
 
-  SLEQP_CALL(tr_solve_loop(data,
-                           jacobian,
-                           multipliers,
-                           gradient,
-                           trust_radius,
-                           &ret));
+  SLEQP_CALL(trlib_loop(data,
+                        jacobian,
+                        multipliers,
+                        gradient,
+                        trust_radius,
+                        time_limit,
+                        &ret));
 
   // We may loose some orthogonality in the process, reproject to
   // be sure
@@ -875,8 +787,6 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
                                            data->s,
                                            newton_step,
                                            NULL));
-
-  SLEQP_CALL(sleqp_timer_stop(data->timer));
 
   // check optimality
 
@@ -930,28 +840,86 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_tr_solver_capture(SleqpTRSolver* data)
+SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
+                                        SleqpProblem* problem,
+                                        SleqpParams* params,
+                                        SleqpOptions* options)
 {
-  ++data->refcount;
+  SolverData* data = NULL;
 
-  return SLEQP_OKAY;
-}
+  SLEQP_CALL(sleqp_malloc(&data));
 
-SLEQP_RETCODE sleqp_tr_solver_release(SleqpTRSolver** star)
-{
-  SleqpTRSolver* data = *star;
+  *data = (SolverData) {0};
 
-  if(!data)
+  data->problem = problem;
+
+  SLEQP_CALL(sleqp_params_capture(params));
+  data->params = params;
+
+  const int max_newton_iter = sleqp_options_get_max_newton_iterations(options);
+
+  data->trlib_maxiter = problem->num_variables;
+
+  if(max_newton_iter != SLEQP_NONE)
   {
-    return SLEQP_OKAY;
+    data->trlib_maxiter = SLEQP_MIN(data->trlib_maxiter, max_newton_iter);
   }
 
-  if(--(data->refcount) == 0)
-  {
-    SLEQP_CALL(tr_solver_free(star));
-  }
+  trlib_int_t iwork_size, fwork_size;
 
-  *star = NULL;
+  trlib_krylov_memory_size(data->trlib_maxiter,
+                           &iwork_size,
+                           &fwork_size,
+                           &data->trlib_h_pointer);
+
+  SLEQP_CALL(sleqp_alloc_array(&data->trlib_iwork, iwork_size));
+  SLEQP_CALL(sleqp_alloc_array(&data->trlib_fwork, fwork_size));
+  SLEQP_CALL(sleqp_alloc_array(&data->trlib_timinig, trlib_krylov_timing_size()));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->s,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->g,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->gm,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->v,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->p,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->Hp,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->l,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_lhs,
+                                              problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_rhs,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_matrix_create(&data->Q,
+                                        problem->num_variables,
+                                        data->trlib_maxiter + 1,
+                                        0));
+
+  SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
+                               SLEQP_MAX(problem->num_variables, problem->num_constraints)));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_timer_create(&data->timer));
+
+  SleqpTRCallbacks callbacks = {
+    .solve = trlib_solve,
+    .free = trlib_free
+  };
+
+  SLEQP_CALL(sleqp_tr_solver_create(solver_star, problem, params, &callbacks, (void*) data));
 
   return SLEQP_OKAY;
 }
