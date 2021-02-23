@@ -84,13 +84,15 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   double dBd;
   double alpha;
   double beta;
-  double nrm_sq;
   double d_nrm_sq;
   double tau;
   double tau1;
   double tau2;
   double gd;
   double zBd;
+
+  double z_curr_nrm_sq = 0.;
+  double z_next_nrm_sq = 0.;
 
   SLEQP_CALL(sleqp_timer_start(solver->timer));
 
@@ -161,9 +163,9 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
 
       // solving for tau results in tau = - z^T * d / ||d||^2 \pm Delta / ||d||
       SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->d, &tau));
-      nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
-      tau1 = - tau / nrm_sq + trust_radius / sqrt (nrm_sq);        /// @todo verify again
-      tau2 = - tau / nrm_sq - trust_radius / sqrt (nrm_sq);
+      const double d_nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
+      tau1 = - tau / d_nrm_sq + trust_radius / sqrt (d_nrm_sq);        /// @todo verify again
+      tau2 = - tau / d_nrm_sq - trust_radius / sqrt (d_nrm_sq);
 
       // compute dot products g^T * d and z^T * (B * d)
       SLEQP_CALL(sleqp_sparse_vector_dot(gradient, solver->d, &gd));
@@ -196,35 +198,49 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                               eps,
                                               solver->sparse_cache));
 
-    SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache,
-                                        solver->z));
+    z_next_nrm_sq  = sleqp_sparse_vector_norm_sq(solver->sparse_cache);
 
     // if ||z_{j+1}|| >= Delta_k:
-    nrm_sq = sleqp_sparse_vector_norm_sq(solver->z);
 
-    if (nrm_sq >= trust_radius*trust_radius)
+    if(z_next_nrm_sq >= trust_radius*trust_radius)
     {
       // find tau >= 0 such that p_k = z + tau*d_j satisfies ||p_k|| = Delta_k
 
-      // solving for tau results in tau = -z * d / ||d||^2 +/- Delta / ||d||
-      SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->d, &tau));
-      nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
-      tau = - tau / nrm_sq + trust_radius / sqrt (nrm_sq);        /// @todo verify again
+      double z_dot_d;
+
+      SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->d, &z_dot_d));
+
+      const double d_nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
+      const double z_nrm_sq = z_curr_nrm_sq;
+
+      assert(d_nrm_sq > 0.);
+
+      const double inner = z_dot_d*z_dot_d - d_nrm_sq*(z_nrm_sq - trust_radius*trust_radius);
+
+      const double tau = 1./d_nrm_sq * (-z_dot_d + sqrt(inner));
+
+      assert(tau >= 0);
 
       // set p_k = z_{j+1} + (tau-alpha)*d_j satisfies ||p_k|| = Delta_k
       // return p_k
       SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->z,
                                                 solver->d,
                                                 1.,
-                                                tau-alpha,
+                                                tau,
                                                 eps,
                                                 newton_step));
 
       sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(newton_step),
                                    trust_radius,
                                    eps));
+
       break;
     }
+
+    SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache,
+                                        solver->z));
+
+    z_curr_nrm_sq = z_next_nrm_sq;
 
     // set r_{j+1} = r_j + alpha_j * (B_k * d_j)
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->r,
