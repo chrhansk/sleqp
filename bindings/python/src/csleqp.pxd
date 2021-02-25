@@ -46,6 +46,15 @@ cdef extern from "sleqp.h":
     SLEQP_HESSIAN_EVAL_SIMPLE_BFGS,
     SLEQP_HESSIAN_EVAL_DAMPED_BFGS
 
+  ctypedef enum SLEQP_BFGS_SIZING:
+    SLEQP_BFGS_SIZING_NONE,
+    SLEQP_BFGS_SIZING_CENTERED_OL
+
+  ctypedef enum SLEQP_TR_SOLVER:
+    SLEQP_TR_SOLVER_TRLIB
+    SLEQP_TR_SOLVER_CG
+    SLEQP_TR_SOLVER_AUTO
+
   ctypedef enum SLEQP_VALUE_REASON:
     SLEQP_VALUE_REASON_NONE,
     SLEQP_VALUE_REASON_INIT,
@@ -507,6 +516,10 @@ cdef extern from "sleqp.h":
 
   int sleqp_options_get_max_newton_iterations(const SleqpOptions* options)
 
+  SLEQP_BFGS_SIZING sleqp_options_get_bfgs_sizing(const SleqpOptions* options)
+
+  SLEQP_TR_SOLVER sleqp_options_get_tr_solver(const SleqpOptions* options)
+
   SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options, bint value)
 
   SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options, bint value)
@@ -526,6 +539,10 @@ cdef extern from "sleqp.h":
                                                             int size)
 
   SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int iterations)
+
+  SLEQP_RETCODE sleqp_options_set_bfgs_sizing(SleqpOptions* options, SLEQP_BFGS_SIZING sizing)
+
+  SLEQP_RETCODE sleqp_options_set_tr_solver(SleqpOptions* options, SLEQP_TR_SOLVER solver)
 
   SLEQP_RETCODE sleqp_options_release(SleqpOptions** star)
 

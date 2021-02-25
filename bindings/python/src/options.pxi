@@ -15,7 +15,9 @@ cdef class Options:
                   'hessian_eval',
                   'dual_estimation_type',
                   'quasi_newton_num_iterates',
-                  'max_newton_iterations']
+                  'max_newton_iterations',
+                  'bfgs_sizing',
+                  'tr_solver']
 
     for key, value in values.items():
       setattr(self, key, value)
@@ -57,6 +59,16 @@ cdef class Options:
 
       return iter if iter != csleqp.SLEQP_NONE else None
 
+  @property
+  def bfgs_sizing(self) -> Sizing:
+      cdef int sizing = csleqp.sleqp_options_get_bfgs_sizing(self.options)
+      return Sizing(sizing)
+
+  @property
+  def tr_solver(self) -> TRSolver:
+      cdef int tr_solver = csleqp.sleqp_options_get_tr_solver(self.options)
+      return TRSolver(tr_solver)
+
   @perform_newton_step.setter
   def perform_newton_step(self, value: bool) -> None:
     csleqp_call(csleqp.sleqp_options_set_perform_newton_step(self.options, value))
@@ -87,10 +99,18 @@ cdef class Options:
 
   @max_newton_iterations.setter
   def max_newton_iterations(self, value):
-      if value is None:
-        value = csleqp.SLEQP_NONE
+    if value is None:
+      value = csleqp.SLEQP_NONE
 
-      csleqp_call(csleqp.sleqp_options_set_max_newton_iterations(self.options, value))
+    csleqp_call(csleqp.sleqp_options_set_max_newton_iterations(self.options, value))
+
+  @bfgs_sizing.setter
+  def bfgs_sizing(self, value):
+    csleqp_call(csleqp.sleqp_options_set_bfgs_sizing(self.options, value.value))
+
+  @tr_solver.setter
+  def tr_solver(self, value):
+    csleqp_call(csleqp.sleqp_options_set_tr_solver(self.options, value.value))
 
   def values(self) -> set:
     return {key: getattr(self, key) for key in self.props}

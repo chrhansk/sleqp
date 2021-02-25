@@ -20,6 +20,15 @@ cpdef enum HessianEval:
   SimpleBFGS = csleqp.SLEQP_HESSIAN_EVAL_SIMPLE_BFGS
   DampedBFGS = csleqp.SLEQP_HESSIAN_EVAL_DAMPED_BFGS
 
+cpdef enum Sizing:
+  NoSizing   = csleqp.SLEQP_BFGS_SIZING_NONE
+  CenteredOL = csleqp.SLEQP_BFGS_SIZING_CENTERED_OL
+
+cpdef enum TRSolver:
+    TRlib = csleqp.SLEQP_TR_SOLVER_TRLIB
+    CG    = csleqp.SLEQP_TR_SOLVER_CG
+    Auto  = csleqp.SLEQP_TR_SOLVER_AUTO
+
 cpdef enum ValueReason:
   NoReason         = csleqp.SLEQP_VALUE_REASON_NONE
   Init             = csleqp.SLEQP_VALUE_REASON_INIT
