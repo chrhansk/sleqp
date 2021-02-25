@@ -446,7 +446,7 @@ SLEQP_RETCODE bfgs_hess_prod_range(BFGSBlock* block,
                                    SleqpSparseVec* product,
                                    int final)
 {
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
   const int begin = block->curr - block->len + 1;
 
   // Initially apply scaled identity
@@ -482,14 +482,14 @@ SLEQP_RETCODE bfgs_hess_prod_range(BFGSBlock* block,
                                               current_point_product,
                                               1.,
                                               -1. * direction_product_dot / bidir_product,
-                                              eps,
+                                              zero_eps,
                                               block->inner_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(block->inner_cache,
                                               current_damped_grad_diff,
                                               sizing_factor,
                                               direction_damped_grad_dot / block->damped_grad_point_diff_dots[j],
-                                              eps,
+                                              zero_eps,
                                               product));
   }
 
@@ -580,6 +580,7 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
                                     const SleqpParams* params)
 {
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   assert(block->len > 0);
 
@@ -641,7 +642,7 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
                                                 product,
                                                 combination_factor,
                                                 1. - combination_factor,
-                                                eps,
+                                                zero_eps,
                                                 current_damped_grad_diff));
 
       SLEQP_CALL(sleqp_sparse_vector_dot(current_damped_grad_diff,
@@ -739,6 +740,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                    SleqpSparseVec* multipliers)
 {
   const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const int num_blocks = data->num_blocks;
 
@@ -748,24 +750,24 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(previous_iterate),
                                                         multipliers,
-                                                        eps,
+                                                        zero_eps,
                                                         data->prod_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->prod_cache,
                                        sleqp_iterate_get_func_grad(previous_iterate),
-                                       eps,
+                                       zero_eps,
                                        data->previous_grad));
   }
 
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_get_cons_jac(current_iterate),
                                                         multipliers,
-                                                        eps,
+                                                        zero_eps,
                                                         data->prod_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->prod_cache,
                                        sleqp_iterate_get_func_grad(current_iterate),
-                                       eps,
+                                       zero_eps,
                                        data->current_grad));
   }
 
@@ -774,7 +776,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                               data->current_grad,
                                               -1.,
                                               1.,
-                                              eps,
+                                              zero_eps,
                                               data->grad_diff));
   }
 
@@ -783,7 +785,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
                                             sleqp_iterate_get_primal(current_iterate),
                                             -1.,
                                             1.,
-                                            eps,
+                                            zero_eps,
                                             data->point_diff));
 
   int k_point = 0;

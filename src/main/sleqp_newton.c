@@ -162,8 +162,9 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   SleqpSparseVec* initial_rhs = data->initial_rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
-  const double eps = sleqp_params_get(data->params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
+
+  const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const int working_set_size = sleqp_working_set_size(working_set);
 
@@ -186,9 +187,9 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
     SleqpSparseVec* lower_diff = data->lower_diff;
     SleqpSparseVec* upper_diff = data->upper_diff;
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_ub, -1., 1., eps, upper_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_ub, -1., 1., zero_eps, upper_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_lb, -1., 1., eps, lower_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_lb, -1., 1., zero_eps, lower_diff));
 
     int k_lower = 0, k_upper = 0;
 
@@ -258,9 +259,9 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
     SleqpSparseVec* lower_diff = data->lower_diff;
     SleqpSparseVec* upper_diff = data->upper_diff;
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_ub, -1., 1., eps, upper_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_ub, -1., 1., zero_eps, upper_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_lb, -1., 1., eps, lower_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_lb, -1., 1., zero_eps, lower_diff));
 
     int k_lower = 0, k_upper = 0;
 
@@ -461,7 +462,7 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
 
     SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_cons_val(iterate),
                                        data->sparse_cache,
-                                       eps,
+                                       zero_eps,
                                        data->initial_cons_val));
   }
 

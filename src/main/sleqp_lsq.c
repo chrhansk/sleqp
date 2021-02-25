@@ -29,7 +29,7 @@ typedef struct SleqpLSQData
 
   SleqpSparseVec* combined_hess_prod;
 
-  double eps;
+  double zero_eps;
 
   void* func_data;
 
@@ -126,7 +126,7 @@ lsq_func_grad(SleqpFunc* func,
                                               lsq_data->lsq_grad,
                                               1.,
                                               1.,
-                                              lsq_data->eps,
+                                              lsq_data->zero_eps,
                                               func_grad));
 
   }
@@ -230,7 +230,7 @@ static SLEQP_RETCODE lsq_func_hess_product(SleqpFunc* func,
                                                 lsq_data->lsq_hess_prod,
                                                 1.,
                                                 (*func_dual),
-                                                lsq_data->eps,
+                                                lsq_data->zero_eps,
                                                 initial_product_dest));
     }
     else
@@ -263,7 +263,7 @@ static SLEQP_RETCODE lsq_func_hess_product(SleqpFunc* func,
                                               initial_product_dest,
                                               lsq_data->levenberg_marquardt,
                                               1.,
-                                              lsq_data->eps,
+                                              lsq_data->zero_eps,
                                               product));
   }
 
@@ -348,7 +348,7 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->combined_hess_prod,
                                               num_variables));
 
-  data->eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  data->zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   data->func_data = func_data;
 

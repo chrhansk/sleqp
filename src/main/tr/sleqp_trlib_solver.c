@@ -285,8 +285,9 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
   const double inf = sleqp_infinity();
 
-  const double zero_eps = sleqp_params_get(data->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
+
+  const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const double rel_tol = sleqp_params_get(data->params,
                                           SLEQP_PARAM_NEWTON_RELATIVE_TOL);
@@ -744,7 +745,9 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
     }
   }
 
-  if(collect_rayleigh && !sleqp_is_zero(min_rayleigh, zero_eps))
+  assert((*trlib_ret) != TRLIB_CLR_CONTINUE);
+
+  if(collect_rayleigh && !sleqp_is_zero(min_rayleigh, eps))
   {
     const double cond_bound = SLEQP_ABS(max_rayleigh) / SLEQP_ABS(min_rayleigh);
 

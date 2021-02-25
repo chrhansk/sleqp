@@ -79,6 +79,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   SleqpParams* params = solver->params;
 
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   const double rel_tol_sq = rel_tol*rel_tol;
 
@@ -192,7 +193,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                                 solver->d,
                                                 1.,
                                                 tau,
-                                                eps,
+                                                zero_eps,
                                                 newton_step));
 
       sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(newton_step),
@@ -213,7 +214,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                               solver->d,
                                               1.,
                                               alpha,
-                                              eps,
+                                              zero_eps,
                                               solver->sparse_cache));
 
     z_next_nrm_sq  = sleqp_sparse_vector_norm_sq(solver->sparse_cache);
@@ -245,7 +246,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                                 solver->d,
                                                 1.,
                                                 tau,
-                                                eps,
+                                                zero_eps,
                                                 newton_step));
 
       sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(newton_step),
@@ -268,7 +269,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                               solver->Bd,
                                               1.,
                                               alpha,
-                                              eps,
+                                              zero_eps,
                                               solver->sparse_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache, solver->r));
@@ -291,7 +292,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                               solver->d,
                                               -1.,
                                               beta,
-                                              eps,
+                                              zero_eps,
                                               solver->sparse_cache));
 
     SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache,

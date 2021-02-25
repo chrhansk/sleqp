@@ -1197,14 +1197,13 @@ static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
                                           SleqpIterate* previous_iterate,
                                           SleqpIterate* iterate)
 {
-  const double eps = sleqp_params_get(solver->params,
-                                      SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(previous_iterate),
                                             sleqp_iterate_get_primal(iterate),
                                             1.,
                                             -1,
-                                            eps,
+                                            zero_eps,
                                             solver->primal_diff));
 
   solver->primal_diff_norm = sleqp_sparse_vector_norm(solver->primal_diff);
@@ -1213,14 +1212,14 @@ static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
                                             sleqp_iterate_get_cons_dual(iterate),
                                             1.,
                                             -1,
-                                            eps,
+                                            zero_eps,
                                             solver->cons_dual_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_vars_dual(previous_iterate),
                                             sleqp_iterate_get_vars_dual(iterate),
                                             1.,
                                             -1,
-                                            eps,
+                                            zero_eps,
                                             solver->vars_dual_diff));
 
   solver->dual_diff_norm = 0.;
