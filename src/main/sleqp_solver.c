@@ -676,7 +676,7 @@ static SLEQP_RETCODE update_trust_radius(double reduction_ratio,
   }
   else
   {
-    *trust_radius = SLEQP_MIN(0.5*(*trust_radius),
+    *trust_radius = SLEQP_MAX(0.5*(*trust_radius),
                               0.5*direction_norm);
   }
 
