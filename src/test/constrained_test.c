@@ -789,7 +789,7 @@ Suite* constrained_test_suite()
 
   tcase_add_test(tc_cons, test_scaled_sr1_solve);
 
-  // tcase_add_test(tc_cons, test_scaled_bfgs_solve);
+  tcase_add_test(tc_cons, test_scaled_bfgs_solve);
 
   tcase_add_test(tc_cons, test_auto_scaled_solve);
 
