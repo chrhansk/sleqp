@@ -162,8 +162,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   SleqpSparseVec* initial_rhs = data->initial_rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
-  const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
-
   const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const int working_set_size = sleqp_working_set_size(working_set);

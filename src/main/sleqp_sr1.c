@@ -398,8 +398,6 @@ SLEQP_RETCODE sr1_compute_inner_products(SleqpSR1Data* data,
 
   const int first = block->curr - block->len + 1;
 
-  const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
-
   const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
   {
@@ -652,8 +650,6 @@ SLEQP_RETCODE sr1_block_hess_prod(SleqpSR1Data* data,
 
     return SLEQP_OKAY;
   }
-
-  const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
 
   const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
