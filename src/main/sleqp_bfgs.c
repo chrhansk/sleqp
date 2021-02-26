@@ -10,6 +10,9 @@
 static const double damping_factor = 0.2;
 static const double sizing_cutoff = 0.1;
 
+static const double initial_scale_min = 1e-6;
+static const double damped_initial_scale_max = 1.;
+
 /**
  * We follow the notation in "Numerical Optimization"
  **/
@@ -520,11 +523,13 @@ SLEQP_RETCODE bfgs_initial_scale(BFGSBlock* block,
 
   (*initial_scale) = point_diff_normsq / grad_point_dot;
 
+  (*initial_scale) = SLEQP_MAX((*initial_scale), initial_scale_min);
+
   if(block->damped)
   {
     // TODO: Find out if there is smoe better way
     // of applying the damping to the initial approximation
-    (*initial_scale) = SLEQP_MAX((*initial_scale), 1.);
+    (*initial_scale) = SLEQP_MIN((*initial_scale), damped_initial_scale_max);
   }
 
   return SLEQP_OKAY;
@@ -579,7 +584,6 @@ static
 SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
                                     const SleqpParams* params)
 {
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
   const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   assert(block->len > 0);
