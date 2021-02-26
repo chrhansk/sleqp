@@ -1,6 +1,6 @@
 #include "sleqp_types.h"
 
-const char* sleqp_retcode_names[] = {
+const char* const sleqp_retcode_names[] = {
   [SLEQP_OKAY]             = "SLEQP_OKAY",
   [SLEQP_NOMEM]            = "SLEQP_NOMEM",
   [SLEQP_FAILED_ASSERTION] = "SLEQP_FAILED_ASSERTION",

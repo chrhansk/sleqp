@@ -14,7 +14,7 @@ struct LevelInfo
   const char* color;
 };
 
-static struct LevelInfo level_infos[SLEQP_NUM_LOG_LEVELS] =
+static struct LevelInfo const level_infos[SLEQP_NUM_LOG_LEVELS] =
 {
   {"error", SLEQP_FORMAT_RED},
   {"warn", SLEQP_FORMAT_YELLOW},

@@ -46,7 +46,7 @@ extern "C" {
     SLEQP_INVALID
   } SLEQP_STATUS;
 
-  extern const char* sleqp_retcode_names[];
+  extern const char* const sleqp_retcode_names[];
 
 #define SLEQP_CALL(x)                                                      \
   do                                                                       \

@@ -78,7 +78,6 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   SleqpFunc* func = problem->func;
   SleqpParams* params = solver->params;
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
   const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   const double rel_tol_sq = rel_tol*rel_tol;
