@@ -317,7 +317,7 @@ SLEQP_RETCODE sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization
 SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
                                                         SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_sparse_factorization_create_umfpack(star, params));
+  SLEQP_CALL(sleqp_sparse_factorization_umfpack_create(star, params));
 
   return SLEQP_OKAY;
 }
