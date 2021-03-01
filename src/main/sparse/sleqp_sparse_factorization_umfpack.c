@@ -290,7 +290,6 @@ static SLEQP_RETCODE umfpack_data_create(UmfpackData** star)
   return SLEQP_OKAY;
 }
 
-
 SLEQP_RETCODE sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization** star,
                                                         SleqpParams* params)
 {
@@ -311,6 +310,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization
                                                params,
                                                &callbacks,
                                                (void*) umfpack_data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                                        SleqpParams* params)
+{
+  SLEQP_CALL(sleqp_sparse_factorization_create_umfpack(star, params));
 
   return SLEQP_OKAY;
 }

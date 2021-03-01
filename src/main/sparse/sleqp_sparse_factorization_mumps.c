@@ -215,7 +215,7 @@ static SLEQP_RETCODE sleqp_mumps_get_sol(void* factorization_data,
 static SLEQP_RETCODE sleqp_mumps_get_condition_estimate(void* factorization_data,
                                                         double* condition_estimate)
 {
-  SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*) factorization_data;
+  //SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*) factorization_data;
 
   (*condition_estimate) = SLEQP_NONE;
 
@@ -261,6 +261,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_mumps_create(SleqpSparseFactorization**
                                                params,
                                                &callbacks,
                                                (void*) sleqp_mumps_data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                                        SleqpParams* params)
+{
+  SLEQP_CALL(sleqp_sparse_factorization_mumps_create(star, params));
 
   return SLEQP_OKAY;
 }

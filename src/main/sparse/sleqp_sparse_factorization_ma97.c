@@ -333,10 +333,8 @@ static SLEQP_RETCODE ma97_data_solve(void* factorization_data,
 {
   MA97Data* ma97_data = (MA97Data*) factorization_data;
 
-  const int job = 0;
   const int nrhs = 1;
   const int dim = ma97_data->dim;
-  const int ldx = ma97_data->dim;
 
   assert(rhs->dim == dim);
 
@@ -375,7 +373,7 @@ static SLEQP_RETCODE ma97_data_get_sol(void* factorization_data,
 static SLEQP_RETCODE ma97_data_get_condition_estimate(void* factorization_data,
                                                       double* condition_estimate)
 {
-  MA97Data* ma97_data = (MA97Data*) factorization_data;
+  // MA97Data* ma97_data = (MA97Data*) factorization_data;
 
   (*condition_estimate) = SLEQP_NONE;
 
@@ -419,6 +417,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma97_create(SleqpSparseFactorization** 
                                                params,
                                                &callbacks,
                                                (void*) ma97_data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                                        SleqpParams* params)
+{
+  SLEQP_CALL(sleqp_sparse_factorization_ma97_create(star, params));
 
   return SLEQP_OKAY;
 }

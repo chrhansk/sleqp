@@ -381,7 +381,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   // create sparse factorization
 
-  SLEQP_CALL(sleqp_sparse_factorization_umfpack_create(&solver->factorization,
+  SLEQP_CALL(sleqp_sparse_factorization_create_default(&solver->factorization,
                                                        params));
 
   SLEQP_CALL(sleqp_aug_jacobian_create(&solver->aug_jacobian,

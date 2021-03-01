@@ -63,7 +63,7 @@ set(SLEQP_LPS ""
 
 include(SearchLPS)
 
-find_package(Umfpack REQUIRED)
+include(SearchFact)
 
 find_package(trlib REQUIRED)
 
@@ -75,7 +75,7 @@ add_library(trlib INTERFACE IMPORTED)
 set(SLEQP_DEPENDENCIES
   trlib::trlib
   ${SLEQP_LPS_LIBRARIES}
-  ${UMFPACK_LIBRARIES}
+  ${SLEQP_FACT_LIBRARIES}
   m)
 
 if(UNIX AND NOT APPLE)

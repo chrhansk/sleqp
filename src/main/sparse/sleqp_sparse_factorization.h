@@ -17,6 +17,10 @@ extern "C" {
                                                   void* factorization_data);
 
   SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                                          SleqpParams* params);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_factorization_capture(SleqpSparseFactorization* sparse_factorization);
 
   SLEQP_NODISCARD

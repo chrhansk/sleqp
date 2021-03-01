@@ -60,7 +60,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   ASSERT_CALL(sleqp_working_set_create(&working_set,
                                       problem));
 
-  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+  ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
                                                         params));
 
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,

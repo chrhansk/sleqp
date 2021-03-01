@@ -259,7 +259,7 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+  ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
                                                         params));
 
   ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,

@@ -544,3 +544,11 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma27_create(SleqpSparseFactorization** 
 
   return SLEQP_OKAY;
 }
+
+SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                                        SleqpParams* params)
+{
+  SLEQP_CALL(sleqp_sparse_factorization_ma27_create(star, params));
+
+  return SLEQP_OKAY;
+}

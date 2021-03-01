@@ -102,7 +102,7 @@ START_TEST(newton_wide_step)
   double penalty_parameter = 1.;
   double trust_radius = 10.;
 
-  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+  ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
                                                         params));
 
   // create with empty active set
@@ -168,7 +168,7 @@ START_TEST(newton_small_step)
   double penalty_parameter = 1.;
   double trust_radius = 1.;
 
-  ASSERT_CALL(sleqp_sparse_factorization_umfpack_create(&factorization,
+  ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
                                                         params));
 
   // create with empty active set

@@ -292,7 +292,7 @@ static SLEQP_RETCODE ma86_data_get_sol(void* factorization_data,
 static SLEQP_RETCODE ma86_data_get_condition_estimate(void* factorization_data,
                                                       double* condition_estimate)
 {
-  MA86Data* ma86_data = (MA86Data*) factorization_data;
+  // MA86Data* ma86_data = (MA86Data*) factorization_data;
 
   (*condition_estimate) = SLEQP_NONE;
 
@@ -336,6 +336,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma86_create(SleqpSparseFactorization** 
                                                params,
                                                &callbacks,
                                                (void*) ma86_data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                                        SleqpParams* params)
+{
+  SLEQP_CALL(sleqp_sparse_factorization_ma86_create(star, params));
 
   return SLEQP_OKAY;
 }

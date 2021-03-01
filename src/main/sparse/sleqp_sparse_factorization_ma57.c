@@ -404,7 +404,7 @@ static SLEQP_RETCODE ma57_increase_ifactor_size(MA57Data* ma57_data)
 
   assert(new_ifactor_size > ifactor_size);
 
-  SLEQP_CALL(sleqp_calloc(&new_ifactor, new_ifactor_size));
+  SLEQP_CALL(sleqp_alloc_array(&new_ifactor, new_ifactor_size));
 
   int32_t empty_int = 0;
   double  empty_dbl = 0;
@@ -442,8 +442,6 @@ static SLEQP_RETCODE ma57_numeric(MA57Data* ma57_data)
   const int32_t dim = hsl_matrix->dim;
   const int32_t nnz = hsl_matrix->nnz;
 
-  const int32_t* rows = hsl_matrix->rows;
-  const int32_t* cols = hsl_matrix->cols;
   const double* data = hsl_matrix->data;
 
   const int32_t keep_size = ma57_workspace->keep_size;
@@ -505,7 +503,6 @@ static SLEQP_RETCODE ma57_set_matrix(void* factorization_data,
   assert(num_rows == num_cols);
 
   const int dim = num_cols;
-  const int nnz = sleqp_sparse_matrix_get_nnz(matrix);
 
   {
     if(ma57_workspace->rhs_sol_size < dim)
@@ -627,10 +624,7 @@ static SLEQP_RETCODE ma57_get_sol(void* factorization_data,
 {
   MA57Data* ma57_data = (MA57Data*) factorization_data;
 
-  MA57ControlInfo* control_info = &(ma57_data->control_info);
-  MA57Factor* ma57_factor = &(ma57_data->factor);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
-  HSLMatrix* hsl_matrix = &(ma57_data->matrix);
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
                                           ma57_workspace->rhs_sol + begin,
@@ -677,7 +671,7 @@ static SLEQP_RETCODE ma57_data_create(MA57Data** star)
 static SLEQP_RETCODE ma57_get_condition_estimate(void* factorization_data,
                                                  double* condition_estimate)
 {
-  MA57Data* ma57_data = (MA57Data*) factorization_data;
+  // MA57Data* ma57_data = (MA57Data*) factorization_data;
 
   (*condition_estimate) = SLEQP_NONE;
 
@@ -688,7 +682,6 @@ static SLEQP_RETCODE ma57_free(void** star)
 {
   MA57Data* ma57_data = (MA57Data*) (*star);
 
-  MA57ControlInfo* control_info = &(ma57_data->control_info);
   MA57Factor* ma57_factor = &(ma57_data->factor);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
   HSLMatrix* hsl_matrix = &(ma57_data->matrix);
@@ -729,6 +722,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma57_create(SleqpSparseFactorization** 
                                                params,
                                                &callbacks,
                                                (void*) ma57_data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                                        SleqpParams* params)
+{
+  SLEQP_CALL(sleqp_sparse_factorization_ma57_create(star, params));
 
   return SLEQP_OKAY;
 }

@@ -1,6 +1,5 @@
 set(COMMON_SRC
   sparse/sleqp_sparse_factorization.c
-  sparse/sleqp_sparse_factorization_umfpack.c
   sparse/sleqp_sparse_matrix.c
   sparse/sleqp_sparse_vec.c
   tr/sleqp_tr_solver.c
@@ -40,7 +39,8 @@ set(COMMON_SRC
 
 add_library(sleqp_objects OBJECT
   ${COMMON_SRC}
-  ${SLEQP_LPS_SOURCES})
+  ${SLEQP_LPS_SOURCES}
+  ${SLEQP_FACT_SOURCES})
 
 set_property(TARGET sleqp_objects PROPERTY C_STANDARD 11)
 
@@ -71,7 +71,7 @@ endif()
 target_include_directories(sleqp_objects
   PRIVATE
   ${CMAKE_BINARY_DIR}
-  ${UMFPACK_INCLUDE_DIRS}
+  ${SLEQP_FACT_INCLUDE_DIRS}
   ${SLEQP_LPS_INCLUDE_DIRS})
 
 set(SLEQP_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "" FORCE)
