@@ -625,7 +625,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
 #endif
 
-    sleqp_log_debug("Cauchy-Newton line search iteration %d, step length: %f, quadratic merit value: %f",
+    sleqp_log_debug("Cauchy-Newton line search iteration %d, step length: %g, quadratic merit value: %g",
                     iteration,
                     alpha,
                     quadratic_merit_value);
@@ -667,7 +667,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
   assert(iteration != LINESEARCH_MAX_IT);
 
-  sleqp_log_debug("Cauchy-Newton line search terminated after %d iterations (step length: %f, quadratic merit: %f)",
+  sleqp_log_debug("Cauchy-Newton line search terminated after %d iterations (step length: %g, quadratic merit: %g)",
                   iteration,
                   alpha,
                   (*trial_quadratic_merit_value));
