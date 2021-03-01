@@ -657,18 +657,24 @@ static SLEQP_RETCODE update_lp_trust_radius(bool trial_step_accepted,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE update_trust_radius(double reduction_ratio,
+static SLEQP_RETCODE update_trust_radius(SleqpSolver* solver,
+                                         double reduction_ratio,
                                          bool trial_step_accepted,
-                                         double direction_norm,
-                                         double* trust_radius)
+                                         double direction_norm)
 {
+  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+
+  double* trust_radius = &(solver->trust_radius);
+
   if(reduction_ratio >= 0.9)
   {
-    *trust_radius = SLEQP_MAX(*trust_radius, 7*direction_norm);
+    *trust_radius = SLEQP_MAX(*trust_radius,
+                              7*direction_norm);
   }
   else if(reduction_ratio >= 0.3)
   {
-    *trust_radius = SLEQP_MAX(*trust_radius, 2*direction_norm);
+    *trust_radius = SLEQP_MAX(*trust_radius,
+                              2*direction_norm);
   }
   else if(trial_step_accepted)
   {
@@ -676,8 +682,16 @@ static SLEQP_RETCODE update_trust_radius(double reduction_ratio,
   }
   else
   {
-    *trust_radius = SLEQP_MAX(0.5*(*trust_radius),
-                              0.5*direction_norm);
+    // filter out very small steps
+    if(sleqp_is_zero(direction_norm, eps))
+    {
+      *trust_radius *= .5;
+    }
+    else
+    {
+      *trust_radius = SLEQP_MIN(.5 * (*trust_radius),
+                                .5 * direction_norm);
+    }
   }
 
   return SLEQP_OKAY;
@@ -1486,10 +1500,10 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
   {
     if(perform_newton_step)
     {
-      SLEQP_CALL(update_trust_radius(reduction_ratio,
+      SLEQP_CALL(update_trust_radius(solver,
+                                     reduction_ratio,
                                      step_accepted,
-                                     trial_step_norm,
-                                     &(solver->trust_radius)));
+                                     trial_step_norm));
     }
 
     SLEQP_CALL(update_lp_trust_radius(step_accepted,
