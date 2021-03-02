@@ -1,7 +1,5 @@
 #include "sleqp_dual_estimation.h"
 
-#include <umfpack.h>
-
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 

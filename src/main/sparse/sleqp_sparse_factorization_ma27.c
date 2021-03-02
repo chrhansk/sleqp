@@ -469,9 +469,6 @@ static SLEQP_RETCODE ma27_data_get_condition_estimate(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-// .solve = umfpack_sparse_factorization_solve,
-// .get_sol = umfpack_sparse_factorization_get_sol,
-
 static SLEQP_RETCODE ma27_data_free(void** star)
 {
   MA27Data* ma27_data = (MA27Data*) (*star);
