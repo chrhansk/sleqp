@@ -356,9 +356,13 @@ static SLEQP_BASESTAT basestat_for(soplex::SPxSolver::VarStatus status)
   case soplex::SPxSolver::BASIC:
     return SLEQP_BASESTAT_BASIC;
   default:
-    assert(false);
     break;
   }
+
+  // Invalid basis status reported by Soplex
+  assert(false);
+
+  return SLEQP_BASESTAT_ZERO;
 }
 
 static SLEQP_RETCODE soplex_get_varstats(void* lp_data,
