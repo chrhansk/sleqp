@@ -50,7 +50,7 @@ build:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_CXX_FLAGS="-O3 -g" -DCMAKE_C_FLAGS="-O3 -g" -DSLEQP_ENABLE_UNIT_TESTS=Off -DSLEQP_ENABLE_PYTHON=On
+    - cmake .. -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_CXX_FLAGS="-O3 -g" -DCMAKE_C_FLAGS="-O3 -g" -DSLEQP_ENABLE_UNIT_TESTS=Off -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS= SoPlex
     - make -j$(nproc)
   artifacts:
     paths:
