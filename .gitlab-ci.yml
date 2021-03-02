@@ -30,35 +30,35 @@ test_Umfpack:
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS=SoPlex
-    - make build_tests test
+    - make all build_tests test
 
 test_MA27:
   <<: *test_job
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA27 -DSLEQP_LPS=SoPlex
-    - make build_tests test
+    - make all build_tests test
 
 test_MA57:
   <<: *test_job
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA57 -DSLEQP_LPS=SoPlex
-    - make build_tests test
+    - make all build_tests test
 
 test_MA86:
   <<: *test_job
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA86 -DSLEQP_LPS=SoPlex
-    - make build_tests test
+    - make all build_tests test
 
 test_MA97:
   <<: *test_job
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA97 -DSLEQP_LPS=SoPlex
-    - make build_tests test
+    - make all build_tests test
 
 # TODO: As soon as we get capable compilers, add misc. sanitizers to tests
 
