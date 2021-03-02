@@ -17,4 +17,8 @@ if(CoinHSL_FOUND)
   else()
     unset(CoinHSL_FOUND)
   endif()
+
+  if(UNIX AND NOT APPLE)
+    set(CoinHSL_LIBRARIES "${CoinHSL_LIBRARIES} -ldl")
+  endif()
 endif()
