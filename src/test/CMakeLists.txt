@@ -5,8 +5,6 @@ include_directories("${CMAKE_SOURCE_DIR}/src/test")
 
 include_directories(${CHECK_INCLUDE_DIRS})
 
-add_custom_target(build_tests)
-
 set(TEST_COMMON_SRC
   quadcons_fixture.c
   quadfunc_fixture.c
@@ -40,7 +38,7 @@ function(add_unit_test TEST_NAME)
 
   add_dependencies(build_tests ${BASE_NAME})
 
-  add_test(NAME ${BASE_NAME} COMMAND ${BASE_NAME})
+  add_test(NAME ${BASE_NAME} COMMAND ${BASE_NAME} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
 
 add_unit_test(sparse/sleqp_sparse_matrix_test)

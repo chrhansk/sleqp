@@ -54,6 +54,8 @@ option(SLEQP_ENABLE_PYTHON "Whether or not to enable python bindings" ON)
 
 option(SLEQP_DEBUG "Whether or not to enable debug messages" OFF)
 
+option(SLEQP_GENERATE_COVERAGE "Whether or not to generate coverage" OFF)
+
 option(SLEQP_FORMAT_CODES "Whether or not to enable ANSI format codes" ON)
 
 set(SLEQP_LPS ""
@@ -105,10 +107,22 @@ enable_testing()
 
 if(CHECK_FOUND)
   include_directories(${CHECK_INCLUDE_DIR})
+  add_custom_target(build_tests)
 else()
   message(STATUS "Could not find Check, unit tests will be disabled")
   set(SLEQP_ENABLE_UNIT_TESTS OFF)
   set(SLEQP_ENABLE_CUTEST OFF)
+endif()
+
+if(SLEQP_GENERATE_COVERAGE)
+  include(Coverage)
+
+  if(NOT SLEQP_ENABLE_UNIT_TESTS)
+    message(FATAL_ERROR "Cannot generate coverage without unit tests")
+  endif()
+
+  add_test_coverage_target(NAME "test_coverage"
+    DEPENDS build_tests)
 endif()
 
 if(SLEQP_ENABLE_CUTEST)
