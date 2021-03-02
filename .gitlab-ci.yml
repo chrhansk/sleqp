@@ -15,24 +15,49 @@ variables:
   stage: test
   before_script:
     - mkdir -p build
-  after_script:
-    - cd build
-    - make
-    - make build_tests
-    - make test
   dependencies: []
 
-test_MUMPS:
-  <<: *test_job
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MUMPS -DSLEQP_LPS=SoPlex
+# test_MUMPS:
+#   <<: *test_job
+#   script:
+#     - cd build
+#     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MUMPS -DSLEQP_LPS=SoPlex
+#     - make build_tests test
 
 test_Umfpack:
   <<: *test_job
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS=SoPlex
+    - make build_tests test
+
+test_MA27:
+  <<: *test_job
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA27 -DSLEQP_LPS=SoPlex
+    - make build_tests test
+
+test_MA57:
+  <<: *test_job
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA57 -DSLEQP_LPS=SoPlex
+    - make build_tests test
+
+test_MA86:
+  <<: *test_job
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA86 -DSLEQP_LPS=SoPlex
+    - make build_tests test
+
+test_MA97:
+  <<: *test_job
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA97 -DSLEQP_LPS=SoPlex
+    - make build_tests test
 
 # test_undefined_sanitizer:
 #   <<: *test_job
