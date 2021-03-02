@@ -105,6 +105,8 @@ include_directories("${CMAKE_BINARY_DIR}")
 
 enable_testing()
 
+set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/test" CACHE INTERNAL "")
+
 if(CHECK_FOUND)
   include_directories(${CHECK_INCLUDE_DIR})
   add_custom_target(build_tests)
@@ -116,6 +118,20 @@ endif()
 
 if(SLEQP_ENABLE_CUTEST)
   set(SLEQP_ENABLE_UNIT_TESTS ON)
+endif()
+
+if(SLEQP_GENERATE_COVERAGE)
+  include(Coverage)
+
+  if(NOT SLEQP_ENABLE_UNIT_TESTS)
+    message(FATAL_ERROR "Cannot generate coverage without unit tests")
+  endif()
+
+  enable_coverage()
+
+  add_test_coverage_target(NAME "test_coverage"
+    DEPENDS build_tests
+    EXCLUDE ${TEST_DIR})
 endif()
 
 # Compiler options
@@ -142,18 +158,6 @@ if(SLEQP_ENABLE_PYTHON)
 endif()
 
 # Coverage
-
-if(SLEQP_GENERATE_COVERAGE)
-  include(Coverage)
-
-  if(NOT SLEQP_ENABLE_UNIT_TESTS)
-    message(FATAL_ERROR "Cannot generate coverage without unit tests")
-  endif()
-
-  add_test_coverage_target(NAME "test_coverage"
-    DEPENDS build_tests
-    EXCLUDE ${TEST_DIR})
-endif()
 
 # Miscellaneous installs
 

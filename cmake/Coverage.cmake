@@ -19,12 +19,14 @@ check_c_source_compiles("int main(void) { return 0; }" COMPILER_HAS_GCOV)
 
 if(COMPILER_HAS_GCOV)
   message(STATUS "Generating coverage information")
-  add_compile_options(${COVERAGE_FLAGS})
-  set(CMAKE_EXE_LINKER_FLAGS ${COVERAGE_FLAGS})
 else()
   message(FATAL_ERROR "Compiler does not support coverage generation")
 endif()
 
+function(enable_coverage)
+  add_compile_options(${COVERAGE_FLAGS})
+  add_link_options(${COVERAGE_FLAGS})
+endfunction()
 
 function(add_test_coverage_target)
 

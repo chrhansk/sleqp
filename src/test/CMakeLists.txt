@@ -5,8 +5,6 @@ include_directories("${CMAKE_SOURCE_DIR}/src/test")
 
 include_directories(${CHECK_INCLUDE_DIRS})
 
-set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR} CACHE INTERNAL "")
-
 set(TEST_COMMON_SRC
   quadcons_fixture.c
   quadfunc_fixture.c
