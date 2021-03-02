@@ -87,7 +87,6 @@ else()
     find_lp_solver(NAME ${LP_SOLVER})
 
     if(${SLEQP_LPS_FOUND})
-      message(STATUS "Using ${LP_SOLVER} as LP solver")
       set(SLEQP_LPS ${LP_SOLVER} CACHE STRING "The LP solver used as a backend" FORCE)
       break()
     endif()

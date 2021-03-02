@@ -110,7 +110,6 @@ else()
     find_factorization(NAME ${FACTORIZATION})
 
     if(${SLEQP_FACT_FOUND})
-      message(STATUS "Using ${FACTORIZATION} as factorization library")
       set(SLEQP_FACT ${FACTORIZATION} CACHE STRING "The factorization library used as a backend" FORCE)
       break()
     endif()
