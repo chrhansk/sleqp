@@ -13,19 +13,31 @@ variables:
 # run tests
 .test_template: &test_job
   stage: test
-  script:
+  before_script:
     - mkdir -p build
+  after_script:
     - cd build
-    - cmake .. -DSLEQP_ENABLE_PYTHON=On
     - make
     - make build_tests
-    - PYTHONMALLOC='malloc' make test
+    - make test
   dependencies: []
 
-test_undefined_sanitizer:
+test_MUMPS:
   <<: *test_job
-  variables:
-    CFLAGS: '-g -fsanitize=undefined'
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MUMPS -DSLEQP_LPS=SoPlex
+
+test_Umfpack:
+  <<: *test_job
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS=SoPlex
+
+# test_undefined_sanitizer:
+#   <<: *test_job
+#   variables:
+#     CFLAGS: '-g -fsanitize=undefined'
 
 # Not possible due to old compiler
 # test_address_sanitizer:
