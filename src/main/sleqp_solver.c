@@ -1738,6 +1738,9 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   const double eps = sleqp_params_get(solver->params,
                                       SLEQP_PARAM_EPS);
 
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
   sleqp_log_info("Solving a problem with %d variables, %d constraints",
                  problem->num_variables,
                  problem->num_constraints);
@@ -1756,10 +1759,38 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                      solver->unscaled_iterate));
   }
 
-  SLEQP_CALL(sleqp_violation_values(problem,
-                                    iterate,
-                                    eps,
-                                    solver->unscaled_violation));
+  // Warnings
+  {
+    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_deriv_check(solver->options);
+    const bool inexact_hessian = (solver->bfgs_data || solver->sr1_data);
+
+    const int hessian_check_flags = SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE | SLEQP_DERIV_CHECK_SECOND_SIMPLE;
+
+    const bool hessian_check = (deriv_check & hessian_check_flags);
+
+    if((solver->bfgs_data || solver->sr1_data) && hessian_check)
+    {
+      sleqp_log_warn("Enabled second order derivative check while using a quasi-Newton method");
+    }
+  }
+
+  {
+    double total_violation;
+
+    SLEQP_CALL(sleqp_violation_one_norm(problem,
+                                        sleqp_iterate_get_cons_val(iterate),
+                                        zero_eps,
+                                        &total_violation));
+
+    const double func_val = sleqp_iterate_get_func_val(iterate);
+
+    if(total_violation >= 10. * func_val)
+    {
+      sleqp_log_warn("Problem is badly scaled, constraint violation %g significantly exceeds function value of %g",
+                     total_violation,
+                     func_val);
+    }
+  }
 
   solver->status = SLEQP_INVALID;
 
