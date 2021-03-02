@@ -43,7 +43,7 @@ test_coverage:
   <<: *test_job
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_GENERATE_COVERAGE=On
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_GENERATE_COVERAGE=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS=SoPlex
     - make all build_tests test
 
 # TODO: Find out why these crash
