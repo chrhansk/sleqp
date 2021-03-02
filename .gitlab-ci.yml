@@ -37,7 +37,7 @@ test_MA27:
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA27 -DSLEQP_LPS=SoPlex
-    - make all build_tests test
+    - make all build_tests test_coverage
 
 test_coverage:
   <<: *test_job
