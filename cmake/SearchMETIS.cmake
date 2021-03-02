@@ -16,13 +16,13 @@ find_path(METIS_INCLUDE_DIR
   PATHS $ENV{METISDIR})
 
 if(METIS_INCLUDE_DIR)
-  extract_define("${UMFPACK_INCLUDE_DIRS}/metis.h"
+  extract_define("${METIS_INCLUDE_DIR}/metis.h"
     "METIS_VER_MAJOR"
     METIS_VER_MAJOR)
-  extract_define("${UMFPACK_INCLUDE_DIRS}/metis.h"
+  extract_define("${METIS_INCLUDE_DIR}/metis.h"
     "METIS_VER_MINOR"
     METIS_VER_MINOR)
-  extract_define("${UMFPACK_INCLUDE_DIRS}/metis.h"
+  extract_define("${METIS_INCLUDE_DIR}/metis.h"
     "METIS_VER_SUBMINOR"
     METIS_VER_SUBMINOR)
 
