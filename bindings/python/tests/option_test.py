@@ -11,9 +11,7 @@ class OptionTest(unittest.TestCase):
     def test():
       options = sleqp.Options(invalid_value=1)
 
-      import pdb; pdb.set_trace()
-
-    self.assertRaises(Exception, test)
+    self.assertRaises(AttributeError, test)
 
   def test_roundtrip(self):
     options = sleqp.Options(dual_estimation_type=sleqp.DualEstimationType.LP)
