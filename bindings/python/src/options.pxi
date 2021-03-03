@@ -20,7 +20,13 @@ cdef class Options:
                   'tr_solver']
 
     for key, value in values.items():
-      setattr(self, key, value)
+      self._set_prop(key, value)
+
+  cdef _set_prop(self, name, value):
+    if not name in self.props:
+      raise AttributeError("Invalid property {0}".format(name))
+
+    setattr(self, name, value)
 
   def __dealloc__(self):
     csleqp_call(csleqp.sleqp_options_release(&self.options))
