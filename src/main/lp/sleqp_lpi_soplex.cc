@@ -122,6 +122,14 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
 
   soplex::SPxSolver::Status status = soplex.optimize();
 
+  // retry the solve from scratch
+  if(status != soplex::SPxSolver::OPTIMAL)
+  {
+    sleqp_log_warn("Failed to solve LP, retrying from scratch");
+    soplex.clearBasis();
+    status = soplex.optimize();
+  }
+
   //soplex.writeFileReal("test.lp");
 
   /*
@@ -182,7 +190,12 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
   }
   */
 
-  assert(soplex.hasBasis());
+  if(!(status == soplex::SPxSolver::OPTIMAL &&
+       soplex.hasBasis()))
+  {
+    sleqp_log_error("Failed to solve LP");
+    return SLEQP_INTERNAL_ERROR;
+  }
 
   return SLEQP_OKAY;
 }
