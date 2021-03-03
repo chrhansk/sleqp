@@ -145,4 +145,3 @@ trigger_downstream:
     - master
   trigger:
     project: code/INDo
-    strategy: depend
