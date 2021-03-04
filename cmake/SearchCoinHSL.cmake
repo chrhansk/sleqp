@@ -19,6 +19,6 @@ if(CoinHSL_FOUND)
   endif()
 
   if(UNIX AND NOT APPLE)
-    set(CoinHSL_LIBRARIES "${CoinHSL_LIBRARIES} -ldl")
+    set(CoinHSL_LIBRARIES "${CoinHSL_LIBRARIES} ${CMAKE_DL_LIBS}")
   endif()
 endif()

@@ -123,9 +123,9 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
   soplex::SPxSolver::Status status = soplex.optimize();
 
   // retry the solve from scratch
-  if(status != soplex::SPxSolver::OPTIMAL)
+  if(status != soplex::SPxSolver::SINGULAR)
   {
-    sleqp_log_warn("Failed to solve LP, retrying from scratch");
+    sleqp_log_warn("Initial basis is singular, resolving from scratch");
     soplex.clearBasis();
     status = soplex.optimize();
   }
