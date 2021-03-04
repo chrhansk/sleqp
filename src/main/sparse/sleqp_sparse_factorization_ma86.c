@@ -303,7 +303,10 @@ static SLEQP_RETCODE ma86_data_free(void **star)
 {
   MA86Data* ma86_data = (MA86Data*) (*star);
 
-  ma86_finalise(&(ma86_data->keep), &(ma86_data->control));
+  if(ma86_data->keep)
+  {
+    ma86_finalise(&(ma86_data->keep), &(ma86_data->control));
+  }
 
   sleqp_free(&(ma86_data->rhs_sol));
   sleqp_free(&(ma86_data->order));
