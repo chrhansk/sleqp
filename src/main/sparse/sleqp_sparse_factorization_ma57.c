@@ -534,7 +534,7 @@ static SLEQP_RETCODE ma57_set_matrix(void* factorization_data,
     {
       SLEQP_CALL(sleqp_realloc(&(ma57_workspace->keep), keep_size));
 
-      memset(ma57_workspace->keep, keep_size, sizeof(int32_t));
+      memset(ma57_workspace->keep, 0, keep_size * sizeof(int32_t));
 
       ma57_workspace->keep_size = keep_size;
     }
