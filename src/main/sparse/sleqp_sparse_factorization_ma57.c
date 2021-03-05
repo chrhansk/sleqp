@@ -1,6 +1,7 @@
 #include "sleqp_sparse_factorization_ma57.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "hsl_ma57.h"
 #include "hsl_matrix.h"
@@ -532,6 +533,8 @@ static SLEQP_RETCODE ma57_set_matrix(void* factorization_data,
     if(ma57_workspace->keep_size < keep_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma57_workspace->keep), keep_size));
+
+      memset(ma57_workspace->keep, keep_size, sizeof(int32_t));
 
       ma57_workspace->keep_size = keep_size;
     }
