@@ -1630,86 +1630,118 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
                  "Solution status",
                  descriptions[solver->status]);
 
-  sleqp_log_info(SLEQP_FORMAT_BOLD "%30s: %e" SLEQP_FORMAT_RESET,
-                 "Objective value",
-                 sleqp_iterate_get_func_val(solver->unscaled_iterate));
+  if(solver->scaling_data)
+  {
+    const double feas_eps = sleqp_params_get(solver->params,
+                                             SLEQP_PARAM_FEASIBILITY_TOL);
 
-  sleqp_log_info(SLEQP_FORMAT_BOLD "%30s: %e" SLEQP_FORMAT_RESET,
-                 "Violation",
-                 violation);
+    double unscaled_violation;
+
+    SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->unscaled_iterate,
+                                                  solver->unscaled_problem,
+                                                  feas_eps,
+                                                  &unscaled_violation));
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Scaled objective value",
+                   sleqp_iterate_get_func_val(solver->iterate));
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Scaled violation",
+                   violation);
+
+    sleqp_log_info("%30s:     %5.10e",
+                   "Original objective value",
+                   sleqp_iterate_get_func_val(solver->unscaled_iterate));
+
+    sleqp_log_info("%30s:     %5.10e",
+                   "Original violation",
+                   unscaled_violation);
+
+  }
+  else
+  {
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Objective value",
+                   sleqp_iterate_get_func_val(solver->iterate));
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Violation",
+                   violation);
+  }
 
   sleqp_log_info("%30s: %5d",
                  "Iterations",
                  solver->iteration);
 
-  solver_print_timer(sleqp_func_get_set_timer(unscaled_func),
-                     "Setting function values",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_func_get_set_timer(unscaled_func),
+                                "Setting function values",
+                                solver->elapsed_seconds));
 
-  solver_print_timer(sleqp_func_get_val_timer(unscaled_func),
-                     "Function evaluations",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_func_get_val_timer(unscaled_func),
+                                "Function evaluations",
+                                solver->elapsed_seconds));
 
-  solver_print_timer(sleqp_func_get_grad_timer(unscaled_func),
-                     "Gradient evaluations",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_func_get_grad_timer(unscaled_func),
+                                "Gradient evaluations",
+                                solver->elapsed_seconds));
 
-  solver_print_timer(sleqp_func_get_cons_val_timer(unscaled_func),
-                     "Constraint evaluations",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_func_get_cons_val_timer(unscaled_func),
+                                "Constraint evaluations",
+                                solver->elapsed_seconds));
 
-  solver_print_timer(sleqp_func_get_cons_jac_timer(unscaled_func),
-                     "Jacobian evaluations",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_func_get_cons_jac_timer(unscaled_func),
+                                "Jacobian evaluations",
+                                solver->elapsed_seconds));
 
   if(with_hessian)
   {
-    solver_print_timer(sleqp_func_get_hess_timer(unscaled_func),
-                       "Hessian products",
-                       solver->elapsed_seconds);
+    SLEQP_CALL(solver_print_timer(sleqp_func_get_hess_timer(unscaled_func),
+                                  "Hessian products",
+                                  solver->elapsed_seconds));
   }
 
   if(solver->bfgs_data)
   {
-    solver_print_timer(sleqp_func_get_hess_timer(func),
-                       "BFGS products",
-                       solver->elapsed_seconds);
+    SLEQP_CALL(solver_print_timer(sleqp_func_get_hess_timer(func),
+                                  "BFGS products",
+                                  solver->elapsed_seconds));
 
-    solver_print_timer(sleqp_bfgs_update_timer(solver->bfgs_data),
-                       "BFGS updates",
-                       solver->elapsed_seconds);
+    SLEQP_CALL(solver_print_timer(sleqp_bfgs_update_timer(solver->bfgs_data),
+                                  "BFGS updates",
+                                  solver->elapsed_seconds));
   }
 
   if(solver->sr1_data)
   {
-    solver_print_timer(sleqp_func_get_hess_timer(func),
-                       "SR1 products",
-                       solver->elapsed_seconds);
+    SLEQP_CALL(solver_print_timer(sleqp_func_get_hess_timer(func),
+                                  "SR1 products",
+                                  solver->elapsed_seconds));
 
-    solver_print_timer(sleqp_sr1_update_timer(solver->sr1_data),
-                       "SR1 updates",
-                       solver->elapsed_seconds);
+    SLEQP_CALL(solver_print_timer(sleqp_sr1_update_timer(solver->sr1_data),
+                                  "SR1 updates",
+                                  solver->elapsed_seconds));
   }
 
-  solver_print_timer(sleqp_aug_jacobian_get_factorization_timer(solver->aug_jacobian),
-                     "Factorizations",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_aug_jacobian_get_factorization_timer(solver->aug_jacobian),
+                                "Factorizations",
+                                solver->elapsed_seconds));
 
-  solver_print_timer(sleqp_aug_jacobian_get_substitution_timer(solver->aug_jacobian),
-                     "Substitutions",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_aug_jacobian_get_substitution_timer(solver->aug_jacobian),
+                                "Substitutions",
+                                solver->elapsed_seconds));
 
-  solver_print_timer(sleqp_lpi_get_solve_timer(solver->lp_interface),
-                     "Solved LPs",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_lpi_get_solve_timer(solver->lp_interface),
+                                "Solved LPs",
+                                solver->elapsed_seconds));
 
-  solver_print_timer(sleqp_newton_get_timer(solver->newton_data),
-                     "Solved EQPs",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_newton_get_timer(solver->newton_data),
+                                "Solved EQPs",
+                                solver->elapsed_seconds));
 
-  solver_print_timer(sleqp_linesearch_get_timer(solver->linesearch),
-                     "Line searches",
-                     solver->elapsed_seconds);
+  SLEQP_CALL(solver_print_timer(sleqp_linesearch_get_timer(solver->linesearch),
+                                "Line searches",
+                                solver->elapsed_seconds));
 
   sleqp_log_info("%30s: %8.2fs", "Solving time", solver->elapsed_seconds);
 
@@ -1863,8 +1895,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   const double feas_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_FEASIBILITY_TOL);
 
-  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->unscaled_iterate,
-                                                solver->unscaled_problem,
+  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->iterate,
+                                                solver->problem,
                                                 feas_eps,
                                                 &violation));
 
