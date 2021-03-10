@@ -96,11 +96,11 @@ class LSQTest(unittest.TestCase):
   def setUp(self):
     inf = sleqp.inf()
 
-    var_lb = np.array([-inf, -inf])
-    var_ub = np.array([inf, inf])
+    self.var_lb = np.array([-inf, -inf])
+    self.var_ub = np.array([inf, inf])
 
-    cons_lb = np.array([])
-    cons_ub = np.array([])
+    self.cons_lb = np.array([])
+    self.cons_ub = np.array([])
 
     self.initial_sol = np.array([0., 0.])
 
@@ -108,42 +108,77 @@ class LSQTest(unittest.TestCase):
 
     self.options = sleqp.Options()
 
-    func = Func(num_variables, num_constraints, num_residuals, 0., self.params)
-
-    problem = sleqp.Problem(func,
-                            self.params,
-                            var_lb,
-                            var_ub,
-                            cons_lb,
-                            cons_ub)
-
-    self.solver = sleqp.Solver(problem,
-                               self.params,
-                               self.options,
-                               self.initial_sol)
-
     self.expected_sol = np.array([1., 1.])
 
 
   def test_solve(self):
-    self.solver.solve(100, 3600)
+    func = Func(num_variables, num_constraints, num_residuals, 0., self.params)
 
-    self.assertEqual(self.solver.status, sleqp.Status.Optimal)
+    problem = sleqp.Problem(func,
+                            self.params,
+                            self.var_lb,
+                            self.var_ub,
+                            self.cons_lb,
+                            self.cons_ub)
+
+    solver = sleqp.Solver(problem,
+                          self.params,
+                          self.options,
+                          self.initial_sol)
+
+    solver.solve(100, 3600)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
 
     self.assertTrue(np.allclose(self.expected_sol,
-                                self.solver.solution.primal))
+                                solver.solution.primal))
 
+  def test_solve_ml(self):
+    func = Func(num_variables, num_constraints, num_residuals, 1e-4, self.params)
+
+    problem = sleqp.Problem(func,
+                            self.params,
+                            self.var_lb,
+                            self.var_ub,
+                            self.cons_lb,
+                            self.cons_ub)
+
+    solver = sleqp.Solver(problem,
+                          self.params,
+                          self.options,
+                          self.initial_sol)
+
+    solver.solve(100, 3600)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    self.assertTrue(np.allclose(self.expected_sol,
+                                solver.solution.primal))
 
   def test_solve_nogil(self):
+    func = Func(num_variables, num_constraints, num_residuals, 0., self.params)
+
+    problem = sleqp.Problem(func,
+                            self.params,
+                            self.var_lb,
+                            self.var_ub,
+                            self.cons_lb,
+                            self.cons_ub)
+
+    solver = sleqp.Solver(problem,
+                          self.params,
+                          self.options,
+                          self.initial_sol)
+
     sleqp.set_release_gil(True)
 
     try:
-      self.solver.solve(100, 3600)
+      solver.solve(100, 3600)
 
-      self.assertEqual(self.solver.status, sleqp.Status.Optimal)
+      self.assertEqual(solver.status, sleqp.Status.Optimal)
 
       self.assertTrue(np.allclose(self.expected_sol,
-                                  self.solver.solution.primal))
+                                  solver.solution.primal))
 
     finally:
       sleqp.set_release_gil(False)
