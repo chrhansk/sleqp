@@ -44,11 +44,38 @@ cdef csleqp.SLEQP_RETCODE accepted_iterate_nogil(csleqp.SleqpSolver* solver,
     return accepted_iterate(solver, iterate, callback_data)
 
 
+cdef csleqp.SLEQP_RETCODE performed_iteration(csleqp.SleqpSolver* sol,
+                                              void* callback_data):
+  try:
+    callback_object = (<CallbackHandle> callback_data)
+
+    function = callback_object.function
+    solver = callback_object.solver
+
+    assert solver.solver == sol
+
+    function(solver)
+
+  except BaseException as exception:
+    callback_object.call_exception = exception
+    return csleqp.SLEQP_INTERNAL_ERROR
+
+cdef csleqp.SLEQP_RETCODE performed_iteration_nogil(csleqp.SleqpSolver* solver,
+                                                    void* callback_data) nogil:
+  with gil:
+    return performed_iteration(solver, callback_data)
+
+
 cdef void* get_callback_function_pointer(solver_event):
   if solver_event == SolverEvent.AcceptedIterate:
     if get_release_gil():
       return <void*> accepted_iterate_nogil
     else:
       return <void*> accepted_iterate
+  elif solver_event == SolverEvent.PerformedIteration:
+    if get_release_gil():
+      return <void*> performed_iteration_nogil
+    else:
+      return <void*> performed_iteration
   else:
     raise Exception("Invalid event: {0}".format(solver_event))

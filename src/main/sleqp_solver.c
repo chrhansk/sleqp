@@ -1590,6 +1590,10 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     set_func_value(solver, iterate, SLEQP_VALUE_REASON_REJECTED_ITERATE);
   }
 
+  SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_PERFORMED_ITERATION],
+                                 SLEQP_PERFORMED_ITERATION,
+                                 solver);
+
   return SLEQP_OKAY;
 }
 

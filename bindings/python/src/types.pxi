@@ -49,4 +49,5 @@ cpdef enum DualEstimationType:
   LSQ     = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LSQ
 
 class SolverEvent(Enum):
-  AcceptedIterate = csleqp.SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE
+  AcceptedIterate    = csleqp.SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE
+  PerformedIteration = csleqp.SLEQP_SOLVER_EVENT_PERFORMED_ITERATION
