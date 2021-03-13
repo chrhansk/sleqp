@@ -36,8 +36,11 @@ scaled_func_set_value(SleqpFunc* func,
   SleqpScalingData* scaling_data = problem_scaling->scaling_data;
 
   {
-    const int error_flags = sleqp_options_get_float_error_flags(problem_scaling->options);
-    const int warn_flags = sleqp_options_get_float_warning_flags(problem_scaling->options);
+    const int error_flags = sleqp_options_get_int(problem_scaling->options,
+                                                  SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS);
+
+    const int warn_flags = sleqp_options_get_int(problem_scaling->options,
+                                                 SLEQP_OPTION_INT_FLOAT_WARNING_FLAGS);
 
     SLEQP_INIT_MATH_CHECK;
 
@@ -129,8 +132,11 @@ scaled_func_hess_prod(SleqpFunc* func,
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
   SleqpScalingData* scaling_data = problem_scaling->scaling_data;
 
-  const int error_flags = sleqp_options_get_float_error_flags(problem_scaling->options);
-  const int warn_flags = sleqp_options_get_float_warning_flags(problem_scaling->options);
+  const int error_flags = sleqp_options_get_int(problem_scaling->options,
+                                                SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS);
+
+  const int warn_flags = sleqp_options_get_int(problem_scaling->options,
+                                               SLEQP_OPTION_INT_FLOAT_WARNING_FLAGS);
 
   SLEQP_CALL(sleqp_sparse_vector_copy(direction,
                                       problem_scaling->scaled_direction));
@@ -260,8 +266,11 @@ SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling)
   SleqpScalingData* scaling_data = problem_scaling->scaling_data;
   SleqpProblem* scaled_problem = problem_scaling->scaled_problem;
 
-  const int error_flags = sleqp_options_get_float_error_flags(problem_scaling->options);
-  const int warn_flags = sleqp_options_get_float_warning_flags(problem_scaling->options);
+  const int error_flags = sleqp_options_get_int(problem_scaling->options,
+                                                SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS);
+
+  const int warn_flags = sleqp_options_get_int(problem_scaling->options,
+                                               SLEQP_OPTION_INT_FLOAT_WARNING_FLAGS);
 
   SLEQP_INIT_MATH_CHECK;
 

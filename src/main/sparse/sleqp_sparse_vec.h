@@ -6,12 +6,12 @@
  * @brief Definition of sparse vectors.
  **/
 
+#include "sleqp_export.h"
+#include "sleqp_types.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include "sleqp_export.h"
-#include "sleqp_types.h"
 
   /**
    * A sparse vector data structure. Indices

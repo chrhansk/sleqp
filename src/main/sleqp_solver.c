@@ -264,7 +264,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SleqpFunc* func = scaled_problem->func;
 
   {
-    const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_hessian_eval(options);
+    const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_int(options,
+                                                                  SLEQP_OPTION_INT_HESSIAN_EVAL);
 
     if(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
        hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
@@ -702,7 +703,8 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
 {
   SleqpOptions* options = solver->options;
 
-  SLEQP_DUAL_ESTIMATION_TYPE estimation_type = sleqp_options_get_dual_estimation_type(options);
+  SLEQP_DUAL_ESTIMATION_TYPE estimation_type = sleqp_options_get_int(options,
+                                                                     SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE);
 
   if(estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LSQ)
   {
@@ -1255,9 +1257,11 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   const SleqpOptions* options = solver->options;
 
-  const bool quadratic_model = sleqp_options_get_use_quadratic_model(options);
+  const bool quadratic_model = sleqp_options_get_bool(options,
+                                                      SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
 
-  const bool perform_newton_step = sleqp_options_get_perform_newton_step(options) && quadratic_model;
+  const bool perform_newton_step = quadratic_model &&
+    sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
 
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -1290,7 +1294,8 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   // Derivative check
   {
-    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_deriv_check(options);
+    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_int(options,
+                                                                SLEQP_OPTION_INT_DERIV_CHECK);
 
     if(deriv_check & SLEQP_DERIV_CHECK_FIRST)
     {
@@ -1421,7 +1426,10 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
     step_accepted = false;
 
-    if((problem->num_constraints > 0) && sleqp_options_get_perform_soc(options))
+    const bool perform_soc = sleqp_options_get_bool(options,
+                                                    SLEQP_OPTION_BOOL_PERFORM_SOC);
+
+    if((problem->num_constraints > 0) && perform_soc)
     {
       sleqp_log_debug("Computing second-order correction");
 
@@ -1793,7 +1801,9 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   // Warnings
   {
-    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_deriv_check(solver->options);
+    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_int(solver->options,
+                                                                SLEQP_OPTION_INT_DERIV_CHECK);
+
     const bool inexact_hessian = (solver->bfgs_data || solver->sr1_data);
 
     const int hessian_check_flags = SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE | SLEQP_DERIV_CHECK_SECOND_SIMPLE;

@@ -115,7 +115,7 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
                                SLEQP_MAX(problem->num_variables, problem->num_constraints)));
 
-  SLEQP_TR_SOLVER tr_solver = sleqp_options_get_tr_solver(options);
+  SLEQP_TR_SOLVER tr_solver = sleqp_options_get_int(options, SLEQP_OPTION_INT_TR_SOLVER);
 
   if(tr_solver == SLEQP_TR_SOLVER_AUTO)
   {

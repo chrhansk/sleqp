@@ -352,14 +352,16 @@ SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
   SLEQP_CALL(sleqp_options_capture(options));
   data->options = options;
 
-  const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_hessian_eval(options);
+  const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_int(options, SLEQP_OPTION_INT_HESSIAN_EVAL);
 
   assert(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
          hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS);
 
   const bool damped = (hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS);
-  const int num = sleqp_options_get_quasi_newton_num_iterates(options);
-  const SLEQP_BFGS_SIZING sizing = sleqp_options_get_bfgs_sizing(options);
+
+  const int num = sleqp_options_get_int(options, SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
+
+  const SLEQP_BFGS_SIZING sizing = sleqp_options_get_int(options, SLEQP_OPTION_INT_BFGS_SIZING);
 
   assert(num > 0);
 

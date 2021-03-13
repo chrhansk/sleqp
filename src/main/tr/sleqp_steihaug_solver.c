@@ -328,7 +328,7 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
   SLEQP_CALL(sleqp_params_capture(params));
   solver->params = params;
 
-  solver->max_iter = sleqp_options_get_max_newton_iterations(options);
+  solver->max_iter = sleqp_options_get_int(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d, problem->num_variables));
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->Bd, problem->num_variables));

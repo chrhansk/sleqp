@@ -859,7 +859,8 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
 
-  const int max_newton_iter = sleqp_options_get_max_newton_iterations(options);
+  const int max_newton_iter = sleqp_options_get_int(options,
+                                                    SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
 
   data->trlib_maxiter = problem->num_variables;
 

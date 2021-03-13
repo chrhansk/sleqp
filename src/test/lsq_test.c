@@ -216,7 +216,9 @@ START_TEST(test_unconstrained_solve)
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_options_set_deriv_check(options, SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_lsq_func,

@@ -354,8 +354,9 @@ START_TEST(test_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -386,11 +387,13 @@ END_TEST
 
 START_TEST(test_sr1_solve)
 {
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_options_set_hessian_eval(options,
-                                             SLEQP_HESSIAN_EVAL_SR1));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
+                                    SLEQP_HESSIAN_EVAL_SR1));
 
   SleqpSolver* solver;
 
@@ -423,14 +426,17 @@ END_TEST
 
 START_TEST(test_bfgs_solve_no_sizing)
 {
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_options_set_bfgs_sizing(options,
-                                            SLEQP_BFGS_SIZING_NONE));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_BFGS_SIZING,
+                                    SLEQP_BFGS_SIZING_NONE));
 
-  ASSERT_CALL(sleqp_options_set_hessian_eval(options,
-                                             SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
+                                    SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
 
   SleqpSolver* solver;
 
@@ -463,14 +469,13 @@ END_TEST
 
 START_TEST(test_bfgs_solve_centered_ol_sizing)
 {
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_BFGS_SIZING,
+                                    SLEQP_BFGS_SIZING_CENTERED_OL));
 
-  ASSERT_CALL(sleqp_options_set_bfgs_sizing(options,
-                                            SLEQP_BFGS_SIZING_CENTERED_OL));
-
-  ASSERT_CALL(sleqp_options_set_hessian_eval(options,
-                                             SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
+                                    SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
 
   SleqpSolver* solver;
 
@@ -503,8 +508,9 @@ END_TEST
 
 START_TEST(test_unscaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
@@ -545,8 +551,9 @@ END_TEST
 
 START_TEST(test_scaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   SleqpSolver* solver;
 
@@ -595,15 +602,17 @@ END_TEST
 
 START_TEST(test_scaled_sr1_solve)
 {
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
   SleqpScalingData* scaling_data;
 
-  ASSERT_CALL(sleqp_options_set_hessian_eval(options,
-                                             SLEQP_HESSIAN_EVAL_SR1));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
+                                    SLEQP_HESSIAN_EVAL_SR1));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
                                    problem->num_variables,
@@ -648,15 +657,17 @@ END_TEST
 
 START_TEST(test_scaled_bfgs_solve)
 {
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
   SleqpScalingData* scaling_data;
 
-  ASSERT_CALL(sleqp_options_set_hessian_eval(options,
-                                             SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
+                                    SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
                                    problem->num_variables,
@@ -701,8 +712,9 @@ END_TEST
 
 START_TEST(test_auto_scaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_deriv_check(options,
-                                            SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 

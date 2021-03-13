@@ -276,7 +276,9 @@ SLEQP_RETCODE sleqp_sr1_data_create(SleqpSR1Data** star,
   SLEQP_CALL(sleqp_options_capture(options));
   data->options = options;
 
-  const int num_iter = sleqp_options_get_quasi_newton_num_iterates(options);
+  const int num_iter = sleqp_options_get_int(options,
+                                             SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
+
   assert(num_iter > 0);
 
   const int num_variables = sleqp_func_get_num_variables(func);

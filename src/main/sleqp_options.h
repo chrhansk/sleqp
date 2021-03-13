@@ -12,86 +12,48 @@
 extern "C" {
 #endif
 
+  typedef enum {
+    SLEQP_OPTION_INT_DERIV_CHECK = 0,
+    SLEQP_OPTION_INT_HESSIAN_EVAL,
+    SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE,
+    SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES,
+    SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS,
+    SLEQP_OPTION_INT_FLOAT_WARNING_FLAGS,
+    SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS,
+    SLEQP_OPTION_INT_BFGS_SIZING,
+    SLEQP_OPTION_INT_TR_SOLVER,
+    SLEQP_NUM_INT_OPTIONS
+  } SLEQP_OPTION_INT;
+
+  typedef enum {
+    SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP = 0,
+    SLEQP_OPTION_BOOL_PERFORM_SOC,
+    SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL,
+    SLEQP_NUM_BOOL_OPTIONS
+  } SLEQP_OPTION_BOOL;
+
   typedef struct SleqpOptions SleqpOptions;
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_options_create(SleqpOptions** star);
 
   SLEQP_EXPORT
-  bool sleqp_options_get_perform_newton_step(const SleqpOptions* options);
+  int sleqp_options_get_int(const SleqpOptions* options,
+                            SLEQP_OPTION_INT option);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_options_set_int(SleqpOptions* options,
+                                      SLEQP_OPTION_INT option,
+                                      int value);
 
   SLEQP_EXPORT
-  bool sleqp_options_get_perform_soc(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  bool sleqp_options_get_use_quadratic_model(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  SLEQP_DERIV_CHECK sleqp_options_get_deriv_check(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  SLEQP_HESSIAN_EVAL sleqp_options_get_hessian_eval(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  SLEQP_DUAL_ESTIMATION_TYPE sleqp_options_get_dual_estimation_type(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  int sleqp_options_get_quasi_newton_num_iterates(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  int sleqp_options_get_max_newton_iterations(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  int sleqp_options_get_float_warning_flags(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  int sleqp_options_get_float_error_flags(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  SLEQP_BFGS_SIZING sleqp_options_get_bfgs_sizing(const SleqpOptions* options);
-
-  SLEQP_EXPORT
-  SLEQP_TR_SOLVER sleqp_options_get_tr_solver(const SleqpOptions* options);
+  bool sleqp_options_get_bool(const SleqpOptions* options,
+                              SLEQP_OPTION_BOOL option);
 
   SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_perform_newton_step(SleqpOptions* options, bool value);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_perform_soc(SleqpOptions* options, bool value);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_use_quadratic_model(SleqpOptions* options, bool value);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_deriv_check(SleqpOptions* options,
-                                              SLEQP_DERIV_CHECK value);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_hessian_eval(SleqpOptions* options,
-                                               SLEQP_HESSIAN_EVAL value);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_dual_estimation_type(SleqpOptions* options,
-                                                       SLEQP_DUAL_ESTIMATION_TYPE dual_estimation_type);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_quasi_newton_num_iterates(SleqpOptions* options,
-                                                            int size);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_max_newton_iterations(SleqpOptions* options, int iterations);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_float_warning_flags(SleqpOptions* options, int flags);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_float_error_flags(SleqpOptions* options, int flags);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_bfgs_sizing(SleqpOptions* options, SLEQP_BFGS_SIZING sizing);
-
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_options_set_tr_solver(SleqpOptions* options, SLEQP_TR_SOLVER solver);
+  SLEQP_RETCODE sleqp_options_set_bool(SleqpOptions* options,
+                                       SLEQP_OPTION_BOOL option,
+                                       bool value);
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_options_capture(SleqpOptions* options);
