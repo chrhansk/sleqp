@@ -16,6 +16,8 @@ variables:
   before_script:
     - mkdir -p build
   dependencies: []
+
+.python_report_template: &python_report
   artifacts:
     when: always
     reports:
@@ -31,6 +33,7 @@ test_MUMPS:
 
 test_Umfpack:
   <<: *test_job
+  <<: *python_report
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS=SoPlex
