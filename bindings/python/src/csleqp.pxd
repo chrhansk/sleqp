@@ -101,6 +101,19 @@ cdef extern from "sleqp.h":
     SLEQP_OPTION_BOOL_PERFORM_SOC,
     SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL
 
+  ctypedef enum SLEQP_SOLVER_STATE_REAL:
+    SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
+    SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS,
+    SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL,
+    SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL,
+    SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
+    SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
+    SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES,
+    SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM
+
+  ctypedef enum SLEQP_SOLVER_STATE_INT:
+    SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE
+
   ctypedef enum SLEQP_SOLVER_EVENT:
     SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
     SLEQP_SOLVER_EVENT_PERFORMED_ITERATION,
@@ -461,6 +474,12 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                    int max_num_iterations,
                                    double time_limit) nogil
+
+  double sleqp_solver_get_real_state(const SleqpSolver* solver,
+                                     SLEQP_SOLVER_STATE_REAL value)
+
+  int sleqp_solver_get_int_state(const SleqpSolver* solver,
+                                 SLEQP_SOLVER_STATE_INT value)
 
   SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
 

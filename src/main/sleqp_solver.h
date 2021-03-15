@@ -18,6 +18,21 @@
 extern "C" {
 #endif
 
+  typedef enum {
+    SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
+    SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS,
+    SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL,
+    SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL,
+    SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
+    SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
+    SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES,
+    SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM,
+  } SLEQP_SOLVER_STATE_REAL;
+
+  typedef enum {
+    SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE,
+  } SLEQP_SOLVER_STATE_INT;
+
   typedef struct SleqpSolver SleqpSolver;
 
   /**
@@ -50,13 +65,19 @@ extern "C" {
                                    int max_num_iterations,
                                    double time_limit);
 
+  SLEQP_EXPORT double sleqp_solver_get_real_state(const SleqpSolver* solver,
+                                                  SLEQP_SOLVER_STATE_REAL value);
+
+  SLEQP_EXPORT int sleqp_solver_get_int_state(const SleqpSolver* solver,
+                                              SLEQP_SOLVER_STATE_INT value);
+
   /**
    * Returns the status of the last call to @ref sleqp_solver_solve
    *
    * @param[in]  solver           The solver
    *
    **/
-  SLEQP_EXPORT SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver);
+  SLEQP_EXPORT SLEQP_STATUS sleqp_solver_get_status(const SleqpSolver* solver);
 
   /**
    * Returns the current iterate of the solver
@@ -81,7 +102,7 @@ extern "C" {
    * @param[in]  solver           The solver
    *
    **/
-  SLEQP_EXPORT int sleqp_solver_get_iterations(SleqpSolver* solver);
+  SLEQP_EXPORT int sleqp_solver_get_iterations(const SleqpSolver* solver);
 
   /**
    * Returns the number of seconds elapsed during the last call to @ref sleqp_solver_solve
@@ -89,7 +110,7 @@ extern "C" {
    * @param[in]  solver           The solver
    *
    **/
-  SLEQP_EXPORT double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver);
+  SLEQP_EXPORT double sleqp_solver_get_elapsed_seconds(const SleqpSolver* solver);
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_solver_add_callback(SleqpSolver* solver,

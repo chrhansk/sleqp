@@ -196,6 +196,19 @@ cdef class Solver:
                                                    callback_handle.function_pointer,
                                                    <void*> callback_handle))
 
+  cpdef states(self):
+    return {
+      SolverState.TrustRadius:      csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS),
+      SolverState.LPTrustRadius:    csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS),
+      SolverState.ScaledFuncVal:    csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL),
+      SolverState.ScaledMeritVal:   csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL),
+      SolverState.ScaledFeasRes:    csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES),
+      SolverState.ScaledStatRes:    csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES),
+      SolverState.ScaledSlackRes:   csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES),
+      SolverState.PenaltyParameter: csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM),
+      SolverState.LastStepType:     csleqp.sleqp_solver_get_int_state(self.solver, csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE)
+    }
+
 
 cdef update_solver_callbacks():
   cdef Solver solver

@@ -1936,6 +1936,58 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+double sleqp_solver_get_real_state(const SleqpSolver* solver,
+                                   SLEQP_SOLVER_STATE_REAL value)
+{
+  SleqpIterate* iterate = solver->iterate;
+
+  switch(value)
+  {
+  case SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS:
+    return solver->trust_radius;
+    break;
+  case SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS:
+    return solver->lp_trust_radius;
+    break;
+  case SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL:
+    return sleqp_iterate_get_func_val(solver->iterate);
+    break;
+  case SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL:
+    return solver->current_merit_value;
+    break;
+  case SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES:
+    return solver->feasibility_residuum;
+    break;
+  case SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES:
+    return solver->stationarity_residuum;
+    break;
+  case SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES:
+    return solver->slackness_residuum;
+    break;
+  case SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM:
+    return solver->penalty_parameter;
+    break;
+  default:
+    sleqp_log_error("Invalid state requested (%d)", value);
+  }
+  return SLEQP_NONE;
+}
+
+int sleqp_solver_get_int_state(const SleqpSolver* solver,
+                               SLEQP_SOLVER_STATE_INT value)
+{
+  switch(value)
+  {
+  case SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE:
+    return solver->last_step_type;
+    break;
+  default:
+    sleqp_log_error("Invalid state requested (%d)", value);
+  }
+
+  return SLEQP_NONE;
+}
+
 SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                         SleqpIterate** iterate)
 {
@@ -1961,17 +2013,17 @@ SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
+SLEQP_STATUS sleqp_solver_get_status(const SleqpSolver* solver)
 {
   return solver->status;
 }
 
-int sleqp_solver_get_iterations(SleqpSolver* solver)
+int sleqp_solver_get_iterations(const SleqpSolver* solver)
 {
   return solver->iteration;
 }
 
-double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver)
+double sleqp_solver_get_elapsed_seconds(const SleqpSolver* solver)
 {
   return solver->elapsed_seconds;
 }

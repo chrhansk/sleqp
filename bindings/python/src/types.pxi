@@ -1,6 +1,6 @@
 #cython: language_level=3
 
-from enum import Enum, Flag
+from enum import Enum, Flag, auto
 
 cpdef enum Status:
   Optimal    = csleqp.SLEQP_OPTIMAL
@@ -51,3 +51,14 @@ cpdef enum DualEstimationType:
 class SolverEvent(Enum):
   AcceptedIterate    = csleqp.SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE
   PerformedIteration = csleqp.SLEQP_SOLVER_EVENT_PERFORMED_ITERATION
+
+class SolverState(Enum):
+  TrustRadius = auto()
+  LPTrustRadius = auto()
+  ScaledFuncVal = auto()
+  ScaledMeritVal = auto()
+  ScaledFeasRes = auto()
+  ScaledStatRes = auto()
+  ScaledSlackRes = auto()
+  PenaltyParameter = auto()
+  LastStepType = auto()
