@@ -2,7 +2,7 @@
 
 from enum import Enum, Flag, auto
 
-cpdef enum Status:
+class Status(Enum):
   Optimal    = csleqp.SLEQP_OPTIMAL
   Feasible   = csleqp.SLEQP_FEASIBLE
   Infeasible = csleqp.SLEQP_INFEASIBLE
@@ -14,22 +14,22 @@ class DerivCheck(Flag):
   SecondExhaustive = csleqp.SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE
   SecondSimple     = csleqp.SLEQP_DERIV_CHECK_SECOND_SIMPLE
 
-cpdef enum HessianEval:
+class HessianEval(Enum):
   Exact      = csleqp.SLEQP_HESSIAN_EVAL_EXACT
   SR1        = csleqp.SLEQP_HESSIAN_EVAL_SR1
   SimpleBFGS = csleqp.SLEQP_HESSIAN_EVAL_SIMPLE_BFGS
   DampedBFGS = csleqp.SLEQP_HESSIAN_EVAL_DAMPED_BFGS
 
-cpdef enum Sizing:
+class Sizing(Enum):
   NoSizing   = csleqp.SLEQP_BFGS_SIZING_NONE
   CenteredOL = csleqp.SLEQP_BFGS_SIZING_CENTERED_OL
 
-cpdef enum TRSolver:
+class TRSolver(Enum):
     TRlib = csleqp.SLEQP_TR_SOLVER_TRLIB
     CG    = csleqp.SLEQP_TR_SOLVER_CG
     Auto  = csleqp.SLEQP_TR_SOLVER_AUTO
 
-cpdef enum ValueReason:
+class ValueReason(Enum):
   NoReason         = csleqp.SLEQP_VALUE_REASON_NONE
   Init             = csleqp.SLEQP_VALUE_REASON_INIT
   CheckingDeriv    = csleqp.SLEQP_VALUE_REASON_CHECKING_DERIV
@@ -38,13 +38,13 @@ cpdef enum ValueReason:
   TryingSOCIterate = csleqp.SLEQP_VALUE_REASON_TRYING_SOC_ITERATE
   RejectedIterate  = csleqp.SLEQP_VALUE_REASON_REJECTED_ITERATE
 
-cpdef enum ActiveState:
+class ActiveState(Enum):
   Inactive    = csleqp.SLEQP_INACTIVE
   ActiveLower = csleqp.SLEQP_ACTIVE_LOWER
   ActiveUpper = csleqp.SLEQP_ACTIVE_UPPER
   ActiveBoth  = csleqp.SLEQP_ACTIVE_BOTH
 
-cpdef enum DualEstimationType:
+class DualEstimationType(Enum):
   LP      = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LP
   LSQ     = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LSQ
 

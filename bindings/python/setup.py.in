@@ -42,8 +42,8 @@ def cythonize(*args, **kwargs):
     return cythonize(*args, **kwargs)
 
 extensions = [
-    Extension("sleqp.sleqp_python_extension",
-              ['src/sleqp_python_extension.pyx'],
+    Extension("sleqp.sleqp",
+              ['src/sleqp.pyx'],
               include_dirs=[numpy.get_include()] + local_include_dirs + pkgconfig_args['includes'],
               libraries=[project_name],
               extra_link_args=pkgconfig_args['libs'],
