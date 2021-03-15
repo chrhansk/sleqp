@@ -16,6 +16,10 @@ variables:
   before_script:
     - mkdir -p build
   dependencies: []
+  artifacts:
+    when: always
+    reports:
+      junit: ./bindings/python/python_test_output.xml
 
 # TODO: Run tests as soon as we can get a MUMPS version without OpenMP
 test_MUMPS:

@@ -2,6 +2,6 @@
 deps =
      -r{toxinidir}/requirements.txt
      -r{toxinidir}/test_requirements.txt
-commands = pytest
+commands = pytest --junitxml {toxinidir}/python_test_output.xml
 setenv = LD_LIBRARY_PATH=@SLEQP_LIBRARY_DIR@
 passenv = GRB_LICENSE_FILE
