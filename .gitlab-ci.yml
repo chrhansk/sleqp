@@ -28,9 +28,8 @@ variables:
       junit: ./build/*.xml
 
 # TODO: Run tests as soon as we can get a MUMPS version without OpenMP
-test_MUMPS:
+test_build_MUMPS:
   <<: *test_job
-  <<: *test_report
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MUMPS -DSLEQP_LPS=$DEFAULT_LPS
