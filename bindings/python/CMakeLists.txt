@@ -13,6 +13,7 @@ if(PythonInterp_FOUND AND PythonLibs_FOUND)
     PROJECT_COMPONENT "python")
 
   add_dependencies(python_sleqp sleqp)
+  add_dependencies(build_tests python_sleqp)
 
 else()
   message(STATUS "Could not find python, extension will not be built")
