@@ -9,6 +9,8 @@ stages:
 
 variables:
   CTEST_OUTPUT_ON_FAILURE: '1'
+  DEFAULT_LPS: 'SoPlex'
+  DEFAULT_FACT: 'Umfpack'
 
 # run tests
 .test_template: &test_job
@@ -17,65 +19,84 @@ variables:
     - mkdir -p build
   dependencies: []
 
-.python_report_template: &python_report
+.test_report: &test_report
+  variables:
+    TEST_EXPORT_XML: 1
+  artifacts:
+    when: always
+    reports:
+      junit: ./build/*.xml
+
+# TODO: Run tests as soon as we can get a MUMPS version without OpenMP
+test_MUMPS:
+  <<: *test_job
+  <<: *test_report
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MUMPS -DSLEQP_LPS=$DEFAULT_LPS
+    - make
+
+test_Umfpack:
+  <<: *test_job
+  <<: *test_report
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=Umfpack -DSLEQP_LPS=$DEFAULT_LPS
+    - make all build_tests test
+
+test_MA27:
+  <<: *test_job
+  <<: *test_report
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA27 -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
+
+test_MA57:
+  <<: *test_job
+  <<: *test_report
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA57 -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
+
+test_MA86:
+  <<: *test_job
+  <<: *test_report
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA86 -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
+
+test_MA97:
+  <<: *test_job
+  <<: *test_report
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA97 -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
+
+test_coverage:
+  <<: *test_job
+  <<: *test_report
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_GENERATE_COVERAGE=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test_coverage
+
+test_python:
+  <<: *test_job
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
   artifacts:
     when: always
     reports:
       junit: ./bindings/python/python_test_output.xml
 
-# TODO: Run tests as soon as we can get a MUMPS version without OpenMP
-test_MUMPS:
-  <<: *test_job
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MUMPS -DSLEQP_LPS=SoPlex
-    - make
-
-test_Umfpack:
-  <<: *test_job
-  <<: *python_report
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS=SoPlex
-    - make all build_tests test
-
-test_MA27:
-  <<: *test_job
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA27 -DSLEQP_LPS=SoPlex
-    - make all build_tests test
-
-test_coverage:
-  <<: *test_job
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_GENERATE_COVERAGE=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS=SoPlex
-    - make all build_tests test_coverage
-
-test_MA57:
-  <<: *test_job
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA57 -DSLEQP_LPS=SoPlex
-    - make all build_tests test
-
-test_MA86:
-  <<: *test_job
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA86 -DSLEQP_LPS=SoPlex
-    - make all build_tests test
-
-test_MA97:
-  <<: *test_job
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=MA97 -DSLEQP_LPS=SoPlex
-    - make all build_tests test
 
 # TODO: As soon as we get capable compilers, add misc. sanitizers to tests
-
 
 build:
   stage: build
@@ -84,7 +105,7 @@ build:
   script:
     - mkdir -p build
     - cd build
-    - cmake .. -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_CXX_FLAGS="-O3 -g" -DCMAKE_C_FLAGS="-O3 -g" -DSLEQP_ENABLE_UNIT_TESTS=Off -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=Umfpack -DSLEQP_LPS=SoPlex
+    - cmake .. -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_BUILD_TYPE="Release" -DSLEQP_ENABLE_UNIT_TESTS=Off -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
     - make -j$(nproc)
   artifacts:
     paths:
