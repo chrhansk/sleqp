@@ -207,7 +207,7 @@ cdef class Solver:
       SolverState.ScaledStatRes:    csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES),
       SolverState.ScaledSlackRes:   csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES),
       SolverState.PenaltyParameter: csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM),
-      SolverState.LastStepType:     csleqp.sleqp_solver_get_int_state(self.solver, csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE)
+      SolverState.LastStepType:     StepType(csleqp.sleqp_solver_get_int_state(self.solver, csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE))
     }
 
 

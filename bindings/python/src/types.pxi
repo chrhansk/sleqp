@@ -62,3 +62,11 @@ class SolverState(Enum):
   ScaledSlackRes = auto()
   PenaltyParameter = auto()
   LastStepType = auto()
+
+
+class StepType(Enum):
+  NoStep       = csleqp.SLEQP_STEPTYPE_NONE
+  Accepted     = csleqp.SLEQP_STEPTYPE_ACCEPTED
+  AcceptedFull = csleqp.SLEQP_STEPTYPE_ACCEPTED_FULL
+  AcceptedSOC  = csleqp.SLEQP_STEPTYPE_ACCEPTED_SOC
+  Rejected     = csleqp.SLEQP_STEPTYPE_REJECTED

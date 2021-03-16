@@ -1159,7 +1159,7 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
     [SLEQP_STEPTYPE_NONE] = "",
     [SLEQP_STEPTYPE_ACCEPTED] = "Accepted",
     [SLEQP_STEPTYPE_ACCEPTED_FULL] = "Accepted (full)",
-    [SLEQP_STEPTYPE_SOC_ACCEPTED] = "SOC accepted",
+    [SLEQP_STEPTYPE_ACCEPTED_SOC] = "Accepted SOC",
     [SLEQP_STEPTYPE_REJECTED] = "Rejected"
   };
 
@@ -1485,7 +1485,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
       if(soc_step_accepted)
       {
-        solver->last_step_type = SLEQP_STEPTYPE_SOC_ACCEPTED;
+        solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED_SOC;
         sleqp_log_debug("Second-order correction accepted");
       }
       else
