@@ -196,7 +196,8 @@ cdef class Solver:
                                                    callback_handle.function_pointer,
                                                    <void*> callback_handle))
 
-  cpdef states(self):
+  @property
+  def states(self):
     return {
       SolverState.TrustRadius:      csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS),
       SolverState.LPTrustRadius:    csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS),
