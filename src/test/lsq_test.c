@@ -280,22 +280,4 @@ Suite* lsq_test_suite()
   return suite;
 }
 
-
-int main()
-{
-  int num_fails;
-  Suite* suite;
-  SRunner* srunner;
-
-  suite = lsq_test_suite();
-  srunner = srunner_create(suite);
-
-  srunner_set_fork_status(srunner, CK_NOFORK);
-  srunner_run_all(srunner, CK_NORMAL);
-
-  num_fails = srunner_ntests_failed(srunner);
-
-  srunner_free(srunner);
-
-  return (num_fails > 0) ? EXIT_FAILURE : EXIT_SUCCESS;
-}
+TEST_MAIN(lsq_test_suite)

@@ -155,7 +155,7 @@ void constrained_teardown()
   quadconsfunc_teardown();
 }
 
-Suite* constrained_test_suite()
+Suite* constrained_cauchy_test_suite()
 {
   Suite *suite;
   TCase *tc_cons;
@@ -176,21 +176,4 @@ Suite* constrained_test_suite()
   return suite;
 }
 
-int main()
-{
-  int num_fails;
-  Suite* suite;
-  SRunner* srunner;
-
-  suite = constrained_test_suite();
-  srunner = srunner_create(suite);
-
-  srunner_set_fork_status(srunner, CK_NOFORK);
-  srunner_run_all(srunner, CK_NORMAL);
-
-  num_fails = srunner_ntests_failed(srunner);
-
-  srunner_free(srunner);
-
-  return (num_fails > 0) ? EXIT_FAILURE : EXIT_SUCCESS;
-}
+TEST_MAIN(constrained_cauchy_test_suite)
