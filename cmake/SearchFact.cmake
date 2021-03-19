@@ -33,14 +33,14 @@ macro(add_factorization)
 endmacro()
 
 add_factorization(
-  NAME "MUMPS"
-  SOURCES sleqp_sparse_factorization_mumps.c
-  DEPS_DEBIAN "libumfpack5 (>= 5.2)")
-
-add_factorization(
   NAME "Umfpack"
   SOURCES sleqp_sparse_factorization_umfpack.c
   DEPS_DEBIAN "libmumps-5.1.2")
+
+add_factorization(
+  NAME "MUMPS"
+  SOURCES sleqp_sparse_factorization_mumps.c
+  DEPS_DEBIAN "libumfpack5 (>= 5.2)")
 
 add_factorization(
   NAME "MA27"
