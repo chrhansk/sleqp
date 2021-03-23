@@ -48,6 +48,9 @@ struct SleqpNewtonData
   SleqpSparseVec* jacobian_product;
 
   SleqpSparseVec* sparse_cache;
+  SleqpSparseVec* tr_step;
+  SleqpSparseVec* tr_hessian_product;
+
   double* dense_cache;
 
   SleqpTRSolver* trust_region_solver;
@@ -110,6 +113,12 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
                                               problem->num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->tr_step,
+                                              problem->num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->tr_hessian_product,
                                               problem->num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
@@ -502,6 +511,59 @@ SLEQP_RETCODE sleqp_newton_compute_multipliers(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
+static
+SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
+                              const SleqpSparseVec* multipliers,
+                              const SleqpSparseVec* gradient,
+                              SleqpSparseVec* tr_step,
+                              double trust_radius)
+{
+  SleqpProblem* problem = data->problem;
+
+  SleqpAugJacobian* jacobian = data->jacobian;
+  SleqpSparseVec* sparse_cache = data->sparse_cache;
+  SleqpSparseVec* tr_prod = data->tr_hessian_product;
+
+  const double zero_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  const double step_norm = sleqp_sparse_vector_norm(tr_step);
+  const double radius_res = step_norm - trust_radius;
+
+  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
+                                           tr_step,
+                                           sparse_cache,
+                                           NULL));
+
+  const double projection_res = sleqp_sparse_vector_inf_norm(sparse_cache);
+
+  double one = 1.;
+
+  SLEQP_CALL(sleqp_func_hess_prod(problem->func,
+                                  &one,
+                                  tr_step,
+                                  multipliers,
+                                  tr_prod));
+
+  SLEQP_CALL(sleqp_sparse_vector_add(tr_prod,
+                                     gradient,
+                                     zero_eps,
+                                     sparse_cache));
+
+  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
+                                           sparse_cache,
+                                           tr_prod,
+                                           NULL));
+
+  const double stationarity_res = sleqp_sparse_vector_inf_norm(tr_prod);
+
+  sleqp_log_debug("Trust region feasibility residuum: %f, stationarity residuum: %f",
+                  SLEQP_MAX(radius_res, projection_res),
+                  stationarity_res);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                         SleqpSparseVec* multipliers,
                                         SleqpSparseVec* newton_step)
@@ -513,6 +575,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
   SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
+  SleqpSparseVec* tr_step = data->tr_step;
 
   SleqpAugJacobian* jacobian = data->jacobian;
 
@@ -588,22 +651,28 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                    jacobian,
                                    multipliers,
                                    data->gradient,
-                                   data->sparse_cache,
+                                   tr_step,
                                    trust_radius));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
+  SLEQP_CALL(sleqp_sparse_vector_add(tr_step,
                                      data->initial_direction,
                                      zero_eps,
                                      newton_step));
 
 #if !defined(NDEBUG)
 
+  SLEQP_CALL(print_residuals(data,
+                             multipliers,
+                             data->gradient,
+                             tr_step,
+                             trust_radius));
+
   // Initial direction and trust region direction
   // must be orthogonal
   {
     double direction_dot;
 
-    SLEQP_CALL(sleqp_sparse_vector_dot(data->sparse_cache,
+    SLEQP_CALL(sleqp_sparse_vector_dot(tr_step,
                                        data->initial_direction,
                                        &direction_dot));
 
@@ -652,6 +721,8 @@ static SLEQP_RETCODE newton_data_free(SleqpNewtonData** star)
 
   sleqp_free(&data->dense_cache);
 
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->tr_hessian_product));
+  SLEQP_CALL(sleqp_sparse_vector_free(&data->tr_step));
   SLEQP_CALL(sleqp_sparse_vector_free(&data->sparse_cache));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->jacobian_product));
