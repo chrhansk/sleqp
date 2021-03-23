@@ -343,6 +343,8 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
   double max_rayleigh = -inf;
   double min_rayleigh = inf;
 
+  bool exhausted_time_limit = false;
+
   while(1)
   {
     (*trlib_ret) = trlib_krylov_min(init,          // trlib_int_t init
@@ -403,18 +405,6 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
       SLEQP_CALL(sleqp_sparse_vector_copy(data->v, data->p));
 
-      {
-        double v_norm = sleqp_sparse_vector_norm(data->v);
-
-        // We can stop directly, if the projected gradient is zero
-        if(sleqp_is_zero(v_norm, zero_eps))
-        {
-          SLEQP_CALL(sleqp_timer_stop(data->timer));
-          return SLEQP_OKAY;
-        }
-
-      }
-
       SLEQP_CALL(sleqp_sparse_vector_scale(data->p, -1.));
 
       g_dot_g = sleqp_sparse_vector_norm_sq(data->g);
@@ -452,19 +442,16 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
       double scale = sqrt(v_dot_g);
 
-      if(!sleqp_is_pos(scale, zero_eps))
+      if(sleqp_is_pos(scale, zero_eps))
       {
-        SLEQP_CALL(sleqp_timer_stop(data->timer));
-        return SLEQP_OKAY;
+        scale = 1./ scale;
+
+        SLEQP_CALL(matrix_push_column(data->Q,
+                                      data->v,
+                                      scale));
+
+        assert(sleqp_sparse_matrix_valid(data->Q));
       }
-
-      scale = 1./ scale;
-
-      SLEQP_CALL(matrix_push_column(data->Q,
-                                    data->v,
-                                    scale));
-
-      assert(sleqp_sparse_matrix_valid(data->Q));
 
       break;
     }
@@ -741,11 +728,15 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
     if(time_limit != SLEQP_NONE && sleqp_timer_elapsed(data->timer) >= time_limit)
     {
+      exhausted_time_limit = true;
       break;
     }
   }
 
-  assert((*trlib_ret) != TRLIB_CLR_CONTINUE);
+  if(!exhausted_time_limit)
+  {
+    assert((*trlib_ret) != TRLIB_CLR_CONTINUE);
+  }
 
   if(collect_rayleigh && !sleqp_is_zero(min_rayleigh, eps))
   {
