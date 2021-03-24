@@ -27,10 +27,9 @@ class UnconstrainedTest(unittest.TestCase):
 
     self.options = sleqp.Options()
 
-    func = RosenbrockFunc(num_variables, num_constraints)
+    func = RosenbrockFunc()
 
     problem = sleqp.Problem(func,
-                            self.params,
                             var_lb,
                             var_ub,
                             cons_lb,
@@ -43,7 +42,6 @@ class UnconstrainedTest(unittest.TestCase):
 
     self.expected_sol = np.array([1., 1.])
 
-
   def test_solve(self):
     self.solver.solve(100, 3600)
 
@@ -51,7 +49,6 @@ class UnconstrainedTest(unittest.TestCase):
 
     self.assertTrue(np.allclose(self.expected_sol,
                                 self.solver.solution.primal))
-
 
   def test_solve_nogil(self):
     sleqp.set_release_gil(True)

@@ -222,7 +222,6 @@ START_TEST(test_unconstrained_solve)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_lsq_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,

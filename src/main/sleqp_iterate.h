@@ -8,6 +8,7 @@
 
 
 #include "sleqp_export.h"
+#include "sleqp_params.h"
 #include "sleqp_problem.h"
 #include "sleqp_working_set.h"
 

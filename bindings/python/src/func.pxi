@@ -16,9 +16,15 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
 
     func_obj.set_value(x_array, ValueReason(reason))
 
-    func_grad_nnz[0] = func_obj.func_grad_nnz()
-    cons_val_nnz[0] = func_obj.cons_val_nnz()
-    cons_jac_nnz[0] =  func_obj.cons_jac_nnz()
+    def try_call(f):
+      try:
+        return f()
+      except AttributeError:
+        return 0
+
+    func_grad_nnz[0] = try_call(lambda : func_obj.func_grad_nnz())
+    cons_val_nnz[0] = try_call(lambda : func_obj.cons_val_nnz())
+    cons_jac_nnz[0] = try_call(lambda : func_obj.cons_jac_nnz())
 
   except BaseException as exception:
     func_obj.call_exception = exception
@@ -256,106 +262,82 @@ cdef object funcs = weakref.WeakSet()
 cdef set_func_callbacks(csleqp.SleqpFuncCallbacks* callbacks):
   if release_gil:
     callbacks[0].set_value = &sleqp_func_set_nogil
-    callbacks[0].func_val = &sleqp_func_val_nogil
+    callbacks[0].func_val  = &sleqp_func_val_nogil
     callbacks[0].func_grad = &sleqp_func_grad_nogil
-    callbacks[0].cons_val = &sleqp_func_cons_val_nogil
-    callbacks[0].cons_jac = &sleqp_func_cons_jac_nogil
+    callbacks[0].cons_val  = &sleqp_func_cons_val_nogil
+    callbacks[0].cons_jac  = &sleqp_func_cons_jac_nogil
     callbacks[0].hess_prod = &sleqp_func_hess_product_nogil
   else:
     callbacks[0].set_value = &sleqp_func_set
-    callbacks[0].func_val = &sleqp_func_val
+    callbacks[0].func_val  = &sleqp_func_val
     callbacks[0].func_grad = &sleqp_func_grad
-    callbacks[0].cons_val = &sleqp_func_cons_val
-    callbacks[0].cons_jac = &sleqp_func_cons_jac
+    callbacks[0].cons_val  = &sleqp_func_cons_val
+    callbacks[0].cons_jac  = &sleqp_func_cons_jac
     callbacks[0].hess_prod = &sleqp_func_hess_product
 
   callbacks.func_free = &sleqp_func_free
 
 
 cdef update_func_callbacks():
-  cdef Func func
+  cdef _Func func
   cdef csleqp.SleqpFuncCallbacks callbacks
 
   set_func_callbacks(&callbacks)
 
   for obj in funcs:
-    func = <Func> obj
+    func = <_Func> obj
 
-    csleqp_call(csleqp.sleqp_func_set_callbacks(func.func,
+    if not func.cfunc:
+      continue
+
+    csleqp_call(csleqp.sleqp_func_set_callbacks(func.cfunc,
                                                 &callbacks))
 
 
-cdef class Func:
+cdef class _Func:
+  cdef csleqp.SleqpFunc* cfunc
+  cdef object __weakref__
 
-  cdef dict __dict__
+  def __cinit__(self):
+    self.cfunc = NULL
 
-  cdef csleqp.SleqpFunc* func
+  cdef void set_func(self, csleqp.SleqpFunc* cfunc):
+    self.release()
+    self.cfunc = cfunc
+    self.capture()
 
-  cdef public object call_exception
+  cdef void capture(self):
+    if self.cfunc != NULL:
+      csleqp_call(csleqp.sleqp_func_capture(self.cfunc))
 
-  def __cinit__(self,
-                int num_variables,
-                int num_constraints,
-                *args,
-                **keywords):
-
-    cdef csleqp.SleqpFuncCallbacks callbacks
-
-    set_func_callbacks(&callbacks)
-
-    csleqp_call(csleqp.sleqp_func_create(&self.func,
-                                         &callbacks,
-                                         num_variables,
-                                         num_constraints,
-                                         <void*> self))
-
-    self.call_exception = None
-
-    funcs.add(self)
-
-    assert(self.func)
-
-  cpdef void set_value(self, value, reason):
-    pass
-
-  cpdef double func_val(self):
-    pass
-
-  cpdef int func_grad_nnz(self):
-    return 0
-
-  cpdef int cons_val_nnz(self):
-    return 0
-
-  cpdef int cons_jac_nnz(self):
-    return 0
-
-  cpdef object func_grad(self):
-    return None
-
-  cpdef object cons_vals(self):
-    return None
-
-  cpdef object cons_jac(self):
-    return None
-
-  cpdef object hess_prod(self,
-                         func_dual: float,
-                         direction: np.array,
-                         cons_dual: np.array):
-    pass
-
-  @property
-  def hess_struct(self) -> HessianStruct:
-    return HessianStruct(self)
-
-  @property
-  def num_variables(self) -> int:
-    return csleqp.sleqp_func_get_num_variables(self.func)
-
-  @property
-  def num_constraints(self) -> int:
-    return csleqp.sleqp_func_get_num_constraints(self.func)
+  cdef void release(self):
+    if self.cfunc != NULL:  
+      csleqp_call(csleqp.sleqp_func_release(&self.cfunc))
 
   def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_func_release(&self.func))
+    self.release()
+
+    
+cdef csleqp.SLEQP_RETCODE create_func(csleqp.SleqpFunc** cfunc,
+                                      object func,
+                                      int num_variables,
+                                      int num_constraints):
+  cdef csleqp.SleqpFuncCallbacks callbacks
+  cdef _Func ofunc = _Func()
+  cdef csleqp.SLEQP_RETCODE retcode
+
+  assert func is not None
+
+  set_func_callbacks(&callbacks)
+
+  retcode = csleqp.sleqp_func_create(cfunc,
+                                     &callbacks,
+                                     num_variables,
+                                     num_constraints,
+                                     <void*> func)
+
+  if cfunc[0] != NULL:
+    ofunc.set_func(cfunc[0])
+    funcs.add(ofunc)
+
+  return retcode

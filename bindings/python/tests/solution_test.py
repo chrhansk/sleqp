@@ -20,10 +20,9 @@ class SolutionTest(unittest.TestCase):
 
         self.params = sleqp.Params()
 
-        self.func = ZeroFunc(num_variables, num_constraints)
+        self.func = ZeroFunc()
 
         self.problem = sleqp.Problem(self.func,
-                                     self.params,
                                      var_lb,
                                      var_ub,
                                      cons_lb,

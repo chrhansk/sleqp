@@ -8,11 +8,11 @@ import sleqp
 num_variables = 2
 num_constraints = 0
 
-class ErrorFunc(sleqp.Func):
+class ErrorFunc:
   def set_value(self, v, reason):
     raise Exception("Error in set_value")
 
-class TypeErrorFunc(sleqp.Func):
+class TypeErrorFunc:
   def set_value(self, v):
     pass
 
@@ -25,7 +25,7 @@ class TypeErrorFunc(sleqp.Func):
   def hess_prod(self, func_dual, direction, cons_dual):
     return "wrong"
 
-class MatrixErrorFunc(sleqp.Func):
+class MatrixErrorFunc:
   def set_value(self, v, reason):
     pass
 
@@ -69,10 +69,9 @@ class FuncErrorTest(unittest.TestCase):
     self.options = sleqp.Options()
 
   def test_error_func(self):
-    self.func = ErrorFunc(num_variables, num_constraints)
+    self.func = ErrorFunc()
 
     self.problem = sleqp.Problem(self.func,
-                                 self.params,
                                  self.var_lb,
                                  self.var_ub,
                                  self.cons_lb,
@@ -87,10 +86,9 @@ class FuncErrorTest(unittest.TestCase):
       self.solver.solve(100, 3600)
 
   def test_type_error_func(self):
-    func = TypeErrorFunc(num_variables, num_constraints)
+    func = TypeErrorFunc()
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
@@ -105,10 +103,9 @@ class FuncErrorTest(unittest.TestCase):
       solver.solve(100, 3600)
 
   def test_matrix_error_func(self):
-    func = MatrixErrorFunc(num_variables, num_constraints)
+    func = MatrixErrorFunc()
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,

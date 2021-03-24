@@ -34,10 +34,9 @@ class CallbackTest(unittest.TestCase):
 
     self.options = sleqp.Options()
 
-    func = RosenbrockFunc(num_variables, num_constraints)
+    func = RosenbrockFunc()
 
     problem = sleqp.Problem(func,
-                            self.params,
                             var_lb,
                             var_ub,
                             cons_lb,

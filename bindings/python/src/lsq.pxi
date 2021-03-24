@@ -120,107 +120,39 @@ cdef set_lsq_func_callbacks(csleqp.SleqpLSQCallbacks* callbacks):
 
 
 cdef update_lsq_func_callbacks():
-  cdef LSQFunc func
+  cdef _Func func
   cdef csleqp.SleqpLSQCallbacks callbacks
 
   set_lsq_func_callbacks(&callbacks)
 
   for obj in lsq_funcs:
-    func = <LSQFunc> obj
+    func = <_Func> obj
 
-    csleqp_call(csleqp.sleqp_lsq_func_set_callbacks(func.func,
+    csleqp_call(csleqp.sleqp_lsq_func_set_callbacks(func.cfunc,
                                                     &callbacks))
 
+cdef csleqp.SLEQP_RETCODE create_lsq_func(csleqp.SleqpFunc** cfunc,
+                                          object func,
+                                          int num_variables,
+                                          int num_constraints,
+                                          int num_residuals,
+                                          double levenberg_marquardt,
+                                          csleqp.SleqpParams* params):
+  cdef csleqp.SleqpLSQCallbacks callbacks
+  cdef csleqp.SLEQP_RETCODE retcode
 
-cdef class LSQFunc:
+  assert func is not None
 
-  cdef dict __dict__
+  set_lsq_func_callbacks(&callbacks)
 
-  cdef csleqp.SleqpFunc* func
-  cdef int num_variables
-  cdef int num_constraints
-  cdef int num_residuals
-
-  cdef public object call_exception
-
-  def __cinit__(self,
-                int num_variables,
-                int num_constraints,
-                int num_residuals,
-                double levenberg_marquardt,
-                Params params,
-                *args,
-                **keywords):
-
-    cdef csleqp.SleqpLSQCallbacks callbacks
-
-    set_lsq_func_callbacks(&callbacks)
-
-    csleqp_call(csleqp.sleqp_lsq_func_create(&self.func,
-                                             &callbacks,
-                                             num_variables,
-                                             num_constraints,
-                                             num_residuals,
-                                             levenberg_marquardt,
-                                             params.params,
-                                             <void*> self))
-
-    self.num_variables = num_variables
-    self.num_constraints = num_constraints
-
-    self.call_exception = None
-
-    lsq_funcs.add(self)
-
-    assert(self.func)
-
-
-  cpdef void set_value(self, value: np.array, reason: ValueReason):
-    pass
-
-  cpdef double func_val(self):
-    pass
-
-  cpdef object lsq_residuals(self):
-    return None
-
-  cpdef object lsq_jac_forward(self, forward_direction: np.array):
-    return None
-
-  cpdef object lsq_jac_adjoint(self, adjoint_direction: np.array):
-    return None
-
-  cpdef int func_grad_nnz(self):
-    return 0
-
-  cpdef int cons_val_nnz(self):
-    return 0
-
-  cpdef int cons_jac_nnz(self):
-    return 0
-
-  cpdef object func_grad(self):
-    return None
-
-  cpdef object cons_vals(self):
-    return None
-
-  cpdef object cons_jac(self):
-    return None
-
-  cpdef object hess_prod(self,
-                         func_dual: float,
-                         direction: np.array,
-                         cons_dual: np.array):
-    return None
-
-  @property
-  def num_variables(self) -> int:
-      return self.num_variables
-
-  @property
-  def num_constraints(self) -> int:
-      return self.num_constraints
-
-  def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_func_release(&self.func))
+  retcode = csleqp.sleqp_lsq_func_create(cfunc,
+                                         &callbacks,
+                                         num_variables,
+                                         num_constraints,
+                                         num_residuals,
+                                         levenberg_marquardt,
+                                         params,
+                                         <void*> func)
+  
+  return retcode
+    

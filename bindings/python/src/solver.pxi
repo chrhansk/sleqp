@@ -11,20 +11,21 @@ cdef class Solver:
   cdef object __weakref__
 
   cdef csleqp.SleqpSolver* solver
-  cdef Problem problem
+  cdef object problem
   cdef Params params
   cdef Options options
 
   cdef list callback_handles
 
   def __cinit__(self,
-                Problem problem,
+                object problem,
                 Params params,
                 Options options,
                 np.ndarray primal,
                 Scaling scaling=None):
 
     cdef csleqp.SleqpSparseVec* primal_vec
+    cdef _Problem _problem = <_Problem> problem._get_problem()
 
     self.params = params
     self.options = options
@@ -36,7 +37,7 @@ cdef class Solver:
     array_to_sleqp_sparse_vec(primal, primal_vec)
 
     csleqp_call(csleqp.sleqp_solver_create(&self.solver,
-                                           problem.problem,
+                                           _problem.cproblem,
                                            params.params,
                                            options.options,
                                            primal_vec,
@@ -68,8 +69,8 @@ cdef class Solver:
     if release_gil:
       with nogil:
         retcode = csleqp.sleqp_solver_solve(self.solver,
-                                              max_num_iterations,
-                                              time_limit)
+                                            max_num_iterations,
+                                            time_limit)
     else:
         retcode = csleqp.sleqp_solver_solve(self.solver,
                                             max_num_iterations,

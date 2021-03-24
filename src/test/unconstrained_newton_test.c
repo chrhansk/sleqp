@@ -34,7 +34,6 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    quadfunc,
-                                   params,
                                    quadfunc_var_lb,
                                    quadfunc_var_ub,
                                    quadfunc_cons_lb,

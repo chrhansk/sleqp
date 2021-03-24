@@ -8,7 +8,7 @@ import sleqp
 num_variables = 4
 num_constraints = 2
 
-class Func(sleqp.Func):
+class Func:
 
     def set_value(self, values, reason):
         assert((values == initial_sol).all())
@@ -38,10 +38,9 @@ class ProblemTest(unittest.TestCase):
 
         self.params = sleqp.Params()
 
-        self.func = Func(num_variables, num_constraints)
+        self.func = Func()
 
         self.problem = sleqp.Problem(self.func,
-                                     self.params,
                                      self.var_lb,
                                      self.var_ub,
                                      self.cons_lb,
@@ -69,13 +68,12 @@ class ProblemTest(unittest.TestCase):
 
         self.assertRaises(sleqp.SLEQPError,
                           lambda: sleqp.Problem(self.func,
-                                                self.params,
                                                 self.var_lb,
                                                 self.var_ub,
                                                 cons_lb,
                                                 cons_ub))
 
-    def test_invalid_cons_bounds(self):
+    def test_invalid_var_bounds(self):
 
         var_lb = self.var_lb[:]
         var_ub = self.var_ub[:]
@@ -85,7 +83,6 @@ class ProblemTest(unittest.TestCase):
 
         self.assertRaises(sleqp.SLEQPError,
                           lambda: sleqp.Problem(self.func,
-                                                self.params,
                                                 var_lb,
                                                 var_ub,
                                                 self.cons_lb,

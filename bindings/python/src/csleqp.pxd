@@ -301,6 +301,8 @@ cdef extern from "sleqp.h":
 
   int sleqp_func_get_num_constraints(SleqpFunc* func)
 
+  SLEQP_RETCODE sleqp_func_capture(SleqpFunc* func)
+
   SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar)
 
   SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
@@ -518,7 +520,6 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                      SleqpFunc* func,
-                                     SleqpParams* params,
                                      SleqpSparseVec* var_lb,
                                      SleqpSparseVec* var_ub,
                                      SleqpSparseVec* cons_lb,

@@ -12,10 +12,9 @@ class SolverTest(unittest.TestCase):
   def setUp(self):
     self.params = sleqp.Params()
 
-    self.func = ConstrainedFunc(num_variables, num_constraints)
+    self.func = ConstrainedFunc()
 
     self.problem = sleqp.Problem(self.func,
-                                 self.params,
                                  var_lb,
                                  var_ub,
                                  cons_lb,

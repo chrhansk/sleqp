@@ -24,7 +24,6 @@ void callback_setup()
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,

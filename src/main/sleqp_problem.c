@@ -76,7 +76,6 @@ static SLEQP_RETCODE check_bounds(SleqpSparseVec* lb,
 
 SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                    SleqpFunc* func,
-                                   SleqpParams* params,
                                    SleqpSparseVec* var_lb,
                                    SleqpSparseVec* var_ub,
                                    SleqpSparseVec* cons_lb,

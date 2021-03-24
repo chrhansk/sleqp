@@ -10,7 +10,7 @@ inf = sleqp.inf()
 def sq(x):
   return x*x
 
-class ConstrainedFunc(sleqp.Func):
+class ConstrainedFunc:
 
   def set_value(self, v, reason):
     self.v = v

@@ -11,16 +11,9 @@ num_variables = 2
 num_residuals = 2
 num_constraints = 0
 
-class Func(sleqp.LSQFunc):
+class Func:
 
-  def __init__(self,
-               num_variables,
-               num_constraints,
-               num_residuals,
-               levenberg_marquardt,
-               params,
-               *args,
-               **keywords):
+  def __init__(self):
     self.a = 1
     self.b = 1
     self.values = np.zeros((num_variables,))
@@ -63,19 +56,6 @@ class Func(sleqp.LSQFunc):
     return np.array([-1.*d0 - 2*math.sqrt(self.b)*x0*d1,
                      math.sqrt(self.b)*(d1)])
 
-
-  def func_grad_nnz(self):
-    return 0
-
-
-  def cons_val_nnz(self):
-    return 0
-
-
-  def cons_jac_nnz(self):
-    return 0
-
-
   def func_grad(self):
     return np.zeros((num_variables,))
 
@@ -112,14 +92,16 @@ class LSQTest(unittest.TestCase):
 
 
   def test_solve(self):
-    func = Func(num_variables, num_constraints, num_residuals, 0., self.params)
+    func = Func()
 
-    problem = sleqp.Problem(func,
-                            self.params,
-                            self.var_lb,
-                            self.var_ub,
-                            self.cons_lb,
-                            self.cons_ub)
+    problem = sleqp.LSQProblem(func,
+                               self.var_lb,
+                               self.var_ub,
+                               self.cons_lb,
+                               self.cons_ub,
+                               num_residuals,
+                               self.params,
+                               regularization=1e-4)
 
     solver = sleqp.Solver(problem,
                           self.params,
@@ -134,14 +116,15 @@ class LSQTest(unittest.TestCase):
                                 solver.solution.primal))
 
   def test_solve_ml(self):
-    func = Func(num_variables, num_constraints, num_residuals, 1e-4, self.params)
+    func = Func()
 
-    problem = sleqp.Problem(func,
-                            self.params,
-                            self.var_lb,
-                            self.var_ub,
-                            self.cons_lb,
-                            self.cons_ub)
+    problem = sleqp.LSQProblem(func,
+                               self.var_lb,
+                               self.var_ub,
+                               self.cons_lb,
+                               self.cons_ub,
+                               num_residuals,
+                               self.params)
 
     solver = sleqp.Solver(problem,
                           self.params,
@@ -156,14 +139,15 @@ class LSQTest(unittest.TestCase):
                                 solver.solution.primal))
 
   def test_solve_nogil(self):
-    func = Func(num_variables, num_constraints, num_residuals, 0., self.params)
+    func = Func()
 
-    problem = sleqp.Problem(func,
-                            self.params,
-                            self.var_lb,
-                            self.var_ub,
-                            self.cons_lb,
-                            self.cons_ub)
+    problem = sleqp.LSQProblem(func,
+                               self.var_lb,
+                               self.var_ub,
+                               self.cons_lb,
+                               self.cons_ub,
+                               num_residuals,
+                               self.params)
 
     solver = sleqp.Solver(problem,
                           self.params,

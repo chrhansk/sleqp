@@ -1,10 +1,11 @@
 cdef class HessianStruct:
   cdef csleqp.SleqpHessianStruct* hess_struct
   cdef dict __dict__
+  cdef _Func _func
 
-  def __cinit__(self, Func func):
+  def __cinit__(self, _Func func):
     self._func = func
-    self.hess_struct = csleqp.sleqp_func_get_hess_struct(func.func)
+    self.hess_struct = csleqp.sleqp_func_get_hess_struct(func.cfunc)
     csleqp_call(csleqp.sleqp_hessian_struct_capture(self.hess_struct))
 
   def __dealloc__(self):

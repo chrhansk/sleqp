@@ -237,7 +237,6 @@ SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   SLEQP_CALL(sleqp_problem_create(&(problem_scaling->scaled_problem),
                                   problem_scaling->scaled_func,
-                                  params,
                                   problem->var_lb,
                                   problem->var_ub,
                                   problem->cons_lb,

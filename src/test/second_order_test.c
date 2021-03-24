@@ -239,7 +239,6 @@ void second_order_setup()
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    func,
-                                   params,
                                    var_lb,
                                    var_ub,
                                    cons_lb,

@@ -14,10 +14,9 @@ class IterateTest(unittest.TestCase):
 
     options = sleqp.Options()
 
-    func = ConstrainedFunc(num_variables, num_constraints)
+    func = ConstrainedFunc()
 
     problem = sleqp.Problem(func,
-                            params,
                             var_lb,
                             var_ub,
                             cons_lb,

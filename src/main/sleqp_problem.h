@@ -8,7 +8,6 @@
 
 #include "sleqp_func.h"
 #include "sleqp_types.h"
-#include "sleqp_params.h"
 
 #include "sparse/sleqp_sparse_matrix.h"
 #include "sparse/sleqp_sparse_vec.h"
@@ -93,7 +92,6 @@ extern "C" {
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                      SleqpFunc* func,
-                                     SleqpParams* params,
                                      SleqpSparseVec* var_lb,
                                      SleqpSparseVec* var_ub,
                                      SleqpSparseVec* cons_lb,

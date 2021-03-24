@@ -24,7 +24,6 @@ void scaling_setup()
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    quadconsfunc,
-                                   params,
                                    quadconsfunc_var_lb,
                                    quadconsfunc_var_ub,
                                    quadconsfunc_cons_lb,

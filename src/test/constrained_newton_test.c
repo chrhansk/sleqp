@@ -210,7 +210,6 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    linquadfunc,
-                                   params,
                                    linquadfunc_var_lb,
                                    linquadfunc_var_ub,
                                    linquadfunc_cons_lb,

@@ -10,7 +10,7 @@ import sleqp
 num_constraints = 0
 num_variables = 2
 
-class LSQFunc(sleqp.Func):
+class LSQFunc:
     """
     Simple LSQ function to solve the Rosenbrock problem.
     Uses an inexact Hessian based on first-order information.
@@ -18,11 +18,7 @@ class LSQFunc(sleqp.Func):
     To adapt to any least squares problem, it is sufficient
     to replace the `eval_lsq_func` and `eval_lsq_jac` functions.
     """
-    def __init__(self,
-                 num_vars,
-                 num_cons,
-                 *args,
-                 **keywords):
+    def __init__(self):
         self.a = 1
         self.b = 100
 
@@ -75,7 +71,7 @@ class LSQFunc(sleqp.Func):
         return func_dual * np.dot(np.transpose(self.lsq_jac),
                                   np.dot(self.lsq_jac, direction))
 
-class LSQImplicitFunc(sleqp.Func):
+class LSQImplicitFunc():
     """
     Simple LSQ function to solve the Rosenbrock problem.
     Uses an inexact Hessian based on first-order information.
@@ -87,11 +83,7 @@ class LSQImplicitFunc(sleqp.Func):
     and `eval_lsq_jac_adjoint` functions.
 
     """
-    def __init__(self,
-                 num_vars,
-                 num_cons,
-                 *args,
-                 **keywords):
+    def __init__(self):
         self.a = 1
         self.b = 100
 
@@ -175,10 +167,9 @@ class LSQTest(unittest.TestCase):
 
     def test_simple(self):
 
-        func = LSQFunc(self.num_vars, self.num_cons)
+        func = LSQFunc()
 
         problem = sleqp.Problem(func,
-                                self.params,
                                 self.var_lb,
                                 self.var_ub,
                                 self.cons_lb,
@@ -198,10 +189,9 @@ class LSQTest(unittest.TestCase):
 
     def test_implicit(self):
 
-        func = LSQImplicitFunc(self.num_vars, self.num_cons)
+        func = LSQImplicitFunc()
 
         problem = sleqp.Problem(func,
-                                self.params,
                                 self.var_lb,
                                 self.var_ub,
                                 self.cons_lb,

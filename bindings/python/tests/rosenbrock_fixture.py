@@ -7,9 +7,9 @@ import sleqp
 num_variables = 2
 num_constraints = 0
 
-class RosenbrockFunc(sleqp.Func):
+class RosenbrockFunc:
 
-  def __init__(self, num_variables, num_constraints):
+  def __init__(self):
     self.a = 1
     self.b = 1
 

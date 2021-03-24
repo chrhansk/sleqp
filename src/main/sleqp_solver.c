@@ -290,7 +290,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
     SLEQP_CALL(sleqp_problem_create(&solver->problem,
                                     func,
-                                    params,
                                     scaled_problem->var_lb,
                                     scaled_problem->var_ub,
                                     scaled_problem->cons_lb,

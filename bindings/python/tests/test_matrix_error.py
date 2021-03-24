@@ -10,7 +10,7 @@ import sleqp
 num_variables = 2
 num_constraints = 1
 
-class MatrixErrorFunc(sleqp.Func):
+class MatrixErrorFunc:
   def set_value(self, v, reason):
     pass
 
@@ -58,13 +58,11 @@ class MatrixErrorTest(unittest.TestCase):
     self.options = sleqp.Options()
 
   def test_string_error(self):
-    func = MatrixErrorFunc(num_variables,
-                           num_constraints)
+    func = MatrixErrorFunc()
 
     func.set_matrix_value("asd")
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
@@ -79,13 +77,11 @@ class MatrixErrorTest(unittest.TestCase):
       solver.solve(1, 3600)
 
   def test_wrong_shape(self):
-    func = MatrixErrorFunc(num_variables,
-                           num_constraints)
+    func = MatrixErrorFunc()
 
     func.set_matrix_value(np.array((2, 2, 2)))
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
@@ -100,15 +96,13 @@ class MatrixErrorTest(unittest.TestCase):
         solver.solve(1, 3600)
 
   def test_sparse_type(self):
-    func = MatrixErrorFunc(num_variables,
-                           num_constraints)
+    func = MatrixErrorFunc()
 
     m = scipy.sparse.lil_matrix((num_constraints, num_variables))
 
     func.set_matrix_value(m)
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
