@@ -168,6 +168,11 @@ cdef class Problem:
     finally:
       csleqp_call(csleqp.sleqp_func_release(&cfunc))
 
+    try:
+      func.set_hessian_struct(self.hess_struct)
+    except AttributeError:
+      pass
+
   @property
   def func(self):
       return self._func
@@ -251,6 +256,11 @@ cdef class LSQProblem:
 
     finally:
       csleqp_call(csleqp.sleqp_func_release(&cfunc))
+
+    try:
+      func.set_hessian_struct(self.hess_struct)
+    except AttributeError:
+      pass
 
   @property
   def func(self):

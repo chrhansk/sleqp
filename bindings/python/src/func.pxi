@@ -311,13 +311,13 @@ cdef class _Func:
       csleqp_call(csleqp.sleqp_func_capture(self.cfunc))
 
   cdef void release(self):
-    if self.cfunc != NULL:  
+    if self.cfunc != NULL:
       csleqp_call(csleqp.sleqp_func_release(&self.cfunc))
 
   def __dealloc__(self):
     self.release()
 
-    
+
 cdef csleqp.SLEQP_RETCODE create_func(csleqp.SleqpFunc** cfunc,
                                       object func,
                                       int num_variables,
