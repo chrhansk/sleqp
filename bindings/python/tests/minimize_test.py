@@ -33,3 +33,33 @@ class MinimizeTest(unittest.TestCase):
 
     self.assertTrue(res.success)
     self.assertTrue(np.allclose(res.x, np.array([1.4 ,1.7])))
+
+  def test_constrained_jac(self):
+
+    fun = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2
+
+    cons = ({'type': 'ineq', 'fun': lambda x:  x[0] - 2 * x[1] + 2, 'jac': lambda x: [1., -2.]},
+            {'type': 'ineq', 'fun': lambda x: -x[0] - 2 * x[1] + 6, 'jac': lambda x: [-1., -2.]},
+            {'type': 'ineq', 'fun': lambda x: -x[0] + 2 * x[1] + 2, 'jac': lambda x: [-1., 2.]})
+
+    bnds = ((0, None), (0, None))
+
+    res = sleqp.minimize(fun, (2, 0), bounds=bnds, constraints=cons)
+
+    self.assertTrue(res.success)
+    self.assertTrue(np.allclose(res.x, np.array([1.4 ,1.7])))
+
+  def test_constrained_jac_findiff(self):
+
+    fun = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2
+
+    cons = ({'type': 'ineq', 'fun': lambda x:  x[0] - 2 * x[1] + 2, 'jac': '2-point'},
+            {'type': 'ineq', 'fun': lambda x: -x[0] - 2 * x[1] + 6, 'jac': '2-point'},
+            {'type': 'ineq', 'fun': lambda x: -x[0] + 2 * x[1] + 2, 'jac': '2-point'})
+
+    bnds = ((0, None), (0, None))
+
+    res = sleqp.minimize(fun, (2, 0), bounds=bnds, constraints=cons)
+
+    self.assertTrue(res.success)
+    self.assertTrue(np.allclose(res.x, np.array([1.4 ,1.7])))

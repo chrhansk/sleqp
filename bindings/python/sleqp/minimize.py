@@ -154,7 +154,7 @@ def _create_constraint_jac(constraints, num_variables):
     if jac is not None:
 
       if callable(jac):
-        cons_jac.append(derivative(jac))
+        cons_jacs.append(derivative(jac))
       elif jac == '2-point':
         cons_jacs.append(findiff_twopoint(fun))
       else:
