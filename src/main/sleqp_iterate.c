@@ -2,6 +2,7 @@
 
 #include <math.h>
 
+#include "sleqp_assert.h"
 #include "sleqp_cmp.h"
 #include "sleqp_feas.h"
 #include "sleqp_mem.h"
@@ -58,7 +59,9 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  assert(sleqp_sparse_vector_valid(x));
+  sleqp_assert_msg(sleqp_sparse_vector_is_valid(x), "Invalid primal values");
+
+  sleqp_assert_msg(sleqp_sparse_vector_is_finite(x), "Infinite primal values");
 
   SleqpIterate* iterate = *star;
 

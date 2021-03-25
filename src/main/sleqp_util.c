@@ -43,8 +43,8 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
 
   SLEQP_CALL(sleqp_iterate_set_func_val(iterate, func_val));
 
-  assert(sleqp_sparse_vector_valid(func_grad));
-  assert(sleqp_sparse_vector_valid(cons_val));
+  assert(sleqp_sparse_vector_is_valid(func_grad));
+  assert(sleqp_sparse_vector_is_valid(cons_val));
 
   assert(sleqp_sparse_matrix_valid(cons_jac));
 

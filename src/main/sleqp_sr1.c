@@ -617,8 +617,8 @@ SLEQP_RETCODE sleqp_sr1_data_push(SleqpSR1Data* data,
 
     const double step_normsq = sleqp_sparse_vector_norm_sq(data->block_step_diff);
 
-    assert(sleqp_sparse_vector_valid(data->block_step_diff));
-    assert(sleqp_sparse_vector_valid(data->block_grad_diff));
+    assert(sleqp_sparse_vector_is_finite(data->block_step_diff));
+    assert(sleqp_sparse_vector_is_finite(data->block_grad_diff));
 
     if(!sleqp_is_zero(step_normsq, eps))
     {
@@ -741,14 +741,14 @@ SLEQP_RETCODE sleqp_sr1_data_hess_prod(SleqpSR1Data* data,
         ++k_direction;
       }
 
-      assert(sleqp_sparse_vector_valid(data->block_direction));
+      assert(sleqp_sparse_vector_is_finite(data->block_direction));
 
       SLEQP_CALL(sr1_block_hess_prod(data,
                                      block,
                                      data->block_direction,
                                      data->block_prod));
 
-      assert(sleqp_sparse_vector_valid(data->block_prod));
+      assert(sleqp_sparse_vector_is_finite(data->block_prod));
 
       for(int k_block_prod = 0;
           k_block_prod < data->block_prod->nnz;

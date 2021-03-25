@@ -192,13 +192,13 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_func_cons_jac(func, cons_indices, cons_jac));
 
-  if(func_grad && !sleqp_sparse_vector_valid(func_grad))
+  if(func_grad && !sleqp_sparse_vector_is_valid(func_grad))
   {
     sleqp_log_error("Function returned invalid gradient");
     return SLEQP_ILLEGAL_ARGUMENT;
   }
 
-  if(cons_val && !sleqp_sparse_vector_valid(cons_val))
+  if(cons_val && !sleqp_sparse_vector_is_valid(cons_val))
   {
     sleqp_log_error("Function returned invalid constraint values");
     return SLEQP_ILLEGAL_ARGUMENT;
@@ -288,8 +288,8 @@ SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
   assert(func->num_variables == direction->dim);
   assert(func->num_variables == product->dim);
 
-  assert(sleqp_sparse_vector_valid(direction));
-  assert(sleqp_sparse_vector_valid(cons_duals));
+  assert(sleqp_sparse_vector_is_valid(direction));
+  assert(sleqp_sparse_vector_is_valid(cons_duals));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(product));
 
@@ -304,7 +304,7 @@ SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_timer_stop(func->hess_timer));
 
-  if(!sleqp_sparse_vector_valid(product))
+  if(!sleqp_sparse_vector_is_valid(product))
   {
     sleqp_log_error("Function returned invalid Hessian product");
     return SLEQP_ILLEGAL_ARGUMENT;

@@ -833,8 +833,8 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
 
     const double point_normsq = sleqp_sparse_vector_norm_sq(data->block_point_diff);
 
-    assert(sleqp_sparse_vector_valid(data->block_point_diff));
-    assert(sleqp_sparse_vector_valid(data->block_grad_diff));
+    assert(sleqp_sparse_vector_is_finite(data->block_point_diff));
+    assert(sleqp_sparse_vector_is_finite(data->block_grad_diff));
 
     if(!sleqp_is_zero(point_normsq, eps))
     {

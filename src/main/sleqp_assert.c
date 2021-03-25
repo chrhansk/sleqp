@@ -35,7 +35,7 @@ void sleqp_log_assert_fail_msg(const char *file,
   vsnprintf(message_buf, BUF_SIZE, format, args);
   va_end(args);
 
-  sleqp_log_error("%s:%d: %s: Assertion `%s' failed",
+  sleqp_log_error("%s:%d: %s: %s",
                   file,
                   line,
                   function,

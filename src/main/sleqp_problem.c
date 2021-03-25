@@ -1,12 +1,40 @@
 #include "sleqp_problem.h"
 
 #include <assert.h>
+#include <math.h>
 
+#include "sleqp_assert.h"
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
-static SLEQP_RETCODE check_bounds(SleqpSparseVec* lb,
-                                  SleqpSparseVec* ub,
+static SLEQP_RETCODE map_pos_inf(SleqpSparseVec* vec, double value)
+{
+  for(int k = 0; k < vec->nnz - 1; ++k)
+  {
+    if(isinf(vec->data[k]))
+    {
+      vec->data[k] = value;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE map_neg_inf(SleqpSparseVec* vec, double value)
+{
+  for(int k = 0; k < vec->nnz - 1; ++k)
+  {
+    if(isinf(-vec->data[k]))
+    {
+      vec->data[k] = value;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE check_bounds(const SleqpSparseVec* lb,
+                                  const SleqpSparseVec* ub,
                                   bool cons_bounds)
 {
   assert(lb->dim == ub->dim);
@@ -84,11 +112,11 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   assert(var_lb->dim == var_ub->dim);
   assert(cons_lb->dim == cons_ub->dim);
 
-  assert(sleqp_sparse_vector_valid(var_lb));
-  assert(sleqp_sparse_vector_valid(var_ub));
+  sleqp_assert_msg(sleqp_sparse_vector_is_valid(var_lb), "Invalid variable bounds");
+  sleqp_assert_msg(sleqp_sparse_vector_is_valid(var_ub), "Invalid variable bounds");
 
-  assert(sleqp_sparse_vector_valid(cons_lb));
-  assert(sleqp_sparse_vector_valid(cons_ub));
+  sleqp_assert_msg(sleqp_sparse_vector_is_valid(cons_lb), "Invalid constraint bounds");
+  sleqp_assert_msg(sleqp_sparse_vector_is_valid(cons_ub), "Invalid constraint bounds");
 
   const int num_constraints = sleqp_func_get_num_constraints(func);
   const int num_variables = sleqp_func_get_num_variables(func);
@@ -102,11 +130,11 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   problem->num_variables = num_variables;
   problem->num_constraints = num_constraints;
 
-  assert(var_lb->dim == num_variables);
-  assert(var_ub->dim == num_variables);
+  sleqp_assert_msg(var_lb->dim == num_variables, "Inconsisten variable dimensions");
+  sleqp_assert_msg(var_ub->dim == num_variables, "Inconsisten variable dimensions");
 
-  assert(cons_lb->dim == num_constraints);
-  assert(cons_ub->dim == num_constraints);
+  sleqp_assert_msg(cons_lb->dim == num_constraints, "Inconsisten constraint dimensions");
+  sleqp_assert_msg(cons_ub->dim == num_constraints, "Inconsisten constraint dimensions");
 
   SLEQP_CALL(sleqp_func_capture(func));
 
@@ -134,8 +162,22 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   SLEQP_CALL(sleqp_sparse_vector_copy(cons_lb, problem->cons_lb));
   SLEQP_CALL(sleqp_sparse_vector_copy(cons_ub, problem->cons_ub));
 
+  const double inf = sleqp_infinity();
+
+  SLEQP_CALL(map_pos_inf(problem->var_ub, inf));
+  SLEQP_CALL(map_pos_inf(problem->cons_ub, inf));
+
+  SLEQP_CALL(map_neg_inf(problem->var_lb, -inf));
+  SLEQP_CALL(map_neg_inf(problem->cons_lb, -inf));
+
   SLEQP_CALL(check_bounds(problem->var_lb, problem->var_ub, false));
   SLEQP_CALL(check_bounds(problem->cons_lb, problem->cons_ub, true));
+
+  sleqp_assert_msg(sleqp_sparse_vector_is_finite(problem->var_lb), "Infinite variable bounds");
+  sleqp_assert_msg(sleqp_sparse_vector_is_finite(problem->var_ub), "Infinite variable bounds");
+
+  sleqp_assert_msg(sleqp_sparse_vector_is_finite(problem->cons_lb), "Infinite constraint bounds");
+  sleqp_assert_msg(sleqp_sparse_vector_is_finite(problem->cons_ub), "Infinite constraint bounds");
 
   return SLEQP_OKAY;
 }

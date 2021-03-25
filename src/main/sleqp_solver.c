@@ -215,7 +215,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   SleqpSparseVec* primal,
                                   SleqpScalingData* scaling_data)
 {
-  assert(sleqp_sparse_vector_valid(primal));
+  assert(sleqp_sparse_vector_is_valid(primal));
 
   SLEQP_CALL(sleqp_malloc(star));
 

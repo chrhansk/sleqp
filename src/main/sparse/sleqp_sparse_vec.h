@@ -301,10 +301,15 @@ extern "C" {
    * - `nnz` non-negative and less than or equal to `nnz_max`
    * - all indices are non-negative and less than or equal to `dim`
    * - the entries are ordered according to their indices
-   * - the stored `data` is free of (IEEE) infs and NaNs
    *
    **/
-  SLEQP_EXPORT bool sleqp_sparse_vector_valid(const SleqpSparseVec* vec);
+  SLEQP_EXPORT bool sleqp_sparse_vector_is_valid(const SleqpSparseVec* vec);
+
+  /**
+   * Returns whether the given vector is *finite*, i.e., whether
+   * - the stored `data` is free of (IEEE) infs and NaNs
+   **/
+  SLEQP_EXPORT bool sleqp_sparse_vector_is_finite(const SleqpSparseVec* vec);
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec);

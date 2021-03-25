@@ -41,7 +41,7 @@ extern "C" {
   }                                               \
   while(false)
 
-#define sleqp_assert_msg(expr, format, args...)       \
+#define sleqp_assert_msg(expr, format, ...)           \
   do                                                  \
   {                                                   \
     if(expr);                                         \
@@ -51,7 +51,7 @@ extern "C" {
                                 __LINE__,             \
                                 __PRETTY_FUNCTION__,  \
                                 format,               \
-                                args);                \
+                                ##__VA_ARGS__);       \
       return SLEQP_FAILED_ASSERTION;                  \
     }                                                 \
   }                                                   \
@@ -64,8 +64,8 @@ extern "C" {
 #define sleqp_num_assert(expr)                  \
   sleqp_assert(expr)
 
-#define sleqp_num_assert_msg(expr, format, args...) \
-  sleqp_assert_msg(expr, format, args)
+#define sleqp_num_assert_msg(expr, format, ...) \
+  sleqp_assert_msg(expr, format, ##__VAR_ARGS__)
 
 #define sleqp_assert_is_eq(x, y, eps)                                              \
   do                                                                               \

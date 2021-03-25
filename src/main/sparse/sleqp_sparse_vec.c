@@ -575,7 +575,7 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-bool sleqp_sparse_vector_valid(const SleqpSparseVec* vec)
+bool sleqp_sparse_vector_is_valid(const SleqpSparseVec* vec)
 {
   if(vec->nnz > vec->nnz_max || vec->nnz < 0)
   {
@@ -603,17 +603,22 @@ bool sleqp_sparse_vector_valid(const SleqpSparseVec* vec)
     }
   }
 
+  if(vec->indices[vec->nnz - 1] >= vec->dim)
+  {
+    return false;
+  }
+
+  return true;
+}
+
+bool sleqp_sparse_vector_is_finite(const SleqpSparseVec* vec)
+{
   for(int k = 0; k < vec->nnz - 1; ++k)
   {
     if(isnan(vec->data[k]) || isinf(vec->data[k]))
     {
       return false;
     }
-  }
-
-  if(vec->indices[vec->nnz - 1] >= vec->dim)
-  {
-    return false;
   }
 
   return true;
