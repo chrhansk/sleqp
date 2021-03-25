@@ -22,8 +22,8 @@ extern "C" {
 
 #if defined(NDEBUG)
 
-#define sleqp_assert()
-#define sleqp_assert_msg()
+#define sleqp_assert(...) do{} while(false)
+#define sleqp_assert_msg(...) do{} while(false)
 
 #else
 #define sleqp_assert(expr)                        \
