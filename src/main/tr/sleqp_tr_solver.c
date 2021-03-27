@@ -27,8 +27,6 @@ SleqpTimer* sleqp_tr_solver_get_solve_timer(SleqpTRSolver* data)
 }
 
 SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
-                                     SleqpProblem* problem,
-                                     SleqpParams* params,
                                      SleqpTRCallbacks* callbacks,
                                      void* solver_data)
 {

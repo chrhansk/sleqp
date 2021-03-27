@@ -22,8 +22,6 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
-                                       SleqpProblem* problem,
-                                       SleqpParams* params,
                                        SleqpTRCallbacks* callbacks,
                                        void* solver_data);
 

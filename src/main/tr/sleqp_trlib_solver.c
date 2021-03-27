@@ -914,7 +914,7 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
     .free = trlib_free
   };
 
-  SLEQP_CALL(sleqp_tr_solver_create(solver_star, problem, params, &callbacks, (void*) data));
+  SLEQP_CALL(sleqp_tr_solver_create(solver_star, &callbacks, (void*) data));
 
   return SLEQP_OKAY;
 }

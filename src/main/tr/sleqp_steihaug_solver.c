@@ -344,7 +344,7 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
     .free = steihaug_solver_free
   };
 
-  SLEQP_CALL(sleqp_tr_solver_create(solver_star, problem, params, &callbacks, (void*) solver));
+  SLEQP_CALL(sleqp_tr_solver_create(solver_star, &callbacks, (void*) solver));
 
   return SLEQP_OKAY;
 }
