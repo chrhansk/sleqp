@@ -144,7 +144,10 @@ def _create_constraint_jac(constraints, num_variables):
 
   num_constraints = len(constraints)
 
-  from sleqp._derivative import findiff_twopoint, derivative
+  from sleqp._derivative import (findiff_twopoint,
+                                 findiff_threepoint,
+                                 findiff_cs,
+                                 derivative)
 
   cons_jacs = []
 
@@ -157,6 +160,10 @@ def _create_constraint_jac(constraints, num_variables):
         cons_jacs.append(derivative(jac))
       elif jac == '2-point':
         cons_jacs.append(findiff_twopoint(fun))
+      elif jac == '3-point':
+        cons_jacs.append(findiff_threepoint(fun))
+      elif jac == 'cs':
+        cons_jacs.append(findiff_cs(fun))
       else:
         assert False
     else:
