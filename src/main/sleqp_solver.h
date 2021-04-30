@@ -79,6 +79,8 @@ extern "C" {
    **/
   SLEQP_EXPORT SLEQP_STATUS sleqp_solver_get_status(const SleqpSolver* solver);
 
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_abort(SleqpSolver* solver);
+
   /**
    * Returns the current iterate of the solver
    *

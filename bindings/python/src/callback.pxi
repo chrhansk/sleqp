@@ -2,11 +2,11 @@ cdef class CallbackHandle:
   cdef Solver solver
   cdef object function
   cdef void* function_pointer
-  cdef csleqp.SLEQP_SOLVER_EVENT event
+  cdef object event
 
   cdef object call_exception
 
-  def __cinit__(self, Solver solver, csleqp.SLEQP_SOLVER_EVENT event, function):
+  def __cinit__(self, Solver solver, object event, function):
     self.solver = solver
     self.function = function
     self.call_exception = None
@@ -66,16 +66,19 @@ cdef csleqp.SLEQP_RETCODE performed_iteration_nogil(csleqp.SleqpSolver* solver,
     return performed_iteration(solver, callback_data)
 
 
-cdef void* get_callback_function_pointer(solver_event):
+cdef  get_callback_function_pointer(solver_event, void** pointer):
   if solver_event == SolverEvent.AcceptedIterate:
     if get_release_gil():
-      return <void*> accepted_iterate_nogil
+      pointer[0] = <void*> accepted_iterate_nogil
     else:
-      return <void*> accepted_iterate
+      pointer[0] = <void*> accepted_iterate
   elif solver_event == SolverEvent.PerformedIteration:
     if get_release_gil():
-      return <void*> performed_iteration_nogil
+      pointer[0] = <void*> performed_iteration_nogil
     else:
-      return <void*> performed_iteration
+      pointer[0] = <void*> performed_iteration
   else:
-    raise Exception("Invalid event: {0}".format(solver_event))
+    pointer[0] = NULL
+    return csleqp.SLEQP_INTERNAL_ERROR
+
+  return csleqp.SLEQP_OKAY

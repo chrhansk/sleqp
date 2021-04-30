@@ -492,6 +492,8 @@ cdef extern from "sleqp.h":
 
   SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
 
+  SLEQP_RETCODE sleqp_solver_abort(SleqpSolver* solver)
+
   int sleqp_solver_get_iterations(SleqpSolver* solver)
 
   double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver)

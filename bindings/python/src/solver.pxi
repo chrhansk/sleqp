@@ -110,6 +110,9 @@ cdef class Solver:
   def status(self) -> Status:
     return Status(csleqp.sleqp_solver_get_status(self.solver))
 
+  def abort(self):
+    csleqp_call(csleqp.sleqp_solver_abort(self.solver))
+
   @property
   def iterations(self) -> int:
     return csleqp.sleqp_solver_get_iterations(self.solver)
@@ -157,12 +160,13 @@ cdef class Solver:
 
 
   def add_callback(self, event, function):
-    cdef CallbackHandle callback_handle = CallbackHandle(self, event.value, function)
+    cdef CallbackHandle callback_handle = CallbackHandle(self, event, function)
 
-    callback_handle.function_pointer = get_callback_function_pointer(event)
+    csleqp_call(get_callback_function_pointer(event,
+                                              &callback_handle.function_pointer))
 
     csleqp_call(csleqp.sleqp_solver_add_callback(self.solver,
-                                                 callback_handle.event,
+                                                 callback_handle.event.value,
                                                  callback_handle.function_pointer,
                                                  <void*> callback_handle))
 
@@ -173,7 +177,7 @@ cdef class Solver:
   def remove_callback(self, CallbackHandle callback_handle):
 
     csleqp_call(csleqp.sleqp_solver_remove_callback(self.solver,
-                                                    callback_handle.event,
+                                                    callback_handle.event.value,
                                                     callback_handle.function_pointer,
                                                     <void*> callback_handle))
 
@@ -186,14 +190,15 @@ cdef class Solver:
       callback_handle = <CallbackHandle> obj
 
       csleqp_call(csleqp.sleqp_solver_remove_callback(self.solver,
-                                                      callback_handle.event,
+                                                      callback_handle.event.value,
                                                       callback_handle.function_pointer,
                                                       <void*> callback_handle))
 
-      callback_handle.function_pointer = get_callback_function_pointer(callback_handle.event)
+      csleqp_call(get_callback_function_pointer(callback_handle.event,
+                                                &callback_handle.function_pointer))
 
       csleqp_call(csleqp.sleqp_solver_add_callback(self.solver,
-                                                   callback_handle.event,
+                                                   callback_handle.event.value,
                                                    callback_handle.function_pointer,
                                                    <void*> callback_handle))
 

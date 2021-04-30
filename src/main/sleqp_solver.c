@@ -167,6 +167,7 @@ struct SleqpSolver
 
   double time_limit;
 
+  bool abort_next;
 };
 
 static double remaining_time(SleqpSolver* solver)
@@ -456,6 +457,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   solver->penalty_parameter = 10.;
 
   solver->time_limit = SLEQP_NONE;
+
+  solver->abort_next = false;
 
   return SLEQP_OKAY;
 }
@@ -1842,6 +1845,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
   solver->time_limit = time_limit;
+  solver->abort_next = false;
 
   solver->iteration = 0;
   solver->elapsed_seconds = 0.;
@@ -1870,6 +1874,12 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
        solver->iteration >= max_num_iterations)
     {
       sleqp_log_info("Reached iteration limit, terminating");
+      break;
+    }
+
+    if(solver->abort_next)
+    {
+      sleqp_log_info("Abortion requested, terminating");
       break;
     }
 
@@ -2015,6 +2025,13 @@ SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
 SLEQP_STATUS sleqp_solver_get_status(const SleqpSolver* solver)
 {
   return solver->status;
+}
+
+SLEQP_RETCODE sleqp_solver_abort(SleqpSolver* solver)
+{
+  solver->abort_next = true;
+
+  return SLEQP_OKAY;
 }
 
 int sleqp_solver_get_iterations(const SleqpSolver* solver)

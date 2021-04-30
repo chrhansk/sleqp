@@ -75,6 +75,18 @@ class CallbackTest(unittest.TestCase):
     self.assertRaises(sleqp.SLEQPError,
                       self.solver.solve, 100, 3600)
 
+  def test_callback_abort(self):
+
+    def performed_iteration(solver):
+      solver.abort()
+
+    self.solver.add_callback(sleqp.SolverEvent.PerformedIteration,
+                             performed_iteration)
+
+    self.solver.solve(100, 3600)
+
+    self.assertEqual(self.solver.iterations, 1)
+
   def test_callback_object(self):
 
     accepted_iterate = self.AcceptedIterateHandler()
