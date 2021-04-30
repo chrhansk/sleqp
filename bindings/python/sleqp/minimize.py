@@ -75,12 +75,15 @@ class _MinFunc:
     return func_dual * prod
 
 
-class OptimizeResult(dict):
-  def __init__(self, x, success, status):
-    self.x = x
-    self.success = success
-    self.status = status
+class OptimizeResult:
+  def __init__(self, solver):
+    self.x = solver.solution.primal
+    self.status = solver.status
+    self.success = (self.status == sleqp.Status.Optimal)
+    self.nit = solver.iterations
 
+  def __getitem__(self, key):
+    return getattr(self, key)
 
 def _create_variable_bounds(num_variables, bounds):
   inf = sleqp.inf()
@@ -190,7 +193,19 @@ def _create_constraint_jac(constraints, num_variables):
   return ConstraintJacobian(cons_jacs)
 
 
-def minimize(fun, x0, args=(), grad=None, hessp=None, bounds=None, constraints=None):
+def _add_solver_callback(solver, callback):
+
+  def accepted_iterate(solver, iterate):
+    abort = callback(iterate.primal)
+
+    if abort is True:
+      solver.abort()
+
+  solver.add_callback(sleqp.SolverEvent.AcceptedIterate,
+                      accepted_iterate)
+
+
+def minimize(fun, x0, args=(), grad=None, hessp=None, bounds=None, constraints=None, callback=None):
   if not isinstance(args, tuple):
     args = (args,)
 
@@ -236,9 +251,9 @@ def minimize(fun, x0, args=(), grad=None, hessp=None, bounds=None, constraints=N
                         options,
                         initial_sol)
 
+  if callback is not None:
+    _add_solver_callback(solver, callback)
+
   solver.solve(100, 3600)
 
-  status = solver.status
-  success = (status == sleqp.Status.Optimal)
-
-  return OptimizeResult(solver.solution.primal, success, status)
+  return OptimizeResult(solver)
