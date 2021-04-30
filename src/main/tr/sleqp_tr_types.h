@@ -15,6 +15,7 @@ extern "C" {
                                                  SleqpSparseVec* gradient,
                                                  SleqpSparseVec* newton_step,
                                                  double trust_radius,
+                                                 double* tr_dual,
                                                  double time_limit,
                                                  void* solver_data);
 

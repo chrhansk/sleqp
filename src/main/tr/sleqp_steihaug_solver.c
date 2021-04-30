@@ -66,6 +66,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                     SleqpSparseVec* gradient,
                                     SleqpSparseVec* newton_step,
                                     double trust_radius,
+                                    double* tr_dual,
                                     double time_limit,
                                     void* solver_data)
 {
@@ -77,6 +78,8 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = problem->func;
   SleqpParams* params = solver->params;
+
+  *tr_dual = SLEQP_NONE;
 
   const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 

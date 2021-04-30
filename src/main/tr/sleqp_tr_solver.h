@@ -37,7 +37,8 @@ extern "C" {
                                       SleqpSparseVec* multipliers,
                                       SleqpSparseVec* gradient,
                                       SleqpSparseVec* newton_step,
-                                      double trust_radius);
+                                      double trust_radius,
+                                      double* tr_dual);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_capture(SleqpTRSolver* solver);

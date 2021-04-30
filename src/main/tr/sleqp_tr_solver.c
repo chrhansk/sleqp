@@ -54,7 +54,8 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* solver,
                                     SleqpSparseVec* multipliers,
                                     SleqpSparseVec* gradient,
                                     SleqpSparseVec* newton_step,
-                                    double trust_radius)
+                                    double trust_radius,
+                                    double* tr_dual)
 {
   SLEQP_CALL(sleqp_timer_start(solver->timer));
 
@@ -63,6 +64,7 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* solver,
                                      gradient,
                                      newton_step,
                                      trust_radius,
+                                     tr_dual,
                                      solver->time_limit,
                                      solver->solver_data));
 

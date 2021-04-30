@@ -758,6 +758,7 @@ static SLEQP_RETCODE trlib_solve(SleqpAugJacobian* jacobian,
                                  SleqpSparseVec* gradient,
                                  SleqpSparseVec* newton_step,
                                  double trust_radius,
+                                 double* tr_dual,
                                  double time_limit,
                                  void* solver_data)
 {
@@ -774,6 +775,9 @@ static SLEQP_RETCODE trlib_solve(SleqpAugJacobian* jacobian,
                         trust_radius,
                         time_limit,
                         &ret));
+
+  // trust region dual, located int trlib
+  *tr_dual = data->trlib_fwork[7];
 
   // We may loose some orthogonality in the process, reproject to
   // be sure

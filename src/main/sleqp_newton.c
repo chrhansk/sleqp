@@ -578,6 +578,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   SleqpSparseVec* tr_step = data->tr_step;
 
   SleqpAugJacobian* jacobian = data->jacobian;
+  double tr_dual = 0.;
 
   const double eps = sleqp_params_get(data->params,
                                       SLEQP_PARAM_EPS);
@@ -652,7 +653,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                    multipliers,
                                    data->gradient,
                                    tr_step,
-                                   trust_radius));
+                                   trust_radius,
+                                   &tr_dual));
 
   SLEQP_CALL(sleqp_sparse_vector_add(tr_step,
                                      data->initial_direction,
