@@ -2,13 +2,22 @@
 
 ## Dependencies
 
-For linear program solving, one or more of the following packages are required:
+For the solution of the linear programming problem, one of the following packages is required:
+
 * [Gurobi](https://www.gurobi.com/)
-* [SoPLEX](https://soplex.zib.de/)
+* [SoPlex](https://soplex.zib.de/)
+
+For factorizations, one of the following libraries is required:
+
+* [UMFPACK](http://faculty.cse.tamu.edu/davis/suitesparse.html)
+* [MUMPS](http://mumps.enseeiht.fr/)
+* [MA27](https://www.hsl.rl.ac.uk/archive/specs/ma27.pdf)
+* [MA57](https://www.hsl.rl.ac.uk/archive/specs/ma57.pdf)
+* [MA86](https://www.hsl.rl.ac.uk/ipopt/)
+* [MA97](https://www.hsl.rl.ac.uk/ipopt/)
 
 Additional dependencies:
 * [trlib](https://github.com/felixlen/trlib) for nonconvex trust region QP solving
-* [UMFPACK](http://faculty.cse.tamu.edu/davis/suitesparse.html) for linear system solving
 
 Optional dependencies for the python bindings:
 * [Python](https://www.python.org/) itself, including `setuptools`, `numpy`, and `scipy`
@@ -32,9 +41,11 @@ make
 
 Use the following options to customize the build process:
 
-* `SLEQP_ENABLE_UNIT_TESTS`: Enables the unit tests
-* `SLEQP_ENABLE_CUTEST`: Enables the CUTest suite
-* `SLEQP_ENABLED_PYTHON`: Enables the build of the python bindings
+* `SLEQP_ENABLE_UNIT_TESTS`: Enables the unit tests (default: `On`)
+* `SLEQP_ENABLE_CUTEST`: Enables the CUTest suite (default: `Off`)
+* `SLEQP_ENABLE_PYTHON`: Enables the build of the python bindings (default : `On`)
+* `SLEQP_LPS`: Set to specify a linear programming solver
+* `SLEQP_FACT`: Set to specify a factorization library
 
 ## References
 
