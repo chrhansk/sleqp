@@ -14,7 +14,7 @@ class MinimizeTest(unittest.TestCase):
     self.xopt = np.array([ 1.,  1.,  1.,  1.,  1.])
 
   def test_unconstrained(self):
-    res = sleqp.minimize(rosen, self.x0, grad=rosen_der, hessp=rosen_hess_prod)
+    res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hessp=rosen_hess_prod)
 
     self.assertTrue(res.success)
     self.assertTrue(np.allclose(res.x, self.xopt))
@@ -23,7 +23,7 @@ class MinimizeTest(unittest.TestCase):
     def callback(x):
       assert x.shape == np.array(self.x0).shape
 
-    res = sleqp.minimize(rosen, self.x0, grad=rosen_der, hessp=rosen_hess_prod, callback=callback)
+    res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hessp=rosen_hess_prod, callback=callback)
 
     self.assertTrue(res.success)
     self.assertTrue(np.allclose(res.x, self.xopt))
@@ -32,6 +32,6 @@ class MinimizeTest(unittest.TestCase):
     def callback(x):
       return True
 
-    res = sleqp.minimize(rosen, self.x0, grad=rosen_der, hessp=rosen_hess_prod, callback=callback)
+    res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hessp=rosen_hess_prod, callback=callback)
 
     self.assertEqual(res['nit'], 1)
