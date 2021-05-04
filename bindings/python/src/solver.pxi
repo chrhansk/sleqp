@@ -111,6 +111,10 @@ cdef class Solver:
     return Status(csleqp.sleqp_solver_get_status(self.solver))
 
   def abort(self):
+    """
+    Aborts the solver as soon as the current iteration
+    finishes.
+    """
     csleqp_call(csleqp.sleqp_solver_abort(self.solver))
 
   @property
@@ -160,6 +164,9 @@ cdef class Solver:
 
 
   def add_callback(self, event, function):
+    """
+    Adds a callback function to the solver.
+    """
     cdef CallbackHandle callback_handle = CallbackHandle(self, event, function)
 
     csleqp_call(get_callback_function_pointer(event,

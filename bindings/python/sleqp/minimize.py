@@ -205,9 +205,38 @@ def _add_solver_callback(solver, callback):
                       accepted_iterate)
 
 
-def minimize(fun, x0, args=(), grad=None, hessp=None, bounds=None, constraints=None, callback=None):
+def minimize(fun, x0, args=(), jac=None, hessp=None, bounds=None, constraints=None, callback=None):
   """
-  A drop-in replacement for :func:`scipy.optimize.minimize`
+  A drop-in replacement for :func:`scipy.optimize.minimize`, minimizing a scalar function
+  of one or more variables subjecting to constraints.
+
+  :param fun:
+      The objective function to be minimized.
+      ``fun(x, *args) -> float``
+      where ``x`` is an 1-D array with shape (n,) and ``args``
+      is a tuple of the fixed parameters needed to completely
+      specify the function.
+  :type fun: callable
+  :param x0:
+        Initial guess. Array of real elements of size (n,),
+        where 'n' is the number of independent variables.
+  :type x0: :class:`numpy.ndarray`, shape (n,)
+  :param args:
+        Extra arguments passed to the objective function and its
+        derivatives (`fun`, `jac` and `hess` functions).
+  :type args: tuple, optional
+  :param bounds:
+        Bounds on variables. There are two ways to specify the bounds:
+        1. Instance of :class:`scipy.optimize.Bounds` class.
+        2. Sequence of ``(min, max)`` pairs for each element in `x`. ``None`` is used to specify no bound.
+  :type bounds: sequence or :class:`scipy.optimize.Bounds`, optional
+  :param callback:
+        Called after each iteration. If callback returns True
+        the algorithm execution is terminated. The signature is: ``callback(xk)``
+        where ``xk`` is the current guess.
+  :type callback: callable, optional
+  :return: An improved guess
+  :rtype: :class:`numpy.ndarray`, shape (n,)
   """
   if not isinstance(args, tuple):
     args = (args,)
@@ -234,7 +263,7 @@ def minimize(fun, x0, args=(), grad=None, hessp=None, bounds=None, constraints=N
   (var_lb, var_ub) = _create_variable_bounds(num_variables,
                                              bounds)
 
-  min_func = _MinFunc(fun, grad, cons_eval, cons_jac, hessp, args, num_variables)
+  min_func = _MinFunc(fun, jac, cons_eval, cons_jac, hessp, args, num_variables)
 
   problem = sleqp.Problem(min_func,
                           var_lb,

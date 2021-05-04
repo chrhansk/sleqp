@@ -2,10 +2,23 @@
 
 from enum import Enum, Flag, auto
 
-class Status(Enum):
-  Optimal    = csleqp.SLEQP_OPTIMAL
-  Feasible   = csleqp.SLEQP_FEASIBLE
-  Infeasible = csleqp.SLEQP_INFEASIBLE
+class _DocEnum(Enum):
+    def __new__(cls, value, doc=None):
+        self = object.__new__(cls)  # calling super().__new__(value) here would fail
+        self._value_ = value
+        print("Construction", value, doc)
+        if doc is not None:
+            self.__doc__ = doc
+        return self
+
+
+class Status(_DocEnum):
+  """
+  The status resulting from the solution process
+  """
+  Optimal    = csleqp.SLEQP_OPTIMAL, "An optimal solution was found"
+  Feasible   = csleqp.SLEQP_FEASIBLE, "A feasible solution was found"
+  Infeasible = csleqp.SLEQP_INFEASIBLE, "No feasible solution was found"
   Invalid    = csleqp.SLEQP_INVALID
 
 class DerivCheck(Flag):
@@ -14,39 +27,54 @@ class DerivCheck(Flag):
   SecondExhaustive = csleqp.SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE
   SecondSimple     = csleqp.SLEQP_DERIV_CHECK_SECOND_SIMPLE
 
-class HessianEval(Enum):
-  Exact      = csleqp.SLEQP_HESSIAN_EVAL_EXACT
-  SR1        = csleqp.SLEQP_HESSIAN_EVAL_SR1
-  SimpleBFGS = csleqp.SLEQP_HESSIAN_EVAL_SIMPLE_BFGS
-  DampedBFGS = csleqp.SLEQP_HESSIAN_EVAL_DAMPED_BFGS
+class HessianEval(_DocEnum):
+  """
+  The evaluation method used for Hessian products
+  """
+  Exact      = csleqp.SLEQP_HESSIAN_EVAL_EXACT, "Exact evaluation"
+  SR1        = csleqp.SLEQP_HESSIAN_EVAL_SR1, "The SR1 quasi-Newton method"
+  SimpleBFGS = csleqp.SLEQP_HESSIAN_EVAL_SIMPLE_BFGS, "The BFGS method for convex functions"
+  DampedBFGS = csleqp.SLEQP_HESSIAN_EVAL_DAMPED_BFGS, "A damped BFGS method "
 
 class Sizing(Enum):
   NoSizing   = csleqp.SLEQP_BFGS_SIZING_NONE
   CenteredOL = csleqp.SLEQP_BFGS_SIZING_CENTERED_OL
 
-class TRSolver(Enum):
-    TRlib = csleqp.SLEQP_TR_SOLVER_TRLIB
-    CG    = csleqp.SLEQP_TR_SOLVER_CG
-    Auto  = csleqp.SLEQP_TR_SOLVER_AUTO
+class TRSolver(_DocEnum):
+  """
+  The trust-region solver used
+  """
+  TRlib = csleqp.SLEQP_TR_SOLVER_TRLIB, "The trlib implementation of the Generalized Lanczos method"
+  CG    = csleqp.SLEQP_TR_SOLVER_CG, "Steihaug's conjugate gradient method"
+  Auto  = csleqp.SLEQP_TR_SOLVER_AUTO, "Automatically chosen"
 
-class ValueReason(Enum):
-  NoReason         = csleqp.SLEQP_VALUE_REASON_NONE
-  Init             = csleqp.SLEQP_VALUE_REASON_INIT
-  CheckingDeriv    = csleqp.SLEQP_VALUE_REASON_CHECKING_DERIV
-  AcceptedIterate  = csleqp.SLEQP_VALUE_REASON_ACCEPTED_ITERATE
-  TryingIterate    = csleqp.SLEQP_VALUE_REASON_TRYING_ITERATE
-  TryingSOCIterate = csleqp.SLEQP_VALUE_REASON_TRYING_SOC_ITERATE
-  RejectedIterate  = csleqp.SLEQP_VALUE_REASON_REJECTED_ITERATE
+class ValueReason(_DocEnum):
+  """
+  The reason for setting a new function value
+  """
+  NoReason         = csleqp.SLEQP_VALUE_REASON_NONE, "No reason given"
+  Init             = csleqp.SLEQP_VALUE_REASON_INIT, "Initialization"
+  CheckingDeriv    = csleqp.SLEQP_VALUE_REASON_CHECKING_DERIV, "Derivative check"
+  AcceptedIterate  = csleqp.SLEQP_VALUE_REASON_ACCEPTED_ITERATE, "Accepted a trial iterate"
+  TryingIterate    = csleqp.SLEQP_VALUE_REASON_TRYING_ITERATE, "Trying out a trial iterate"
+  TryingSOCIterate = csleqp.SLEQP_VALUE_REASON_TRYING_SOC_ITERATE, "Trying a second-order correction"
+  RejectedIterate  = csleqp.SLEQP_VALUE_REASON_REJECTED_ITERATE, "Rejected an iterate restoring the previous"
 
-class ActiveState(Enum):
-  Inactive    = csleqp.SLEQP_INACTIVE
-  ActiveLower = csleqp.SLEQP_ACTIVE_LOWER
-  ActiveUpper = csleqp.SLEQP_ACTIVE_UPPER
-  ActiveBoth  = csleqp.SLEQP_ACTIVE_BOTH
+class ActiveState(_DocEnum):
+  """
+  The state of a variable or constraint in the working set
+  """
+  Inactive    = csleqp.SLEQP_INACTIVE, "Variable or constraint is inactive"
+  ActiveLower = csleqp.SLEQP_ACTIVE_LOWER, "Variable or constraint is active at its lower bound"
+  ActiveUpper = csleqp.SLEQP_ACTIVE_UPPER, "Variable or constraint is active at its upper bound"
+  ActiveBoth  = csleqp.SLEQP_ACTIVE_BOTH, "Variable or constraint is active at both bounds (which must coincide)"
 
-class DualEstimationType(Enum):
-  LP      = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LP
-  LSQ     = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LSQ
+class DualEstimationType(_DocEnum):
+  """
+  The type of dual estimation used
+  """
+  LP      = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LP, "Dual variables of the LP"
+  LSQ     = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LSQ, "Least-squares estimation"
 
 class SolverEvent(Enum):
   AcceptedIterate    = csleqp.SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE
