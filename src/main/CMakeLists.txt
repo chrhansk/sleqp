@@ -65,7 +65,9 @@ if(DOXYGEN_FOUND)
   set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/doc")
   set(DOXYGEN_USE_MATHJAX YES)
   set(DOXYGEN_FILE_PATTERNS "*.h")
-  doxygen_add_docs(doc ${CMAKE_CURRENT_SOURCE_DIR})
+  doxygen_add_docs(c_doc ${CMAKE_CURRENT_SOURCE_DIR})
+
+  add_dependencies(doc c_doc)
 endif()
 
 target_include_directories(sleqp_objects

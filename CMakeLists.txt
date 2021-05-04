@@ -88,6 +88,8 @@ endif()
 
 find_package(Doxygen)
 
+add_custom_target(doc)
+
 # Config files
 
 configure_file("${CMAKE_SOURCE_DIR}/src/main/sleqp_defs.h.in"

@@ -15,6 +15,8 @@ if(PythonInterp_FOUND AND PythonLibs_FOUND)
   add_dependencies(python_sleqp sleqp)
   add_dependencies(build_tests python_sleqp)
 
+  add_dependencies(doc python_sleqp_doc)
+
 else()
   message(STATUS "Could not find python, extension will not be built")
 endif()

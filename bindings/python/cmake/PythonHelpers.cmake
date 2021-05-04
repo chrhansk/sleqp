@@ -20,14 +20,18 @@ function(add_python_project)
 
   set(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
+  set(DOC_DIR "${PROJECT_DIR}/docs")
+
   set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
   set(SETUP_PY    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
 
   set(TOX_INI_IN "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini.in")
   set(TOX_INI    "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini")
 
-  set(DOC_CONF_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/docs/conf.py.in")
-  set(DOC_CONF_PY "${CMAKE_CURRENT_SOURCE_DIR}/docs/conf.py")
+  set(DOC_CONF_PY_IN "${DOC_DIR}/conf.py.in")
+  set(DOC_CONF_PY "${DOC_DIR}/conf.py")
+
+  set(DOC_TARGET "python_${PROJECT_NAME}_doc")
 
   set(PYTHON_CFLAGS "")
 
@@ -50,6 +54,20 @@ function(add_python_project)
     @ONLY)
 
   add_custom_target(${TARGET_NAME} ALL)
+
+  add_custom_target(${DOC_TARGET})
+
+  find_program(MAKE make)
+
+  if(MAKE)
+    add_custom_command(
+    TARGET ${DOC_TARGET}
+    COMMAND ${MAKE} html
+    WORKING_DIRECTORY ${DOC_DIR})
+
+  add_dependencies(${DOC_TARGET} ${TARGET_NAME})
+
+  endif()
 
   add_custom_command(
     TARGET ${TARGET_NAME}
