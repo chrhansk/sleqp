@@ -206,6 +206,9 @@ def _add_solver_callback(solver, callback):
 
 
 def minimize(fun, x0, args=(), grad=None, hessp=None, bounds=None, constraints=None, callback=None):
+  """
+  A drop-in replacement for :func:`scipy.optimize.minimize`
+  """
   if not isinstance(args, tuple):
     args = (args,)
 

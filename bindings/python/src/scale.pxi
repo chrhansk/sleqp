@@ -2,7 +2,7 @@
 
 class Array(np.ndarray):
   """
-  Thin wrapper around a numpy array, storing a
+  Thin wrapper around a :class:`numpy.ndarray`, storing a
   reference to prevent the destruction of
   an underlying object
   """

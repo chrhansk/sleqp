@@ -26,6 +26,9 @@ function(add_python_project)
   set(TOX_INI_IN "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini.in")
   set(TOX_INI    "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini")
 
+  set(DOC_CONF_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/docs/conf.py.in")
+  set(DOC_CONF_PY "${CMAKE_CURRENT_SOURCE_DIR}/docs/conf.py")
+
   set(PYTHON_CFLAGS "")
 
   if(CMAKE_C_FLAGS)
@@ -40,6 +43,10 @@ function(add_python_project)
 
   configure_file(${TOX_INI_IN}
     ${TOX_INI}
+    @ONLY)
+
+  configure_file(${DOC_CONF_PY_IN}
+    ${DOC_CONF_PY}
     @ONLY)
 
   add_custom_target(${TARGET_NAME} ALL)
