@@ -173,7 +173,7 @@ SLEQP_RETCODE slack_residuum(const SleqpSparseVec* v,
       {
         bool valid_v = k_v < v->nnz;
         bool valid_ub = k_ub < ub->nnz;
-        bool valid_lb = k_lb < ub->nnz;
+        bool valid_lb = k_lb < lb->nnz;
         bool valid_d = k_d < d->nnz;
 
         const int i_v = valid_v ? v->indices[k_v] : dim + 1;
@@ -244,17 +244,17 @@ SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpProblem* problem,
   double current_residuum;
 
   SLEQP_CALL(slack_residuum(sleqp_iterate_get_cons_val(iterate),
-                            problem->var_lb,
-                            problem->var_ub,
-                            sleqp_iterate_get_vars_dual(iterate),
+                            problem->cons_lb,
+                            problem->cons_ub,
+                            sleqp_iterate_get_cons_dual(iterate),
                             &current_residuum));
 
   (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
 
   SLEQP_CALL(slack_residuum(sleqp_iterate_get_primal(iterate),
-                            problem->cons_lb,
-                            problem->cons_ub,
-                            sleqp_iterate_get_cons_dual(iterate),
+                            problem->var_lb,
+                            problem->var_ub,
+                            sleqp_iterate_get_vars_dual(iterate),
                             &current_residuum));
 
   (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
