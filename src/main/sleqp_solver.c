@@ -191,17 +191,17 @@ static SLEQP_RETCODE set_residuum(SleqpSolver* solver)
   const double feas_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_FEASIBILITY_TOL);
 
-  SLEQP_CALL(sleqp_iterate_slackness_residuum(solver->iterate,
-                                              solver->problem,
+  SLEQP_CALL(sleqp_iterate_slackness_residuum(solver->problem,
+                                              solver->iterate,
                                               &solver->slackness_residuum));
 
-  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->iterate,
-                                                solver->problem,
+  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
+                                                solver->iterate,
                                                 feas_eps,
                                                 &solver->feasibility_residuum));
 
-  SLEQP_CALL(sleqp_iterate_stationarity_residuum(solver->iterate,
-                                                 solver->problem,
+  SLEQP_CALL(sleqp_iterate_stationarity_residuum(solver->problem,
+                                                 solver->iterate,
                                                  solver->dense_cache,
                                                  &solver->stationarity_residuum));
 
@@ -1651,8 +1651,8 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
 
     double unscaled_violation;
 
-    SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->unscaled_iterate,
-                                                  solver->unscaled_problem,
+    SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->unscaled_problem,
+                                                  solver->unscaled_iterate,
                                                   feas_eps,
                                                   &unscaled_violation));
 
@@ -1918,8 +1918,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   const double feas_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_FEASIBILITY_TOL);
 
-  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->iterate,
-                                                solver->problem,
+  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
+                                                solver->iterate,
                                                 feas_eps,
                                                 &violation));
 
@@ -1997,6 +1997,45 @@ int sleqp_solver_get_int_state(const SleqpSolver* solver,
   return SLEQP_NONE;
 }
 
+SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
+                                         SLEQP_SOLVER_STATE_VEC value,
+                                         SleqpSparseVec* result)
+{
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  switch(value)
+  {
+  case SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS:
+    SLEQP_CALL(sleqp_iterate_stationarity_residuals(solver->problem,
+                                                    solver->iterate,
+                                                    solver->dense_cache,
+                                                    result,
+                                                    zero_eps));
+    break;
+  case SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS:
+    SLEQP_CALL(sleqp_violation_values(solver->problem,
+                                      solver->iterate,
+                                      zero_eps,
+                                      result));
+    break;
+  case SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS:
+    SLEQP_CALL(sleqp_iterate_cons_slackness_residuals(solver->problem,
+                                                      solver->iterate,
+                                                      result,
+                                                      zero_eps));
+    break;
+  case SLEQP_SOLVER_STATE_VEC_SCALED_VAR_SLACK_RESIDUALS:
+    SLEQP_CALL(sleqp_iterate_vars_slackness_residuals(solver->problem,
+                                                      solver->iterate,
+                                                      result,
+                                                      zero_eps));
+    break;
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                         SleqpIterate** iterate)
 {
@@ -2013,8 +2052,8 @@ SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
   const double feas_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_FEASIBILITY_TOL);
 
-  SLEQP_CALL(sleqp_iterate_get_violated_constraints(iterate,
-                                                    solver->unscaled_problem,
+  SLEQP_CALL(sleqp_iterate_get_violated_constraints(solver->unscaled_problem,
+                                                    iterate,
                                                     violated_constraints,
                                                     num_violated_constraints,
                                                     feas_eps));

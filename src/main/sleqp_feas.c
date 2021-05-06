@@ -235,13 +235,13 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
   assert(dim == num_constraints);
   assert(dim == lb->dim);
   assert(dim == ub->dim);
-  assert(dim == violation->dim);
 
   {
     int max_size = lb->nnz + ub->nnz + c->nnz;
     max_size = SLEQP_MIN(max_size, num_constraints);
 
     SLEQP_CALL(sleqp_sparse_vector_clear(violation));
+    SLEQP_CALL(sleqp_sparse_vector_resize(violation, dim));
     SLEQP_CALL(sleqp_sparse_vector_reserve(violation, max_size));
   }
 

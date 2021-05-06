@@ -33,6 +33,13 @@ extern "C" {
     SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE,
   } SLEQP_SOLVER_STATE_INT;
 
+  typedef enum {
+    SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
+    SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
+    SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
+    SLEQP_SOLVER_STATE_VEC_SCALED_VAR_SLACK_RESIDUALS,
+  } SLEQP_SOLVER_STATE_VEC;
+
   typedef struct SleqpSolver SleqpSolver;
 
   /**
@@ -70,6 +77,10 @@ extern "C" {
 
   SLEQP_EXPORT int sleqp_solver_get_int_state(const SleqpSolver* solver,
                                               SLEQP_SOLVER_STATE_INT value);
+
+  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
+                                                        SLEQP_SOLVER_STATE_VEC value,
+                                                        SleqpSparseVec* result);
 
   /**
    * Returns the status of the last call to @ref sleqp_solver_solve

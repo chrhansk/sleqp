@@ -152,200 +152,62 @@ SleqpSparseVec* sleqp_iterate_get_vars_dual(SleqpIterate* iterate)
   return iterate->vars_dual;
 }
 
-SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
-                                               SleqpProblem* problem,
-                                               double* slackness_residuum)
+static
+SLEQP_RETCODE slack_residuum(const SleqpSparseVec* v,
+                             const SleqpSparseVec* lb,
+                             const SleqpSparseVec* ub,
+                             const SleqpSparseVec* d,
+                             double* residuum)
 {
-  (*slackness_residuum) = 0.;
+  const int dim = v->dim;
+
+  *residuum = 0.;
 
   {
-    SleqpSparseVec* x = iterate->primal;
-
-    SleqpSparseVec* lb = problem->var_lb;
-    SleqpSparseVec* ub = problem->var_ub;
-
-    SleqpSparseVec* d = iterate->vars_dual;
-
     {
-      int k_x = 0, k_ub = 0, k_d = 0;
-
-      int dim = x->dim;
-
-      while((k_x < x->nnz || k_ub < ub->nnz) && k_d < d->nnz)
-      {
-        bool valid_x = k_x < x->nnz;
-        bool valid_ub = k_ub < ub->nnz;
-        bool valid_d = k_d < d->nnz;
-
-        int i_x = valid_x ? x->indices[k_x] : dim + 1;
-        int i_ub = valid_ub ? ub->indices[k_ub] : dim + 1;
-        int i_d = valid_d ? d->indices[k_d] : dim + 1;
-
-        int i_combined = SLEQP_MIN(i_x, i_ub);
-        i_combined = SLEQP_MIN(i_combined, i_d);
-
-        valid_x = valid_x && (i_x == i_combined);
-        valid_ub = valid_ub && (i_ub == i_combined);
-        valid_d = valid_d && (i_d == i_combined);
-
-        double x_val = valid_x ? x->data[k_x] : 0.;
-        double ub_val = valid_ub ? ub->data[k_ub] : 0.;
-        double d_val = valid_d ? d->data[k_d] : 0.;
-
-        double current_residuum = SLEQP_MAX(ub_val - x_val, 0.) * SLEQP_MAX(d_val, 0.);
-
-        (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
-
-        if(valid_x)
-        {
-          ++k_x;
-        }
-
-        if(valid_ub)
-        {
-          ++k_ub;
-        }
-
-        if(valid_d)
-        {
-          ++k_d;
-        }
-      }
-    }
-
-    {
-      int k_x = 0, k_lb = 0, k_d = 0;
-
-      int dim = x->dim;
-
-      while((k_x < x->nnz || k_lb < lb->nnz) && k_d < d->nnz)
-      {
-        bool valid_x = k_x < x->nnz;
-        bool valid_lb = k_lb < lb->nnz;
-        bool valid_d = k_d < d->nnz;
-
-        int i_x = valid_x ? x->indices[k_x] : dim + 1;
-        int i_lb = valid_lb ? lb->indices[k_lb] : dim + 1;
-        int i_d = valid_d ? d->indices[k_d] : dim + 1;
-
-        int i_combined = SLEQP_MIN(i_x, i_lb);
-        i_combined = SLEQP_MIN(i_combined, i_d);
-
-        valid_x = valid_x && (i_x == i_combined);
-        valid_lb = valid_lb && (i_lb == i_combined);
-        valid_d = valid_d && (i_d == i_combined);
-
-        double x_val = valid_x ? x->data[k_x] : 0.;
-        double lb_val = valid_lb ? lb->data[k_lb] : 0.;
-        double d_val = valid_d ? d->data[k_d] : 0.;
-
-        double current_residuum = SLEQP_MIN(lb_val - x_val, 0.) * SLEQP_MIN(d_val, 0.);
-
-        (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
-
-        if(valid_x)
-        {
-          ++k_x;
-        }
-
-        if(valid_lb)
-        {
-          ++k_lb;
-        }
-
-        if(valid_d)
-        {
-          ++k_d;
-        }
-      }
-    }
-  }
-
-  {
-    SleqpSparseVec* v = iterate->cons_val;
-
-    SleqpSparseVec* lb = problem->cons_lb;
-    SleqpSparseVec* ub = problem->cons_ub;
-
-    SleqpSparseVec* d = iterate->cons_dual;
-
-    {
-      int k_v = 0, k_ub = 0, k_d = 0;
+      int k_v = 0, k_ub = 0, k_lb = 0, k_d = 0;
 
       int dim = v->dim;
 
-      while((k_v < v->nnz || k_ub < ub->nnz) && k_d < d->nnz)
+      while((k_v < v->nnz || k_lb < lb->nnz || k_ub < ub->nnz) && k_d < d->nnz)
       {
         bool valid_v = k_v < v->nnz;
         bool valid_ub = k_ub < ub->nnz;
+        bool valid_lb = k_lb < ub->nnz;
         bool valid_d = k_d < d->nnz;
 
-        int i_v = valid_v ? v->indices[k_v] : dim + 1;
-        int i_ub = valid_ub ? ub->indices[k_ub] : dim + 1;
-        int i_d = valid_d ? d->indices[k_d] : dim + 1;
+        const int i_v = valid_v ? v->indices[k_v] : dim + 1;
+        const int i_lb = valid_lb ? lb->indices[k_lb] : dim + 1;
+        const int i_ub = valid_ub ? ub->indices[k_ub] : dim + 1;
+        const int i_d = valid_d ? d->indices[k_d] : dim + 1;
 
-        int i_combined = SLEQP_MIN(i_v, i_ub);
+        int i_combined = SLEQP_MIN(i_lb, i_ub);
         i_combined = SLEQP_MIN(i_combined, i_d);
-
-        valid_v = valid_v && (i_v == i_combined);
-        valid_ub = valid_ub && (i_ub == i_combined);
-        valid_d = valid_d && (i_d == i_combined);
-
-        double v_val = valid_v ? v->data[k_v] : 0.;
-        double ub_val = valid_ub ? ub->data[k_ub] : 0.;
-        double d_val = valid_d ? d->data[k_d] : 0.;
-
-        double current_residuum = SLEQP_MAX(ub_val - v_val, 0.) * SLEQP_MAX(d_val, 0.);
-
-        (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
-
-        if(valid_v)
-        {
-          ++k_v;
-        }
-
-        if(valid_ub)
-        {
-          ++k_ub;
-        }
-
-        if(valid_d)
-        {
-          ++k_d;
-        }
-      }
-    }
-
-
-    {
-      int k_v = 0, k_lb = 0, k_d = 0;
-
-      int dim = v->dim;
-
-      while((k_v < v->nnz || k_lb < lb->nnz) && k_d < d->nnz)
-      {
-        bool valid_v = k_v < v->nnz;
-        bool valid_lb = k_lb < lb->nnz;
-        bool valid_d = k_d < d->nnz;
-
-        int i_v = valid_v ? v->indices[k_v] : dim + 1;
-        int i_lb = valid_lb ? lb->indices[k_lb] : dim + 1;
-        int i_d = valid_d ? d->indices[k_d] : dim + 1;
-
-        int i_combined = SLEQP_MIN(i_v, i_lb);
-        i_combined = SLEQP_MIN(i_combined, i_d);
+        i_combined = SLEQP_MIN(i_combined, i_v);
 
         valid_v = valid_v && (i_v == i_combined);
         valid_lb = valid_lb && (i_lb == i_combined);
+        valid_ub = valid_ub && (i_ub == i_combined);
         valid_d = valid_d && (i_d == i_combined);
 
-        double v_val = valid_v ? v->data[k_v] : 0.;
-        double lb_val = valid_lb ? lb->data[k_lb] : 0.;
-        double d_val = valid_d ? d->data[k_d] : 0.;
+        const double v_val = valid_v ? v->data[k_v] : 0.;
+        const double lb_val = valid_lb ? lb->data[k_lb] : 0.;
+        const double ub_val = valid_ub ? ub->data[k_ub] : 0.;
+        const double d_val = valid_d ? d->data[k_d] : 0.;
 
-        double current_residuum = SLEQP_MIN(lb_val - v_val, 0.) * SLEQP_MIN(d_val, 0.);
+        double current_residuum = 0.;
 
-        (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
+        // use signs of dual variables with respect to working set
+        if(d_val >= 0.)
+        {
+          current_residuum = SLEQP_MAX(ub_val - v_val, 0.) * d_val;
+        }
+        else
+        {
+          current_residuum = SLEQP_MAX(v_val - lb_val, 0.) * d_val;
+        }
+
+        *residuum = SLEQP_MAX(*residuum, SLEQP_ABS(current_residuum));
 
         if(valid_v)
         {
@@ -355,6 +217,11 @@ SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
         if(valid_lb)
         {
           ++k_lb;
+        }
+
+        if(valid_ub)
+        {
+          ++k_ub;
         }
 
         if(valid_d)
@@ -368,8 +235,163 @@ SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpIterate* iterate,
-                                                 SleqpProblem* problem,
+SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpProblem* problem,
+                                               SleqpIterate* iterate,
+                                               double* slackness_residuum)
+{
+  (*slackness_residuum) = 0.;
+
+  double current_residuum;
+
+  SLEQP_CALL(slack_residuum(sleqp_iterate_get_cons_val(iterate),
+                            problem->var_lb,
+                            problem->var_ub,
+                            sleqp_iterate_get_vars_dual(iterate),
+                            &current_residuum));
+
+  (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
+
+  SLEQP_CALL(slack_residuum(sleqp_iterate_get_primal(iterate),
+                            problem->cons_lb,
+                            problem->cons_ub,
+                            sleqp_iterate_get_cons_dual(iterate),
+                            &current_residuum));
+
+  (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
+
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE slack_residuals(const SleqpSparseVec* v,
+                              const SleqpSparseVec* lb,
+                              const SleqpSparseVec* ub,
+                              const SleqpSparseVec* d,
+                              SleqpSparseVec* r,
+                              double zero_eps)
+{
+  const int dim = v->dim;
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(r));
+
+  SLEQP_CALL(sleqp_sparse_vector_resize(r, dim));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(r, dim));
+
+  {
+    {
+      int k_v = 0, k_ub = 0, k_lb = 0, k_d = 0;
+
+      int dim = v->dim;
+
+      while((k_v < v->nnz || k_lb < lb->nnz || k_ub < ub->nnz) && k_d < d->nnz)
+      {
+        bool valid_v = k_v < v->nnz;
+        bool valid_ub = k_ub < ub->nnz;
+        bool valid_lb = k_lb < ub->nnz;
+        bool valid_d = k_d < d->nnz;
+
+        const int i_v = valid_v ? v->indices[k_v] : dim + 1;
+        const int i_lb = valid_lb ? lb->indices[k_lb] : dim + 1;
+        const int i_ub = valid_ub ? ub->indices[k_ub] : dim + 1;
+        const int i_d = valid_d ? d->indices[k_d] : dim + 1;
+
+        int i_combined = SLEQP_MIN(i_lb, i_ub);
+        i_combined = SLEQP_MIN(i_combined, i_d);
+        i_combined = SLEQP_MIN(i_combined, i_v);
+
+        valid_v = valid_v && (i_v == i_combined);
+        valid_lb = valid_lb && (i_lb == i_combined);
+        valid_ub = valid_ub && (i_ub == i_combined);
+        valid_d = valid_d && (i_d == i_combined);
+
+        const double v_val = valid_v ? v->data[k_v] : 0.;
+        const double lb_val = valid_lb ? lb->data[k_lb] : 0.;
+        const double ub_val = valid_ub ? ub->data[k_ub] : 0.;
+        const double d_val = valid_d ? d->data[k_d] : 0.;
+
+        double current_residuum = 0.;
+
+        // use signs of dual variables with respect to working set
+        if(d_val >= 0.)
+        {
+          current_residuum = SLEQP_MAX(ub_val - v_val, 0.) * d_val;
+        }
+        else
+        {
+          current_residuum = SLEQP_MAX(v_val - lb_val, 0.) * d_val;
+        }
+
+        if(!sleqp_is_zero(current_residuum, zero_eps))
+        {
+          SLEQP_CALL(sleqp_sparse_vector_push(r,
+                                              i_combined,
+                                              current_residuum));
+        }
+
+        if(valid_v)
+        {
+          ++k_v;
+        }
+
+        if(valid_lb)
+        {
+          ++k_lb;
+        }
+
+        if(valid_ub)
+        {
+          ++k_ub;
+        }
+
+        if(valid_d)
+        {
+          ++k_d;
+        }
+      }
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_iterate_vars_slackness_residuals(SleqpProblem* problem,
+                                                     SleqpIterate* iterate,
+                                                     SleqpSparseVec* residuals,
+                                                     double zero_eps)
+{
+  const int num_variables = problem->num_variables;
+
+  SLEQP_CALL(slack_residuals(sleqp_iterate_get_cons_val(iterate),
+                             problem->var_lb,
+                             problem->var_ub,
+                             sleqp_iterate_get_vars_dual(iterate),
+                             residuals,
+                             zero_eps));
+
+  return SLEQP_OKAY;
+}
+
+
+SLEQP_RETCODE sleqp_iterate_cons_slackness_residuals(SleqpProblem* problem,
+                                                     SleqpIterate* iterate,
+                                                     SleqpSparseVec* residuals,
+                                                     double zero_eps)
+{
+  const int num_constraints = problem->num_constraints;
+
+  SLEQP_CALL(slack_residuals(sleqp_iterate_get_primal(iterate),
+                             problem->cons_lb,
+                             problem->cons_ub,
+                             sleqp_iterate_get_cons_dual(iterate),
+                             residuals,
+                             zero_eps));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpProblem* problem,
+                                                 SleqpIterate* iterate,
                                                  double feas_eps,
                                                  double* feasibility_residuum)
 {
@@ -381,8 +403,8 @@ SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpIterate* iterate,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
-                                                     SleqpProblem* problem,
+SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpProblem* problem,
+                                                     SleqpIterate* iterate,
                                                      int* violated_constraints,
                                                      int* num_violated_constraints,
                                                      double feas_eps)
@@ -396,13 +418,11 @@ SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
-                                                  SleqpProblem* problem,
-                                                  double* cache,
-                                                  double* stationarity_residuum)
+static SLEQP_RETCODE
+write_stationarity_resiudals_to_cache(SleqpIterate* iterate,
+                                      SleqpProblem* problem,
+                                      double* cache)
 {
-  (*stationarity_residuum) = 0.;
-
   const int num_variables = problem->num_variables;
   const int num_constraints = problem->num_constraints;
 
@@ -460,6 +480,37 @@ SLEQP_RETCODE sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
     cache[func_grad->indices[k]] += func_grad->data[k];
   }
 
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_iterate_stationarity_residuals(SleqpProblem* problem,
+                                                   SleqpIterate* iterate,
+                                                   double* cache,
+                                                   SleqpSparseVec* residuals,
+                                                   double zero_eps)
+{
+  const int num_variables = problem->num_variables;
+
+  SLEQP_CALL(write_stationarity_resiudals_to_cache(iterate, problem, cache));
+
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(residuals,
+                                          cache,
+                                          num_variables,
+                                          zero_eps));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_iterate_stationarity_residuum(SleqpProblem* problem,
+                                                  SleqpIterate* iterate,
+                                                  double* cache,
+                                                  double* stationarity_residuum)
+{
+  const int num_variables = problem->num_variables;
+
+  SLEQP_CALL(write_stationarity_resiudals_to_cache(iterate, problem, cache));
+
+  (*stationarity_residuum) = 0.;
 
   for(int j = 0; j < num_variables; ++j)
   {

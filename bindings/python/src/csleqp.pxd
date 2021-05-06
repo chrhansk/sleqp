@@ -114,6 +114,12 @@ cdef extern from "sleqp.h":
   ctypedef enum SLEQP_SOLVER_STATE_INT:
     SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE
 
+  ctypedef enum SLEQP_SOLVER_STATE_VEC:
+    SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
+    SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
+    SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
+    SLEQP_SOLVER_STATE_VEC_SCALED_VAR_SLACK_RESIDUALS
+
   ctypedef enum SLEQP_STEPTYPE:
     SLEQP_STEPTYPE_NONE,
     SLEQP_STEPTYPE_ACCEPTED,
@@ -489,6 +495,10 @@ cdef extern from "sleqp.h":
 
   int sleqp_solver_get_int_state(const SleqpSolver* solver,
                                  SLEQP_SOLVER_STATE_INT value)
+
+  SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
+                                           SLEQP_SOLVER_STATE_VEC value,
+                                           SleqpSparseVec* result)
 
   SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
 

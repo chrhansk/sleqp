@@ -79,19 +79,38 @@ extern "C" {
   SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_vars_dual(SleqpIterate* iterate);
 
   SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpIterate* iterate,
-                                                 SleqpProblem* problem,
+  SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpProblem* problem,
+                                                 SleqpIterate* iterate,
                                                  double* slackness_residuum);
 
   SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpIterate* iterate,
-                                                   SleqpProblem* problem,
+  SLEQP_RETCODE sleqp_iterate_vars_slackness_residuals(SleqpProblem* problem,
+                                                       SleqpIterate* iterate,
+                                                       SleqpSparseVec* residuals,
+                                                       double zero_eps);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_iterate_cons_slackness_residuals(SleqpProblem* problem,
+                                                       SleqpIterate* iterate,
+                                                       SleqpSparseVec* residuals,
+                                                       double zero_eps);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpProblem* problem,
+                                                   SleqpIterate* iterate,
                                                    double feas_eps,
                                                    double* feasibility_residuum);
 
   SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_iterate_stationarity_residuum(SleqpIterate* iterate,
-                                                    SleqpProblem* problem,
+  SLEQP_RETCODE sleqp_iterate_stationarity_residuals(SleqpProblem* problem,
+                                                     SleqpIterate* iterate,
+                                                     double* cache,
+                                                     SleqpSparseVec* residuals,
+                                                     double zero_eps);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_iterate_stationarity_residuum(SleqpProblem* problem,
+                                                    SleqpIterate* iterate,
                                                     double* cache,
                                                     double* stationarity_residuum);
 
@@ -106,8 +125,8 @@ extern "C" {
                                              double stationarity_residuum);
 
   SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpIterate* iterate,
-                                                       SleqpProblem* problem,
+  SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpProblem* problem,
+                                                       SleqpIterate* iterate,
                                                        int* violated_constraints,
                                                        int* num_violated_constraints,
                                                        double feas_eps);
