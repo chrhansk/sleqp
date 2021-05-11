@@ -83,6 +83,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
   data->zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   data->num_constraints = num_constraints;
+  data->num_variables = num_variables;
   data->goth = cutest_false;
 
   SLEQP_CALL(sleqp_alloc_array(&data->x, num_variables));
@@ -267,6 +268,8 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_jac(SleqpFunc* func,
 
   const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
   int last_col = 0;
+
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, data->jac_nnz));
 
   for(int i = 0; i < data->jac_nnz; ++i)
   {
