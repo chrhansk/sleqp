@@ -146,6 +146,8 @@ static SLEQP_RETCODE callback_handler_free(SleqpCallbackHandler** star)
     return SLEQP_OKAY;
   }
 
+  sleqp_free(&(handler->callbacks));
+
   sleqp_free(star);
 
   return SLEQP_OKAY;
