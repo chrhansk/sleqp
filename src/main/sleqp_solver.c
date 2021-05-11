@@ -345,6 +345,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_cauchy_data_create(&solver->cauchy_data,
                                       solver->problem,
                                       params,
+                                      options,
                                       solver->lp_interface));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_direction,
