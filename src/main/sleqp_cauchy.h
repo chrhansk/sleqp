@@ -7,6 +7,8 @@
  **/
 
 #include "sleqp_iterate.h"
+#include "sleqp_options.h"
+#include "sleqp_params.h"
 
 #include "lp/sleqp_lpi.h"
 
@@ -16,10 +18,18 @@ extern "C" {
 
   typedef struct SleqpCauchyData SleqpCauchyData;
 
+  typedef enum {
+    SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT,
+    SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY,
+    SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED,
+    SLEQP_NUM_CAUCHY_OBJECTIVES
+  } SLEQP_CAUCHY_OBJECTIVE_TYPE;
+
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
                                          SleqpProblem* problem,
                                          SleqpParams* params,
+                                         SleqpOptions* options,
                                          SleqpLPi* lp_interface);
 
   SLEQP_NODISCARD
@@ -50,7 +60,8 @@ extern "C" {
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
                                    SleqpSparseVec* gradient,
-                                   double penalty);
+                                   double penalty,
+                                   SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type);
 
   /**
    * Returns the value of the linearized merit function at the

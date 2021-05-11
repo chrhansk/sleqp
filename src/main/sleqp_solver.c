@@ -504,7 +504,8 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
   SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                 NULL,
-                                solver->penalty_parameter));
+                                solver->penalty_parameter,
+                                SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY));
 
   {
     bool locally_infeasible;
@@ -541,7 +542,8 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                     sleqp_iterate_get_func_grad(iterate),
-                                    solver->penalty_parameter));
+                                    solver->penalty_parameter,
+                                    SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED));
 
       double next_violation;
 
@@ -587,7 +589,8 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
 
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                     sleqp_iterate_get_func_grad(iterate),
-                                    solver->penalty_parameter));
+                                    solver->penalty_parameter,
+                                    SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED));
 
       double next_violation;
 
@@ -751,7 +754,8 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
                                   sleqp_iterate_get_func_grad(iterate),
-                                  solver->penalty_parameter));
+                                  solver->penalty_parameter,
+                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
     double objective_value;
 

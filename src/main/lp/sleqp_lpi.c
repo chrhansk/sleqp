@@ -113,6 +113,20 @@ SLEQP_RETCODE sleqp_lpi_set_time_limit(SleqpLPi* lp_interface,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_lpi_save_basis(SleqpLPi* lp_interface,
+                                   int index)
+{
+  return lp_interface->callbacks.save_basis(lp_interface->lp_data,
+                                            index);
+}
+
+SLEQP_RETCODE sleqp_lpi_restore_basis(SleqpLPi* lp_interface,
+                                      int index)
+{
+  return lp_interface->callbacks.restore_basis(lp_interface->lp_data,
+                                               index);
+}
+
 SLEQP_RETCODE sleqp_lpi_get_primal_sol(SleqpLPi* lp_interface,
                                        double* objective_value,
                                        double* solution_values)

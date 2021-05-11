@@ -11,6 +11,7 @@ struct SleqpCauchyData
 {
   SleqpProblem* problem;
   SleqpParams* params;
+  SleqpOptions* options;
 
   int num_lp_variables;
   int num_lp_constraints;
@@ -20,6 +21,9 @@ struct SleqpCauchyData
 
   SLEQP_BASESTAT* var_stats;
   SLEQP_BASESTAT* cons_stats;
+
+  bool has_basis[SLEQP_NUM_CAUCHY_OBJECTIVES];
+  SLEQP_CAUCHY_OBJECTIVE_TYPE current_objective;
 
   SleqpLPi* lp_interface;
 
@@ -38,6 +42,7 @@ struct SleqpCauchyData
 SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
                                        SleqpProblem* problem,
                                        SleqpParams* params,
+                                       SleqpOptions* options,
                                        SleqpLPi* lp_interface)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -51,6 +56,9 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
   SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
 
+  SLEQP_CALL(sleqp_options_capture(options));
+  data->options = options;
+
   data->num_lp_variables = problem->num_variables + 2 * problem->num_constraints;
   data->num_lp_constraints = problem->num_constraints;
 
@@ -61,6 +69,11 @@ SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
 
   SLEQP_CALL(sleqp_alloc_array(&data->var_stats, data->num_lp_variables));
   SLEQP_CALL(sleqp_alloc_array(&data->cons_stats, data->num_lp_constraints));
+
+  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT] = false;
+  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY] = false;
+  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED] = false;
+  data->current_objective = SLEQP_NONE;
 
   data->lp_interface = lp_interface;
 
@@ -502,9 +515,24 @@ static SLEQP_RETCODE check_basis(SleqpCauchyData* cauchy_data,
   }
 */
 
+static
+SLEQP_RETCODE restore_basis(SleqpCauchyData* cauchy_data,
+                            SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
+{
+  if(cauchy_data->current_objective != objective_type &&
+     cauchy_data->has_basis[objective_type])
+  {
+    SLEQP_CALL(sleqp_lpi_restore_basis(cauchy_data->lp_interface,
+                                       objective_type));
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
                                  SleqpSparseVec* gradient,
-                                 double penalty)
+                                 double penalty,
+                                 SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
 {
   SLEQP_CALL(create_objective(cauchy_data,
                               gradient,
@@ -512,6 +540,33 @@ SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
 
   SLEQP_CALL(sleqp_lpi_set_objective(cauchy_data->lp_interface,
                                      cauchy_data->objective));
+
+  bool warm_start = sleqp_options_get_bool(cauchy_data->options,
+                                           SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP);
+
+  if(warm_start)
+  {
+    switch(objective_type)
+    {
+    case SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT:
+      // fallthrough
+    case SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY:
+      SLEQP_CALL(restore_basis(cauchy_data, objective_type));
+      break;
+    case SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED:
+      if(cauchy_data->current_objective != SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED)
+      {
+        // restart from the default, this should be closer
+        // to the initial mixed one
+        SLEQP_CALL(restore_basis(cauchy_data, SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+      }
+      break;
+    default:
+      break;
+    }
+  }
+
+  cauchy_data->current_objective = objective_type;
 
   SLEQP_CALL(sleqp_lpi_solve(cauchy_data->lp_interface));
 
@@ -535,6 +590,13 @@ SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
     }
   */
 #endif
+
+  if(warm_start)
+  {
+    SLEQP_CALL(sleqp_lpi_save_basis(cauchy_data->lp_interface, objective_type));
+  }
+
+  cauchy_data->has_basis[objective_type] = true;
 
   return SLEQP_OKAY;
 }
@@ -1041,6 +1103,7 @@ SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star)
 
   SLEQP_CALL(sleqp_iterate_release(&data->iterate));
 
+  SLEQP_CALL(sleqp_options_release(&data->options));
   SLEQP_CALL(sleqp_params_release(&data->params));
 
   sleqp_free(star);

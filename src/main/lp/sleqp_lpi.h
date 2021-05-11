@@ -52,6 +52,14 @@ extern "C" {
                                          double time_limit);
 
   SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_lpi_save_basis(SleqpLPi* lp_interface,
+                                     int index);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_lpi_restore_basis(SleqpLPi* lp_interface,
+                                        int index);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lpi_get_primal_sol(SleqpLPi* lp_interface,
                                          double* objective_value,
                                          double* solution_values);

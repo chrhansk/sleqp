@@ -59,6 +59,7 @@ void newton_setup()
   ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
                                        problem,
                                        params,
+                                       options,
                                        lp_interface));
 }
 

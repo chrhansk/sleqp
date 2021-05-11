@@ -23,6 +23,10 @@ typedef struct SleqpLpiGRB
 
   int num_lp_cols;
 
+  int num_bases;
+  int** vbases;
+  int** cbases;
+
   int* slack_basis;
   int* col_basis;
   int* row_basis;
@@ -262,6 +266,82 @@ static SLEQP_RETCODE gurobi_set_objective(void* lp_data,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE
+gurobi_reserve_bases(SleqpLpiGRB* lp_interface,
+                     int size)
+{
+  if(size <= lp_interface->num_bases)
+  {
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(sleqp_realloc(&lp_interface->vbases, size));
+  SLEQP_CALL(sleqp_realloc(&lp_interface->cbases, size));
+
+  for(int j = lp_interface->num_bases; j < size; ++j)
+  {
+    SLEQP_CALL(sleqp_alloc_array(&lp_interface->vbases[j], lp_interface->num_lp_cols));
+    SLEQP_CALL(sleqp_alloc_array(&lp_interface->cbases[j], lp_interface->num_rows));
+  }
+
+  lp_interface->num_bases = size;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE gurobi_save_basis(void* lp_data,
+                                       int index)
+{
+  SleqpLpiGRB* lp_interface = lp_data;
+
+  assert(index >= 0);
+
+  SLEQP_CALL(gurobi_reserve_bases(lp_interface, index + 1));
+
+  GRBenv* env = lp_interface->env;
+  GRBmodel* model = lp_interface->model;
+
+  SLEQP_GRB_CALL(GRBgetintattrarray(model,
+                                    GRB_INT_ATTR_VBASIS,
+                                    0,
+                                    lp_interface->num_lp_cols,
+                                    lp_interface->vbases[index]), env);
+
+  SLEQP_GRB_CALL(GRBgetintattrarray(model,
+                                    GRB_INT_ATTR_CBASIS,
+                                    0,
+                                    lp_interface->num_rows,
+                                    lp_interface->cbases[index]), env);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE gurobi_restore_basis(void* lp_data,
+                                          int index)
+{
+  SleqpLpiGRB* lp_interface = lp_data;
+
+  assert(index >= 0);
+  assert(index < lp_interface->num_bases);
+
+  GRBenv* env = lp_interface->env;
+  GRBmodel* model = lp_interface->model;
+
+  SLEQP_GRB_CALL(GRBsetintattrarray(model,
+                                    GRB_INT_ATTR_VBASIS,
+                                    0,
+                                    lp_interface->num_lp_cols,
+                                    lp_interface->vbases[index]), env);
+
+  SLEQP_GRB_CALL(GRBsetintattrarray(model,
+                                    GRB_INT_ATTR_CBASIS,
+                                    0,
+                                    lp_interface->num_rows,
+                                    lp_interface->cbases[index]), env);
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE gurobi_get_primal_sol(void* lp_data,
                                            int num_cols,
                                            int num_rows,
@@ -452,6 +532,14 @@ static SLEQP_RETCODE gurobi_free(void** star)
   {
     GRBfreemodel(lp_interface->model);
   }
+  for(int i = 0; i < lp_interface->num_bases; ++i)
+  {
+    sleqp_free(&lp_interface->vbases[i]);
+    sleqp_free(&lp_interface->cbases[i]);
+  }
+
+  sleqp_free(&lp_interface->vbases);
+  sleqp_free(&lp_interface->cbases);
 
   /* Free environment */
   if(lp_interface->env)
@@ -481,6 +569,8 @@ SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
     .set_bounds = gurobi_set_bounds,
     .set_coefficients = gurobi_set_coefficients,
     .set_objective = gurobi_set_objective,
+    .save_basis = gurobi_save_basis,
+    .restore_basis = gurobi_restore_basis,
     .get_primal_sol = gurobi_get_primal_sol,
     .get_dual_sol = gurobi_get_dual_sol,
     .get_varstats = gurobi_get_varstats,

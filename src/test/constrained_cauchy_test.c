@@ -16,6 +16,7 @@
 #include "quadcons_fixture.h"
 
 SleqpParams* params;
+SleqpOptions* options;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpLPi* lp_interface;
@@ -28,6 +29,8 @@ void constrained_setup()
   quadconsfunc_setup();
 
   ASSERT_CALL(sleqp_params_create(&params));
+
+  ASSERT_CALL(sleqp_options_create(&options));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    quadconsfunc,
@@ -53,6 +56,7 @@ void constrained_setup()
   ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
                                        problem,
                                        params,
+                                       options,
                                        lp_interface));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&cauchy_direction, 2, 2));
@@ -71,7 +75,8 @@ START_TEST(test_working_set)
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
                                  sleqp_iterate_get_func_grad(iterate),
-                                 penalty_parameter));
+                                 penalty_parameter,
+                                 SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
                                            iterate));
@@ -97,7 +102,8 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
                                  sleqp_iterate_get_func_grad(iterate),
-                                 penalty_parameter));
+                                 penalty_parameter,
+                                 SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
                                            iterate));
@@ -148,6 +154,8 @@ void constrained_teardown()
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
   ASSERT_CALL(sleqp_problem_free(&problem));
+
+  ASSERT_CALL(sleqp_options_release(&options));
 
   ASSERT_CALL(sleqp_params_release(&params));
 

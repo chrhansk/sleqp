@@ -4,14 +4,38 @@
 #include "sleqp_mem.h"
 
 #include <iostream>
+#include <vector>
+
 #include <soplex.h>
+
+struct SoPlexBasis
+{
+  SoPlexBasis(int num_cols, int num_rows)
+    : status(num_cols + num_rows, soplex::SPxSolver::ZERO),
+      basis_rows(status.data()),
+      basis_cols(status.data() + num_rows)
+  {
+  }
+
+  std::vector<soplex::SPxSolver::VarStatus> status;
+
+  soplex::SPxSolver::VarStatus* const basis_rows;
+  soplex::SPxSolver::VarStatus* const basis_cols;
+};
 
 struct SleqpLpiSoplex
 {
+  SleqpLpiSoplex(int num_cols, int num_rows)
+    : num_cols(num_cols),
+      num_rows(num_rows),
+      current_basis(num_cols, num_rows)
+  {}
+
   soplex::SoPlex* soplex;
 
-  soplex::SPxSolver::VarStatus* basis_rows;
-  soplex::SPxSolver::VarStatus* basis_cols;
+  std::vector<SoPlexBasis> bases;
+
+  SoPlexBasis current_basis;
 
   int num_cols;
   int num_rows;
@@ -22,15 +46,13 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
                                            int num_rows,
                                            SleqpParams* params)
 {
-  SleqpLpiSoplex* spx = new SleqpLpiSoplex;
-
-  *spx = (SleqpLpiSoplex){0};
+  SleqpLpiSoplex* spx = new SleqpLpiSoplex(num_cols, num_rows);
 
   spx->soplex = new soplex::SoPlex();
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  spx->basis_rows = new soplex::SPxSolver::VarStatus[num_rows];
-  spx->basis_cols = new soplex::SPxSolver::VarStatus[num_cols];
+  //spx->basis_rows = new soplex::SPxSolver::VarStatus[num_rows];
+  //spx->basis_cols = new soplex::SPxSolver::VarStatus[num_cols];
 
   soplex::SPxOut spxout;
 
@@ -103,6 +125,16 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
   }
 
   *lp_data = spx;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE soplex_write(void* lp_data, const char* filename)
+{
+  SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
+  soplex::SoPlex& soplex = *(spx->soplex);
+
+  soplex.writeFileReal(filename);
 
   return SLEQP_OKAY;
 }
@@ -257,7 +289,7 @@ static SLEQP_RETCODE soplex_set_coefficients(void* lp_data,
 
   // Note: We save / restore the basis in order to
   //       warm-start the iteration.
-  soplex.getBasis(spx->basis_rows, spx->basis_cols);
+  soplex.getBasis(spx->current_basis.basis_rows, spx->current_basis.basis_cols);
 
   soplex.clearBasis();
   assert(soplex.status() == soplex::SPxSolver::NO_PROBLEM);
@@ -282,7 +314,7 @@ static SLEQP_RETCODE soplex_set_coefficients(void* lp_data,
     soplex.changeColReal(j, soplex::LPCol(objective, soplex_col, ub, lb));
   }
 
-  soplex.setBasis(spx->basis_rows, spx->basis_cols);
+  soplex.setBasis(spx->current_basis.basis_rows, spx->current_basis.basis_cols);
 
   return SLEQP_OKAY;
 }
@@ -299,6 +331,45 @@ static SLEQP_RETCODE soplex_set_objective(void* lp_data,
   {
     soplex.changeObjReal(j, adjust_inf(objective[j]));
   }
+
+  return SLEQP_OKAY;
+}
+
+
+static SLEQP_RETCODE soplex_save_basis(void* lp_data,
+                                       int index)
+{
+  SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
+  soplex::SoPlex& soplex = *(spx->soplex);
+
+  assert(index >= 0);
+  assert(index <= spx->bases.size());
+
+  while(index >= spx->bases.size())
+  {
+    spx->bases.push_back(SoPlexBasis(spx->num_cols, spx->num_rows));
+  }
+
+  SoPlexBasis& basis = spx->bases[index];
+
+  soplex.getBasis(basis.basis_rows, basis.basis_cols);
+
+  return SLEQP_OKAY;
+}
+
+
+static SLEQP_RETCODE soplex_restore_basis(void* lp_data,
+                                          int index)
+{
+  SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
+  soplex::SoPlex& soplex = *(spx->soplex);
+
+  assert(index >= 0);
+  assert(index < spx->bases.size());
+
+  const SoPlexBasis& basis = spx->bases[index];
+
+  soplex.setBasis(basis.basis_rows, basis.basis_cols);
 
   return SLEQP_OKAY;
 }
@@ -449,11 +520,6 @@ static SLEQP_RETCODE soplex_free(void** lp_data)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*) *lp_data;
 
-  delete[] spx->basis_cols;
-  delete[] spx->basis_rows;
-  spx->basis_cols = NULL;
-  spx->basis_rows = NULL;
-
   delete spx->soplex;
   spx->soplex = NULL;
 
@@ -477,6 +543,8 @@ extern "C"
       .set_bounds = soplex_set_bounds,
       .set_coefficients = soplex_set_coefficients,
       .set_objective = soplex_set_objective,
+      .save_basis = soplex_save_basis,
+      .restore_basis = soplex_restore_basis,
       .get_primal_sol = soplex_get_primal_sol,
       .get_dual_sol = soplex_get_dual_sol,
       .get_varstats = soplex_get_varstats,
