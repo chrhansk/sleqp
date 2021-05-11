@@ -539,6 +539,18 @@ SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_cauchy_get_objective_value(SleqpCauchyData* cauchy_data,
+                                               double* objective_value)
+{
+  SLEQP_CALL(sleqp_lpi_get_primal_sol(cauchy_data->lp_interface,
+                                      objective_value,
+                                      NULL));
+
+  (*objective_value) += sleqp_iterate_get_func_val(cauchy_data->iterate);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
                                            SleqpIterate* iterate)
 {

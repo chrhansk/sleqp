@@ -53,6 +53,18 @@ extern "C" {
                                    double penalty);
 
   /**
+   * Returns the value of the linearized merit function at the
+   * optimal solution of the current LP.
+   *
+   * @param[in]       cauchy_data        Cauchy data
+   * @param[in]       objective_value    The objective value
+   *
+   **/
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_cauchy_get_objective_value(SleqpCauchyData* cauchy_data,
+                                                 double* objective_value);
+
+  /**
    * Updates the working of the given iterate according to the optimal basis of
    * the current LP.
    *
