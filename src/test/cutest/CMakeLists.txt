@@ -224,7 +224,7 @@ foreach(s ${SIFPROBLEMS_EXT})
     PROBLEM_NAME="${PROBLEM}")
 
   target_link_libraries("${SOLVER_NAME}"
-    sleqp_cutest
+    sleqp_objects
     m
     ${CMAKE_DL_LIBS}
     "cutest_${PROBLEM}"

@@ -9,6 +9,7 @@ typedef struct CUTestConsFuncData
   double eps;
   double zero_eps;
 
+  int num_variables;
   int num_constraints;
 
   double* x;
@@ -78,8 +79,8 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
   CUTestConsFuncData* data = *star;
   int status;
 
-  data->eps = sleqp_params_get_eps(params);
-  data->zero_eps = sleqp_params_get_zero_eps(params);
+  data->eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  data->zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   data->num_constraints = num_constraints;
   data->goth = cutest_false;
@@ -131,9 +132,9 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_free(CUTestConsFuncData** star)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpSparseVec* x,
+static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpFunc* func,
+                                                SleqpSparseVec* x,
                                                 SLEQP_VALUE_REASON reason,
-                                                int num_variables,
                                                 int* func_grad_nnz,
                                                 int* cons_val_nnz,
                                                 int* cons_jac_nnz,
@@ -145,7 +146,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpSparseVec* x,
 
   data->goth = cutest_false;
 
-  *func_grad_nnz = num_variables;
+  *func_grad_nnz = data->num_variables;
 
   *cons_val_nnz = data->num_constraints;
 
@@ -154,144 +155,162 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpSparseVec* x,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_func_eval(int num_variables,
-                                                 const SleqpSparseVec* cons_indices,
-                                                 double* func_val,
+static SLEQP_RETCODE sleqp_cutest_cons_func_val(SleqpFunc* func,
+                                                double* func_val,
+                                                void* func_data)
+{
+  CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
+  int status;
+
+  CUTEST_cfn(&status,
+             &data->num_variables,
+             &data->num_constraints,
+             data->x,
+             func_val,
+             data->cons_vals);
+
+  SLEQP_CUTEST_CHECK_STATUS(status);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE sleqp_cutest_cons_func_grad(SleqpFunc* func,
                                                  SleqpSparseVec* func_grad,
-                                                 SleqpSparseVec* cons_val,
-                                                 SleqpSparseMatrix* cons_jac,
                                                  void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
   int status;
 
-  if(func_val || cons_val)
+  CUTEST_csgr(&status,                // status flag
+              &data->num_variables,   // number of variables
+              &data->num_constraints, // number of constraints
+              data->x,                // current iterate
+              NULL,                   // Lagrangian multipliers
+              &cutest_false,          // Do we want the gradient of the Lagrangian?
+              &(data->jac_nnz),       // Actual number of Jacobian nonzeroes
+              &(data->jac_nnz_max),   // Maximum number of Jacobian nonzeroes
+              data->jac_vals,         // Jacobian data
+              data->jac_cols,         // Lagrangian leading size
+              data->jac_rows);        // Lagrangian trailing size
+
+  SLEQP_CUTEST_CHECK_STATUS(status);
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE sleqp_cutest_cons_cons_val(SleqpFunc* func,
+                                                const SleqpSparseVec* cons_indices,
+                                                SleqpSparseVec* cons_val,
+                                                void* func_data)
+{
+  CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
+  int status;
+
+  double obj;
+
+  CUTEST_cfn(&status,
+             &data->num_variables,
+             &data->num_constraints,
+             data->x,
+             &obj,
+             data->cons_vals);
+
+  SLEQP_CUTEST_CHECK_STATUS(status);
+
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_val,
+                                          data->cons_vals,
+                                          data->num_constraints,
+                                          data->zero_eps));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE sleqp_cutest_cons_cons_jac(SleqpFunc* func,
+                                                const SleqpSparseVec* cons_indices,
+                                                SleqpSparseMatrix* cons_jac,
+                                                void* func_data)
+{
+  CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
+  int status;
+
+  CUTEST_csgr(&status,                // status flag
+              &data->num_variables,   // number of variables
+              &data->num_constraints, // number of constraints
+              data->x,                // current iterate
+              NULL,                   // Lagrangian multipliers
+              &cutest_false,          // Do we want the gradient of the Lagrangian?
+              &(data->jac_nnz),       // Actual number of Jacobian nonzeroes
+              &(data->jac_nnz_max),   // Maximum number of Jacobian nonzeroes
+              data->jac_vals,         // Jacobian data
+              data->jac_cols,         // Lagrangian leading size
+              data->jac_rows);        // Lagrangian trailing size
+
+
+  SLEQP_CUTEST_CHECK_STATUS(status);
+
+  for(int i = 0; i < data->jac_nnz; ++i)
   {
-    double obj;
-
-
-    CUTEST_cfn(&status,
-               &num_variables,
-               &data->num_constraints,
-               data->x,
-               &obj,
-               data->cons_vals);
-
-    SLEQP_CUTEST_CHECK_STATUS(status);
-
-    if(func_val)
-    {
-      *func_val = obj;
-    }
-
-    if(cons_val)
-    {
-      SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_val,
-                                              data->cons_vals,
-                                              data->num_constraints,
-                                              data->zero_eps));
-    }
-
+    data->jac_indices[i] = i;
   }
 
-  if(func_grad || cons_jac)
+  //JacCmpData jac_data = { data->jac_rows, data->jac_cols};
+
+  jac_cmp_data.jac_cols = data->jac_cols;
+  jac_cmp_data.jac_rows = data->jac_rows;
+
+  qsort(data->jac_indices,
+        data->jac_nnz,
+        sizeof(int),
+        &jac_compare);
+
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  int last_col = 0;
+
+  for(int i = 0; i < data->jac_nnz; ++i)
   {
-    CUTEST_csgr(&status,                // status flag
-                &num_variables,         // number of variables
-                &data->num_constraints, // number of constraints
-                data->x,                // current iterate
-                NULL,                   // Lagrangian multipliers
-                &cutest_false,          // Do we want the gradient of the Lagrangian?
-                &(data->jac_nnz),       // Actual number of Jacobian nonzeroes
-                &(data->jac_nnz_max),   // Maximum number of Jacobian nonzeroes
-                data->jac_vals,         // Jacobian data
-                data->jac_cols,         // Lagrangian leading size
-                data->jac_rows);        // Lagrangian trailing size
+    const int k = data->jac_indices[i];
 
+    int row = data->jac_rows[k];
+    int col = data->jac_cols[k];
+    double val = data->jac_vals[k];
 
-    SLEQP_CUTEST_CHECK_STATUS(status);
+    --col;
 
-    for(int i = 0; i < data->jac_nnz; ++i)
+    assert(col >= 0);
+
+    if(row == 0)
     {
-      data->jac_indices[i] = i;
+      continue;
     }
 
-    //JacCmpData jac_data = { data->jac_rows, data->jac_cols};
+    --row;
 
-    jac_cmp_data.jac_cols = data->jac_cols;
-    jac_cmp_data.jac_rows = data->jac_rows;
-
-    qsort(data->jac_indices,
-          data->jac_nnz,
-          sizeof(int),
-          &jac_compare);
-
-    if(func_grad)
+    while(col > last_col)
     {
-      SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
+      SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
+                                                 ++last_col));
     }
 
-    const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
-    int last_col = 0;
+    last_col = col;
 
-    for(int i = 0; i < data->jac_nnz; ++i)
-    {
-      const int k = data->jac_indices[i];
+    //sleqp_log_debug("Pushing row = %d, col = %d, val = %f", row, col, val);
 
-      int row = data->jac_rows[k];
-      int col = data->jac_cols[k];
-      double val = data->jac_vals[k];
+    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, row, col, val));
+  }
 
-      --col;
-
-      assert(col >= 0);
-
-      if(row == 0)
-      {
-        if(func_grad)
-        {
-          SLEQP_CALL(sleqp_sparse_vector_push(func_grad, col, val));
-        }
-
-        continue;
-      }
-
-      if(!cons_jac)
-      {
-        continue;
-      }
-
-      --row;
-
-      while(col > last_col)
-      {
-        SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
-                                                   ++last_col));
-      }
-
-      last_col = col;
-
-      //sleqp_log_debug("Pushing row = %d, col = %d, val = %f", row, col, val);
-
-      SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, row, col, val));
-
-    }
-
-    if(cons_jac)
-    {
-      ++last_col;
-      while(num_cols > last_col)
-      {
-        SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
-                                                   last_col++));
-      }
-    }
+  ++last_col;
+  while(num_cols > last_col)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
+                                               last_col++));
   }
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(int num_variables,
+static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(SleqpFunc* func,
                                                          const double* func_dual,
                                                          const SleqpSparseVec* direction,
                                                          const SleqpSparseVec* cons_duals,
@@ -310,7 +329,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(int num_variables,
 
   {
     CUTEST_chprod(&status,
-                  &num_variables,
+                  &(data->num_variables),
                   &(data->num_constraints),
                   &(data->goth),
                   data->x,
@@ -324,7 +343,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(int num_variables,
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(product,
                                           data->hessian_product,
-                                          num_variables,
+                                          data->num_variables,
                                           data->zero_eps));
 
   return SLEQP_OKAY;
@@ -344,7 +363,10 @@ SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
 
   SleqpFuncCallbacks callbacks = {
     .set_value = sleqp_cutest_cons_func_set,
-    .func_eval = sleqp_cutest_cons_func_eval,
+    .func_val = sleqp_cutest_cons_func_val,
+    .func_grad = sleqp_cutest_cons_func_grad,
+    .cons_val = sleqp_cutest_cons_cons_val,
+    .cons_jac = sleqp_cutest_cons_cons_jac,
     .hess_prod = sleqp_cutest_cons_func_hess_product,
     .func_free = NULL
   };
@@ -352,6 +374,7 @@ SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
   SLEQP_CALL(sleqp_func_create(star,
                                &callbacks,
                                num_variables,
+                               num_constraints,
                                data));
 
   return SLEQP_OKAY;

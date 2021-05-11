@@ -117,8 +117,9 @@ int sleqp_cutest_run(const char* filename,
 
   SLEQP_CALL(sleqp_params_create(&params));
 
-  const double eps = sleqp_params_get_eps(params);
-  const double zero_eps = sleqp_params_get_zero_eps(params);
+  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   SleqpSparseVec* var_lb;
   SleqpSparseVec* var_ub;
@@ -158,7 +159,6 @@ int sleqp_cutest_run(const char* filename,
 
   SLEQP_CALL(sleqp_problem_create(&problem,
                                   func,
-                                  params,
                                   var_lb,
                                   var_ub,
                                   cons_lb,
@@ -202,8 +202,12 @@ int sleqp_cutest_run(const char* filename,
 
     const double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
 
-    const double violation = sleqp_iterate_feasibility_residuum(iterate,
-                                                                problem);
+    double violation;
+
+    SLEQP_CALL(sleqp_iterate_feasibility_residuum(problem,
+                                                  iterate,
+                                                  feas_eps,
+                                                  &violation));
 
     fprintf(stdout,
             "%s;%d;%d;%s;%f;%f;%d;%f\n",
