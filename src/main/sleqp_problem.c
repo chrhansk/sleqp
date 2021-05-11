@@ -9,7 +9,7 @@
 
 static SLEQP_RETCODE map_pos_inf(SleqpSparseVec* vec, double value)
 {
-  for(int k = 0; k < vec->nnz - 1; ++k)
+  for(int k = 0; k < vec->nnz; ++k)
   {
     if(isinf(vec->data[k]))
     {
@@ -22,7 +22,7 @@ static SLEQP_RETCODE map_pos_inf(SleqpSparseVec* vec, double value)
 
 static SLEQP_RETCODE map_neg_inf(SleqpSparseVec* vec, double value)
 {
-  for(int k = 0; k < vec->nnz - 1; ++k)
+  for(int k = 0; k < vec->nnz; ++k)
   {
     if(isinf(-vec->data[k]))
     {
