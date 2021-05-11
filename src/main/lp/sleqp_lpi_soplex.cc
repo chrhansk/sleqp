@@ -318,10 +318,13 @@ static SLEQP_RETCODE soplex_get_primal_sol(void* lp_data,
     *objective_value = soplex.objValueReal();
   }
 
-  bool found_solution = soplex.getPrimalReal(solution_values,
-                                             num_cols);
+  if(solution_values)
+  {
+    const bool found_solution = soplex.getPrimalReal(solution_values,
+                                                     num_cols);
 
-  assert(found_solution);
+    assert(found_solution);
+  }
 
   return SLEQP_OKAY;
 }
