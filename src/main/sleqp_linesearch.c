@@ -343,6 +343,9 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
   const double eps = sleqp_params_get(linesearch->params,
                                       SLEQP_PARAM_EPS);
 
+  const double feas_eps = sleqp_params_get(linesearch->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
+
   const double zero_eps = sleqp_params_get(linesearch->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
@@ -498,7 +501,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                                      linesearch->cauchy_cons_val,
                                                      linesearch->violated_multipliers,
                                                      NULL,
-                                                     eps));
+                                                     feas_eps));
 
     double jacobian_dot;
 
