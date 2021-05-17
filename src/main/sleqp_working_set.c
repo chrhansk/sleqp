@@ -80,6 +80,31 @@ SLEQP_RETCODE sleqp_working_set_reset(SleqpWorkingSet* working_set)
   return SLEQP_OKAY;
 }
 
+bool sleqp_working_set_eq(SleqpWorkingSet* first,
+                          SleqpWorkingSet* second)
+{
+  assert(first->num_constraints == second->num_constraints);
+  assert(first->num_variables == second->num_variables);
+
+  for(int j = 0; j < first->num_variables; ++j)
+  {
+    if(first->variable_indices[j] != second->variable_indices[j])
+    {
+      return false;
+    }
+  }
+
+  for(int i = 0; i < first->num_constraints; ++i)
+  {
+    if(first->constraint_indices[i] != second->constraint_indices[i])
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 SLEQP_RETCODE sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
                                              int index,
                                              SLEQP_ACTIVE_STATE state)

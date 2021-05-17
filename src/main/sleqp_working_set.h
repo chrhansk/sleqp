@@ -35,6 +35,10 @@ extern "C" {
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_working_set_reset(SleqpWorkingSet* working_set);
 
+  SLEQP_EXPORT SLEQP_NODISCARD
+  bool sleqp_working_set_eq(SleqpWorkingSet* first,
+                            SleqpWorkingSet* second);
+
   /**
    * Adds a variable to the given working set
    *

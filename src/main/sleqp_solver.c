@@ -1206,11 +1206,22 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(solver->iterate);
 
-  snprintf(working_set_buf,
-           1024,
-           "%dv/%dc",
-           sleqp_working_set_num_active_vars(working_set),
-           sleqp_working_set_num_active_cons(working_set));
+  SleqpWorkingSet* trial_working_set = sleqp_iterate_get_working_set(solver->trial_iterate);
+
+  if(sleqp_working_set_eq(working_set, trial_working_set))
+  {
+    snprintf(working_set_buf,
+             1024,
+             "--");
+  }
+  else
+  {
+    snprintf(working_set_buf,
+             1024,
+             "%dv/%dc",
+             sleqp_working_set_num_active_vars(working_set),
+             sleqp_working_set_num_active_cons(working_set));
+  }
 
   sleqp_log_info(LINE_FORMAT,
                  solver->iteration,
