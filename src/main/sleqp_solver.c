@@ -1032,9 +1032,7 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
-                                             double* soc_value,
-                                             bool quadratic_model)
+static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
 
@@ -1081,31 +1079,6 @@ static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver,
                                         problem->var_ub,
                                         zero_eps,
                                         trial_point));
-  }
-
-  SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
-                                solver->iterate,
-                                solver->soc_corrected_direction,
-                                solver->penalty_parameter,
-                                soc_value));
-
-  if(quadratic_model)
-  {
-    double one = 1.;
-
-    double soc_quad_value;
-
-    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                    &one,
-                                    solver->soc_corrected_direction,
-                                    solver->multipliers,
-                                    solver->soc_hessian_direction));
-
-    SLEQP_CALL(sleqp_sparse_vector_dot(solver->soc_corrected_direction,
-                                       solver->soc_hessian_direction,
-                                       &soc_quad_value));
-
-    (*soc_value) += .5 * soc_quad_value;
   }
 
   return SLEQP_OKAY;
@@ -1305,6 +1278,9 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                       problem->var_lb,
                                       problem->var_ub));
 
+  const double eps = sleqp_params_get(solver->params,
+                                      SLEQP_PARAM_EPS);
+
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
@@ -1469,52 +1445,38 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
       double soc_model_reduction;
 
-      // SLEQP_CALL(set_func_value(solver, iterate));
+      SLEQP_CALL(compute_soc_trial_point(solver));
 
-      SLEQP_CALL(compute_soc_trial_point(solver, &model_trial_value, quadratic_model));
+      SLEQP_CALL(set_func_value(solver,
+                                trial_iterate,
+                                SLEQP_VALUE_REASON_TRYING_SOC_ITERATE));
 
-      soc_model_reduction = model_iterate_value - model_trial_value;
+      double func_val;
 
-      // in the SOC case it is not guaranteed that
-      // there is a quadratic reduction
-      if(sleqp_is_pos(soc_model_reduction, zero_eps))
-      {
+      SLEQP_CALL(sleqp_func_eval(problem->func,
+                                 NULL,
+                                 &func_val,
+                                 NULL,
+                                 sleqp_iterate_get_cons_val(trial_iterate),
+                                 NULL));
 
-        SLEQP_CALL(set_func_value(solver,
+      SLEQP_CALL(sleqp_iterate_set_func_val(trial_iterate, func_val));
+
+      double soc_exact_trial_value;
+
+      SLEQP_CALL(sleqp_merit_func(solver->merit_data,
                                   trial_iterate,
-                                  SLEQP_VALUE_REASON_TRYING_SOC_ITERATE));
+                                  solver->penalty_parameter,
+                                  &soc_exact_trial_value));
 
-        double func_val;
 
-        SLEQP_CALL(sleqp_func_eval(problem->func,
-                                   NULL,
-                                   &func_val,
-                                   NULL,
-                                   sleqp_iterate_get_cons_val(trial_iterate),
-                                   NULL));
+      double soc_actual_reduction = exact_iterate_value - soc_exact_trial_value;
 
-        SLEQP_CALL(sleqp_iterate_set_func_val(trial_iterate, func_val));
+      sleqp_log_debug("SOC reduction: %e", soc_actual_reduction);
 
-        double soc_exact_trial_value;
-
-        SLEQP_CALL(sleqp_merit_func(solver->merit_data,
-                                    trial_iterate,
-                                    solver->penalty_parameter,
-                                    &soc_exact_trial_value));
-
-        double soc_actual_reduction = exact_iterate_value - soc_exact_trial_value;
-
-        double soc_reduction_ratio = soc_actual_reduction / soc_model_reduction;
-
-        sleqp_log_debug("SOC Reduction ratio: %e, actual: %e, predicted: %e",
-                        soc_reduction_ratio,
-                        soc_actual_reduction,
-                        soc_model_reduction);
-
-        if(soc_reduction_ratio >= accepted_reduction)
-        {
-          soc_step_accepted = true;
-        }
+      if(sleqp_is_lt(soc_exact_trial_value, exact_iterate_value, eps))
+      {
+        soc_step_accepted = true;
       }
 
       if(soc_step_accepted)
