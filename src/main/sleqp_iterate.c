@@ -364,8 +364,6 @@ SLEQP_RETCODE sleqp_iterate_vars_slackness_residuals(SleqpProblem* problem,
                                                      SleqpSparseVec* residuals,
                                                      double zero_eps)
 {
-  const int num_variables = problem->num_variables;
-
   SLEQP_CALL(slack_residuals(sleqp_iterate_get_primal(iterate),
                              problem->var_lb,
                              problem->var_ub,
@@ -382,8 +380,6 @@ SLEQP_RETCODE sleqp_iterate_cons_slackness_residuals(SleqpProblem* problem,
                                                      SleqpSparseVec* residuals,
                                                      double zero_eps)
 {
-  const int num_constraints = problem->num_constraints;
-
   SLEQP_CALL(slack_residuals(sleqp_iterate_get_cons_val(iterate),
                              problem->cons_lb,
                              problem->cons_ub,
