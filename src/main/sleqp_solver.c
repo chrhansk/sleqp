@@ -1032,7 +1032,7 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_soc_trial_point(SleqpSolver* solver)
+static SLEQP_RETCODE compute_trial_point_soc(SleqpSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
 
@@ -1474,9 +1474,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     {
       sleqp_log_debug("Computing second-order correction");
 
-      double soc_model_reduction;
-
-      SLEQP_CALL(compute_soc_trial_point(solver));
+      SLEQP_CALL(compute_trial_point_soc(solver));
 
       SLEQP_CALL(set_func_value(solver,
                                 trial_iterate,
@@ -1500,12 +1498,23 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                   solver->penalty_parameter,
                                   &soc_exact_trial_value));
 
+      const double soc_actual_reduction = exact_iterate_value - soc_exact_trial_value;
 
-      double soc_actual_reduction = exact_iterate_value - soc_exact_trial_value;
+      double soc_reduction_ratio = 1.;
 
-      sleqp_log_debug("SOC reduction: %e", soc_actual_reduction);
+      // The denominator of the SOC reduction ratio is the quadratic reduction
+      // with respect to the original (not the corrected) trial step
+      if(soc_actual_reduction != model_reduction)
+      {
+        soc_reduction_ratio = soc_actual_reduction / model_reduction;
+      }
 
-      if(sleqp_is_lt(soc_exact_trial_value, exact_iterate_value, eps))
+      sleqp_log_debug("SOC Reduction ratio: %e, actual: %e, predicted: %e",
+                      soc_reduction_ratio,
+                      soc_actual_reduction,
+                      model_reduction);
+
+      if(soc_reduction_ratio >= accepted_reduction)
       {
         soc_step_accepted = true;
       }
