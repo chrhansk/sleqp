@@ -1242,14 +1242,15 @@ static SLEQP_RETCODE print_line(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
-                                          SleqpIterate* previous_iterate,
-                                          SleqpIterate* iterate)
+static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver)
 {
+  SleqpIterate* iterate = solver->iterate;
+  SleqpIterate* trial_iterate = solver->trial_iterate;
+
   const double zero_eps = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(previous_iterate),
-                                            sleqp_iterate_get_primal(iterate),
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(iterate),
+                                            sleqp_iterate_get_primal(trial_iterate),
                                             1.,
                                             -1,
                                             zero_eps,
@@ -1257,15 +1258,15 @@ static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
 
   solver->primal_diff_norm = sleqp_sparse_vector_norm(solver->primal_diff);
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_cons_dual(previous_iterate),
-                                            sleqp_iterate_get_cons_dual(iterate),
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_cons_dual(iterate),
+                                            sleqp_iterate_get_cons_dual(trial_iterate),
                                             1.,
                                             -1,
                                             zero_eps,
                                             solver->cons_dual_diff));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_vars_dual(previous_iterate),
-                                            sleqp_iterate_get_vars_dual(iterate),
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_vars_dual(iterate),
+                                            sleqp_iterate_get_vars_dual(trial_iterate),
                                             1.,
                                             -1,
                                             zero_eps,
@@ -1281,8 +1282,8 @@ static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
-                                             bool* optimal)
+static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
+                                       bool* optimal)
 {
   *optimal = false;
 
@@ -1387,7 +1388,7 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
                                           &full_step));
   }
 
-  SLEQP_CALL(compute_step_lengths(solver, trial_iterate, iterate));
+  SLEQP_CALL(compute_step_lengths(solver));
 
   double model_reduction = model_iterate_value - model_trial_value;
 
@@ -1921,7 +1922,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
 
-    SLEQP_CALL(sleqp_perform_iteration(solver, &optimal));
+    SLEQP_CALL(perform_iteration(solver, &optimal));
 
     SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
 
@@ -1963,15 +1964,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                                     solver->feasibility_residuum,
                                                     feas_eps);
 
-    if(feasible)
-    {
-      solver->status = SLEQP_FEASIBLE;
-    }
-    else
-    {
-      solver->status = SLEQP_INFEASIBLE;
-    }
-
+    solver->status = feasible ? SLEQP_FEASIBLE : SLEQP_INFEASIBLE;
   }
 
   SLEQP_CALL(solver_print_stats(solver, violation));
@@ -2064,6 +2057,10 @@ SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
                                                       solver->iterate,
                                                       result,
                                                       zero_eps));
+    break;
+  default:
+    sleqp_log_error("Invalid state requested (%d)", value);
+    return SLEQP_ILLEGAL_ARGUMENT;
     break;
   }
 
