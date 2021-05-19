@@ -1117,6 +1117,8 @@ static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
 
 #define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14s |%14e |%14e | %18s"
 
+#define INITIAL_LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
+
 static SLEQP_RETCODE print_header()
 {
   sleqp_log_info(HEADER_FORMAT,
@@ -1135,6 +1137,30 @@ static SLEQP_RETCODE print_header()
                  "Primal step",
                  "Dual step",
                  "Step type");
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE print_initial_line(SleqpSolver* solver)
+{
+  char working_set_buf[1024];
+
+  sleqp_log_info(INITIAL_LINE_FORMAT,
+                 solver->iteration,
+                 sleqp_iterate_get_func_val(solver->iterate),
+                 solver->current_merit_value,
+                 solver->feasibility_residuum,
+                 "",
+                 "",
+                 solver->penalty_parameter,
+                 "",
+                 "",
+                 "",
+                 "",
+                 "",
+                 "",
+                 "",
+                 "");
 
   return SLEQP_OKAY;
 }
@@ -1298,6 +1324,13 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
     solver->current_merit_value = model_iterate_value = exact_iterate_value;
   }
 
+  SLEQP_CALL(set_residuum(solver));
+
+  if(solver->iteration == 0)
+  {
+    SLEQP_CALL(print_initial_line(solver));
+  }
+
   double model_trial_value;
 
   bool full_step;
@@ -1324,8 +1357,6 @@ static SLEQP_RETCODE sleqp_perform_iteration(SleqpSolver* solver,
 
   // Optimality check with respect to scaled problem
   {
-    SLEQP_CALL(set_residuum(solver));
-
     if(sleqp_iterate_is_optimal(iterate,
                                 solver->params,
                                 solver->feasibility_residuum,
