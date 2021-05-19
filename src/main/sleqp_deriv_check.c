@@ -112,9 +112,7 @@ static double get_perturbation(double perturbation_param,
                                SleqpSparseVec* x,
                                int j)
 {
-  double* vec_ptr = sleqp_sparse_vector_at(x, j);
-
-  double value = vec_ptr ? (*vec_ptr) : 0.;
+  double value = sleqp_sparse_vector_value_at(x, j);
 
   value = SLEQP_ABS(value);
 
@@ -183,9 +181,7 @@ static SLEQP_RETCODE check_func_first_order_at(SleqpDerivCheckData* data,
 
   const double actual_value = func_diff / perturbation;
 
-  double* vec_ptr = sleqp_sparse_vector_at(sleqp_iterate_get_func_grad(iterate), j);
-
-  const double expected_value = vec_ptr ? (*vec_ptr) : 0.;
+  const double expected_value = sleqp_sparse_vector_value_at(sleqp_iterate_get_func_grad(iterate), j);
 
   if(!sleqp_is_eq(expected_value, actual_value, tolerance))
   {
@@ -269,13 +265,11 @@ static SLEQP_RETCODE check_cons_first_order_at(SleqpDerivCheckData* data,
 
     const double expected_value = ptr ? (*ptr) : 0.;
 
-    ptr = sleqp_sparse_vector_at(sleqp_iterate_get_cons_val(iterate), i);
+    const double lower_value = sleqp_sparse_vector_value_at(sleqp_iterate_get_cons_val(iterate),
+                                                            i);
 
-    const double lower_value = ptr ? (*ptr) : 0.;
-
-    ptr = sleqp_sparse_vector_at(sleqp_iterate_get_cons_val(check_iterate), i);
-
-    const double upper_value = ptr ? (*ptr) : 0.;
+    const double upper_value = sleqp_sparse_vector_value_at(sleqp_iterate_get_cons_val(check_iterate),
+                                                            i);
 
     const double unit_direction = upper_value - lower_value;
 

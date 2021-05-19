@@ -254,6 +254,15 @@ extern "C" {
                                               int index);
 
   /**
+   * Returns the value of the given vector at the given index
+   *
+   * @param[in] vector   A pointer to the vector
+   * @param[in] index    The desired index
+   **/
+  SLEQP_EXPORT double sleqp_sparse_vector_value_at(SleqpSparseVec* vec,
+                                                   int index);
+
+  /**
    * Returns whether this vector is boxed, i.e., \f$ lb \leq x \leq ub \f$
    * for all components.
    *

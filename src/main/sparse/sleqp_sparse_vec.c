@@ -414,6 +414,14 @@ double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
   return NULL;
 }
 
+double sleqp_sparse_vector_value_at(SleqpSparseVec* vec,
+                                    int index)
+{
+  const double* ptr = sleqp_sparse_vector_at(vec, index);
+
+  return ptr ? (*ptr) : 0.;
+}
+
 bool sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
                                   const SleqpSparseVec* lb,
                                   const SleqpSparseVec* ub)
