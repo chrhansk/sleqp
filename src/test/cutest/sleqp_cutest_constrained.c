@@ -182,21 +182,17 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_grad(SleqpFunc* func,
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
   int status;
 
-  CUTEST_csgr(&status,                // status flag
-              &data->num_variables,   // number of variables
-              &data->num_constraints, // number of constraints
-              data->x,                // current iterate
-              NULL,                   // Lagrangian multipliers
-              &cutest_false,          // Do we want the gradient of the Lagrangian?
-              &(data->jac_nnz),       // Actual number of Jacobian nonzeroes
-              &(data->jac_nnz_max),   // Maximum number of Jacobian nonzeroes
-              data->jac_vals,         // Jacobian data
-              data->jac_cols,         // Lagrangian leading size
-              data->jac_rows);        // Lagrangian trailing size
+  CUTEST_ugr(&status,                // status flag
+             &data->num_variables,   // number of variables
+             data->x,                // current iterate
+             data->func_grad);       // function gradient
 
   SLEQP_CUTEST_CHECK_STATUS(status);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(func_grad));
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(func_grad,
+                                          data->func_grad,
+                                          data->num_variables,
+                                          data->zero_eps));
 
   return SLEQP_OKAY;
 }
