@@ -51,7 +51,7 @@ int sleqp_cutest_run(const char* filename,
 
   // we don't care about the ordering (or indeed the variable /
   // constraint types) at this point
-  integer e_order = 0, l_order = 0, v_order = 0;
+  integer e_order = 1, l_order = 0, v_order = 0;
 
   SLEQP_CALL(sleqp_alloc_array(&x_dense, CUTEst_nvar));
   SLEQP_CALL(sleqp_alloc_array(&var_lb_dense, CUTEst_nvar));
@@ -59,13 +59,13 @@ int sleqp_cutest_run(const char* filename,
 
   if(CUTest_constrained)
   {
-    SLEQP_CALL(sleqp_alloc_array(&cons_lb_dense, CUTEst_ncons + 1));
-    SLEQP_CALL(sleqp_alloc_array(&cons_ub_dense, CUTEst_ncons + 1));
+    SLEQP_CALL(sleqp_alloc_array(&cons_lb_dense, CUTEst_ncons));
+    SLEQP_CALL(sleqp_alloc_array(&cons_ub_dense, CUTEst_ncons));
 
-    SLEQP_CALL(sleqp_alloc_array(&equatn, CUTEst_ncons + 1));
-    SLEQP_CALL(sleqp_alloc_array(&linear, CUTEst_ncons + 1));
+    SLEQP_CALL(sleqp_alloc_array(&equatn, CUTEst_ncons));
+    SLEQP_CALL(sleqp_alloc_array(&linear, CUTEst_ncons));
 
-    SLEQP_CALL(sleqp_alloc_array(&v, CUTEst_ncons + CUTEst_nvar + 1));
+    SLEQP_CALL(sleqp_alloc_array(&v, CUTEst_ncons));
 
     CUTEST_csetup(&cutest_status, &funit, &iout, &io_buffer,
                   &CUTEst_nvar, &CUTEst_ncons,

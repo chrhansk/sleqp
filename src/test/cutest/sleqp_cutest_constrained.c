@@ -19,6 +19,7 @@ typedef struct CUTestConsFuncData
   double* direction;
   double* multipliers;
   double* hessian_product;
+  double* cons_hessian_product;
 
   int jac_nnz;
   int jac_nnz_max;
@@ -95,6 +96,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
   SLEQP_CALL(sleqp_alloc_array(&data->multipliers, data->num_constraints));
 
   SLEQP_CALL(sleqp_alloc_array(&data->hessian_product, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->cons_hessian_product, num_variables));
 
   CUTEST_cdimsj(&status, &(data->jac_nnz_max));
 
@@ -118,6 +120,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_free(CUTestConsFuncData** star)
   sleqp_free(&data->jac_cols);
   sleqp_free(&data->jac_rows);
 
+  sleqp_free(&data->cons_hessian_product);
   sleqp_free(&data->hessian_product);
 
   sleqp_free(&data->multipliers);
@@ -327,17 +330,30 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(SleqpFunc* func,
   SLEQP_CALL(sleqp_sparse_vector_to_raw(cons_duals, data->multipliers));
 
   {
-    CUTEST_chprod(&status,
+    CUTEST_uhprod(&status,
                   &(data->num_variables),
-                  &(data->num_constraints),
                   &(data->goth),
                   data->x,
-                  data->multipliers,
                   data->direction,
                   data->hessian_product);
 
     SLEQP_CUTEST_CHECK_STATUS(status);
 
+    CUTEST_chcprod(&status,
+                   &(data->num_variables),
+                   &(data->num_constraints),
+                   &(data->goth),
+                   data->x,
+                   data->multipliers,
+                   data->direction,
+                   data->cons_hessian_product);
+
+    SLEQP_CUTEST_CHECK_STATUS(status);
+  }
+
+  for(int i = 0; i < data->num_variables; ++i)
+  {
+    data->hessian_product[i] += data->cons_hessian_product[i];
   }
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(product,
