@@ -280,7 +280,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 #endif
 
     // check condition
-    if((exact_merit_value - (*quadratic_merit_value)) >= eta*(exact_merit_value - linear_merit_value))
+    // This is a numerically more sensible version of the condition
+    // ((exact_merit_value - (*quadratic_merit_value)) >= eta*(exact_merit_value - linear_merit_value))
+    if((exact_merit_value - linear_merit_value) * (1. - eta) >= (0.5 * hessian_product))
     {
       break;
     }
@@ -298,6 +300,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
     if(sleqp_is_zero(delta, eps))
     {
+      SLEQP_CALL(sleqp_sparse_vector_clear(direction));
       delta = 0.;
       break;
     }
