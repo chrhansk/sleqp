@@ -1445,7 +1445,6 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
   sleqp_log_debug("Trial step norm: %e", trial_step_norm);
 
   bool step_accepted = true;
-  bool soc_step_accepted = false;
 
   solver->last_step_type = SLEQP_STEPTYPE_REJECTED;
 
@@ -1501,26 +1500,26 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
 
       const double soc_actual_reduction = exact_iterate_value - soc_exact_trial_value;
 
-      double soc_reduction_ratio = 1.;
+      reduction_ratio = 1.;
 
       // The denominator of the SOC reduction ratio is the quadratic reduction
       // with respect to the original (not the corrected) trial step
       if(soc_actual_reduction != model_reduction)
       {
-        soc_reduction_ratio = soc_actual_reduction / model_reduction;
+        reduction_ratio = soc_actual_reduction / model_reduction;
       }
 
       sleqp_log_debug("SOC Reduction ratio: %e, actual: %e, predicted: %e",
-                      soc_reduction_ratio,
+                      reduction_ratio,
                       soc_actual_reduction,
                       model_reduction);
 
-      if(soc_reduction_ratio >= accepted_reduction)
+      if(reduction_ratio >= accepted_reduction)
       {
-        soc_step_accepted = true;
+        step_accepted = true;
       }
 
-      if(soc_step_accepted)
+      if(step_accepted)
       {
         solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED_SOC;
         sleqp_log_debug("Second-order correction accepted");
@@ -1563,7 +1562,7 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
 
   // update current iterate
 
-  if(step_accepted || soc_step_accepted)
+  if(step_accepted)
   {
     SLEQP_CALL(set_func_value(solver,
                               trial_iterate,
