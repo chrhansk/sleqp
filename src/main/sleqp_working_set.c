@@ -57,6 +57,8 @@ SLEQP_RETCODE sleqp_working_set_create(SleqpWorkingSet** star,
   SLEQP_CALL(sleqp_alloc_array(&working_set->content_indices,
                                working_set->max_set_size));
 
+  SLEQP_CALL(sleqp_working_set_reset(working_set));
+
   return SLEQP_OKAY;
 }
 

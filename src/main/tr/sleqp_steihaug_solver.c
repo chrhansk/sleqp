@@ -17,7 +17,6 @@ typedef struct SleqpSteihaugSolver SleqpSteihaugSolver;
 
 struct SleqpSteihaugSolver
 {
-  int refcount;
   SleqpProblem* problem;
   SleqpParams* params;
 
@@ -40,7 +39,7 @@ static SLEQP_RETCODE steihaug_solver_free(void **star)
 {
   SleqpSteihaugSolver* solver = (SleqpSteihaugSolver*) (*star);
 
-  if (!solver)
+  if(!solver)
   {
     return SLEQP_OKAY;
   }
@@ -61,14 +60,14 @@ static SLEQP_RETCODE steihaug_solver_free(void **star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
-                                    SleqpSparseVec* multipliers,
-                                    SleqpSparseVec* gradient,
-                                    SleqpSparseVec* newton_step,
-                                    double trust_radius,
-                                    double* tr_dual,
-                                    double time_limit,
-                                    void* solver_data)
+static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
+                                           SleqpSparseVec* multipliers,
+                                           SleqpSparseVec* gradient,
+                                           SleqpSparseVec* newton_step,
+                                           double trust_radius,
+                                           double* tr_dual,
+                                           double time_limit,
+                                           void* solver_data)
 {
   SleqpSteihaugSolver* solver = (SleqpSteihaugSolver*) solver_data;
 
@@ -81,6 +80,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
 
   *tr_dual = SLEQP_NONE;
 
+  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
   const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   const double rel_tol_sq = rel_tol*rel_tol;
@@ -158,7 +158,7 @@ SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
     SLEQP_CALL(sleqp_sparse_vector_dot(solver->d, solver->Bd, &dBd));
 
     // if d_j^T * B_k * d_j <= 0:
-    if (dBd <= 0.)
+    if(dBd <= 0.)
     {
       // z is a feasible iterate and d is a null-space direction, so P^T[p_k] = 0
       // find tau such that p_k = z_j + tau * d_j solves
@@ -323,8 +323,6 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
   SLEQP_CALL(sleqp_malloc(&solver));
 
   *solver = (SleqpSteihaugSolver) {0};
-
-  solver->refcount = 1;
 
   solver->problem = problem;
 
