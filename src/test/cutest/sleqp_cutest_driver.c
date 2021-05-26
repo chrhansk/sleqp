@@ -200,6 +200,12 @@ int sleqp_cutest_run(const char* filename,
 
     const int iterations = sleqp_solver_get_iterations(solver);
 
+    const int last_step_bdry = sleqp_solver_get_int_state(solver,
+                                                          SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY);
+
+    const double last_trust_radius = sleqp_solver_get_real_state(solver,
+                                                                 SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS);
+
     const double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
 
     double violation;
@@ -210,7 +216,7 @@ int sleqp_cutest_run(const char* filename,
                                                   &violation));
 
     fprintf(stdout,
-            "%s;%d;%d;%s;%f;%f;%d;%f\n",
+            "%s;%d;%d;%s;%f;%f;%d;%f;%d;%f\n",
             probname,
             CUTEst_nvar,
             CUTEst_ncons,
@@ -218,7 +224,9 @@ int sleqp_cutest_run(const char* filename,
             sleqp_iterate_get_func_val(iterate),
             violation,
             iterations,
-            elapsed_seconds);
+            elapsed_seconds,
+            last_step_bdry,
+            last_trust_radius);
 
     if(status == SLEQP_INVALID)
     {

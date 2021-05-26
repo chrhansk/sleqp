@@ -88,6 +88,7 @@ class SolverState(Enum):
   ScaledStatRes = auto()
   ScaledSlackRes = auto()
   PenaltyParameter = auto()
+  LastStepOnBoundary = auto()
   LastStepType = auto()
   ScaledStatResiduals = auto()
   ScaledFeasResiduals = auto()

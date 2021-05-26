@@ -161,6 +161,8 @@ struct SleqpSolver
 
   // misc
 
+  int boundary_step;
+
   double elapsed_seconds;
 
   int iteration;
@@ -1444,6 +1446,10 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
 
   sleqp_log_debug("Trial step norm: %e", trial_step_norm);
 
+  solver->boundary_step = sleqp_is_geq(trial_step_norm,
+                                       solver->trust_radius,
+                                       eps);
+
   bool step_accepted = true;
 
   solver->last_step_type = SLEQP_STEPTYPE_REJECTED;
@@ -1475,6 +1481,12 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
       sleqp_log_debug("Computing second-order correction");
 
       SLEQP_CALL(compute_trial_point_soc(solver));
+
+      const double soc_trial_step_norm = sleqp_sparse_vector_norm(solver->soc_corrected_direction);
+
+      solver->boundary_step = sleqp_is_geq(soc_trial_step_norm,
+                                           solver->trust_radius,
+                                           eps);
 
       SLEQP_CALL(set_func_value(solver,
                                 trial_iterate,
@@ -2016,6 +2028,8 @@ int sleqp_solver_get_int_state(const SleqpSolver* solver,
   case SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE:
     return solver->last_step_type;
     break;
+  case SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY:
+    return solver->boundary_step;
   default:
     sleqp_log_error("Invalid state requested (%d)", value);
   }
