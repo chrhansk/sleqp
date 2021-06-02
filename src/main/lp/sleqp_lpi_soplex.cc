@@ -26,9 +26,9 @@ struct SoPlexBasis
 struct SleqpLpiSoplex
 {
   SleqpLpiSoplex(int num_cols, int num_rows)
-    : num_cols(num_cols),
-      num_rows(num_rows),
-      current_basis(num_cols, num_rows)
+    : current_basis(num_cols, num_rows),
+      num_cols(num_cols),
+      num_rows(num_rows)
   {}
 
   soplex::SoPlex* soplex;
@@ -343,9 +343,10 @@ static SLEQP_RETCODE soplex_save_basis(void* lp_data,
   soplex::SoPlex& soplex = *(spx->soplex);
 
   assert(index >= 0);
-  assert(index <= spx->bases.size());
 
-  while(index >= spx->bases.size())
+  unsigned int uindex = index;
+
+  while(uindex >= spx->bases.size())
   {
     spx->bases.push_back(SoPlexBasis(spx->num_cols, spx->num_rows));
   }
@@ -365,9 +366,12 @@ static SLEQP_RETCODE soplex_restore_basis(void* lp_data,
   soplex::SoPlex& soplex = *(spx->soplex);
 
   assert(index >= 0);
-  assert(index < spx->bases.size());
 
-  const SoPlexBasis& basis = spx->bases[index];
+  unsigned int uindex = index;
+
+  assert(uindex < spx->bases.size());
+
+  const SoPlexBasis& basis = spx->bases[uindex];
 
   soplex.setBasis(basis.basis_rows, basis.basis_cols);
 
