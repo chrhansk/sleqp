@@ -98,7 +98,6 @@ extern "C" {
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpProblem* problem,
                                                    SleqpIterate* iterate,
-                                                   double feas_eps,
                                                    double* feasibility_residuum);
 
   SLEQP_EXPORT SLEQP_NODISCARD

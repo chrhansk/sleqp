@@ -119,7 +119,6 @@ int sleqp_cutest_run(const char* filename,
 
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
   const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
-  const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   SleqpSparseVec* var_lb;
   SleqpSparseVec* var_ub;
@@ -212,7 +211,6 @@ int sleqp_cutest_run(const char* filename,
 
     SLEQP_CALL(sleqp_iterate_feasibility_residuum(problem,
                                                   iterate,
-                                                  feas_eps,
                                                   &violation));
 
     fprintf(stdout,

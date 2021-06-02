@@ -392,7 +392,6 @@ SLEQP_RETCODE sleqp_iterate_cons_slackness_residuals(SleqpProblem* problem,
 
 SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpProblem* problem,
                                                  SleqpIterate* iterate,
-                                                 double feas_eps,
                                                  double* feasibility_residuum)
 {
   SLEQP_CALL(sleqp_violation_inf_norm(problem,

@@ -199,7 +199,6 @@ static SLEQP_RETCODE set_residuum(SleqpSolver* solver)
 
   SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
                                                 solver->iterate,
-                                                feas_eps,
                                                 &solver->feasibility_residuum));
 
   SLEQP_CALL(sleqp_iterate_stationarity_residuum(solver->problem,
@@ -1630,7 +1629,6 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_violation_values(solver->unscaled_problem,
                                       solver->unscaled_iterate,
-                                      zero_eps,
                                       solver->unscaled_violation));
   }
   else
@@ -1699,7 +1697,6 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->unscaled_problem,
                                                   solver->unscaled_iterate,
-                                                  feas_eps,
                                                   &unscaled_violation));
 
     sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
@@ -1833,6 +1830,9 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
+  const double feas_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
+
   sleqp_log_info("Solving a problem with %d variables, %d constraints",
                  problem->num_variables,
                  problem->num_constraints);
@@ -1873,7 +1873,6 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_violation_one_norm(problem,
                                         sleqp_iterate_get_cons_val(iterate),
-                                        zero_eps,
                                         &total_violation));
 
     const double func_val = sleqp_iterate_get_func_val(iterate);
@@ -1961,12 +1960,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   double violation;
 
-  const double feas_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_FEASIBILITY_TOL);
-
   SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
                                                 solver->iterate,
-                                                feas_eps,
                                                 &violation));
 
   if(solver->status != SLEQP_OPTIMAL)
