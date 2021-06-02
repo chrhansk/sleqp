@@ -4,8 +4,7 @@
 SLEQP_RETCODE sleqp_violated_constraint_multipliers(SleqpProblem* problem,
                                                     SleqpSparseVec* cons_vals,
                                                     SleqpSparseVec* multipliers,
-                                                    SleqpWorkingSet* working_set,
-                                                    double feas_eps)
+                                                    SleqpWorkingSet* working_set)
 {
   SleqpSparseVec* lb = problem->cons_lb;
   SleqpSparseVec* ub = problem->cons_ub;
@@ -58,13 +57,13 @@ SLEQP_RETCODE sleqp_violated_constraint_multipliers(SleqpProblem* problem,
     const double upper_violation = SLEQP_MAX(c_val - ub_val, 0.);
     const double lower_violation = SLEQP_MAX(lb_val - c_val, 0.);
 
-    if(sleqp_is_pos(upper_violation, feas_eps))
+    if(upper_violation > 0.)
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
                                           1.));
     }
-    else if(sleqp_is_pos(lower_violation, feas_eps))
+    else if(lower_violation > 0.)
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
@@ -79,8 +78,7 @@ SLEQP_RETCODE sleqp_violated_constraint_multipliers(SleqpProblem* problem,
 SLEQP_RETCODE sleqp_violated_variable_multipliers(SleqpProblem* problem,
                                                   SleqpSparseVec* primal,
                                                   SleqpSparseVec* multipliers,
-                                                  SleqpWorkingSet* working_set,
-                                                  double feas_eps)
+                                                  SleqpWorkingSet* working_set)
 {
   SleqpSparseVec* lb = problem->var_lb;
   SleqpSparseVec* ub = problem->var_ub;
@@ -133,13 +131,13 @@ SLEQP_RETCODE sleqp_violated_variable_multipliers(SleqpProblem* problem,
     const double upper_violation = SLEQP_MAX(p_val - ub_val, 0.);
     const double lower_violation = SLEQP_MAX(lb_val - p_val, 0.);
 
-    if(sleqp_is_pos(upper_violation, feas_eps))
+    if(upper_violation > 0.)
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
                                           1.));
     }
-    else if(sleqp_is_pos(lower_violation, feas_eps))
+    else if(lower_violation > 0.)
     {
       SLEQP_CALL(sleqp_sparse_vector_push(multipliers,
                                           idx,
@@ -154,8 +152,7 @@ SLEQP_RETCODE sleqp_violated_variable_multipliers(SleqpProblem* problem,
 SLEQP_RETCODE sleqp_violated_constraints(SleqpProblem* problem,
                                          SleqpSparseVec* cons_val,
                                          int* violated_constraints,
-                                         int* num_violated_constraints,
-                                         double feas_eps)
+                                         int* num_violated_constraints)
 {
   SleqpSparseVec* c = cons_val;
   SleqpSparseVec* lb = problem->cons_lb;
@@ -191,11 +188,11 @@ SLEQP_RETCODE sleqp_violated_constraints(SleqpProblem* problem,
     const double upper_violation = SLEQP_MAX(c_val - ub_val, 0.);
     const double lower_violation = SLEQP_MAX(lb_val - c_val, 0.);
 
-    if(sleqp_is_pos(upper_violation, feas_eps))
+    if(upper_violation > 0.)
     {
       violated_constraints[(*num_violated_constraints)++] = i_combined;
     }
-    else if(sleqp_is_pos(lower_violation, feas_eps))
+    else if(lower_violation > 0.)
     {
       violated_constraints[(*num_violated_constraints)++] = i_combined;
     }
@@ -221,7 +218,6 @@ SLEQP_RETCODE sleqp_violated_constraints(SleqpProblem* problem,
 
 SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
                                      SleqpIterate* iterate,
-                                     double zero_eps,
                                      SleqpSparseVec* violation)
 {
   int num_constraints = problem->num_constraints;
@@ -277,13 +273,13 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
     const double upper_violation = SLEQP_MAX(c_val - ub_val, 0.);
     const double lower_violation = SLEQP_MAX(lb_val - c_val, 0.);
 
-    if(sleqp_is_pos(upper_violation, zero_eps))
+    if(upper_violation > 0.)
     {
       SLEQP_CALL(sleqp_sparse_vector_push(violation,
                                           idx,
                                           c_val - ub_val));
     }
-    else if(sleqp_is_pos(lower_violation, zero_eps))
+    else if(lower_violation > 0.)
     {
       SLEQP_CALL(sleqp_sparse_vector_push(violation,
                                           idx,
@@ -297,7 +293,6 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
 
 SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,
                                        SleqpSparseVec* cons_val,
-                                       double zero_eps,
                                        double* max_violation)
 {
   int num_constraints = problem->num_constraints;
@@ -346,11 +341,11 @@ SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,
     const double upper_violation = SLEQP_MAX(c_val - ub_val, 0.);
     const double lower_violation = SLEQP_MAX(lb_val - c_val, 0.);
 
-    if(sleqp_is_pos(upper_violation, zero_eps))
+    if(upper_violation > 0.)
     {
       (*max_violation) = SLEQP_MAX(upper_violation, (*max_violation));
     }
-    else if(sleqp_is_pos(lower_violation, zero_eps))
+    else if(lower_violation > 0.)
     {
       (*max_violation) = SLEQP_MAX(lower_violation, (*max_violation));
     }
@@ -362,7 +357,6 @@ SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,
 
 SLEQP_RETCODE sleqp_violation_one_norm(SleqpProblem* problem,
                                        SleqpSparseVec* cons_val,
-                                       double zero_eps,
                                        double* total_violation)
 {
   int num_constraints = problem->num_constraints;
@@ -411,11 +405,11 @@ SLEQP_RETCODE sleqp_violation_one_norm(SleqpProblem* problem,
     const double upper_violation = SLEQP_MAX(c_val - ub_val, 0.);
     const double lower_violation = SLEQP_MAX(lb_val - c_val, 0.);
 
-    if(sleqp_is_pos(upper_violation, zero_eps))
+    if(upper_violation > 0.)
     {
       (*total_violation) += upper_violation;
     }
-    else if(sleqp_is_pos(lower_violation, zero_eps))
+    else if(lower_violation > 0.)
     {
       (*total_violation) += lower_violation;
     }

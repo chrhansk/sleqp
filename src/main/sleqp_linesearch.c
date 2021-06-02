@@ -115,22 +115,35 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
   SleqpProblem* problem = linesearch->problem;
   SleqpMeritData* merit_data = linesearch->merit_data;
 
+  SleqpIterate* iterate = linesearch->iterate;
+  const double penalty_parameter = linesearch->penalty_parameter;
+  const double trust_radius = linesearch->trust_radius;
+
+  const double one = 1.;
+
   const double eps = sleqp_params_get(linesearch->params,
                                       SLEQP_PARAM_EPS);
 
   const double zero_eps = sleqp_params_get(linesearch->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
+  const double feas_eps = sleqp_params_get(linesearch->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
+
   SLEQP_CALL(sleqp_timer_start(linesearch->timer));
+
+  double exact_violation;
+
+  SLEQP_CALL(sleqp_violation_one_norm(problem,
+                                      sleqp_iterate_get_cons_val(iterate),
+                                      &exact_violation));
 
 #if !defined(NDEBUG)
 
   // Check Hessian product
   {
-    double func_dual = 1.;
-
     SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                    &func_dual,
+                                    &one,
                                     direction,
                                     multipliers,
                                     linesearch->test_direction));
@@ -143,18 +156,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
 #endif
 
-  SleqpIterate* iterate = linesearch->iterate;
-  const double penalty_parameter = linesearch->penalty_parameter;
-  const double trust_radius = linesearch->trust_radius;
-
   (*quadratic_merit_value) = 0.;
 
-  double exact_merit_value;
-
-  SLEQP_CALL(sleqp_merit_func(merit_data,
-                              iterate,
-                              penalty_parameter,
-                              &exact_merit_value));
+  const double exact_merit_value = sleqp_iterate_get_func_val(iterate) + penalty_parameter*exact_violation;
 
   double hessian_product;
 
@@ -201,6 +205,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
   const double eta = sleqp_params_get(linesearch->params, SLEQP_PARAM_CAUCHY_ETA);
   const double tau = sleqp_params_get(linesearch->params, SLEQP_PARAM_CAUCHY_TAU);
 
+  double linear_violation;
 
   int iteration = 0;
 
@@ -220,14 +225,11 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                          zero_eps,
                                          linesearch->combined_cons_val));
 
-      double total_violation;
-
       SLEQP_CALL(sleqp_violation_one_norm(problem,
                                           linesearch->combined_cons_val,
-                                          zero_eps,
-                                          &total_violation));
+                                          &linear_violation));
 
-      linear_merit_value += penalty_parameter * total_violation;
+      linear_merit_value += penalty_parameter * linear_violation;
     }
 
     // compute quadratic merit value
@@ -235,7 +237,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
       (*quadratic_merit_value) = linear_merit_value + (0.5 * hessian_product);
     }
 
-    sleqp_log_debug("Cauchy line search iteration %d, step length: %f, linear merit value: %f, quadratic merit value: %f",
+    sleqp_log_debug("Cauchy line search iteration %d, step length: %g, linear merit value: %f, quadratic merit value: %f",
                     iteration,
                     delta,
                     linear_merit_value,
@@ -261,11 +263,9 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
       {
         double actual_quadratic_merit_value;
 
-        double func_dual = 1.;
-
         SLEQP_CALL(sleqp_merit_quadratic(merit_data,
                                          iterate,
-                                         &func_dual,
+                                         &one,
                                          direction,
                                          multipliers,
                                          penalty_parameter,
@@ -282,7 +282,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
     // check condition
     // This is a numerically more sensible version of the condition
     // ((exact_merit_value - (*quadratic_merit_value)) >= eta*(exact_merit_value - linear_merit_value))
-    if((exact_merit_value - linear_merit_value) * (1. - eta) >= (0.5 * hessian_product))
+    if((penalty_parameter*(exact_violation - linear_violation) - objective_dot) * (1. - eta) >= (0.5 * hessian_product))
     {
       break;
     }
@@ -503,8 +503,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
     SLEQP_CALL(sleqp_violated_constraint_multipliers(problem,
                                                      linesearch->cauchy_cons_val,
                                                      linesearch->violated_multipliers,
-                                                     NULL,
-                                                     feas_eps));
+                                                     NULL));
 
     double jacobian_dot;
 
@@ -568,7 +567,6 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
       SLEQP_CALL(sleqp_violation_one_norm(problem,
                                           linesearch->combined_cons_val,
-                                          zero_eps,
                                           &total_violation));
 
       linear_merit_value += penalty_parameter * total_violation;

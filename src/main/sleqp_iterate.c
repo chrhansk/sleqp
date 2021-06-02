@@ -397,7 +397,6 @@ SLEQP_RETCODE sleqp_iterate_feasibility_residuum(SleqpProblem* problem,
 {
   SLEQP_CALL(sleqp_violation_inf_norm(problem,
                                       iterate->cons_val,
-                                      feas_eps,
                                       feasibility_residuum));
 
   return SLEQP_OKAY;
@@ -412,8 +411,7 @@ SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpProblem* problem,
   SLEQP_CALL(sleqp_violated_constraints(problem,
                                         iterate->cons_val,
                                         violated_constraints,
-                                        num_violated_constraints,
-                                        feas_eps));
+                                        num_violated_constraints));
 
   return SLEQP_OKAY;
 }

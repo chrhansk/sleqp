@@ -2056,7 +2056,6 @@ SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
   case SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS:
     SLEQP_CALL(sleqp_violation_values(solver->problem,
                                       solver->iterate,
-                                      zero_eps,
                                       result));
     break;
   case SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS:
