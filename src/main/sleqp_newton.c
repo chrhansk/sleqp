@@ -376,9 +376,6 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
   const double zero_eps = sleqp_params_get(data->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
-  const double feas_eps = sleqp_params_get(data->params,
-                                           SLEQP_PARAM_FEASIBILITY_TOL);
-
   SLEQP_CALL(get_initial_rhs(data, iterate, jacobian));
 
   SLEQP_CALL(sleqp_aug_jacobian_min_norm_solution(jacobian,
@@ -478,14 +475,12 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
     SLEQP_CALL(sleqp_violated_variable_multipliers(problem,
                                                    data->initial_point,
                                                    data->violated_variable_multipliers,
-                                                   working_set,
-                                                   feas_eps));
+                                                   working_set));
 
     SLEQP_CALL(sleqp_violated_constraint_multipliers(problem,
                                                      data->initial_cons_val,
                                                      data->violated_constraint_multipliers,
-                                                     working_set,
-                                                     feas_eps));
+                                                     working_set));
   }
 
   return SLEQP_OKAY;
