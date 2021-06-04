@@ -51,8 +51,22 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
   spx->soplex = new soplex::SoPlex();
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  //spx->basis_rows = new soplex::SPxSolver::VarStatus[num_rows];
-  //spx->basis_cols = new soplex::SPxSolver::VarStatus[num_cols];
+  assert(soplex.setRealParam(soplex::SoPlexBase<double>::INFTY,
+                             sleqp_infinity()));
+
+  /*
+  const double feas_eps = sleqp_params_get(params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
+
+  const double stat_eps = sleqp_params_get(params,
+                                           SLEQP_PARAM_STATIONARITY_TOL);
+
+  assert(soplex.setRealParam(soplex::SoPlexBase<double>::FEASTOL,
+                             feas_eps));
+
+  assert(soplex.setRealParam(soplex::SoPlexBase<double>::OPTTOL,
+                             stat_eps));
+  */
 
   soplex::SPxOut spxout;
 
@@ -232,20 +246,6 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
   return SLEQP_OKAY;
 }
 
-static double adjust_inf(double value)
-{
-  if(sleqp_is_inf(value))
-  {
-    return soplex::infinity;
-  }
-  else if(sleqp_is_inf(-value))
-  {
-    return -(soplex::infinity);
-  }
-
-  return value;
-}
-
 static SLEQP_RETCODE soplex_set_bounds(void* lp_data,
                                        int num_cols,
                                        int num_rows,
@@ -260,13 +260,13 @@ static SLEQP_RETCODE soplex_set_bounds(void* lp_data,
   for(int i = 0; i < num_rows; ++i)
   {
     assert(cons_lb[i] <= cons_ub[i]);
-    soplex.changeRangeReal(i, adjust_inf(cons_lb[i]), adjust_inf(cons_ub[i]));
+    soplex.changeRangeReal(i, cons_lb[i], cons_ub[i]);
   }
 
   for(int j = 0; j < num_cols; ++j)
   {
     assert(vars_lb[j] <= vars_ub[j]);
-    soplex.changeBoundsReal(j, adjust_inf(vars_lb[j]), adjust_inf(vars_ub[j]));
+    soplex.changeBoundsReal(j, vars_lb[j], vars_ub[j]);
   }
 
   return SLEQP_OKAY;
@@ -329,7 +329,7 @@ static SLEQP_RETCODE soplex_set_objective(void* lp_data,
 
   for(int j = 0; j < num_cols; ++j)
   {
-    soplex.changeObjReal(j, adjust_inf(objective[j]));
+    soplex.changeObjReal(j, objective[j]);
   }
 
   return SLEQP_OKAY;
