@@ -21,6 +21,8 @@ typedef struct
   trlib_flt_t *trlib_fwork;
   trlib_int_t *trlib_timinig;
 
+  trlib_int_t iwork_size, fwork_size;
+
   SleqpSparseVec* s;
   SleqpSparseVec* g;
   SleqpSparseVec* gm;
@@ -329,6 +331,9 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
   {
     init = TRLIB_CLS_INIT;
+    memset(data->trlib_fwork, 0, (data->fwork_size)*sizeof(trlib_flt_t));
+    memset(data->trlib_iwork, 0, (data->iwork_size)*sizeof(trlib_int_t));
+
     trlib_krylov_prepare_memory(maxiter, fwork);
   }
 
@@ -867,12 +872,12 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   trlib_int_t iwork_size, fwork_size;
 
   trlib_krylov_memory_size(data->trlib_maxiter,
-                           &iwork_size,
-                           &fwork_size,
+                           &data->iwork_size,
+                           &data->fwork_size,
                            &data->trlib_h_pointer);
 
-  SLEQP_CALL(sleqp_alloc_array(&data->trlib_iwork, iwork_size));
-  SLEQP_CALL(sleqp_alloc_array(&data->trlib_fwork, fwork_size));
+  SLEQP_CALL(sleqp_alloc_array(&data->trlib_iwork, data->iwork_size));
+  SLEQP_CALL(sleqp_alloc_array(&data->trlib_fwork, data->fwork_size));
   SLEQP_CALL(sleqp_alloc_array(&data->trlib_timinig, trlib_krylov_timing_size()));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->s,
