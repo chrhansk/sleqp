@@ -1,6 +1,8 @@
 #include "sleqp_tr_solver.h"
 
 #include <math.h>
+#include <string.h>
+
 #include <trlib.h>
 
 #include "sleqp_assert.h"
