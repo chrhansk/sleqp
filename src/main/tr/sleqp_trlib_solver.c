@@ -132,7 +132,7 @@ static SLEQP_RETCODE rayleigh_quotient(SleqpSparseVec* direction,
                                      product,
                                      &dot));
 
-  *rayleigh_factor = SLEQP_ABS(dot) / dir_norm;
+  *rayleigh_factor = dot / dir_norm;
 
   return SLEQP_OKAY;
 }
