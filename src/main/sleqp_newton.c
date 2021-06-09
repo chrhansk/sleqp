@@ -703,6 +703,18 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
+
+SLEQP_RETCODE sleqp_newton_current_rayleigh(SleqpNewtonData* data,
+                                            double* min_rayleigh,
+                                            double* max_rayleigh)
+{
+  SLEQP_CALL(sleqp_tr_solver_current_rayleigh(data->trust_region_solver,
+                                              min_rayleigh,
+                                              max_rayleigh));
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE newton_data_free(SleqpNewtonData** star)
 {
   SleqpNewtonData* data = *star;

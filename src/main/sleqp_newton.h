@@ -48,6 +48,11 @@ extern "C" {
                                           SleqpSparseVec* newton_step);
 
   SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_newton_current_rayleigh(SleqpNewtonData* data,
+                                              double* min_rayleigh,
+                                              double* max_rayleigh);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_data_capture(SleqpNewtonData* data);
 
   SLEQP_NODISCARD
