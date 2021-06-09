@@ -41,6 +41,11 @@ extern "C" {
                                       double* tr_dual);
 
   SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_tr_solver_current_rayleigh(SleqpTRSolver* solver,
+                                                 double* min_rayleigh,
+                                                 double* max_rayleigh);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_capture(SleqpTRSolver* solver);
 
   SLEQP_NODISCARD

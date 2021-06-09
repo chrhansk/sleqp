@@ -9,8 +9,6 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
-static const bool collect_rayleigh = false;
-
 typedef struct
 {
   SleqpProblem* problem;
@@ -114,29 +112,6 @@ static SLEQP_RETCODE matrix_push_column(SleqpSparseMatrix* matrix,
                                         column,
                                         vector->data[k] * scale));
   }
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE rayleigh_quotient(SleqpSparseVec* direction,
-                                       SleqpSparseVec* product,
-                                       double eps,
-                                       double* rayleigh_factor)
-{
-  double dir_norm = sleqp_sparse_vector_norm_sq(direction);
-
-  if(sleqp_is_zero(dir_norm, eps))
-  {
-    return SLEQP_OKAY;
-  }
-
-  double dot;
-
-  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
-                                     product,
-                                     &dot));
-
-  *rayleigh_factor = dot / dir_norm;
 
   return SLEQP_OKAY;
 }
@@ -347,9 +322,6 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
   char* prefix = "trlib: ";
   FILE* fout = stderr;
 
-  double max_rayleigh = -inf;
-  double min_rayleigh = inf;
-
   bool exhausted_time_limit = false;
 
   while(1)
@@ -425,16 +397,6 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                       data->p,
                                       multipliers,
                                       data->Hp));
-
-      if(collect_rayleigh)
-      {
-        double cur_rayleigh;
-
-        SLEQP_CALL(rayleigh_quotient(data->p, data->Hp, zero_eps, &cur_rayleigh));
-
-        max_rayleigh = SLEQP_MAX(max_rayleigh, cur_rayleigh);
-        min_rayleigh = SLEQP_MIN(min_rayleigh, cur_rayleigh);
-      }
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -578,16 +540,6 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                       multipliers,
                                       data->sparse_cache));
 
-      if(collect_rayleigh)
-      {
-        double cur_rayleigh;
-
-        SLEQP_CALL(rayleigh_quotient(data->s, data->sparse_cache, zero_eps, &cur_rayleigh));
-
-        max_rayleigh = SLEQP_MAX(max_rayleigh, cur_rayleigh);
-        min_rayleigh = SLEQP_MIN(min_rayleigh, cur_rayleigh);
-      }
-
       SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache, gradient, zero_eps, data->l));
 
       SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->l,
@@ -640,16 +592,6 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                         multipliers,
                                         data->Hp));
 
-        if(collect_rayleigh)
-        {
-          double cur_rayleigh;
-
-          SLEQP_CALL(rayleigh_quotient(data->p, data->Hp, zero_eps, &cur_rayleigh));
-
-          max_rayleigh = SLEQP_MAX(max_rayleigh, cur_rayleigh);
-          min_rayleigh = SLEQP_MIN(min_rayleigh, cur_rayleigh);
-        }
-
         SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
       }
@@ -681,16 +623,6 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                         data->p,
                                         multipliers,
                                         data->Hp));
-
-        if(collect_rayleigh)
-        {
-          double cur_rayleigh;
-
-          SLEQP_CALL(rayleigh_quotient(data->p, data->Hp, zero_eps, &cur_rayleigh));
-
-          max_rayleigh = SLEQP_MAX(max_rayleigh, cur_rayleigh);
-          min_rayleigh = SLEQP_MIN(min_rayleigh, cur_rayleigh);
-        }
 
         SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -745,17 +677,19 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
     assert((*trlib_ret) != TRLIB_CLR_CONTINUE);
   }
 
-  if(collect_rayleigh && !sleqp_is_zero(min_rayleigh, eps))
-  {
-    const double cond_bound = SLEQP_ABS(max_rayleigh) / SLEQP_ABS(min_rayleigh);
-
-    sleqp_log_info("Spectrum bound: %f / %f, condition bound: %f",
-                   min_rayleigh,
-                   max_rayleigh,
-                   cond_bound);
-  }
-
   SLEQP_CALL(sleqp_timer_stop(data->timer));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE trlib_rayleigh(double* min_rayleigh,
+                                    double* max_rayleigh,
+                                    void* solver_data)
+{
+  SolverData* data = (SolverData*) solver_data;
+
+  (*min_rayleigh) = data->trlib_fwork[14];
+  (*max_rayleigh) = data->trlib_fwork[13];
 
   return SLEQP_OKAY;
 }
@@ -922,6 +856,7 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
 
   SleqpTRCallbacks callbacks = {
     .solve = trlib_solve,
+    .rayleigh = trlib_rayleigh,
     .free = trlib_free
   };
 

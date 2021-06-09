@@ -73,7 +73,16 @@ SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* solver,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_tr_solver_current_rayleigh(SleqpTRSolver* solver,
+                                               double* min_rayleigh,
+                                               double* max_rayleigh)
+{
+  SLEQP_CALL(solver->callbacks.rayleigh(min_rayleigh,
+                                        max_rayleigh,
+                                        solver->solver_data));
 
+  return SLEQP_OKAY;
+}
 
 SLEQP_RETCODE sleqp_tr_solver_capture(SleqpTRSolver* solver)
 {

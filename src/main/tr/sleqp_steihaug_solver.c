@@ -29,7 +29,9 @@ struct SleqpSteihaugSolver
   SleqpSparseVec* r;            // full-space residual
   SleqpSparseVec* z;            // CG iterate
 
-  SleqpSparseVec* sparse_cache; // a temporary t for computing t <- a*x + b*y; x <- t
+  SleqpSparseVec* sparse_cache;
+
+  double min_rayleigh, max_rayleigh;
 
   SleqpTimer* timer;
 };
@@ -60,6 +62,46 @@ static SLEQP_RETCODE steihaug_solver_free(void **star)
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE steihaug_collect_rayleigh(SleqpSteihaugSolver* solver,
+                                               const SleqpSparseVec* direction,
+                                               const SleqpSparseVec* product)
+{
+  const double dir_normsq = sleqp_sparse_vector_norm_sq(direction);
+
+  if(dir_normsq == 0.)
+  {
+    return SLEQP_OKAY;
+  }
+
+  double dot_product;
+
+  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
+                                     product,
+                                     &dot_product));
+
+  const double cur_rayleigh = dot_product / dir_normsq;
+
+  solver->min_rayleigh = SLEQP_MIN(solver->min_rayleigh,
+                                   cur_rayleigh);
+
+  solver->max_rayleigh = SLEQP_MAX(solver->max_rayleigh,
+                                   cur_rayleigh);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE steihaug_solver_rayleigh(double* min_rayleigh,
+                                              double* max_rayleigh,
+                                              void* solver_data)
+{
+  SleqpSteihaugSolver* solver = (SleqpSteihaugSolver*) solver_data;
+
+  (*min_rayleigh) = solver->min_rayleigh;
+  (*max_rayleigh) = solver->max_rayleigh;
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                            SleqpSparseVec* multipliers,
                                            SleqpSparseVec* gradient,
@@ -70,6 +112,9 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                            void* solver_data)
 {
   SleqpSteihaugSolver* solver = (SleqpSteihaugSolver*) solver_data;
+
+  solver->min_rayleigh = 1.;
+  solver->max_rayleigh = 1.;
 
   const double one = 1.;
   const double rel_tol = sleqp_params_get (solver->params, SLEQP_PARAM_NEWTON_RELATIVE_TOL);
@@ -153,6 +198,8 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
 
     // compute B_k * d_j
     SLEQP_CALL(sleqp_func_hess_prod(func, &one, solver->d, multipliers, solver->Bd));
+
+    SLEQP_CALL(steihaug_collect_rayleigh(solver, solver->d, solver->Bd));
 
     // compute d_j^T * (B_k * d_j)
     SLEQP_CALL(sleqp_sparse_vector_dot(solver->d, solver->Bd, &dBd));
@@ -342,6 +389,7 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
 
   SleqpTRCallbacks callbacks = {
     .solve = steihaug_solver_solve,
+    .rayleigh = steihaug_solver_rayleigh,
     .free = steihaug_solver_free
   };
 
