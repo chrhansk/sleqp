@@ -73,15 +73,20 @@ extern "C" {
                                    int max_num_iterations,
                                    double time_limit);
 
-  SLEQP_EXPORT double sleqp_solver_get_real_state(const SleqpSolver* solver,
-                                                  SLEQP_SOLVER_STATE_REAL value);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_get_real_state(const SleqpSolver* solver,
+                                            SLEQP_SOLVER_STATE_REAL state,
+                                            double* value);
 
-  SLEQP_EXPORT int sleqp_solver_get_int_state(const SleqpSolver* solver,
-                                              SLEQP_SOLVER_STATE_INT value);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_get_int_state(const SleqpSolver* solver,
+                                           SLEQP_SOLVER_STATE_INT state,
+                                           int* value);
 
-  SLEQP_EXPORT SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
-                                                        SLEQP_SOLVER_STATE_VEC value,
-                                                        SleqpSparseVec* result);
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
+                                           SLEQP_SOLVER_STATE_VEC value,
+                                           SleqpSparseVec* result);
 
   /**
    * Returns the status of the last call to @ref sleqp_solver_solve

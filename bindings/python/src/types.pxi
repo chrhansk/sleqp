@@ -88,6 +88,8 @@ class SolverState(Enum):
   ScaledStatRes = auto()
   ScaledSlackRes = auto()
   PenaltyParameter = auto()
+  MinRayleigh = auto()
+  MaxRayleigh = auto()
   LastStepOnBoundary = auto()
   LastStepType = auto()
   ScaledStatResiduals = auto()

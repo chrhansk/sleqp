@@ -1978,58 +1978,76 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-double sleqp_solver_get_real_state(const SleqpSolver* solver,
-                                   SLEQP_SOLVER_STATE_REAL value)
+SLEQP_RETCODE sleqp_solver_get_real_state(const SleqpSolver* solver,
+                                          SLEQP_SOLVER_STATE_REAL state,
+                                          double* value)
 {
   SleqpIterate* iterate = solver->iterate;
 
-  switch(value)
+  double min_rayleigh, max_rayleigh;
+
+  SLEQP_CALL(sleqp_newton_current_rayleigh(solver->newton_data,
+                                           &min_rayleigh,
+                                           &max_rayleigh));
+
+  switch(state)
   {
   case SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS:
-    return solver->trust_radius;
+    (*value) = solver->trust_radius;
     break;
   case SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS:
-    return solver->lp_trust_radius;
+    (*value) = solver->lp_trust_radius;
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL:
-    return sleqp_iterate_get_func_val(solver->iterate);
+    (*value) = sleqp_iterate_get_func_val(solver->iterate);
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL:
-    return solver->current_merit_value;
+    (*value) = solver->current_merit_value;
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES:
-    return solver->feasibility_residuum;
+    (*value) = solver->feasibility_residuum;
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES:
-    return solver->stationarity_residuum;
+    (*value) = solver->stationarity_residuum;
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES:
-    return solver->slackness_residuum;
+    (*value) = solver->slackness_residuum;
     break;
   case SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM:
-    return solver->penalty_parameter;
+    (*value) = solver->penalty_parameter;
+    break;
+  case SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH:
+    (*value) = min_rayleigh;
+    break;
+  case SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH:
+    (*value) = max_rayleigh;
     break;
   default:
     sleqp_log_error("Invalid state requested (%d)", value);
+    return SLEQP_ILLEGAL_ARGUMENT;
   }
-  return SLEQP_NONE;
+
+  return SLEQP_OKAY;
 }
 
-int sleqp_solver_get_int_state(const SleqpSolver* solver,
-                               SLEQP_SOLVER_STATE_INT value)
+SLEQP_RETCODE sleqp_solver_get_int_state(const SleqpSolver* solver,
+                                         SLEQP_SOLVER_STATE_INT state,
+                                         int* value)
 {
-  switch(value)
+  switch(state)
   {
   case SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE:
-    return solver->last_step_type;
+    (*value) = solver->last_step_type;
     break;
   case SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY:
-    return solver->boundary_step;
+    (*value) = solver->boundary_step;
+    break;
   default:
     sleqp_log_error("Invalid state requested (%d)", value);
+    return SLEQP_ILLEGAL_ARGUMENT;
   }
 
-  return SLEQP_NONE;
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,

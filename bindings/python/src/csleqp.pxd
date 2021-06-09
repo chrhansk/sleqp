@@ -109,7 +109,9 @@ cdef extern from "sleqp.h":
     SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
     SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
     SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES,
-    SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM
+    SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM,
+    SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH,
+    SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH
 
   ctypedef enum SLEQP_SOLVER_STATE_INT:
     SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY
@@ -491,11 +493,13 @@ cdef extern from "sleqp.h":
                                    int max_num_iterations,
                                    double time_limit) nogil
 
-  double sleqp_solver_get_real_state(const SleqpSolver* solver,
-                                     SLEQP_SOLVER_STATE_REAL value)
+  SLEQP_RETCODE sleqp_solver_get_real_state(const SleqpSolver* solver,
+                                            SLEQP_SOLVER_STATE_REAL state,
+                                            double* value)
 
-  int sleqp_solver_get_int_state(const SleqpSolver* solver,
-                                 SLEQP_SOLVER_STATE_INT value)
+  SLEQP_RETCODE sleqp_solver_get_int_state(const SleqpSolver* solver,
+                                           SLEQP_SOLVER_STATE_INT state,
+                                           int* value)
 
   SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
                                            SLEQP_SOLVER_STATE_VEC value,

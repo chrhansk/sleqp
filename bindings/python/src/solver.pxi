@@ -232,21 +232,37 @@ cdef class Solver:
     vars_slack_residuals = sleqp_sparse_vec_to_array(self.residuals)
 
     return {
-      SolverState.TrustRadius:              csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS),
-      SolverState.LPTrustRadius:            csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS),
-      SolverState.ScaledFuncVal:            csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL),
-      SolverState.ScaledMeritVal:           csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL),
-      SolverState.ScaledFeasRes:            csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES),
-      SolverState.ScaledStatRes:            csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES),
-      SolverState.ScaledSlackRes:           csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES),
-      SolverState.PenaltyParameter:         csleqp.sleqp_solver_get_real_state(self.solver, csleqp.SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM),
-      SolverState.LastStepType:             StepType(csleqp.sleqp_solver_get_int_state(self.solver, csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE)),
-      SolverState.LastStepOnBoundary:       bool(csleqp.sleqp_solver_get_int_state(self.solver, csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY)),
+      SolverState.TrustRadius:              self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS),
+      SolverState.LPTrustRadius:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS),
+      SolverState.ScaledFuncVal:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL),
+      SolverState.ScaledMeritVal:           self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL),
+      SolverState.ScaledFeasRes:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES),
+      SolverState.ScaledStatRes:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES),
+      SolverState.ScaledSlackRes:           self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES),
+      SolverState.PenaltyParameter:         self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM),
+      SolverState.MinRayleigh:              self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH),
+      SolverState.MaxRayleigh:              self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH),
+      SolverState.LastStepType:             StepType(self._get_solver_int_state(csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE)),
+      SolverState.LastStepOnBoundary:       bool(self._get_solver_int_state(csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY)),
       SolverState.ScaledStatResiduals:      stat_residuals,
       SolverState.ScaledFeasResiduals:      feas_residuals,
       SolverState.ScaledConsSlackResiduals: cons_slack_residuals,
       SolverState.ScaledVarSlackResiduals:  vars_slack_residuals
     }
+
+  cpdef double _get_solver_real_state(self, int state):
+    cdef double value = 0.
+    csleqp_call(csleqp.sleqp_solver_get_real_state(self.solver,
+                                                   <csleqp.SLEQP_SOLVER_STATE_REAL> state,
+                                                   &value))
+    return value
+
+  cpdef int _get_solver_int_state(self, int state):
+    cdef int value = 0
+    csleqp_call(csleqp.sleqp_solver_get_int_state(self.solver,
+                                                  <csleqp.SLEQP_SOLVER_STATE_INT> state,
+                                                  &value))
+    return value
 
 
 cdef update_solver_callbacks():
