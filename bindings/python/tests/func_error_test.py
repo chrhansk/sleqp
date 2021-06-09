@@ -8,9 +8,11 @@ import sleqp
 num_variables = 2
 num_constraints = 0
 
+inner = Exception("Error in set_value")
+
 class ErrorFunc:
   def set_value(self, v, reason):
-    raise Exception("Error in set_value")
+    raise inner
 
 class TypeErrorFunc:
   def set_value(self, v):
@@ -69,9 +71,9 @@ class FuncErrorTest(unittest.TestCase):
     self.options = sleqp.Options()
 
   def test_error_func(self):
-    self.func = ErrorFunc()
+    func = ErrorFunc()
 
-    self.problem = sleqp.Problem(self.func,
+    self.problem = sleqp.Problem(func,
                                  self.var_lb,
                                  self.var_ub,
                                  self.cons_lb,
@@ -82,8 +84,27 @@ class FuncErrorTest(unittest.TestCase):
                                self.options,
                                self.x)
 
-    with self.assertRaises(sleqp.SLEQPError) as context:
-      self.solver.solve(100, 3600)
+    with self.assertRaises(sleqp.SLEQPError):
+      self.solver.solve()
+
+  def test_error_chain(self):
+    func = ErrorFunc()
+
+    self.problem = sleqp.Problem(func,
+                                 self.var_lb,
+                                 self.var_ub,
+                                 self.cons_lb,
+                                 self.cons_ub)
+
+    self.solver = sleqp.Solver(self.problem,
+                               self.params,
+                               self.options,
+                               self.x)
+
+    try:
+      self.solver.solve()
+    except sleqp.SLEQPError as err:
+      self.assertEqual(err.__cause__, inner)
 
   def test_type_error_func(self):
     func = TypeErrorFunc()
@@ -99,8 +120,8 @@ class FuncErrorTest(unittest.TestCase):
                           self.options,
                           self.x)
 
-    with self.assertRaises(sleqp.SLEQPError) as context:
-      solver.solve(100, 3600)
+    with self.assertRaises(sleqp.SLEQPError):
+      solver.solve()
 
   def test_matrix_error_func(self):
     func = MatrixErrorFunc()
@@ -116,8 +137,8 @@ class FuncErrorTest(unittest.TestCase):
                           self.options,
                           self.x)
 
-    with self.assertRaises(sleqp.SLEQPError) as context:
-      solver.solve(100, 3600)
+    with self.assertRaises(sleqp.SLEQPError):
+      solver.solve()
 
 if __name__ == '__main__':
     unittest.main()
