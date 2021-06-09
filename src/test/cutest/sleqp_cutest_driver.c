@@ -199,11 +199,29 @@ int sleqp_cutest_run(const char* filename,
 
     const int iterations = sleqp_solver_get_iterations(solver);
 
-    const int last_step_bdry = sleqp_solver_get_int_state(solver,
-                                                          SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY);
+    int last_step_bdry;
 
-    const double last_trust_radius = sleqp_solver_get_real_state(solver,
-                                                                 SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS);
+    SLEQP_CALL(sleqp_solver_get_int_state(solver,
+                                          SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY,
+                                          &last_step_bdry));
+
+    double last_trust_radius;
+
+    SLEQP_CALL(sleqp_solver_get_real_state(solver,
+                                           SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
+                                           &last_trust_radius));
+
+    double min_rayleigh;
+
+    SLEQP_CALL(sleqp_solver_get_real_state(solver,
+                                           SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH,
+                                           &min_rayleigh));
+
+    double max_rayleigh;
+
+    SLEQP_CALL(sleqp_solver_get_real_state(solver,
+                                           SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH,
+                                           &max_rayleigh));
 
     const double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
 
@@ -214,7 +232,7 @@ int sleqp_cutest_run(const char* filename,
                                                   &violation));
 
     fprintf(stdout,
-            "%s;%d;%d;%s;%f;%f;%d;%f;%d;%f\n",
+            "%s;%d;%d;%s;%f;%f;%d;%f;%d;%f;%f;%f\n",
             probname,
             CUTEst_nvar,
             CUTEst_ncons,
@@ -224,7 +242,9 @@ int sleqp_cutest_run(const char* filename,
             iterations,
             elapsed_seconds,
             last_step_bdry,
-            last_trust_radius);
+            last_trust_radius,
+            min_rayleigh,
+            max_rayleigh);
 
     if(status == SLEQP_INVALID)
     {
