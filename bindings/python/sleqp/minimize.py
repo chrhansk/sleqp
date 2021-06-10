@@ -81,6 +81,7 @@ class OptimizeResult:
     self.status = solver.status
     self.success = (self.status == sleqp.Status.Optimal)
     self.nit = solver.iterations
+    self.fun = solver.solution.func_val
 
   def __getitem__(self, key):
     return getattr(self, key)
