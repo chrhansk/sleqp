@@ -75,6 +75,8 @@ extern "C" {
                                      int num_variables,
                                      int num_constraints);
 
+  SLEQP_RETCODE sleqp_scaling_reset(SleqpScalingData* scaling);
+
   SLEQP_EXPORT int sleqp_scaling_get_num_variables(SleqpScalingData* scaling);
   SLEQP_EXPORT int sleqp_scaling_get_num_constraints(SleqpScalingData* scaling);
 

@@ -53,7 +53,8 @@ static SLEQP_RETCODE apply_scaling(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE reset_scaling(SleqpScalingData* scaling)
+
+SLEQP_RETCODE sleqp_scaling_reset(SleqpScalingData* scaling)
 {
   for(int j = 0; j < scaling->num_variables; ++j)
   {
@@ -105,7 +106,7 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
 
   scaling->func_weight = 0;
 
-  SLEQP_CALL(reset_scaling(scaling));
+  SLEQP_CALL(sleqp_scaling_reset(scaling));
 
   return SLEQP_OKAY;
 }
@@ -658,7 +659,7 @@ SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
                                           SleqpSparseMatrix* cons_jac,
                                           double eps)
 {
-  SLEQP_CALL(reset_scaling(scaling));
+  SLEQP_CALL(sleqp_scaling_reset(scaling));
 
   if(!(scaling->min_cache))
   {

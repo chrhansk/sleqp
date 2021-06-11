@@ -42,8 +42,8 @@ SLEQP_RETCODE sleqp_deriv_checker_create(SleqpDerivCheckData** star,
 
   SleqpDerivCheckData* data = *star;
 
-  int num_constraints = problem->num_constraints;
-  int num_variables = problem->num_variables;
+  const int num_constraints = problem->num_constraints;
+  const int num_variables = problem->num_variables;
 
   data->problem = problem;
 
