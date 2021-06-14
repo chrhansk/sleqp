@@ -74,6 +74,7 @@ class FuncErrorTest(unittest.TestCase):
     func = ErrorFunc()
 
     self.problem = sleqp.Problem(func,
+                                 self.params,
                                  self.var_lb,
                                  self.var_ub,
                                  self.cons_lb,
@@ -91,6 +92,7 @@ class FuncErrorTest(unittest.TestCase):
     func = ErrorFunc()
 
     self.problem = sleqp.Problem(func,
+                                 self.params,
                                  self.var_lb,
                                  self.var_ub,
                                  self.cons_lb,
@@ -110,6 +112,7 @@ class FuncErrorTest(unittest.TestCase):
     func = TypeErrorFunc()
 
     problem = sleqp.Problem(func,
+                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
@@ -127,6 +130,7 @@ class FuncErrorTest(unittest.TestCase):
     func = MatrixErrorFunc()
 
     problem = sleqp.Problem(func,
+                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,

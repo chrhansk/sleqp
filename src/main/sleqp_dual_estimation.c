@@ -17,13 +17,16 @@ SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+
   SleqpDualEstimationData* data = *star;
 
   data->problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(data->problem));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->solution, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->neg_grad, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->neg_grad, num_variables));
 
   return SLEQP_OKAY;
 }
@@ -35,6 +38,8 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
 {
   SleqpProblem* problem = estimation_data->problem;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   SleqpSparseVec* grad = sleqp_iterate_get_func_grad(iterate);
 
@@ -77,7 +82,7 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
 
       int index = sleqp_working_set_get_content(working_set, sol_index);
 
-      if(index < problem->num_variables)
+      if(index < num_variables)
       {
         SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(working_set, index);
 
@@ -115,7 +120,7 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
       }
       else
       {
-        index -= problem->num_variables;
+        index -= num_variables;
 
         SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set, index);
 
@@ -172,6 +177,8 @@ SLEQP_RETCODE sleqp_dual_estimation_data_free(SleqpDualEstimationData** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&data->neg_grad));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->solution));
+
+  SLEQP_CALL(sleqp_problem_release(&data->problem));
 
   sleqp_free(star);
 

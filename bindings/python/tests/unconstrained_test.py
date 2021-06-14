@@ -30,6 +30,7 @@ class UnconstrainedTest(unittest.TestCase):
     func = RosenbrockFunc()
 
     problem = sleqp.Problem(func,
+                            self.params,
                             var_lb,
                             var_ub,
                             cons_lb,

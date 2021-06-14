@@ -32,12 +32,16 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   quadfunc,
-                                   quadfunc_var_lb,
-                                   quadfunc_var_ub,
-                                   quadfunc_cons_lb,
-                                   quadfunc_cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          quadfunc,
+                                          params,
+                                          quadfunc_var_lb,
+                                          quadfunc_var_ub,
+                                          quadfunc_cons_lb,
+                                          quadfunc_cons_ub));
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
@@ -46,8 +50,8 @@ void newton_setup()
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
   ASSERT_CALL(sleqp_working_set_reset(working_set));
 
-  int num_lp_variables = problem->num_variables + 2*problem->num_constraints;
-  int num_lp_constraints = problem->num_constraints;
+  int num_lp_variables = num_variables + 2*num_constraints;
+  int num_lp_constraints = num_constraints;
 
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
                                                  num_lp_variables,
@@ -71,7 +75,7 @@ void newton_teardown()
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_options_release(&options));
 
@@ -90,7 +94,7 @@ START_TEST(newton_wide_step)
   SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
 
-  int num_variables = problem->num_variables;
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 2));
 
@@ -155,8 +159,7 @@ START_TEST(newton_small_step)
   SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
 
-
-  int num_variables = problem->num_variables;
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 2));
 

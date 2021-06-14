@@ -55,7 +55,8 @@ static SLEQP_RETCODE steihaug_solver_free(void **star)
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->Bd));
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->d));
 
-  SLEQP_CALL(sleqp_params_release (&solver->params));
+  SLEQP_CALL(sleqp_params_release(&solver->params));
+  SLEQP_CALL(sleqp_problem_release(&solver->problem));
 
   sleqp_free(star);
 
@@ -120,7 +121,6 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   const double rel_tol = sleqp_params_get (solver->params, SLEQP_PARAM_NEWTON_RELATIVE_TOL);
 
   SleqpProblem* problem = solver->problem;
-  SleqpFunc* func = problem->func;
   SleqpParams* params = solver->params;
 
   *tr_dual = SLEQP_NONE;
@@ -197,7 +197,7 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
     }
 
     // compute B_k * d_j
-    SLEQP_CALL(sleqp_func_hess_prod(func, &one, solver->d, multipliers, solver->Bd));
+    SLEQP_CALL(sleqp_problem_hess_prod(problem, &one, solver->d, multipliers, solver->Bd));
 
     SLEQP_CALL(steihaug_collect_rayleigh(solver, solver->d, solver->Bd));
 
@@ -367,23 +367,26 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
 {
   SleqpSteihaugSolver *solver = NULL;
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+
   SLEQP_CALL(sleqp_malloc(&solver));
 
   *solver = (SleqpSteihaugSolver) {0};
 
   solver->problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(solver->problem));
 
   SLEQP_CALL(sleqp_params_capture(params));
   solver->params = params;
 
   solver->max_iter = sleqp_options_get_int(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->Bd, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->g, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->r, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->z, problem->num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d, num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->Bd, num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->g, num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->r, num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->z, num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache, num_variables));
 
   SLEQP_CALL(sleqp_timer_create(&solver->timer));
 

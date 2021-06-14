@@ -32,19 +32,23 @@ void constrained_setup()
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   quadconsfunc,
-                                   quadconsfunc_var_lb,
-                                   quadconsfunc_var_ub,
-                                   quadconsfunc_cons_lb,
-                                   quadconsfunc_cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          quadconsfunc,
+                                          params,
+                                          quadconsfunc_var_lb,
+                                          quadconsfunc_var_ub,
+                                          quadconsfunc_cons_lb,
+                                          quadconsfunc_cons_ub));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
                                    quadconsfunc_x));
 
-  int num_lp_variables = problem->num_variables + 2*problem->num_constraints;
-  int num_lp_constraints = problem->num_constraints;
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  int num_lp_variables = num_variables + 2*num_constraints;
+  int num_lp_constraints = num_constraints;
 
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
                                                  num_lp_variables,
@@ -153,7 +157,7 @@ void constrained_teardown()
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_options_release(&options));
 

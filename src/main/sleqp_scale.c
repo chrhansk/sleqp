@@ -256,7 +256,33 @@ SLEQP_RETCODE sleqp_scale_func_grad(SleqpScalingData* scaling,
 SLEQP_RETCODE sleqp_scale_cons_val(SleqpScalingData* scaling,
                                    SleqpSparseVec* cons_val)
 {
-  SLEQP_CALL(apply_scaling(cons_val, scaling->cons_weights, 0));
+  SLEQP_CALL(apply_scaling(cons_val,
+                           scaling->cons_weights,
+                           0));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_scale_cons_general(SleqpScalingData* scaling,
+                                       SleqpSparseVec* general_val)
+{
+  SLEQP_CALL(apply_scaling(general_val,
+                           scaling->cons_weights,
+                           0));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_scale_cons_linear(SleqpScalingData* scaling,
+                                      SleqpSparseVec* linear_val)
+{
+  const int num_linear = linear_val->dim;
+  const int num_cons = scaling->num_constraints;
+  const int num_general = num_cons - num_linear;
+
+  SLEQP_CALL(apply_scaling(linear_val,
+                           scaling->cons_weights + num_general,
+                           0));
 
   return SLEQP_OKAY;
 }
@@ -283,6 +309,40 @@ SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScalingData* scaling,
 
     cons_jac_data[index] = ldexp(cons_jac_data[index],
                                  (-1) * scaling->cons_weights[row] +
+                                 scaling->var_weights[col]);
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_scale_linear_coeffs(SleqpScalingData* scaling,
+                                        SleqpSparseMatrix* linear_coeffs)
+{
+  int col = 0;
+
+  const int num_linear = sleqp_sparse_matrix_get_num_rows(linear_coeffs);
+
+  assert(num_linear <= scaling->num_constraints);
+
+  const int num_general = scaling->num_constraints - num_linear;
+
+  const int* linear_coeffs_cols = sleqp_sparse_matrix_get_cols(linear_coeffs);
+  const int* linear_coeffs_rows = sleqp_sparse_matrix_get_rows(linear_coeffs);
+  double* linear_coeffs_data = sleqp_sparse_matrix_get_data(linear_coeffs);
+
+  int linear_coeffs_nnz = sleqp_sparse_matrix_get_nnz(linear_coeffs);
+
+  for(int index = 0; index < linear_coeffs_nnz; ++index)
+  {
+    while(index >= linear_coeffs_cols[col + 1])
+    {
+      ++col;
+    }
+
+    const int row = linear_coeffs_rows[index];
+
+    linear_coeffs_data[index] = ldexp(linear_coeffs_data[index],
+                                 (-1) * scaling->cons_weights[num_linear + row] +
                                  scaling->var_weights[col]);
   }
 

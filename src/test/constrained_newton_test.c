@@ -11,8 +11,6 @@
 #include "sleqp_newton.h"
 #include "sleqp_problem.h"
 
-#include "sparse/sleqp_sparse_factorization_umfpack.h"
-
 static const int num_variables = 2;
 static const int num_constraints = 1;
 
@@ -208,12 +206,13 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_params_create(&params));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   linquadfunc,
-                                   linquadfunc_var_lb,
-                                   linquadfunc_var_ub,
-                                   linquadfunc_cons_lb,
-                                   linquadfunc_cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          linquadfunc,
+                                          params,
+                                          linquadfunc_var_lb,
+                                          linquadfunc_var_ub,
+                                          linquadfunc_cons_lb,
+                                          linquadfunc_cons_ub));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
@@ -247,7 +246,7 @@ START_TEST(newton_constrained_step)
   double penalty_parameter = 1.;
   double trust_radius = 10.;
 
-  int num_variables = problem->num_variables;
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   ASSERT_CALL(sleqp_sparse_vector_create(&actual_step, num_variables, 0));
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 1));
@@ -307,7 +306,7 @@ void newton_teardown()
 {
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_params_release(&params));
 

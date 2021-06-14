@@ -95,12 +95,12 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
+                               self.params,
                                self.var_lb,
                                self.var_ub,
                                self.cons_lb,
                                self.cons_ub,
                                num_residuals,
-                               self.params,
                                regularization=1e-4)
 
     solver = sleqp.Solver(problem,
@@ -119,12 +119,12 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
+                               self.params,
                                self.var_lb,
                                self.var_ub,
                                self.cons_lb,
                                self.cons_ub,
-                               num_residuals,
-                               self.params)
+                               num_residuals)
 
     solver = sleqp.Solver(problem,
                           self.params,
@@ -142,12 +142,12 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
+                               self.params,
                                self.var_lb,
                                self.var_ub,
                                self.cons_lb,
                                self.cons_ub,
-                               num_residuals,
-                               self.params)
+                               num_residuals)
 
     solver = sleqp.Solver(problem,
                           self.params,

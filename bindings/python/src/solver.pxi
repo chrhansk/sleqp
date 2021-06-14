@@ -44,7 +44,7 @@ cdef class Solver:
                                            params.params,
                                            options.options,
                                            primal_vec,
-                                           scaling.scaling if scaling else NULL))
+                                           scaling.scaling if scaling is not None else NULL))
 
     csleqp_call(csleqp.sleqp_sparse_vector_free(&primal_vec))
 

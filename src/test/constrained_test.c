@@ -310,12 +310,13 @@ void constrained_setup()
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   func,
-                                   var_lb,
-                                   var_ub,
-                                   cons_lb,
-                                   cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          func,
+                                          params,
+                                          var_lb,
+                                          var_ub,
+                                          cons_lb,
+                                          cons_ub));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 4, 4));
 
@@ -329,7 +330,7 @@ void constrained_teardown()
 {
   ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_options_release(&options));
 
@@ -515,9 +516,12 @@ START_TEST(test_unscaled_solve)
 
   SleqpScalingData* scaling_data;
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem->num_variables,
-                                   problem->num_constraints));
+                                   num_variables,
+                                   num_constraints));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -613,9 +617,12 @@ START_TEST(test_scaled_sr1_solve)
                                     SLEQP_OPTION_INT_HESSIAN_EVAL,
                                     SLEQP_HESSIAN_EVAL_SR1));
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem->num_variables,
-                                   problem->num_constraints));
+                                   num_variables,
+                                   num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
 
@@ -668,9 +675,12 @@ START_TEST(test_scaled_bfgs_solve)
                                     SLEQP_OPTION_INT_HESSIAN_EVAL,
                                     SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem->num_variables,
-                                   problem->num_constraints));
+                                   num_variables,
+                                   num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
 
@@ -730,9 +740,12 @@ START_TEST(test_auto_scaled_solve)
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   ASSERT_CALL(sleqp_scaling_create(&scaling_data,
-                                   problem->num_variables,
-                                   problem->num_constraints));
+                                   num_variables,
+                                   num_constraints));
 
   ASSERT_CALL(sleqp_func_scaling_from_gradient(scaling_data,
                                                sleqp_iterate_get_func_grad(iterate),

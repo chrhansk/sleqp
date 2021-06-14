@@ -65,6 +65,9 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   SleqpNewtonData* data = *star;
 
   *data = (SleqpNewtonData) {0};
@@ -72,6 +75,7 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   data->refcount = 1;
 
   data->problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(data->problem));
 
   SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
@@ -80,55 +84,55 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   data->options = options;
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_direction,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_point,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_cons_val,
-                                              problem->num_constraints));
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lower_diff,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->upper_diff,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->violated_variable_multipliers,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->violated_constraint_multipliers,
-                                              problem->num_constraints));
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->gradient,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_rhs,
-                                              problem->num_constraints));
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->initial_hessian_product,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->jacobian_product,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->tr_step,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->tr_hessian_product,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
-                               SLEQP_MAX(problem->num_variables, problem->num_constraints)));
+                               SLEQP_MAX(num_variables, num_constraints)));
 
   SLEQP_TR_SOLVER tr_solver = sleqp_options_get_int(options, SLEQP_OPTION_INT_TR_SOLVER);
 
   if(tr_solver == SLEQP_TR_SOLVER_AUTO)
   {
-    SleqpFunc* func = problem->func;
+    SleqpFunc* func = sleqp_problem_func(problem);
 
     if(sleqp_func_has_psd_hessian(func))
     {
@@ -171,6 +175,8 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   SleqpSparseVec* initial_rhs = data->initial_rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
+  const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
+
   const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const int working_set_size = sleqp_working_set_size(working_set);
@@ -188,8 +194,8 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   // variables
   {
     SleqpSparseVec* values = sleqp_iterate_get_primal(iterate);
-    SleqpSparseVec* var_lb = problem->var_lb;
-    SleqpSparseVec* var_ub = problem->var_ub;
+    SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
+    SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
 
     SleqpSparseVec* lower_diff = data->lower_diff;
     SleqpSparseVec* upper_diff = data->upper_diff;
@@ -260,8 +266,8 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   // constraints
   {
     SleqpSparseVec* values = sleqp_iterate_get_cons_val(iterate);
-    SleqpSparseVec* cons_lb = problem->cons_lb;
-    SleqpSparseVec* cons_ub = problem->cons_ub;
+    SleqpSparseVec* cons_lb = sleqp_problem_cons_lb(problem);
+    SleqpSparseVec* cons_ub = sleqp_problem_cons_ub(problem);
 
     SleqpSparseVec* lower_diff = data->lower_diff;
     SleqpSparseVec* upper_diff = data->upper_diff;
@@ -370,6 +376,8 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
 
   SleqpProblem* problem = data->problem;
 
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   const double eps = sleqp_params_get(data->params,
                                       SLEQP_PARAM_EPS);
 
@@ -461,7 +469,7 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
 
     SLEQP_CALL(sleqp_sparse_vector_from_raw(data->sparse_cache,
                                             data->dense_cache,
-                                            problem->num_constraints,
+                                            num_constraints,
                                             zero_eps));
 
     SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_cons_val(iterate),
@@ -534,11 +542,11 @@ SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
 
   double one = 1.;
 
-  SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                  &one,
-                                  tr_step,
-                                  multipliers,
-                                  tr_prod));
+  SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                     &one,
+                                     tr_step,
+                                     multipliers,
+                                     tr_prod));
 
   SLEQP_CALL(sleqp_sparse_vector_add(tr_prod,
                                      gradient,
@@ -597,7 +605,9 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     int working_set_size = sleqp_working_set_size(working_set);
   */
 
-  SleqpTimer* hess_timer = sleqp_func_get_hess_timer(problem->func);
+  SleqpFunc* func = sleqp_problem_func(problem);
+
+  SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
 
   SleqpTimer* subst_timer = sleqp_aug_jacobian_get_substitution_timer(data->jacobian);
 
@@ -612,11 +622,11 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   {
     double one = 1.;
 
-    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                    &one,
-                                    data->initial_direction,
-                                    multipliers,
-                                    data->initial_hessian_product));
+    SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                       &one,
+                                       data->initial_direction,
+                                       multipliers,
+                                       data->initial_hessian_product));
 
     SLEQP_CALL(sleqp_sparse_vector_add(data->initial_hessian_product,
                                        func_grad,
@@ -756,6 +766,8 @@ static SLEQP_RETCODE newton_data_free(SleqpNewtonData** star)
 
   SLEQP_CALL(sleqp_options_release(&data->options));
   SLEQP_CALL(sleqp_params_release(&data->params));
+
+  SLEQP_CALL(sleqp_problem_release(&data->problem));
 
   sleqp_free(star);
 

@@ -11,7 +11,15 @@ extern "C" {
   SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
                                               int num_variables,
                                               int num_constraints,
+                                              int num_linear,
                                               SleqpParams* params);
+
+  SLEQP_RETCODE sleqp_cutest_linear_offset(SleqpFunc* func,
+                                           SleqpSparseVec* offset);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_cutest_eval_linear(SleqpFunc* func,
+                                         SleqpSparseMatrix* coeffs);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_cutest_cons_func_free(SleqpFunc** star);

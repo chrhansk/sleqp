@@ -41,6 +41,7 @@ class ProblemTest(unittest.TestCase):
         self.func = Func()
 
         self.problem = sleqp.Problem(self.func,
+                                     self.params,
                                      self.var_lb,
                                      self.var_ub,
                                      self.cons_lb,
@@ -68,6 +69,7 @@ class ProblemTest(unittest.TestCase):
 
         self.assertRaises(sleqp.SLEQPError,
                           lambda: sleqp.Problem(self.func,
+                                                self.params,
                                                 self.var_lb,
                                                 self.var_ub,
                                                 cons_lb,
@@ -83,6 +85,7 @@ class ProblemTest(unittest.TestCase):
 
         self.assertRaises(sleqp.SLEQPError,
                           lambda: sleqp.Problem(self.func,
+                                                self.params,
                                                 var_lb,
                                                 var_ub,
                                                 self.cons_lb,

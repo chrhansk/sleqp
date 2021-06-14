@@ -11,6 +11,7 @@ typedef struct CUTestConsFuncData
 
   int num_variables;
   int num_constraints;
+  int num_linear;
 
   double* x;
   double* cons_vals;
@@ -73,6 +74,7 @@ static int jac_compare(const void* f, const void* s)
 static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
                                                    int num_variables,
                                                    int num_constraints,
+                                                   int num_linear,
                                                    SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -85,6 +87,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
 
   data->num_constraints = num_constraints;
   data->num_variables = num_variables;
+  data->num_linear = num_linear;
   data->goth = cutest_false;
 
   SLEQP_CALL(sleqp_alloc_array(&data->x, num_variables));
@@ -285,8 +288,6 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_jac(SleqpFunc* func,
     data->jac_indices[i] = i;
   }
 
-  //JacCmpData jac_data = { data->jac_rows, data->jac_cols};
-
   jac_cmp_data.jac_cols = data->jac_cols;
   jac_cmp_data.jac_rows = data->jac_rows;
 
@@ -299,6 +300,8 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_jac(SleqpFunc* func,
   int last_col = 0;
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, data->jac_nnz));
+
+  const int num_general = data->num_constraints - data->num_linear;
 
   for(int i = 0; i < data->jac_nnz; ++i)
   {
@@ -319,6 +322,12 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_jac(SleqpFunc* func,
 
     --row;
 
+    // linear constraint
+    if(row >= num_general)
+    {
+      continue;
+    }
+
     while(col > last_col)
     {
       SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
@@ -327,8 +336,6 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_jac(SleqpFunc* func,
 
     last_col = col;
 
-    //sleqp_log_debug("Pushing row = %d, col = %d, val = %f", row, col, val);
-
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, row, col, val));
   }
 
@@ -336,6 +343,138 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_jac(SleqpFunc* func,
   while(num_cols > last_col)
   {
     SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
+                                               last_col++));
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_cutest_linear_offset(SleqpFunc* func,
+                                         SleqpSparseVec* offset)
+{
+  void* func_data = sleqp_func_get_data(func);
+  CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
+  int status;
+
+  double obj;
+
+  assert(offset->dim == data->num_linear);
+
+  for(int j = 0; j < data->num_variables; ++j)
+  {
+    data->x[j] = 0.;
+  }
+
+  const int num_general = data->num_constraints - data->num_linear;
+
+  CUTEST_cfn(&status,
+             &data->num_variables,
+             &data->num_constraints,
+             data->x,
+             &obj,
+             data->cons_vals);
+
+  SLEQP_CUTEST_CHECK_STATUS(status);
+
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(offset,
+                                          data->cons_vals + num_general,
+                                          data->num_linear,
+                                          data->zero_eps));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_cutest_eval_linear(SleqpFunc* func,
+                                       SleqpSparseMatrix* coeffs)
+{
+  void* func_data = sleqp_func_get_data(func);
+  CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
+  int status;
+
+  assert(sleqp_sparse_matrix_get_num_cols(coeffs) == data->num_variables);
+  assert(sleqp_sparse_matrix_get_num_rows(coeffs) == data->num_linear);
+
+  CUTEST_csgr(&status,                // status flag
+              &data->num_variables,   // number of variables
+              &data->num_constraints, // number of constraints
+              data->x,                // current iterate
+              NULL,                   // Lagrangian multipliers
+              &cutest_false,          // Do we want the gradient of the Lagrangian?
+              &(data->jac_nnz),       // Actual number of Jacobian nonzeroes
+              &(data->jac_nnz_max),   // Maximum number of Jacobian nonzeroes
+              data->jac_vals,         // Jacobian data
+              data->jac_cols,         // Lagrangian leading size
+              data->jac_rows);        // Lagrangian trailing size
+
+  SLEQP_CUTEST_CHECK_STATUS(status);
+
+  for(int i = 0; i < data->jac_nnz; ++i)
+  {
+    data->jac_indices[i] = i;
+  }
+
+  jac_cmp_data.jac_cols = data->jac_cols;
+  jac_cmp_data.jac_rows = data->jac_rows;
+
+  qsort(data->jac_indices,
+        data->jac_nnz,
+        sizeof(int),
+        &jac_compare);
+
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(coeffs);
+  int last_col = 0;
+
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(coeffs, data->jac_nnz));
+
+  const int num_general = data->num_constraints - data->num_linear;
+
+  for(int i = 0; i < data->jac_nnz; ++i)
+  {
+    const int k = data->jac_indices[i];
+
+    int row = data->jac_rows[k];
+    int col = data->jac_cols[k];
+    double val = data->jac_vals[k];
+
+    --col;
+
+    assert(col >= 0);
+
+    // objective gradient
+    if(row == 0)
+    {
+      continue;
+    }
+
+    --row;
+
+    // general constraints
+    if(row < num_general)
+    {
+      continue;
+    }
+
+    row -= num_general;
+
+    while(col > last_col)
+    {
+      SLEQP_CALL(sleqp_sparse_matrix_push_column(coeffs,
+                                                 ++last_col));
+    }
+
+    last_col = col;
+
+    SLEQP_CALL(sleqp_sparse_matrix_push(coeffs,
+                                        row,
+                                        col,
+                                        val));
+  }
+
+  ++last_col;
+
+  while(num_cols > last_col)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(coeffs,
                                                last_col++));
   }
 
@@ -397,13 +536,17 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(SleqpFunc* func,
 SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
                                             int num_variables,
                                             int num_constraints,
+                                            int num_linear,
                                             SleqpParams* params)
 {
   CUTestConsFuncData* data;
 
+  const int num_general = num_constraints - num_linear;
+
   SLEQP_CALL(sleqp_cutest_cons_data_create(&data,
                                            num_variables,
                                            num_constraints,
+                                           num_linear,
                                            params));
 
   SleqpFuncCallbacks callbacks = {
@@ -419,7 +562,7 @@ SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
   SLEQP_CALL(sleqp_func_create(star,
                                &callbacks,
                                num_variables,
-                               num_constraints,
+                               num_general,
                                data));
 
   return SLEQP_OKAY;

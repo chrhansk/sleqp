@@ -22,16 +22,20 @@ void scaling_setup()
 
   ASSERT_CALL(sleqp_params_create(&params));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   quadconsfunc,
-                                   quadconsfunc_var_lb,
-                                   quadconsfunc_var_ub,
-                                   quadconsfunc_cons_lb,
-                                   quadconsfunc_cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          quadconsfunc,
+                                          params,
+                                          quadconsfunc_var_lb,
+                                          quadconsfunc_var_ub,
+                                          quadconsfunc_cons_lb,
+                                          quadconsfunc_cons_ub));
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   problem->num_variables,
-                                   problem->num_constraints));
+                                   num_variables,
+                                   num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling,
                                             2));
@@ -270,7 +274,7 @@ void scaling_teardown()
 
   ASSERT_CALL(sleqp_scaling_release(&scaling));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_params_release(&params));
 

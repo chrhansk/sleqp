@@ -47,6 +47,7 @@ class SecondOrderTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.Problem(func,
+                            self.params,
                             var_lb,
                             var_ub,
                             cons_lb,

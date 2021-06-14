@@ -12,12 +12,12 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
   int cons_val_nnz = 0;
   int cons_jac_nnz = 0;
 
-  SLEQP_CALL(sleqp_func_set_value(problem->func,
-                                  sleqp_iterate_get_primal(iterate),
-                                  reason,
-                                  &func_grad_nnz,
-                                  &cons_val_nnz,
-                                  &cons_jac_nnz));
+  SLEQP_CALL(sleqp_problem_set_value(problem,
+                                     sleqp_iterate_get_primal(iterate),
+                                     reason,
+                                     &func_grad_nnz,
+                                     &cons_val_nnz,
+                                     &cons_jac_nnz));
 
   SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
@@ -34,12 +34,12 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
 
   double func_val;
 
-  SLEQP_CALL(sleqp_func_eval(problem->func,
-                             NULL,
-                             &func_val,
-                             func_grad,
-                             cons_val,
-                             cons_jac));
+  SLEQP_CALL(sleqp_problem_eval(problem,
+                                NULL,
+                                &func_val,
+                                func_grad,
+                                cons_val,
+                                cons_jac));
 
   SLEQP_CALL(sleqp_iterate_set_func_val(iterate, func_val));
 
@@ -66,8 +66,8 @@ SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
                                                 direction,
                                                 cache));
 
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 

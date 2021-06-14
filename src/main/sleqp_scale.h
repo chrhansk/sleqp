@@ -151,8 +151,20 @@ extern "C" {
                                      SleqpSparseVec* cons_val);
 
   SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_scale_cons_general(SleqpScalingData* scaling,
+                                         SleqpSparseVec* general_val);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_scale_cons_linear(SleqpScalingData* scaling,
+                                        SleqpSparseVec* linear_val);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScalingData* scaling,
                                      SleqpSparseMatrix* cons_jac);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_scale_linear_coeffs(SleqpScalingData* scaling,
+                                          SleqpSparseMatrix* linear_coeffs);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_scale_cons_duals(SleqpScalingData* scaling,

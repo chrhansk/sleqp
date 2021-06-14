@@ -149,6 +149,11 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
                                            int dim);
 
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_vector_concat(const SleqpSparseVec* first,
+                                           const SleqpSparseVec* second,
+                                           SleqpSparseVec* result);
+
   /**
    * Returns whether all entries of the given vector are equal
    * up to the given tolerance
@@ -204,7 +209,7 @@ extern "C" {
    * @param[in]  first         A pointer to the first vector
    * @param[in]  second        A pointer to the second vector
    * @param[in]  first_factor  A factor for the first vector
-   * @param[in]  second_factor A factor for the first vector
+   * @param[in]  second_factor A factor for the second vector
    * @param[out] result        A pointer to the result
    **/
   SLEQP_EXPORT SLEQP_NODISCARD

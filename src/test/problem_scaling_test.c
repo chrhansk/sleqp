@@ -30,16 +30,19 @@ void problem_scaling_setup()
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   quadconsfunc,
-                                   quadconsfunc_var_lb,
-                                   quadconsfunc_var_ub,
-                                   quadconsfunc_cons_lb,
-                                   quadconsfunc_cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          quadconsfunc,
+                                          params,
+                                          quadconsfunc_var_lb,
+                                          quadconsfunc_var_ub,
+                                          quadconsfunc_cons_lb,
+                                          quadconsfunc_cons_ub));
+
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   problem->num_variables,
-                                   problem->num_constraints));
+                                   sleqp_problem_num_variables(problem),
+                                   num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling,
                                             2));
@@ -79,7 +82,7 @@ START_TEST(test_overflow)
 
   ASSERT_CALL(sleqp_sparse_vector_push(point, 0, 1.));
 
-  SleqpFunc* func = scaled_problem->func;
+  SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
   int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
@@ -106,7 +109,7 @@ START_TEST(test_underflow_warning)
 
   ASSERT_CALL(sleqp_sparse_vector_push(point, 0, 1.));
 
-  SleqpFunc* func = scaled_problem->func;
+  SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
   int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
@@ -137,7 +140,7 @@ START_TEST(test_underflow_error)
 
   ASSERT_CALL(sleqp_sparse_vector_push(point, 0, 1.));
 
-  SleqpFunc* func = scaled_problem->func;
+  SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
   int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
@@ -222,7 +225,7 @@ void problem_scaling_teardown()
 
   ASSERT_CALL(sleqp_scaling_release(&scaling));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_options_release(&options));
 

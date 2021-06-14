@@ -6,13 +6,15 @@ SLEQP_RETCODE sleqp_violated_constraint_multipliers(SleqpProblem* problem,
                                                     SleqpSparseVec* multipliers,
                                                     SleqpWorkingSet* working_set)
 {
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   SleqpSparseVec* v = cons_vals;
+
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(multipliers));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(multipliers, problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(multipliers, num_constraints));
 
   const int dim = v->dim;
 
@@ -80,13 +82,15 @@ SLEQP_RETCODE sleqp_violated_variable_multipliers(SleqpProblem* problem,
                                                   SleqpSparseVec* multipliers,
                                                   SleqpWorkingSet* working_set)
 {
-  SleqpSparseVec* lb = problem->var_lb;
-  SleqpSparseVec* ub = problem->var_ub;
+  SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
+  SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
   SleqpSparseVec* p = primal;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(multipliers));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(multipliers, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(multipliers, num_variables));
 
   const int dim = p->dim;
 
@@ -155,8 +159,8 @@ SLEQP_RETCODE sleqp_violated_constraints(SleqpProblem* problem,
                                          int* num_violated_constraints)
 {
   SleqpSparseVec* c = cons_val;
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
   int k_c = 0, k_lb = 0, k_ub = 0;
 
@@ -220,10 +224,10 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
                                      SleqpIterate* iterate,
                                      SleqpSparseVec* violation)
 {
-  int num_constraints = problem->num_constraints;
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   SleqpSparseVec* c = sleqp_iterate_get_cons_val(iterate);
 
   const int dim = c->dim;
@@ -295,10 +299,10 @@ SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,
                                        SleqpSparseVec* cons_val,
                                        double* max_violation)
 {
-  int num_constraints = problem->num_constraints;
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   SleqpSparseVec* c = cons_val;
 
   const int dim = c->dim;
@@ -359,10 +363,10 @@ SLEQP_RETCODE sleqp_violation_one_norm(SleqpProblem* problem,
                                        SleqpSparseVec* cons_val,
                                        double* total_violation)
 {
-  int num_constraints = problem->num_constraints;
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpSparseVec* lb = problem->cons_lb;
-  SleqpSparseVec* ub = problem->cons_ub;
+  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   SleqpSparseVec* c = cons_val;
 
   const int dim = c->dim;

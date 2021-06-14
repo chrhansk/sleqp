@@ -35,13 +35,15 @@ SLEQP_RETCODE sleqp_working_set_create(SleqpWorkingSet** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  int num_variables = problem->num_variables;
-  int num_constraints = problem->num_constraints;
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   SleqpWorkingSet* working_set = *star;
 
   working_set->refcount = 1;
+
   working_set->problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(working_set->problem));
 
   SLEQP_CALL(sleqp_alloc_array(&working_set->variable_states, num_variables));
   SLEQP_CALL(sleqp_alloc_array(&working_set->constraint_states, num_constraints));
@@ -113,8 +115,10 @@ SLEQP_RETCODE sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
 {
   SleqpProblem* problem = working_set->problem;
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+
   assert(index >= 0);
-  assert(index < problem->num_variables);
+  assert(index < num_variables);
   assert(working_set->num_active_constraints == 0);
 
   assert(sleqp_working_set_get_variable_state(working_set, index) == SLEQP_INACTIVE);
@@ -145,8 +149,10 @@ SLEQP_RETCODE sleqp_working_set_add_constraint(SleqpWorkingSet* working_set,
 {
   SleqpProblem* problem = working_set->problem;
 
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   assert(index >= 0);
-  assert(index < problem->num_constraints);
+  assert(index < num_constraints);
 
   assert(sleqp_working_set_get_constraint_state(working_set, index) == SLEQP_INACTIVE);
   assert(state != SLEQP_INACTIVE);
@@ -235,8 +241,8 @@ bool sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 {
   SleqpProblem* problem = working_set->problem;
 
-  const int num_variables = problem->num_variables;
-  const int num_constraints = problem->num_constraints;
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   const int working_set_size = sleqp_working_set_size(working_set);
 
@@ -248,7 +254,7 @@ bool sleqp_working_set_valid(const SleqpWorkingSet* working_set)
     assert(num_active_vars <= working_set_size);
     assert(num_active_cons <= working_set_size);
 
-    assert(working_set_size <= problem->num_variables);
+    assert(working_set_size <= num_variables);
   }
 
   {
@@ -400,9 +406,8 @@ SLEQP_RETCODE sleqp_working_set_fprintf(const SleqpWorkingSet* working_set,
 {
   SleqpProblem* problem = working_set->problem;
 
-  int num_variables = problem->num_variables;
-  int num_constraints = problem->num_constraints;
-
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   fprintf(output,
           "Active set, variables: %d, constraints: %d\n",
@@ -440,12 +445,16 @@ SLEQP_RETCODE sleqp_working_set_fprintf(const SleqpWorkingSet* working_set,
 SLEQP_RETCODE sleqp_working_set_copy(const SleqpWorkingSet* source,
                                      SleqpWorkingSet* target)
 {
-  const int num_variables = source->problem->num_variables;
-  const int num_constraints = source->problem->num_constraints;
+  SleqpProblem* source_problem = source->problem;
+  SleqpProblem* target_problem = target->problem;
+
+  const int num_variables = sleqp_problem_num_variables(source_problem);
+  const int num_constraints = sleqp_problem_num_constraints(source_problem);
+
   const int max_set_size = source->max_set_size;
 
-  assert(num_variables == target->problem->num_variables);
-  assert(num_constraints == target->problem->num_constraints);
+  assert(num_variables == sleqp_problem_num_variables(target_problem));
+  assert(num_constraints == sleqp_problem_num_constraints(target_problem));
   assert(max_set_size == target->max_set_size);
 
   for(int j = 0; j < num_variables; ++j)
@@ -507,6 +516,8 @@ static SLEQP_RETCODE working_set_free(SleqpWorkingSet** star)
 
   sleqp_free(&working_set->constraint_states);
   sleqp_free(&working_set->variable_states);
+
+  SLEQP_CALL(sleqp_problem_release(&working_set->problem));
 
   sleqp_free(star);
 

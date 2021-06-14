@@ -83,6 +83,8 @@ static SLEQP_RETCODE trlib_free(void** star)
 
   SLEQP_CALL(sleqp_params_release(&data->params));
 
+  SLEQP_CALL(sleqp_problem_release(&data->problem));
+
   sleqp_free(star);
 
   return SLEQP_OKAY;
@@ -186,7 +188,6 @@ static SLEQP_RETCODE check_optimality(SolverData* data,
                                       bool* is_optimal)
 {
   SleqpProblem* problem = data->problem;
-  SleqpFunc* func = problem->func;
 
   const double eps = sleqp_params_get(data->params,
                                       SLEQP_PARAM_STATIONARITY_TOL);
@@ -197,11 +198,11 @@ static SLEQP_RETCODE check_optimality(SolverData* data,
 
   (*is_optimal) = true;
 
-  SLEQP_CALL(sleqp_func_hess_prod(func,
-                                  &one,
-                                  newton_step,
-                                  multipliers,
-                                  data->Hp));
+  SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                     &one,
+                                     newton_step,
+                                     multipliers,
+                                     data->Hp));
 
   SLEQP_CALL(sleqp_sparse_vector_add(gradient,
                                      data->Hp,
@@ -260,7 +261,8 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                 trlib_int_t* trlib_ret)
 {
   SleqpProblem* problem = data->problem;
-  SleqpFunc* func = problem->func;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   const double inf = sleqp_infinity();
 
@@ -392,11 +394,11 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                          data->g,
                                          &v_dot_g));
 
-      SLEQP_CALL(sleqp_func_hess_prod(func,
-                                      &one,
-                                      data->p,
-                                      multipliers,
-                                      data->Hp));
+      SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                         &one,
+                                         data->p,
+                                         multipliers,
+                                         data->Hp));
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -435,7 +437,7 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
       SLEQP_CALL(sleqp_sparse_vector_from_raw(data->s,
                                               data->dense_cache,
-                                              problem->num_variables,
+                                              num_variables,
                                               zero_eps));
 
 
@@ -535,10 +537,11 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
     }
     case TRLIB_CLA_CONV_HARD:
     {
-      SLEQP_CALL(sleqp_func_hess_prod(func, &one,
-                                      data->s,
-                                      multipliers,
-                                      data->sparse_cache));
+      SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                         &one,
+                                         data->s,
+                                         multipliers,
+                                         data->sparse_cache));
 
       SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache, gradient, zero_eps, data->l));
 
@@ -587,10 +590,11 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->p));
 
-        SLEQP_CALL(sleqp_func_hess_prod(func, &one,
-                                        data->p,
-                                        multipliers,
-                                        data->Hp));
+        SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                           &one,
+                                           data->p,
+                                           multipliers,
+                                           data->Hp));
 
         SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -619,10 +623,11 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->p));
 
-        SLEQP_CALL(sleqp_func_hess_prod(func, &one,
-                                        data->p,
-                                        multipliers,
-                                        data->Hp));
+        SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                           &one,
+                                           data->p,
+                                           multipliers,
+                                           data->Hp));
 
         SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -639,11 +644,11 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
     {
       double lin_term, quad_term;
 
-      SLEQP_CALL(sleqp_func_hess_bilinear(func,
-                                          &one,
-                                          data->s,
-                                          multipliers,
-                                          &quad_term));
+      SLEQP_CALL(sleqp_problem_hess_bilinear(problem,
+                                             &one,
+                                             data->s,
+                                             multipliers,
+                                             &quad_term));
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->s,
                                          data->g,
@@ -786,11 +791,15 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
 {
   SolverData* data = NULL;
 
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables = sleqp_problem_num_variables(problem);
+
   SLEQP_CALL(sleqp_malloc(&data));
 
   *data = (SolverData) {0};
 
   data->problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(data->problem));
 
   SLEQP_CALL(sleqp_params_capture(params));
   data->params = params;
@@ -798,7 +807,7 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   const int max_newton_iter = sleqp_options_get_int(options,
                                                     SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
 
-  data->trlib_maxiter = problem->num_variables;
+  data->trlib_maxiter = num_variables;
 
   if(max_newton_iter != SLEQP_NONE)
   {
@@ -817,40 +826,40 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   SLEQP_CALL(sleqp_alloc_array(&data->trlib_timinig, trlib_krylov_timing_size()));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->s,
-                                              problem->num_variables));
+                                              num_variables));
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->g,
-                                              problem->num_variables));
+                                              num_variables));
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->gm,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->v,
-                                              problem->num_variables));
+                                              num_variables));
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->p,
-                                              problem->num_variables));
+                                              num_variables));
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->Hp,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->l,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_lhs,
-                                              problem->num_variables));
+                                              num_variables));
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_rhs,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&data->Q,
-                                        problem->num_variables,
+                                        num_variables,
                                         data->trlib_maxiter + 1,
                                         0));
 
   SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
-                               SLEQP_MAX(problem->num_variables, problem->num_constraints)));
+                               SLEQP_MAX(num_variables, num_constraints)));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->sparse_cache,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_timer_create(&data->timer));
 

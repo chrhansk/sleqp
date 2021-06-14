@@ -30,6 +30,7 @@ SLEQP_RETCODE sleqp_soc_data_create(SleqpSOCData** star,
   soc_data->refcount = 1;
 
   soc_data->problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(soc_data->problem));
 
   SLEQP_CALL(sleqp_params_capture(params));
   soc_data->params = params;
@@ -48,6 +49,9 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
 {
   SleqpProblem* problem = soc_data->problem;
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   const double eps = sleqp_params_get(soc_data->params,
                                       SLEQP_PARAM_EPS);
 
@@ -61,20 +65,20 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->lower_diff));
-  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->lower_diff, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->lower_diff, num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->upper_diff));
-  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->upper_diff, problem->num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->upper_diff, num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(trial_iterate),
-                                            problem->var_lb,
+                                            sleqp_problem_var_lb(problem),
                                             -1.,
                                             1.,
                                             zero_eps,
                                             lower_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(trial_iterate),
-                                            problem->var_ub,
+                                            sleqp_problem_var_ub(problem),
                                             -1.,
                                             1.,
                                             zero_eps,
@@ -82,7 +86,7 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
 
   int k_ld = 0., k_ud = 0.;
 
-  for(int i = 0; i < problem->num_variables; ++i)
+  for(int i = 0; i < num_variables; ++i)
   {
     while(k_ld < lower_diff->nnz && lower_diff->indices[k_ld] < i)
     {
@@ -134,6 +138,8 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
 {
   SleqpProblem* problem = soc_data->problem;
 
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   const double eps = sleqp_params_get(soc_data->params,
                                       SLEQP_PARAM_EPS);
 
@@ -147,20 +153,20 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->lower_diff));
-  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->lower_diff, problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->lower_diff, num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->upper_diff));
-  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->upper_diff, problem->num_constraints));
+  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->upper_diff, num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_cons_val(trial_iterate),
-                                            problem->cons_lb,
+                                            sleqp_problem_cons_lb(problem),
                                             -1.,
                                             1.,
                                             zero_eps,
                                             lower_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_get_cons_val(trial_iterate),
-                                            problem->cons_ub,
+                                            sleqp_problem_cons_ub(problem),
                                             -1.,
                                             1.,
                                             zero_eps,
@@ -169,7 +175,7 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOCData* soc_data,
 
   int k_ld = 0., k_ud = 0.;
 
-  for(int i = 0; i < problem->num_constraints; ++i)
+  for(int i = 0; i < num_constraints; ++i)
   {
     while(k_ld < lower_diff->nnz && lower_diff->indices[k_ld] < i)
     {
@@ -255,6 +261,8 @@ static SLEQP_RETCODE soc_data_free(SleqpSOCData** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->rhs));
 
   SLEQP_CALL(sleqp_params_release(&soc_data->params));
+
+  SLEQP_CALL(sleqp_problem_release(&soc_data->problem));
 
   sleqp_free(star);
 

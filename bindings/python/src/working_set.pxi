@@ -22,7 +22,7 @@ cdef class WorkingSet:
 
     problem = csleqp.sleqp_working_set_get_problem(self.working_set)
 
-    return problem.num_variables
+    return csleqp.sleqp_problem_num_variables(problem)
 
   @property
   def num_constraints(self) -> int:
@@ -30,7 +30,7 @@ cdef class WorkingSet:
 
     problem = csleqp.sleqp_working_set_get_problem(self.working_set)
 
-    return problem.num_constraints
+    return csleqp.sleqp_problem_num_constraints(problem)
 
   @property
   def num_active_variables(self) -> int:

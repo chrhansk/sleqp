@@ -63,6 +63,7 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value("asd")
 
     problem = sleqp.Problem(func,
+                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
@@ -82,6 +83,7 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value(np.array((2, 2, 2)))
 
     problem = sleqp.Problem(func,
+                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
@@ -103,6 +105,7 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value(m)
 
     problem = sleqp.Problem(func,
+                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,

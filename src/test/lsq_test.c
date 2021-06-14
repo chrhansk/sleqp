@@ -220,12 +220,13 @@ START_TEST(test_unconstrained_solve)
                                     SLEQP_OPTION_INT_DERIV_CHECK,
                                     SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   rosenbrock_lsq_func,
-                                   rosenbrock_var_lb,
-                                   rosenbrock_var_ub,
-                                   rosenbrock_cons_lb,
-                                   rosenbrock_cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          rosenbrock_lsq_func,
+                                          params,
+                                          rosenbrock_var_lb,
+                                          rosenbrock_var_ub,
+                                          rosenbrock_cons_lb,
+                                          rosenbrock_cons_ub));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -252,7 +253,7 @@ START_TEST(test_unconstrained_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_options_release(&options));
 

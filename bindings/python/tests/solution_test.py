@@ -23,6 +23,7 @@ class SolutionTest(unittest.TestCase):
         self.func = ZeroFunc()
 
         self.problem = sleqp.Problem(self.func,
+                                     self.params,
                                      var_lb,
                                      var_ub,
                                      cons_lb,

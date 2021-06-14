@@ -146,14 +146,7 @@ cdef extern from "sleqp.h":
     pass
 
   ctypedef struct SleqpProblem:
-    int num_variables
-    int num_constraints
-
-    SleqpSparseVec* var_lb
-    SleqpSparseVec* var_ub
-
-    SleqpSparseVec* cons_lb
-    SleqpSparseVec* cons_ub
+    pass
 
   ctypedef struct SleqpSolver:
     pass
@@ -535,14 +528,27 @@ cdef extern from "sleqp.h":
 
   # Problem
 
-  SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
-                                     SleqpFunc* func,
-                                     SleqpSparseVec* var_lb,
-                                     SleqpSparseVec* var_ub,
-                                     SleqpSparseVec* cons_lb,
-                                     SleqpSparseVec* cons_ub)
+  SLEQP_RETCODE sleqp_problem_create_simple(SleqpProblem** star,
+                                            SleqpFunc* func,
+                                            SleqpParams* params,
+                                            SleqpSparseVec* var_lb,
+                                            SleqpSparseVec* var_ub,
+                                            SleqpSparseVec* cons_lb,
+                                            SleqpSparseVec* cons_ub)
 
-  SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star)
+  int sleqp_problem_num_constraints(SleqpProblem* problem)
+
+  int sleqp_problem_num_variables(SleqpProblem* problem)
+
+  SleqpSparseVec* sleqp_problem_var_lb(SleqpProblem* problem)
+
+  SleqpSparseVec* sleqp_problem_var_ub(SleqpProblem* problem)
+
+  SleqpSparseVec* sleqp_problem_cons_lb(SleqpProblem* problem)
+
+  SleqpSparseVec* sleqp_problem_cons_ub(SleqpProblem* problem)
+
+  SLEQP_RETCODE sleqp_problem_release(SleqpProblem** star)
 
   # Parameters
 

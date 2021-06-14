@@ -170,6 +170,7 @@ class LSQTest(unittest.TestCase):
         func = LSQFunc()
 
         problem = sleqp.Problem(func,
+                                self.params,
                                 self.var_lb,
                                 self.var_ub,
                                 self.cons_lb,
@@ -192,6 +193,7 @@ class LSQTest(unittest.TestCase):
         func = LSQImplicitFunc()
 
         problem = sleqp.Problem(func,
+                                self.params,
                                 self.var_lb,
                                 self.var_ub,
                                 self.cons_lb,

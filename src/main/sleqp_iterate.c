@@ -69,8 +69,8 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
 
   iterate->refcount = 1;
 
-  int num_variables = problem->num_variables;
-  int num_constraints = problem->num_constraints;
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   SLEQP_CALL(sleqp_sparse_vector_create(&iterate->primal,
                                         num_variables,
@@ -248,16 +248,16 @@ SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpProblem* problem,
   double current_residuum;
 
   SLEQP_CALL(slack_residuum(sleqp_iterate_get_cons_val(iterate),
-                            problem->cons_lb,
-                            problem->cons_ub,
+                            sleqp_problem_cons_lb(problem),
+                            sleqp_problem_cons_ub(problem),
                             sleqp_iterate_get_cons_dual(iterate),
                             &current_residuum));
 
   (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
 
   SLEQP_CALL(slack_residuum(sleqp_iterate_get_primal(iterate),
-                            problem->var_lb,
-                            problem->var_ub,
+                            sleqp_problem_var_lb(problem),
+                            sleqp_problem_var_ub(problem),
                             sleqp_iterate_get_vars_dual(iterate),
                             &current_residuum));
 
@@ -365,8 +365,8 @@ SLEQP_RETCODE sleqp_iterate_vars_slackness_residuals(SleqpProblem* problem,
                                                      double zero_eps)
 {
   SLEQP_CALL(slack_residuals(sleqp_iterate_get_primal(iterate),
-                             problem->var_lb,
-                             problem->var_ub,
+                             sleqp_problem_var_lb(problem),
+                             sleqp_problem_var_ub(problem),
                              sleqp_iterate_get_vars_dual(iterate),
                              residuals,
                              zero_eps));
@@ -381,8 +381,8 @@ SLEQP_RETCODE sleqp_iterate_cons_slackness_residuals(SleqpProblem* problem,
                                                      double zero_eps)
 {
   SLEQP_CALL(slack_residuals(sleqp_iterate_get_cons_val(iterate),
-                             problem->cons_lb,
-                             problem->cons_ub,
+                             sleqp_problem_cons_lb(problem),
+                             sleqp_problem_cons_ub(problem),
                              sleqp_iterate_get_cons_dual(iterate),
                              residuals,
                              zero_eps));
@@ -420,8 +420,8 @@ write_stationarity_resiudals_to_cache(SleqpIterate* iterate,
                                       SleqpProblem* problem,
                                       double* cache)
 {
-  const int num_variables = problem->num_variables;
-  const int num_constraints = problem->num_constraints;
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
@@ -486,7 +486,7 @@ SLEQP_RETCODE sleqp_iterate_stationarity_residuals(SleqpProblem* problem,
                                                    SleqpSparseVec* residuals,
                                                    double zero_eps)
 {
-  const int num_variables = problem->num_variables;
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   SLEQP_CALL(write_stationarity_resiudals_to_cache(iterate, problem, cache));
 
@@ -503,7 +503,7 @@ SLEQP_RETCODE sleqp_iterate_stationarity_residuum(SleqpProblem* problem,
                                                   double* cache,
                                                   double* stationarity_residuum)
 {
-  const int num_variables = problem->num_variables;
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   SLEQP_CALL(write_stationarity_resiudals_to_cache(iterate, problem, cache));
 

@@ -7,6 +7,7 @@
  **/
 
 #include "sleqp_func.h"
+#include "sleqp_params.h"
 #include "sleqp_types.h"
 
 #include "sparse/sleqp_sparse_matrix.h"
@@ -38,48 +39,7 @@ extern "C" {
    * @{
    **/
 
-  /**
-   *
-   **/
-  typedef struct SleqpProblem
-  {
-    /**
-     * The functions \f$ f\f$, and \f$ c \f$ combined.
-     **/
-    SleqpFunc* func;
-
-    /**
-     * lower variable bounds \f$ l_x \f$.
-     **/
-    SleqpSparseVec* var_lb;
-
-    /**
-     * upper variable bounds \f$ u_x \f$.
-     **/
-    SleqpSparseVec* var_ub;
-
-    /**
-     * lower constraint bounds \f$ l \f$.
-     **/
-    SleqpSparseVec* cons_lb;
-
-    /**
-     * upper constraint bounds \f$ u \f$.
-     **/
-    SleqpSparseVec* cons_ub;
-
-    /**
-     * number of variables \f$ n \f$.
-     **/
-    int num_variables;
-
-    /**
-     * number of constraints \f$ m \f$.
-     **/
-    int num_constraints;
-
-  } SleqpProblem;
-
+  typedef struct SleqpProblem SleqpProblem;
 
   /**
    * Creates a new problem, which will be saved
@@ -90,18 +50,116 @@ extern "C" {
    *
    **/
   SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_create_simple(SleqpProblem** star,
+                                            SleqpFunc* func,
+                                            SleqpParams* params,
+                                            const SleqpSparseVec* var_lb,
+                                            const SleqpSparseVec* var_ub,
+                                            const SleqpSparseVec* general_lb,
+                                            const SleqpSparseVec* general_ub);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                      SleqpFunc* func,
-                                     SleqpSparseVec* var_lb,
-                                     SleqpSparseVec* var_ub,
-                                     SleqpSparseVec* cons_lb,
-                                     SleqpSparseVec* cons_ub);
+                                     SleqpParams* params,
+                                     const SleqpSparseVec* var_lb,
+                                     const SleqpSparseVec* var_ub,
+                                     const SleqpSparseVec* genereal_lb,
+                                     const SleqpSparseVec* genereal_ub,
+                                     const SleqpSparseMatrix* linear_coeffs,
+                                     const SleqpSparseVec* linear_lb,
+                                     const SleqpSparseVec* linear_ub);
+
+  SLEQP_EXPORT int sleqp_problem_num_variables(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseVec* sleqp_problem_var_lb(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseVec* sleqp_problem_var_ub(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseVec* sleqp_problem_general_lb(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseVec* sleqp_problem_general_ub(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseMatrix* sleqp_problem_linear_coeffs(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseVec* sleqp_problem_linear_lb(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseVec* sleqp_problem_linear_ub(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseVec* sleqp_problem_cons_lb(SleqpProblem* problem);
+
+  SLEQP_EXPORT SleqpSparseVec* sleqp_problem_cons_ub(SleqpProblem* problem);
 
   /**
-   * Frees a previously created problem.
+   * Returns the total number of constraints (both general and linear) of the problem.
    **/
+  SLEQP_EXPORT int sleqp_problem_num_constraints(SleqpProblem* problem);
+
+  /**
+   * Returns the total number of linear constraints of the problem.
+   **/
+  SLEQP_EXPORT int sleqp_problem_num_linear_constraints(SleqpProblem* problem);
+
+  /**
+   * Returns the total number of general constraints of the problem.
+   **/
+  SLEQP_EXPORT int sleqp_problem_num_general_constraints(SleqpProblem* problem);
+
+  SleqpFunc* sleqp_problem_func(SleqpProblem* problem);
+
   SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_problem_free(SleqpProblem** star);
+  SLEQP_RETCODE sleqp_problem_set_value(SleqpProblem* problem,
+                                        SleqpSparseVec* x,
+                                        SLEQP_VALUE_REASON reason,
+                                        int* func_grad_nnz,
+                                        int* cons_val_nnz,
+                                        int* cons_jac_nnz);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_eval(SleqpProblem* problem,
+                                   const SleqpSparseVec* cons_indices,
+                                   double* func_val,
+                                   SleqpSparseVec* func_grad,
+                                   SleqpSparseVec* cons_val,
+                                   SleqpSparseMatrix* cons_jac);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_val(SleqpProblem* problem,
+                                  double* func_val);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_grad(SleqpProblem* problem,
+                                   SleqpSparseVec* func_grad);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_cons_val(SleqpProblem* problem,
+                                       const SleqpSparseVec* cons_indices,
+                                       SleqpSparseVec* cons_val);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_cons_jac(SleqpProblem* problem,
+                                       const SleqpSparseVec* cons_indices,
+                                       SleqpSparseMatrix* cons_jac);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_hess_prod(SleqpProblem* problem,
+                                        const double* func_dual,
+                                        const SleqpSparseVec* direction,
+                                        const SleqpSparseVec* cons_duals,
+                                        SleqpSparseVec* product);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_hess_bilinear(SleqpProblem* problem,
+                                            const double* func_dual,
+                                            const SleqpSparseVec* direction,
+                                            const SleqpSparseVec* cons_duals,
+                                            double* bilinear_prod);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_capture(SleqpProblem* problem);
+  
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_release(SleqpProblem** star);
 
   /**
    * @}

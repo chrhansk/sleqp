@@ -37,7 +37,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
-  const int num_variables = problem->num_variables;
+  const int num_variables = sleqp_problem_num_variables(problem);
   const int working_set_size = sleqp_working_set_size(working_set);
 
   int augmented_size = num_variables + working_set_size;
@@ -188,12 +188,17 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   SleqpAugJacobian* jacobian = *star;
 
   *jacobian = (SleqpAugJacobian){0};
 
   jacobian->refcount = 1;
   jacobian->problem = problem;
+
+  SLEQP_CALL(sleqp_problem_capture(jacobian->problem));
 
   SLEQP_CALL(sleqp_params_capture(params));
 
@@ -203,8 +208,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&jacobian->augmented_matrix, 0, 0, 0));
 
-  jacobian->max_set_size = problem->num_constraints + problem->num_variables;
-  int max_num_cols = problem->num_variables + jacobian->max_set_size;
+  jacobian->max_set_size = num_constraints + num_variables;
+  int max_num_cols = num_variables + jacobian->max_set_size;
 
   SLEQP_CALL(sleqp_sparse_factorization_capture(sparse_factorization));
 
@@ -225,6 +230,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   SleqpProblem* problem = jacobian->problem;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+
   jacobian->working_set_size = sleqp_working_set_size(working_set);
 
   jacobian->condition_estimate = -1;
@@ -234,7 +241,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
 
   int variable_nnz = sleqp_working_set_num_active_vars(working_set);
 
-  int total_nnz = problem->num_variables // identity
+  int total_nnz = num_variables // identity
     + 2*(constraint_nnz + variable_nnz); // cons jac nnz + active variables
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(jacobian->augmented_matrix));
@@ -258,7 +265,6 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
   {
     SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
 
-    int num_variables = problem->num_variables;
     int total_size = num_variables + jacobian->working_set_size;
 
     assert(sleqp_sparse_matrix_is_quadratic(matrix));
@@ -299,7 +305,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
 
   double zero_eps = sleqp_params_get(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
-  int num_variables = problem->num_variables;
+  const int num_variables = sleqp_problem_num_variables(problem);
 
   assert(sol->dim == num_variables);
 
@@ -316,7 +322,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_min_norm_solution(SleqpAugJacobian* jacobian,
   SLEQP_CALL(sleqp_sparse_factorization_get_sol(factorization,
                                                 sol,
                                                 0,
-                                                problem->num_variables,
+                                                num_variables,
                                                 zero_eps));
 
   rhs->dim -= num_variables;
@@ -345,9 +351,9 @@ SLEQP_RETCODE sleqp_aug_jacobian_projection(SleqpAugJacobian* jacobian,
 
   double zero_eps = sleqp_params_get(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
-  int num_variables = problem->num_variables;
-  int working_set_size = jacobian->working_set_size;
-  int total_size = num_variables + working_set_size;
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int working_set_size = jacobian->working_set_size;
+  const int total_size = num_variables + working_set_size;
 
   assert(rhs->dim == num_variables);
 
@@ -410,6 +416,8 @@ static SLEQP_RETCODE aug_jacobian_free(SleqpAugJacobian** star)
   SLEQP_CALL(sleqp_sparse_matrix_release(&jacobian->augmented_matrix));
 
   SLEQP_CALL(sleqp_params_release(&jacobian->params));
+
+  SLEQP_CALL(sleqp_problem_release(&jacobian->problem));
 
   sleqp_free(star);
 

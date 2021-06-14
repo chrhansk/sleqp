@@ -192,19 +192,23 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   linfunc,
-                                   linfunc_var_lb,
-                                   linfunc_var_ub,
-                                   linfunc_cons_lb,
-                                   linfunc_cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          linfunc,
+                                          params,
+                                          linfunc_var_lb,
+                                          linfunc_var_ub,
+                                          linfunc_cons_lb,
+                                          linfunc_cons_ub));
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
                                    linfunc_x));
 
-  int num_lp_variables = problem->num_variables + 2*problem->num_constraints;
-  int num_lp_constraints = problem->num_constraints;
+  int num_lp_variables = num_variables + 2*num_constraints;
+  int num_lp_constraints = num_constraints;
 
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
                                                  num_lp_variables,
@@ -251,7 +255,7 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_options_release(&options));
 

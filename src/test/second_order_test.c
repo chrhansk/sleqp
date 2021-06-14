@@ -237,17 +237,18 @@ void second_order_setup()
 
   ASSERT_CALL(sleqp_params_create(&params));
 
-  ASSERT_CALL(sleqp_problem_create(&problem,
-                                   func,
-                                   var_lb,
-                                   var_ub,
-                                   cons_lb,
-                                   cons_ub));
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          func,
+                                          params,
+                                          var_lb,
+                                          var_ub,
+                                          cons_lb,
+                                          cons_ub));
 }
 
 void second_order_teardown()
 {
-  ASSERT_CALL(sleqp_problem_free(&problem));
+  ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_params_release(&params));
 

@@ -586,6 +586,8 @@ static
 SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
                                     const SleqpParams* params)
 {
+  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+
   const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   assert(block->len > 0);

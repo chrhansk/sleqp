@@ -127,6 +127,11 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix,
                                                int col);
 
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_vstack(const SleqpSparseMatrix* first,
+                                           const SleqpSparseMatrix* second,
+                                           SleqpSparseMatrix* result);
+
   /**
    * Computes the product of the given matrix with the given vector
    * @param[in]  matrix     The matrix

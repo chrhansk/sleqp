@@ -46,6 +46,10 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
+  const int num_variables = sleqp_problem_num_variables(problem);
+
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   SleqpLineSearchData* linesearch = *star;
 
   *linesearch = (SleqpLineSearchData){0};
@@ -53,6 +57,7 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
   linesearch->refcount = 1;
 
   linesearch->problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(linesearch->problem));
 
   SLEQP_CALL(sleqp_params_capture(params));
   linesearch->params = params;
@@ -62,31 +67,31 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
   linesearch->merit_data = merit_data;
 
   SLEQP_CALL(sleqp_alloc_array(&linesearch->prod_cache,
-                               problem->num_constraints));
+                               num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_point,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_jacobian_prod,
-                                              problem->num_constraints));
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->newton_jacobian_prod,
-                                              problem->num_constraints));
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_cons_val,
-                                              problem->num_constraints));
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->combined_cons_val,
-                                              problem->num_constraints));
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->cauchy_newton_direction,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->violated_multipliers,
-                                              problem->num_constraints));
+                                              num_constraints));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linesearch->test_direction,
-                                              problem->num_variables));
+                                              num_variables));
 
   SLEQP_CALL(sleqp_timer_create(&linesearch->timer));
 
@@ -115,6 +120,8 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
   SleqpProblem* problem = linesearch->problem;
   SleqpMeritData* merit_data = linesearch->merit_data;
 
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   SleqpIterate* iterate = linesearch->iterate;
   const double penalty_parameter = linesearch->penalty_parameter;
   const double trust_radius = linesearch->trust_radius;
@@ -142,11 +149,11 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
   // Check Hessian product
   {
-    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                    &one,
-                                    direction,
-                                    multipliers,
-                                    linesearch->test_direction));
+    SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                       &one,
+                                       direction,
+                                       multipliers,
+                                       linesearch->test_direction));
 
     sleqp_num_assert(sleqp_sparse_vector_eq(hessian_direction,
                                             linesearch->test_direction,
@@ -198,7 +205,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
     SLEQP_CALL(sleqp_sparse_vector_from_raw(jacobian_product,
                                             linesearch->prod_cache,
-                                            problem->num_constraints,
+                                            num_constraints,
                                             zero_eps));
   }
 
@@ -343,6 +350,8 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
   SleqpIterate* iterate = linesearch->iterate;
   const double penalty_parameter = linesearch->penalty_parameter;
 
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   const double eps = sleqp_params_get(linesearch->params,
                                       SLEQP_PARAM_EPS);
 
@@ -384,21 +393,21 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                        actual_quadratic_merit,
                        eps);
 
-    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                    &func_dual,
-                                    cauchy_step,
-                                    multipliers,
-                                    linesearch->test_direction));
+    SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                       &func_dual,
+                                       cauchy_step,
+                                       multipliers,
+                                       linesearch->test_direction));
 
     sleqp_num_assert(sleqp_sparse_vector_eq(cauchy_hessian_step,
                                             linesearch->test_direction,
                                             eps));
 
-    SLEQP_CALL(sleqp_func_hess_prod(problem->func,
-                                    &func_dual,
-                                    newton_step,
-                                    multipliers,
-                                    linesearch->test_direction));
+    SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                       &func_dual,
+                                       newton_step,
+                                       multipliers,
+                                       linesearch->test_direction));
 
     sleqp_num_assert(sleqp_sparse_vector_eq(newton_hessian_step,
                                             linesearch->test_direction,
@@ -415,7 +424,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
     SLEQP_CALL(sleqp_sparse_vector_from_raw(linesearch->cauchy_jacobian_prod,
                                             linesearch->prod_cache,
-                                            problem->num_constraints,
+                                            num_constraints,
                                             zero_eps));
 
     SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_get_cons_jac(iterate),
@@ -424,7 +433,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
     SLEQP_CALL(sleqp_sparse_vector_from_raw(linesearch->newton_jacobian_prod,
                                             linesearch->prod_cache,
-                                            problem->num_constraints,
+                                            num_constraints,
                                             zero_eps));
   }
 
@@ -482,8 +491,8 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
     SLEQP_CALL(sleqp_max_step_length(linesearch->cauchy_point,
                                      linesearch->cauchy_newton_direction,
-                                     problem->var_lb,
-                                     problem->var_ub,
+                                     sleqp_problem_var_lb(problem),
+                                     sleqp_problem_var_ub(problem),
                                      &alpha));
 
     assert(alpha >= 0);
@@ -700,6 +709,8 @@ static SLEQP_RETCODE linesearch_free(SleqpLineSearchData** star)
   SLEQP_CALL(sleqp_merit_data_release(&linesearch->merit_data));
 
   SLEQP_CALL(sleqp_params_release(&linesearch->params));
+
+  SLEQP_CALL(sleqp_problem_release(&linesearch->problem));
 
   sleqp_free(star);
 

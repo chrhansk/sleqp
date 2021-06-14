@@ -266,13 +266,14 @@ def minimize(fun, x0, args=(), jac=None, hessp=None, bounds=None, constraints=No
 
   min_func = _MinFunc(fun, jac, cons_eval, cons_jac, hessp, args, num_variables)
 
+  params = sleqp.Params()
+
   problem = sleqp.Problem(min_func,
+                          params,
                           var_lb,
                           var_ub,
                           cons_lb,
                           cons_ub)
-
-  params = sleqp.Params()
 
   options = sleqp.Options(deriv_check=sleqp.DerivCheck.First)
 
