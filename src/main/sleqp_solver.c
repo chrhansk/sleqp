@@ -1151,8 +1151,6 @@ static SLEQP_RETCODE print_header()
 
 static SLEQP_RETCODE print_initial_line(SleqpSolver* solver)
 {
-  char working_set_buf[1024];
-
   sleqp_log_info(INITIAL_LINE_FORMAT,
                  solver->iteration,
                  sleqp_iterate_get_func_val(solver->iterate),
@@ -1874,7 +1872,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
     const bool hessian_check = (deriv_check & hessian_check_flags);
 
-    if((solver->bfgs_data || solver->sr1_data) && hessian_check)
+    if(inexact_hessian && hessian_check)
     {
       sleqp_log_warn("Enabled second order derivative check while using a quasi-Newton method");
     }
@@ -1994,8 +1992,6 @@ SLEQP_RETCODE sleqp_solver_get_real_state(const SleqpSolver* solver,
                                           SLEQP_SOLVER_STATE_REAL state,
                                           double* value)
 {
-  SleqpIterate* iterate = solver->iterate;
-
   double min_rayleigh, max_rayleigh;
 
   SLEQP_CALL(sleqp_newton_current_rayleigh(solver->newton_data,

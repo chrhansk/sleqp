@@ -266,8 +266,6 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
   const double inf = sleqp_infinity();
 
-  const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
-
   const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const double rel_tol = sleqp_params_get(data->params,
@@ -813,8 +811,6 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   {
     data->trlib_maxiter = SLEQP_MIN(data->trlib_maxiter, max_newton_iter);
   }
-
-  trlib_int_t iwork_size, fwork_size;
 
   trlib_krylov_memory_size(data->trlib_maxiter,
                            &data->iwork_size,

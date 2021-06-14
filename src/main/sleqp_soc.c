@@ -50,7 +50,6 @@ static SLEQP_RETCODE add_variable_entries(SleqpSOCData* soc_data,
   SleqpProblem* problem = soc_data->problem;
 
   const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
 
   const double eps = sleqp_params_get(soc_data->params,
                                       SLEQP_PARAM_EPS);

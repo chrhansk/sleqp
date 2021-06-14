@@ -324,8 +324,6 @@ SLEQP_RETCODE sleqp_scale_linear_coeffs(SleqpScalingData* scaling,
 
   assert(num_linear <= scaling->num_constraints);
 
-  const int num_general = scaling->num_constraints - num_linear;
-
   const int* linear_coeffs_cols = sleqp_sparse_matrix_get_cols(linear_coeffs);
   const int* linear_coeffs_rows = sleqp_sparse_matrix_get_rows(linear_coeffs);
   double* linear_coeffs_data = sleqp_sparse_matrix_get_data(linear_coeffs);
