@@ -42,6 +42,19 @@ class SolverTest(unittest.TestCase):
 
     self.assertTrue(np.allclose(expected_sol, solution.primal))
 
+  def test_solve_linesearch(self):
+    options = sleqp.Options(linesearch=sleqp.LineSearch.Exact)
+
+    solver = self.get_solver(options=options)
+
+    solver.solve(max_num_iterations=1000)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(expected_sol, solution.primal))
+
   def test_solve_lp_duals(self):
     options = sleqp.Options(dual_estimation_type=sleqp.DualEstimationType.LP)
 
