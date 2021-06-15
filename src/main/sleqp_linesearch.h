@@ -84,15 +84,27 @@ extern "C" {
    **/
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
-                                            SleqpSparseVec* cauchy_step,
-                                            SleqpSparseVec* cauchy_hessian_step,
+                                            const SleqpSparseVec* cauchy_step,
+                                            const SleqpSparseVec* cauchy_hessian_step,
                                             const double cauchy_quadratic_merit_value,
-                                            SleqpSparseVec* newton_step,
-                                            SleqpSparseVec* newton_hessian_step,
-                                            SleqpSparseVec* multipliers,
+                                            const SleqpSparseVec* newton_step,
+                                            const SleqpSparseVec* newton_hessian_step,
+                                            const SleqpSparseVec* multipliers,
                                             SleqpSparseVec* trial_step,
                                             double* step_length,
                                             double* trial_quadratic_merit_value);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
+                                                  const SleqpSparseVec* cauchy_step,
+                                                  const SleqpSparseVec* cauchy_hessian_step,
+                                                  const double cauchy_quadratic_merit_value,
+                                                  const SleqpSparseVec* newton_step,
+                                                  const SleqpSparseVec* newton_hessian_step,
+                                                  const SleqpSparseVec* multipliers,
+                                                  SleqpSparseVec* trial_step,
+                                                  double* step_length,
+                                                  double* trial_quadratic_merit_value);
 
   SleqpTimer* sleqp_linesearch_get_timer(SleqpLineSearchData* linesearch);
 

@@ -17,7 +17,8 @@ cdef class Options:
                   'quasi_newton_num_iterates',
                   'max_newton_iterations',
                   'bfgs_sizing',
-                  'tr_solver']
+                  'tr_solver',
+                  'linesearch']
 
     for key, value in values.items():
       self._set_prop(key, value)
@@ -85,6 +86,12 @@ cdef class Options:
                                                       csleqp.SLEQP_OPTION_INT_TR_SOLVER)
     return TRSolver(tr_solver)
 
+  @property
+  def linesearch(self) -> LineSearch:
+    cdef int linesearch = csleqp.sleqp_options_get_int(self.options,
+                                                       csleqp.SLEQP_OPTION_INT_LINESEARCH)
+    return LineSearch(linesearch)
+
   @perform_newton_step.setter
   def perform_newton_step(self, value: bool) -> None:
     csleqp_call(csleqp.sleqp_options_set_bool(self.options,
@@ -146,6 +153,12 @@ cdef class Options:
   def tr_solver(self, value):
     csleqp_call(csleqp.sleqp_options_set_int(self.options,
                                              csleqp.SLEQP_OPTION_INT_TR_SOLVER,
+                                             value.value))
+
+  @linesearch.setter
+  def linesearch(self, value):
+    csleqp_call(csleqp.sleqp_options_set_int(self.options,
+                                             csleqp.SLEQP_OPTION_INT_LINESEARCH,
                                              value.value))
 
   def values(self) -> set:

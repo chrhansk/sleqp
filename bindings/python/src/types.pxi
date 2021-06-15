@@ -47,6 +47,13 @@ class TRSolver(_DocEnum):
   CG    = csleqp.SLEQP_TR_SOLVER_CG, "Steihaug's conjugate gradient method"
   Auto  = csleqp.SLEQP_TR_SOLVER_AUTO, "Automatically chosen"
 
+class LineSearch(_DocEnum):
+  """
+  The linesearch used
+  """
+  Exact  = csleqp.SLEQP_LINESEARCH_EXACT, "Exact line search"
+  Appeox = csleqp.SLEQP_LINESEARCH_APPROX, "Approximate line search"
+
 class ValueReason(_DocEnum):
   """
   The reason for setting a new function value

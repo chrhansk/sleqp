@@ -990,18 +990,39 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
   }
 
   {
+    SLEQP_LINESEARCH lineserach = sleqp_options_get_int(solver->options,
+                                                        SLEQP_OPTION_INT_LINESEARCH);
+
     double step_length;
 
-    SLEQP_CALL(sleqp_linesearch_trial_step(solver->linesearch,
-                                           solver->cauchy_step,
-                                           solver->cauchy_hessian_step,
-                                           cauchy_merit_value,
-                                           solver->newton_step,
-                                           solver->newton_hessian_step,
-                                           solver->multipliers,
-                                           solver->trial_step,
-                                           &step_length,
-                                           trial_merit_value));
+    if(lineserach == SLEQP_LINESEARCH_EXACT)
+    {
+      SLEQP_CALL(sleqp_linesearch_trial_step_exact(solver->linesearch,
+                                                   solver->cauchy_step,
+                                                   solver->cauchy_hessian_step,
+                                                   cauchy_merit_value,
+                                                   solver->newton_step,
+                                                   solver->newton_hessian_step,
+                                                   solver->multipliers,
+                                                   solver->trial_step,
+                                                   &step_length,
+                                                   trial_merit_value));
+    }
+    else
+    {
+      assert(lineserach == SLEQP_LINESEARCH_APPROX);
+
+      SLEQP_CALL(sleqp_linesearch_trial_step(solver->linesearch,
+                                             solver->cauchy_step,
+                                             solver->cauchy_hessian_step,
+                                             cauchy_merit_value,
+                                             solver->newton_step,
+                                             solver->newton_hessian_step,
+                                             solver->multipliers,
+                                             solver->trial_step,
+                                             &step_length,
+                                             trial_merit_value));
+    }
   }
 
 #if !defined(NDEBUG)
