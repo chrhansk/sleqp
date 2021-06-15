@@ -536,10 +536,21 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_problem_create_simple(SleqpProblem** star,
                                             SleqpFunc* func,
                                             SleqpParams* params,
-                                            SleqpSparseVec* var_lb,
-                                            SleqpSparseVec* var_ub,
-                                            SleqpSparseVec* cons_lb,
-                                            SleqpSparseVec* cons_ub)
+                                            const SleqpSparseVec* var_lb,
+                                            const SleqpSparseVec* var_ub,
+                                            const SleqpSparseVec* cons_lb,
+                                            const SleqpSparseVec* cons_ub)
+
+  SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
+                                     SleqpFunc* func,
+                                     SleqpParams* params,
+                                     const SleqpSparseVec* var_lb,
+                                     const SleqpSparseVec* var_ub,
+                                     const SleqpSparseVec* genereal_lb,
+                                     const SleqpSparseVec* genereal_ub,
+                                     const SleqpSparseMatrix* linear_coeffs,
+                                     const SleqpSparseVec* linear_lb,
+                                     const SleqpSparseVec* linear_ub)
 
   int sleqp_problem_num_constraints(SleqpProblem* problem)
 
