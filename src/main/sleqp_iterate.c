@@ -102,13 +102,13 @@ SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
 }
 
 
-SleqpSparseVec* sleqp_iterate_get_primal(SleqpIterate* iterate)
+SleqpSparseVec* sleqp_iterate_get_primal(const SleqpIterate* iterate)
 {
   return iterate->primal;
 }
 
 
-double sleqp_iterate_get_func_val(SleqpIterate* iterate)
+double sleqp_iterate_get_func_val(const SleqpIterate* iterate)
 {
   return iterate->func_val;
 }
@@ -121,33 +121,33 @@ SLEQP_RETCODE sleqp_iterate_set_func_val(SleqpIterate* iterate,
 }
 
 
-SleqpSparseVec* sleqp_iterate_get_func_grad(SleqpIterate* iterate)
+SleqpSparseVec* sleqp_iterate_get_func_grad(const SleqpIterate* iterate)
 {
   return iterate->func_grad;
 }
 
 
-SleqpSparseVec* sleqp_iterate_get_cons_val(SleqpIterate* iterate)
+SleqpSparseVec* sleqp_iterate_get_cons_val(const SleqpIterate* iterate)
 {
   return iterate->cons_val;
 }
 
-SleqpSparseMatrix* sleqp_iterate_get_cons_jac(SleqpIterate* iterate)
+SleqpSparseMatrix* sleqp_iterate_get_cons_jac(const SleqpIterate* iterate)
 {
   return iterate->cons_jac;
 }
 
-SleqpWorkingSet* sleqp_iterate_get_working_set(SleqpIterate* iterate)
+SleqpWorkingSet* sleqp_iterate_get_working_set(const SleqpIterate* iterate)
 {
   return iterate->working_set;
 }
 
-SleqpSparseVec* sleqp_iterate_get_cons_dual(SleqpIterate* iterate)
+SleqpSparseVec* sleqp_iterate_get_cons_dual(const SleqpIterate* iterate)
 {
   return iterate->cons_dual;
 }
 
-SleqpSparseVec* sleqp_iterate_get_vars_dual(SleqpIterate* iterate)
+SleqpSparseVec* sleqp_iterate_get_vars_dual(const SleqpIterate* iterate)
 {
   return iterate->vars_dual;
 }

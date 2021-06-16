@@ -15,7 +15,9 @@ extern "C" {
 
   SLEQP_EXPORT double sleqp_infinity();
 
-  bool sleqp_is_inf(double value);
+  bool sleqp_is_infinite(double value);
+
+  bool sleqp_is_finite(double value);
 
   bool sleqp_is_eq(double x, double y, double eps);
 

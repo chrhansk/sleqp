@@ -36,12 +36,12 @@ extern "C" {
   /**
    * The current point. Has dimension = num_variables.
    **/
-  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_primal(SleqpIterate* iterate);
+  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_primal(const SleqpIterate* iterate);
 
   /**
    * The current function value
    **/
-  SLEQP_EXPORT double sleqp_iterate_get_func_val(SleqpIterate* iterate);
+  SLEQP_EXPORT double sleqp_iterate_get_func_val(const SleqpIterate* iterate);
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_iterate_set_func_val(SleqpIterate* iterate,
@@ -50,33 +50,33 @@ extern "C" {
   /**
    * The current function gradient. Has dimension = num_variables.
    **/
-  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_func_grad(SleqpIterate* iterate);
+  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_func_grad(const SleqpIterate* iterate);
 
   /**
    * The current constraint values. Has dimension = num_constraints.
    **/
-  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_cons_val(SleqpIterate* iterate);
+  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_cons_val(const SleqpIterate* iterate);
 
   /**
    * The Jacobian of the constraitns at the current iterate.
    * Has num_constraints many rows, num_variables many columns.
    */
-  SLEQP_EXPORT SleqpSparseMatrix* sleqp_iterate_get_cons_jac(SleqpIterate* iterate);
+  SLEQP_EXPORT SleqpSparseMatrix* sleqp_iterate_get_cons_jac(const SleqpIterate* iterate);
 
   /**
    * The current working set.
    **/
-  SLEQP_EXPORT SleqpWorkingSet* sleqp_iterate_get_working_set(SleqpIterate* iterate);
+  SLEQP_EXPORT SleqpWorkingSet* sleqp_iterate_get_working_set(const SleqpIterate* iterate);
 
   /**
    * The dual values of the constraints. Has dimension = num_constraints.
    */
-  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_cons_dual(SleqpIterate* iterate);
+  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_cons_dual(const SleqpIterate* iterate);
 
   /**
    * The dual values of the variable bounds. Has dimension = num_variables.
    */
-  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_vars_dual(SleqpIterate* iterate);
+  SLEQP_EXPORT SleqpSparseVec* sleqp_iterate_get_vars_dual(const SleqpIterate* iterate);
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_iterate_slackness_residuum(SleqpProblem* problem,

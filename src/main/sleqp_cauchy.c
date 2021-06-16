@@ -219,11 +219,11 @@ static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
     const double lbval = valid_lb ? lb->data[k_lb] : 0;
     const double cval = valid_c ? val->data[k_c] : 0;
 
-    assert(!sleqp_is_inf(lbval));
-    assert(!sleqp_is_inf(-ubval));
-    assert(!sleqp_is_inf(SLEQP_ABS(cval)));
+    assert(!sleqp_is_infinite(lbval));
+    assert(!sleqp_is_infinite(-ubval));
+    assert(sleqp_is_finite(cval));
 
-    if(sleqp_is_inf(ubval))
+    if(sleqp_is_infinite(ubval))
     {
       cauchy_data->cons_ub[i] = inf;
     }
@@ -232,7 +232,7 @@ static SLEQP_RETCODE create_cons_bounds(SleqpCauchyData* cauchy_data,
       cauchy_data->cons_ub[i] = ubval - cval;
     }
 
-    if(sleqp_is_inf(-lbval))
+    if(sleqp_is_infinite(-lbval))
     {
       cauchy_data->cons_lb[i] = -inf;
     }
@@ -289,11 +289,11 @@ static SLEQP_RETCODE create_var_bounds(SleqpCauchyData* cauchy_data,
     const double lbval = valid_lb ? lb->data[k_lb] : 0.;
     const double xval = valid_x ? x->data[k_x] : 0.;
 
-    assert(!sleqp_is_inf(lbval));
-    assert(!sleqp_is_inf(-ubval));
-    assert(!sleqp_is_inf(SLEQP_ABS(xval)));
+    assert(!sleqp_is_infinite(lbval));
+    assert(!sleqp_is_infinite(-ubval));
+    assert(sleqp_is_finite(xval));
 
-    if(sleqp_is_inf(ubval))
+    if(sleqp_is_infinite(ubval))
     {
       cauchy_data->vars_ub[j] = trust_radius;
     }
@@ -302,7 +302,7 @@ static SLEQP_RETCODE create_var_bounds(SleqpCauchyData* cauchy_data,
       cauchy_data->vars_ub[j] = SLEQP_MIN(ubval - xval, trust_radius);
     }
 
-    if(sleqp_is_inf(-lbval))
+    if(sleqp_is_infinite(-lbval))
     {
       cauchy_data->vars_lb[j] = -trust_radius;
     }
@@ -749,8 +749,8 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
 
       if(cons_stat == SLEQP_BASESTAT_ZERO)
       {
-        assert(sleqp_is_inf(ubval));
-        assert(sleqp_is_inf(-lbval));
+        assert(sleqp_is_infinite(ubval));
+        assert(sleqp_is_infinite(-lbval));
 
         continue;
       }

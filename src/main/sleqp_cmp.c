@@ -19,9 +19,14 @@ double sleqp_infinity()
   return inf;
 }
 
-bool sleqp_is_inf(double value)
+bool sleqp_is_infinite(double value)
 {
   return value >= sleqp_infinity() / 2.;
+}
+
+bool sleqp_is_finite(double value)
+{
+  return !(sleqp_is_infinite(SLEQP_ABS(value)));
 }
 
 bool sleqp_is_eq(double x,
