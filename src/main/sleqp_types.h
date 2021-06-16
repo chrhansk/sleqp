@@ -112,6 +112,12 @@ extern "C" {
     SLEQP_SOLVER_NUM_EVENTS
   } SLEQP_SOLVER_EVENT;
 
+  typedef enum {
+    SLEQP_PREPROCESSING_RESULT_SUCCESS,
+    SLEQP_PREPROCESSING_RESULT_FAILURE,
+    SLEQP_PREPROCESSING_RESULT_INFEASIBLE
+  } SLEQP_PREPROCESSING_RESULT;
+
   /**None value to be used in place of integer parameters **/
 #define SLEQP_NONE (-1)
 

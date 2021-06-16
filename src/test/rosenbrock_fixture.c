@@ -1,7 +1,7 @@
 #include "rosenbrock_fixture.h"
 
-const int num_variables = 2;
-const int num_constraints = 0;
+const int rosenbrock_num_variables = 2;
+const int rosenbrock_num_constraints = 0;
 
 typedef struct RosenbrockData
 {
@@ -171,8 +171,8 @@ void rosenbrock_setup()
 
   ASSERT_CALL(sleqp_func_create(&rosenbrock_func,
                                 &callbacks,
-                                num_variables,
-                                num_constraints,
+                                rosenbrock_num_variables,
+                                rosenbrock_num_constraints,
                                 func_data));
 
   ASSERT_CALL(sleqp_sparse_vector_create(&rosenbrock_var_lb,
