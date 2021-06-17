@@ -33,10 +33,10 @@ extern "C" {
 #endif
 
   typedef enum {
-    SLEQP_INACTIVE,
-    SLEQP_ACTIVE_LOWER,
-    SLEQP_ACTIVE_UPPER,
-    SLEQP_ACTIVE_BOTH
+    SLEQP_INACTIVE = 0,
+    SLEQP_ACTIVE_LOWER = (1 << 1),
+    SLEQP_ACTIVE_UPPER = (1 << 2),
+    SLEQP_ACTIVE_BOTH = (SLEQP_ACTIVE_LOWER | SLEQP_ACTIVE_UPPER),
   } SLEQP_ACTIVE_STATE;
 
   typedef enum {
