@@ -4,6 +4,7 @@
 
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
+#include "sleqp_util.h"
 
 typedef struct Entry
 {
@@ -613,10 +614,149 @@ SLEQP_RETCODE sleqp_preprocessor_transform_iterate(SleqpPreprocessor* preprocess
   return SLEQP_OKAY;
 }
 
+static
+SLEQP_RETCODE restore_cons_dual(SleqpPreprocessor* preprocessor,
+                                const SleqpSparseVec* transformed_cons_dual,
+                                SleqpSparseVec* original_cons_dual)
+{
+  SleqpProblem* problem = preprocessor->original_problem;
+
+  const int num_general = sleqp_problem_num_general_constraints(problem);
+  const int num_linear = sleqp_problem_num_linear_constraints(problem);
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(original_cons_dual));
+
+  assert(original_cons_dual->dim == num_general + num_linear);
+
+  int p = 0;
+
+  for(int k = 0; k < transformed_cons_dual->nnz; ++k)
+  {
+    const int i = transformed_cons_dual->indices[k];
+    const double v = transformed_cons_dual->data[k];
+
+    if(i < num_general)
+    {
+      SLEQP_CALL(sleqp_sparse_vector_push(original_cons_dual,
+                                          i,
+                                          v));
+    }
+    else
+    {
+      const int j = i - num_general;
+
+      while(p < preprocessor->num_redundant_linear_cons &&
+            j > preprocessor->redundant_linear_cons[p])
+      {
+        ++p;
+      }
+
+      SLEQP_CALL(sleqp_sparse_vector_push(original_cons_dual,
+                                          i + p,
+                                          v));
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE restore_working_set(SleqpPreprocessor* preprocessor,
+                                  const SleqpWorkingSet* transformed_working_set,
+                                  SleqpWorkingSet* original_working_set)
+{
+  SleqpProblem* problem = preprocessor->original_problem;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_general = sleqp_problem_num_general_constraints(problem);
+  const int num_linear = sleqp_problem_num_linear_constraints(problem);
+
+  SLEQP_CALL(sleqp_working_set_reset(original_working_set));
+
+  // Set variables states
+  for(int j = 0; j < num_variables; ++j)
+  {
+    SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(transformed_working_set,
+                                                                        j);
+
+    if(var_state == SLEQP_INACTIVE)
+    {
+      continue;
+    }
+
+    SLEQP_CALL(sleqp_working_set_add_variable(original_working_set,
+                                              j,
+                                              var_state));
+  }
+
+  // Set general states
+  for(int i = 0; i < num_general; ++i)
+  {
+    SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(transformed_working_set,
+                                                                           i);
+
+    if(cons_state == SLEQP_INACTIVE)
+    {
+      continue;
+    }
+
+    SLEQP_CALL(sleqp_working_set_add_variable(original_working_set,
+                                              i,
+                                              cons_state));
+  }
+
+  int k = 0;
+
+  for(int i = 0; i < num_linear; ++i)
+  {
+    if(k < preprocessor->num_redundant_linear_cons &&
+       i == preprocessor->redundant_linear_cons[k])
+    {
+      ++k;
+      continue;
+    }
+
+    SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(transformed_working_set,
+                                                                           num_general + i);
+
+    if(cons_state == SLEQP_INACTIVE)
+    {
+      continue;
+    }
+
+    SLEQP_CALL(sleqp_working_set_add_variable(original_working_set,
+                                              num_general + k + i,
+                                              cons_state));
+  }
+
+  assert(k == preprocessor->num_redundant_linear_cons);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_preprocessor_restore_iterate(SleqpPreprocessor* preprocessor,
                                                  const SleqpIterate* transformed_iterate,
                                                  SleqpIterate* original_iterate)
 {
+  SLEQP_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_primal(transformed_iterate),
+                                      sleqp_iterate_get_primal(original_iterate)));
+
+  SLEQP_CALL(sleqp_set_and_evaluate(preprocessor->original_problem,
+                                    original_iterate,
+                                    SLEQP_VALUE_REASON_NONE));
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_vars_dual(transformed_iterate),
+                                      sleqp_iterate_get_vars_dual(original_iterate)));
+
+  SLEQP_CALL(restore_working_set(preprocessor,
+                                 sleqp_iterate_get_working_set(transformed_iterate),
+                                 sleqp_iterate_get_working_set(original_iterate)));
+
+  SLEQP_CALL(restore_cons_dual(preprocessor,
+                               sleqp_iterate_get_cons_dual(transformed_iterate),
+                               sleqp_iterate_get_cons_dual(original_iterate)));
+
+
   return SLEQP_OKAY;
 }
 
