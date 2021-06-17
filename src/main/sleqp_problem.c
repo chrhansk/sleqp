@@ -653,6 +653,9 @@ static SLEQP_RETCODE problem_free(SleqpProblem** star)
 
   SLEQP_CALL(sleqp_sparse_matrix_release(&problem->linear_coeffs));
 
+  SLEQP_CALL(sleqp_sparse_vector_free(&problem->general_ub));
+  SLEQP_CALL(sleqp_sparse_vector_free(&problem->general_lb));
+
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->cons_ub));
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->cons_lb));
 
