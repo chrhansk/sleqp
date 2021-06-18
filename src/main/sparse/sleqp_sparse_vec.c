@@ -178,6 +178,9 @@ SLEQP_RETCODE sleqp_sparse_vector_concat(const SleqpSparseVec* first,
                                          const SleqpSparseVec* second,
                                          SleqpSparseVec* result)
 {
+  assert(first != result);
+  assert(second != result);
+
   SLEQP_CALL(sleqp_sparse_vector_clear(result));
   SLEQP_CALL(sleqp_sparse_vector_reserve(result, first->nnz + second->nnz));
   SLEQP_CALL(sleqp_sparse_vector_resize(result, first->dim + second->dim));

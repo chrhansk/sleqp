@@ -243,6 +243,8 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_val(SleqpFunc* func,
 
   double obj;
 
+  const int num_general = data->num_constraints - data->num_linear;
+
   CUTEST_cfn(&status,
              &data->num_variables,
              &data->num_constraints,
@@ -254,7 +256,7 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_val(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_val,
                                           data->cons_vals,
-                                          data->num_constraints,
+                                          num_general,
                                           data->zero_eps));
 
   return SLEQP_OKAY;

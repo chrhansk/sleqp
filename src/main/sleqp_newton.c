@@ -175,6 +175,9 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
   SleqpSparseVec* initial_rhs = data->initial_rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
+  SleqpSparseVec* lower_diff = data->lower_diff;
+  SleqpSparseVec* upper_diff = data->upper_diff;
+
   const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
 
   const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
@@ -196,9 +199,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
     SleqpSparseVec* values = sleqp_iterate_get_primal(iterate);
     SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
     SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
-
-    SleqpSparseVec* lower_diff = data->lower_diff;
-    SleqpSparseVec* upper_diff = data->upper_diff;
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_ub, -1., 1., zero_eps, upper_diff));
 
@@ -268,9 +268,6 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
     SleqpSparseVec* values = sleqp_iterate_get_cons_val(iterate);
     SleqpSparseVec* cons_lb = sleqp_problem_cons_lb(problem);
     SleqpSparseVec* cons_ub = sleqp_problem_cons_ub(problem);
-
-    SleqpSparseVec* lower_diff = data->lower_diff;
-    SleqpSparseVec* upper_diff = data->upper_diff;
 
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_ub, -1., 1., zero_eps, upper_diff));
 
@@ -560,7 +557,7 @@ SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
 
   const double stationarity_res = sleqp_sparse_vector_inf_norm(tr_prod);
 
-  sleqp_log_debug("Trust region feasibility residuum: %f, stationarity residuum: %f",
+  sleqp_log_debug("Trust region feasibility residuum: %.14e, stationarity residuum: %.14e",
                   SLEQP_MAX(radius_res, projection_res),
                   stationarity_res);
 
