@@ -156,7 +156,7 @@ cdef extern from "sleqp.h":
   ctypedef struct SleqpSolver:
     pass
 
-  ctypedef struct SleqpScalingData:
+  ctypedef struct SleqpScaling:
     pass
 
   ctypedef struct SleqpParams:
@@ -427,56 +427,56 @@ cdef extern from "sleqp.h":
 
   # Scaling
 
-  SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** scaling,
+  SLEQP_RETCODE sleqp_scaling_create(SleqpScaling** scaling,
                                      int num_variables,
                                      int num_constraints)
 
-  int sleqp_scaling_get_num_variables(SleqpScalingData* scaling)
-  int sleqp_scaling_get_num_constraints(SleqpScalingData* scaling)
+  int sleqp_scaling_get_num_variables(SleqpScaling* scaling)
+  int sleqp_scaling_get_num_constraints(SleqpScaling* scaling)
 
-  int sleqp_scaling_get_func_weight(SleqpScalingData* scaling)
+  int sleqp_scaling_get_func_weight(SleqpScaling* scaling)
 
-  SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScaling* scaling,
                                               int weight)
 
-  SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScaling* scaling,
                                                            double nominal_value)
 
-  SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScaling* scaling,
                                              int index,
                                              int weight)
 
-  SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScaling* scaling,
                                                           int index,
                                                           double nominal_value)
 
-  SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScaling* scaling,
                                                            double* nominal_values)
 
-  SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScaling* scaling,
                                               int index,
                                               int weight)
 
-  int* sleqp_scaling_get_var_weights(SleqpScalingData* scaling)
+  int* sleqp_scaling_get_var_weights(SleqpScaling* scaling)
 
-  int* sleqp_scaling_get_cons_weights(SleqpScalingData* scaling)
+  int* sleqp_scaling_get_cons_weights(SleqpScaling* scaling)
 
-  SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScaling* scaling,
                                                             double* nominal_values)
 
-  SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScaling* scaling,
                                                            int index,
                                                            double nominal_value);
 
-  SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
                                                  SleqpSparseVec* gradient,
                                                  double eps)
 
-  SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
+  SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
                                             SleqpSparseMatrix* cons_jac,
                                             double eps)
 
-  SLEQP_RETCODE sleqp_scaling_release(SleqpScalingData** scaling)
+  SLEQP_RETCODE sleqp_scaling_release(SleqpScaling** scaling)
 
   # Solver
 
@@ -485,7 +485,7 @@ cdef extern from "sleqp.h":
                                     SleqpParams* params,
                                     SleqpOptions* options,
                                     SleqpSparseVec* x,
-                                    SleqpScalingData* scaling)
+                                    SleqpScaling* scaling)
 
   SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                    int max_num_iterations,

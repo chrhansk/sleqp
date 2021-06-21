@@ -30,13 +30,13 @@ extern "C" {
    *
    **/
 
-  typedef struct SleqpBFGSData SleqpBFGSData;
+  typedef struct SleqpBFGS SleqpBFGS;
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
-                                       SleqpFunc* func,
-                                       SleqpParams* params,
-                                       SleqpOptions* options);
+  SLEQP_RETCODE sleqp_bfgs_create(SleqpBFGS** star,
+                                  SleqpFunc* func,
+                                  SleqpParams* params,
+                                  SleqpOptions* options);
 
   /**
    * Pushes a new pair \f$ (s_k, y_k) \f$. If the new pair
@@ -53,10 +53,10 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
-                                     SleqpIterate* old_iterate,
-                                     SleqpIterate* new_iterate,
-                                     SleqpSparseVec* multipliers);
+  SLEQP_RETCODE sleqp_bfgs_push(SleqpBFGS* data,
+                                SleqpIterate* old_iterate,
+                                SleqpIterate* new_iterate,
+                                SleqpSparseVec* multipliers);
 
   /**
    * Computes the product of the Hessian approximation with the given direction
@@ -67,19 +67,19 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_bfgs_data_hess_prod(const SleqpBFGSData* data,
-                                          const SleqpSparseVec* direction,
-                                          SleqpSparseVec* product);
+  SLEQP_RETCODE sleqp_bfgs_hess_prod(const SleqpBFGS* data,
+                                     const SleqpSparseVec* direction,
+                                     SleqpSparseVec* product);
 
-  SleqpFunc* sleqp_bfgs_get_func(SleqpBFGSData* data);
+  SleqpFunc* sleqp_bfgs_get_func(SleqpBFGS* data);
 
-  SleqpTimer* sleqp_bfgs_update_timer(SleqpBFGSData* data);
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_bfgs_data_capture(SleqpBFGSData* data);
+  SleqpTimer* sleqp_bfgs_update_timer(SleqpBFGS* data);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_bfgs_data_release(SleqpBFGSData** star);
+  SLEQP_RETCODE sleqp_bfgs_capture(SleqpBFGS* data);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_bfgs_release(SleqpBFGS** star);
 
 #ifdef __cplusplus
 }

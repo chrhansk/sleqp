@@ -15,7 +15,7 @@
 SleqpParams* params;
 SleqpOptions* options;
 
-SleqpScalingData* scaling;
+SleqpScaling* scaling;
 SleqpProblemScaling* problem_scaling;
 SleqpProblem* scaled_problem;
 

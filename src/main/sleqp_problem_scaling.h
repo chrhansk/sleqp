@@ -13,7 +13,7 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** problem_scaling,
-                                             SleqpScalingData* scaling_data,
+                                             SleqpScaling* scaling_data,
                                              SleqpProblem* problem,
                                              SleqpParams* params,
                                              SleqpOptions* options);

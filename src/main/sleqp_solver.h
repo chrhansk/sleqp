@@ -61,7 +61,7 @@ extern "C" {
                                     SleqpParams* params,
                                     SleqpOptions* options,
                                     SleqpSparseVec* x,
-                                    SleqpScalingData* scaling_data);
+                                    SleqpScaling* scaling_data);
 
   /**
    * Solves the problem by performing iteration starting from the current solution

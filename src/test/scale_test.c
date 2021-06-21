@@ -11,7 +11,7 @@
 
 SleqpParams* params;
 
-SleqpScalingData* scaling;
+SleqpScaling* scaling;
 
 SleqpProblem* problem;
 SleqpIterate* iterate;

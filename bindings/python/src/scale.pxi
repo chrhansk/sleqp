@@ -18,7 +18,7 @@ class Array(np.ndarray):
 
 cdef class Scaling:
   cdef dict __dict__
-  cdef csleqp.SleqpScalingData* scaling
+  cdef csleqp.SleqpScaling* scaling
   cdef csleqp.SleqpSparseVec* gradient
   cdef csleqp.SleqpSparseMatrix* cons_jac
 

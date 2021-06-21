@@ -14,7 +14,7 @@ const int min_weight = -(MAX_WEIGHT);
 #define CLIP_WEIGHT(w)                                    \
   (w) = SLEQP_MIN(SLEQP_MAX((w), min_weight), max_weight)
 
-struct SleqpScalingData
+struct SleqpScaling
 {
   int refcount;
 
@@ -54,7 +54,7 @@ static SLEQP_RETCODE apply_scaling(SleqpSparseVec* vec,
 }
 
 
-SLEQP_RETCODE sleqp_scaling_reset(SleqpScalingData* scaling)
+SLEQP_RETCODE sleqp_scaling_reset(SleqpScaling* scaling)
 {
   for(int j = 0; j < scaling->num_variables; ++j)
   {
@@ -71,15 +71,15 @@ SLEQP_RETCODE sleqp_scaling_reset(SleqpScalingData* scaling)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
+SLEQP_RETCODE sleqp_scaling_create(SleqpScaling** star,
                                    int num_variables,
                                    int num_constraints)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  SleqpScalingData* scaling = *star;
+  SleqpScaling* scaling = *star;
 
-  *scaling = (SleqpScalingData) {0};
+  *scaling = (SleqpScaling) {0};
 
   if(num_variables < 0)
   {
@@ -111,29 +111,29 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScalingData** star,
   return SLEQP_OKAY;
 }
 
-int sleqp_scaling_get_num_variables(SleqpScalingData* scaling)
+int sleqp_scaling_get_num_variables(SleqpScaling* scaling)
 {
   return scaling->num_variables;
 }
 
-int sleqp_scaling_get_num_constraints(SleqpScalingData* scaling)
+int sleqp_scaling_get_num_constraints(SleqpScaling* scaling)
 {
   return scaling->num_constraints;
 }
 
-int sleqp_scaling_get_func_weight(SleqpScalingData* scaling)
+int sleqp_scaling_get_func_weight(SleqpScaling* scaling)
 {
   return scaling->func_weight;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScaling* scaling,
                                             int weight)
 {
   scaling->func_weight = weight;
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScaling* scaling,
                                                          double nominal_value)
 {
   frexp(nominal_value, &(scaling->func_weight));
@@ -141,7 +141,7 @@ SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScalingData* scali
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScaling* scaling,
                                            int index,
                                            int weight)
 {
@@ -155,7 +155,7 @@ SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScaling* scaling,
                                                          double* nominal_values)
 {
   for(int j = 0; j < scaling->num_variables; ++j)
@@ -166,7 +166,7 @@ SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScalingData* scali
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScaling* scaling,
                                                         int index,
                                                         double nominal_value)
 {
@@ -180,7 +180,7 @@ SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScalingData* scalin
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScaling* scaling,
                                             int index,
                                             int weight)
 {
@@ -194,7 +194,7 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScaling* scaling,
                                                           double* nominal_values)
 {
   for(int i = 0; i < scaling->num_constraints; ++i)
@@ -205,7 +205,7 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScalingData* scal
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScaling* scaling,
                                                          int index,
                                                          double nominal_value)
 {
@@ -219,23 +219,23 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScalingData* scali
   return SLEQP_OKAY;
 }
 
-int* sleqp_scaling_get_var_weights(SleqpScalingData* scaling)
+int* sleqp_scaling_get_var_weights(SleqpScaling* scaling)
 {
   return scaling->var_weights;
 }
 
-int* sleqp_scaling_get_cons_weights(SleqpScalingData* scaling)
+int* sleqp_scaling_get_cons_weights(SleqpScaling* scaling)
 {
   return scaling->cons_weights;
 }
 
-double sleqp_scale_func_val(SleqpScalingData* scaling,
+double sleqp_scale_func_val(SleqpScaling* scaling,
                             double func_val)
 {
   return ldexp(func_val, (-1) * scaling->func_weight);
 }
 
-SLEQP_RETCODE sleqp_scale_point(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_point(SleqpScaling* scaling,
                                 SleqpSparseVec* point)
 {
   SLEQP_CALL(apply_scaling(point, scaling->var_weights, 0));
@@ -243,7 +243,7 @@ SLEQP_RETCODE sleqp_scale_point(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_func_grad(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_func_grad(SleqpScaling* scaling,
                                     SleqpSparseVec* func_grad)
 {
   SLEQP_CALL(apply_unscaling(func_grad,
@@ -253,7 +253,7 @@ SLEQP_RETCODE sleqp_scale_func_grad(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_val(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_cons_val(SleqpScaling* scaling,
                                    SleqpSparseVec* cons_val)
 {
   SLEQP_CALL(apply_scaling(cons_val,
@@ -263,7 +263,7 @@ SLEQP_RETCODE sleqp_scale_cons_val(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_general(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_cons_general(SleqpScaling* scaling,
                                        SleqpSparseVec* general_val)
 {
   SLEQP_CALL(apply_scaling(general_val,
@@ -273,7 +273,7 @@ SLEQP_RETCODE sleqp_scale_cons_general(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_linear(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_cons_linear(SleqpScaling* scaling,
                                       SleqpSparseVec* linear_val)
 {
   const int num_linear = linear_val->dim;
@@ -287,7 +287,7 @@ SLEQP_RETCODE sleqp_scale_cons_linear(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScaling* scaling,
                                    SleqpSparseMatrix* cons_jac)
 {
   int col = 0;
@@ -315,7 +315,7 @@ SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_linear_coeffs(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_linear_coeffs(SleqpScaling* scaling,
                                         SleqpSparseMatrix* linear_coeffs)
 {
   int col = 0;
@@ -347,7 +347,7 @@ SLEQP_RETCODE sleqp_scale_linear_coeffs(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_duals(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_cons_duals(SleqpScaling* scaling,
                                      SleqpSparseVec* cons_duals)
 {
   SLEQP_CALL(apply_unscaling(cons_duals,
@@ -357,7 +357,7 @@ SLEQP_RETCODE sleqp_scale_cons_duals(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_var_duals(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_var_duals(SleqpScaling* scaling,
                                     SleqpSparseVec* var_duals)
 {
   SLEQP_CALL(apply_unscaling(var_duals,
@@ -367,7 +367,7 @@ SLEQP_RETCODE sleqp_scale_var_duals(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScaling* scaling,
                                           SleqpSparseVec* product)
 {
   SLEQP_CALL(apply_unscaling(product,
@@ -377,7 +377,7 @@ SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_iterate(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scale_iterate(SleqpScaling* scaling,
                                   SleqpIterate* scaled_iterate)
 {
   SLEQP_CALL(sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
@@ -406,13 +406,13 @@ SLEQP_RETCODE sleqp_scale_iterate(SleqpScalingData* scaling,
 }
 
 
-double sleqp_unscale_func_val(SleqpScalingData* scaling,
+double sleqp_unscale_func_val(SleqpScaling* scaling,
                               double scaled_func_val)
 {
   return ldexp(scaled_func_val, scaling->func_weight);
 }
 
-SLEQP_RETCODE sleqp_unscale_point(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_unscale_point(SleqpScaling* scaling,
                                   SleqpSparseVec* scaled_point)
 {
   SLEQP_CALL(apply_unscaling(scaled_point, scaling->var_weights, 0));
@@ -420,7 +420,7 @@ SLEQP_RETCODE sleqp_unscale_point(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_func_grad(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_unscale_func_grad(SleqpScaling* scaling,
                                       SleqpSparseVec* scaled_func_grad)
 {
   SLEQP_CALL(apply_scaling(scaled_func_grad,
@@ -430,7 +430,7 @@ SLEQP_RETCODE sleqp_unscale_func_grad(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_cons_val(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_unscale_cons_val(SleqpScaling* scaling,
                                      SleqpSparseVec* scaled_cons_val)
 {
   SLEQP_CALL(apply_unscaling(scaled_cons_val, scaling->cons_weights, 0));
@@ -438,7 +438,7 @@ SLEQP_RETCODE sleqp_unscale_cons_val(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_cons_jac(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_unscale_cons_jac(SleqpScaling* scaling,
                                      SleqpSparseMatrix* scaled_cons_jac)
 {
   int col = 0;
@@ -466,7 +466,7 @@ SLEQP_RETCODE sleqp_unscale_cons_jac(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_cons_duals(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_unscale_cons_duals(SleqpScaling* scaling,
                                        SleqpSparseVec* scaled_cons_duals)
 {
   SLEQP_CALL(apply_scaling(scaled_cons_duals,
@@ -476,7 +476,7 @@ SLEQP_RETCODE sleqp_unscale_cons_duals(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScaling* scaling,
                                       SleqpSparseVec* scaled_var_duals)
 {
   SLEQP_CALL(apply_scaling(scaled_var_duals,
@@ -486,7 +486,7 @@ SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_hessian_direction(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_unscale_hessian_direction(SleqpScaling* scaling,
                                               SleqpSparseVec* direction,
                                               SleqpSparseVec* cons_duals)
 {
@@ -502,7 +502,7 @@ SLEQP_RETCODE sleqp_unscale_hessian_direction(SleqpScalingData* scaling,
 }
 
 
-SLEQP_RETCODE sleqp_unscale_iterate(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_unscale_iterate(SleqpScaling* scaling,
                                     SleqpIterate* scaled_iterate)
 {
   SLEQP_CALL(sleqp_unscale_point(scaling,
@@ -531,7 +531,7 @@ SLEQP_RETCODE sleqp_unscale_iterate(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
                                                SleqpSparseVec* gradient,
                                                double eps)
 {
@@ -570,7 +570,7 @@ SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
+static SLEQP_RETCODE compute_scale_factors(SleqpScaling* scaling,
                                            SleqpSparseMatrix* matrix,
                                            bool column,
                                            int* scaling_factors,
@@ -646,7 +646,7 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-static double max_matrix_ratio(SleqpScalingData* scaling,
+static double max_matrix_ratio(SleqpScaling* scaling,
                                SleqpSparseMatrix* matrix,
                                bool column,
                                double eps)
@@ -713,7 +713,7 @@ static double max_matrix_ratio(SleqpScalingData* scaling,
   return max_ratio;
 }
 
-SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
+SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
                                           SleqpSparseMatrix* cons_jac,
                                           double eps)
 {
@@ -769,9 +769,9 @@ SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScalingData* scaling,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE scaling_free(SleqpScalingData** star)
+static SLEQP_RETCODE scaling_free(SleqpScaling** star)
 {
-  SleqpScalingData* scaling = *star;
+  SleqpScaling* scaling = *star;
 
   if(!scaling)
   {
@@ -793,16 +793,16 @@ static SLEQP_RETCODE scaling_free(SleqpScalingData** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_capture(SleqpScalingData* scaling)
+SLEQP_RETCODE sleqp_scaling_capture(SleqpScaling* scaling)
 {
   ++scaling->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_release(SleqpScalingData** star)
+SLEQP_RETCODE sleqp_scaling_release(SleqpScaling** star)
 {
-  SleqpScalingData* scaling = *star;
+  SleqpScaling* scaling = *star;
 
   if(!scaling)
   {

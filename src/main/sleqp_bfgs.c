@@ -65,7 +65,7 @@ typedef struct BFGSBlock
 
 } BFGSBlock;
 
-struct SleqpBFGSData
+struct SleqpBFGS
 {
   int refcount;
 
@@ -106,7 +106,7 @@ bfgs_func_set_value(SleqpFunc* func,
                     int* cons_jac_nnz,
                     void* func_data)
 {
-  SleqpBFGSData* bfgs_data = (SleqpBFGSData*) func_data;
+  SleqpBFGS* bfgs_data = (SleqpBFGS*) func_data;
 
   SLEQP_CALL(sleqp_func_set_value(bfgs_data->func,
                                   x,
@@ -123,7 +123,7 @@ bfgs_func_val(SleqpFunc* func,
               double* func_val,
               void* func_data)
 {
-  SleqpBFGSData* bfgs_data = (SleqpBFGSData*) func_data;
+  SleqpBFGS* bfgs_data = (SleqpBFGS*) func_data;
 
   SLEQP_CALL(sleqp_func_val(bfgs_data->func,
                             func_val));
@@ -136,7 +136,7 @@ bfgs_func_grad(SleqpFunc* func,
                SleqpSparseVec* func_grad,
                void* func_data)
 {
-  SleqpBFGSData* bfgs_data = (SleqpBFGSData*) func_data;
+  SleqpBFGS* bfgs_data = (SleqpBFGS*) func_data;
 
   SLEQP_CALL(sleqp_func_grad(bfgs_data->func,
                              func_grad));
@@ -150,7 +150,7 @@ bfgs_func_cons_val(SleqpFunc* func,
                    SleqpSparseVec* cons_val,
                    void* func_data)
 {
-  SleqpBFGSData* bfgs_data = (SleqpBFGSData*) func_data;
+  SleqpBFGS* bfgs_data = (SleqpBFGS*) func_data;
 
   SLEQP_CALL(sleqp_func_cons_val(bfgs_data->func,
                                  cons_indices,
@@ -165,7 +165,7 @@ bfgs_func_cons_jac(SleqpFunc* func,
                    SleqpSparseMatrix* cons_jac,
                    void* func_data)
 {
-  SleqpBFGSData* bfgs_data = (SleqpBFGSData*) func_data;
+  SleqpBFGS* bfgs_data = (SleqpBFGS*) func_data;
 
   SLEQP_CALL(sleqp_func_cons_jac(bfgs_data->func,
                                  cons_indices,
@@ -182,9 +182,9 @@ bfgs_func_hess_prod(SleqpFunc* func,
                     SleqpSparseVec* product,
                     void* func_data)
 {
-  SleqpBFGSData* bfgs_data = (SleqpBFGSData*) func_data;
+  SleqpBFGS* bfgs_data = (SleqpBFGS*) func_data;
 
-  SLEQP_CALL(sleqp_bfgs_data_hess_prod(bfgs_data,
+  SLEQP_CALL(sleqp_bfgs_hess_prod(bfgs_data,
                                        direction,
                                        product));
 
@@ -193,7 +193,7 @@ bfgs_func_hess_prod(SleqpFunc* func,
 
 static SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
                                       SleqpFunc* func,
-                                      SleqpBFGSData* bfgs_data)
+                                      SleqpBFGS* bfgs_data)
 {
   const int num_variables = sleqp_func_get_num_variables(func);
   const int num_constraints = sleqp_func_get_num_constraints(func);
@@ -224,7 +224,7 @@ static SLEQP_RETCODE bfgs_func_create(SleqpFunc** fstar,
   return SLEQP_OKAY;
 }
 
-SleqpFunc* sleqp_bfgs_get_func(SleqpBFGSData* data)
+SleqpFunc* sleqp_bfgs_get_func(SleqpBFGS* data)
 {
   return data->bfgs_func;
 }
@@ -333,16 +333,16 @@ static SLEQP_RETCODE bfgs_block_free_at(BFGSBlock* block)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_bfgs_data_create(SleqpBFGSData** star,
+SLEQP_RETCODE sleqp_bfgs_create(SleqpBFGS** star,
                                      SleqpFunc* func,
                                      SleqpParams* params,
                                      SleqpOptions* options)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  SleqpBFGSData* data = *star;
+  SleqpBFGS* data = *star;
 
-  *data = (SleqpBFGSData) {0};
+  *data = (SleqpBFGS) {0};
 
   data->refcount = 1;
 
@@ -742,7 +742,7 @@ SLEQP_RETCODE bfgs_block_push(BFGSBlock* block,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
+SLEQP_RETCODE sleqp_bfgs_push(SleqpBFGS* data,
                                    SleqpIterate* previous_iterate,
                                    SleqpIterate* current_iterate,
                                    SleqpSparseVec* multipliers)
@@ -855,7 +855,7 @@ SLEQP_RETCODE sleqp_bfgs_data_push(SleqpBFGSData* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_bfgs_data_hess_prod(const SleqpBFGSData* data,
+SLEQP_RETCODE sleqp_bfgs_hess_prod(const SleqpBFGS* data,
                                         const SleqpSparseVec* direction,
                                         SleqpSparseVec* product)
 {
@@ -927,14 +927,14 @@ SLEQP_RETCODE sleqp_bfgs_data_hess_prod(const SleqpBFGSData* data,
   return SLEQP_OKAY;
 }
 
-SleqpTimer* sleqp_bfgs_update_timer(SleqpBFGSData* data)
+SleqpTimer* sleqp_bfgs_update_timer(SleqpBFGS* data)
 {
   return data->update_timer;
 }
 
-static SLEQP_RETCODE bfgs_data_free(SleqpBFGSData** star)
+static SLEQP_RETCODE bfgs_data_free(SleqpBFGS** star)
 {
-  SleqpBFGSData* data = *star;
+  SleqpBFGS* data = *star;
 
   if(!data)
   {
@@ -980,16 +980,16 @@ static SLEQP_RETCODE bfgs_data_free(SleqpBFGSData** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_bfgs_data_capture(SleqpBFGSData* data)
+SLEQP_RETCODE sleqp_bfgs_capture(SleqpBFGS* data)
 {
   ++data->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_bfgs_data_release(SleqpBFGSData** star)
+SLEQP_RETCODE sleqp_bfgs_release(SleqpBFGS** star)
 {
-  SleqpBFGSData* bfgs_data = *star;
+  SleqpBFGS* bfgs_data = *star;
 
   if(!bfgs_data)
   {

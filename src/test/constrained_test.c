@@ -514,12 +514,12 @@ START_TEST(test_unscaled_solve)
 
   SleqpSolver* solver;
 
-  SleqpScalingData* scaling_data;
+  SleqpScaling* scaling;
 
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  ASSERT_CALL(sleqp_scaling_create(&scaling_data,
+  ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    num_variables,
                                    num_constraints));
 
@@ -528,7 +528,7 @@ START_TEST(test_unscaled_solve)
                                   params,
                                   options,
                                   x,
-                                  scaling_data));
+                                  scaling));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
@@ -548,7 +548,7 @@ START_TEST(test_unscaled_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling));
 }
 END_TEST
 
@@ -560,26 +560,26 @@ START_TEST(test_scaled_solve)
 
   SleqpSolver* solver;
 
-  SleqpScalingData* scaling_data;
+  SleqpScaling* scaling;
 
-  ASSERT_CALL(sleqp_scaling_create(&scaling_data,
+  ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    num_variables,
                                    num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
+  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
 
-  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling_data, 0, -5));
-  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling_data, 1, 5));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -5));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, 5));
 
-  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling_data, 0, -1));
-  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling_data, 1, 2));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 0, -1));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 1, 2));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
                                   options,
                                   x,
-                                  scaling_data));
+                                  scaling));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 1000, -1));
@@ -599,7 +599,7 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling));
 }
 END_TEST
 
@@ -611,7 +611,7 @@ START_TEST(test_scaled_sr1_solve)
 
   SleqpSolver* solver;
 
-  SleqpScalingData* scaling_data;
+  SleqpScaling* scaling;
 
   ASSERT_CALL(sleqp_options_set_int(options,
                                     SLEQP_OPTION_INT_HESSIAN_EVAL,
@@ -620,24 +620,24 @@ START_TEST(test_scaled_sr1_solve)
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  ASSERT_CALL(sleqp_scaling_create(&scaling_data,
+  ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    num_variables,
                                    num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
+  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
 
-  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling_data, 0, -5));
-  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling_data, 1, 5));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -5));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, 5));
 
-  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling_data, 0, -1));
-  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling_data, 1, 2));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 0, -1));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 1, 2));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
                                   options,
                                   x,
-                                  scaling_data));
+                                  scaling));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 1000, -1));
@@ -657,7 +657,7 @@ START_TEST(test_scaled_sr1_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling));
 }
 END_TEST
 
@@ -669,7 +669,7 @@ START_TEST(test_scaled_bfgs_solve)
 
   SleqpSolver* solver;
 
-  SleqpScalingData* scaling_data;
+  SleqpScaling* scaling;
 
   ASSERT_CALL(sleqp_options_set_int(options,
                                     SLEQP_OPTION_INT_HESSIAN_EVAL,
@@ -678,24 +678,24 @@ START_TEST(test_scaled_bfgs_solve)
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  ASSERT_CALL(sleqp_scaling_create(&scaling_data,
+  ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    num_variables,
                                    num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling_data, 2));
+  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
 
-  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling_data, 0, -5));
-  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling_data, 1, 5));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -5));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, 5));
 
-  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling_data, 0, -1));
-  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling_data, 1, 2));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 0, -1));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 1, 2));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
                                   options,
                                   x,
-                                  scaling_data));
+                                  scaling));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 1000, -1));
@@ -715,7 +715,7 @@ START_TEST(test_scaled_bfgs_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling));
 }
 END_TEST
 
@@ -727,7 +727,7 @@ START_TEST(test_auto_scaled_solve)
 
   SleqpSolver* solver;
 
-  SleqpScalingData* scaling_data;
+  SleqpScaling* scaling;
 
   SleqpIterate* iterate;
 
@@ -743,15 +743,15 @@ START_TEST(test_auto_scaled_solve)
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  ASSERT_CALL(sleqp_scaling_create(&scaling_data,
+  ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    num_variables,
                                    num_constraints));
 
-  ASSERT_CALL(sleqp_func_scaling_from_gradient(scaling_data,
+  ASSERT_CALL(sleqp_func_scaling_from_gradient(scaling,
                                                sleqp_iterate_get_func_grad(iterate),
                                                eps));
 
-  ASSERT_CALL(sleqp_scaling_from_cons_jac(scaling_data,
+  ASSERT_CALL(sleqp_scaling_from_cons_jac(scaling,
                                           sleqp_iterate_get_cons_jac(iterate),
                                           eps));
 
@@ -760,7 +760,7 @@ START_TEST(test_auto_scaled_solve)
                                   params,
                                   options,
                                   x,
-                                  scaling_data));
+                                  scaling));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
@@ -780,7 +780,7 @@ START_TEST(test_auto_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_scaling_release(&scaling_data));
+  ASSERT_CALL(sleqp_scaling_release(&scaling));
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 }

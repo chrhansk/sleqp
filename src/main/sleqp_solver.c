@@ -43,7 +43,7 @@ struct SleqpSolver
 
   SleqpProblem* unscaled_problem;
 
-  SleqpScalingData* scaling_data;
+  SleqpScaling* scaling_data;
 
   SleqpProblemScaling* problem_scaling;
 
@@ -145,11 +145,11 @@ struct SleqpSolver
 
   // BFGS related
 
-  SleqpBFGSData* bfgs_data;
+  SleqpBFGS* bfgs_data;
 
   // SR1 related
 
-  SleqpSR1Data* sr1_data;
+  SleqpSR1* sr1_data;
 
   // parameters, adjusted throughout...
 
@@ -190,9 +190,6 @@ static double remaining_time(SleqpSolver* solver)
 
 static SLEQP_RETCODE set_residuum(SleqpSolver* solver)
 {
-  const double feas_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_FEASIBILITY_TOL);
-
   SLEQP_CALL(sleqp_iterate_slackness_residuum(solver->problem,
                                               solver->iterate,
                                               &solver->slackness_residuum));
@@ -215,7 +212,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   SleqpParams* params,
                                   SleqpOptions* options,
                                   SleqpSparseVec* primal,
-                                  SleqpScalingData* scaling_data)
+                                  SleqpScaling* scaling_data)
 {
   assert(sleqp_sparse_vector_is_valid(primal));
 
@@ -273,7 +270,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
     if(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
        hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
     {
-      SLEQP_CALL(sleqp_bfgs_data_create(&solver->bfgs_data,
+      SLEQP_CALL(sleqp_bfgs_create(&solver->bfgs_data,
                                         func,
                                         params,
                                         options));
@@ -283,10 +280,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
     if(hessian_eval == SLEQP_HESSIAN_EVAL_SR1)
     {
-      SLEQP_CALL(sleqp_sr1_data_create(&solver->sr1_data,
-                                       func,
-                                       params,
-                                       options));
+      SLEQP_CALL(sleqp_sr1_create(&solver->sr1_data,
+                                  func,
+                                  params,
+                                  options));
 
       func = sleqp_sr1_get_func(solver->sr1_data);
     }
@@ -1628,7 +1625,7 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
 
     if(solver->bfgs_data)
     {
-      SLEQP_CALL(sleqp_bfgs_data_push(solver->bfgs_data,
+      SLEQP_CALL(sleqp_bfgs_push(solver->bfgs_data,
                                       solver->iterate,
                                       solver->trial_iterate,
                                       solver->multipliers));
@@ -1636,7 +1633,7 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
 
     if(solver->sr1_data)
     {
-      SLEQP_CALL(sleqp_sr1_data_push(solver->sr1_data,
+      SLEQP_CALL(sleqp_sr1_push(solver->sr1_data,
                                      solver->iterate,
                                      solver->trial_iterate,
                                      solver->multipliers));
@@ -2319,9 +2316,9 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
 
-  SLEQP_CALL(sleqp_sr1_data_release(&solver->sr1_data));
+  SLEQP_CALL(sleqp_sr1_release(&solver->sr1_data));
 
-  SLEQP_CALL(sleqp_bfgs_data_release(&solver->bfgs_data));
+  SLEQP_CALL(sleqp_bfgs_release(&solver->bfgs_data));
 
   SLEQP_CALL(sleqp_problem_release(&solver->unscaled_problem));
 
