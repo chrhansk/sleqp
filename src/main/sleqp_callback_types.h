@@ -17,6 +17,11 @@ extern "C" {
   typedef SLEQP_RETCODE (*SLEQP_PERFORMED_ITERATION)(SleqpSolver* solver,
                                                      void* callback_data);
 
+  typedef SLEQP_RETCODE (*SLEQP_FINISHED)(SleqpSolver* solver,
+                                          SleqpIterate* iterate,
+                                          void* callback_data);
+
+
 #ifdef __cplusplus
 }
 #endif

@@ -134,5 +134,21 @@ class CallbackTest(unittest.TestCase):
 
     self.assertFalse(accepted_iterate.called)
 
+  def test_finished_callback(self):
+
+    did_finish = 0
+
+    def finished(solver, iterate):
+      nonlocal did_finish
+      did_finish += 1
+
+    self.solver.add_callback(sleqp.SolverEvent.Finished,
+                             finished)
+
+    self.solver.solve(100, 3600)
+
+    self.assertEqual(did_finish, 1)
+
+
 if __name__ == '__main__':
     unittest.main()

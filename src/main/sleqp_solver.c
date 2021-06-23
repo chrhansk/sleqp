@@ -2001,6 +2001,11 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     solver->status = feasible ? SLEQP_FEASIBLE : SLEQP_INFEASIBLE;
   }
 
+  SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_FINISHED],
+                                 SLEQP_FINISHED,
+                                 solver,
+                                 solver->unscaled_trial_iterate);
+
   SLEQP_CALL(solver_print_stats(solver, violation));
 
   return SLEQP_OKAY;

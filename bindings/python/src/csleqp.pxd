@@ -138,6 +138,7 @@ cdef extern from "sleqp.h":
   ctypedef enum SLEQP_SOLVER_EVENT:
     SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
     SLEQP_SOLVER_EVENT_PERFORMED_ITERATION,
+    SLEQP_SOLVER_EVENT_FINISHED,
 
   ctypedef struct SleqpSparseVec:
     double* data

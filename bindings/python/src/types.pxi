@@ -85,6 +85,7 @@ class DualEstimationType(_DocEnum):
 class SolverEvent(Enum):
   AcceptedIterate    = csleqp.SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE
   PerformedIteration = csleqp.SLEQP_SOLVER_EVENT_PERFORMED_ITERATION
+  Finished           = csleqp.SLEQP_SOLVER_EVENT_FINISHED
 
 class SolverState(Enum):
   TrustRadius = auto()
