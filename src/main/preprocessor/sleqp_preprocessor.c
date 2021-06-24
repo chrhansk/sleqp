@@ -290,11 +290,13 @@ SLEQP_RETCODE check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor
   return SLEQP_OKAY;
 }
 
-/*
+
 static
 SLEQP_RETCODE fix_variables_by_bounds(SleqpPreprocessor* preprocessor)
 {
   SleqpProblem* problem = preprocessor->original_problem;
+
+  SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
   const int num_variables = sleqp_problem_num_variables(problem);
 
@@ -302,13 +304,14 @@ SLEQP_RETCODE fix_variables_by_bounds(SleqpPreprocessor* preprocessor)
   {
     if(preprocessor->var_lb[j] == preprocessor->var_ub[j])
     {
-      preprocessor->var_states[j] = (VariableState) {.state = VarFixedByBound, .value = preprocessor->var_lb[j]};
+      SLEQP_CALL(sleqp_preprocessing_state_fix_variable(state,
+                                                        j,
+                                                        preprocessor->var_lb[j]));
     }
   }
 
   return SLEQP_OKAY;
 }
-*/
 
 static
 SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
@@ -316,12 +319,6 @@ SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
   SLEQP_CALL(compute_cons_counts(preprocessor));
 
   SleqpProblem* problem = preprocessor->original_problem;
-
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_var_lb(problem),
-                                        preprocessor->var_lb));
-
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_var_ub(problem),
-                                        preprocessor->var_ub));
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_linear_lb(problem),
                                         preprocessor->linear_lb));
@@ -424,6 +421,14 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&preprocessor->cache,
                                               num_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_var_lb(problem),
+                                        preprocessor->var_lb));
+
+  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_var_ub(problem),
+                                        preprocessor->var_ub));
+
+  SLEQP_CALL(fix_variables_by_bounds(preprocessor));
 
   SLEQP_CALL(remove_redundant_constraints(preprocessor));
 

@@ -133,7 +133,7 @@ SLEQP_RETCODE sleqp_preprocessing_state_remove_linear_constraint(SleqpPreprocess
 
 SLEQP_RETCODE sleqp_preprocessing_state_fix_variable(SleqpPreprocessingState* state,
                                                      int variable,
-                                                     double* value)
+                                                     double value)
 {
   SleqpProblem* problem = state->original_problem;
 
@@ -144,7 +144,11 @@ SLEQP_RETCODE sleqp_preprocessing_state_fix_variable(SleqpPreprocessingState* st
 
   assert(state->var_states[variable].state == SLEQP_VAR_UNCHANGED);
 
-  state->var_states[variable].state = SLEQP_VAR_BOUNDFIXED;
+  state->var_states[variable] = (SleqpVariableState)
+  {
+    .state = SLEQP_VAR_BOUNDFIXED,
+    .value = value
+  };
 
   ++(state->num_fixed_variables);
 

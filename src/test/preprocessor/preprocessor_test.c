@@ -358,6 +358,45 @@ START_TEST(test_simple_infeasibility)
 }
 END_TEST
 
+START_TEST(test_fixed_var)
+{
+  SleqpPreprocessor* preprocessor;
+  SleqpProblem* problem;
+
+  ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_var_lb));
+  ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_var_ub));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_var_lb, 0, 0.));
+  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_var_lb, 1, 1.));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_var_ub, 0, 0.));
+  ASSERT_CALL(sleqp_sparse_vector_push(rosenbrock_var_ub, 1, 2.));
+
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          rosenbrock_func,
+                                          params,
+                                          rosenbrock_var_lb,
+                                          rosenbrock_var_ub,
+                                          rosenbrock_cons_lb,
+                                          rosenbrock_cons_ub));
+
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor,
+                                        problem,
+                                        params));
+
+  SleqpProblem* transformed_problem = sleqp_preprocessor_transformed_problem(preprocessor);
+
+  ck_assert_int_eq(sleqp_problem_num_variables(transformed_problem),
+                   1);
+
+  ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
+
+  ASSERT_CALL(sleqp_problem_release(&problem));
+
+  ASSERT_CALL(sleqp_problem_release(&problem));
+}
+END_TEST
+
 /*
 START_TEST(test_solve)
 {
@@ -690,6 +729,8 @@ Suite* preprocessor_test_suite()
   tcase_add_test(tc_prob, test_failure);
 
   tcase_add_test(tc_prob, test_simple_infeasibility);
+
+  tcase_add_test(tc_prob, test_fixed_var);
 
   /*
   tcase_add_test(tc_prob, test_solve);

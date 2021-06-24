@@ -78,7 +78,7 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_preprocessing_state_fix_variable(SleqpPreprocessingState* state,
                                                        int variable,
-                                                       double* value);
+                                                       double value);
 
   SLEQP_RETCODE sleqp_preprocessing_state_converted_bounds(SleqpPreprocessingState* state,
                                                            SleqpConvertedBound** star,
