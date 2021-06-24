@@ -6,9 +6,8 @@
 #include "test_common.h"
 #include "rosenbrock_fixture.h"
 
-const int num_linear = 1;
-
-int num_variables = 2;
+static const int num_linear = 1;
+static const int num_variables = 2;
 
 SleqpParams* params;
 

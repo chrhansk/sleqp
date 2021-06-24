@@ -19,8 +19,8 @@ SleqpOptions* options;
 
 SleqpSparseVec* expected_solution;
 
-const int num_variables = 4;
-const int num_constraints = 2;
+static const int num_variables = 4;
+static const int num_constraints = 2;
 
 typedef struct FuncData
 {

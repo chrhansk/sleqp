@@ -9,8 +9,8 @@
 
 extern SleqpFunc* quadconsfunc;
 
-extern int quadconsfunc_num_variables;
-extern int quadconsfunc_num_constraints;
+extern const int quadconsfunc_num_variables;
+extern const int quadconsfunc_num_constraints;
 
 extern SleqpSparseVec* quadconsfunc_var_lb;
 extern SleqpSparseVec* quadconsfunc_var_ub;

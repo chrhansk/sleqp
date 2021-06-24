@@ -13,8 +13,8 @@ SleqpSparseVec* cons_lb;
 SleqpSparseVec* cons_ub;
 SleqpSparseVec* x;
 
-const int num_variables = 2;
-const int num_constraints = 1;
+static const int num_variables = 2;
+static const int num_constraints = 1;
 
 typedef struct FuncData
 {

@@ -11,8 +11,8 @@ int num_fixed;
 int* fixed_indices;
 double* fixed_values;
 
-int num_variables;
-int num_constraints;
+static int num_variables;
+static int num_constraints;
 
 SleqpFunc* fixed_var_func;
 
