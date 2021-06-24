@@ -5,6 +5,9 @@ set(COMMON_SRC
   tr/sleqp_tr_solver.c
   tr/sleqp_trlib_solver.c
   tr/sleqp_steihaug_solver.c
+  preprocessor/sleqp_fixed_var_func.c
+  preprocessor/sleqp_preprocessing.c
+  preprocessor/sleqp_preprocessor.c
   sleqp_assert.c
   sleqp_aug_jacobian.c
   sleqp_bfgs.c
@@ -22,7 +25,6 @@ set(COMMON_SRC
   sleqp_log.c
   sleqp_lsq.c
   sleqp_options.c
-  sleqp_preprocessor.c
   sleqp_problem_scaling.c
   sleqp_newton.c
   sleqp_merit.c

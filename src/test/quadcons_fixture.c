@@ -11,6 +11,9 @@ SleqpSparseVec* quadconsfunc_x;
 static const int num_variables = 2;
 static const int num_constraints = 2;
 
+int quadconsfunc_num_variables = 2;
+int quadconsfunc_num_constraints = 2;
+
 typedef struct SquareFuncData
 {
   double* x;
