@@ -81,7 +81,7 @@ void setup()
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&fixed_cons_jac,
                                          num_constraints,
-                                         num_variables,
+                                         num_variables - num_fixed,
                                          0));
 
   ASSERT_CALL(sleqp_sparse_vector_create_full(&direction,
@@ -222,12 +222,12 @@ START_TEST(test_cons_jac)
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  ASSERT_CALL(sleqp_sparse_matrix_reserve(fixed_cons_jac,
+  ASSERT_CALL(sleqp_sparse_matrix_reserve(cons_jac,
                                           cons_jac_nnz));
 
-  ASSERT_CALL(sleqp_func_cons_jac(fixed_var_func,
+  ASSERT_CALL(sleqp_func_cons_jac(quadconsfunc,
                                   NULL,
-                                  fixed_cons_jac));
+                                  cons_jac));
 
   for(int i = 0; i < num_constraints; ++i)
   {

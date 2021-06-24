@@ -37,10 +37,11 @@ SLEQP_RETCODE fixed_var_func_set(SleqpFunc* func,
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*) data;
 
-  SLEQP_CALL(sleqp_preprocessing_merge_fixed_entries(value, func_data->values,
-                                                     func_data->num_fixed,
-                                                     func_data->fixed_indices,
-                                                     func_data->fixed_values));
+  SLEQP_CALL(sleqp_preprocessing_merge_entries(value,
+                                               func_data->values,
+                                               func_data->num_fixed,
+                                               func_data->fixed_indices,
+                                               func_data->fixed_values));
 
   SLEQP_CALL(sleqp_func_set_value(func_data->func,
                                   func_data->values,
@@ -77,10 +78,10 @@ SLEQP_RETCODE fixed_var_func_grad(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_func_grad(func_data->func, func_data->grad));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_fixed_entries(func_data->grad,
-                                                      func_grad,
-                                                      func_data->num_fixed,
-                                                      func_data->fixed_indices));
+  SLEQP_CALL(sleqp_preprocessing_remove_entries(func_data->grad,
+                                                func_grad,
+                                                func_data->num_fixed,
+                                                func_data->fixed_indices));
 
   return SLEQP_OKAY;
 }
@@ -108,10 +109,10 @@ SLEQP_RETCODE fixed_var_cons_jac(SleqpFunc* func,
                                  cons_indices,
                                  func_data->jacobian));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_fixed_matrix_entries(func_data->jacobian,
-                                                             cons_jac,
-                                                             func_data->num_fixed,
-                                                             func_data->fixed_indices));
+  SLEQP_CALL(sleqp_preprocessing_remove_matrix_cols(func_data->jacobian,
+                                                    cons_jac,
+                                                    func_data->num_fixed,
+                                                    func_data->fixed_indices));
 
   return SLEQP_OKAY;
 }
@@ -137,10 +138,10 @@ SLEQP_RETCODE fixed_var_hess_prod(SleqpFunc* func,
                                   cons_duals,
                                   func_data->product));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_fixed_entries(func_data->product,
-                                                      product,
-                                                      func_data->num_fixed,
-                                                      func_data->fixed_indices));
+  SLEQP_CALL(sleqp_preprocessing_remove_entries(func_data->product,
+                                                product,
+                                                func_data->num_fixed,
+                                                func_data->fixed_indices));
 
   return SLEQP_OKAY;
 }

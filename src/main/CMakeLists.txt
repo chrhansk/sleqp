@@ -7,7 +7,9 @@ set(COMMON_SRC
   tr/sleqp_steihaug_solver.c
   preprocessor/sleqp_fixed_var_func.c
   preprocessor/sleqp_preprocessing.c
+  preprocessor/sleqp_preprocessing_state.c
   preprocessor/sleqp_preprocessor.c
+  preprocessor/sleqp_transform.c
   sleqp_assert.c
   sleqp_aug_jacobian.c
   sleqp_bfgs.c

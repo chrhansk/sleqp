@@ -9,59 +9,15 @@
 #include "preprocessor/sleqp_fixed_var_func.h"
 #include "preprocessor/sleqp_preprocessing.h"
 
+#include "preprocessor/sleqp_preprocessing_state.h"
+#include "preprocessor/sleqp_transform.h"
+
 typedef struct
 {
   int row;
   int col;
   double value;
 } Entry;
-
-typedef enum
-{
-  Lower = (1 << 1),
-  Upper = (1 << 2),
-  Both = (Upper | Lower)
-} BoundState;
-
-typedef struct
-{
-  int row, col;
-  double factor;
-  BoundState bound_state;
-  SLEQP_ACTIVE_STATE var_state;
-} ConvertedBound;
-
-typedef enum
-{
-  ConsUnchanged,
-  ConsRedundant,
-  ConsConvertedToBound
-} _ConstraintState;
-
-typedef struct
-{
-  _ConstraintState state;
-  int bound;
-} ConstraintState;
-
-typedef enum
-{
-  VarUnchanged,
-  VarFixedByBound
-} _VariableState;
-
-typedef struct
-{
-  _VariableState state;
-  double value;
-} VariableState;
-
-typedef struct
-{
-  int num_redundant_cons;
-  int num_bound_converted_cons;
-  int num_fixed_variables;
-} PreprocessingStats;
 
 
 struct SleqpPreprocessor
@@ -86,40 +42,20 @@ struct SleqpPreprocessor
   double* linear_min;
   double* linear_max;
 
-  ConstraintState* linear_cons_states;
-  int* bound_converted_vars;
-
-  VariableState* var_states;
-
   double* cons_dual_dense;
   SLEQP_ACTIVE_STATE* cons_state_dense;
 
-  ConvertedBound* converted_bounds;
+  SleqpPreprocessingState* preprocessing_state;
+  SleqpTransformation* transformation;
 
   int* removed_linear_cons;
   int num_removed_linear_cons;
 
-  SleqpSparseVec* transformed_var_lb;
-  SleqpSparseVec* transformed_var_ub;
-
-  SleqpSparseVec* transformed_linear_lb;
-  SleqpSparseVec* transformed_linear_ub;
-
   SleqpSparseVec* cache;
-
-  SleqpSparseMatrix* transformed_linear_coeffs;
 
   bool infeasible;
 
   SleqpProblem* transformed_problem;
-
-  SleqpFunc* transformed_func;
-
-  int num_fixed_vars;
-  int* fixed_var_indices;
-  double* fixed_var_values;
-
-  PreprocessingStats stats;
 };
 
 static
@@ -165,60 +101,8 @@ SLEQP_RETCODE compute_cons_counts(SleqpPreprocessor* preprocessor)
 }
 
 static
-SLEQP_RETCODE
-remove_redundant_linear_constraint(SleqpPreprocessor* preprocessor,
-                                   int i)
-{
-  assert(preprocessor->linear_cons_states[i].state == ConsUnchanged);
-
-  ++preprocessor->stats.num_redundant_cons;
-
-  preprocessor->linear_cons_states[i].state = ConsRedundant;
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE
-add_converted_bound(SleqpPreprocessor* preprocessor,
-                    int row,
-                    int col,
-                    double factor,
-                    bool improved_lower,
-                    bool improved_upper)
-{
-  assert(preprocessor->linear_cons_states[row].state == ConsUnchanged);
-
-  BoundState bound_state = 0;
-
-  if(improved_lower)
-  {
-    bound_state |= Lower;
-  }
-  if(improved_upper)
-  {
-    bound_state |= Upper;
-  }
-
-  const int bound_index = preprocessor->stats.num_bound_converted_cons;
-
-  ConvertedBound* converted_bound = preprocessor->converted_bounds + bound_index;
-
-  *converted_bound = (ConvertedBound) { .row = row, .col = col, .factor = factor, .bound_state = bound_state};
-
-  preprocessor->linear_cons_states[row] = (ConstraintState) {.state = ConsConvertedToBound, .bound = bound_index};
-
-  preprocessor->bound_converted_vars[col] = bound_index;
-
-  ++preprocessor->stats.num_bound_converted_cons;
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE
-convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor,
-                                   int i)
+SLEQP_RETCODE convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor,
+                                                 int i)
 {
   Entry* entry = preprocessor->linear_entries + i;
 
@@ -238,21 +122,25 @@ convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor,
 
   bool improved_upper = false, improved_lower = false;
 
-  if(sleqp_is_finite(preprocessor->linear_ub[i]))
-  {
-    if(ub < preprocessor->var_ub[j])
-    {
-      improved_upper = true;
-      preprocessor->var_ub[j] = ub;
-    }
-  }
+  SleqpBoundState bound_state = 0;
 
   if(sleqp_is_finite(preprocessor->linear_lb[i]))
   {
     if(lb > preprocessor->var_lb[j])
     {
+      bound_state |= SleqpLowerBound;
       improved_lower = true;
       preprocessor->var_lb[j] = lb;
+    }
+  }
+
+  if(sleqp_is_finite(preprocessor->linear_ub[i]))
+  {
+    if(ub < preprocessor->var_ub[j])
+    {
+      bound_state |= SleqpUpperBound;
+      improved_upper = true;
+      preprocessor->var_ub[j] = ub;
     }
   }
 
@@ -260,282 +148,18 @@ convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor,
 
   if(improved)
   {
-    SLEQP_CALL(add_converted_bound(preprocessor,
-                                   i,
-                                   j,
-                                   entry->value,
-                                   improved_lower,
-                                   improved_upper));
+    SLEQP_CALL(sleqp_preprocessing_state_convert_linear_constraint_to_bound(preprocessor->preprocessing_state,
+                                                                            i,
+                                                                            j,
+                                                                            entry->value,
+                                                                            lb,
+                                                                            ub,
+                                                                            bound_state));
   }
   else
   {
-    remove_redundant_linear_constraint(preprocessor, i);
-  }
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE remove_vec_entries(const SleqpSparseVec* original,
-                                 SleqpSparseVec* transformed,
-                                 const int *entries,
-                                 int num_entries,
-                                 int offset)
-{
-  assert(num_entries <= original->dim);
-
-  SLEQP_CALL(sleqp_sparse_vector_clear(transformed));
-
-  SLEQP_CALL(sleqp_sparse_vector_resize(transformed,
-                                        original->dim - num_entries));
-
-  SLEQP_CALL(sleqp_sparse_vector_reserve(transformed,
-                                         original->nnz));
-
-  int i = offset;
-
-  for(int k = 0; k < original->nnz; ++k)
-  {
-    if(i < num_entries && original->indices[k] == entries[i])
-    {
-      ++i;
-    }
-    else
-    {
-      SLEQP_CALL(sleqp_sparse_vector_push(transformed,
-                                          original->indices[k] - i,
-                                          original->data[k]));
-    }
-  }
-
-  assert(i <= num_entries);
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE remove_matrix_rows(SleqpSparseMatrix* original,
-                                 SleqpSparseMatrix* transformed,
-                                 const int* entries,
-                                 int num_entries,
-                                 int offset)
-{
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(original);
-  const int num_rows = sleqp_sparse_matrix_get_num_rows(original);
-
-  assert(num_entries <= num_rows);
-
-  SLEQP_CALL(sleqp_sparse_matrix_clear(transformed));
-
-  SLEQP_CALL(sleqp_sparse_matrix_resize(transformed,
-                                        num_rows - num_entries,
-                                        num_cols));
-
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(transformed,
-                                         sleqp_sparse_matrix_get_nnz(original)));
-
-  double* original_data = sleqp_sparse_matrix_get_data(original);
-  int* original_rows = sleqp_sparse_matrix_get_rows(original);
-  int* original_cols = sleqp_sparse_matrix_get_cols(original);
-
-  for(int col = 0; col < num_cols; ++col)
-  {
-    int i = offset;
-
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(transformed,
-                                               col));
-
-    for(int k = original_cols[col]; k < original_cols[col + 1]; ++k)
-    {
-      const int row = original_rows[k];
-
-      if(i < num_entries && row == entries[i])
-      {
-        ++i;
-      }
-      else
-      {
-        const double value = original_data[k];
-
-        SLEQP_CALL(sleqp_sparse_matrix_push(transformed,
-                                            row - i,
-                                            col,
-                                            value));
-      }
-    }
-
-    assert(i <= num_entries);
-  }
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE create_fixed_vars(SleqpPreprocessor* preprocessor)
-{
-  SleqpProblem* problem = preprocessor->original_problem;
-
-  const int num_variables = sleqp_problem_num_variables(problem);
-
-  const int num_fixed_vars = preprocessor->stats.num_fixed_variables;
-
-  sleqp_free(&preprocessor->fixed_var_indices);
-  sleqp_free(&preprocessor->fixed_var_values);
-
-  SLEQP_CALL(sleqp_alloc_array(&preprocessor->fixed_var_indices, num_fixed_vars));
-  SLEQP_CALL(sleqp_alloc_array(&preprocessor->fixed_var_values, num_fixed_vars));
-
-  int i = 0;
-
-  for(int j = 0; j < num_variables; ++j)
-  {
-    if(preprocessor->var_states[j].state != VarUnchanged)
-    {
-      assert(preprocessor->var_states[j].state == VarFixedByBound);
-
-      preprocessor->fixed_var_indices[i] = j;
-      preprocessor->fixed_var_values[i] = j;
-      ++i;
-    }
-  }
-
-  assert(i == num_fixed_vars);
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE create_transformed_func(SleqpPreprocessor* preprocessor,
-                                      SleqpFunc** star)
-{
-  SleqpProblem* problem = preprocessor->original_problem;
-
-  const int num_fixed_vars = preprocessor->stats.num_fixed_variables;
-
-  SLEQP_CALL(sleqp_fixed_var_func_create(star,
-                                         sleqp_problem_func(problem),
-                                         num_fixed_vars,
-                                         preprocessor->fixed_var_indices,
-                                         preprocessor->fixed_var_values));
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE transform_var_bounds(SleqpPreprocessor* preprocessor)
-{
-  SleqpProblem* problem = preprocessor->original_problem;
-
-  const int num_fixed_vars = preprocessor->stats.num_fixed_variables;
-
-  const int num_variables = sleqp_problem_num_variables(problem);
-
-  const bool has_fixed_vars = num_fixed_vars > 0;
-
-  const double zero_eps = sleqp_params_get(preprocessor->params,
-                                           SLEQP_PARAM_ZERO_EPS);
-
-  if(has_fixed_vars)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_resize(preprocessor->transformed_var_lb,
-                                          num_variables - num_fixed_vars));
-
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(preprocessor->cache,
-                                            preprocessor->var_lb,
-                                            num_variables,
-                                            zero_eps));
-
-    SLEQP_CALL(sleqp_preprocessing_remove_fixed_entries(preprocessor->cache,
-                                                        preprocessor->transformed_var_lb,
-                                                        num_fixed_vars,
-                                                        preprocessor->fixed_var_indices));
-
-    SLEQP_CALL(sleqp_sparse_vector_resize(preprocessor->transformed_var_ub,
-                                          num_variables - num_fixed_vars));
-
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(preprocessor->cache,
-                                            preprocessor->var_ub,
-                                            num_variables,
-                                            zero_eps));
-
-    SLEQP_CALL(sleqp_preprocessing_remove_fixed_entries(preprocessor->cache,
-                                                        preprocessor->transformed_var_ub,
-                                                        num_fixed_vars,
-                                                        preprocessor->fixed_var_indices));
-
-  }
-  else
-  {
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(preprocessor->transformed_var_lb,
-                                            preprocessor->var_lb,
-                                            num_variables,
-                                            zero_eps));
-
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(preprocessor->transformed_var_ub,
-                                            preprocessor->var_ub,
-                                            num_variables,
-                                            zero_eps));
-  }
-
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE create_transformed_problem(SleqpPreprocessor* preprocessor)
-{
-  SleqpProblem* problem = preprocessor->original_problem;
-  SleqpParams* params = preprocessor->params;
-
-  const bool has_fixed_vars = preprocessor->stats.num_fixed_variables > 0;
-  SleqpFunc* transformed_func = NULL;
-
-  SLEQP_CALL(create_fixed_vars(preprocessor));
-
-  SLEQP_CALL(remove_vec_entries(sleqp_problem_linear_lb(problem),
-                                preprocessor->transformed_linear_lb,
-                                preprocessor->removed_linear_cons,
-                                preprocessor->num_removed_linear_cons,
-                                0));
-
-  SLEQP_CALL(remove_vec_entries(sleqp_problem_linear_ub(problem),
-                                preprocessor->transformed_linear_ub,
-                                preprocessor->removed_linear_cons,
-                                preprocessor->num_removed_linear_cons,
-                                0));
-
-  SLEQP_CALL(remove_matrix_rows(sleqp_problem_linear_coeffs(problem),
-                                preprocessor->transformed_linear_coeffs,
-                                preprocessor->removed_linear_cons,
-                                preprocessor->num_removed_linear_cons,
-                                0));
-
-  SLEQP_CALL(transform_var_bounds(preprocessor));
-
-  if(has_fixed_vars)
-  {
-    SLEQP_CALL(create_transformed_func(preprocessor, &transformed_func));
-  }
-  else
-  {
-    transformed_func = sleqp_problem_func(problem);
-  }
-
-
-  SLEQP_CALL(sleqp_problem_create(&preprocessor->transformed_problem,
-                                  transformed_func,
-                                  params,
-                                  preprocessor->transformed_var_lb,
-                                  preprocessor->transformed_var_ub,
-                                  sleqp_problem_general_lb(problem),
-                                  sleqp_problem_general_ub(problem),
-                                  preprocessor->transformed_linear_coeffs,
-                                  preprocessor->transformed_linear_lb,
-                                  preprocessor->transformed_linear_ub));
-
-  if(has_fixed_vars)
-  {
-    SLEQP_CALL(sleqp_func_release(&transformed_func));
+    SLEQP_CALL(sleqp_preprocessing_state_remove_linear_constraint(preprocessor->preprocessing_state,
+                                                                  i));
   }
 
   return SLEQP_OKAY;
@@ -679,7 +303,6 @@ SLEQP_RETCODE fix_variables_by_bounds(SleqpPreprocessor* preprocessor)
     if(preprocessor->var_lb[j] == preprocessor->var_ub[j])
     {
       preprocessor->var_states[j] = (VariableState) {.state = VarFixedByBound, .value = preprocessor->var_lb[j]};
-      ++preprocessor->stats.num_fixed_variables;
     }
   }
 
@@ -688,35 +311,7 @@ SLEQP_RETCODE fix_variables_by_bounds(SleqpPreprocessor* preprocessor)
 */
 
 static
-SLEQP_RETCODE collect_removed_linear_cons(SleqpPreprocessor* preprocessor)
-{
-  SleqpProblem* problem = preprocessor->original_problem;
-
-  const int num_linear_constraints = sleqp_problem_num_linear_constraints(problem);
-
-  const int num_removed_cons = preprocessor->stats.num_bound_converted_cons +
-    preprocessor->stats.num_redundant_cons;
-
-  preprocessor->num_removed_linear_cons = 0;
-
-  SLEQP_CALL(sleqp_realloc(&preprocessor->removed_linear_cons,
-                           num_removed_cons));
-
-  for(int i = 0; i < num_linear_constraints; ++i)
-  {
-    if(preprocessor->linear_cons_states[i].state != ConsUnchanged)
-    {
-      preprocessor->removed_linear_cons[preprocessor->num_removed_linear_cons++] = i;
-    }
-  }
-
-  assert(num_removed_cons == preprocessor->num_removed_linear_cons);
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE transform_problem(SleqpPreprocessor* preprocessor)
+SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
 {
   SLEQP_CALL(compute_cons_counts(preprocessor));
 
@@ -743,11 +338,13 @@ SLEQP_RETCODE transform_problem(SleqpPreprocessor* preprocessor)
     if(sleqp_is_infinite(-preprocessor->linear_lb[i]) &&
        sleqp_is_infinite(preprocessor->linear_ub[i]))
     {
-      SLEQP_CALL(remove_redundant_linear_constraint(preprocessor, i));
+      SLEQP_CALL(sleqp_preprocessing_state_remove_linear_constraint(preprocessor->preprocessing_state,
+                                                                    i));
     }
     else if(count == 0)
     {
-      SLEQP_CALL(remove_redundant_linear_constraint(preprocessor, i));
+      SLEQP_CALL(sleqp_preprocessing_state_remove_linear_constraint(preprocessor->preprocessing_state,
+                                                                    i));
     }
     else if(count == 1)
     {
@@ -772,18 +369,13 @@ SLEQP_RETCODE transform_problem(SleqpPreprocessor* preprocessor)
       if(preprocessor->linear_lb[i] <= preprocessor->linear_min[i] &&
          preprocessor->linear_ub[i] >= preprocessor->linear_max[i])
       {
-        SLEQP_CALL(remove_redundant_linear_constraint(preprocessor, i));
+        SLEQP_CALL(sleqp_preprocessing_state_remove_linear_constraint(preprocessor->preprocessing_state,
+                                                                      i));
       }
     }
   }
 
   SLEQP_CALL(check_for_constraint_infeasibility(preprocessor));
-
-  SLEQP_CALL(collect_removed_linear_cons(preprocessor));
-
-  // SLEQP_CALL(fix_variables_by_bounds(preprocessor));
-
-  SLEQP_CALL(create_transformed_problem(preprocessor));
 
   return SLEQP_OKAY;
 }
@@ -814,22 +406,8 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->linear_cons_counts, num_linear_constraints));
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->linear_entries, num_linear_constraints));
 
-  SLEQP_CALL(sleqp_alloc_array(&preprocessor->linear_cons_states, num_linear_constraints));
-
-  for(int i = 0; i < num_linear_constraints; ++i)
-  {
-    preprocessor->linear_cons_states[i] = (ConstraintState) {.state = ConsUnchanged, .bound = -1 };
-  }
-
-  SLEQP_CALL(sleqp_alloc_array(&preprocessor->converted_bounds,
-                               num_linear_constraints));
-
-  SLEQP_CALL(sleqp_alloc_array(&preprocessor->var_states, num_variables));
-
-  for(int j = 0; j < num_variables; ++j)
-  {
-    preprocessor->var_states[j] = (VariableState) {.state = VarUnchanged};
-  }
+  SLEQP_CALL(sleqp_preprocessing_state_create(&preprocessor->preprocessing_state,
+                                              problem));
 
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->var_lb, num_variables));
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->var_ub, num_variables));
@@ -840,40 +418,21 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->linear_min, num_linear_constraints));
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->linear_max, num_linear_constraints));
 
-  SLEQP_CALL(sleqp_alloc_array(&preprocessor->bound_converted_vars, num_variables));
-
-  for(int j = 0; j < num_variables; ++j)
-  {
-    preprocessor->bound_converted_vars[j] = SLEQP_NONE;
-  }
-
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->cons_dual_dense, num_constraints));
 
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->cons_state_dense, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&preprocessor->transformed_var_lb,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&preprocessor->transformed_var_ub,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&preprocessor->transformed_linear_lb,
-                                              num_linear_constraints));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&preprocessor->transformed_linear_ub,
-                                              num_linear_constraints));
-
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&preprocessor->cache,
                                               num_variables));
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(&preprocessor->transformed_linear_coeffs,
-                                        num_linear_constraints,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(remove_redundant_constraints(preprocessor));
 
-  preprocessor->stats = (PreprocessingStats) {0};
+  SLEQP_CALL(sleqp_transformation_create(&preprocessor->transformation,
+                                         preprocessor->preprocessing_state,
+                                         params));
 
-  SLEQP_CALL(transform_problem(preprocessor));
+  SLEQP_CALL(sleqp_transformation_create_transformed_problem(preprocessor->transformation,
+                                                             &preprocessor->transformed_problem));
 
   return SLEQP_OKAY;
 }
@@ -885,10 +444,13 @@ SLEQP_PREPROCESSING_RESULT sleqp_preprocessor_result(SleqpPreprocessor* preproce
     return SLEQP_PREPROCESSING_RESULT_INFEASIBLE;
   }
 
-  const int num_removed_cons = preprocessor->stats.num_bound_converted_cons +
-    preprocessor->stats.num_redundant_cons;
+  SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
-  if(num_removed_cons > 0)
+  const int num_fixed_vars = sleqp_preprocessing_state_num_fixed_variables(state);
+
+  const int num_removed_cons = sleqp_preprocessing_state_num_removed_linear_constraints(state);
+
+  if(num_fixed_vars > 0 || num_removed_cons > 0)
   {
     return SLEQP_PREPROCESSING_RESULT_SUCCESS;
   }
@@ -901,38 +463,12 @@ SleqpProblem* sleqp_preprocessor_transformed_problem(SleqpPreprocessor* preproce
   return preprocessor->transformed_problem;
 }
 
-SLEQP_RETCODE sleqp_preprocessor_transform_iterate(SleqpPreprocessor* preprocessor,
-                                                   const SleqpIterate* iterate,
-                                                   SleqpIterate* transformed_iterate)
+SLEQP_RETCODE sleqp_preprocessor_transform_primal(const SleqpSparseVec* source,
+                                                  SleqpSparseVec* target)
 {
-  SleqpProblem* problem = preprocessor->original_problem;
-
-  const int offset = sleqp_problem_num_general_constraints(problem);
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_primal(iterate),
-                                      sleqp_iterate_get_primal(transformed_iterate)));
-
-  SLEQP_CALL(remove_vec_entries(sleqp_iterate_get_cons_val(iterate),
-                                sleqp_iterate_get_cons_val(transformed_iterate),
-                                preprocessor->removed_linear_cons,
-                                preprocessor->num_removed_linear_cons,
-                                offset));
-
-  SLEQP_CALL(remove_vec_entries(sleqp_iterate_get_cons_dual(iterate),
-                                sleqp_iterate_get_cons_dual(transformed_iterate),
-                                preprocessor->removed_linear_cons,
-                                preprocessor->num_removed_linear_cons,
-                                offset));
-
-  SLEQP_CALL(remove_matrix_rows(sleqp_iterate_get_cons_jac(iterate),
-                                sleqp_iterate_get_cons_jac(transformed_iterate),
-                                preprocessor->removed_linear_cons,
-                                preprocessor->num_removed_linear_cons,
-                                offset));
-
   return SLEQP_OKAY;
 }
-
+/*
 static
 SLEQP_RETCODE restore_duals(SleqpPreprocessor* preprocessor,
                             const SleqpIterate* transformed_iterate,
@@ -1139,11 +675,13 @@ SLEQP_RETCODE restore_working_set(SleqpPreprocessor* preprocessor,
 
   return SLEQP_OKAY;
 }
+*/
 
 SLEQP_RETCODE sleqp_preprocessor_restore_iterate(SleqpPreprocessor* preprocessor,
                                                  const SleqpIterate* transformed_iterate,
                                                  SleqpIterate* original_iterate)
 {
+  /*
   SLEQP_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_primal(transformed_iterate),
                                       sleqp_iterate_get_primal(original_iterate)));
 
@@ -1161,6 +699,7 @@ SLEQP_RETCODE sleqp_preprocessor_restore_iterate(SleqpPreprocessor* preprocessor
   SLEQP_CALL(restore_duals(preprocessor,
                            transformed_iterate,
                            original_iterate));
+  */
 
 
   return SLEQP_OKAY;
@@ -1170,30 +709,19 @@ static SLEQP_RETCODE preprocessor_free(SleqpPreprocessor** star)
 {
   SleqpPreprocessor* preprocessor = *star;
 
-  sleqp_free(&preprocessor->fixed_var_indices);
-  sleqp_free(&preprocessor->fixed_var_values);
-
   SLEQP_CALL(sleqp_problem_release(&preprocessor->transformed_problem));
-
-  SLEQP_CALL(sleqp_sparse_matrix_release(&preprocessor->transformed_linear_coeffs));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&preprocessor->cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&preprocessor->transformed_linear_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&preprocessor->transformed_linear_lb));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&preprocessor->transformed_var_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&preprocessor->transformed_var_lb));
-
   sleqp_free(&preprocessor->removed_linear_cons);
-
-  sleqp_free(&preprocessor->converted_bounds);
 
   sleqp_free(&preprocessor->cons_state_dense);
 
   sleqp_free(&preprocessor->cons_dual_dense);
 
-  sleqp_free(&preprocessor->bound_converted_vars);
+  SLEQP_CALL(sleqp_preprocessing_state_release(&preprocessor->preprocessing_state));
+
+  SLEQP_CALL(sleqp_transformation_release(&preprocessor->transformation));
 
   sleqp_free(&preprocessor->linear_max);
   sleqp_free(&preprocessor->linear_min);
@@ -1205,8 +733,6 @@ static SLEQP_RETCODE preprocessor_free(SleqpPreprocessor** star)
   sleqp_free(&preprocessor->var_lb);
 
   sleqp_free(&preprocessor->removed_linear_cons);
-
-  sleqp_free(&preprocessor->linear_cons_states);
 
   sleqp_free(&preprocessor->linear_entries);
   sleqp_free(&preprocessor->linear_cons_counts);

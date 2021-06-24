@@ -358,6 +358,7 @@ START_TEST(test_simple_infeasibility)
 }
 END_TEST
 
+/*
 START_TEST(test_solve)
 {
   SleqpSparseMatrix* linear_coeffs;
@@ -663,7 +664,7 @@ START_TEST(test_restore_negative_bound_row)
   ASSERT_CALL(sleqp_sparse_matrix_release(&linear_coeffs));
 }
 END_TEST
-
+*/
 
 Suite* preprocessor_test_suite()
 {
@@ -690,11 +691,13 @@ Suite* preprocessor_test_suite()
 
   tcase_add_test(tc_prob, test_simple_infeasibility);
 
+  /*
   tcase_add_test(tc_prob, test_solve);
 
   tcase_add_test(tc_prob, test_restore_positive_bound_row);
 
   tcase_add_test(tc_prob, test_restore_negative_bound_row);
+  */
 
   suite_add_tcase(suite, tc_prob);
 

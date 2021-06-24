@@ -1,10 +1,12 @@
 #include "sleqp_preprocessing.h"
 
-SLEQP_RETCODE sleqp_preprocessing_merge_fixed_entries(const SleqpSparseVec* source,
+#include "sleqp_assert.h"
+
+SLEQP_RETCODE sleqp_preprocessing_merge_entries(const SleqpSparseVec* source,
                                                       SleqpSparseVec* target,
-                                                      int num_fixed,
-                                                      const int* fixed_indices,
-                                                      double* fixed_values)
+                                                      int num_entries,
+                                                      const int* entry_indices,
+                                                      double* entry_values)
 {
   SLEQP_CALL(sleqp_sparse_vector_clear(target));
 
@@ -15,14 +17,14 @@ SLEQP_RETCODE sleqp_preprocessing_merge_fixed_entries(const SleqpSparseVec* sour
   {
     const int i_v = source->indices[k];
 
-    while(k_f < num_fixed &&
-          fixed_indices[k_f] <= i_v)
+    while(k_f < num_entries &&
+          entry_indices[k_f] <= i_v)
     {
-      const int i_f = fixed_indices[k_f];
+      const int i_f = entry_indices[k_f];
 
       SLEQP_CALL(sleqp_sparse_vector_push(target,
                                           i_f,
-                                          fixed_values[k_f]));
+                                          entry_values[k_f]));
 
       ++k_f;
       ++offset;
@@ -37,10 +39,10 @@ SLEQP_RETCODE sleqp_preprocessing_merge_fixed_entries(const SleqpSparseVec* sour
 }
 
 
-SLEQP_RETCODE sleqp_preprocessing_remove_fixed_entries(const SleqpSparseVec* source,
-                                                       SleqpSparseVec* target,
-                                                       int num_fixed,
-                                                       const int* fixed_indices)
+SLEQP_RETCODE sleqp_preprocessing_remove_entries(const SleqpSparseVec* source,
+                                                 SleqpSparseVec* target,
+                                                 int num_entries,
+                                                 const int* entry_indices)
 {
   SLEQP_CALL(sleqp_sparse_vector_clear(target));
 
@@ -55,15 +57,15 @@ SLEQP_RETCODE sleqp_preprocessing_remove_fixed_entries(const SleqpSparseVec* sou
     const int i = source->indices[k];
     const double v = source->data[k];
 
-    while(k_f < num_fixed &&
-          fixed_indices[k_f] < i)
+    while(k_f < num_entries &&
+          entry_indices[k_f] < i)
     {
       ++k_f;
       ++offset;
     }
 
-    if(k_f < num_fixed &&
-       fixed_indices[k_f] == i)
+    if(k_f < num_entries &&
+       entry_indices[k_f] == i)
     {
       continue;
     }
@@ -76,40 +78,78 @@ SLEQP_RETCODE sleqp_preprocessing_remove_fixed_entries(const SleqpSparseVec* sou
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_preprocessing_remove_fixed_matrix_entries(const SleqpSparseMatrix* source,
-                                                              SleqpSparseMatrix* target,
-                                                              int num_fixed,
-                                                              const int* fixed_indices)
+SLEQP_RETCODE sleqp_preprocessing_remove_matrix_cols(const SleqpSparseMatrix* source,
+                                                     SleqpSparseMatrix* target,
+                                                     int num_entries,
+                                                     const int* col_indices)
+{
+  SLEQP_CALL(sleqp_preprocessing_remove_matrix_entries(source,
+                                                       target,
+                                                       num_entries,
+                                                       col_indices,
+                                                       0,
+                                                       NULL));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_preprocessing_remove_matrix_entries(const SleqpSparseMatrix* source,
+                                                        SleqpSparseMatrix* target,
+                                                        int num_col_entries,
+                                                        const int* col_indices,
+                                                        int num_row_entries,
+                                                        const int* row_indices)
 {
   SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
                                          sleqp_sparse_matrix_get_nnz(source)));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
-  const int num_cols = sleqp_sparse_matrix_get_num_rows(source);
+  sleqp_assert(sleqp_sparse_matrix_get_num_cols(source) ==
+               sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
+
+  sleqp_assert(sleqp_sparse_matrix_get_num_rows(source) ==
+               sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
+
+
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
 
   double* source_data = sleqp_sparse_matrix_get_data(source);
   int* source_rows = sleqp_sparse_matrix_get_rows(source);
   int* source_cols = sleqp_sparse_matrix_get_cols(source);
 
-  int offset = 0;
+  int col_offset = 0;
 
   for(int col = 0; col < num_cols; ++col)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(target,
-                                               col));
-
-    if(offset < num_fixed && fixed_indices[offset] <= col)
+    if(col_offset < num_col_entries && col_indices[col_offset] <= col)
     {
-      ++offset;
+      ++col_offset;
       continue;
     }
 
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(target,
+                                               col - col_offset));
+
+    int row_offset = 0;
+
     for(int k = source_cols[col]; k < source_cols[col + 1]; ++k)
     {
+      const int row = source_rows[k];
+
+      while(row_offset < num_row_entries && row_indices[row_offset] < row)
+      {
+        ++row_offset;
+      }
+
+      if(row_offset < num_row_entries && row_indices[row_offset] == row)
+      {
+        continue;
+      }
+
       SLEQP_CALL(sleqp_sparse_matrix_push(target,
-                                          source_rows[k],
-                                          col,
+                                          row - row_offset,
+                                          col - col_offset,
                                           source_data[k]));
     }
   }
@@ -119,8 +159,8 @@ SLEQP_RETCODE sleqp_preprocessing_remove_fixed_matrix_entries(const SleqpSparseM
 
 SLEQP_RETCODE sleqp_preprocessing_add_zero_entries(const SleqpSparseVec* source,
                                                    SleqpSparseVec* target,
-                                                   int num_fixed,
-                                                   const int* fixed_indices)
+                                                   int num_entries,
+                                                   const int* entry_indices)
 {
   SLEQP_CALL(sleqp_sparse_vector_clear(target));
 
@@ -135,7 +175,7 @@ SLEQP_RETCODE sleqp_preprocessing_add_zero_entries(const SleqpSparseVec* source,
     const int i = source->indices[k];
     const double v = source->data[k];
 
-    while(k_f < num_fixed && fixed_indices[k] <= i)
+    while(k_f < num_entries && entry_indices[k] <= i)
     {
       ++k_f;
       ++offset;
