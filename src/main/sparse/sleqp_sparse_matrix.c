@@ -130,17 +130,17 @@ bool sleqp_sparse_matrix_is_quadratic(const SleqpSparseMatrix* matrix)
   return matrix->num_rows == matrix->num_cols;
 }
 
-double* sleqp_sparse_matrix_get_data(SleqpSparseMatrix* matrix)
+double* sleqp_sparse_matrix_get_data(const SleqpSparseMatrix* matrix)
 {
   return matrix->data;
 }
 
-int* sleqp_sparse_matrix_get_cols(SleqpSparseMatrix* matrix)
+int* sleqp_sparse_matrix_get_cols(const SleqpSparseMatrix* matrix)
 {
   return matrix->cols;
 }
 
-int* sleqp_sparse_matrix_get_rows(SleqpSparseMatrix* matrix)
+int* sleqp_sparse_matrix_get_rows(const SleqpSparseMatrix* matrix)
 {
   return matrix->rows;
 }
@@ -325,6 +325,15 @@ double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
   }
 
   return NULL;
+}
+
+double sleqp_sparse_matrix_value_at(SleqpSparseMatrix* matrix,
+                                    int row,
+                                    int col)
+{
+  double* ptr = sleqp_sparse_matrix_at(matrix, row, col);
+
+  return ptr ? *ptr : 0.;
 }
 
 SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,

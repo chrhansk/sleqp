@@ -899,8 +899,6 @@ SLEQP_RETCODE sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
   const double eps = sleqp_params_get(linesearch->params,
                                       SLEQP_PARAM_EPS);
 
-  const double inf = sleqp_infinity();
-
   const double penalty_parameter = linesearch->penalty_parameter;
 
   const int num_constraints = sleqp_problem_num_constraints(problem);

@@ -1715,9 +1715,6 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
 
   if(solver->scaling_data)
   {
-    const double feas_eps = sleqp_params_get(solver->params,
-                                             SLEQP_PARAM_FEASIBILITY_TOL);
-
     double unscaled_violation;
 
     SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->unscaled_problem,
@@ -1851,12 +1848,6 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
-
-  const double eps = sleqp_params_get(solver->params,
-                                      SLEQP_PARAM_EPS);
-
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
 
   const double feas_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_FEASIBILITY_TOL);

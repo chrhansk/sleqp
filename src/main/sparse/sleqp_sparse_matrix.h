@@ -98,17 +98,17 @@ extern "C" {
   /**
    * Returns a pointer to the values of the matrix
    **/
-  SLEQP_EXPORT double* sleqp_sparse_matrix_get_data(SleqpSparseMatrix* matrix);
+  SLEQP_EXPORT double* sleqp_sparse_matrix_get_data(const SleqpSparseMatrix* matrix);
 
   /**
    * Returns a pointer to the columns of the given matrix
    **/
-  SLEQP_EXPORT int* sleqp_sparse_matrix_get_cols(SleqpSparseMatrix* matrix);
+  SLEQP_EXPORT int* sleqp_sparse_matrix_get_cols(const SleqpSparseMatrix* matrix);
 
   /**
    * Returns a pointer to the rows of the given matrix
    **/
-  SLEQP_EXPORT int* sleqp_sparse_matrix_get_rows(SleqpSparseMatrix* matrix);
+  SLEQP_EXPORT int* sleqp_sparse_matrix_get_rows(const SleqpSparseMatrix* matrix);
 
   /**
    * Pushes a new entry to the matrix. Fails if the matrix is at capacity
@@ -169,6 +169,19 @@ extern "C" {
   SLEQP_EXPORT double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
                                               int row,
                                               int col);
+
+  /**
+   * Returns the value of the entry at the given element of the matrix
+   *
+   * @param[in] matrix     The matrix
+   * @param[in] row        The given row
+   * @param[in] col        The given column
+   *
+   * @return A pointer to the entry, or NULL if the entry is not contained
+   **/
+  SLEQP_EXPORT double sleqp_sparse_matrix_value_at(SleqpSparseMatrix* matrix,
+                                                   int row,
+                                                   int col);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
