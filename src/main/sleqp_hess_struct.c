@@ -26,7 +26,7 @@ SLEQP_RETCODE sleqp_hessian_struct_create(SleqpHessianStruct** star,
 
   hessian_struct->dimension = dimension;
 
-  if(!empty)
+  if(!empty && dimension > 0)
   {
     SLEQP_CALL(sleqp_hessian_struct_push_block(hessian_struct,
                                                dimension));

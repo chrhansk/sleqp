@@ -700,6 +700,83 @@ START_TEST(test_restore_negative_bound_row)
 }
 END_TEST
 
+START_TEST(test_restore_fixed_vars)
+{
+  double* cache;
+
+  SleqpPreprocessor* preprocessor;
+
+  SleqpProblem* problem;
+  SleqpIterate* iterate;
+
+  SleqpSparseVec* transformed_initial;
+  SleqpIterate* transformed_iterate;
+
+  const double eps = sleqp_params_get(params,
+                                      SLEQP_PARAM_EPS);
+
+  ASSERT_CALL(sleqp_alloc_array(&cache, num_variables));
+
+  ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_var_lb));
+  ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_var_ub));
+
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          rosenbrock_func,
+                                          params,
+                                          rosenbrock_var_lb,
+                                          rosenbrock_var_ub,
+                                          rosenbrock_cons_lb,
+                                          rosenbrock_cons_ub));
+
+  ASSERT_CALL(sleqp_iterate_create(&iterate,
+                                   problem,
+                                   rosenbrock_initial));
+
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor,
+                                        problem,
+                                        params));
+
+  ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
+                   SLEQP_PREPROCESSING_RESULT_SUCCESS);
+
+  SleqpProblem* transformed_problem = sleqp_preprocessor_transformed_problem(preprocessor);
+
+  ck_assert_int_eq(sleqp_problem_num_variables(transformed_problem),
+                   0);
+
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(&transformed_initial, 0));
+
+  ASSERT_CALL(sleqp_iterate_create(&transformed_iterate,
+                                   transformed_problem,
+                                   transformed_initial));
+
+  ASSERT_CALL(sleqp_preprocessor_restore_iterate(preprocessor,
+                                                 transformed_iterate,
+                                                 iterate));
+
+  double stationarity_residuum;
+  ASSERT_CALL(sleqp_iterate_stationarity_residuum(problem,
+                                                  iterate,
+                                                  cache,
+                                                  &stationarity_residuum));
+
+  ck_assert(sleqp_is_zero(stationarity_residuum, eps));
+
+  ASSERT_CALL(sleqp_iterate_release(&transformed_iterate));
+
+  ASSERT_CALL(sleqp_sparse_vector_free(&transformed_initial));
+
+  ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
+
+  ASSERT_CALL(sleqp_iterate_release(&iterate));
+
+  ASSERT_CALL(sleqp_problem_release(&problem));
+
+  sleqp_free(&cache);
+}
+END_TEST
+
+
 Suite* preprocessor_test_suite()
 {
   Suite *suite;
@@ -732,6 +809,8 @@ Suite* preprocessor_test_suite()
   tcase_add_test(tc_prob, test_restore_positive_bound_row);
 
   tcase_add_test(tc_prob, test_restore_negative_bound_row);
+
+  tcase_add_test(tc_prob, test_restore_fixed_vars);
 
   suite_add_tcase(suite, tc_prob);
 
