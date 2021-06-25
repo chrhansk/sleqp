@@ -444,7 +444,8 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
                                                              &preprocessor->transformed_problem));
 
   SLEQP_CALL(sleqp_restoration_create(&preprocessor->restoration,
-                                      preprocessor->preprocessing_state));
+                                      preprocessor->preprocessing_state,
+                                      params));
 
   return SLEQP_OKAY;
 }

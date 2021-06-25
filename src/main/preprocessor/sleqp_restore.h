@@ -13,7 +13,8 @@ extern "C" {
   typedef struct SleqpRestoration SleqpRestoration;
 
   SLEQP_RETCODE sleqp_restoration_create(SleqpRestoration** star,
-                                         SleqpPreprocessingState* preprocessing_state);
+                                         SleqpPreprocessingState* preprocessing_state,
+                                         SleqpParams* params);
 
   SLEQP_RETCODE sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
                                                   const SleqpIterate* source,
