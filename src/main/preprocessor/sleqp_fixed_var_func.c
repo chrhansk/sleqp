@@ -172,6 +172,56 @@ SLEQP_RETCODE fixed_func_free(void* data)
   return SLEQP_OKAY;
 }
 
+static
+SLEQP_RETCODE create_fixed_var_hess_struct(const SleqpHessianStruct* source,
+                                           SleqpHessianStruct* target,
+                                           const int num_fixed,
+                                           const int* fixed_indices)
+{
+  SLEQP_CALL(sleqp_hessian_struct_clear(target));
+
+  const int num_blocks = sleqp_hessian_struct_get_num_blocks(source);
+
+  int fixed_pos = 0;
+
+  int offset = 0;
+  for(int block = 0; block < num_blocks; ++block)
+  {
+    int source_begin, source_end;
+
+    int next_offset = offset;
+
+    SLEQP_CALL(sleqp_hessian_struct_get_block_range(source,
+                                                    block,
+                                                    &source_begin,
+                                                    &source_end));
+
+    const int target_begin = source_begin - offset;
+
+
+    for(int j = source_begin; j < source_end; ++j)
+    {
+      if(fixed_pos < num_fixed && fixed_indices[fixed_pos] == j)
+      {
+        ++next_offset;
+        ++fixed_pos;
+      }
+    }
+
+    const int target_end = source_end - next_offset;
+
+    if(target_begin != target_end)
+    {
+      SLEQP_CALL(sleqp_hessian_struct_push_block(target,
+                                                 target_end));
+    }
+
+    offset = next_offset;
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_fixed_var_func_create(SleqpFunc** star,
                                           SleqpFunc* func,
                                           int num_fixed,
@@ -258,6 +308,16 @@ SLEQP_RETCODE sleqp_fixed_var_func_create(SleqpFunc** star,
                                num_variables - num_fixed,
                                num_constraints,
                                (void*) func_data));
+
+  SleqpFunc* fixed_var_func = *star;
+
+  SLEQP_CALL(sleqp_func_set_psd_hessian(fixed_var_func,
+                                        sleqp_func_has_psd_hessian(func)));
+
+  SLEQP_CALL(create_fixed_var_hess_struct(sleqp_func_get_hess_struct(func),
+                                          sleqp_func_get_hess_struct(fixed_var_func),
+                                          num_fixed,
+                                          fixed_indices));
 
   return SLEQP_OKAY;
 }

@@ -212,11 +212,13 @@ SLEQP_RETCODE create_transformed_var_ub(SleqpTransformation* transformation)
   const double zero_eps = sleqp_params_get(transformation->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
+  SleqpPreprocessingState* preprocessing_state = transformation->preprocessing_state;
+
   int num_fixed_vars;
   int* fixed_var_indices;
   double* fixed_var_values;
 
-  SLEQP_CALL(sleqp_preprocessing_state_fixed_variables(transformation->preprocessing_state,
+  SLEQP_CALL(sleqp_preprocessing_state_fixed_variables(preprocessing_state,
                                                        &num_fixed_vars,
                                                        &fixed_var_indices,
                                                        &fixed_var_values));
@@ -227,7 +229,7 @@ SLEQP_RETCODE create_transformed_var_ub(SleqpTransformation* transformation)
   SleqpConvertedBound* converted_bounds;
   int num_converted_bounds;
 
-  SLEQP_CALL(sleqp_preprocessing_state_converted_bounds(transformation->preprocessing_state,
+  SLEQP_CALL(sleqp_preprocessing_state_converted_bounds(preprocessing_state,
                                                         &converted_bounds,
                                                         &num_converted_bounds));
 
@@ -257,11 +259,13 @@ SLEQP_RETCODE sleqp_transformation_create_transformed_problem(SleqpTransformatio
 {
   SleqpProblem* problem = transformation->original_problem;
 
+  SleqpPreprocessingState* preprocessing_state = transformation->preprocessing_state;
+
   int num_fixed_vars;
   int* fixed_var_indices;
   double* fixed_var_values;
 
-  SLEQP_CALL(sleqp_preprocessing_state_fixed_variables(transformation->preprocessing_state,
+  SLEQP_CALL(sleqp_preprocessing_state_fixed_variables(preprocessing_state,
                                                        &num_fixed_vars,
                                                        &fixed_var_indices,
                                                        &fixed_var_values));
@@ -269,7 +273,7 @@ SLEQP_RETCODE sleqp_transformation_create_transformed_problem(SleqpTransformatio
   int num_removed_cons;
   int* removed_cons_indices;
 
-  SLEQP_CALL(sleqp_preprocessing_state_removed_linear_constraints(transformation->preprocessing_state,
+  SLEQP_CALL(sleqp_preprocessing_state_removed_linear_constraints(preprocessing_state,
                                                                   &num_removed_cons,
                                                                   &removed_cons_indices));
 
