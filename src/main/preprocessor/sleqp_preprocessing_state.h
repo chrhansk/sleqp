@@ -51,9 +51,9 @@ extern "C" {
 
   typedef enum
   {
-    SleqpLowerBound = (1 << 1),
-    SleqpUpperBound = (1 << 2),
-    SleqpBothBounds = (SleqpLowerBound | SleqpUpperBound)
+    SLEQP_LOWER_BOUND = (1 << 1),
+    SLEQP_UPPER_BOUND = (1 << 2),
+    SLEQP_BOTH_BOUNDS = (SLEQP_LOWER_BOUND | SLEQP_UPPER_BOUND)
 
   } SleqpBoundState;
 
@@ -91,6 +91,17 @@ extern "C" {
   int sleqp_preprocessing_state_num_fixed_variables(const SleqpPreprocessingState* state);
 
   int sleqp_preprocessing_state_num_removed_linear_constraints(const SleqpPreprocessingState* state);
+
+  SLEQP_RETCODE sleqp_preprocessing_state_flush(SleqpPreprocessingState* state);
+
+  SLEQP_RETCODE sleqp_preprocessing_state_fixed_variables(SleqpPreprocessingState* state,
+                                                          int* num_fixed_vars,
+                                                          int** fixed_var_indices,
+                                                          double** fixed_var_values);
+
+  SLEQP_RETCODE sleqp_preprocessing_state_removed_linear_constraints(SleqpPreprocessingState* state,
+                                                                     int* num_removed_cons,
+                                                                     int** removed_cons_indices);
 
   SleqpProblem* sleqp_preprocessing_state_get_problem(const SleqpPreprocessingState* state);
 

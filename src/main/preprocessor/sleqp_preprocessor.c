@@ -11,6 +11,7 @@
 
 #include "preprocessor/sleqp_preprocessing_state.h"
 #include "preprocessor/sleqp_transform.h"
+#include "preprocessor/sleqp_restore.h"
 
 typedef struct
 {
@@ -47,6 +48,7 @@ struct SleqpPreprocessor
 
   SleqpPreprocessingState* preprocessing_state;
   SleqpTransformation* transformation;
+  SleqpRestoration* restoration;
 
   int* removed_linear_cons;
   int num_removed_linear_cons;
@@ -128,7 +130,7 @@ SLEQP_RETCODE convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor
   {
     if(lb > preprocessor->var_lb[j])
     {
-      bound_state |= SleqpLowerBound;
+      bound_state |= SLEQP_LOWER_BOUND;
       improved_lower = true;
       preprocessor->var_lb[j] = lb;
     }
@@ -138,7 +140,7 @@ SLEQP_RETCODE convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor
   {
     if(ub < preprocessor->var_ub[j])
     {
-      bound_state |= SleqpUpperBound;
+      bound_state |= SLEQP_UPPER_BOUND;
       improved_upper = true;
       preprocessor->var_ub[j] = ub;
     }
@@ -432,12 +434,17 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   SLEQP_CALL(remove_redundant_constraints(preprocessor));
 
+  SLEQP_CALL(sleqp_preprocessing_state_flush(preprocessor->preprocessing_state));
+
   SLEQP_CALL(sleqp_transformation_create(&preprocessor->transformation,
                                          preprocessor->preprocessing_state,
                                          params));
 
   SLEQP_CALL(sleqp_transformation_create_transformed_problem(preprocessor->transformation,
                                                              &preprocessor->transformed_problem));
+
+  SLEQP_CALL(sleqp_restoration_create(&preprocessor->restoration,
+                                      preprocessor->preprocessing_state));
 
   return SLEQP_OKAY;
 }
@@ -468,9 +475,13 @@ SleqpProblem* sleqp_preprocessor_transformed_problem(SleqpPreprocessor* preproce
   return preprocessor->transformed_problem;
 }
 
-SLEQP_RETCODE sleqp_preprocessor_transform_primal(const SleqpSparseVec* source,
+SLEQP_RETCODE sleqp_preprocessor_transform_primal(SleqpPreprocessor* preprocessor,
+                                                  const SleqpSparseVec* source,
                                                   SleqpSparseVec* target)
 {
+  SLEQP_CALL(sleqp_transformation_convert_primal(preprocessor->transformation,
+                                                 source,
+                                                 target));
   return SLEQP_OKAY;
 }
 /*
@@ -686,26 +697,9 @@ SLEQP_RETCODE sleqp_preprocessor_restore_iterate(SleqpPreprocessor* preprocessor
                                                  const SleqpIterate* transformed_iterate,
                                                  SleqpIterate* original_iterate)
 {
-  /*
-  SLEQP_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_primal(transformed_iterate),
-                                      sleqp_iterate_get_primal(original_iterate)));
-
-  SLEQP_CALL(sleqp_set_and_evaluate(preprocessor->original_problem,
-                                    original_iterate,
-                                    SLEQP_VALUE_REASON_NONE));
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(sleqp_iterate_get_vars_dual(transformed_iterate),
-                                      sleqp_iterate_get_vars_dual(original_iterate)));
-
-  SLEQP_CALL(restore_working_set(preprocessor,
-                                 sleqp_iterate_get_working_set(transformed_iterate),
-                                 sleqp_iterate_get_working_set(original_iterate)));
-
-  SLEQP_CALL(restore_duals(preprocessor,
-                           transformed_iterate,
-                           original_iterate));
-  */
-
+  SLEQP_CALL(sleqp_restoration_restore_iterate(preprocessor->restoration,
+                                               transformed_iterate,
+                                               original_iterate));
 
   return SLEQP_OKAY;
 }
@@ -723,6 +717,8 @@ static SLEQP_RETCODE preprocessor_free(SleqpPreprocessor** star)
   sleqp_free(&preprocessor->cons_state_dense);
 
   sleqp_free(&preprocessor->cons_dual_dense);
+
+  SLEQP_CALL(sleqp_restoration_release(&preprocessor->restoration));
 
   SLEQP_CALL(sleqp_preprocessing_state_release(&preprocessor->preprocessing_state));
 

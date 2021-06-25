@@ -24,7 +24,8 @@ extern "C" {
 
   SleqpProblem* sleqp_preprocessor_transformed_problem(SleqpPreprocessor* preprocessor);
 
-  SLEQP_RETCODE sleqp_preprocessor_transform_primal(const SleqpSparseVec* source,
+  SLEQP_RETCODE sleqp_preprocessor_transform_primal(SleqpPreprocessor* preprocessor,
+                                                    const SleqpSparseVec* source,
                                                     SleqpSparseVec* target);
 
   SLEQP_RETCODE sleqp_preprocessor_restore_iterate(SleqpPreprocessor* preprocessor,

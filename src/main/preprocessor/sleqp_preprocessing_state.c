@@ -12,10 +12,15 @@ struct SleqpPreprocessingState
 
   int num_redundant_constraints;
 
-  int num_fixed_variables;
-
   SleqpVariableState* var_states;
   SleqpConstraintState* cons_states;
+
+  int num_fixed_vars;
+  int* fixed_var_indices;
+  double* fixed_var_values;
+
+  int num_removed_cons;
+  int* removed_cons_indices;
 };
 
 
@@ -66,7 +71,8 @@ SLEQP_RETCODE sleqp_preprocessing_state_reset(SleqpPreprocessingState* state)
 
   state->num_redundant_constraints = 0;
 
-  state->num_fixed_variables = 0;
+  state->num_fixed_vars = 0;
+  state->num_removed_cons = 0;
 
   return SLEQP_OKAY;
 }
@@ -150,7 +156,7 @@ SLEQP_RETCODE sleqp_preprocessing_state_fix_variable(SleqpPreprocessingState* st
     .value = value
   };
 
-  ++(state->num_fixed_variables);
+  ++(state->num_fixed_vars);
 
   return SLEQP_OKAY;
 }
@@ -178,12 +184,114 @@ SleqpConstraintState* sleqp_preprocessing_state_linear_constraint_states(const S
 
 int sleqp_preprocessing_state_num_fixed_variables(const SleqpPreprocessingState* state)
 {
-  return state->num_fixed_variables;
+  return state->num_fixed_vars;
 }
 
 int sleqp_preprocessing_state_num_removed_linear_constraints(const SleqpPreprocessingState* state)
 {
   return state->num_redundant_constraints + state->num_converted_bounds;
+}
+
+static
+SLEQP_RETCODE create_fixed_variables(SleqpPreprocessingState* state)
+{
+  SleqpProblem* problem = state->original_problem;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+
+  sleqp_free(&state->fixed_var_indices);
+  sleqp_free(&state->fixed_var_values);
+
+  SLEQP_CALL(sleqp_alloc_array(&state->fixed_var_indices,
+                               state->num_fixed_vars));
+
+  SLEQP_CALL(sleqp_alloc_array(&state->fixed_var_values,
+                               state->num_fixed_vars));
+
+  SleqpVariableState* var_states = sleqp_preprocessing_state_variable_states(state);
+
+  int i = 0;
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    if(var_states[j].state != SLEQP_VAR_UNCHANGED)
+    {
+      assert(var_states[j].state == SLEQP_VAR_BOUNDFIXED);
+
+      state->fixed_var_indices[i] = j;
+      state->fixed_var_values[i] = var_states[j].value;
+
+      ++i;
+    }
+  }
+
+  assert(i == state->num_fixed_vars);
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE create_fixed_linear_constraints(SleqpPreprocessingState* state)
+{
+  SleqpProblem* problem = state->original_problem;
+
+  const int num_linear_cons = sleqp_problem_num_linear_constraints(problem);
+
+  state->num_removed_cons = sleqp_preprocessing_state_num_removed_linear_constraints(state);
+
+  sleqp_free(&state->removed_cons_indices);
+
+  SLEQP_CALL(sleqp_alloc_array(&state->removed_cons_indices, state->num_removed_cons));
+
+  SleqpConstraintState* cons_states = sleqp_preprocessing_state_linear_constraint_states(state);
+
+  int j = 0;
+
+  for(int i = 0; i < num_linear_cons; ++i)
+  {
+    if(cons_states[i].state != SLEQP_CONS_UNCHANGED)
+    {
+      state->removed_cons_indices[j] = i;
+      ++j;
+    }
+  }
+
+  assert(j == state->num_removed_cons);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_preprocessing_state_flush(SleqpPreprocessingState* state)
+{
+  SLEQP_CALL(create_fixed_variables(state));
+
+  SLEQP_CALL(create_fixed_linear_constraints(state));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_preprocessing_state_fixed_variables(SleqpPreprocessingState* state,
+                                                        int* num_fixed_vars,
+                                                        int** fixed_var_indices,
+                                                        double** fixed_var_values)
+{
+  *num_fixed_vars = state->num_fixed_vars;
+
+  *fixed_var_indices = state->fixed_var_indices;
+  *fixed_var_values = state->fixed_var_values;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_preprocessing_state_removed_linear_constraints(SleqpPreprocessingState* state,
+                                                                   int* num_removed_cons,
+                                                                   int** removed_cons_indices)
+{
+  *num_removed_cons = sleqp_preprocessing_state_num_removed_linear_constraints(state);
+
+  *removed_cons_indices = state->removed_cons_indices;
+
+  return SLEQP_OKAY;
 }
 
 SleqpProblem* sleqp_preprocessing_state_get_problem(const SleqpPreprocessingState* state)
@@ -195,6 +303,11 @@ static
 SLEQP_RETCODE preprocessing_state_free(SleqpPreprocessingState** star)
 {
   SleqpPreprocessingState* state = *star;
+
+  sleqp_free(&state->removed_cons_indices);
+
+  sleqp_free(&state->fixed_var_indices);
+  sleqp_free(&state->fixed_var_values);
 
   sleqp_free(&state->converted_bounds);
   sleqp_free(&state->cons_states);

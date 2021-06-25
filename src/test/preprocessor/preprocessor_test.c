@@ -396,7 +396,6 @@ START_TEST(test_fixed_var)
 }
 END_TEST
 
-/*
 START_TEST(test_solve)
 {
   SleqpSparseMatrix* linear_coeffs;
@@ -488,6 +487,7 @@ START_TEST(test_solve)
 }
 END_TEST
 
+/*
 START_TEST(test_restore_positive_bound_row)
 {
   SleqpSparseMatrix* linear_coeffs;
@@ -731,9 +731,9 @@ Suite* preprocessor_test_suite()
 
   tcase_add_test(tc_prob, test_fixed_var);
 
-  /*
   tcase_add_test(tc_prob, test_solve);
 
+  /*
   tcase_add_test(tc_prob, test_restore_positive_bound_row);
 
   tcase_add_test(tc_prob, test_restore_negative_bound_row);

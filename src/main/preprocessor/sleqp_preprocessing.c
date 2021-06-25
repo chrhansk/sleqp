@@ -10,6 +10,8 @@ SLEQP_RETCODE sleqp_preprocessing_merge_entries(const SleqpSparseVec* source,
 {
   SLEQP_CALL(sleqp_sparse_vector_clear(target));
 
+  SLEQP_CALL(sleqp_sparse_vector_reserve(target, source->nnz + num_entries));
+
   int offset = 0;
   int k_f = 0;
 
