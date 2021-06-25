@@ -391,8 +391,6 @@ START_TEST(test_fixed_var)
   ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
 
   ASSERT_CALL(sleqp_problem_release(&problem));
-
-  ASSERT_CALL(sleqp_problem_release(&problem));
 }
 END_TEST
 
