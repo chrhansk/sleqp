@@ -217,6 +217,91 @@ START_TEST(test_negative_bound_row)
 }
 END_TEST
 
+
+/*
+ * An example for a forcing constraint,
+ * 1 <= x + y, y <= 0, x <= 1.
+ * Should fix x = 1, y = 0.
+ */
+
+/*
+START_TEST(test_forcing_constraint)
+{
+  SleqpSparseMatrix* linear_coeffs;
+  SleqpPreprocessor* preprocessor;
+  SleqpProblem* problem;
+
+  const int num_linear = 1;
+
+  const double inf = sleqp_infinity();
+  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+
+  double var_lb[] = {-inf, -inf};
+
+  double var_ub[] = {1., 0.};
+
+  ASSERT_CALL(sleqp_sparse_vector_from_raw(rosenbrock_var_lb,
+                                           var_lb,
+                                           num_variables,
+                                           zero_eps));
+
+  ASSERT_CALL(sleqp_sparse_vector_from_raw(rosenbrock_var_ub,
+                                           var_ub,
+                                           num_variables,
+                                           zero_eps));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(linear_lb, 0, 1.));
+
+  ASSERT_CALL(sleqp_sparse_vector_push(linear_ub, 0, inf));
+
+  ASSERT_CALL(sleqp_sparse_matrix_create(&linear_coeffs,
+                                         num_linear,
+                                         num_variables,
+                                         2));
+
+  ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_coeffs, 0));
+
+  ASSERT_CALL(sleqp_sparse_matrix_push(linear_coeffs, 0, 0, 1.));
+
+  ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_coeffs, 1));
+
+  ASSERT_CALL(sleqp_sparse_matrix_push(linear_coeffs, 0, 1, 1.));
+
+  ASSERT_CALL(sleqp_problem_create(&problem,
+                                   rosenbrock_func,
+                                   params,
+                                   rosenbrock_var_lb,
+                                   rosenbrock_var_ub,
+                                   rosenbrock_cons_lb,
+                                   rosenbrock_cons_ub,
+                                   linear_coeffs,
+                                   linear_lb,
+                                   linear_ub));
+
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor,
+                                        problem,
+                                        params));
+
+  ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
+                   SLEQP_PREPROCESSING_RESULT_SUCCESS);
+
+  SleqpProblem* transformed_problem = sleqp_preprocessor_transformed_problem(preprocessor);
+
+  ck_assert_int_eq(sleqp_problem_num_linear_constraints(transformed_problem),
+                   0);
+
+  ck_assert_int_eq(sleqp_problem_num_variables(transformed_problem),
+                   0);
+
+  ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
+
+  ASSERT_CALL(sleqp_problem_release(&problem));
+
+  ASSERT_CALL(sleqp_sparse_matrix_release(&linear_coeffs));
+}
+END_TEST
+*/
+
 START_TEST(test_dominated_row)
 {
   SleqpSparseMatrix* linear_coeffs;
@@ -795,6 +880,8 @@ Suite* preprocessor_test_suite()
   tcase_add_test(tc_prob, test_positive_bound_row);
 
   tcase_add_test(tc_prob, test_negative_bound_row);
+
+  // tcase_add_test(tc_prob, test_forcing_constraint);
 
   tcase_add_test(tc_prob, test_dominated_row);
 
