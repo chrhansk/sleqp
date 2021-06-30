@@ -69,7 +69,7 @@ struct SleqpSolver
 
   SleqpLPi* lp_interface;
 
-  SleqpCauchyData* cauchy_data;
+  SleqpCauchy* cauchy_data;
 
   SleqpSparseVec* cauchy_direction;
 
@@ -479,7 +479,7 @@ static SLEQP_RETCODE update_penalty_parameter(SleqpSolver* solver)
     return SLEQP_OKAY;
   }
 
-  SleqpCauchyData* cauchy_data = solver->cauchy_data;
+  SleqpCauchy* cauchy_data = solver->cauchy_data;
 
   double current_violation;
 

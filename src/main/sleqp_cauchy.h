@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-  typedef struct SleqpCauchyData SleqpCauchyData;
+  typedef struct SleqpCauchy SleqpCauchy;
 
   typedef enum {
     SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT,
@@ -26,14 +26,14 @@ extern "C" {
   } SLEQP_CAUCHY_OBJECTIVE_TYPE;
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchyData** star,
+  SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchy** star,
                                          SleqpProblem* problem,
                                          SleqpParams* params,
                                          SleqpOptions* options,
                                          SleqpLPi* lp_interface);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchyData** star);
+  SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchy** star);
 
   /**
    * Sets the iterate and trust radius for the current LP.
@@ -43,7 +43,7 @@ extern "C" {
    * @param[in]       trust_radius       The trust radius
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchyData* cauchy_data,
+  SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchy* cauchy_data,
                                          SleqpIterate* iterate,
                                          double trust_radius);
 
@@ -58,7 +58,7 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchyData* cauchy_data,
+  SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchy* cauchy_data,
                                    SleqpSparseVec* gradient,
                                    double penalty,
                                    SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type);
@@ -72,7 +72,7 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_get_objective_value(SleqpCauchyData* cauchy_data,
+  SLEQP_RETCODE sleqp_cauchy_get_objective_value(SleqpCauchy* cauchy_data,
                                                  double* objective_value);
 
   /**
@@ -84,7 +84,7 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchyData* cauchy_data,
+  SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchy* cauchy_data,
                                              SleqpIterate* iterate);
 
   /**
@@ -95,7 +95,7 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchyData* cauchy_data,
+  SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchy* cauchy_data,
                                            SleqpSparseVec* direction);
 
   /**
@@ -109,7 +109,7 @@ extern "C" {
    * @param[out]      locally_infeasible   Whether or not the iterate is locally infeasible
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchyData* cauchy_data,
+  SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchy* cauchy_data,
                                                 bool* locally_infeasible);
 
   /**
@@ -121,7 +121,7 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchyData* cauchy_data,
+  SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchy* cauchy_data,
                                                  SleqpIterate* iterate);
 
   /**
@@ -133,7 +133,7 @@ extern "C" {
    * @param[out]      violation          The total constraint violation
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchyData* cauchy_data,
+  SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchy* cauchy_data,
                                            double* violation);
 
 #ifdef __cplusplus

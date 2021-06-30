@@ -20,7 +20,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpProblem* problem;
   SleqpIterate* iterate;
   SleqpLPi* lp_interface;
-  SleqpCauchyData* cauchy_data;
+  SleqpCauchy* cauchy_data;
   SleqpWorkingSet* working_set;
   SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;

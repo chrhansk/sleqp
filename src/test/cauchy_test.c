@@ -184,7 +184,7 @@ START_TEST(test_unconstrained_cauchy_direction)
   SleqpIterate* iterate;
   SleqpLPi* lp_interface;
   SleqpSparseVec* direction;
-  SleqpCauchyData* cauchy_data;
+  SleqpCauchy* cauchy_data;
 
   double penalty_parameter = 1., trust_radius = 1.5;
 

@@ -20,7 +20,7 @@ SleqpOptions* options;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpLPi* lp_interface;
-SleqpCauchyData* cauchy_data;
+SleqpCauchy* cauchy_data;
 
 SleqpSparseVec* cauchy_direction;
 

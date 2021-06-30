@@ -19,7 +19,7 @@ SleqpOptions* options;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpLPi* lp_interface;
-SleqpCauchyData* cauchy_data;
+SleqpCauchy* cauchy_data;
 
 void working_set_var_setup()
 {
