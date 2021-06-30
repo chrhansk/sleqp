@@ -247,7 +247,7 @@ START_TEST(test_unconstrained_cauchy_direction)
   ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(direction, 0), -trust_radius, tolerance));
   ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(direction, 1), -trust_radius, tolerance));
 
-  ASSERT_CALL(sleqp_cauchy_free(&cauchy_data));
+  ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&direction));
 

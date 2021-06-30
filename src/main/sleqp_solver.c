@@ -2280,7 +2280,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_direction));
 
-  SLEQP_CALL(sleqp_cauchy_free(&solver->cauchy_data));
+  SLEQP_CALL(sleqp_cauchy_release(&solver->cauchy_data));
 
   SLEQP_CALL(sleqp_lpi_free(&solver->lp_interface));
 

@@ -69,7 +69,7 @@ void newton_setup()
 
 void newton_teardown()
 {
-  ASSERT_CALL(sleqp_cauchy_free(&cauchy_data));
+  ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 

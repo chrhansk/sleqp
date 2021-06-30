@@ -151,7 +151,7 @@ void constrained_teardown()
 {
   ASSERT_CALL(sleqp_sparse_vector_free(&cauchy_direction));
 
-  ASSERT_CALL(sleqp_cauchy_free(&cauchy_data));
+  ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 

@@ -33,7 +33,7 @@ extern "C" {
                                     SleqpLPi* lp_interface);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_free(SleqpCauchy** star);
+  SLEQP_RETCODE sleqp_cauchy_release(SleqpCauchy** star);
 
   /**
    * Sets the iterate and trust radius for the current LP.

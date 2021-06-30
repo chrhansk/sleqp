@@ -9,6 +9,7 @@
 
 struct SleqpCauchy
 {
+  int refcount;
   SleqpProblem* problem;
   SleqpParams* params;
   SleqpOptions* options;
@@ -54,6 +55,8 @@ SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
   SleqpCauchy* data = *star;
 
   *data = (SleqpCauchy){0};
+
+  data->refcount = 1;
 
   data->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(data->problem));
@@ -1088,16 +1091,10 @@ SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_free(SleqpCauchy** star)
+static
+SLEQP_RETCODE cauchy_free(SleqpCauchy** star)
 {
   SleqpCauchy* data = *star;
-
-  if(!data)
-  {
-    return SLEQP_OKAY;
-  }
-
-  //SLEQP_CALL(sleqp_merit_data_free(&data->merit_data));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->quadratic_gradient));
 
@@ -1123,6 +1120,25 @@ SLEQP_RETCODE sleqp_cauchy_free(SleqpCauchy** star)
   SLEQP_CALL(sleqp_problem_release(&data->problem));
 
   sleqp_free(star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_cauchy_release(SleqpCauchy** star)
+{
+  SleqpCauchy* data = *star;
+
+  if(!data)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--data->refcount == 0)
+  {
+    SLEQP_CALL(cauchy_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }
