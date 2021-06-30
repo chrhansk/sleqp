@@ -58,14 +58,14 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
 
-  ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
-                                       problem,
-                                       params,
-                                       options,
-                                       lp_interface));
+  ASSERT_CALL(sleqp_cauchy_create(&cauchy_data,
+                                  problem,
+                                  params,
+                                  options,
+                                  lp_interface));
 
   ASSERT_CALL(sleqp_working_set_create(&working_set,
-                                      problem));
+                                       problem));
 
   ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
                                                         params));
@@ -114,7 +114,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_working_set_release(&working_set));
 
-  ASSERT_CALL(sleqp_cauchy_data_free(&cauchy_data));
+  ASSERT_CALL(sleqp_cauchy_free(&cauchy_data));
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 

@@ -60,16 +60,16 @@ void newton_setup()
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_INIT));
 
-  ASSERT_CALL(sleqp_cauchy_data_create(&cauchy_data,
-                                       problem,
-                                       params,
-                                       options,
-                                       lp_interface));
+  ASSERT_CALL(sleqp_cauchy_create(&cauchy_data,
+                                  problem,
+                                  params,
+                                  options,
+                                  lp_interface));
 }
 
 void newton_teardown()
 {
-  ASSERT_CALL(sleqp_cauchy_data_free(&cauchy_data));
+  ASSERT_CALL(sleqp_cauchy_free(&cauchy_data));
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 

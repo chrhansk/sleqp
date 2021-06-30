@@ -26,14 +26,14 @@ extern "C" {
   } SLEQP_CAUCHY_OBJECTIVE_TYPE;
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchy** star,
-                                         SleqpProblem* problem,
-                                         SleqpParams* params,
-                                         SleqpOptions* options,
-                                         SleqpLPi* lp_interface);
+  SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
+                                    SleqpProblem* problem,
+                                    SleqpParams* params,
+                                    SleqpOptions* options,
+                                    SleqpLPi* lp_interface);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchy** star);
+  SLEQP_RETCODE sleqp_cauchy_free(SleqpCauchy** star);
 
   /**
    * Sets the iterate and trust radius for the current LP.

@@ -271,9 +271,9 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
        hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
     {
       SLEQP_CALL(sleqp_bfgs_create(&solver->bfgs_data,
-                                        func,
-                                        params,
-                                        options));
+                                   func,
+                                   params,
+                                   options));
 
       func = sleqp_bfgs_get_func(solver->bfgs_data);
     }
@@ -345,11 +345,11 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->unscaled_violation,
                                               num_constraints));
 
-  SLEQP_CALL(sleqp_cauchy_data_create(&solver->cauchy_data,
-                                      solver->problem,
-                                      params,
-                                      options,
-                                      solver->lp_interface));
+  SLEQP_CALL(sleqp_cauchy_create(&solver->cauchy_data,
+                                 solver->problem,
+                                 params,
+                                 options,
+                                 solver->lp_interface));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_direction,
                                               num_variables));
@@ -1626,17 +1626,17 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
     if(solver->bfgs_data)
     {
       SLEQP_CALL(sleqp_bfgs_push(solver->bfgs_data,
-                                      solver->iterate,
-                                      solver->trial_iterate,
-                                      solver->multipliers));
+                                 solver->iterate,
+                                 solver->trial_iterate,
+                                 solver->multipliers));
     }
 
     if(solver->sr1_data)
     {
       SLEQP_CALL(sleqp_sr1_push(solver->sr1_data,
-                                     solver->iterate,
-                                     solver->trial_iterate,
-                                     solver->multipliers));
+                                solver->iterate,
+                                solver->trial_iterate,
+                                solver->multipliers));
     }
 
     SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE],
@@ -2280,7 +2280,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_direction));
 
-  SLEQP_CALL(sleqp_cauchy_data_free(&solver->cauchy_data));
+  SLEQP_CALL(sleqp_cauchy_free(&solver->cauchy_data));
 
   SLEQP_CALL(sleqp_lpi_free(&solver->lp_interface));
 

@@ -39,11 +39,11 @@ struct SleqpCauchy
   SleqpSparseVec* quadratic_gradient;
 };
 
-SLEQP_RETCODE sleqp_cauchy_data_create(SleqpCauchy** star,
-                                       SleqpProblem* problem,
-                                       SleqpParams* params,
-                                       SleqpOptions* options,
-                                       SleqpLPi* lp_interface)
+SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
+                                  SleqpProblem* problem,
+                                  SleqpParams* params,
+                                  SleqpOptions* options,
+                                  SleqpLPi* lp_interface)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -1088,7 +1088,7 @@ SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_data_free(SleqpCauchy** star)
+SLEQP_RETCODE sleqp_cauchy_free(SleqpCauchy** star)
 {
   SleqpCauchy* data = *star;
 
