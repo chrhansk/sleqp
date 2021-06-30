@@ -155,7 +155,7 @@ SLEQP_RETCODE sleqp_linesearch_set_iterate(SleqpLineSearchData* linesearch,
 
 SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                            SleqpSparseVec* direction,
-                                           SleqpSparseVec* multipliers,
+                                           const SleqpSparseVec* multipliers,
                                            SleqpSparseVec* hessian_direction,
                                            double* step_length,
                                            double* quadratic_merit_value)
@@ -176,9 +176,6 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
   const double zero_eps = sleqp_params_get(linesearch->params,
                                            SLEQP_PARAM_ZERO_EPS);
-
-  const double feas_eps = sleqp_params_get(linesearch->params,
-                                           SLEQP_PARAM_FEASIBILITY_TOL);
 
   SLEQP_CALL(sleqp_timer_start(linesearch->timer));
 

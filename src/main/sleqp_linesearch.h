@@ -61,7 +61,7 @@ extern "C" {
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                              SleqpSparseVec* direction,
-                                             SleqpSparseVec* multipliers,
+                                             const SleqpSparseVec* multipliers,
                                              SleqpSparseVec* hessian_direction,
                                              double* step_length,
                                              double* quadratic_merit_value);
