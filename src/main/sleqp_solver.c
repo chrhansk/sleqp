@@ -109,6 +109,7 @@ struct SleqpSolver
   SleqpLineSearchData* linesearch;
 
   SleqpParametricSolver* parametric_solver;
+  SleqpWorkingSet* parametric_original_working_set;
 
   SleqpCallbackHandler** callback_handlers;
 
@@ -210,37 +211,24 @@ static SLEQP_RETCODE set_residuum(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
-                                  SleqpProblem* problem,
-                                  SleqpParams* params,
-                                  SleqpOptions* options,
-                                  SleqpSparseVec* primal,
-                                  SleqpScaling* scaling_data)
+static
+SLEQP_RETCODE solver_create_problem(SleqpSolver* solver,
+                                    SleqpProblem* problem,
+                                    SleqpScaling* scaling_data,
+                                    SleqpSparseVec* primal)
 {
-  assert(sleqp_sparse_vector_is_valid(primal));
-
-  SLEQP_CALL(sleqp_malloc(star));
-
-  SleqpSolver* solver = *star;
-
-  *solver = (SleqpSolver){0};
-
-  solver->refcount = 1;
-
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
   SleqpProblem* scaled_problem;
+
+  SleqpParams* params = solver->params;
+  SleqpOptions* options = solver->options;
 
   solver->unscaled_problem = problem;
   SLEQP_CALL(sleqp_problem_capture(solver->unscaled_problem));
 
   if(scaling_data)
   {
+    SLEQP_CALL(sleqp_scaling_capture(scaling_data));
     solver->scaling_data = scaling_data;
-
-    SLEQP_CALL(sleqp_scaling_capture(solver->scaling_data));
 
     SLEQP_CALL(sleqp_problem_scaling_create(&solver->problem_scaling,
                                             solver->scaling_data,
@@ -304,6 +292,29 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     sleqp_problem_linear_ub(scaled_problem)));
   }
 
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
+                                  SleqpProblem* problem,
+                                  SleqpParams* params,
+                                  SleqpOptions* options,
+                                  SleqpSparseVec* primal,
+                                  SleqpScaling* scaling_data)
+{
+  assert(sleqp_sparse_vector_is_valid(primal));
+
+  SLEQP_CALL(sleqp_malloc(star));
+
+  SleqpSolver* solver = *star;
+
+  *solver = (SleqpSolver){0};
+
+  solver->refcount = 1;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
   SLEQP_CALL(sleqp_params_capture(params));
@@ -311,6 +322,11 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_options_capture(options));
   solver->options = options;
+
+  SLEQP_CALL(solver_create_problem(solver,
+                                   problem,
+                                   scaling_data,
+                                   primal));
 
   solver->iteration = 0;
   solver->elapsed_seconds = 0.;
@@ -424,6 +440,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                               solver->options,
                                               solver->merit_data,
                                               solver->linesearch));
+
+    SLEQP_CALL(sleqp_working_set_create(&solver->parametric_original_working_set, solver->problem));
   }
 
   SLEQP_CALL(sleqp_alloc_array(&solver->callback_handlers,
@@ -595,6 +613,8 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
 {
   SleqpIterate* iterate = solver->iterate;
 
+  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+
   {
     SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
                                         iterate,
@@ -647,23 +667,36 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
                                              iterate,
                                              solver->cauchy_data,
                                              solver->cauchy_step,
+                                             solver->cauchy_hessian_step,
                                              solver->multipliers,
                                              &(solver->lp_trust_radius),
                                              cauchy_merit_value));
   }
 
-  {
-    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
-                                            iterate));
+  SLEQP_CALL(sleqp_working_set_copy(sleqp_iterate_get_working_set(iterate),
+                                    solver->parametric_original_working_set));
 
+  SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
+                                          iterate));
+
+  // Reconstruct the augmented Jacobian if required
+  if(!sleqp_working_set_eq(solver->parametric_original_working_set,
+                           sleqp_iterate_get_working_set(iterate)))
+  {
     SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
                                               iterate));
-
-    SLEQP_CALL(sleqp_linesearch_set_iterate(solver->linesearch,
-                                            iterate,
-                                            solver->penalty_parameter,
-                                            solver->trust_radius));
   }
+
+  SLEQP_CALL(sleqp_linesearch_set_iterate(solver->linesearch,
+                                          iterate,
+                                          solver->penalty_parameter,
+                                          solver->trust_radius));
+
+  SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
+                                      iterate,
+                                      solver->aug_jacobian,
+                                      solver->trust_radius,
+                                      solver->penalty_parameter));
 
 #if !defined(NDEBUG)
 
@@ -2235,6 +2268,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   }
 
   sleqp_free(&solver->callback_handlers);
+
+  SLEQP_CALL(sleqp_working_set_release(&solver->parametric_original_working_set));
 
   SLEQP_CALL(sleqp_parametric_solver_release(&solver->parametric_solver));
 

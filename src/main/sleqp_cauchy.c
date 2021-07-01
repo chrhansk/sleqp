@@ -314,7 +314,7 @@ static SLEQP_RETCODE create_var_bounds(SleqpCauchy* cauchy_data,
       cauchy_data->vars_lb[j] = SLEQP_MAX(lbval - xval, -trust_radius);
     }
 
-    assert(cauchy_data->vars_lb[j] <=cauchy_data->vars_ub[j]);
+    assert(cauchy_data->vars_lb[j] <= cauchy_data->vars_ub[j]);
   }
 
   return SLEQP_OKAY;
@@ -423,6 +423,12 @@ SLEQP_RETCODE sleqp_cauchy_set_trust_radius(SleqpCauchy* cauchy_data,
                                cauchy_data->iterate,
                                num_variables,
                                num_constraints));
+
+  SLEQP_CALL(sleqp_lpi_set_bounds(cauchy_data->lp_interface,
+                                  cauchy_data->cons_lb,
+                                  cauchy_data->cons_ub,
+                                  cauchy_data->vars_lb,
+                                  cauchy_data->vars_ub));
 
   return SLEQP_OKAY;
 }

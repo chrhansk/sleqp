@@ -41,6 +41,7 @@ extern "C" {
                                               SleqpIterate* iterate,
                                               SleqpCauchy* cauchy_data,
                                               SleqpSparseVec* cauchy_direction,
+                                              SleqpSparseVec* cauchy_hessian_direction,
                                               const SleqpSparseVec* multipliers,
                                               double* trust_radius,
                                               double* quadratic_merit_value);
