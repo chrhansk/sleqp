@@ -389,9 +389,9 @@ START_TEST(test_parametric_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_bool(options,
-                                    SLEQP_OPTION_BOOL_PARAMETRIC_CAUCHY,
-                                    true));
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_PARAMETRIC_CAUCHY,
+                                    SLEQP_PARAMETRIC_CAUCHY_COARSE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
