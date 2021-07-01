@@ -19,6 +19,7 @@
 
 #include "sparse/sleqp_sparse_factorization_umfpack.h"
 
+#include "sleqp_parametric.h"
 #include "sleqp_newton.h"
 
 #include "sleqp_soc.h"
@@ -29,6 +30,7 @@
 #include "sleqp_linesearch.h"
 #include "sleqp_merit.h"
 #include "sleqp_scale.h"
+#include "sleqp_penalty.h"
 #include "sleqp_problem_scaling.h"
 #include "sleqp_util.h"
 
@@ -105,6 +107,8 @@ struct SleqpSolver
   SleqpMeritData* merit_data;
 
   SleqpLineSearchData* linesearch;
+
+  SleqpParametricSolver* parametric_solver;
 
   SleqpCallbackHandler** callback_handlers;
 
@@ -409,6 +413,19 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                      params,
                                      solver->merit_data));
 
+  SLEQP_PARAMETRIC_CAUCHY parametric_cauchy = sleqp_options_get_int(solver->options,
+                                                                    SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+
+  if(parametric_cauchy != SLEQP_PARAMETRIC_CAUCHY_DISABLED)
+  {
+    SLEQP_CALL(sleqp_parametric_solver_create(&solver->parametric_solver,
+                                              solver->problem,
+                                              solver->params,
+                                              solver->options,
+                                              solver->merit_data,
+                                              solver->linesearch));
+  }
+
   SLEQP_CALL(sleqp_alloc_array(&solver->callback_handlers,
                                SLEQP_SOLVER_NUM_EVENTS));
 
@@ -566,8 +583,111 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
                                                 iterate));
   }
 
-  SLEQP_CALL(sleqp_newton_compute_multipliers(solver->newton_data,
-                                              solver->multipliers));
+  SLEQP_CALL(sleqp_newton_add_violated_multipliers(solver->newton_data,
+                                                   solver->multipliers));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
+                                                    double* cauchy_merit_value,
+                                                    bool* full_step)
+{
+  SleqpIterate* iterate = solver->iterate;
+
+  {
+    SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
+                                        iterate,
+                                        solver->lp_trust_radius));
+
+    SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
+                                  sleqp_iterate_get_func_grad(iterate),
+                                  solver->penalty_parameter,
+                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+
+    double objective_value;
+
+    SLEQP_CALL(sleqp_cauchy_get_objective_value(solver->cauchy_data,
+                                                &objective_value));
+
+    const double reduction = solver->current_merit_value - objective_value;
+
+    sleqp_assert_is_geq(reduction, 0., eps);
+
+    const double criticality_bound = reduction / SLEQP_MIN(solver->lp_trust_radius, 1.);
+
+    // Bound on the criticality measure used in
+    // "On the Convergence of Successive Linear Programming Algorithms"
+    sleqp_log_debug("Criticality bound: %g", criticality_bound);
+
+
+    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
+                                            iterate));
+
+    SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
+                                              iterate));
+
+    SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
+                                        iterate,
+                                        solver->aug_jacobian,
+                                        solver->trust_radius,
+                                        solver->penalty_parameter));
+
+    SLEQP_CALL(estimate_dual_values(solver, iterate));
+
+    SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
+                                          solver->cauchy_direction));
+  }
+
+  {
+    SLEQP_CALL(sleqp_parametric_solver_set_penalty(solver->parametric_solver,
+                                                   solver->penalty_parameter));
+
+    SLEQP_CALL(sleqp_parametric_solver_solve(solver->parametric_solver,
+                                             iterate,
+                                             solver->cauchy_data,
+                                             solver->cauchy_step,
+                                             solver->multipliers,
+                                             &(solver->lp_trust_radius),
+                                             cauchy_merit_value));
+  }
+
+  {
+    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
+                                            iterate));
+
+    SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
+                                              iterate));
+
+    SLEQP_CALL(sleqp_linesearch_set_iterate(solver->linesearch,
+                                            iterate,
+                                            solver->penalty_parameter,
+                                            solver->trust_radius));
+  }
+
+#if !defined(NDEBUG)
+
+  {
+    double actual_quadratic_merit_value;
+
+    double func_dual = 1.;
+
+    SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
+                                     iterate,
+                                     &func_dual,
+                                     solver->cauchy_step,
+                                     solver->multipliers,
+                                     solver->penalty_parameter,
+                                     &actual_quadratic_merit_value));
+
+    sleqp_assert_is_eq(*cauchy_merit_value,
+                       actual_quadratic_merit_value,
+                       eps);
+  }
+
+#endif
+
+  (*full_step) = true;
 
   return SLEQP_OKAY;
 }
@@ -590,7 +710,6 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
 
   // compute Cauchy direction / step and dual estimation
   {
-
     SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
                                         iterate,
                                         solver->lp_trust_radius));
@@ -727,10 +846,22 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(compute_cauchy_step(solver,
-                                 cauchy_merit_value,
-                                 quadratic_model,
-                                 full_step));
+  SLEQP_PARAMETRIC_CAUCHY parametric_cauchy = sleqp_options_get_int(solver->options,
+                                                                    SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+
+  if(parametric_cauchy != SLEQP_PARAMETRIC_CAUCHY_DISABLED)
+  {
+    SLEQP_CALL(compute_cauchy_step_parametric(solver,
+                                              cauchy_merit_value,
+                                              full_step));
+  }
+  else
+  {
+    SLEQP_CALL(compute_cauchy_step(solver,
+                                   cauchy_merit_value,
+                                   quadratic_model,
+                                   full_step));
+  }
 
   const SleqpSparseVec* trial_step = solver->cauchy_step;
 
@@ -807,10 +938,22 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
 
   double cauchy_merit_value;
 
-  SLEQP_CALL(compute_cauchy_step(solver,
-                                 &cauchy_merit_value,
-                                 true,
-                                 full_step));
+  SLEQP_PARAMETRIC_CAUCHY parametric_cauchy = sleqp_options_get_int(solver->options,
+                                                                    SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+
+  if(parametric_cauchy != SLEQP_PARAMETRIC_CAUCHY_DISABLED)
+  {
+    SLEQP_CALL(compute_cauchy_step_parametric(solver,
+                                              &cauchy_merit_value,
+                                              full_step));
+  }
+  else
+  {
+    SLEQP_CALL(compute_cauchy_step(solver,
+                                   &cauchy_merit_value,
+                                   true,
+                                   full_step));
+  }
 
   // compute Newton step
   {
@@ -2092,6 +2235,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   }
 
   sleqp_free(&solver->callback_handlers);
+
+  SLEQP_CALL(sleqp_parametric_solver_release(&solver->parametric_solver));
 
   SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
 

@@ -39,8 +39,8 @@ extern "C" {
                                          double penalty_parameter);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_compute_multipliers(SleqpNewtonData* data,
-                                                 SleqpSparseVec* multipliers);
+  SLEQP_RETCODE sleqp_newton_add_violated_multipliers(SleqpNewtonData* data,
+                                                      SleqpSparseVec* multipliers);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,

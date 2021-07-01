@@ -491,8 +491,8 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_compute_multipliers(SleqpNewtonData* data,
-                                               SleqpSparseVec* multipliers)
+SLEQP_RETCODE sleqp_newton_add_violated_multipliers(SleqpNewtonData* data,
+                                                    SleqpSparseVec* multipliers)
 {
   assert(data->iterate);
 

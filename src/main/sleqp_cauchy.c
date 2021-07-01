@@ -409,6 +409,24 @@ SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_cauchy_set_trust_radius(SleqpCauchy* cauchy_data,
+                                            double trust_radius)
+{
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(cauchy_data->iterate);
+
+  const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  const int num_constraints = sleqp_sparse_matrix_get_num_rows(cons_jac);
+
+  cauchy_data->trust_radius = trust_radius;
+
+  SLEQP_CALL(create_var_bounds(cauchy_data,
+                               cauchy_data->iterate,
+                               num_variables,
+                               num_constraints));
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE check_basis(SleqpCauchy* cauchy_data,
                                  bool* valid_basis)
 {

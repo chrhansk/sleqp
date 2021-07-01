@@ -54,6 +54,14 @@ class LineSearch(_DocEnum):
   Exact  = csleqp.SLEQP_LINESEARCH_EXACT, "Exact line search"
   Appeox = csleqp.SLEQP_LINESEARCH_APPROX, "Approximate line search"
 
+class ParametricCauchy(_DocEnum):
+  """
+  The parametric Cauchy type to be used
+  """
+  Disabled = csleqp.SLEQP_PARAMETRIC_CAUCHY_DISABLED, "Disable parametric Cauchy"
+  Coarse   = csleqp.SLEQP_PARAMETRIC_CAUCHY_COARSE, "Coarse parametric Cauchy"
+  Fine     = csleqp.SLEQP_PARAMETRIC_CAUCHY_FINE, "Fine parametric Cauchy"
+
 class ValueReason(_DocEnum):
   """
   The reason for setting a new function value

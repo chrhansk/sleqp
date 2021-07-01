@@ -18,7 +18,8 @@ cdef class Options:
                   'max_newton_iterations',
                   'bfgs_sizing',
                   'tr_solver',
-                  'linesearch']
+                  'linesearch',
+                  'parametric_cauchy']
 
     for key, value in values.items():
       self._set_prop(key, value)
@@ -92,6 +93,13 @@ cdef class Options:
                                                        csleqp.SLEQP_OPTION_INT_LINESEARCH)
     return LineSearch(linesearch)
 
+  @property
+  def parametric_cauchy(self) -> ParametricCauchy:
+    cdef int parametric_cauchy = csleqp.sleqp_options_get_int(self.options,
+                                                              csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY)
+
+    return ParametricCauchy(parametric_cauchy)
+
   @perform_newton_step.setter
   def perform_newton_step(self, value: bool) -> None:
     csleqp_call(csleqp.sleqp_options_set_bool(self.options,
@@ -159,6 +167,12 @@ cdef class Options:
   def linesearch(self, value):
     csleqp_call(csleqp.sleqp_options_set_int(self.options,
                                              csleqp.SLEQP_OPTION_INT_LINESEARCH,
+                                             value.value))
+
+  @parametric_cauchy.setter
+  def parametric_cauchy(self, value):
+    csleqp_call(csleqp.sleqp_options_set_int(self.options,
+                                             csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY,
                                              value.value))
 
   def values(self) -> set:

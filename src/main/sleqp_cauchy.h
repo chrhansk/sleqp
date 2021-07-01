@@ -47,6 +47,10 @@ extern "C" {
                                          SleqpIterate* iterate,
                                          double trust_radius);
 
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_cauchy_set_trust_radius(SleqpCauchy* cauchy_data,
+                                              double trust_radius);
+
   /**
    * Solve the LP according to the current iterate. The
    * objective is determined according to the function
