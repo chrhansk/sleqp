@@ -128,15 +128,11 @@ struct SleqpSolver
   double current_merit_value;
 
   // SOC related
-  SleqpSOCData* soc_data;
+  SleqpSOC* soc_data;
 
-  SleqpSparseVec* soc_direction;
+  SleqpSparseVec* soc_trial_point;
 
-  SleqpSparseVec* soc_corrected_direction;
-
-  SleqpSparseVec* soc_hessian_direction;
-
-  SleqpSparseVec* initial_soc_trial_point;
+  double soc_step_norm;
 
   double* dense_cache;
 
@@ -465,16 +461,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                    solver->problem,
                                    params));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_direction,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_corrected_direction,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_hessian_direction,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->initial_soc_trial_point,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_trial_point,
                                               num_variables));
 
 
@@ -1078,52 +1065,29 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
 
 static SLEQP_RETCODE compute_trial_point_soc(SleqpSolver* solver)
 {
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
   SleqpProblem* problem = solver->problem;
 
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
-  SleqpSparseVec* current_point = sleqp_iterate_get_primal(iterate);
   SleqpSparseVec* trial_point = sleqp_iterate_get_primal(trial_iterate);
 
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  SLEQP_CALL(sleqp_soc_compute_trial_point(solver->soc_data,
+                                           solver->aug_jacobian,
+                                           iterate,
+                                           solver->trial_step,
+                                           trial_iterate,
+                                           solver->soc_trial_point,
+                                           &solver->soc_step_norm));
 
-  SLEQP_CALL(sleqp_soc_compute(solver->soc_data,
-                               solver->aug_jacobian,
-                               iterate,
-                               trial_iterate,
-                               solver->soc_direction));
-
-  double max_step_length = 1.;
-
-  SLEQP_CALL(sleqp_max_step_length(trial_point,
-                                   solver->soc_direction,
-                                   sleqp_problem_var_lb(problem),
-                                   sleqp_problem_var_ub(problem),
-                                   &max_step_length));
-
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->trial_step,
-                                            solver->soc_direction,
-                                            1.,
-                                            max_step_length,
-                                            zero_eps,
-                                            solver->soc_corrected_direction));
-
-  {
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(current_point,
-                                              solver->soc_corrected_direction,
-                                              1.,
-                                              1.,
-                                              zero_eps,
-                                              solver->initial_soc_trial_point));
-
-    SLEQP_CALL(sleqp_sparse_vector_clip(solver->initial_soc_trial_point,
-                                        sleqp_problem_var_lb(problem),
-                                        sleqp_problem_var_ub(problem),
-                                        zero_eps,
-                                        trial_point));
-  }
+  SLEQP_CALL(sleqp_sparse_vector_clip(solver->soc_trial_point,
+                                      sleqp_problem_var_lb(problem),
+                                      sleqp_problem_var_ub(problem),
+                                      zero_eps,
+                                      trial_point));
 
   return SLEQP_OKAY;
 }
@@ -1524,9 +1488,7 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
 
       SLEQP_CALL(compute_trial_point_soc(solver));
 
-      const double soc_trial_step_norm = sleqp_sparse_vector_norm(solver->soc_corrected_direction);
-
-      solver->boundary_step = sleqp_is_geq(soc_trial_step_norm,
+      solver->boundary_step = sleqp_is_geq(solver->soc_step_norm,
                                            solver->trust_radius,
                                            eps);
 
@@ -2243,13 +2205,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   sleqp_free(&solver->dense_cache);
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->initial_soc_trial_point));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_hessian_direction));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_corrected_direction));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_direction));
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_trial_point));
 
   SLEQP_CALL(sleqp_soc_data_release(&solver->soc_data));
 

@@ -9,31 +9,41 @@
 #include "sleqp_aug_jacobian.h"
 #include "sleqp_iterate.h"
 #include "sleqp_problem.h"
+#include "sleqp_util.h"
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-  typedef struct SleqpSOCData SleqpSOCData;
+  typedef struct SleqpSOC SleqpSOC;
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_soc_data_create(SleqpSOCData** star,
+  SLEQP_RETCODE sleqp_soc_data_create(SleqpSOC** star,
                                       SleqpProblem* problem,
                                       SleqpParams* params);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_soc_compute(SleqpSOCData* soc_data,
-                                  SleqpAugJacobian* augmented_jacobian,
-                                  SleqpIterate* iterate,
-                                  SleqpIterate* trial_iterate,
-                                  SleqpSparseVec* soc_direction);
+  SLEQP_RETCODE sleqp_soc_compute_direction(SleqpSOC* soc_data,
+                                            SleqpAugJacobian* augmented_jacobian,
+                                            const SleqpIterate* iterate,
+                                            const SleqpIterate* trial_iterate,
+                                            SleqpSparseVec* soc_direction);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_soc_data_capture(SleqpSOCData* soc_data);
+  SLEQP_RETCODE sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
+                                              SleqpAugJacobian* augmented_jacobian,
+                                              const SleqpIterate* iterate,
+                                              const SleqpSparseVec* trial_step,
+                                              const SleqpIterate* trial_iterate,
+                                              SleqpSparseVec* soc_trial_point,
+                                              double* soc_step_norm);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_soc_data_release(SleqpSOCData** star);
+  SLEQP_RETCODE sleqp_soc_data_capture(SleqpSOC* soc_data);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_soc_data_release(SleqpSOC** star);
 
 #ifdef __cplusplus
 }
