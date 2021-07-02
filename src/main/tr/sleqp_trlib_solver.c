@@ -431,6 +431,8 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                               iter + 1,
                                               zero_eps));
 
+      SLEQP_CALL(sleqp_sparse_vector_resize(data->h, sleqp_sparse_matrix_get_num_cols(data->Q)));
+
       SLEQP_CALL(sleqp_sparse_matrix_vector_product(data->Q, data->h, data->dense_cache));
 
       SLEQP_CALL(sleqp_sparse_vector_from_raw(data->s,
@@ -632,6 +634,8 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
         SLEQP_CALL(matrix_push_column(data->Q,
                                       data->p,
                                       1.));
+
+        assert(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q));
 
         assert(sleqp_sparse_matrix_valid(data->Q));
 
