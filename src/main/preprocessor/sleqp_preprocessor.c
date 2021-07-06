@@ -132,7 +132,6 @@ SLEQP_RETCODE convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor
     {
       bound_state |= SLEQP_LOWER_BOUND;
       improved_lower = true;
-      preprocessor->var_lb[j] = lb;
     }
   }
 
@@ -142,7 +141,6 @@ SLEQP_RETCODE convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor
     {
       bound_state |= SLEQP_UPPER_BOUND;
       improved_upper = true;
-      preprocessor->var_ub[j] = ub;
     }
   }
 
@@ -173,11 +171,11 @@ SLEQP_RETCODE compute_linear_bounds(SleqpPreprocessor* preprocessor)
   SleqpProblem* problem = preprocessor->original_problem;
 
   const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear_constraints = sleqp_problem_num_linear_constraints(problem);
+  const int num_linear = sleqp_problem_num_linear_constraints(problem);
 
   SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs) == num_linear_constraints);
+  assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs) == num_linear);
   assert(sleqp_sparse_matrix_get_num_cols(linear_coeffs) == num_variables);
 
   double* linear_data = sleqp_sparse_matrix_get_data(linear_coeffs);
@@ -186,7 +184,7 @@ SLEQP_RETCODE compute_linear_bounds(SleqpPreprocessor* preprocessor)
 
   const double inf = sleqp_infinity();
 
-  for(int i = 0; i < num_linear_constraints; ++i)
+  for(int i = 0; i < num_linear; ++i)
   {
     preprocessor->linear_min[i] = 0.;
     preprocessor->linear_max[i] = 0.;
@@ -265,33 +263,72 @@ SLEQP_RETCODE compute_linear_bounds(SleqpPreprocessor* preprocessor)
   return SLEQP_OKAY;
 }
 
+
+static
+SLEQP_RETCODE add_forcing_constraint(SleqpPreprocessor* preprocessor,
+                                     int i,
+                                     SleqpBoundState bound_state)
+{
+  SLEQP_CALL(sleqp_preprocessing_state_add_forcing_constraint(preprocessor->preprocessing_state,
+                                                              i,
+                                                              bound_state,
+                                                              preprocessor->var_lb,
+                                                              preprocessor->var_ub));
+
+  return SLEQP_OKAY;
+}
+
 static
 SLEQP_RETCODE check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor)
 {
   SleqpProblem* problem = preprocessor->original_problem;
 
+  SleqpPreprocessingState* state = preprocessor->preprocessing_state;
+
+  SleqpConstraintState* linear_cons_states = sleqp_preprocessing_state_linear_constraint_states(state);
+
   const int num_linear_constraints = sleqp_problem_num_linear_constraints(problem);
 
   for(int i = 0; i < num_linear_constraints; ++i)
   {
-    if(!sleqp_is_infinite(-preprocessor->linear_lb[i]) &&
-       preprocessor->linear_max[i] < preprocessor->linear_lb[i])
+    if(linear_cons_states[i].state != SLEQP_CONS_UNCHANGED)
     {
-      preprocessor->infeasible = true;
-      break;
+      continue;
     }
 
-    if(!sleqp_is_infinite(preprocessor->linear_ub[i]) &&
-       preprocessor->linear_min[i] > preprocessor->linear_ub[i])
+    if(sleqp_is_finite(preprocessor->linear_lb[i]))
     {
-      preprocessor->infeasible = true;
-      break;
+      const double bound_slack = preprocessor->linear_max[i] - preprocessor->linear_lb[i];
+
+      if(bound_slack < 0.)
+      {
+        preprocessor->infeasible = true;
+      }
+      else if(bound_slack == 0.)
+      {
+        add_forcing_constraint(preprocessor, i, SLEQP_LOWER_BOUND);
+        // add forcing constraint
+      }
+    }
+
+    if(sleqp_is_finite(preprocessor->linear_ub[i]))
+    {
+      const double bound_slack = preprocessor->linear_ub[i] - preprocessor->linear_min[i];
+
+      if(bound_slack < 0.)
+      {
+        preprocessor->infeasible = true;
+      }
+      else if(bound_slack == 0.)
+      {
+        add_forcing_constraint(preprocessor, i, SLEQP_UPPER_BOUND);
+        // add forcing constraint
+      }
     }
   }
 
   return SLEQP_OKAY;
 }
-
 
 static
 SLEQP_RETCODE fix_variables_by_bounds(SleqpPreprocessor* preprocessor)
@@ -306,9 +343,9 @@ SLEQP_RETCODE fix_variables_by_bounds(SleqpPreprocessor* preprocessor)
   {
     if(preprocessor->var_lb[j] == preprocessor->var_ub[j])
     {
-      SLEQP_CALL(sleqp_preprocessing_state_fix_variable(state,
-                                                        j,
-                                                        preprocessor->var_lb[j]));
+      SLEQP_CALL(sleqp_preprocessing_state_fix_variable_to_bounds(state,
+                                                                  j,
+                                                                  preprocessor->var_lb[j]));
     }
   }
 
@@ -342,8 +379,15 @@ SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
     }
     else if(count == 0)
     {
-      SLEQP_CALL(sleqp_preprocessing_state_remove_linear_constraint(preprocessor->preprocessing_state,
-                                                                    i));
+      if(preprocessor->linear_lb[i] > 0. || preprocessor->linear_ub[i] < 0)
+      {
+        preprocessor->infeasible = true;
+      }
+      else
+      {
+        SLEQP_CALL(sleqp_preprocessing_state_remove_linear_constraint(preprocessor->preprocessing_state,
+                                                                      i));
+      }
     }
     else if(count == 1)
     {

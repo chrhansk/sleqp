@@ -1,5 +1,6 @@
 #include "sleqp_working_set.h"
 
+#include "sleqp_assert.h"
 #include "sleqp_mem.h"
 
 struct SleqpWorkingSet
@@ -399,6 +400,77 @@ bool sleqp_working_set_valid(const SleqpWorkingSet* working_set)
   }
 
   return true;
+}
+
+static
+SLEQP_RETCODE supports_range(SleqpSparseVec* dual,
+                             SLEQP_ACTIVE_STATE* states,
+                             bool* supports)
+{
+  *supports = true;
+
+  for(int k = 0; k < dual->nnz; ++k)
+  {
+    const int i = dual->indices[k];
+    const double v = dual->data[k];
+
+    SLEQP_ACTIVE_STATE state = states[i];
+
+    switch (state)
+    {
+    case SLEQP_ACTIVE_BOTH:
+      break;
+    case SLEQP_ACTIVE_LOWER:
+      if(v > 0.)
+      {
+        *supports = false;
+        return SLEQP_OKAY;
+      }
+      break;
+    case SLEQP_ACTIVE_UPPER:
+      if(v < 0.)
+      {
+        *supports = false;
+        return SLEQP_OKAY;
+      }
+      break;
+    case SLEQP_INACTIVE:
+      if(v != 0.)
+      {
+        *supports = false;
+        return SLEQP_OKAY;
+      }
+      break;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_working_set_supports_cons_dual(const SleqpWorkingSet* working_set,
+                                                   SleqpSparseVec* cons_dual,
+                                                   bool* supports)
+{
+  SleqpProblem* problem = working_set->problem;
+
+  sleqp_assert(cons_dual->dim == sleqp_problem_num_constraints(problem));
+
+  SLEQP_CALL(supports_range(cons_dual, working_set->constraint_states, supports));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_working_set_supports_vars_dual(const SleqpWorkingSet* working_set,
+                                                   SleqpSparseVec* vars_dual,
+                                                   bool* supports)
+{
+  SleqpProblem* problem = working_set->problem;
+
+  sleqp_assert(vars_dual->dim == sleqp_problem_num_variables(problem));
+
+  SLEQP_CALL(supports_range(vars_dual, working_set->variable_states, supports));
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_working_set_fprintf(const SleqpWorkingSet* working_set,

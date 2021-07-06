@@ -158,6 +158,16 @@ extern "C" {
    **/
   SLEQP_EXPORT bool sleqp_working_set_valid(const SleqpWorkingSet* working_set);
 
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_supports_cons_dual(const SleqpWorkingSet* working_set,
+                                                     SleqpSparseVec* cons_dual,
+                                                     bool* supports);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_supports_vars_dual(const SleqpWorkingSet* working_set,
+                                                     SleqpSparseVec* vars_dual,
+                                                     bool* supports);
+
   /**
    * Prints the given working set to the given file
    *
