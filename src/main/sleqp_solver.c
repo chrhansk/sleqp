@@ -101,7 +101,7 @@ struct SleqpSolver
 
   SleqpAugJacobian* aug_jacobian;
 
-  SleqpDualEstimationData* estimation_data;
+  SleqpDualEstimation* estimation_data;
   SleqpSparseVec* estimation_residuum;
 
   SleqpMeritData* merit_data;
@@ -410,8 +410,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                        params,
                                        solver->factorization));
 
-  SLEQP_CALL(sleqp_dual_estimation_data_create(&solver->estimation_data,
-                                               solver->problem));
+  SLEQP_CALL(sleqp_dual_estimation_create(&solver->estimation_data,
+                                          solver->problem));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->estimation_residuum,
                                               num_variables));
@@ -2235,7 +2235,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->estimation_residuum));
 
-  SLEQP_CALL(sleqp_dual_estimation_data_free(&solver->estimation_data));
+  SLEQP_CALL(sleqp_dual_estimation_free(&solver->estimation_data));
 
   SLEQP_CALL(sleqp_aug_jacobian_release(&solver->aug_jacobian));
 

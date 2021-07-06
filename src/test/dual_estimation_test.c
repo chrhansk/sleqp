@@ -25,7 +25,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
 
-  SleqpDualEstimationData* estimation_data;
+  SleqpDualEstimation* estimation_data;
 
   double penalty_parameter = 1., trust_radius = 0.1;
 
@@ -75,7 +75,7 @@ START_TEST(test_simply_constrained_dual_estimation)
                                         params,
                                         factorization));
 
-  ASSERT_CALL(sleqp_dual_estimation_data_create(&estimation_data, problem));
+  ASSERT_CALL(sleqp_dual_estimation_create(&estimation_data, problem));
 
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
                                        iterate,
@@ -106,7 +106,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(vars_dual, 0), -2., tolerance));
   ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(vars_dual, 1), -4., tolerance));
 
-  ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
+  ASSERT_CALL(sleqp_dual_estimation_free(&estimation_data));
 
   ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
 

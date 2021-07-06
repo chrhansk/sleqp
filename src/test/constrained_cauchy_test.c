@@ -96,7 +96,7 @@ START_TEST(test_dual_variable)
 
   SleqpSparseFactorization* factorization;
   SleqpAugJacobian* jacobian;
-  SleqpDualEstimationData* estimation_data;
+  SleqpDualEstimation* estimation_data;
 
   double trust_radius = 0.1, penalty_parameter = 1.;
 
@@ -124,7 +124,7 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
-  ASSERT_CALL(sleqp_dual_estimation_data_create(&estimation_data, problem));
+  ASSERT_CALL(sleqp_dual_estimation_create(&estimation_data, problem));
 
   ASSERT_CALL(sleqp_dual_estimation_compute(estimation_data,
                                             iterate,
@@ -138,7 +138,7 @@ START_TEST(test_dual_variable)
 
   ck_assert(sleqp_is_eq(cons_dual->data[0], 0.4142135623, 1e-8));
 
-  ASSERT_CALL(sleqp_dual_estimation_data_free(&estimation_data));
+  ASSERT_CALL(sleqp_dual_estimation_free(&estimation_data));
 
   ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
 

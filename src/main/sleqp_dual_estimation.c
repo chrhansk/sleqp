@@ -3,7 +3,7 @@
 #include "sleqp_cmp.h"
 #include "sleqp_mem.h"
 
-struct SleqpDualEstimationData
+struct SleqpDualEstimation
 {
   SleqpProblem* problem;
 
@@ -12,14 +12,14 @@ struct SleqpDualEstimationData
 };
 
 
-SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
-                                                SleqpProblem* problem)
+SLEQP_RETCODE sleqp_dual_estimation_create(SleqpDualEstimation** star,
+                                           SleqpProblem* problem)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   const int num_variables = sleqp_problem_num_variables(problem);
 
-  SleqpDualEstimationData* data = *star;
+  SleqpDualEstimation* data = *star;
 
   data->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(data->problem));
@@ -31,7 +31,7 @@ SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_data,
+SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
                                             SleqpIterate* iterate,
                                             SleqpSparseVec* residuum,
                                             SleqpAugJacobian* jacobian)
@@ -165,9 +165,9 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_dual_estimation_data_free(SleqpDualEstimationData** star)
+SLEQP_RETCODE sleqp_dual_estimation_free(SleqpDualEstimation** star)
 {
-  SleqpDualEstimationData* data = *star;
+  SleqpDualEstimation* data = *star;
 
   if(!data)
   {

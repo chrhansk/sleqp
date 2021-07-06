@@ -26,11 +26,11 @@
 extern "C" {
 #endif
 
-  typedef struct SleqpDualEstimationData SleqpDualEstimationData;
+  typedef struct SleqpDualEstimation SleqpDualEstimation;
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_dual_estimation_data_create(SleqpDualEstimationData** star,
-                                                  SleqpProblem* problem);
+  SLEQP_RETCODE sleqp_dual_estimation_create(SleqpDualEstimation** star,
+                                             SleqpProblem* problem);
 
   /**
    * Computes the estimation of the dual variables for the given iterate
@@ -43,13 +43,13 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimationData* estimation_data,
+  SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
                                               SleqpIterate* iterate,
                                               SleqpSparseVec* residuum,
                                               SleqpAugJacobian* aug_jacobian);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_dual_estimation_data_free(SleqpDualEstimationData** star);
+  SLEQP_RETCODE sleqp_dual_estimation_free(SleqpDualEstimation** star);
 
 #ifdef __cplusplus
 }
