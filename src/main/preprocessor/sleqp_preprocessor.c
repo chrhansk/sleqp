@@ -197,15 +197,15 @@ SLEQP_RETCODE compute_linear_bounds(SleqpPreprocessor* preprocessor)
     for(int k = linear_cols[col]; k < linear_cols[col + 1]; ++k)
     {
       const int row = linear_rows[k];
-      const double value  = linear_data[k];
+      const double value = linear_data[k];
 
       if(value == 0.)
       {
         continue;
       }
 
-      double lb = preprocessor->var_lb[row];
-      double ub = preprocessor->var_ub[row];
+      double lb = preprocessor->var_lb[col];
+      double ub = preprocessor->var_ub[col];
 
       if(value > 0.)
       {
