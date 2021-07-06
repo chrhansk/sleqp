@@ -19,7 +19,7 @@ extern "C" {
     ? SLEQP_NOMEM : SLEQP_OKAY
 
 #define sleqp_reallocate_memory(ptr, size)                              \
-  (*ptr = realloc(*ptr, size), *ptr != NULL) ? SLEQP_OKAY : SLEQP_NOMEM
+  (*ptr = realloc(*ptr, size), (((size) > 0) && (*(ptr) == NULL))) ? SLEQP_NOMEM : SLEQP_OKAY
 
   SLEQP_NODISCARD SLEQP_RETCODE sleqp_free(void** ptr);
 

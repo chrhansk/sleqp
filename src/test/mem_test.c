@@ -79,6 +79,18 @@ START_TEST(test_realloc)
 }
 END_TEST
 
+START_TEST(test_realloc_zero)
+{
+  int* ptr = NULL;
+
+  ASSERT_CALL(sleqp_alloc_array(&ptr, 100));
+
+  ASSERT_CALL(sleqp_realloc(&ptr, 0));
+
+  ck_assert(ptr == NULL);
+}
+END_TEST
+
 /*
   START_TEST(test_realloc_nomem)
   {
@@ -118,6 +130,8 @@ Suite* mem_test_suite()
   tc_realloc = tcase_create("Reallocation");
 
   tcase_add_test(tc_realloc, test_realloc);
+
+  tcase_add_test(tc_realloc, test_realloc_zero);
 
   // tcase_add_test(tc_alloc, test_realloc_nomem);
 
