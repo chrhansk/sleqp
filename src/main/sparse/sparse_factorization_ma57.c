@@ -7,6 +7,7 @@
 #include "hsl_matrix.h"
 
 #include "cmp.h"
+#include "log.h"
 #include "mem.h"
 
 static const bool ma57_verbose = false;

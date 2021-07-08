@@ -5,6 +5,7 @@
 #include <hsl_ma97d.h>
 #include <hsl_mc68i.h>
 
+#include "log.h"
 #include "mem.h"
 
 static const bool ma97_verbose = true;

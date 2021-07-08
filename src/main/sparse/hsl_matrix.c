@@ -2,7 +2,11 @@
 
 #include <assert.h>
 
+#include "types.h"
+
+#include "log.h"
 #include "mem.h"
+#include "sparse/sparse_matrix.h"
 
 SLEQP_RETCODE hsl_matrix_set(HSLMatrix* hsl_matrix,
                              SleqpSparseMatrix* matrix)
