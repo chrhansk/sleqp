@@ -3,9 +3,7 @@
 
 #include <check.h>
 
-#include "sleqp.h"
-
-#include "sleqp.h"
+#include "mem.h"
 
 #include "test_common.h"
 

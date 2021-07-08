@@ -3,11 +3,11 @@
 
 #include "test_common.h"
 
-#include "sleqp_cmp.h"
-#include "sleqp_mem.h"
+#include "cmp.h"
+#include "mem.h"
 
-#include "sparse/sleqp_sparse_matrix.h"
-#include "sparse/sleqp_sparse_vec.h"
+#include "sparse/sparse_matrix.h"
+#include "sparse/sparse_vec.h"
 
 START_TEST(test_sparse_matrix_vector_product)
 {

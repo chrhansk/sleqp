@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "sleqp_cmp.h"
-#include "sleqp_mem.h"
-#include "sleqp_solver.h"
+#include "cmp.h"
+#include "mem.h"
+#include "solver.h"
 
 #include "test_common.h"
 

@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "sleqp_util.h"
-
-#include "lp/sleqp_lpi.h"
+#include "util.h"
+#include "scale.h"
+#include "lp/lpi.h"
 
 #include "test_common.h"
 

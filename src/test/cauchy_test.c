@@ -1,12 +1,14 @@
+#include <assert.h>
 #include <stdlib.h>
+
 #include <check.h>
 
-#include "sleqp.h"
-#include "sleqp_cauchy.h"
-#include "sleqp_cmp.h"
-#include "sleqp_mem.h"
+#include "cauchy.h"
+#include "cmp.h"
+#include "mem.h"
+#include "util.h"
 
-#include "lp/sleqp_lpi.h"
+#include "lp/lpi.h"
 
 #include "test_common.h"
 

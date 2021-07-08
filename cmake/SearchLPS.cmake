@@ -34,11 +34,11 @@ endmacro()
 
 add_lp_solver(
   NAME "Gurobi"
-  SOURCES sleqp_lpi_gurobi.c)
+  SOURCES "lpi_gurobi.c")
 
 add_lp_solver(
   NAME "SoPlex"
-  SOURCES sleqp_lpi_soplex.cc
+  SOURCES "lpi_soplex.cc"
   DEPS_DEBIAN "scipoptsuite (>= 7.0.0)")
 
 set(_SLEQP_LP_SOLVER_VALUES "")

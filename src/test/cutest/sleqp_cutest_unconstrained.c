@@ -1,5 +1,8 @@
 #include "sleqp_cutest_unconstrained.h"
 
+#include "log.h"
+#include "mem.h"
+
 #include "sleqp_cutest_defs.h"
 
 typedef struct CUTestUnconsFuncData

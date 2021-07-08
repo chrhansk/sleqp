@@ -4,8 +4,8 @@
 #include "test_common.h"
 #include "quadcons_fixture.h"
 
-#include "sleqp_mem.h"
-#include "preprocessor/sleqp_fixed_var_func.h"
+#include "mem.h"
+#include "preprocessor/fixed_var_func.h"
 
 int num_fixed;
 int* fixed_indices;

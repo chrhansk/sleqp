@@ -1,9 +1,9 @@
 #include "sleqp_cutest_driver.h"
 
-#include "sleqp.h"
+#include "log.h"
+#include "mem.h"
 
 #include "sleqp_cutest_defs.h"
-
 #include "sleqp_cutest_constrained.h"
 #include "sleqp_cutest_unconstrained.h"
 

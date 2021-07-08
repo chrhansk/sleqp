@@ -3,7 +3,8 @@
 
 #include <check.h>
 
-#include "sleqp_types.h"
+#include "log.h"
+#include "types.h"
 
 #define ASSERT_CALL(x)                          \
   do                                            \

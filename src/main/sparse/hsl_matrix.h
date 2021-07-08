@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#include "sleqp_types.h"
-#include "sparse/sleqp_sparse_matrix.h"
+#include "types.h"
+#include "sparse/sparse_matrix.h"
 
 #ifdef __cplusplus
 extern "C" {

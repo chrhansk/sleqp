@@ -1,9 +1,10 @@
 #ifndef QUADCONS_FIXTURE_H
 #define QUADCONS_FIXTURE_H
 
-#include "sleqp.h"
-#include "sleqp_cmp.h"
-#include "sleqp_mem.h"
+#include "cmp.h"
+#include "func.h"
+#include "mem.h"
+#include "sparse/sparse_vec.h"
 
 #include "test_common.h"
 

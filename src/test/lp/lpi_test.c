@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "sleqp_cmp.h"
+#include "cmp.h"
 
 #include "test_common.h"
 
-#include "lp/sleqp_lpi.h"
+#include "lp/lpi.h"
 
 START_TEST(test_simplex_solve)
 {

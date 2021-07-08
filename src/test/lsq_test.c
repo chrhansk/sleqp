@@ -2,13 +2,13 @@
 #include <check.h>
 #include <math.h>
 
-#include "sleqp.h"
-#include "sleqp_cauchy.h"
-#include "sleqp_cmp.h"
-#include "sleqp_lsq.h"
-#include "sleqp_mem.h"
+#include "cauchy.h"
+#include "cmp.h"
+#include "lsq.h"
+#include "mem.h"
+#include "solver.h"
 
-#include "lp/sleqp_lpi.h"
+#include "lp/lpi.h"
 
 #include "test_common.h"
 

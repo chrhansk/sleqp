@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 
+#include "log.h"
+#include "mem.h"
+
 #include "sleqp_cutest_defs.h"
 
 typedef struct CUTestConsFuncData

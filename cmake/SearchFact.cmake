@@ -34,35 +34,35 @@ endmacro()
 
 add_factorization(
   NAME "Umfpack"
-  SOURCES sleqp_sparse_factorization_umfpack.c
+  SOURCES sparse_factorization_umfpack.c
   DEPS_DEBIAN "libmumps-5.1.2")
 
 add_factorization(
   NAME "MUMPS"
-  SOURCES sleqp_sparse_factorization_mumps.c
+  SOURCES sparse_factorization_mumps.c
   DEPS_DEBIAN "libumfpack5 (>= 5.2)")
 
 add_factorization(
   NAME "MA27"
   SOURCES
-  sleqp_sparse_factorization_ma27.c
+  sparse_factorization_ma27.c
   hsl_matrix.c)
 
 add_factorization(
   NAME "MA57"
   SOURCES
-  sleqp_sparse_factorization_ma57.c
+  sparse_factorization_ma57.c
   hsl_matrix.c)
 
 add_factorization(
   NAME "MA86"
   SOURCES
-  sleqp_sparse_factorization_ma86.c)
+  sparse_factorization_ma86.c)
 
 add_factorization(
   NAME "MA97"
   SOURCES
-  sleqp_sparse_factorization_ma97.c)
+  sparse_factorization_ma97.c)
 
 set(_SLEQP_FACTORIZATION_VALUES "")
 

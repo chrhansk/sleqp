@@ -1,15 +1,15 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "sleqp.h"
-#include "sleqp_aug_jacobian.h"
-#include "sleqp_cauchy.h"
-#include "sleqp_cmp.h"
-#include "sleqp_dual_estimation.h"
-#include "sleqp_mem.h"
-#include "sleqp_newton.h"
+#include "aug_jacobian.h"
+#include "cauchy.h"
+#include "cmp.h"
+#include "dual_estimation.h"
+#include "mem.h"
+#include "newton.h"
+#include "util.h"
 
-#include "sparse/sleqp_sparse_factorization_umfpack.h"
+#include "sparse/sparse_factorization_umfpack.h"
 
 #include "test_common.h"
 

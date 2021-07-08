@@ -2,11 +2,11 @@
 #include <check.h>
 #include <fenv.h>
 
-#include "sleqp_problem_scaling.h"
-#include "sleqp_deriv_check.h"
-#include "sleqp_util.h"
+#include "problem_scaling.h"
+#include "deriv_check.h"
+#include "util.h"
 
-#include "lp/sleqp_lpi.h"
+#include "lp/lpi.h"
 
 #include "test_common.h"
 

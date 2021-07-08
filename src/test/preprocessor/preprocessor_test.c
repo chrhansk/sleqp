@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "preprocessor/sleqp_preprocessor.h"
+#include "options.h"
+#include "problem.h"
+#include "solver.h"
+#include "preprocessor/preprocessor.h"
 
 #include "test_common.h"
 #include "rosenbrock_fixture.h"

@@ -3,13 +3,12 @@
 
 #include "test_common.h"
 
-#include "sleqp.h"
-#include "sleqp_cmp.h"
-#include "sleqp_func.h"
-#include "sleqp_iterate.h"
-#include "sleqp_mem.h"
-#include "sleqp_newton.h"
-#include "sleqp_problem.h"
+#include "cmp.h"
+#include "func.h"
+#include "iterate.h"
+#include "mem.h"
+#include "newton.h"
+#include "problem.h"
 
 static const int num_variables = 2;
 static const int num_constraints = 1;

@@ -1,0 +1,22 @@
+#ifndef SLEQP_PUB_CMP_H
+#define SLEQP_PUB_CMP_H
+
+/**
+ * @file pub_cmp.h
+ * @brief Definition of numerical comparison functions.
+ **/
+
+#include "export.h"
+#include "types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  SLEQP_EXPORT double sleqp_infinity();
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* SLEQP_PUB_CMP_H */

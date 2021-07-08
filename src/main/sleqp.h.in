@@ -1,0 +1,14 @@
+#ifndef SLEQP_H
+#define SLEQP_H
+
+/**
+ * @file sleqp.h
+ * @brief SLEQP callable library.
+ **/
+
+#include "sleqp/defs.h"
+#include "sleqp/export.h"
+
+@PUB_HEADER_INCLUDES@
+
+#endif /* SLEQP_H */

@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-#include "sleqp_mem.h"
+#include "mem.h"
 
 SLEQP_RETCODE hsl_matrix_set(HSLMatrix* hsl_matrix,
                              SleqpSparseMatrix* matrix)
