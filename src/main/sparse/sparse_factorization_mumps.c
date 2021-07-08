@@ -4,6 +4,7 @@
 
 #include <dmumps_c.h>
 
+#include "log.h"
 #include "mem.h"
 
 static const bool sleqp_mumps_verbose = true;

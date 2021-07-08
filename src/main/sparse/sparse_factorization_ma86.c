@@ -5,7 +5,7 @@
 #include <hsl_ma86d.h>
 #include <hsl_mc68i.h>
 
-#include "log.h
+#include "log.h"
 #include "mem.h"
 
 static const bool ma86_verbose = false;

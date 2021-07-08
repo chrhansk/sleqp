@@ -5,6 +5,7 @@
 
 #include <umfpack.h>
 
+#include "log.h"
 #include "mem.h"
 
 typedef struct UmfpackData
