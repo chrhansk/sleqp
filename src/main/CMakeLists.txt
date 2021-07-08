@@ -104,7 +104,8 @@ set_target_properties(sleqp
     PROPERTIES
     VERSION ${PROJECT_VERSION})
 
-set(SLEQP_EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/export.h")
+set(SLEQP_EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/sleqp/export.h")
+set(SLEQP_DEFS_FILE_NAME "${CMAKE_BINARY_DIR}/sleqp/defs.h")
 
 # Generate include list
 
@@ -130,6 +131,9 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sleqp.h.in"
   "${CMAKE_BINARY_DIR}/sleqp.h"
   @ONLY)
 
+configure_file("${CMAKE_SOURCE_DIR}/src/main/defs.h.in"
+  "${SLEQP_DEFS_FILE_NAME}")
+
 generate_export_header(sleqp
   EXPORT_FILE_NAME ${SLEQP_EXPORT_FILE_NAME})
 
@@ -142,7 +146,7 @@ install(TARGETS sleqp
 
 install(
   FILES
-  "${CMAKE_BINARY_DIR}/defs.h"
+  "${SLEQP_DEFS_FILE_NAME}"
   "${SLEQP_EXPORT_FILE_NAME}"
   DESTINATION include/sleqp
   COMPONENT "headers")

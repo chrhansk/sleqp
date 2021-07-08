@@ -94,9 +94,6 @@ add_custom_target(doc)
 
 # Config files
 
-configure_file("${CMAKE_SOURCE_DIR}/src/main/defs.h.in"
-  "${CMAKE_BINARY_DIR}/defs.h")
-
 set(PKGCONFIG_FILE "${CMAKE_BINARY_DIR}/sleqp.pc")
 
 configure_file("${CMAKE_SOURCE_DIR}/cmake/sleqp.pc.in"
