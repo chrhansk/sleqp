@@ -9,6 +9,8 @@
 #include "mem.h"
 #include "newton.h"
 #include "problem.h"
+#include "util.h"
+#include "working_set.h"
 
 static const int num_variables = 2;
 static const int num_constraints = 1;

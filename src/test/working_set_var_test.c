@@ -6,6 +6,7 @@
 #include "cmp.h"
 #include "dual_estimation.h"
 #include "mem.h"
+#include "util.h"
 
 #include "lp/lpi.h"
 

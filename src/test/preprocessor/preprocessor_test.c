@@ -4,6 +4,8 @@
 #include "options.h"
 #include "problem.h"
 #include "solver.h"
+#include "working_set.h"
+
 #include "preprocessor/preprocessor.h"
 
 #include "test_common.h"

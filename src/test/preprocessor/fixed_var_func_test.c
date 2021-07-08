@@ -5,6 +5,9 @@
 #include "quadcons_fixture.h"
 
 #include "mem.h"
+#include "util.h"
+#include "sparse/sparse_matrix.h"
+
 #include "preprocessor/fixed_var_func.h"
 
 int num_fixed;

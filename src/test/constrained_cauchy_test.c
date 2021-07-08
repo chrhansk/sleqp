@@ -6,6 +6,8 @@
 #include "cmp.h"
 #include "dual_estimation.h"
 #include "mem.h"
+#include "util.h"
+
 #include "sparse/sparse_factorization_umfpack.h"
 
 #include "lp/lpi.h"
