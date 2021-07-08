@@ -1,7 +1,9 @@
 include_directories(${CHECK_INCLUDE_DIR})
 
-include_directories("${CMAKE_SOURCE_DIR}/src/main")
-include_directories("${CMAKE_SOURCE_DIR}/src/test")
+include_directories(
+  "${CMAKE_SOURCE_DIR}/src/main"
+  "${CMAKE_SOURCE_DIR}/src/test"
+  "${CMAKE_BINARY_DIR}/sleqp")
 
 include_directories(${CHECK_INCLUDE_DIRS})
 
