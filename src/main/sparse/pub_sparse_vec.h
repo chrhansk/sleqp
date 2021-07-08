@@ -7,7 +7,7 @@
  **/
 
 #include "export.h"
-#include "types.h"
+#include "pub_types.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -11,8 +11,8 @@ project_version = '@PROJECT_VERSION@'
 
 local_libdirs = ['@SLEQP_LIBRARY_DIR@']
 
-local_include_dirs = ['@SLEQP_INCLUDE_DIR@',
-                      '@CMAKE_BINARY_DIR@']
+local_include_dirs = ['@CMAKE_BINARY_DIR@',
+                      '@CMAKE_BINARY_DIR@/sleqp']
 
 def pkgconfig(name):
 

@@ -6,17 +6,29 @@
  * @brief Definition of the solver structure.
  **/
 
-#include "callback_types.h"
 #include "export.h"
-#include "iterate.h"
-#include "options.h"
-#include "params.h"
-#include "problem.h"
-#include "scale.h"
+#include "pub_iterate.h"
+#include "pub_options.h"
+#include "pub_params.h"
+#include "pub_problem.h"
+#include "pub_scale.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+  typedef struct SleqpSolver SleqpSolver;
+
+  typedef SLEQP_RETCODE (*SLEQP_ACCEPTED_ITERATE)(SleqpSolver* solver,
+                                                  SleqpIterate* iterate,
+                                                  void* callback_data);
+
+  typedef SLEQP_RETCODE (*SLEQP_PERFORMED_ITERATION)(SleqpSolver* solver,
+                                                     void* callback_data);
+
+  typedef SLEQP_RETCODE (*SLEQP_FINISHED)(SleqpSolver* solver,
+                                          SleqpIterate* iterate,
+                                          void* callback_data);
 
   typedef enum {
     SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,

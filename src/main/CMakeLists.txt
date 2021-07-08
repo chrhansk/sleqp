@@ -117,10 +117,16 @@ set(HEADER_INCLUDES "")
 foreach(PUB_HEADER ${PUB_HEADERS})
 
   get_filename_component(HEADER_DIR ${PUB_HEADER} DIRECTORY)
+  get_filename_component(HEADER_NAME ${PUB_HEADER} NAME)
 
   install(FILES ${PUB_HEADER}
-  DESTINATION "include/sleqp/${HEADER_DIR}"
-  COMPONENT "headers")
+    DESTINATION "include/sleqp/${HEADER_DIR}"
+    COMPONENT "headers")
+
+  add_custom_command(TARGET sleqp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+    "${CMAKE_CURRENT_SOURCE_DIR}/${PUB_HEADER}"
+    "${CMAKE_BINARY_DIR}/sleqp/${HEADER_DIR}/${HEADER_NAME}")
 
   set(HEADER_INCLUDE "#include \"sleqp/${PUB_HEADER}\"")
   list(APPEND HEADER_INCLUDES ${HEADER_INCLUDE})
