@@ -6,6 +6,7 @@
 #include "hsl_matrix.h"
 
 #include "cmp.h"
+#include "log.h"
 #include "mem.h"
 
 // 20 % increase as suggested in the manual
