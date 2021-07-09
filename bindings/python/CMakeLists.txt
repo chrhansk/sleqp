@@ -12,7 +12,8 @@ if(PythonInterp_FOUND AND PythonLibs_FOUND)
     PROJECT_NAME "sleqp"
     PROJECT_COMPONENT "python")
 
-  add_dependencies(python_sleqp sleqp)
+  add_dependencies(python_sleqp sleqp_local_headers sleqp)
+
   add_dependencies(build_tests python_sleqp)
 
   add_dependencies(doc python_sleqp_doc)

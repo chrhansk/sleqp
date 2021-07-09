@@ -81,7 +81,6 @@ endif()
 target_include_directories(sleqp_objects
   PRIVATE
   ${CMAKE_BINARY_DIR}
-  ${CMAKE_BINARY_DIR}/sleqp
   ${SLEQP_FACT_INCLUDE_DIRS}
   ${SLEQP_LPS_INCLUDE_DIRS})
 
@@ -114,6 +113,8 @@ file(GLOB_RECURSE PUB_HEADERS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "pub_*.h")
 
 set(HEADER_INCLUDES "")
 
+add_custom_target(sleqp_local_headers)
+
 foreach(PUB_HEADER ${PUB_HEADERS})
 
   get_filename_component(HEADER_DIR ${PUB_HEADER} DIRECTORY)
@@ -123,10 +124,15 @@ foreach(PUB_HEADER ${PUB_HEADERS})
     DESTINATION "include/sleqp/${HEADER_DIR}"
     COMPONENT "headers")
 
-  add_custom_command(TARGET sleqp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-    "${CMAKE_CURRENT_SOURCE_DIR}/${PUB_HEADER}"
-    "${CMAKE_BINARY_DIR}/sleqp/${HEADER_DIR}/${HEADER_NAME}")
+  set(HEADER_FULL "${CMAKE_CURRENT_SOURCE_DIR}/${PUB_HEADER}")
+  set(HEADER_DEST "${CMAKE_BINARY_DIR}/sleqp/${HEADER_DIR}/${HEADER_NAME}")
+
+  add_custom_command(
+    TARGET sleqp_local_headers POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${HEADER_FULL}
+    ${HEADER_DEST}
+    DEPENDS ${HEADER_FULL})
 
   set(HEADER_INCLUDE "#include \"sleqp/${PUB_HEADER}\"")
   list(APPEND HEADER_INCLUDES ${HEADER_INCLUDE})
