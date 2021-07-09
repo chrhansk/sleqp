@@ -81,6 +81,7 @@ endif()
 target_include_directories(sleqp_objects
   PRIVATE
   ${CMAKE_BINARY_DIR}
+  "${CMAKE_BINARY_DIR}/sleqp"
   ${SLEQP_FACT_INCLUDE_DIRS}
   ${SLEQP_LPS_INCLUDE_DIRS})
 
