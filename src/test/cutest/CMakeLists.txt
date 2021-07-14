@@ -35,6 +35,7 @@ add_library(sleqp_cutest
   STATIC
   sleqp_cutest_defs.c
   sleqp_cutest_driver.c
+  sleqp_cutest_data.c
   sleqp_cutest_constrained.c
   sleqp_cutest_unconstrained.c)
 

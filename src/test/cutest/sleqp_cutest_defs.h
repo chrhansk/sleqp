@@ -10,6 +10,9 @@ extern "C" {
   extern const logical cutest_true;
   extern const logical cutest_false;
 
+  extern integer cutest_io_buffer;
+  extern integer cutest_iout;
+
 #define SLEQP_CUTEST_CHECK_STATUS(status)       \
   do                                            \
   {                                             \
