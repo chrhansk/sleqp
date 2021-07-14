@@ -21,9 +21,6 @@ extern "C" {
   SLEQP_RETCODE sleqp_cutest_eval_linear(SleqpFunc* func,
                                          SleqpSparseMatrix* coeffs);
 
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cutest_cons_func_free(SleqpFunc** star);
-
 #ifdef __cplusplus
 }
 #endif

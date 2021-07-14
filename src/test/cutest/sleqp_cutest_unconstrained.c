@@ -21,9 +21,10 @@ typedef struct CUTestUnconsFuncData
 
 } CUTestUnconsFuncData;
 
-static SLEQP_RETCODE sleqp_cutest_uncons_data_create(CUTestUnconsFuncData** star,
-                                                     int num_variables,
-                                                     double eps)
+static
+SLEQP_RETCODE cutest_uncons_data_create(CUTestUnconsFuncData** star,
+                                        int num_variables,
+                                        double eps)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -43,28 +44,31 @@ static SLEQP_RETCODE sleqp_cutest_uncons_data_create(CUTestUnconsFuncData** star
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_uncons_data_free(CUTestUnconsFuncData** star)
+static
+SLEQP_RETCODE cutest_uncons_data_free(void* data)
 {
-  CUTestUnconsFuncData* data = *star;
+  CUTestUnconsFuncData* uncons_data = (CUTestUnconsFuncData*) data;
+  CUTestUnconsFuncData** star = &uncons_data;
 
-  sleqp_free(&data->hessian_product);
-  sleqp_free(&data->direction);
+  sleqp_free(&uncons_data->hessian_product);
+  sleqp_free(&uncons_data->direction);
 
-  sleqp_free(&data->func_grad);
-  sleqp_free(&data->x);
+  sleqp_free(&uncons_data->func_grad);
+  sleqp_free(&uncons_data->x);
 
   sleqp_free(star);
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_uncons_func_set(SleqpFunc* func,
-                                                  SleqpSparseVec* x,
-                                                  SLEQP_VALUE_REASON reason,
-                                                  int* func_grad_nnz,
-                                                  int* cons_val_nnz,
-                                                  int* cons_jac_nnz,
-                                                  void* func_data)
+static SLEQP_RETCODE
+cutest_uncons_func_set(SleqpFunc* func,
+                       SleqpSparseVec* x,
+                       SLEQP_VALUE_REASON reason,
+                       int* func_grad_nnz,
+                       int* cons_val_nnz,
+                       int* cons_jac_nnz,
+                       void* func_data)
 {
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*) func_data;
 
@@ -80,9 +84,10 @@ static SLEQP_RETCODE sleqp_cutest_uncons_func_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_uncons_func_val(SleqpFunc* func,
-                                                  double* func_val,
-                                                  void* func_data)
+static
+SLEQP_RETCODE cutest_uncons_func_val(SleqpFunc* func,
+                                     double* func_val,
+                                     void* func_data)
 {
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*) func_data;
   int status;
@@ -97,9 +102,10 @@ static SLEQP_RETCODE sleqp_cutest_uncons_func_val(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_uncons_func_grad(SleqpFunc* func,
-                                                   SleqpSparseVec* func_grad,
-                                                   void* func_data)
+static
+SLEQP_RETCODE cutest_uncons_func_grad(SleqpFunc* func,
+                                      SleqpSparseVec* func_grad,
+                                      void* func_data)
 {
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*) func_data;
   int status;
@@ -119,12 +125,13 @@ static SLEQP_RETCODE sleqp_cutest_uncons_func_grad(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_uncons_func_hess_product(SleqpFunc* func,
-                                                           const double* func_dual,
-                                                           const SleqpSparseVec* direction,
-                                                           const SleqpSparseVec* cons_duals,
-                                                           SleqpSparseVec* product,
-                                                           void* func_data)
+static
+SLEQP_RETCODE cutest_uncons_func_hess_product(SleqpFunc* func,
+                                              const double* func_dual,
+                                              const SleqpSparseVec* direction,
+                                              const SleqpSparseVec* cons_duals,
+                                              SleqpSparseVec* product,
+                                              void* func_data)
 {
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*) func_data;
   int status;
@@ -158,38 +165,27 @@ SLEQP_RETCODE sleqp_cutest_uncons_func_create(SleqpFunc** star,
 {
   CUTestUnconsFuncData* data;
 
-  SLEQP_CALL(sleqp_cutest_uncons_data_create(&data,
-                                             num_variables,
-                                             eps));
+  const int num_constraints = 0;
+
+  SLEQP_CALL(cutest_uncons_data_create(&data,
+                                       num_variables,
+                                       eps));
 
   SleqpFuncCallbacks callbacks = {
-    .set_value = sleqp_cutest_uncons_func_set,
-    .func_val = sleqp_cutest_uncons_func_val,
-    .func_grad = sleqp_cutest_uncons_func_grad,
-    .cons_val = NULL,
-    .cons_jac = NULL,
-    .hess_prod = sleqp_cutest_uncons_func_hess_product,
-    .func_free = NULL
+    .set_value = cutest_uncons_func_set,
+    .func_val  = cutest_uncons_func_val,
+    .func_grad = cutest_uncons_func_grad,
+    .cons_val  = NULL,
+    .cons_jac  = NULL,
+    .hess_prod = cutest_uncons_func_hess_product,
+    .func_free = cutest_uncons_data_free
   };
 
   SLEQP_CALL(sleqp_func_create(star,
                                &callbacks,
                                num_variables,
-                               0,
+                               num_constraints,
                                data));
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_cutest_uncons_func_free(SleqpFunc** star)
-{
-  SleqpFunc* func = *star;
-
-  CUTestUnconsFuncData* data = (CUTestUnconsFuncData*) sleqp_func_get_data(func);
-
-  SLEQP_CALL(sleqp_func_release(star));
-
-  SLEQP_CALL(sleqp_cutest_uncons_data_free(&data));
 
   return SLEQP_OKAY;
 }

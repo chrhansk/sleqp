@@ -1,5 +1,6 @@
 #include "sleqp_cutest_constrained.h"
 
+#include <assert.h>
 #include <stdlib.h>
 
 #include "log.h"
@@ -74,11 +75,12 @@ static int jac_compare(const void* f, const void* s)
   return 0;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
-                                                   int num_variables,
-                                                   int num_constraints,
-                                                   int num_linear,
-                                                   SleqpParams* params)
+static SLEQP_RETCODE
+cutest_cons_data_create(CUTestConsFuncData** star,
+                        int num_variables,
+                        int num_constraints,
+                        int num_linear,
+                        SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -117,9 +119,11 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_create(CUTestConsFuncData** star,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_data_free(CUTestConsFuncData** star)
+static
+SLEQP_RETCODE cutest_cons_data_free(void* func_data)
 {
-  CUTestConsFuncData* data = *star;
+  CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
+  CUTestConsFuncData** star = &data;
 
   sleqp_free(&data->jac_indices);
   sleqp_free(&data->jac_vals);
@@ -142,13 +146,14 @@ static SLEQP_RETCODE sleqp_cutest_cons_data_free(CUTestConsFuncData** star)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpFunc* func,
-                                                SleqpSparseVec* x,
-                                                SLEQP_VALUE_REASON reason,
-                                                int* func_grad_nnz,
-                                                int* cons_val_nnz,
-                                                int* cons_jac_nnz,
-                                                void* func_data)
+static
+SLEQP_RETCODE cutest_cons_func_set(SleqpFunc* func,
+                                   SleqpSparseVec* x,
+                                   SLEQP_VALUE_REASON reason,
+                                   int* func_grad_nnz,
+                                   int* cons_val_nnz,
+                                   int* cons_jac_nnz,
+                                   void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
 
@@ -165,9 +170,10 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_func_val(SleqpFunc* func,
-                                                double* func_val,
-                                                void* func_data)
+static
+SLEQP_RETCODE cutest_cons_func_val(SleqpFunc* func,
+                                   double* func_val,
+                                   void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
   int status;
@@ -184,9 +190,10 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_val(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_func_grad(SleqpFunc* func,
-                                                 SleqpSparseVec* func_grad,
-                                                 void* func_data)
+static
+SLEQP_RETCODE cutest_cons_func_grad(SleqpFunc* func,
+                                    SleqpSparseVec* func_grad,
+                                    void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
   int status;
@@ -236,10 +243,11 @@ static SLEQP_RETCODE sleqp_cutest_cons_func_grad(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_cons_val(SleqpFunc* func,
-                                                const SleqpSparseVec* cons_indices,
-                                                SleqpSparseVec* cons_val,
-                                                void* func_data)
+static
+SLEQP_RETCODE cutest_cons_cons_val(SleqpFunc* func,
+                                   const SleqpSparseVec* cons_indices,
+                                   SleqpSparseVec* cons_val,
+                                   void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
   int status;
@@ -265,10 +273,11 @@ static SLEQP_RETCODE sleqp_cutest_cons_cons_val(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_cons_jac(SleqpFunc* func,
-                                                const SleqpSparseVec* cons_indices,
-                                                SleqpSparseMatrix* cons_jac,
-                                                void* func_data)
+static
+SLEQP_RETCODE cutest_cons_cons_jac(SleqpFunc* func,
+                                   const SleqpSparseVec* cons_indices,
+                                   SleqpSparseMatrix* cons_jac,
+                                   void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
   int status;
@@ -486,12 +495,13 @@ SLEQP_RETCODE sleqp_cutest_eval_linear(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE sleqp_cutest_cons_func_hess_product(SleqpFunc* func,
-                                                         const double* func_dual,
-                                                         const SleqpSparseVec* direction,
-                                                         const SleqpSparseVec* cons_duals,
-                                                         SleqpSparseVec* product,
-                                                         void* func_data)
+static SLEQP_RETCODE
+cutest_cons_func_hess_product(SleqpFunc* func,
+                              const double* func_dual,
+                              const SleqpSparseVec* direction,
+                              const SleqpSparseVec* cons_duals,
+                              SleqpSparseVec* product,
+                              void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
   int status;
@@ -548,20 +558,20 @@ SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
 
   const int num_general = num_constraints - num_linear;
 
-  SLEQP_CALL(sleqp_cutest_cons_data_create(&data,
-                                           num_variables,
-                                           num_constraints,
-                                           num_linear,
-                                           params));
+  SLEQP_CALL(cutest_cons_data_create(&data,
+                                     num_variables,
+                                     num_constraints,
+                                     num_linear,
+                                     params));
 
   SleqpFuncCallbacks callbacks = {
-    .set_value = sleqp_cutest_cons_func_set,
-    .func_val = sleqp_cutest_cons_func_val,
-    .func_grad = sleqp_cutest_cons_func_grad,
-    .cons_val = sleqp_cutest_cons_cons_val,
-    .cons_jac = sleqp_cutest_cons_cons_jac,
-    .hess_prod = sleqp_cutest_cons_func_hess_product,
-    .func_free = NULL
+    .set_value = cutest_cons_func_set,
+    .func_val  = cutest_cons_func_val,
+    .func_grad = cutest_cons_func_grad,
+    .cons_val  = cutest_cons_cons_val,
+    .cons_jac  = cutest_cons_cons_jac,
+    .hess_prod = cutest_cons_func_hess_product,
+    .func_free = cutest_cons_data_free
   };
 
   SLEQP_CALL(sleqp_func_create(star,
@@ -569,19 +579,6 @@ SLEQP_RETCODE sleqp_cutest_cons_func_create(SleqpFunc** star,
                                num_variables,
                                num_general,
                                data));
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_cutest_cons_func_free(SleqpFunc** star)
-{
-  SleqpFunc* func = *star;
-
-  CUTestConsFuncData* data = (CUTestConsFuncData*) sleqp_func_get_data(func);
-
-  SLEQP_CALL(sleqp_func_release(star));
-
-  SLEQP_CALL(sleqp_cutest_cons_data_free(&data));
 
   return SLEQP_OKAY;
 }

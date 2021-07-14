@@ -1,11 +1,87 @@
 #include "sleqp_cutest_driver.h"
 
+#include <assert.h>
+
+#include "iterate.h"
 #include "log.h"
 #include "mem.h"
 
 #include "sleqp_cutest_defs.h"
 #include "sleqp_cutest_constrained.h"
 #include "sleqp_cutest_unconstrained.h"
+
+static
+SLEQP_RETCODE report_result(SleqpSolver* solver,
+                            SleqpProblem* problem,
+                            const char* probname)
+{
+  const char* descriptions[] = {
+    [SLEQP_FEASIBLE] = "feasible",
+    [SLEQP_OPTIMAL] = "optimal",
+    [SLEQP_INFEASIBLE] = "infeasible",
+    [SLEQP_INVALID] = "invalid"
+  };
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  SLEQP_STATUS status = sleqp_solver_get_status(solver);
+  SleqpIterate* iterate;
+
+  SLEQP_CALL(sleqp_solver_get_solution(solver, &iterate));
+
+  const int iterations = sleqp_solver_get_iterations(solver);
+
+  int last_step_bdry;
+
+  SLEQP_CALL(sleqp_solver_get_int_state(solver,
+                                        SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY,
+                                        &last_step_bdry));
+
+  double last_trust_radius;
+
+  SLEQP_CALL(sleqp_solver_get_real_state(solver,
+                                         SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
+                                         &last_trust_radius));
+
+  double min_rayleigh;
+
+  SLEQP_CALL(sleqp_solver_get_real_state(solver,
+                                         SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH,
+                                         &min_rayleigh));
+
+  double max_rayleigh;
+
+  SLEQP_CALL(sleqp_solver_get_real_state(solver,
+                                         SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH,
+                                         &max_rayleigh));
+
+  const double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
+
+  double violation;
+
+  SLEQP_CALL(sleqp_iterate_feasibility_residuum(problem,
+                                                iterate,
+                                                &violation));
+
+  fprintf(stdout,
+          "%s;%d;%d;%s;%f;%f;%d;%f;%d;%f;%f;%f\n",
+          probname,
+          num_variables,
+          num_constraints,
+          descriptions[status],
+          sleqp_iterate_get_func_val(iterate),
+          violation,
+          iterations,
+          elapsed_seconds,
+          last_step_bdry,
+          last_trust_radius,
+          min_rayleigh,
+          max_rayleigh);
+
+  return SLEQP_OKAY;
+}
+
 
 int sleqp_cutest_run(const char* filename,
                      const char* probname)
@@ -14,7 +90,7 @@ int sleqp_cutest_run(const char* filename,
   integer iout = 6;          /* FORTRAN unit number for error output */
   integer ierr;              /* Exit flag from OPEN and CLOSE */
   integer io_buffer = 11;    /* FORTRAN unit internal input/output */
-  integer cutest_status;            /* Exit flag from CUTEst tools */
+  integer cutest_status;     /* Exit flag from CUTEst tools */
 
 
   integer CUTEst_nvar;        /* number of variables */
@@ -31,7 +107,7 @@ int sleqp_cutest_run(const char* filename,
     return 1;
   }
 
-  CUTEST_cdimen( &cutest_status, &funit, &CUTEst_nvar, &CUTEst_ncons);
+  CUTEST_cdimen(&cutest_status, &funit, &CUTEst_nvar, &CUTEst_ncons);
 
   sleqp_log_info("Problem has %d variables, %d constraints",
                  CUTEst_nvar,
@@ -114,7 +190,7 @@ int sleqp_cutest_run(const char* filename,
       {
         var_lb_dense[i] = -inf;
       }
-      if(var_ub_dense[i] ==  CUTE_INF)
+      if(var_ub_dense[i] == CUTE_INF)
       {
         var_ub_dense[i] = inf;
       }
@@ -253,8 +329,6 @@ int sleqp_cutest_run(const char* filename,
                                  x,
                                  NULL));
 
-  /**/
-
   const int max_num_iterations = -1;
   const double time_limit = 3600;
 
@@ -266,66 +340,9 @@ int sleqp_cutest_run(const char* filename,
 
   if(status == SLEQP_OKAY)
   {
-    const char* descriptions[] = {
-      [SLEQP_FEASIBLE] = "feasible",
-      [SLEQP_OPTIMAL] = "optimal",
-      [SLEQP_INFEASIBLE] = "infeasible",
-      [SLEQP_INVALID] = "invalid"
-    };
+    SLEQP_CALL(report_result(solver, problem, probname));
 
     SLEQP_STATUS status = sleqp_solver_get_status(solver);
-    SleqpIterate* iterate;
-
-    SLEQP_CALL(sleqp_solver_get_solution(solver, &iterate));
-
-    const int iterations = sleqp_solver_get_iterations(solver);
-
-    int last_step_bdry;
-
-    SLEQP_CALL(sleqp_solver_get_int_state(solver,
-                                          SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY,
-                                          &last_step_bdry));
-
-    double last_trust_radius;
-
-    SLEQP_CALL(sleqp_solver_get_real_state(solver,
-                                           SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
-                                           &last_trust_radius));
-
-    double min_rayleigh;
-
-    SLEQP_CALL(sleqp_solver_get_real_state(solver,
-                                           SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH,
-                                           &min_rayleigh));
-
-    double max_rayleigh;
-
-    SLEQP_CALL(sleqp_solver_get_real_state(solver,
-                                           SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH,
-                                           &max_rayleigh));
-
-    const double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
-
-    double violation;
-
-    SLEQP_CALL(sleqp_iterate_feasibility_residuum(problem,
-                                                  iterate,
-                                                  &violation));
-
-    fprintf(stdout,
-            "%s;%d;%d;%s;%f;%f;%d;%f;%d;%f;%f;%f\n",
-            probname,
-            CUTEst_nvar,
-            CUTEst_ncons,
-            descriptions[status],
-            sleqp_iterate_get_func_val(iterate),
-            violation,
-            iterations,
-            elapsed_seconds,
-            last_step_bdry,
-            last_trust_radius,
-            min_rayleigh,
-            max_rayleigh);
 
     if(status == SLEQP_INVALID)
     {
@@ -345,14 +362,7 @@ int sleqp_cutest_run(const char* filename,
 
   SLEQP_CALL(sleqp_problem_release(&problem));
 
-  if(CUTest_constrained)
-  {
-    SLEQP_CALL(sleqp_cutest_cons_func_free(&func));
-  }
-  else
-  {
-    SLEQP_CALL(sleqp_cutest_uncons_func_free(&func));
-  }
+  SLEQP_CALL(sleqp_func_release(&func));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&linear_offset));
 
