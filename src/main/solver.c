@@ -17,8 +17,6 @@
 #include "cauchy.h"
 #include "dual_estimation.h"
 
-#include "sparse/sparse_factorization_umfpack.h"
-
 #include "parametric.h"
 #include "newton.h"
 
@@ -102,7 +100,7 @@ struct SleqpSolver
   SleqpAugJacobian* aug_jacobian;
 
   SleqpDualEstimation* estimation_data;
-  SleqpSparseVec* estimation_residuum;
+  SleqpSparseVec* estimation_residuals;
 
   SleqpMeritData* merit_data;
 
@@ -413,7 +411,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_dual_estimation_create(&solver->estimation_data,
                                           solver->problem));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->estimation_residuum,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->estimation_residuals,
                                               num_variables));
 
   SLEQP_CALL(sleqp_merit_data_create(&solver->merit_data,
@@ -577,7 +575,7 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
   {
     SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
                                              iterate,
-                                             solver->estimation_residuum,
+                                             solver->estimation_residuals,
                                              solver->aug_jacobian));
   }
   else
@@ -2243,7 +2241,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_merit_data_release(&solver->merit_data));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->estimation_residuum));
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->estimation_residuals));
 
   SLEQP_CALL(sleqp_dual_estimation_free(&solver->estimation_data));
 
