@@ -640,6 +640,19 @@ SLEQP_RETCODE sleqp_sr1_push(SleqpSR1* sr1,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sr1_reset(SleqpSR1* sr1)
+{
+  const int num_blocks = sr1->num_blocks;
+
+  for(int i = 0; i < num_blocks; ++i)
+  {
+    SR1Block* block = sr1->blocks + i;
+    block->len = 0;
+  }
+
+  return SLEQP_OKAY;
+}
+
 static
 SLEQP_RETCODE sr1_block_hess_prod(SleqpSR1* sr1,
                                   SR1Block* block,

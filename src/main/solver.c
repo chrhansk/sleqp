@@ -2138,6 +2138,16 @@ SLEQP_RETCODE sleqp_solver_reset(SleqpSolver* solver)
 
   solver->penalty_parameter = 10.;
 
+  if(solver->bfgs_data)
+  {
+    SLEQP_CALL(sleqp_bfgs_reset(solver->bfgs_data));
+  }
+
+  if(solver->sr1_data)
+  {
+    SLEQP_CALL(sleqp_sr1_reset(solver->sr1_data));
+  }
+
   return SLEQP_OKAY;
 }
 

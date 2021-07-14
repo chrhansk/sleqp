@@ -31,6 +31,9 @@ extern "C" {
                                SleqpSparseVec* multipliers);
 
   SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sr1_reset(SleqpSR1* sr1);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sr1_hess_prod(SleqpSR1* sr1,
                                     const SleqpSparseVec* direction,
                                     SleqpSparseVec* product);

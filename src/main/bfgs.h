@@ -58,6 +58,9 @@ extern "C" {
                                 SleqpIterate* new_iterate,
                                 SleqpSparseVec* multipliers);
 
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_bfgs_reset(SleqpBFGS* data);
+
   /**
    * Computes the product of the Hessian approximation with the given direction
    *

@@ -857,6 +857,19 @@ SLEQP_RETCODE sleqp_bfgs_push(SleqpBFGS* data,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_bfgs_reset(SleqpBFGS* data)
+{
+  const int num_blocks = data->num_blocks;
+
+  for (int i = 0; i < num_blocks; ++i)
+  {
+    BFGSBlock *block = data->blocks + i;
+    block->len = 0;
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_bfgs_hess_prod(const SleqpBFGS* data,
                                         const SleqpSparseVec* direction,
                                         SleqpSparseVec* product)
