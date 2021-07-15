@@ -333,7 +333,7 @@ SLEQP_RETCODE solver_create_problem(SleqpSolver* solver,
   if(enable_preprocesor)
   {
     SLEQP_CALL(sleqp_preprocessor_create(&solver->preprocessor,
-                                         solver->problem,
+                                         solver->scaled_problem,
                                          solver->params));
 
     const SLEQP_PREPROCESSING_RESULT preprocessing_result = sleqp_preprocessor_result(solver->preprocessor);

@@ -492,6 +492,16 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
                                       preprocessor->preprocessing_state,
                                       params));
 
+  SleqpPreprocessingState* state = preprocessor->preprocessing_state;
+
+  const int num_fixed_vars = sleqp_preprocessing_state_num_fixed_variables(state);
+
+  const int num_removed_cons = sleqp_preprocessing_state_num_removed_linear_constraints(state);
+
+  sleqp_log_info("Preprocessing fixed %d variables and removed %d constraints",
+                 num_fixed_vars,
+                 num_removed_cons);
+
   return SLEQP_OKAY;
 }
 
