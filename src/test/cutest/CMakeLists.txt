@@ -1,4 +1,5 @@
 include(ExternalProject)
+
 ExternalProject_Add(CUTEst_clone
   GIT_REPOSITORY https://github.com/optimizers/cutest-mirror
   CONFIGURE_COMMAND ""
@@ -160,6 +161,8 @@ file(GLOB SIFPROBLEMS_EXT RELATIVE ${MASTSIF_BASE} ${MASTSIF_BASE}/*.SIF DEPENDS
 
 set(SIFPROBLEMS "")
 
+find_package(GETOPT REQUIRED)
+
 add_custom_target(cutest_solvers)
 add_custom_target(cutest_libraries)
 
@@ -218,6 +221,9 @@ foreach(s ${SIFPROBLEMS_EXT})
   add_executable("${SOLVER_NAME}"
     EXCLUDE_FROM_ALL
     sleqp_cutest_main.c)
+
+  target_include_directories("${SOLVER_NAME}"
+    PRIVATE "${GETOPT_INCLUDE_DIR}")
 
   target_compile_definitions("${SOLVER_NAME}"
     PRIVATE

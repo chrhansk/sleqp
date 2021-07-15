@@ -5,6 +5,7 @@
 #include "iterate.h"
 #include "log.h"
 #include "mem.h"
+#include "options.h"
 
 #include "sleqp_cutest_defs.h"
 #include "sleqp_cutest_data.h"
@@ -85,7 +86,8 @@ SLEQP_RETCODE report_result(SleqpSolver* solver,
 
 
 int sleqp_cutest_run(const char* filename,
-                     const char* probname)
+                     const char* probname,
+                     const SleqpCutestOptions* cutest_options)
 {
   integer funit = 42;        /* FORTRAN unit number for OUTSDIF.d */
   integer ierr;              /* Exit flag from OPEN and CLOSE */
@@ -144,7 +146,7 @@ int sleqp_cutest_run(const char* filename,
     SLEQP_CALL(sleqp_cutest_cons_problem_create(&problem,
                                                 cutest_data,
                                                 params,
-                                                false));
+                                                cutest_options->force_nonlinear_constraints));
   }
   else
   {
@@ -154,6 +156,13 @@ int sleqp_cutest_run(const char* filename,
   }
 
   SLEQP_CALL(sleqp_options_create(&options));
+
+  if(cutest_options->enable_preprocessing)
+  {
+    SLEQP_CALL(sleqp_options_set_bool(options,
+                                      SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR,
+                                      true));
+  }
 
   /*
   SLEQP_CALL(sleqp_options_set_int(options,
