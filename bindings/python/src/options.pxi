@@ -19,7 +19,8 @@ cdef class Options:
                   'bfgs_sizing',
                   'tr_solver',
                   'linesearch',
-                  'parametric_cauchy']
+                  'parametric_cauchy',
+                  'enable_preprocessor']
 
     for key, value in values.items():
       self._set_prop(key, value)
@@ -47,6 +48,11 @@ cdef class Options:
   def use_quadratic_model(self) -> bool:
     return csleqp.sleqp_options_get_bool(self.options,
                                          csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL)
+
+  @property
+  def enable_preprocessor(self) -> bool:
+    return csleqp.sleqp_options_get_bool(self.options,
+                                         csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR)
 
   @property
   def deriv_check(self) -> DerivCheck:
@@ -116,6 +122,12 @@ cdef class Options:
   def use_quadratic_model(self, value: bool) -> None:
     csleqp_call(csleqp.sleqp_options_set_bool(self.options,
                                               csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL,
+                                              value))
+
+  @enable_preprocessor.setter
+  def enable_preprocessor(self, value: bool) -> None:
+    csleqp_call(csleqp.sleqp_options_set_bool(self.options,
+                                              csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR,
                                               value))
 
   @deriv_check.setter
