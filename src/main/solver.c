@@ -2401,6 +2401,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_scaling_release(&solver->scaling_data));
 
+  SLEQP_CALL(sleqp_preprocessor_release(&solver->preprocessor));
+
   SLEQP_CALL(sleqp_problem_release(&solver->scaled_problem));
 
   SLEQP_CALL(sleqp_sr1_release(&solver->sr1_data));

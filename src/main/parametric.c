@@ -442,6 +442,8 @@ SLEQP_RETCODE parametric_solver_free(SleqpParametricSolver** star)
 
   SLEQP_CALL(sleqp_merit_data_release(&solver->merit_data));
 
+  SLEQP_CALL(sleqp_params_release(&solver->params));
+
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
 
   sleqp_free(&solver->cache);
