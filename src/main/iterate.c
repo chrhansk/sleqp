@@ -577,7 +577,7 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
   return true;
 }
 
-SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
+SLEQP_RETCODE sleqp_iterate_copy(const SleqpIterate* source,
                                  SleqpIterate* target)
 {
   SLEQP_CALL(sleqp_sparse_vector_copy(source->primal, target->primal));

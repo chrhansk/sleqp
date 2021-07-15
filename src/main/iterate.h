@@ -63,7 +63,7 @@ extern "C" {
                                                        double feas_eps);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_iterate_copy(SleqpIterate* source,
+  SLEQP_RETCODE sleqp_iterate_copy(const SleqpIterate* source,
                                    SleqpIterate* target);
 
 #ifdef __cplusplus
