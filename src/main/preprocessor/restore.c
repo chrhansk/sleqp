@@ -612,7 +612,7 @@ SLEQP_RETCODE prepare_duals(SleqpRestoration* restoration,
 
       if(i < num_general)
       {
-        restoration->var_dual[i] = v;
+        restoration->cons_dual[i] = v;
         continue;
       }
 
