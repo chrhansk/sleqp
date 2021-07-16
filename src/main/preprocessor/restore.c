@@ -101,6 +101,8 @@ SLEQP_RETCODE store_working_set(const SleqpRestoration* restoration,
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
+  SLEQP_CALL(sleqp_working_set_reset(working_set));
+
   for(int j = 0; j < num_variables; ++j)
   {
     SLEQP_ACTIVE_STATE state = restoration->working_var_states[j];
