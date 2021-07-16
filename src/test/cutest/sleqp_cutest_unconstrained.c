@@ -222,9 +222,6 @@ SLEQP_RETCODE sleqp_cutest_uncons_problem_create(SleqpProblem** star,
   SLEQP_CALL(sleqp_sparse_vector_from_raw(var_lb, data->var_lb, num_variables, zero_eps));
   SLEQP_CALL(sleqp_sparse_vector_from_raw(var_ub, data->var_ub, num_variables, zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_lb));
-
   SLEQP_CALL(sleqp_cutest_uncons_func_create(&func,
                                              num_variables,
                                              params));
