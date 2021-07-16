@@ -210,6 +210,9 @@ SLEQP_RETCODE solver_convert_primal(SleqpSolver* solver,
                                     const SleqpSparseVec* source,
                                     SleqpSparseVec* target)
 {
+  assert(source->dim == sleqp_problem_num_variables(solver->original_problem));
+  assert(target->dim == sleqp_problem_num_variables(solver->problem));
+
   SLEQP_CALL(sleqp_sparse_vector_copy(source, solver->scaled_primal));
 
   if(solver->scaling_data)
@@ -423,8 +426,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   solver->refcount = 1;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_original_variables = sleqp_problem_num_variables(problem);
+  const int num_original_constraints = sleqp_problem_num_constraints(problem);
 
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
@@ -434,12 +437,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
     solver->scaling_data = scaling_data;
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->scaled_primal,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->primal,
-                                              num_variables));
-
   SLEQP_CALL(sleqp_params_capture(params));
   solver->params = params;
 
@@ -448,6 +445,15 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(solver_create_problem(solver,
                                    problem));
+
+  const int num_variables = sleqp_problem_num_variables(solver->problem);
+  const int num_constraints = sleqp_problem_num_constraints(solver->problem);
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->scaled_primal,
+                                              num_original_variables));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->primal,
+                                              num_variables));
 
   SLEQP_CALL(solver_create_iterates(solver,
                                     primal));
@@ -462,8 +468,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   const double zero_eps = sleqp_params_get(params,
                                            SLEQP_PARAM_ZERO_EPS);
 
-  int num_lp_variables = num_variables + 2*num_constraints;
-  int num_lp_constraints = num_constraints;
+  const int num_lp_variables = num_variables + 2*num_constraints;
+  const int num_lp_constraints = num_constraints;
 
   SLEQP_CALL(sleqp_lpi_create_default_interface(&solver->lp_interface,
                                                 num_lp_variables,
