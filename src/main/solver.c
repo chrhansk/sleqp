@@ -47,6 +47,7 @@ struct SleqpSolver
 
   SleqpProblemScaling* problem_scaling;
 
+  bool restore_original_iterate;
   SleqpIterate* original_iterate;
 
   SleqpIterate* scaled_iterate;
@@ -263,6 +264,21 @@ SLEQP_RETCODE solver_restore_iterate(SleqpSolver* solver,
 }
 
 static
+SLEQP_RETCODE restore_original_iterate(SleqpSolver* solver)
+{
+  if(solver->restore_original_iterate)
+  {
+    SLEQP_CALL(solver_restore_iterate(solver,
+                                      solver->iterate,
+                                      solver->original_iterate));
+
+    solver->restore_original_iterate = false;
+  }
+
+  return SLEQP_OKAY;
+}
+
+static
 SLEQP_RETCODE solver_create_problem(SleqpSolver* solver,
                                     SleqpProblem* problem)
 {
@@ -400,10 +416,13 @@ SLEQP_RETCODE solver_create_iterates(SleqpSolver* solver,
     SLEQP_CALL(sleqp_iterate_create(&solver->original_iterate,
                                     solver->original_problem,
                                     primal));
+
+    solver->restore_original_iterate = true;
   }
   else
   {
     solver->original_iterate = solver->iterate;
+    solver->restore_original_iterate = false;
   }
 
   return SLEQP_OKAY;
@@ -427,7 +446,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   solver->refcount = 1;
 
   const int num_original_variables = sleqp_problem_num_variables(problem);
-  const int num_original_constraints = sleqp_problem_num_constraints(problem);
 
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
@@ -464,9 +482,6 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_check,
                                         solver->problem,
                                         params));
-
-  const double zero_eps = sleqp_params_get(params,
-                                           SLEQP_PARAM_ZERO_EPS);
 
   const int num_lp_variables = num_variables + 2*num_constraints;
   const int num_lp_constraints = num_constraints;
@@ -1722,27 +1737,27 @@ static SLEQP_RETCODE perform_iteration(SleqpSolver* solver,
     solver->trial_iterate = iterate;
     solver->iterate = trial_iterate;
 
-
     // ensure that the unscaled iterate is kept up to date
     if(solver->scaling_data || solver->preprocessor)
     {
-      SLEQP_CALL(solver_restore_iterate(solver,
-                                        solver->iterate,
-                                        solver->original_iterate));
+      solver->restore_original_iterate = true;
     }
     else
     {
       solver->original_iterate = solver->iterate;
     }
 
-    SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE],
-                                   SLEQP_ACCEPTED_ITERATE,
-                                   solver,
-                                   solver->original_iterate);
+    SleqpCallbackHandler* handler = solver->callback_handlers[SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE];
 
-    SLEQP_CALL(sleqp_violation_values(solver->original_problem,
-                                      solver->original_iterate,
-                                      solver->original_violation));
+    if(sleqp_callback_handler_size(handler) != 0)
+    {
+      SLEQP_CALL(restore_original_iterate(solver));
+
+      SLEQP_CALLBACK_HANDLER_EXECUTE(handler,
+                                     SLEQP_ACCEPTED_ITERATE,
+                                     solver,
+                                     solver->original_iterate);
+    }
   }
   else
   {
@@ -1786,10 +1801,10 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
                                         double violation)
 {
   const char* descriptions[] = {
-    [SLEQP_FEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "feasible" SLEQP_FORMAT_RESET,
-    [SLEQP_OPTIMAL] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN "optimal" SLEQP_FORMAT_RESET,
-    [SLEQP_INFEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED "infeasible" SLEQP_FORMAT_RESET,
-    [SLEQP_INVALID] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED "Invalid" SLEQP_FORMAT_RESET
+    [SLEQP_FEASIBLE]   = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "feasible"   SLEQP_FORMAT_RESET,
+    [SLEQP_OPTIMAL]    = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN  "optimal"    SLEQP_FORMAT_RESET,
+    [SLEQP_INFEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "infeasible" SLEQP_FORMAT_RESET,
+    [SLEQP_INVALID]    = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "Invalid"    SLEQP_FORMAT_RESET
   };
 
   SleqpFunc* original_func = sleqp_problem_func(solver->original_problem);
@@ -1914,7 +1929,13 @@ static SLEQP_RETCODE solver_print_stats(SleqpSolver* solver,
 
   if(solver->status == SLEQP_INFEASIBLE)
   {
-    sleqp_log_info("Violations: ");
+    SLEQP_CALL(restore_original_iterate(solver));
+
+    SLEQP_CALL(sleqp_violation_values(solver->original_problem,
+                                      solver->original_iterate,
+                                      solver->original_violation));
+
+    sleqp_log_info("Violations with respect to original problem: ");
 
     for(int index = 0; index < solver->original_violation->nnz; ++index)
     {
@@ -2204,6 +2225,8 @@ SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
 SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                         SleqpIterate** iterate)
 {
+  SLEQP_CALL(restore_original_iterate(solver));
+
   (*iterate) = solver->original_iterate;
 
   return SLEQP_OKAY;
