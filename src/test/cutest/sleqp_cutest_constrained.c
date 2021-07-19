@@ -171,6 +171,23 @@ SLEQP_RETCODE cutest_cons_func_set(SleqpFunc* func,
 }
 
 static
+SLEQP_RETCODE cutest_cons_func_set_raw(SleqpFunc* func,
+                                       const double* x)
+{
+  void* func_data = sleqp_func_get_data(func);
+  CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
+
+  const int num_variables = data->num_variables;
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    data->x[j] = x[j];
+  }
+
+  return SLEQP_OKAY;
+}
+
+static
 SLEQP_RETCODE cutest_cons_func_val(SleqpFunc* func,
                                    double* func_val,
                                    void* func_data)
@@ -363,8 +380,8 @@ SLEQP_RETCODE cutest_cons_cons_jac(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cutest_linear_offset(SleqpFunc* func,
-                                         SleqpSparseVec* offset)
+SLEQP_RETCODE sleqp_cutest_eval_linear(SleqpFunc* func,
+                                       SleqpSparseVec* linear)
 {
   void* func_data = sleqp_func_get_data(func);
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
@@ -372,12 +389,7 @@ SLEQP_RETCODE sleqp_cutest_linear_offset(SleqpFunc* func,
 
   double obj;
 
-  assert(offset->dim == data->num_linear);
-
-  for(int j = 0; j < data->num_variables; ++j)
-  {
-    data->x[j] = 0.;
-  }
+  assert(linear->dim == data->num_linear);
 
   const int num_general = data->num_constraints - data->num_linear;
 
@@ -390,7 +402,7 @@ SLEQP_RETCODE sleqp_cutest_linear_offset(SleqpFunc* func,
 
   SLEQP_CUTEST_CHECK_STATUS(status);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(offset,
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(linear,
                                           data->cons_vals + num_general,
                                           data->num_linear,
                                           data->zero_eps));
@@ -398,8 +410,8 @@ SLEQP_RETCODE sleqp_cutest_linear_offset(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cutest_eval_linear(SleqpFunc* func,
-                                       SleqpSparseMatrix* coeffs)
+SLEQP_RETCODE sleqp_cutest_eval_linear_coeffs(SleqpFunc* func,
+                                              SleqpSparseMatrix* coeffs)
 {
   void* func_data = sleqp_func_get_data(func);
   CUTestConsFuncData* data = (CUTestConsFuncData*) func_data;
@@ -624,6 +636,47 @@ SLEQP_RETCODE adjust_for_linear_offset(SleqpParams* params,
   return SLEQP_OKAY;
 }
 
+static
+SLEQP_RETCODE compute_linear_offset(SleqpFunc* func,
+                                    SleqpParams* params,
+                                    SleqpCutestData* data,
+                                    const SleqpSparseMatrix* linear_coeffs,
+                                    SleqpSparseVec* linear_offset)
+{
+  SleqpSparseVec* linear;
+  SleqpSparseVec* x;
+  SleqpSparseVec* product;
+  double* raw_product;
+
+  const int num_variables = data->num_variables;
+  const int num_linear = data->num_linear;
+
+  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&linear, num_linear));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&x, num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&product, num_linear));
+  SLEQP_CALL(sleqp_alloc_array(&raw_product, num_linear));
+
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(x, data->x, num_variables, zero_eps));
+
+  SLEQP_CALL(sleqp_cutest_eval_linear(func, linear));
+
+  SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_coeffs, x, raw_product));
+
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(product, raw_product, num_linear, zero_eps));
+
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(linear, product, 1., -1., zero_eps, linear_offset));
+
+  sleqp_free(&raw_product);
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&product));
+  SLEQP_CALL(sleqp_sparse_vector_free(&x));
+  SLEQP_CALL(sleqp_sparse_vector_free(&linear));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_cutest_cons_problem_create(SleqpProblem** star,
                                                SleqpCutestData* data,
                                                SleqpParams* params,
@@ -678,10 +731,15 @@ SLEQP_RETCODE sleqp_cutest_cons_problem_create(SleqpProblem** star,
 
   if(num_linear != 0)
   {
-    SLEQP_CALL(sleqp_cutest_eval_linear(func, linear_coeffs));
+    SLEQP_CALL(cutest_cons_func_set_raw(func, data->x));
 
-    SLEQP_CALL(sleqp_cutest_linear_offset(func,
-                                          linear_offset));
+    SLEQP_CALL(sleqp_cutest_eval_linear_coeffs(func, linear_coeffs));
+
+    SLEQP_CALL(compute_linear_offset(func,
+                                     params,
+                                     data,
+                                     linear_coeffs,
+                                     linear_offset));
 
     SLEQP_CALL(adjust_for_linear_offset(params,
                                         data,

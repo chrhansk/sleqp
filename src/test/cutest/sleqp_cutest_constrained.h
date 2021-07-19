@@ -24,12 +24,12 @@ extern "C" {
                                                  bool force_nonlinear);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cutest_linear_offset(SleqpFunc* func,
-                                           SleqpSparseVec* offset);
+  SLEQP_RETCODE sleqp_cutest_eval_linear(SleqpFunc* func,
+                                         SleqpSparseVec* linear);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_cutest_eval_linear(SleqpFunc* func,
-                                         SleqpSparseMatrix* coeffs);
+  SLEQP_RETCODE sleqp_cutest_eval_linear_coeffs(SleqpFunc* func,
+                                                SleqpSparseMatrix* coeffs);
 
 
 #ifdef __cplusplus
