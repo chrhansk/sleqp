@@ -45,7 +45,8 @@ struct SleqpLpiSoplex
 static SLEQP_RETCODE soplex_create_problem(void** lp_data,
                                            int num_cols,
                                            int num_rows,
-                                           SleqpParams* params)
+                                           SleqpParams* params,
+                                           SleqpOptions* options)
 {
   SleqpLpiSoplex* spx = new SleqpLpiSoplex(num_cols, num_rows);
 
@@ -540,7 +541,8 @@ extern "C"
   SLEQP_RETCODE sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star,
                                                   int num_cols,
                                                   int num_rows,
-                                                  SleqpParams* params)
+                                                  SleqpParams* params,
+                                                  SleqpOptions* options)
   {
     SleqpLPiCallbacks callbacks = {
       .create_problem = soplex_create_problem,
@@ -562,18 +564,21 @@ extern "C"
                                       num_cols,
                                       num_rows,
                                       params,
+                                      options,
                                       &callbacks);
   }
 
   SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
                                                    int num_variables,
                                                    int num_constraints,
-                                                   SleqpParams* params)
+                                                   SleqpParams* params,
+                                                   SleqpOptions* options)
   {
     SLEQP_CALL(sleqp_lpi_soplex_create_interface(lp_interface,
                                                  num_variables,
                                                  num_constraints,
-                                                 params));
+                                                 params,
+                                                 options));
 
     return SLEQP_OKAY;
   }

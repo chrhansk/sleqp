@@ -164,6 +164,13 @@ int sleqp_cutest_run(const char* filename,
                                       true));
   }
 
+  if(cutest_options->max_num_threads != SLEQP_NONE)
+  {
+    SLEQP_CALL(sleqp_options_set_int(options,
+                                     SLEQP_OPTION_INT_NUM_THREADS,
+                                     cutest_options->max_num_threads));
+  }
+
   /*
   SLEQP_CALL(sleqp_options_set_int(options,
                                    SLEQP_OPTION_INT_DERIV_CHECK,

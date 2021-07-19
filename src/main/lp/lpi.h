@@ -23,6 +23,7 @@ extern "C" {
                                            int num_variables,
                                            int num_constraints,
                                            SleqpParams* params,
+                                           SleqpOptions* options,
                                            SleqpLPiCallbacks* callbacks);
 
   int sleqp_lpi_get_num_variables(SleqpLPi* lp_interface);
@@ -91,7 +92,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
                                                    int num_variables,
                                                    int num_constraints,
-                                                   SleqpParams* params);
+                                                   SleqpParams* params,
+                                                   SleqpOptions* options);
 
 
 #ifdef __cplusplus

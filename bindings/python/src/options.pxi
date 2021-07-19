@@ -106,6 +106,16 @@ cdef class Options:
 
     return ParametricCauchy(parametric_cauchy)
 
+  @property
+  def num_threads(self):
+    cdef int num_threads = csleqp.sleqp_options_get_int(self.options,
+                                                        csleqp.SLEQP_OPTION_INT_NUM_THREADS)
+
+    if num_threads == csleqp.SLEQP_NONE:
+      return None
+
+    return num_threads
+
   @perform_newton_step.setter
   def perform_newton_step(self, value: bool) -> None:
     csleqp_call(csleqp.sleqp_options_set_bool(self.options,
@@ -186,6 +196,15 @@ cdef class Options:
     csleqp_call(csleqp.sleqp_options_set_int(self.options,
                                              csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY,
                                              value.value))
+
+  @num_threads.setter
+  def num_threads(self, value):
+    if value is None:
+      value = csleqp.SLEQP_NONE
+
+    csleqp_call(csleqp.sleqp_options_set_int(self.options,
+                                             csleqp.SLEQP_OPTION_INT_NUM_THREADS,
+                                             value))
 
   def values(self) -> set:
     return {key: getattr(self, key) for key in self.props}

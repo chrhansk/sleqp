@@ -24,6 +24,7 @@
 #define BFGS_SIZING_DEFAULT                SLEQP_BFGS_SIZING_CENTERED_OL
 #define TR_SOLVER_DEFAULT                  SLEQP_TR_SOLVER_AUTO
 #define LINESEARCH_DEFAULT                 SLEQP_LINESEARCH_APPROX
+#define NUM_THREADS_DEFAULT                SLEQP_NONE
 
 #define CHECK_FLOAT_ENV                                                                             \
   do                                                                                                \
@@ -67,6 +68,7 @@ SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
   options->int_values[SLEQP_OPTION_INT_TR_SOLVER]                 = TR_SOLVER_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_LINESEARCH]                = LINESEARCH_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_PARAMETRIC_CAUCHY]         = PARAMETRIC_CAUCHY_DEFAULT;
+  options->int_values[SLEQP_OPTION_INT_NUM_THREADS]               = NUM_THREADS_DEFAULT;
 
   options->bool_values[SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]  = PERFORM_NEWTON_DEFAULT;
   options->bool_values[SLEQP_OPTION_BOOL_PERFORM_SOC]          = PERFORM_SOC_DEFAULT;

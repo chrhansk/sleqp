@@ -8,6 +8,7 @@
 
 #include "types.h"
 
+#include "options.h"
 #include "params.h"
 
 #include "sparse/sparse_matrix.h"
@@ -30,7 +31,8 @@ extern "C" {
   typedef SLEQP_RETCODE (*SLEQP_LPI_CREATE)(void** lp_data,
                                             int num_variables,
                                             int num_constraints,
-                                            SleqpParams* params);
+                                            SleqpParams* params,
+                                            SleqpOptions* options);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_SOLVE)(void* lp_data,
                                            int num_variables,

@@ -10,6 +10,7 @@
 START_TEST(test_simplex_solve)
 {
   SleqpParams* params;
+  SleqpOptions* options;
 
   SleqpLPi* lp_interface;
 
@@ -18,6 +19,7 @@ START_TEST(test_simplex_solve)
   const double inf = sleqp_infinity();
 
   ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_options_create(&options));
 
   int num_variables = 2;
   int num_constraints = 1;
@@ -25,7 +27,8 @@ START_TEST(test_simplex_solve)
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
                                                  num_variables,
                                                  num_constraints,
-                                                 params));
+                                                 params,
+                                                 options));
 
   double objective[] = {-1, 0};
   double vars_lb[] = {0, 0};
@@ -103,6 +106,7 @@ START_TEST(test_simplex_solve)
 
   ASSERT_CALL(sleqp_lpi_free(&lp_interface));
 
+  ASSERT_CALL(sleqp_options_release(&options));
   ASSERT_CALL(sleqp_params_release(&params));
 }
 END_TEST

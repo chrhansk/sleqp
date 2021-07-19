@@ -11,6 +11,7 @@ typedef struct
 {
   bool enable_preprocessing;
   bool force_nonlinear_constraints;
+  int max_num_threads;
 } SleqpCutestOptions;
 
 #ifdef __cplusplus

@@ -56,7 +56,8 @@ void newton_setup()
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
                                                  num_lp_variables,
                                                  num_lp_constraints,
-                                                 params));
+                                                 params,
+                                                 options));
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_INIT));
 

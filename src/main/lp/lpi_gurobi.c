@@ -60,7 +60,8 @@ typedef struct SleqpLpiGRB
 static SLEQP_RETCODE gurobi_create_problem(void** star,
                                            int num_cols,
                                            int num_rows,
-                                           SleqpParams* params)
+                                           SleqpParams* params,
+                                           SleqpOptions* options)
 {
   SleqpLpiGRB* lp_interface = NULL;
 
@@ -94,6 +95,25 @@ static SLEQP_RETCODE gurobi_create_problem(void** star,
     SLEQP_GRB_CALL(GRBsetintparam(env,
                                   GRB_INT_PAR_OUTPUTFLAG,
                                   0), env);
+  }
+
+  {
+    const int num_threads = sleqp_options_get_int(options,
+                                                  SLEQP_OPTION_INT_NUM_THREADS);
+
+    if(num_threads == SLEQP_NONE)
+    {
+      SLEQP_GRB_CALL(GRBsetintparam(env,
+                                    GRB_INT_PAR_THREADS,
+                                    0), env);
+    }
+    else
+    {
+      SLEQP_GRB_CALL(GRBsetintparam(env,
+                                    GRB_INT_PAR_THREADS,
+                                    num_threads), env);
+    }
+
   }
 
   SLEQP_GRB_CALL(GRBnewmodel(env,
@@ -562,7 +582,8 @@ static SLEQP_RETCODE gurobi_free(void** star)
 SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
                                                 int num_cols,
                                                 int num_rows,
-                                                SleqpParams* params)
+                                                SleqpParams* params,
+                                                SleqpOptions* options)
 {
   SleqpLPiCallbacks callbacks = {
     .create_problem = gurobi_create_problem,
@@ -584,6 +605,7 @@ SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
                                     num_cols,
                                     num_rows,
                                     params,
+                                    options,
                                     &callbacks);
 }
 
@@ -591,12 +613,14 @@ SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
 SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
                                                  int num_variables,
                                                  int num_constraints,
-                                                 SleqpParams* params)
+                                                 SleqpParams* params,
+                                                 SleqpOptions* options)
 {
   SLEQP_CALL(sleqp_lpi_gurobi_create_interface(lp_interface,
                                                num_variables,
                                                num_constraints,
-                                               params));
+                                               params,
+                                               options));
 
   return SLEQP_OKAY;
 }

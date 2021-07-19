@@ -489,7 +489,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_lpi_create_default_interface(&solver->lp_interface,
                                                 num_lp_variables,
                                                 num_lp_constraints,
-                                                params));
+                                                params,
+                                                options));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->original_violation,
                                               num_constraints));

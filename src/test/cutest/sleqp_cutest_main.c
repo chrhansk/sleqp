@@ -15,9 +15,10 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
     int option_index = 0;
 
     static struct option long_options[] = {
-      {"enable_preprocessing",        no_argument, 0, 'p'},
-      {"force_nonlinear_constraints", no_argument, 0, 'n'},
-      {0,                                       0, 0,  0}
+      {"enable_preprocessing",        no_argument,       0, 'p'},
+      {"force_nonlinear_constraints", no_argument,       0, 'n'},
+      {"max_num_threads",             required_argument, 0, 't'},
+      {0,                             0,                 0,  0}
     };
 
     int c = getopt_long(argc,
@@ -37,6 +38,11 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
     case 'n':
       sleqp_log_info("Forcing nonlinear constraints");
       options->force_nonlinear_constraints = true;
+      break;
+
+    case 't':
+      options->max_num_threads = atoi(optarg);
+      sleqp_log_info("Using up to %d threads", options->max_num_threads);
       break;
 
     default:
@@ -60,6 +66,7 @@ int main(int argc, char *argv[])
   const char* probname = PROBLEM_NAME;
 
   SleqpCutestOptions options = (SleqpCutestOptions) {0};
+  options.max_num_threads = SLEQP_NONE;
 
   if(parse_command_line_options(argc, argv, &options) != EXIT_SUCCESS)
   {

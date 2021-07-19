@@ -24,6 +24,7 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
                                          int num_variables,
                                          int num_constraints,
                                          SleqpParams* params,
+                                         SleqpOptions* options,
                                          SleqpLPiCallbacks* callbacks)
 {
   SLEQP_CALL(sleqp_malloc(lp_star));
@@ -44,7 +45,8 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
   SLEQP_CALL(lp_interface->callbacks.create_problem(&lp_interface->lp_data,
                                                     num_variables,
                                                     num_constraints,
-                                                    params));
+                                                    params,
+                                                    options));
 
   return SLEQP_OKAY;
 }
