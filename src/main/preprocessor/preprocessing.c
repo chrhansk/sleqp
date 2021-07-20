@@ -4,10 +4,10 @@
 #include "fail.h"
 
 SLEQP_RETCODE sleqp_preprocessing_merge_entries(const SleqpSparseVec* source,
-                                                      SleqpSparseVec* target,
-                                                      int num_entries,
-                                                      const int* entry_indices,
-                                                      double* entry_values)
+                                                SleqpSparseVec* target,
+                                                int num_entries,
+                                                const int* entry_indices,
+                                                double* entry_values)
 {
   SLEQP_CALL(sleqp_sparse_vector_clear(target));
 
@@ -190,7 +190,8 @@ SLEQP_RETCODE sleqp_preprocessing_add_zero_entries(const SleqpSparseVec* source,
     const int i = source->indices[k];
     const double v = source->data[k];
 
-    while(k_f < num_entries && entry_indices[k] <= i)
+    while(k_f < num_entries &&
+          entry_indices[k_f] <= i + offset)
     {
       ++k_f;
       ++offset;
