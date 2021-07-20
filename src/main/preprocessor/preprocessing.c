@@ -1,5 +1,6 @@
 #include "preprocessing.h"
 
+#include <assert.h>
 #include "fail.h"
 
 SLEQP_RETCODE sleqp_preprocessing_merge_entries(const SleqpSparseVec* source,
@@ -9,6 +10,8 @@ SLEQP_RETCODE sleqp_preprocessing_merge_entries(const SleqpSparseVec* source,
                                                       double* entry_values)
 {
   SLEQP_CALL(sleqp_sparse_vector_clear(target));
+
+  assert(source->dim + num_entries == target->dim);
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(target, source->nnz + num_entries));
 
@@ -20,7 +23,7 @@ SLEQP_RETCODE sleqp_preprocessing_merge_entries(const SleqpSparseVec* source,
     const int i_v = source->indices[k];
 
     while(k_f < num_entries &&
-          entry_indices[k_f] <= i_v)
+          entry_indices[k_f] <= i_v + offset)
     {
       const int i_f = entry_indices[k_f];
 
@@ -37,6 +40,15 @@ SLEQP_RETCODE sleqp_preprocessing_merge_entries(const SleqpSparseVec* source,
                                         source->data[k]));
   }
 
+  while(k_f < num_entries)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_push(target,
+                                        entry_indices[k_f],
+                                        entry_values[k_f]));
+
+    ++k_f;
+  }
+
   return SLEQP_OKAY;
 }
 
@@ -48,8 +60,9 @@ SLEQP_RETCODE sleqp_preprocessing_remove_entries(const SleqpSparseVec* source,
 {
   SLEQP_CALL(sleqp_sparse_vector_clear(target));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(target,
-                                         source->nnz));
+  assert(source->dim == target->dim + num_entries);
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(target, source->nnz));
 
   int k_f = 0;
   int offset = 0;

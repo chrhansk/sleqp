@@ -303,6 +303,7 @@ SLEQP_RETCODE check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor
 
       if(bound_slack < 0.)
       {
+        sleqp_log_debug("Lower bound of linear constraint %d is incompatible with variable bounds", i);
         preprocessor->infeasible = true;
       }
       else if(bound_slack == 0.)
@@ -318,6 +319,7 @@ SLEQP_RETCODE check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor
 
       if(bound_slack < 0.)
       {
+        sleqp_log_debug("Upper bound of linear constraint %d is incompatible with variable bounds", i);
         preprocessor->infeasible = true;
       }
       else if(bound_slack == 0.)

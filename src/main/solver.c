@@ -357,13 +357,13 @@ SLEQP_RETCODE solver_create_problem(SleqpSolver* solver,
 
     const SLEQP_PREPROCESSING_RESULT preprocessing_result = sleqp_preprocessor_result(solver->preprocessor);
 
-    if(preprocessing_result == SLEQP_PREPROCESSING_RESULT_SUCCESS)
+    if(preprocessing_result == SLEQP_PREPROCESSING_RESULT_FAILURE)
     {
-      solver->problem = sleqp_preprocessor_transformed_problem(solver->preprocessor);
+      solver->problem = solver->scaled_problem;
     }
     else
     {
-      solver->problem = solver->scaled_problem;
+      solver->problem = sleqp_preprocessor_transformed_problem(solver->preprocessor);
 
       if(preprocessing_result == SLEQP_PREPROCESSING_RESULT_INFEASIBLE)
       {
