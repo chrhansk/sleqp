@@ -373,6 +373,11 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   return SLEQP_OKAY;
 }
 
+bool sleqp_problem_has_nonlinear_cons(SleqpProblem* problem)
+{
+  return problem->num_general_constraints != 0;
+}
+
 int sleqp_problem_num_variables(SleqpProblem* problem)
 {
   return problem->num_variables;

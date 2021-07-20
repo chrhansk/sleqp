@@ -11,6 +11,8 @@
 extern "C" {
 #endif
 
+  bool sleqp_problem_has_nonlinear_cons(SleqpProblem* problem);
+
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_set_value(SleqpProblem* problem,
                                         SleqpSparseVec* x,

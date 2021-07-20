@@ -26,6 +26,8 @@ struct SleqpCauchy
   bool has_basis[SLEQP_NUM_CAUCHY_OBJECTIVES];
   SLEQP_CAUCHY_OBJECTIVE_TYPE current_objective;
 
+  bool has_coefficients;
+
   SleqpLPi* lp_interface;
 
   double* objective;
@@ -82,6 +84,8 @@ SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
   data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY] = false;
   data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED] = false;
   data->current_objective = SLEQP_NONE;
+
+  data->has_coefficients = false;
 
   data->lp_interface = lp_interface;
 
@@ -356,11 +360,50 @@ static SLEQP_RETCODE create_objective(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
+static
+SLEQP_RETCODE cauchy_set_coefficients(SleqpCauchy* cauchy_data,
+                                      SleqpSparseMatrix* cons_jac)
+{
+  SleqpProblem* problem = cauchy_data->problem;
+
+  const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  const int num_constraints = sleqp_sparse_matrix_get_num_rows(cons_jac);
+
+  bool fixed_jacobian = !(sleqp_problem_has_nonlinear_cons(problem));
+
+  if(fixed_jacobian && cauchy_data->has_coefficients)
+  {
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(append_identities(cons_jac,
+                               num_variables,
+                               num_constraints));
+
+  assert(sleqp_sparse_matrix_valid(cons_jac));
+
+  SLEQP_CALL(sleqp_lpi_set_coefficients(cauchy_data->lp_interface,
+                                        cons_jac));
+
+  SLEQP_CALL(remove_identities(cons_jac,
+                               num_variables,
+                               num_constraints));
+
+  assert(sleqp_sparse_matrix_valid(cons_jac));
+
+  cauchy_data->has_coefficients = true;
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchy* cauchy_data,
                                        SleqpIterate* iterate,
                                        double trust_radius)
 {
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+
+  const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  const int num_constraints = sleqp_sparse_matrix_get_num_rows(cons_jac);
 
   assert(trust_radius > 0.);
 
@@ -371,15 +414,6 @@ SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchy* cauchy_data,
   cauchy_data->iterate = iterate;
 
   SLEQP_CALL(sleqp_iterate_capture(cauchy_data->iterate));
-
-  const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
-  const int num_constraints = sleqp_sparse_matrix_get_num_rows(cons_jac);
-
-  SLEQP_CALL(append_identities(cons_jac,
-                               num_variables,
-                               num_constraints));
-
-  assert(sleqp_sparse_matrix_valid(cons_jac));
 
   SLEQP_CALL(create_var_bounds(cauchy_data,
                                iterate,
@@ -397,14 +431,7 @@ SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchy* cauchy_data,
                                   cauchy_data->vars_lb,
                                   cauchy_data->vars_ub));
 
-  SLEQP_CALL(sleqp_lpi_set_coefficients(cauchy_data->lp_interface,
-                                        cons_jac));
-
-  SLEQP_CALL(remove_identities(cons_jac,
-                               num_variables,
-                               num_constraints));
-
-  assert(sleqp_sparse_matrix_valid(cons_jac));
+  SLEQP_CALL(cauchy_set_coefficients(cauchy_data, cons_jac));
 
   return SLEQP_OKAY;
 }
