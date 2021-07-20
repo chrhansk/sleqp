@@ -284,6 +284,9 @@ SLEQP_RETCODE check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor
 {
   SleqpProblem* problem = preprocessor->original_problem;
 
+  const double feas_eps = sleqp_params_get(preprocessor->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
+
   SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
   SleqpConstraintState* linear_cons_states = sleqp_preprocessing_state_linear_constraint_states(state);
@@ -301,12 +304,12 @@ SLEQP_RETCODE check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor
     {
       const double bound_slack = preprocessor->linear_max[i] - preprocessor->linear_lb[i];
 
-      if(bound_slack < 0.)
+      if(sleqp_is_lt(bound_slack, 0., feas_eps))
       {
         sleqp_log_debug("Lower bound of linear constraint %d is incompatible with variable bounds", i);
         preprocessor->infeasible = true;
       }
-      else if(bound_slack == 0.)
+      else if(sleqp_is_eq(bound_slack, 0., feas_eps))
       {
         add_forcing_constraint(preprocessor, i, SLEQP_LOWER_BOUND);
         // add forcing constraint
@@ -317,12 +320,12 @@ SLEQP_RETCODE check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor
     {
       const double bound_slack = preprocessor->linear_ub[i] - preprocessor->linear_min[i];
 
-      if(bound_slack < 0.)
+      if(sleqp_is_lt(bound_slack, 0., feas_eps))
       {
         sleqp_log_debug("Upper bound of linear constraint %d is incompatible with variable bounds", i);
         preprocessor->infeasible = true;
       }
-      else if(bound_slack == 0.)
+      else if(sleqp_is_eq(bound_slack, 0., feas_eps))
       {
         add_forcing_constraint(preprocessor, i, SLEQP_UPPER_BOUND);
         // add forcing constraint
