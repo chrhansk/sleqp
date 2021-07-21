@@ -16,6 +16,8 @@ struct SleqpAugJacobian
   int working_set_size;
   int max_set_size;
 
+  bool has_factorization;
+
   SleqpSparseMatrix* augmented_matrix;
   SleqpSparseFactorization* factorization;
 
@@ -215,6 +217,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_create(SleqpAugJacobian** star,
   jacobian->max_set_size = num_constraints + num_variables;
   int max_num_cols = num_variables + jacobian->max_set_size;
 
+  jacobian->has_factorization = false;
+
   SLEQP_CALL(sleqp_sparse_factorization_capture(sparse_factorization));
 
   jacobian->factorization = sparse_factorization;
@@ -244,7 +248,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
 
   if(jacobian->working_set)
   {
-    if(sleqp_working_set_eq(working_set, jacobian->working_set))
+    if(sleqp_working_set_eq(working_set, jacobian->working_set) &&
+       jacobian->has_factorization)
     {
       return SLEQP_OKAY;
     }
@@ -258,7 +263,7 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
 
   jacobian->working_set_size = sleqp_working_set_size(working_set);
 
-  jacobian->condition_estimate = -1;
+  jacobian->condition_estimate = SLEQP_NONE;
 
   // we overestimate here...
   int constraint_nnz = sleqp_sparse_matrix_get_nnz(sleqp_iterate_get_cons_jac(iterate));
@@ -280,6 +285,8 @@ SLEQP_RETCODE sleqp_aug_jacobian_set_iterate(SleqpAugJacobian* jacobian,
 
   SLEQP_CALL(sleqp_sparse_factorization_set_matrix(jacobian->factorization,
                                                    jacobian->augmented_matrix));
+
+  jacobian->has_factorization = true;
 
   SLEQP_CALL(sleqp_timer_stop(jacobian->factorization_timer));
 
