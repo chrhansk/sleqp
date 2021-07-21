@@ -66,6 +66,13 @@ extern "C" {
 
   } SleqpConstraintState;
 
+  typedef enum
+  {
+    SLEQP_BOUND_REQUIRED = 0,
+    SLEQP_BOUND_REDUNDANT_LOWER = (1 << 1),
+    SLEQP_BOUND_REDUNDANT_UPPER = (1 << 2),
+    SLEQP_BOUND_REDUNDANT = (SLEQP_BOUND_REDUNDANT_LOWER | SLEQP_BOUND_REDUNDANT_UPPER),
+  } SleqpBoundRequirementState;
 
   typedef struct SleqpPreprocessingState SleqpPreprocessingState;
 
@@ -107,9 +114,24 @@ extern "C" {
 
   SleqpConstraintState* sleqp_preprocessing_state_linear_constraint_states(const SleqpPreprocessingState* state);
 
+  SleqpBoundRequirementState* sleqp_preprocessing_state_variable_bound_requirements(const SleqpPreprocessingState* state);
+
+  SleqpBoundRequirementState* sleqp_preprocessing_state_linear_constraint_bound_requirements(const SleqpPreprocessingState* state);
+
+  SLEQP_RETCODE sleqp_preprocessing_state_add_variable_bound_requirement(SleqpPreprocessingState* state,
+                                                                         int j,
+                                                                         SleqpBoundRequirementState requirement_state);
+
+  SLEQP_RETCODE sleqp_preprocessing_state_add_linear_constraint_bound_requirement(SleqpPreprocessingState* state,
+                                                                                  int i,
+                                                                                  SleqpBoundRequirementState requirement_state);
+
+
   int sleqp_preprocessing_state_num_fixed_variables(const SleqpPreprocessingState* state);
 
   int sleqp_preprocessing_state_num_removed_linear_constraints(const SleqpPreprocessingState* state);
+
+  int sleqp_preprocessing_state_num_removed_bounds(const SleqpPreprocessingState* state);
 
   SLEQP_RETCODE sleqp_preprocessing_state_flush(SleqpPreprocessingState* state);
 

@@ -1,6 +1,7 @@
 #include "preprocessor.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "cmp.h"
 #include "log.h"
@@ -35,6 +36,9 @@ struct SleqpPreprocessor
   // dense version of variable bounds
   double* var_lb;
   double* var_ub;
+
+  double* var_min;
+  double* var_max;
 
   // dense version of linear bounds
   double* linear_lb;
@@ -161,6 +165,91 @@ SLEQP_RETCODE convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor
   {
     SLEQP_CALL(sleqp_preprocessing_state_remove_linear_constraint(preprocessor->preprocessing_state,
                                                                   i));
+  }
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE compute_variable_bounds(SleqpPreprocessor* preprocessor)
+{
+  SleqpProblem* problem = preprocessor->original_problem;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_linear = sleqp_problem_num_linear_constraints(problem);
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    preprocessor->var_min[j] = preprocessor->var_lb[j];
+    preprocessor->var_max[j] = preprocessor->var_ub[j];
+  }
+
+  SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+
+  assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs) == num_linear);
+  assert(sleqp_sparse_matrix_get_num_cols(linear_coeffs) == num_variables);
+
+  double* linear_data = sleqp_sparse_matrix_get_data(linear_coeffs);
+  int* linear_rows = sleqp_sparse_matrix_get_rows(linear_coeffs);
+  int* linear_cols = sleqp_sparse_matrix_get_cols(linear_coeffs);
+
+  for(int col = 0; col < num_variables; ++col)
+  {
+    for(int k = linear_cols[col]; k < linear_cols[col + 1]; ++k)
+    {
+      const int row = linear_rows[k];
+      const double value = linear_data[k];
+
+      const double var_lb = preprocessor->var_lb[col];
+      const double var_ub = preprocessor->var_ub[col];
+
+      const double linear_lb = preprocessor->linear_lb[row];
+      const double linear_ub = preprocessor->linear_ub[row];
+
+      const double linear_max = preprocessor->linear_max[row];
+      const double linear_min = preprocessor->linear_min[row];
+
+      if (value == 0.)
+      {
+        continue;
+      }
+
+      if(sleqp_is_finite(linear_ub) &&
+         sleqp_is_finite(linear_min) &&
+         sleqp_is_finite(var_lb))
+      {
+        const double var_bound = 1./(value) * (linear_ub - linear_min) - var_lb;
+
+        if(value > 0.)
+        {
+          preprocessor->var_max[col] = SLEQP_MIN(preprocessor->var_max[col],
+                                                 var_bound);
+        }
+        else
+        {
+          preprocessor->var_min[col] = SLEQP_MAX(preprocessor->var_min[col],
+                                                 var_bound);
+        }
+      }
+
+      if(sleqp_is_finite(linear_lb) &&
+         sleqp_is_finite(linear_max) &&
+         sleqp_is_finite(var_ub))
+      {
+        const double var_bound = 1./(value) * (linear_lb - linear_max) - var_ub;
+
+        if(value > 0.)
+        {
+          preprocessor->var_min[col] = SLEQP_MAX(preprocessor->var_min[col],
+                                                 var_bound);
+        }
+        else
+        {
+          preprocessor->var_max[col] = SLEQP_MIN(preprocessor->var_max[col],
+                                                 var_bound);
+        }
+      }
+    }
   }
 
   return SLEQP_OKAY;
@@ -333,6 +422,77 @@ SLEQP_RETCODE check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor
     }
   }
 
+  for(int i = 0; i < num_linear_constraints; ++i)
+  {
+    if(linear_cons_states[i].state != SLEQP_CONS_UNCHANGED)
+    {
+      continue;
+    }
+
+    if(sleqp_is_gt(preprocessor->linear_min[i], preprocessor->linear_lb[i], feas_eps) &&
+       sleqp_is_finite(preprocessor->linear_lb[i]))
+    {
+      sleqp_preprocessing_state_add_linear_constraint_bound_requirement(state,
+                                                                        i,
+                                                                        SLEQP_BOUND_REDUNDANT_LOWER);
+    }
+
+    if(sleqp_is_lt(preprocessor->linear_max[i], preprocessor->linear_ub[i], feas_eps) &&
+       sleqp_is_finite(preprocessor->linear_ub[i]))
+    {
+      sleqp_preprocessing_state_add_linear_constraint_bound_requirement(state,
+                                                                        i,
+                                                                        SLEQP_BOUND_REDUNDANT_UPPER);
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE check_for_variable_infeasibility(SleqpPreprocessor* preprocessor)
+{
+  SleqpProblem* problem = preprocessor->original_problem;
+
+  SleqpPreprocessingState* state = preprocessor->preprocessing_state;
+
+  SleqpVariableState* var_states = sleqp_preprocessing_state_variable_states(state);
+
+  const double feas_eps = sleqp_params_get(preprocessor->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    if(var_states[j].state != SLEQP_VAR_UNCHANGED)
+    {
+      continue;
+    }
+
+    if(sleqp_is_lt(preprocessor->var_max[j], preprocessor->var_min[j], feas_eps))
+    {
+      sleqp_log_debug("Implicit bounds on variable %d are incompatible", j);
+      preprocessor->infeasible = true;
+    }
+
+    if(sleqp_is_gt(preprocessor->var_min[j], preprocessor->var_lb[j], feas_eps) &&
+      sleqp_is_finite(preprocessor->var_lb[j]))
+    {
+      SLEQP_CALL(sleqp_preprocessing_state_add_variable_bound_requirement(state,
+                                                                          j,
+                                                                          SLEQP_BOUND_REDUNDANT_LOWER));
+    }
+
+    if(sleqp_is_lt(preprocessor->var_max[j], preprocessor->var_ub[j], feas_eps) &&
+       sleqp_is_finite(preprocessor->var_ub[j]))
+    {
+      SLEQP_CALL(sleqp_preprocessing_state_add_variable_bound_requirement(state,
+                                                                          j,
+                                                                          SLEQP_BOUND_REDUNDANT_UPPER));
+    }
+  }
+
   return SLEQP_OKAY;
 }
 
@@ -426,6 +586,11 @@ SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
 
   SLEQP_CALL(check_for_constraint_infeasibility(preprocessor));
 
+
+  SLEQP_CALL(compute_variable_bounds(preprocessor));
+
+  SLEQP_CALL(check_for_variable_infeasibility(preprocessor));
+
   return SLEQP_OKAY;
 }
 
@@ -460,6 +625,9 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->var_lb, num_variables));
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->var_ub, num_variables));
+
+  SLEQP_CALL(sleqp_alloc_array(&preprocessor->var_min, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&preprocessor->var_max, num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->linear_lb, num_linear_constraints));
   SLEQP_CALL(sleqp_alloc_array(&preprocessor->linear_ub, num_linear_constraints));
@@ -503,9 +671,12 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   const int num_removed_cons = sleqp_preprocessing_state_num_removed_linear_constraints(state);
 
-  sleqp_log_info("Preprocessing fixed %d variables and removed %d constraints",
+  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_bounds(state);
+
+  sleqp_log_info("Preprocessing fixed %d variables and removed %d constraints, %d bounds",
                  num_fixed_vars,
-                 num_removed_cons);
+                 num_removed_cons,
+                 num_removed_bounds);
 
   return SLEQP_OKAY;
 }
@@ -523,7 +694,9 @@ SLEQP_PREPROCESSING_RESULT sleqp_preprocessor_result(SleqpPreprocessor* preproce
 
   const int num_removed_cons = sleqp_preprocessing_state_num_removed_linear_constraints(state);
 
-  if(num_fixed_vars > 0 || num_removed_cons > 0)
+  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_bounds(state);
+
+  if(num_fixed_vars > 0 || num_removed_cons > 0 || num_removed_bounds > 0)
   {
     return SLEQP_PREPROCESSING_RESULT_SUCCESS;
   }
@@ -582,6 +755,9 @@ static SLEQP_RETCODE preprocessor_free(SleqpPreprocessor** star)
 
   sleqp_free(&preprocessor->linear_ub);
   sleqp_free(&preprocessor->linear_lb);
+
+  sleqp_free(&preprocessor->var_max);
+  sleqp_free(&preprocessor->var_min);
 
   sleqp_free(&preprocessor->var_ub);
   sleqp_free(&preprocessor->var_lb);

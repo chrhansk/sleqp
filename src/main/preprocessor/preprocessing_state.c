@@ -20,12 +20,17 @@ struct SleqpPreprocessingState
   SleqpVariableState* var_states;
   SleqpConstraintState* cons_states;
 
+  SleqpBoundRequirementState* var_bound_states;
+  SleqpBoundRequirementState* cons_bound_states;
+
   int num_fixed_vars;
   int* fixed_var_indices;
   double* fixed_var_values;
 
   int num_removed_cons;
   int* removed_cons_indices;
+
+  int num_removed_bounds;
 };
 
 
@@ -47,6 +52,9 @@ SLEQP_RETCODE sleqp_preprocessing_state_create(SleqpPreprocessingState** star,
 
   SLEQP_CALL(sleqp_alloc_array(&state->var_states, num_variables));
   SLEQP_CALL(sleqp_alloc_array(&state->cons_states, num_linear));
+
+  SLEQP_CALL(sleqp_alloc_array(&state->var_bound_states, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&state->cons_bound_states, num_linear));
 
   SLEQP_CALL(sleqp_alloc_array(&state->converted_bounds, num_linear));
 
@@ -72,11 +80,13 @@ SLEQP_RETCODE sleqp_preprocessing_state_reset(SleqpPreprocessingState* state)
   for(int j = 0; j < num_variables; ++j)
   {
     state->var_states[j] = (SleqpVariableState) { .state = SLEQP_VAR_UNCHANGED };
+    state->var_bound_states[j] = SLEQP_BOUND_REQUIRED;
   }
 
   for(int j = 0; j < num_linear; ++j)
   {
     state->cons_states[j] = (SleqpConstraintState) { .state = SLEQP_CONS_UNCHANGED };
+    state->cons_bound_states[j] = SLEQP_BOUND_REQUIRED;
   }
 
   state->num_converted_bounds = 0;
@@ -285,6 +295,7 @@ SLEQP_RETCODE sleqp_preprocessing_state_remove_linear_constraint(SleqpPreprocess
   assert(state->cons_states[constraint].state == SLEQP_CONS_UNCHANGED);
 
   state->cons_states[constraint].state = SLEQP_CONS_REDUNDANT;
+  state->cons_bound_states[constraint] = SLEQP_BOUND_REDUNDANT;
 
   ++(state->num_redundant_constraints);
 
@@ -347,6 +358,44 @@ SleqpConstraintState* sleqp_preprocessing_state_linear_constraint_states(const S
   return state->cons_states;
 }
 
+SleqpBoundRequirementState* sleqp_preprocessing_state_variable_bound_requirements(const SleqpPreprocessingState* state)
+{
+  return state->var_bound_states;
+}
+
+SleqpBoundRequirementState* sleqp_preprocessing_state_linear_constraint_bound_requirements(const SleqpPreprocessingState* state)
+{
+  return state->cons_bound_states;
+}
+
+SLEQP_RETCODE sleqp_preprocessing_state_add_variable_bound_requirement(SleqpPreprocessingState* state,
+                                                                       int j,
+                                                                       SleqpBoundRequirementState requirement_state)
+{
+  if(state->var_bound_states[j] == SLEQP_BOUND_REQUIRED)
+  {
+    ++(state->num_removed_bounds);
+  }
+
+  state->var_bound_states[j] |= requirement_state;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_preprocessing_state_add_linear_constraint_bound_requirement(SleqpPreprocessingState* state,
+                                                                                int i,
+                                                                                SleqpBoundRequirementState requirement_state)
+{
+  if(state->cons_bound_states[i] == SLEQP_BOUND_REQUIRED)
+  {
+    ++(state->num_removed_bounds);
+  }
+
+  state->cons_bound_states[i] |= requirement_state;
+
+  return SLEQP_OKAY;
+}
+
 int sleqp_preprocessing_state_num_fixed_variables(const SleqpPreprocessingState* state)
 {
   return state->num_fixed_vars;
@@ -355,6 +404,11 @@ int sleqp_preprocessing_state_num_fixed_variables(const SleqpPreprocessingState*
 int sleqp_preprocessing_state_num_removed_linear_constraints(const SleqpPreprocessingState* state)
 {
   return state->num_redundant_constraints + state->num_converted_bounds;
+}
+
+int sleqp_preprocessing_state_num_removed_bounds(const SleqpPreprocessingState* state)
+{
+  return state->num_removed_bounds;
 }
 
 static
@@ -485,6 +539,10 @@ SLEQP_RETCODE preprocessing_state_free(SleqpPreprocessingState** star)
   sleqp_free(&state->forcing_constraints);
 
   sleqp_free(&state->converted_bounds);
+
+  sleqp_free(&state->cons_bound_states);
+  sleqp_free(&state->var_bound_states);
+
   sleqp_free(&state->cons_states);
   sleqp_free(&state->var_states);
 
