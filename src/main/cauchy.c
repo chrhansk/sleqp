@@ -5,6 +5,7 @@
 #include "fail.h"
 #include "cmp.h"
 #include "mem.h"
+#include "problem.h"
 #include "merit.h"
 
 struct SleqpCauchy
