@@ -218,7 +218,7 @@ SLEQP_RETCODE compute_variable_bounds(SleqpPreprocessor* preprocessor)
          sleqp_is_finite(linear_min) &&
          sleqp_is_finite(var_lb))
       {
-        const double var_bound = 1./(value) * (linear_ub - linear_min) - var_lb;
+        const double var_bound = 1./(value) * (linear_ub - linear_min) + var_lb;
 
         if(value > 0.)
         {
@@ -236,7 +236,7 @@ SLEQP_RETCODE compute_variable_bounds(SleqpPreprocessor* preprocessor)
          sleqp_is_finite(linear_max) &&
          sleqp_is_finite(var_ub))
       {
-        const double var_bound = 1./(value) * (linear_lb - linear_max) - var_ub;
+        const double var_bound = 1./(value) * (linear_lb - linear_max) + var_ub;
 
         if(value > 0.)
         {

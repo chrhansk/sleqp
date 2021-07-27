@@ -96,6 +96,8 @@ SLEQP_RETCODE sleqp_preprocessing_state_reset(SleqpPreprocessingState* state)
   state->num_fixed_vars = 0;
   state->num_removed_cons = 0;
 
+  state->num_removed_bounds = 0;
+
   return SLEQP_OKAY;
 }
 
