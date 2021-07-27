@@ -202,7 +202,7 @@ SLEQP_RETCODE replace_redundant_bound(SleqpTransformation* transformation,
 
   for(int j = 0; j < dim; ++j)
   {
-    if(requirement_states[j] & required_state)
+    if(requirement_states[j] == required_state)
     {
       SLEQP_CALL(sleqp_sparse_vector_push(target, j, value));
       continue;
@@ -216,6 +216,7 @@ SLEQP_RETCODE replace_redundant_bound(SleqpTransformation* transformation,
     if(k < source->nnz && source->indices[k] == j)
     {
       SLEQP_CALL(sleqp_sparse_vector_push(target, j, source->data[k]));
+      ++k;
     }
   }
 
