@@ -671,7 +671,7 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   const int num_removed_cons = sleqp_preprocessing_state_num_removed_linear_constraints(state);
 
-  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_bounds(state);
+  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_variable_bounds(state);
 
   sleqp_log_info("Preprocessing fixed %d variables and removed %d constraints, %d bounds",
                  num_fixed_vars,
@@ -694,7 +694,7 @@ SLEQP_PREPROCESSING_RESULT sleqp_preprocessor_result(SleqpPreprocessor* preproce
 
   const int num_removed_cons = sleqp_preprocessing_state_num_removed_linear_constraints(state);
 
-  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_bounds(state);
+  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_variable_bounds(state);
 
   if(num_fixed_vars > 0 || num_removed_cons > 0 || num_removed_bounds > 0)
   {

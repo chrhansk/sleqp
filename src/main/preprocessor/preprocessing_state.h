@@ -131,7 +131,9 @@ extern "C" {
 
   int sleqp_preprocessing_state_num_removed_linear_constraints(const SleqpPreprocessingState* state);
 
-  int sleqp_preprocessing_state_num_removed_bounds(const SleqpPreprocessingState* state);
+  int sleqp_preprocessing_state_num_removed_variable_bounds(const SleqpPreprocessingState* state);
+
+  int sleqp_preprocessing_state_num_removed_linear_constraint_bounds(const SleqpPreprocessingState* state);
 
   SLEQP_RETCODE sleqp_preprocessing_state_flush(SleqpPreprocessingState* state);
 

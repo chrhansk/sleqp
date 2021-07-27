@@ -30,7 +30,8 @@ struct SleqpPreprocessingState
   int num_removed_cons;
   int* removed_cons_indices;
 
-  int num_removed_bounds;
+  int num_removed_var_bounds;
+  int num_removed_cons_bounds;
 };
 
 
@@ -96,7 +97,8 @@ SLEQP_RETCODE sleqp_preprocessing_state_reset(SleqpPreprocessingState* state)
   state->num_fixed_vars = 0;
   state->num_removed_cons = 0;
 
-  state->num_removed_bounds = 0;
+  state->num_removed_var_bounds = 0;
+  state->num_removed_cons_bounds = 0;
 
   return SLEQP_OKAY;
 }
@@ -376,7 +378,7 @@ SLEQP_RETCODE sleqp_preprocessing_state_add_variable_bound_requirement(SleqpPrep
 {
   if(state->var_bound_states[j] == SLEQP_BOUND_REQUIRED)
   {
-    ++(state->num_removed_bounds);
+    ++(state->num_removed_var_bounds);
   }
 
   state->var_bound_states[j] |= requirement_state;
@@ -390,7 +392,7 @@ SLEQP_RETCODE sleqp_preprocessing_state_add_linear_constraint_bound_requirement(
 {
   if(state->cons_bound_states[i] == SLEQP_BOUND_REQUIRED)
   {
-    ++(state->num_removed_bounds);
+    ++(state->num_removed_cons_bounds);
   }
 
   state->cons_bound_states[i] |= requirement_state;
@@ -408,9 +410,14 @@ int sleqp_preprocessing_state_num_removed_linear_constraints(const SleqpPreproce
   return state->num_redundant_constraints + state->num_converted_bounds;
 }
 
-int sleqp_preprocessing_state_num_removed_bounds(const SleqpPreprocessingState* state)
+int sleqp_preprocessing_state_num_removed_variable_bounds(const SleqpPreprocessingState* state)
 {
-  return state->num_removed_bounds;
+  return state->num_removed_var_bounds;
+}
+
+int sleqp_preprocessing_state_num_removed_linear_constraint_bounds(const SleqpPreprocessingState* state)
+{
+  return state->num_removed_cons_bounds;
 }
 
 static

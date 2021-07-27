@@ -185,6 +185,7 @@ SLEQP_RETCODE create_transformed_func(SleqpTransformation* transformation,
 
 static
 SLEQP_RETCODE replace_redundant_bound(SleqpTransformation* transformation,
+                                      int num_removed_bounds,
                                       SleqpBoundRequirementState* requirement_states,
                                       const SleqpSparseVec* source,
                                       SleqpSparseVec* target,
@@ -192,10 +193,6 @@ SLEQP_RETCODE replace_redundant_bound(SleqpTransformation* transformation,
                                       double value)
 {
   const int dim = source->dim;
-
-  SleqpPreprocessingState* preprocessing_state = transformation->preprocessing_state;
-
-  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_bounds(preprocessing_state);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(target));
 
@@ -228,6 +225,7 @@ SLEQP_RETCODE replace_redundant_bound(SleqpTransformation* transformation,
 
 static
 SLEQP_RETCODE remove_redundant_bounds(SleqpTransformation* transformation,
+                                      int num_removed_bounds,
                                       SleqpBoundRequirementState* requirement_states,
                                       const SleqpSparseVec* source_lb,
                                       const SleqpSparseVec* source_ub,
@@ -240,6 +238,7 @@ SLEQP_RETCODE remove_redundant_bounds(SleqpTransformation* transformation,
   const double inf = sleqp_infinity();
 
   SLEQP_CALL(replace_redundant_bound(transformation,
+                                     num_removed_bounds,
                                      requirement_states,
                                      source_lb,
                                      target_lb,
@@ -247,6 +246,7 @@ SLEQP_RETCODE remove_redundant_bounds(SleqpTransformation* transformation,
                                      -inf));
 
   SLEQP_CALL(replace_redundant_bound(transformation,
+                                     num_removed_bounds,
                                      requirement_states,
                                      source_ub,
                                      target_ub,
@@ -270,6 +270,8 @@ SLEQP_RETCODE create_transformed_var_lb(SleqpTransformation* transformation)
 
   SleqpPreprocessingState* preprocessing_state = transformation->preprocessing_state;
 
+  int num_removed_bounds = sleqp_preprocessing_state_num_removed_variable_bounds(preprocessing_state);
+
   int num_fixed_vars;
   int* fixed_var_indices;
   double* fixed_var_values;
@@ -282,6 +284,7 @@ SLEQP_RETCODE create_transformed_var_lb(SleqpTransformation* transformation)
   SleqpBoundRequirementState* var_requirements = sleqp_preprocessing_state_variable_bound_requirements(preprocessing_state);
 
   SLEQP_CALL(replace_redundant_bound(transformation,
+                                     num_removed_bounds,
                                      var_requirements,
                                      sleqp_problem_var_lb(problem),
                                      transformation->trans_cache,
@@ -333,6 +336,8 @@ SLEQP_RETCODE create_transformed_var_ub(SleqpTransformation* transformation)
 
   SleqpPreprocessingState* preprocessing_state = transformation->preprocessing_state;
 
+  int num_removed_bounds = sleqp_preprocessing_state_num_removed_variable_bounds(preprocessing_state);
+
   int num_fixed_vars;
   int* fixed_var_indices;
   double* fixed_var_values;
@@ -345,6 +350,7 @@ SLEQP_RETCODE create_transformed_var_ub(SleqpTransformation* transformation)
   SleqpBoundRequirementState* var_requirements = sleqp_preprocessing_state_variable_bound_requirements(preprocessing_state);
 
   SLEQP_CALL(replace_redundant_bound(transformation,
+                                     num_removed_bounds,
                                      var_requirements,
                                      sleqp_problem_var_ub(problem),
                                      transformation->trans_cache,
@@ -447,7 +453,7 @@ SLEQP_RETCODE transform_linear_constraints(SleqpTransformation* transformation)
     fixed_linear_ub = transformation->fixed_linear_ub;
   }
 
-  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_bounds(preprocessing_state);
+  const int num_removed_bounds = sleqp_preprocessing_state_num_removed_variable_bounds(preprocessing_state);
 
   SleqpSparseVec* redundant_linear_lb = NULL;
   SleqpSparseVec* redundant_linear_ub = NULL;
@@ -459,7 +465,10 @@ SLEQP_RETCODE transform_linear_constraints(SleqpTransformation* transformation)
     redundant_linear_lb = transformation->redundant_linear_lb;
     redundant_linear_ub = transformation->redundant_linear_ub;
 
+    const int num_removed_bounds = sleqp_preprocessing_state_num_removed_variable_bounds(preprocessing_state);
+
     SLEQP_CALL(remove_redundant_bounds(transformation,
+                                       num_removed_bounds,
                                        requirement_states,
                                        fixed_linear_lb,
                                        fixed_linear_ub,
