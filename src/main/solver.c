@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <threads.h>
 
 #include "aug_jacobian.h"
 #include "bfgs.h"
@@ -29,6 +30,13 @@
 
 #include "lp/lpi.h"
 #include "preprocessor/preprocessor.h"
+
+#define INFO_BUF_SIZE 100
+#define SOLVER_INFO_BUF_SIZE 400
+
+thread_local char lps_info[INFO_BUF_SIZE];
+thread_local char fact_info[INFO_BUF_SIZE];
+thread_local char solver_info[SOLVER_INFO_BUF_SIZE];
 
 struct SleqpSolver
 {
@@ -602,7 +610,34 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   solver->abort_next = false;
 
+  sleqp_log_debug("%s", sleqp_solver_info(solver));
+
   return SLEQP_OKAY;
+}
+
+const char* sleqp_solver_info(const SleqpSolver* solver)
+{
+  snprintf(lps_info,
+           INFO_BUF_SIZE,
+           "%s %s",
+           sleqp_lpi_get_name(solver->lp_interface),
+           sleqp_lpi_get_version(solver->lp_interface));
+
+  snprintf(fact_info,
+           INFO_BUF_SIZE,
+           "%s %s",
+           sleqp_sparse_factorization_get_name(solver->factorization),
+           sleqp_sparse_factorization_get_version(solver->factorization));
+
+  snprintf(solver_info,
+           SOLVER_INFO_BUF_SIZE,
+           "Sleqp version %s [LP solver: %s] [factorization: %s] [GitHash %s]",
+           SLEQP_VERSION,
+           lps_info,
+           fact_info,
+           SLEQP_GIT_COMMIT_HASH);
+
+  return solver_info;
 }
 
 static SLEQP_RETCODE update_lp_trust_radius(bool trial_step_accepted,

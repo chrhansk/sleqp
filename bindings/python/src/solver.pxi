@@ -96,6 +96,9 @@ cdef class Solver:
         # raise default
         raise exception
 
+  def info(self) -> str:
+    return str(csleqp.sleqp_solver_info(self.solver))
+
   def solve(self,
             max_num_iterations: int = None,
             time_limit: float = None) -> None:

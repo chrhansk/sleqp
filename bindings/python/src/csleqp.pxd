@@ -496,6 +496,8 @@ cdef extern from "sleqp.h":
                                     SleqpSparseVec* x,
                                     SleqpScaling* scaling)
 
+  const char* sleqp_solver_info(const SleqpSolver* solver)
+
   SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                    int max_num_iterations,
                                    double time_limit) nogil

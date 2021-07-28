@@ -102,6 +102,9 @@ extern "C" {
                                            SLEQP_SOLVER_STATE_VEC value,
                                            SleqpSparseVec* result);
 
+  SLEQP_EXPORT
+  const char* sleqp_solver_info(const SleqpSolver* solver);
+
   /**
    * Returns the status of the last call to @ref sleqp_solver_solve
    *
