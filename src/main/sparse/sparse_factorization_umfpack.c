@@ -5,6 +5,7 @@
 
 #include <umfpack.h>
 
+#include "defs.h"
 #include "log.h"
 #include "mem.h"
 
@@ -309,6 +310,8 @@ SLEQP_RETCODE sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization
   SLEQP_CALL(umfpack_data_create(&umfpack_data));
 
   SLEQP_CALL(sleqp_sparse_factorization_create(star,
+                                               SLEQP_FACT_UMFPACK_NAME,
+                                               SLEQP_FACT_UMFPACK_VERSION,
                                                params,
                                                &callbacks,
                                                (void*) umfpack_data));

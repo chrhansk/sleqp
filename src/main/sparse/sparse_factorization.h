@@ -12,9 +12,15 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
+                                                  const char* name,
+                                                  const char* version,
                                                   SleqpParams* params,
                                                   SleqpSparseFactorizationCallbacks* callbacks,
                                                   void* factorization_data);
+
+  const char* sleqp_sparse_factorization_get_name(SleqpSparseFactorization* sparse_factorization);
+
+  const char* sleqp_sparse_factorization_get_version(SleqpSparseFactorization* sparse_factorization);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,

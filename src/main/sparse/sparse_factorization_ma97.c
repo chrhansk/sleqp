@@ -5,6 +5,7 @@
 #include <hsl_ma97d.h>
 #include <hsl_mc68i.h>
 
+#include "defs.h"
 #include "log.h"
 #include "mem.h"
 
@@ -415,6 +416,8 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma97_create(SleqpSparseFactorization** 
   SLEQP_CALL(ma97_data_create(&ma97_data));
 
   SLEQP_CALL(sleqp_sparse_factorization_create(star,
+                                               SLEQP_FACT_MA97_NAME,
+                                               SLEQP_FACT_MA97_VERSION,
                                                params,
                                                &callbacks,
                                                (void*) ma97_data));

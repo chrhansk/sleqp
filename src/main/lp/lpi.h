@@ -20,11 +20,17 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_interface,
+                                           const char* name,
+                                           const char* version,
                                            int num_variables,
                                            int num_constraints,
                                            SleqpParams* params,
                                            SleqpOptions* options,
                                            SleqpLPiCallbacks* callbacks);
+
+  const char* sleqp_lpi_get_name(SleqpLPi* lp_interface);
+
+  const char* sleqp_lpi_get_version(SleqpLPi* lp_interface);
 
   int sleqp_lpi_get_num_variables(SleqpLPi* lp_interface);
 

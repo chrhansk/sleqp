@@ -7,6 +7,7 @@
 #include "hsl_matrix.h"
 
 #include "cmp.h"
+#include "defs.h"
 #include "log.h"
 #include "mem.h"
 
@@ -723,6 +724,8 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma57_create(SleqpSparseFactorization** 
   SLEQP_CALL(ma57_data_create(&ma57_data));
 
   SLEQP_CALL(sleqp_sparse_factorization_create(star,
+                                               SLEQP_FACT_MA57_NAME,
+                                               SLEQP_FACT_MA57_VERSION,
                                                params,
                                                &callbacks,
                                                (void*) ma57_data));

@@ -1,6 +1,7 @@
 #include "lpi.h"
 
 #include <assert.h>
+#include <string.h>
 
 #include "log.h"
 #include "mem.h"
@@ -9,6 +10,9 @@ struct SleqpLPi
 {
   // data
   void* lp_data;
+
+  char* name;
+  char* version;
 
   SleqpTimer* timer;
 
@@ -21,6 +25,8 @@ struct SleqpLPi
 };
 
 SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
+                                         const char* name,
+                                         const char* version,
                                          int num_variables,
                                          int num_constraints,
                                          SleqpParams* params,
@@ -32,6 +38,9 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
   SleqpLPi* lp_interface = *lp_star;
 
   *lp_interface = (SleqpLPi) {0};
+
+  lp_interface->name = strdup(name);
+  lp_interface->version = strdup(version);
 
   SLEQP_CALL(sleqp_timer_create(&lp_interface->timer));
 
@@ -49,6 +58,16 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
                                                     options));
 
   return SLEQP_OKAY;
+}
+
+const char* sleqp_lpi_get_name(SleqpLPi* lp_interface)
+{
+  return lp_interface->name;
+}
+
+const char* sleqp_lpi_get_version(SleqpLPi* lp_interface)
+{
+  return lp_interface->version;
 }
 
 int sleqp_lpi_get_num_variables(SleqpLPi* lp_interface)
@@ -196,6 +215,9 @@ SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_star)
   lp_interface->callbacks.free_problem(&lp_interface->lp_data);
 
   SLEQP_CALL(sleqp_timer_free(&lp_interface->timer));
+
+  sleqp_free(&lp_interface->version);
+  sleqp_free(&lp_interface->name);
 
   sleqp_free(lp_star);
 

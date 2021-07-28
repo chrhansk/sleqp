@@ -4,6 +4,7 @@
 #include <gurobi_c.h>
 
 #include "cmp.h"
+#include "defs.h"
 #include "log.h"
 #include "mem.h"
 
@@ -586,22 +587,24 @@ SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
                                                 SleqpOptions* options)
 {
   SleqpLPiCallbacks callbacks = {
-    .create_problem = gurobi_create_problem,
-    .solve = gurobi_solve,
-    .set_bounds = gurobi_set_bounds,
-    .set_coefficients = gurobi_set_coefficients,
-    .set_objective = gurobi_set_objective,
-    .save_basis = gurobi_save_basis,
-    .restore_basis = gurobi_restore_basis,
-    .get_primal_sol = gurobi_get_primal_sol,
-    .get_dual_sol = gurobi_get_dual_sol,
-    .get_varstats = gurobi_get_varstats,
-    .get_consstats = gurobi_get_consstats,
+    .create_problem      = gurobi_create_problem,
+    .solve               = gurobi_solve,
+    .set_bounds          = gurobi_set_bounds,
+    .set_coefficients    = gurobi_set_coefficients,
+    .set_objective       = gurobi_set_objective,
+    .save_basis          = gurobi_save_basis,
+    .restore_basis       = gurobi_restore_basis,
+    .get_primal_sol      = gurobi_get_primal_sol,
+    .get_dual_sol        = gurobi_get_dual_sol,
+    .get_varstats        = gurobi_get_varstats,
+    .get_consstats       = gurobi_get_consstats,
     .get_basis_condition = gurobi_get_basis_condition,
-    .free_problem = gurobi_free
+    .free_problem        = gurobi_free
   };
 
   return sleqp_lpi_create_interface(lp_star,
+                                    SLEQP_LP_SOLVER_GUROBI_NAME,
+                                    SLEQP_LP_SOLVER_GUROBI_VERSION,
                                     num_cols,
                                     num_rows,
                                     params,

@@ -4,6 +4,7 @@
 
 #include <dmumps_c.h>
 
+#include "defs.h"
 #include "log.h"
 #include "mem.h"
 
@@ -259,6 +260,8 @@ SLEQP_RETCODE sleqp_sparse_factorization_mumps_create(SleqpSparseFactorization**
   SLEQP_CALL(sleqp_mumps_create(&sleqp_mumps_data));
 
   SLEQP_CALL(sleqp_sparse_factorization_create(star,
+                                               SLEQP_FACT_MUMPS_NAME,
+                                               SLEQP_FACT_MUMPS_VERSION,
                                                params,
                                                &callbacks,
                                                (void*) sleqp_mumps_data));

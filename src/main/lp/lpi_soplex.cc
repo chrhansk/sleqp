@@ -6,6 +6,7 @@
 #include <soplex.h>
 
 #include "cmp.h"
+#include "defs.h"
 #include "log.h"
 #include "mem.h"
 
@@ -545,22 +546,24 @@ extern "C"
                                                   SleqpOptions* options)
   {
     SleqpLPiCallbacks callbacks = {
-      .create_problem = soplex_create_problem,
-      .solve = soplex_solve,
-      .set_bounds = soplex_set_bounds,
-      .set_coefficients = soplex_set_coefficients,
-      .set_objective = soplex_set_objective,
-      .save_basis = soplex_save_basis,
-      .restore_basis = soplex_restore_basis,
-      .get_primal_sol = soplex_get_primal_sol,
-      .get_dual_sol = soplex_get_dual_sol,
-      .get_varstats = soplex_get_varstats,
-      .get_consstats = soplex_get_consstats,
+      .create_problem      = soplex_create_problem,
+      .solve               = soplex_solve,
+      .set_bounds          = soplex_set_bounds,
+      .set_coefficients    = soplex_set_coefficients,
+      .set_objective       = soplex_set_objective,
+      .save_basis          = soplex_save_basis,
+      .restore_basis       = soplex_restore_basis,
+      .get_primal_sol      = soplex_get_primal_sol,
+      .get_dual_sol        = soplex_get_dual_sol,
+      .get_varstats        = soplex_get_varstats,
+      .get_consstats       = soplex_get_consstats,
       .get_basis_condition = soplex_get_basis_condition,
-      .free_problem = soplex_free
+      .free_problem        = soplex_free
     };
 
     return sleqp_lpi_create_interface(lp_star,
+                                      SLEQP_LP_SOLVER_SOPLEX_NAME,
+                                      SLEQP_LP_SOLVER_SOPLEX_VERSION,
                                       num_cols,
                                       num_rows,
                                       params,

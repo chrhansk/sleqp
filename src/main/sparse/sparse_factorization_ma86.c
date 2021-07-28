@@ -5,6 +5,7 @@
 #include <hsl_ma86d.h>
 #include <hsl_mc68i.h>
 
+#include "defs.h"
 #include "log.h"
 #include "mem.h"
 
@@ -337,6 +338,8 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma86_create(SleqpSparseFactorization** 
   SLEQP_CALL(ma86_data_create(&ma86_data));
 
   SLEQP_CALL(sleqp_sparse_factorization_create(star,
+                                               SLEQP_FACT_MA86_NAME,
+                                               SLEQP_FACT_MA86_VERSION,
                                                params,
                                                &callbacks,
                                                (void*) ma86_data));

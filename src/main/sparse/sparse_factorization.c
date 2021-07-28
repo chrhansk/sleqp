@@ -1,5 +1,7 @@
 #include "sparse_factorization.h"
 
+#include <string.h>
+
 #include "log.h"
 #include "mem.h"
 
@@ -7,11 +9,16 @@ struct SleqpSparseFactorization
 {
   int refcount;
 
+  char* name;
+  char* version;
+
   SleqpSparseFactorizationCallbacks callbacks;
   void* factorization_data;
 };
 
 SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
+                                                const char* name,
+                                                const char* version,
                                                 SleqpParams* params,
                                                 SleqpSparseFactorizationCallbacks* callbacks,
                                                 void* factorization_data)
@@ -22,11 +29,24 @@ SLEQP_RETCODE sleqp_sparse_factorization_create(SleqpSparseFactorization** star,
 
   *sparse_factorization = (SleqpSparseFactorization) {0};
 
+  sparse_factorization->name = strdup(name);
+  sparse_factorization->version = strdup(version);
+
   sparse_factorization->refcount = 1;
   sparse_factorization->callbacks = *callbacks;
   sparse_factorization->factorization_data = factorization_data;
 
   return SLEQP_OKAY;
+}
+
+const char* sleqp_sparse_factorization_get_name(SleqpSparseFactorization* sparse_factorization)
+{
+  return sparse_factorization->name;
+}
+
+const char* sleqp_sparse_factorization_get_version(SleqpSparseFactorization* sparse_factorization)
+{
+  return sparse_factorization->version;
 }
 
 SLEQP_RETCODE sleqp_sparse_factorization_set_matrix(SleqpSparseFactorization* sparse_factorization,
@@ -83,6 +103,9 @@ static SLEQP_RETCODE sparse_factorization_free(SleqpSparseFactorization** star)
   SleqpSparseFactorization* sparse_factorization = *star;
 
   SLEQP_CALL(sparse_factorization->callbacks.free(&(sparse_factorization->factorization_data)));
+
+  sleqp_free(&sparse_factorization->version);
+  sleqp_free(&sparse_factorization->name);
 
   sleqp_free(star);
 
