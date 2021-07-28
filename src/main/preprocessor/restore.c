@@ -586,13 +586,13 @@ SLEQP_RETCODE prepare_duals(SleqpRestoration* restoration,
       int j = var_dual->indices[k];
       double v = var_dual->data[k];
 
-      if(var_states[j].state == SLEQP_VAR_UNCHANGED)
+      if(var_states[j + offset].state == SLEQP_VAR_UNCHANGED)
       {
         restoration->var_dual[j + offset] = v;
       }
       else
       {
-        assert(var_states[j].state & SLEQP_VAR_FIXED);
+        assert(var_states[j + offset].state & SLEQP_VAR_FIXED);
         ++offset;
       }
     }
@@ -619,7 +619,7 @@ SLEQP_RETCODE prepare_duals(SleqpRestoration* restoration,
       const int i_general = i;
       i -= num_general;
 
-      if(linear_cons_states[i].state == SLEQP_CONS_UNCHANGED)
+      if(linear_cons_states[i + offset].state == SLEQP_CONS_UNCHANGED)
       {
         restoration->cons_dual[i_general + offset] = v;
       }
