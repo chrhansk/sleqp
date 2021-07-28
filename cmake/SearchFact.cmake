@@ -35,12 +35,12 @@ endmacro()
 add_factorization(
   NAME "Umfpack"
   SOURCES sparse_factorization_umfpack.c
-  DEPS_DEBIAN "libmumps-5.1.2")
+  DEPS_DEBIAN "libumfpack5 (>= 5.2)")
 
 add_factorization(
   NAME "MUMPS"
   SOURCES sparse_factorization_mumps.c
-  DEPS_DEBIAN "libumfpack5 (>= 5.2)")
+  DEPS_DEBIAN "libmumps-5.1.2")
 
 add_factorization(
   NAME "MA27"
