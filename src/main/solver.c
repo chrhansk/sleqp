@@ -178,7 +178,7 @@ static double remaining_time(SleqpSolver* solver)
 
   if(time_limit != SLEQP_NONE)
   {
-    double remaining_time = time_limit - sleqp_timer_elapsed(solver->elapsed_timer);
+    double remaining_time = time_limit - sleqp_timer_get_ttl(solver->elapsed_timer);
 
     remaining_time = SLEQP_MAX(remaining_time, 0.);
 

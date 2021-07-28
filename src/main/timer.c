@@ -1,5 +1,6 @@
 #include "timer.h"
 
+#include <assert.h>
 #include <math.h>
 #include <time.h>
 
@@ -10,6 +11,7 @@ struct SleqpTimer
 {
   clock_t start;
   int num_runs;
+  int running;
 
   double total_elapsed;
   double total_elapsed_squared;
@@ -30,6 +32,9 @@ SLEQP_RETCODE sleqp_timer_create(SleqpTimer** star)
 
 SLEQP_RETCODE sleqp_timer_start(SleqpTimer* timer)
 {
+  assert(!timer->running);
+
+  timer->running = true;
   timer->start = clock();
 
   return SLEQP_OKAY;
@@ -42,11 +47,28 @@ SLEQP_RETCODE sleqp_timer_reset(SleqpTimer* timer)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
+static
+double current_elapsed(SleqpTimer* timer)
 {
+  if(!timer->running)
+  {
+    return 0.;
+  }
+
   clock_t end = clock();
 
   double elapsed = ((double) (end - timer->start)) / CLOCKS_PER_SEC;
+
+  assert(elapsed >= 0.);
+
+  return elapsed;
+}
+
+SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
+{
+  assert(timer->running);
+
+  const double elapsed = current_elapsed(timer);
 
   ++timer->num_runs;
 
@@ -54,6 +76,8 @@ SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
 
   timer->total_elapsed += elapsed;
   timer->total_elapsed_squared += elapsed*elapsed;
+
+  timer->running = false;
 
   return SLEQP_OKAY;
 }
@@ -75,6 +99,8 @@ double sleqp_timer_elapsed(SleqpTimer* timer)
 
 double sleqp_timer_get_avg(SleqpTimer* timer)
 {
+  assert(!timer->running);
+
   if(timer->num_runs == 0)
   {
     return 0.;
