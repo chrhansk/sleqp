@@ -305,6 +305,9 @@ search_backtracking(SleqpParametricSolver* solver,
 
       const double step_norm = sleqp_sparse_vector_inf_norm(cauchy_direction);
 
+      SLEQP_NUM_ASSERT_PARAM(eps);
+      SLEQP_NUM_ASSERT_PARAM(step_norm);
+
       sleqp_num_assert(sleqp_is_leq(step_norm, *trust_radius, eps));
     }
 #endif
@@ -411,6 +414,9 @@ SLEQP_RETCODE sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
     const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
 
     const double step_norm = sleqp_sparse_vector_inf_norm(cauchy_direction);
+
+    SLEQP_NUM_ASSERT_PARAM(eps);
+    SLEQP_NUM_ASSERT_PARAM(step_norm);
 
     sleqp_num_assert(sleqp_is_leq(step_norm, *trust_radius, eps));
   }

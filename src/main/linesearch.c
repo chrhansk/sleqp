@@ -395,8 +395,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
   const double eps = sleqp_params_get(linesearch->params,
                                       SLEQP_PARAM_EPS);
 
-  const double feas_eps = sleqp_params_get(linesearch->params,
-                                           SLEQP_PARAM_FEASIBILITY_TOL);
+  SLEQP_NUM_ASSERT_PARAM(eps);
 
   const double zero_eps = sleqp_params_get(linesearch->params,
                                            SLEQP_PARAM_ZERO_EPS);
@@ -896,6 +895,8 @@ SLEQP_RETCODE sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
   const double eps = sleqp_params_get(linesearch->params,
                                       SLEQP_PARAM_EPS);
 
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
   const double penalty_parameter = linesearch->penalty_parameter;
 
   const int num_constraints = sleqp_problem_num_constraints(problem);
@@ -1017,6 +1018,8 @@ SLEQP_RETCODE sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
     const double one = 1.;
     const double alpha = last_point;
     const double quadratic_value = offset + .5 * alpha * quadratic_term * alpha;
+
+    SLEQP_NUM_ASSERT_PARAM(quadratic_value);
 
     double actual_quadratic_merit_value;
 

@@ -590,6 +590,8 @@ SLEQP_RETCODE bfgs_compute_products(BFGSBlock* block,
 {
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
 
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
   const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   assert(block->len > 0);

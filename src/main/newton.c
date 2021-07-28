@@ -183,6 +183,8 @@ static SLEQP_RETCODE get_initial_rhs(SleqpNewtonData* data,
 
   const double eps = sleqp_params_get(data->params, SLEQP_PARAM_EPS);
 
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
   const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const int working_set_size = sleqp_working_set_size(working_set);

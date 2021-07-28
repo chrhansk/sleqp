@@ -69,9 +69,6 @@ SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
 {
   SleqpProblem* problem = merit_data->problem;
 
-  const double feas_eps = sleqp_params_get(merit_data->params,
-                                           SLEQP_PARAM_FEASIBILITY_TOL);
-
   *merit_value = sleqp_iterate_get_func_val(iterate);
 
   double total_violation;

@@ -128,6 +128,8 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
   const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
   const double rel_tol_sq = rel_tol*rel_tol;
 
   double dBd;

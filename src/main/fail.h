@@ -204,7 +204,11 @@ extern "C" {
 
 #endif // NDEBUG
 
-#if !defined(SLEQP_HAS_NUM_ASSERT_DEFS)
+#if defined(SLEQP_HAS_NUM_ASSERT_DEFS)
+
+#define SLEQP_NUM_ASSERT_PARAM(x)
+
+#else
 
 #define sleqp_num_assert(expr)
 
@@ -223,6 +227,7 @@ extern "C" {
 
 #define sleqp_assert_is_zero(x, eps)
 
+#define SLEQP_NUM_ASSERT_PARAM(x) (void)(x)
 
 #endif // SLEQP_HAS_NUM_ASSERT_DEFS
 

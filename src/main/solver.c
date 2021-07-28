@@ -724,6 +724,8 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
 
   const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
 
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
   {
     SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
                                         iterate,
@@ -845,6 +847,8 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
   const double eps = sleqp_params_get(solver->params,
                                       SLEQP_PARAM_EPS);
 
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
@@ -897,9 +901,6 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
 #if !defined(NDEBUG)
 
     {
-      const double eps = sleqp_params_get(solver->params,
-                                          SLEQP_PARAM_EPS);
-
       bool in_working_set = false;
 
       SLEQP_CALL(sleqp_direction_in_working_set(problem,
@@ -984,6 +985,8 @@ static SLEQP_RETCODE compute_trial_point_simple(SleqpSolver* solver,
 
   const double eps = sleqp_params_get(solver->params,
                                       SLEQP_PARAM_EPS);
+
+  SLEQP_NUM_ASSERT_PARAM(eps);
 
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
@@ -1072,6 +1075,8 @@ static SLEQP_RETCODE compute_trial_point_newton(SleqpSolver* solver,
   SleqpIterate* iterate = solver->iterate;
 
   const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+
+  SLEQP_NUM_ASSERT_PARAM(eps);
 
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
