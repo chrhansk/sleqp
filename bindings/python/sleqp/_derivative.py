@@ -1,5 +1,6 @@
 import numpy as np
 
+FD_METHODS = ('2-point', '3-point', 'cs')
 
 EPS = np.finfo(float).eps
 
