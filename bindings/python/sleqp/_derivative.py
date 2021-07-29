@@ -103,7 +103,7 @@ def derivative(jac):
 
   return evaluate
 
-def create_derivative(fun,jac):
+def create_derivative(fun, jac):
   if callable(jac):
     return derivative(jac)
   elif jac == '2-point':
