@@ -10,6 +10,8 @@ from scipy.sparse.linalg import LinearOperator
 
 import sleqp
 
+def rosen_combined(x, *args):
+  return (rosen(x, *args), rosen_der(x, *args))
 
 def convert_to_sparse(array):
   (m, n) = array.shape
@@ -34,36 +36,33 @@ class MinimizeTest(unittest.TestCase):
     self.x0 = [1.3, 0.7, 0.8, 1.9, 1.2]
     self.xopt = np.array([ 1.,  1.,  1.,  1.,  1.])
 
-  def test_unconstrained(self):
-    res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hessp=rosen_hess_prod)
-
+  def check_res(self, res):
     self.assertTrue(res.success)
     self.assertTrue(np.allclose(res.x, self.xopt))
+
+  def test_unconstrained(self):
+    res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hessp=rosen_hess_prod)
+    self.check_res(res)
 
   def test_unconstrained_findiff(self):
     res = sleqp.minimize(rosen, self.x0, jac='3-point', hessp=rosen_hess_prod)
-
-    self.assertTrue(res.success)
-    self.assertTrue(np.allclose(res.x, self.xopt))
-
+    self.check_res(res)
 
   def test_dense_hessian(self):
     res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hess=rosen_hess)
-
-    self.assertTrue(res.success)
-    self.assertTrue(np.allclose(res.x, self.xopt))
+    self.check_res(res)
 
   def test_sparse_hessian(self):
     res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hess=sparse_hessian(rosen_hess))
-
-    self.assertTrue(res.success)
-    self.assertTrue(np.allclose(res.x, self.xopt))
+    self.check_res(res)
 
   def test_findiff_hessian(self):
     res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hess='3-point')
+    self.check_res(res)
 
-    self.assertTrue(res.success)
-    self.assertTrue(np.allclose(res.x, self.xopt))
+  def test_combined_findiff_hessian(self):
+    res = sleqp.minimize(rosen_combined, self.x0, jac=True, hess='3-point')
+    self.check_res(res)
 
   def test_hessian_linear_operator(self):
 
@@ -74,18 +73,14 @@ class MinimizeTest(unittest.TestCase):
       return LinearOperator((n, n), matvec=prod)
 
     res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hess=hess_op)
-
-    self.assertTrue(res.success)
-    self.assertTrue(np.allclose(res.x, self.xopt))
+    self.check_res(res)
 
   def test_callback(self):
     def callback(x):
       assert x.shape == np.array(self.x0).shape
 
     res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hessp=rosen_hess_prod, callback=callback)
-
-    self.assertTrue(res.success)
-    self.assertTrue(np.allclose(res.x, self.xopt))
+    self.check_res(res)
 
   def test_callback_abort(self):
     def callback(x):

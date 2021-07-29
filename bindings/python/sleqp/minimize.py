@@ -156,7 +156,12 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
   if hessp is None and hess is None:
     options.hessian_eval = sleqp.HessianEval.DampedBFGS
   else:
-    hessian = create_hessian(x0, args, jac, hess, hessp)
+    _jac = jac
+    if jac is True:
+      def _jac(x, *args):
+        return fun(x, *args)[1]
+
+    hessian = create_hessian(_jac, hess, hessp)
 
   initial_sol = np.array(x0)
 
