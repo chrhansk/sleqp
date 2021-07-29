@@ -58,9 +58,7 @@ def findiff_threepoint(f):
 
       fpos = f(xd, *args)
 
-      xd[j] = x0[j]
-
-      xd[j] -= h[j]
+      xd[j] = x0[j] - h[j]
 
       fneg = f(xd, *args)
 
@@ -104,3 +102,17 @@ def derivative(jac):
     return jac(x0)
 
   return evaluate
+
+def create_derivative(fun,jac):
+  if callable(jac):
+    return derivative(jac)
+  elif jac == '2-point':
+    return findiff_twopoint(fun)
+  elif jac == '3-point':
+    return findiff_threepoint(fun)
+  elif jac == 'cs':
+    return findiff_cs(fun)
+  elif jac is None:
+    return findiff_twopoint(fun)
+
+  raise ValueError("Invalid Jacobian: %s" % jac)

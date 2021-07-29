@@ -23,6 +23,16 @@ class ConstrainedMinimizeTest(unittest.TestCase):
       lambda x: [-1., 2.]
     ]
 
+    def combined_func(i):
+      return lambda x: (self.cons_funcs[i](x),
+                        self.cons_jacs[i](x))
+
+    self.combined_funcs = [
+      combined_func(0),
+      combined_func(1),
+      combined_func(2)
+    ]
+
     self.initial_sol = (2, 0)
     self.expected_sol = np.array([1.4, 1.7])
 
@@ -56,6 +66,18 @@ class ConstrainedMinimizeTest(unittest.TestCase):
     cons = ({'type': 'ineq', 'fun': self.cons_funcs[0], 'jac': self.cons_jacs[0]},
             {'type': 'ineq', 'fun': self.cons_funcs[1], 'jac': self.cons_jacs[1]},
             {'type': 'ineq', 'fun': self.cons_funcs[2], 'jac': self.cons_jacs[2]})
+
+    bnds = ((0, None), (0, None))
+
+    res = sleqp.minimize(self.obj, self.initial_sol, bounds=bnds, constraints=cons)
+
+    self.assertTrue(res.success)
+    self.assertTrue(np.allclose(res.x, self.expected_sol))
+
+  def test_constrained_jac(self):
+    cons = ({'type': 'ineq', 'fun': self.combined_funcs[0], 'jac': True},
+            {'type': 'ineq', 'fun': self.combined_funcs[1], 'jac': True},
+            {'type': 'ineq', 'fun': self.combined_funcs[2], 'jac': True})
 
     bnds = ((0, None), (0, None))
 
