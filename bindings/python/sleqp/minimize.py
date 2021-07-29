@@ -6,23 +6,20 @@ from sleqp._bounds import (create_constraint_bounds,
                            create_variable_bounds)
 
 from sleqp._cons_func import create_constraint_func
+from sleqp._objective import create_objective
 
 
 _base_pert = np.sqrt(np.finfo(float).eps)
 
 class _MinFunc:
 
-  def __init__(self, fun, grad, cons_func, hessp, args, num_variables):
+  def __init__(self, objective, cons_func, hessp, args, num_variables):
     self.x = np.zeros((num_variables,))
-    self.fun = fun
+    self.objective = objective
     self.cons_func = cons_func
-    self.grad = grad
     self.hessp = hessp
     self.args = args
     self.num_variables = num_variables
-
-    self._cons_vals = None
-    self._func_val = None
 
   def set_value(self, v, reason):
     if (self.x == v).all():
@@ -30,11 +27,10 @@ class _MinFunc:
 
     self.x[:] = v
 
+    self.objective.set_value(self.x)
+
     if self.cons_func:
       self.cons_func.set_value(self.x)
-
-    self._cons_vals = None
-    self._func_val = None
 
   def cons_vals(self):
     return self.cons_func.val(self.args)
@@ -43,33 +39,10 @@ class _MinFunc:
     return self.cons_func.jac(self.args)
 
   def func_val(self):
-    if self._func_val is None:
-      self._func_val = self.fun(self.x, *self.args)
-
-    return self._func_val
+    return self.objective.val(self.args)
 
   def func_grad(self):
-    if self.grad is not None:
-      return self.grad(self.x, *self.args)
-
-    grad = np.empty_like(self.x)
-
-    xd = np.copy(self.x)
-
-    orig_func_val = self.func_val()
-
-    for i in range(self.num_variables):
-
-      pert = _base_pert * max(abs(self.x[i]), 1.)
-      xd[i] += pert
-
-      pert_func_val = self.fun(xd, *self.args)
-
-      grad[i] = (pert_func_val - orig_func_val) / pert
-
-      xd[i] = self.x[i]
-
-    return grad
+    return self.objective.grad(self.args)
 
   def hess_prod(self, func_dual, direction, _):
     prod = self.hessp(self.x,
@@ -167,11 +140,13 @@ def minimize(fun, x0, args=(), jac=None, hessp=None, bounds=None, constraints=No
     (cons_lb, cons_ub) = create_constraint_bounds(constraints)
     cons_func = create_constraint_func(num_variables, constraints)
 
+  objective = create_objective(num_variables, fun, jac)
+
   initial_sol = np.array(x0)
 
   (var_lb, var_ub) = create_variable_bounds(num_variables, bounds)
 
-  min_func = _MinFunc(fun, jac, cons_func, hessp, args, num_variables)
+  min_func = _MinFunc(objective, cons_func, hessp, args, num_variables)
 
   params = sleqp.Params()
 
