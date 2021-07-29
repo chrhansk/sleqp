@@ -3,7 +3,7 @@ import scipy.sparse as sps
 
 from scipy.sparse.linalg import LinearOperator
 
-from sleqp._derivative import create_derivative
+from sleqp._derivative import FD_METHODS, create_derivative
 
 
 class Hessian:
@@ -11,22 +11,22 @@ class Hessian:
     pass
 
 
-  def product(self, args, d):
+  def product(self, args, grad, d):
     pass
 
 
-class HessianProduct:
+class HessianProduct(Hessian):
   def __init__(self, hessp):
     self.hessp = hessp
 
   def set_value(self, x):
     self.x = x
 
-  def product(self, args, d):
-    return self.hessp(self.x, d, *args)
+  def product(self, args, direction, grad=None):
+    return self.hessp(self.x, direction, *args)
 
 
-class SparseHessian:
+class SparseHessian(Hessian):
   def __init__(self, hess):
     self.hess = hess
     self.hval = None
@@ -39,12 +39,12 @@ class SparseHessian:
     if self.hval is None:
       self.hval = self.hess(self.x, *args)
 
-  def product(self, args, d):
+  def product(self, args, direction, grad=None):
     self._eval(args)
-    return self.hval.dot(d)
+    return self.hval.dot(direction)
 
 
-class DenseHessian:
+class DenseHessian(Hessian):
   def __init__(self, hess):
     self.hess = hess
     self.hval = None
@@ -57,12 +57,12 @@ class DenseHessian:
     if self.hval is None:
       self.hval = np.atleast_2d(self.hess(self.x, *args))
 
-  def product(self, args, d):
+  def product(self, args, direction, grad=None):
     self._eval(args)
-    return np.dot(self.hval, d)
+    return np.dot(self.hval, direction)
 
 
-class HessianOperator:
+class HessianOperator(Hessian):
   def __init__(self, hess):
     self.hess = hess
 
@@ -74,9 +74,26 @@ class HessianOperator:
     if self.hess_op is None:
       self.hess_op = self.hess(self.x, *args)
 
-  def product(self, args, d):
+  def product(self, args, direction, grad=None):
     self._eval(args)
-    return self.hess_op(d)
+    return self.hess_op(direction)
+
+class FindiffHessian(Hessian):
+  def __init__(self, deriv):
+    self.deriv = deriv
+    self.hess = None
+
+  def set_value(self, x):
+    self.x = x
+    self.hess = None
+
+  def _eval(self, grad, args):
+    if self.hess is None:
+      self.hess = self.deriv(self.x, args, grad)
+
+  def product(self, args, direction, grad=None):
+    self._eval(grad, args)
+    return np.dot(self.hess, direction)
 
 
 def create_hessian(x0, args, grad, hess, hessp):
@@ -86,6 +103,10 @@ def create_hessian(x0, args, grad, hess, hessp):
 
   if hessp:
     return HessianProduct(hessp)
+
+  if hess in FD_METHODS:
+    deriv = create_derivative(grad, hess)
+    return FindiffHessian(deriv)
 
   elif callable(hess):
 

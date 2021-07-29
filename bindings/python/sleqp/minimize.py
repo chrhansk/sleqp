@@ -21,6 +21,9 @@ class _MinFunc:
     self.args = args
     self.num_variables = num_variables
 
+    self.obj_val = None
+    self.obj_grad = None
+
   def set_value(self, v, reason):
     if (self.x == v).all():
       return
@@ -35,6 +38,9 @@ class _MinFunc:
     if self.cons_func:
       self.cons_func.set_value(self.x)
 
+    self.obj_val = None
+    self.obj_grad = None
+
   def cons_vals(self):
     return self.cons_func.val(self.args)
 
@@ -42,13 +48,28 @@ class _MinFunc:
     return self.cons_func.jac(self.args)
 
   def func_val(self):
-    return self.objective.val(self.args)
+    self._eval_obj_val()
+    return self.obj_val
+
+  def _eval_obj_val(self):
+    if self.obj_val is None:
+      self.obj_val = self.objective.val(self.args)
+
+  def _eval_obj_grad(self):
+    self._eval_obj_val()
+
+    if self.obj_grad is None:
+      self.obj_grad = self.objective.grad(self.args)
 
   def func_grad(self):
-    return self.objective.grad(self.args)
+    self._eval_obj_grad()
+    return self.obj_grad
 
   def hess_prod(self, func_dual, direction, _):
-    prod = self.hessian.product(self.args, direction)
+    self._eval_obj_grad()
+    prod = self.hessian.product(self.args,
+                                direction,
+                                self.obj_grad)
 
     return func_dual * prod
 

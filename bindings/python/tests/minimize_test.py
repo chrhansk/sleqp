@@ -59,6 +59,12 @@ class MinimizeTest(unittest.TestCase):
     self.assertTrue(res.success)
     self.assertTrue(np.allclose(res.x, self.xopt))
 
+  def test_findiff_hessian(self):
+    res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hess='3-point')
+
+    self.assertTrue(res.success)
+    self.assertTrue(np.allclose(res.x, self.xopt))
+
   def test_hessian_linear_operator(self):
 
     n = len(self.x0)

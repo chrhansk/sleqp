@@ -46,6 +46,9 @@ def findiff_threepoint(f):
     x0 = np.atleast_1d(x0)
     h = perturbation(x0, eps_threepoint)
 
+    if f0 is None:
+      f0 = f(x0, *args)
+
     n = x0.size
     m = f0.size
 
@@ -78,6 +81,9 @@ def findiff_cs(f):
 
     n = x0.size
     m = f0.size
+
+    if f0 is None:
+      f0 = f(x0, *args)
 
     df = np.empty((m, n))
 
