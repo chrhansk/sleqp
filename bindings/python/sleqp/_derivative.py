@@ -106,20 +106,23 @@ def findiff_cs(f):
 
 def derivative(jac):
   def evaluate(x0, args=(), f0=None):
-    return jac(x0)
+    return np.atleast_1d(jac(x0, *args))
 
   return evaluate
 
 def create_derivative(fun, jac):
+  def func(x, *args):
+    return np.atleast_1d(fun(x, *args))
+
   if callable(jac):
     return derivative(jac)
   elif jac == '2-point':
-    return findiff_twopoint(fun)
+    return findiff_twopoint(func)
   elif jac == '3-point':
-    return findiff_threepoint(fun)
+    return findiff_threepoint(func)
   elif jac == 'cs':
-    return findiff_cs(fun)
+    return findiff_cs(func)
   elif jac is None:
-    return findiff_twopoint(fun)
+    return findiff_twopoint(func)
 
   raise ValueError("Invalid Jacobian: %s" % jac)

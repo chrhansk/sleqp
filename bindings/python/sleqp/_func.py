@@ -1,18 +1,22 @@
 import numpy as np
 
 from sleqp._derivative import create_derivative
-
+from sleqp._hessian import create_hessian
 
 class PointFunc:
-  def __init__(self, fun, deriv):
+  def __init__(self, fun, deriv, hessian):
     self.x = None
     self.fun = fun
     self.deriv = deriv
+    self.hessian = hessian
 
   def set_value(self, x):
     self.x = x
     self.fval = None
     self.gval = None
+
+    if self.hessian:
+      self.hessian.set_value(x)
 
   def val(self, args=()):
     if self.fval is None:
@@ -22,20 +26,30 @@ class PointFunc:
   def grad(self, args=()):
     if self.gval is None:
       self.gval = self.deriv(self.x, args, self.fval)
+      self.gval = np.atleast_1d(self.gval)
     return self.gval
 
+  def hess_prod(self, direction, args=()):
+    return self.hessian.product(args, direction)
+
+
 class CombinedFunc:
-  def __init__(self, fun):
+  def __init__(self, fun, hessian):
     self.x = None
     self.fun = fun
+    self.hessian = hessian
 
   def set_value(self, x):
     self.x = x
     self.fval = None
     self.gval = None
 
+    if self.hessian:
+      self.hessian.set_value(x)
+
   def _eval(self, x, args=()):
     (self.fval, self.gval) = self.fun(x, *args)
+    self.gval = np.atleast_1d(self.gval)
 
   def val(self, args=()):
     if self.fval is None:
@@ -49,11 +63,31 @@ class CombinedFunc:
 
     return self.gval
 
+  def hess_prod(self, direction, args=()):
+    prod = self.hessian.product(args, direction)
+    return np.atleast_1d(prod)
 
-def create_func(fun, jac):
-  if jac is True:
-    return CombinedFunc(fun)
 
-  deriv = create_derivative(fun, jac)
+def actual_gradient(fun, grad):
+  if grad is True:
+    def _grad(x, *args):
+      return fun(x, *args)[1]
 
-  return PointFunc(fun, deriv)
+    return _grad
+
+  return grad
+
+def create_func(fun, grad, hess=None, hessp=None):
+
+  actual_grad = actual_gradient(fun, grad)
+  hessian = None
+
+  if hess is not None or hessp is not None:
+    hessian = create_hessian(actual_grad, hess, hessp)
+
+  if grad is True:
+    return CombinedFunc(fun, hessian)
+
+  deriv = create_derivative(fun, grad)
+
+  return PointFunc(fun, deriv, hessian)

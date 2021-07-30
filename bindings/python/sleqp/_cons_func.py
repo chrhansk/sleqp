@@ -20,8 +20,10 @@ class ConstraintFunc:
     for constraint in constraints:
       fun = constraint['fun']
       jac = constraint.get('jac')
+      hess = constraint.get('hess')
+      hessp = constraint.get('hessp')
 
-      funcs.append(create_func(fun, jac))
+      funcs.append(create_func(fun, jac, hess, hessp))
 
     return funcs
 
@@ -46,6 +48,20 @@ class ConstraintFunc:
       jac[i, :] = func.grad(args)
 
     return jac
+
+  def hess_prod(self, direction, duals, args=()):
+    assert direction.shape == (self.num_variables,)
+    assert duals.shape == (self.num_constraints,)
+
+    product = np.zeros_like(direction)
+
+    for i, func in enumerate(self.funcs):
+      if duals[i] == 0.:
+        continue
+
+      product += duals[i] * func.hess_prod(direction, args)
+
+    return product
 
 
 def create_constraint_func(num_variables,

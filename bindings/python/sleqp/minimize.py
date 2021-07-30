@@ -6,18 +6,17 @@ from sleqp._bounds import (create_constraint_bounds,
                            create_variable_bounds)
 
 from sleqp._cons_func import create_constraint_func
-from sleqp._objective import create_objective
+from sleqp._func import create_func
 from sleqp._hessian import create_hessian
 
 _base_pert = np.sqrt(np.finfo(float).eps)
 
 class _MinFunc:
 
-  def __init__(self, objective, cons_func, hessian, args, num_variables):
+  def __init__(self, objective, constraints, args, num_variables):
     self.x = np.zeros((num_variables,))
     self.objective = objective
-    self.cons_func = cons_func
-    self.hessian = hessian
+    self.constraints = constraints
     self.args = args
     self.num_variables = num_variables
 
@@ -32,20 +31,17 @@ class _MinFunc:
 
     self.objective.set_value(self.x)
 
-    if self.hessian is not None:
-      self.hessian.set_value(self.x)
-
-    if self.cons_func:
-      self.cons_func.set_value(self.x)
+    if self.constraints:
+      self.constraints.set_value(self.x)
 
     self.obj_val = None
     self.obj_grad = None
 
   def cons_vals(self):
-    return self.cons_func.val(self.args)
+    return self.constraints.val(self.args)
 
   def cons_jac(self):
-    return self.cons_func.jac(self.args)
+    return self.constraints.jac(self.args)
 
   def func_val(self):
     self._eval_obj_val()
@@ -61,17 +57,28 @@ class _MinFunc:
     if self.obj_grad is None:
       self.obj_grad = self.objective.grad(self.args)
 
+      if self.obj_grad.ndim == 2:
+        self.obj_grad = self.obj_grad[0,:]
+
   def func_grad(self):
     self._eval_obj_grad()
     return self.obj_grad
 
-  def hess_prod(self, func_dual, direction, _):
+  def hess_prod(self, func_dual, direction, cons_duals):
     self._eval_obj_grad()
-    prod = self.hessian.product(self.args,
-                                direction,
-                                self.obj_grad)
 
-    return func_dual * prod
+    prod = self.objective.hess_prod(direction,
+                                    self.args)
+
+    prod *= func_dual
+
+    if self.constraints:
+      cons_prod = self.constraints.hess_prod(direction,
+                                             cons_duals,
+                                             self.args)
+      prod += cons_prod
+
+    return prod
 
 
 class OptimizeResult:
@@ -147,27 +154,18 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
     (cons_lb, cons_ub) = create_constraint_bounds(constraints)
     cons_func = create_constraint_func(num_variables, constraints)
 
-  objective = create_objective(num_variables, fun, jac)
+  objective = create_func(fun, jac, hess, hessp)
 
   options = sleqp.Options()
 
-  hessian = None
-
   if hessp is None and hess is None:
     options.hessian_eval = sleqp.HessianEval.DampedBFGS
-  else:
-    _jac = jac
-    if jac is True:
-      def _jac(x, *args):
-        return fun(x, *args)[1]
-
-    hessian = create_hessian(_jac, hess, hessp)
 
   initial_sol = np.array(x0)
 
   (var_lb, var_ub) = create_variable_bounds(num_variables, bounds)
 
-  min_func = _MinFunc(objective, cons_func, hessian, args, num_variables)
+  min_func = _MinFunc(objective, cons_func, args, num_variables)
 
   params = sleqp.Params()
 
