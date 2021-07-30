@@ -85,11 +85,23 @@ class ConstraintFunc:
 
     product = np.zeros_like(direction)
 
-    for i, func in enumerate(self.funcs):
-      if duals[i] == 0.:
-        continue
+    offset = 0
 
-      product += duals[i] * func.hess_prod(direction, args)
+    for i, func in enumerate(self.funcs):
+      dim = func.dimension
+      func_duals = duals[offset:offset + dim]
+
+      func_product = func.hess_prod(direction, args)
+
+      scaled_product = np.dot(func_duals,
+                              func_product[np.newaxis,:])
+
+      if scaled_product.ndim > 1:
+        scaled_product = scaled_product[0, :]
+
+      product += scaled_product
+
+      offset += dim
 
     return product
 

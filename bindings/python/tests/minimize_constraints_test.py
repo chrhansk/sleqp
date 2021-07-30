@@ -61,6 +61,8 @@ class ConstrainedMinimizeTest(unittest.TestCase):
 
     res = sleqp.minimize(self.obj,
                          self.initial_sol,
+                         jac=self.grad,
+                         hessp=self.hessp,
                          bounds=self.bounds,
                          constraints=self.nonlinear_cons)
 

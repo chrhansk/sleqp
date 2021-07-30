@@ -25,7 +25,7 @@ def findiff_twopoint(f):
 
     xd = np.copy(x0)
 
-    df = np.empty((m, n))
+    df = np.atleast_2d(np.empty((*f0.shape, n)))
 
     for j in range(n):
       xd[j] += h[j]
@@ -55,7 +55,7 @@ def findiff_threepoint(f):
 
     xd = np.copy(x0)
 
-    df = np.empty((m, n))
+    df = np.atleast_2d(np.empty((*f0.shape, n)))
 
     for j in range(n):
       xd[j] += h[j]
@@ -86,7 +86,7 @@ def findiff_cs(f):
     if f0 is None:
       f0 = f(x0, *args)
 
-    df = np.empty((m, n))
+    df = np.atleast_2d(np.empty((*f0.shape, n)))
 
     xd = x0.astype('complex')
 
