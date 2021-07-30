@@ -77,7 +77,7 @@ class MinimizeTest(unittest.TestCase):
 
   def test_callback(self):
     def callback(x):
-      assert x.shape == np.array(self.x0).shape
+      assert x.shape == self.x0.shape
 
     res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hessp=rosen_hess_prod, callback=callback)
     self.check_res(res)

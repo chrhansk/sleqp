@@ -29,19 +29,40 @@ def create_variable_bounds(num_variables, bounds):
 
 
 def create_constraint_bounds(constraints):
-  num_constraints = len(constraints)
 
   inf = sleqp.inf()
-  cons_lb = np.full((num_constraints,), -inf)
-  cons_ub = np.full((num_constraints,), inf)
+  cons_lb = []
+  cons_ub = []
 
   for i, constraint in enumerate(constraints):
+
+    try:
+      cons_lb.append(constraint.lb)
+      cons_ub.append(constraint.ub)
+      continue
+    except AttributeError:
+      pass
+
     if constraint['type'] == 'ineq':
-      cons_lb[i] = 0.
-      cons_ub[i] = inf
+      cons_lb.append(np.array([0.]))
+      cons_ub.append(np.array([inf]))
     else:
       assert constraint['type'] == 'eq'
-      cons_lb[i] = 0.
-      cons_ub[i] = 0.
+      cons_lb.append(np.array([0.]))
+      cons_ub.append(np.array([0.]))
+
+  if cons_lb:
+    cons_lb = np.hstack(cons_lb)
+  else:
+    cons_lb = np.array([])
+
+  if cons_ub:
+    cons_ub = np.hstack(cons_ub)
+  else:
+    cons_ub = np.array([])
+
+  assert cons_lb.shape == cons_ub.shape
+
+  assert (cons_lb <= cons_ub).all()
 
   return (cons_lb, cons_ub)

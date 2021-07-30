@@ -142,16 +142,18 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
     args = (args,)
 
   num_variables = len(x0)
-  num_constraints = 0
 
   cons_lb = np.zeros((0,))
   cons_ub = np.zeros((0,))
   cons_func = None
 
   if constraints is not None:
-    num_constraints = len(constraints)
+
+    if not isinstance(constraints, list) and not isinstance(constraints, tuple):
+      constraints = [constraints]
 
     (cons_lb, cons_ub) = create_constraint_bounds(constraints)
+
     cons_func = create_constraint_func(num_variables, constraints)
 
   objective = create_func(fun, jac, hess, hessp)

@@ -6,24 +6,38 @@ from sleqp._func import create_func
 class ConstraintFunc:
 
   def __init__(self, num_variables, constraints):
-    self.num_constraints = len(constraints)
     self.num_variables = num_variables
     self.funcs = self._create_funcs(constraints)
+
+    self.num_constraints = sum(func.dimension for func in self.funcs)
 
     self.shape = (self.num_constraints,
                   self.num_variables)
 
+  def _create_func(self, constraint):
 
-  def _create_funcs(self, constraints):
-    funcs = []
+      try:
+        fun = constraint.fun
+        jac = constraint.jac
+        hess = constraint.hess
+        dim = len(constraint.lb)
+        return create_func(fun, jac, hess=hess, dimension=dim)
 
-    for constraint in constraints:
+      except AttributeError:
+        pass
+
       fun = constraint['fun']
       jac = constraint.get('jac')
       hess = constraint.get('hess')
       hessp = constraint.get('hessp')
 
-      funcs.append(create_func(fun, jac, hess, hessp))
+      return create_func(fun, jac, hess, hessp)
+
+  def _create_funcs(self, constraints):
+    funcs = []
+
+    for constraint in constraints:
+      funcs.append(self._create_func(constraint))
 
     return funcs
 
@@ -34,18 +48,32 @@ class ConstraintFunc:
       func.set_value(self.x)
 
   def val(self, args=()):
-    values = np.empty((self.num_constraints,))
+    values = []
 
     for i, func in enumerate(self.funcs):
-      values[i] = func.val(args)
+      values.append(func.val(args))
+
+    if values:
+      values = np.hstack(values)
+    else:
+      values = np.array([])
+
+    assert values.shape == (self.num_constraints,)
 
     return values
 
   def jac(self, args=()):
-    jac = np.empty(self.shape)
+    jac = []
 
     for i, func in enumerate(self.funcs):
-      jac[i, :] = func.grad(args)
+      func_grad = func.grad(args)
+      assert func_grad.shape == (func.dimension, self.num_variables)
+      jac.append(func_grad)
+
+    if jac:
+      jac = np.hstack(jac)
+    else:
+      return np.zeros(self.shape)
 
     return jac
 

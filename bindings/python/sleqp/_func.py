@@ -4,11 +4,12 @@ from sleqp._derivative import create_derivative
 from sleqp._hessian import create_hessian
 
 class PointFunc:
-  def __init__(self, fun, deriv, hessian):
+  def __init__(self, fun, deriv, hessian, dimension=1):
     self.x = None
     self.fun = fun
     self.deriv = deriv
     self.hessian = hessian
+    self.dimension = dimension
 
   def set_value(self, x):
     self.x = x
@@ -34,10 +35,11 @@ class PointFunc:
 
 
 class CombinedFunc:
-  def __init__(self, fun, hessian):
+  def __init__(self, fun, hessian, dimension=1):
     self.x = None
     self.fun = fun
     self.hessian = hessian
+    self.dimension = dimension
 
   def set_value(self, x):
     self.x = x
@@ -77,7 +79,7 @@ def actual_gradient(fun, grad):
 
   return grad
 
-def create_func(fun, grad, hess=None, hessp=None):
+def create_func(fun, grad, hess=None, hessp=None, dimension=1):
 
   actual_grad = actual_gradient(fun, grad)
   hessian = None
@@ -86,8 +88,8 @@ def create_func(fun, grad, hess=None, hessp=None):
     hessian = create_hessian(actual_grad, hess, hessp)
 
   if grad is True:
-    return CombinedFunc(fun, hessian)
+    return CombinedFunc(fun, hessian, dimension)
 
   deriv = create_derivative(fun, grad)
 
-  return PointFunc(fun, deriv, hessian)
+  return PointFunc(fun, deriv, hessian, dimension)
