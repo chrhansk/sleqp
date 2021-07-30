@@ -67,11 +67,13 @@ class ConstraintFunc:
 
     for i, func in enumerate(self.funcs):
       func_grad = func.grad(args)
+      if func_grad.ndim == 1:
+        func_grad = func_grad[np.newaxis, :]
       assert func_grad.shape == (func.dimension, self.num_variables)
       jac.append(func_grad)
 
     if jac:
-      jac = np.hstack(jac)
+      jac = np.vstack(jac)
     else:
       return np.zeros(self.shape)
 
