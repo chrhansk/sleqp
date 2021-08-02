@@ -669,7 +669,7 @@ SLEQP_RETCODE sleqp_problem_hess_bilinear(SleqpProblem* problem,
                                           const double* func_dual,
                                           const SleqpSparseVec* direction,
                                           const SleqpSparseVec* cons_duals,
-                                          double* bilinear_prod)g
+                                          double* bilinear_prod)
 {
   if(problem->num_linear_constraints == 0)
   {
