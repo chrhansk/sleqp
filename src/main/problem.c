@@ -41,6 +41,8 @@ typedef struct SleqpProblem
   SleqpSparseVec* general_cons_val;
   SleqpSparseVec* linear_cons_val;
 
+  SleqpSparseVec* general_cons_duals;
+
   SleqpSparseMatrix* general_cons_jac;
 
 } SleqpProblem;
@@ -365,6 +367,9 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
     SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->linear_cons_val,
                                                 num_linear_constraints));
 
+    SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->general_cons_duals,
+                                                problem->num_general_constraints));
+
     SLEQP_CALL(sleqp_alloc_array(&problem->dense_cache, num_linear_constraints));
   }
 
@@ -607,16 +612,56 @@ SLEQP_RETCODE sleqp_problem_cons_jac(SleqpProblem* problem,
                                     cons_jac);
 }
 
+static
+SLEQP_RETCODE prepare_cons_duals(SleqpProblem* problem,
+                                 const SleqpSparseVec* cons_duals)
+{
+  SLEQP_CALL(sleqp_sparse_vector_reserve(problem->general_cons_duals,
+                                         cons_duals->nnz));
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(problem->general_cons_duals));
+
+  const int num_general = problem->num_general_constraints;
+
+  for(int k = 0; k < cons_duals->nnz; ++k)
+  {
+    int i = cons_duals->indices[k];
+
+    if(i >= num_general)
+    {
+      break;
+    }
+
+    SLEQP_CALL(sleqp_sparse_vector_push(problem->general_cons_duals,
+                                        i,
+                                        cons_duals->data[k]));
+
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_problem_hess_prod(SleqpProblem* problem,
                                       const double* func_dual,
                                       const SleqpSparseVec* direction,
                                       const SleqpSparseVec* cons_duals,
                                       SleqpSparseVec* product)
 {
+  if(problem->num_linear_constraints == 0)
+  {
+    return sleqp_func_hess_prod(problem->func,
+                                func_dual,
+                                direction,
+                                cons_duals,
+                                product);
+  }
+
+  SLEQP_CALL(prepare_cons_duals(problem, cons_duals));
+
   return sleqp_func_hess_prod(problem->func,
                               func_dual,
                               direction,
-                              cons_duals,
+                              problem->general_cons_duals,
                               product);
 }
 
@@ -624,12 +669,23 @@ SLEQP_RETCODE sleqp_problem_hess_bilinear(SleqpProblem* problem,
                                           const double* func_dual,
                                           const SleqpSparseVec* direction,
                                           const SleqpSparseVec* cons_duals,
-                                          double* bilinear_prod)
+                                          double* bilinear_prod)g
 {
+  if(problem->num_linear_constraints == 0)
+  {
+    return sleqp_func_hess_bilinear(problem->func,
+                                    func_dual,
+                                    direction,
+                                    cons_duals,
+                                    bilinear_prod);
+  }
+
+  SLEQP_CALL(prepare_cons_duals(problem, cons_duals));
+
   return sleqp_func_hess_bilinear(problem->func,
                                   func_dual,
                                   direction,
-                                  cons_duals,
+                                  problem->general_cons_duals,
                                   bilinear_prod);
 }
 
@@ -647,6 +703,8 @@ static SLEQP_RETCODE problem_free(SleqpProblem** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->general_cons_val));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->linear_cons_val));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&problem->general_cons_duals));
 
   sleqp_free(&problem->dense_cache);
 
