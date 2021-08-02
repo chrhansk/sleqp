@@ -945,7 +945,7 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
                                                 eps,
                                                 &in_working_set));
 
-      assert(in_working_set);
+      sleqp_num_assert(in_working_set);
     }
 
 #endif
