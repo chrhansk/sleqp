@@ -9,6 +9,7 @@ extern "C" {
 
 typedef struct
 {
+  bool enable_logging;
   bool enable_preprocessing;
   bool force_nonlinear_constraints;
   int max_num_threads;

@@ -108,6 +108,11 @@ int sleqp_cutest_run(const char* filename,
     return 1;
   }
 
+  if(!cutest_options->enable_logging)
+  {
+    sleqp_log_set_level(SLEQP_LOG_ERROR);
+  }
+
   CUTEST_cdimen(&cutest_status, &funit, &CUTEst_nvar, &CUTEst_ncons);
 
   sleqp_log_info("Problem has %d variables, %d constraints",

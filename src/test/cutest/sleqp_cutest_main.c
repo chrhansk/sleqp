@@ -15,6 +15,7 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
     int option_index = 0;
 
     static struct option long_options[] = {
+      {"enable_logging",              no_argument,       0, 'l'},
       {"enable_preprocessing",        no_argument,       0, 'p'},
       {"force_nonlinear_constraints", no_argument,       0, 'n'},
       {"max_num_threads",             required_argument, 0, 't'},
@@ -30,19 +31,24 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
       break;
 
     switch(c) {
+    case 'l':
+      break;
+      sleqp_log_debug("Enabling logging");
+      options->enable_logging = true;
+      break;
     case 'p':
-      sleqp_log_info("Enabling preprocessing");
+      sleqp_log_debug("Enabling preprocessing");
       options->enable_preprocessing = true;
       break;
 
     case 'n':
-      sleqp_log_info("Forcing nonlinear constraints");
+      sleqp_log_debug("Forcing nonlinear constraints");
       options->force_nonlinear_constraints = true;
       break;
 
     case 't':
       options->max_num_threads = atoi(optarg);
-      sleqp_log_info("Using up to %d threads", options->max_num_threads);
+      sleqp_log_debug("Using up to %d threads", options->max_num_threads);
       break;
 
     default:
