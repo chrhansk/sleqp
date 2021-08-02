@@ -47,15 +47,15 @@ class ConstrainedMinimizeTest(unittest.TestCase):
     self.expected_sol = np.array([1.4, 1.7])
     self.bounds = ((0, None), (0, None))
 
-  # def test_linear_constraint(self):
+  def test_linear_constraint(self):
 
-  #   res = sleqp.minimize(self.obj,
-  #                        self.initial_sol,
-  #                        bounds=self.bounds,
-  #                        constraints=self.linear_cons)
+    res = sleqp.minimize(self.obj,
+                         self.initial_sol,
+                         bounds=self.bounds,
+                         constraints=self.linear_cons)
 
-  #   self.assertTrue(res.success)
-  #   self.assertTrue(np.allclose(res.x, self.expected_sol))
+    self.assertTrue(res.success)
+    self.assertTrue(np.allclose(res.x, self.expected_sol))
 
   def test_nonlinear_constraint(self):
 

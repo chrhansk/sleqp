@@ -12,6 +12,12 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
                                          np.ndarray linear_lb = None,
                                          np.ndarray linear_ub = None):
 
+  assert var_lb is not None
+  assert var_ub is not None
+
+  assert general_lb is not None
+  assert general_ub is not None
+
   cdef csleqp.SleqpSparseVec* var_lb_vec
   cdef csleqp.SleqpSparseVec* var_ub_vec
 

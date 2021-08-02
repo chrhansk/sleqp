@@ -2,14 +2,11 @@ import numpy as np
 
 import sleqp
 
-from sleqp._bounds import (create_constraint_bounds,
-                           create_variable_bounds)
-
-from sleqp._cons_func import create_constraint_func
+from sleqp._bounds import create_variable_bounds
+from sleqp._cons import create_constraints
 from sleqp._func import create_func
 from sleqp._hessian import create_hessian
 
-_base_pert = np.sqrt(np.finfo(float).eps)
 
 class _MinFunc:
 
@@ -147,14 +144,7 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
   cons_ub = np.zeros((0,))
   cons_func = None
 
-  if constraints is not None:
-
-    if not isinstance(constraints, list) and not isinstance(constraints, tuple):
-      constraints = [constraints]
-
-    (cons_lb, cons_ub) = create_constraint_bounds(constraints)
-
-    cons_func = create_constraint_func(num_variables, constraints)
+  constraints = create_constraints(num_variables, constraints)
 
   objective = create_func(fun, jac, hess, hessp)
 
@@ -167,7 +157,10 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
 
   (var_lb, var_ub) = create_variable_bounds(num_variables, bounds)
 
-  min_func = _MinFunc(objective, cons_func, args, num_variables)
+  min_func = _MinFunc(objective,
+                      constraints.general.func,
+                      args,
+                      num_variables)
 
   params = sleqp.Params()
 
@@ -175,8 +168,11 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
                           params,
                           var_lb,
                           var_ub,
-                          cons_lb,
-                          cons_ub)
+                          constraints.general.lb,
+                          constraints.general.ub,
+                          linear_coeffs=constraints.linear.coeffs,
+                          linear_lb=constraints.linear.lb,
+                          linear_ub=constraints.linear.ub)
 
   solver = sleqp.Solver(problem,
                         params,
