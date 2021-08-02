@@ -24,7 +24,7 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
 
     int c = getopt_long(argc,
                         argv,
-                        "pn",
+                        "lpn",
                         long_options,
                         &option_index);
     if (c == -1)
@@ -32,7 +32,6 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
 
     switch(c) {
     case 'l':
-      break;
       sleqp_log_debug("Enabling logging");
       options->enable_logging = true;
       break;
