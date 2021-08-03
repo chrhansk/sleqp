@@ -74,7 +74,9 @@ find_package(trlib REQUIRED)
 find_package(Check)
 find_package(Threads)
 
-find_package(OpenMP)
+if(NOT(OpenMP_FOUND))
+  find_package(OpenMP)
+endif()
 
 add_library(trlib INTERFACE IMPORTED)
 

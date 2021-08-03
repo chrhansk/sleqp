@@ -1,36 +1,24 @@
-include(ExternalProject)
+include(FetchContent)
 
-ExternalProject_Add(CUTEst_clone
+FetchContent_Declare(CUTEst
   GIT_REPOSITORY https://github.com/optimizers/cutest-mirror
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
   )
-ExternalProject_Get_Property(CUTEst_clone SOURCE_DIR)
-set(CUTEST_BASE ${SOURCE_DIR} PARENT_SCOPE)
-set(CUTEST_BASE ${SOURCE_DIR})
 
-ExternalProject_Add(sifdecode_clone
+FetchContent_Declare(sifdecode
   GIT_REPOSITORY https://github.com/optimizers/sifdecode-mirror
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
   )
 
-ExternalProject_Add(mastsif_clone
+FetchContent_Declare(mastsif
   GIT_REPOSITORY https://github.com/optimizers/mastsif-mirror.git
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND ""
-  INSTALL_COMMAND ""
   )
 
-ExternalProject_Get_Property(sifdecode_clone SOURCE_DIR)
-set(SIFDEC_BASE ${SOURCE_DIR})
+FetchContent_MakeAvailable(CUTEst sifdecode mastsif)
 
-ExternalProject_Get_Property(mastsif_clone SOURCE_DIR)
-set(MASTSIF_BASE ${SOURCE_DIR})
+set(CUTEST_BASE ${cutest_SOURCE_DIR})
+set(SIFDECODE_BASE ${sifdecode_SOURCE_DIR})
+set(MASTSIF_BASE ${mastsif_SOURCE_DIR})
 
-enable_language (Fortran)
+enable_language(Fortran)
 
 add_library(sleqp_cutest
   STATIC
@@ -48,22 +36,21 @@ file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded")
 
 add_custom_command(
  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecoded.f90"
- COMMAND sed -f "${SIFDEC_BASE}/seds/double.sed" "${SIFDEC_BASE}/src/decode/sifdecode.f90" > "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecoded.f90"
- DEPENDS sifdecode_clone)
+ COMMAND sed -f "${SIFDECODE_BASE}/seds/double.sed" "${SIFDECODE_BASE}/src/decode/sifdecode.f90" > "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecoded.f90")
 
 add_custom_command(
  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecode_maind.f90"
- COMMAND sed -f "${SIFDEC_BASE}/seds/double.sed" "${SIFDEC_BASE}/src/decode/sifdecode_main.f90" > "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecode_maind.f90"
- DEPENDS sifdecode_clone)
+ COMMAND sed -f "${SIFDECODE_BASE}/seds/double.sed" "${SIFDECODE_BASE}/src/decode/sifdecode_main.f90" > "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecode_maind.f90")
 
-add_executable(sifdecode "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecode_maind.f90" "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecoded.f90")
+add_executable(sifdecode
+  "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecode_maind.f90"
+  "${CMAKE_CURRENT_BINARY_DIR}/sifdecoded/sifdecoded.f90")
 
 file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/cutestd")
 
 add_custom_command(
   OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cutestd/fortran_ops_mod.f90"
-  COMMAND sed "s/CHARACTER \\( LEN = 64 \\)/CHARACTER \\( LEN = 255 \\)/" "${CUTEST_BASE}/src/tools/fortran_ops.f90" > "${CMAKE_CURRENT_BINARY_DIR}/cutestd/fortran_ops_mod.f90"
-  DEPENDS CUTEst_clone)
+  COMMAND sed "s/CHARACTER \\( LEN = 64 \\)/CHARACTER \\( LEN = 255 \\)/" "${CUTEST_BASE}/src/tools/fortran_ops.f90" > "${CMAKE_CURRENT_BINARY_DIR}/cutestd/fortran_ops_mod.f90")
 
 set(CUTESTSRC
   ccfg
@@ -142,8 +129,7 @@ set(CUTESTSRC
 foreach(s ${CUTESTSRC})
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90"
-    COMMAND sed -f "${CUTEST_BASE}/seds/double.sed" "${CUTEST_BASE}/src/tools/${s}.f90" > "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90"
-    DEPENDS CUTEst_clone)
+    COMMAND sed -f "${CUTEST_BASE}/seds/double.sed" "${CUTEST_BASE}/src/tools/${s}.f90" > "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90")
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}sized.f90"
     COMMAND sed -f "${CUTEST_BASE}/seds/cutersize.sed" "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90" > "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}sized.f90"
@@ -157,7 +143,7 @@ set(cutestsrc ${cutestsrc} "${CMAKE_CURRENT_BINARY_DIR}/cutestd/fortran_ops_mod.
 add_library(cutest OBJECT ${cutestsrc})
 set_property(TARGET cutest PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
-file(GLOB SIFPROBLEMS_EXT RELATIVE ${MASTSIF_BASE} ${MASTSIF_BASE}/*.SIF DEPENDS mastsif_clone)
+file(GLOB SIFPROBLEMS_EXT RELATIVE ${MASTSIF_BASE} ${MASTSIF_BASE}/*.SIF)
 
 set(SIFPROBLEMS "")
 
@@ -181,8 +167,7 @@ foreach(s ${SIFPROBLEMS_EXT})
 
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/A.SIF"
-    COMMAND cp "${MASTSIF_BASE}/${PROBLEM}.SIF" "${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/A.SIF"
-    DEPENDS mastsif_clone)
+    COMMAND cp "${MASTSIF_BASE}/${PROBLEM}.SIF" "${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/A.SIF")
 
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/AUTOMAT.d.in"
     "${CMAKE_CURRENT_BINARY_DIR}/PROBLEMS/${PROBLEM}/AUTOMAT.d")

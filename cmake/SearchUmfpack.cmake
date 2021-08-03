@@ -44,7 +44,9 @@ if(UMFPACK_LIBRARY)
     get_filename_component(UMFPACK_LIBDIR ${UMFPACK_LIBRARY} PATH)
   endif(NOT UMFPACK_LIBDIR)
 
-  find_package(OpenMP)
+  if(NOT(OpenMP_FOUND))
+    find_package(OpenMP)
+  endif()
 
   if(OpenMP_FOUND)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
