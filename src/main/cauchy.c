@@ -381,7 +381,7 @@ SLEQP_RETCODE cauchy_set_coefficients(SleqpCauchy* cauchy_data,
                                num_variables,
                                num_constraints));
 
-  assert(sleqp_sparse_matrix_valid(cons_jac));
+  assert(sleqp_sparse_matrix_is_valid(cons_jac));
 
   SLEQP_CALL(sleqp_lpi_set_coefficients(cauchy_data->lp_interface,
                                         cons_jac));
@@ -390,7 +390,7 @@ SLEQP_RETCODE cauchy_set_coefficients(SleqpCauchy* cauchy_data,
                                num_variables,
                                num_constraints));
 
-  assert(sleqp_sparse_matrix_valid(cons_jac));
+  assert(sleqp_sparse_matrix_is_valid(cons_jac));
 
   cauchy_data->has_coefficients = true;
 

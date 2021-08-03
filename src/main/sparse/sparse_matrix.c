@@ -342,7 +342,7 @@ SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
 {
   assert(source->num_rows == target->num_rows);
   assert(source->num_cols == target->num_cols);
-  assert(sleqp_sparse_matrix_valid(source));
+  assert(sleqp_sparse_matrix_is_valid(source));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
   SLEQP_CALL(sleqp_sparse_matrix_reserve(target, source->nnz));
@@ -385,7 +385,7 @@ SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
     ++target_col;
   }
 
-  assert(sleqp_sparse_matrix_valid(target));
+  assert(sleqp_sparse_matrix_is_valid(target));
 
   return SLEQP_OKAY;
 }
@@ -525,7 +525,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
 {
   assert(source->num_cols == target->num_cols);
   assert(source->num_rows == target->num_rows);
-  assert(sleqp_sparse_matrix_valid(source));
+  assert(sleqp_sparse_matrix_is_valid(source));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
@@ -545,12 +545,12 @@ SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
 
   target->nnz = source->nnz;
 
-  assert(sleqp_sparse_matrix_valid(target));
+  assert(sleqp_sparse_matrix_is_valid(target));
 
   return SLEQP_OKAY;
 }
 
-bool sleqp_sparse_matrix_valid(const SleqpSparseMatrix* matrix)
+bool sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix)
 {
   if(matrix->nnz > matrix->nnz_max)
   {
@@ -592,17 +592,22 @@ bool sleqp_sparse_matrix_valid(const SleqpSparseMatrix* matrix)
     }
   }
 
-  for(int index = 0; index < matrix->nnz; ++index)
-  {
-    if(isnan(matrix->data[index]) || isinf(matrix->data[index]))
-    {
-      return false;
-    }
-  }
-
   if(matrix->cols[matrix->num_cols] != matrix->nnz)
   {
     return false;
+  }
+
+  return true;
+}
+
+bool sleqp_sparse_matrix_is_finite(const SleqpSparseMatrix* matrix)
+{
+  for(int index = 0; index < matrix->nnz; ++index)
+  {
+    if(!sleqp_is_finite(matrix->data[index]))
+    {
+      return false;
+    }
   }
 
   return true;

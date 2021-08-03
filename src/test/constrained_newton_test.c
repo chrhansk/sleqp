@@ -125,7 +125,7 @@ SLEQP_RETCODE linquadfunc_cons_jac(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 1.));
 
-  assert(sleqp_sparse_matrix_valid(cons_jac));
+  assert(sleqp_sparse_matrix_is_valid(cons_jac));
 
   return SLEQP_OKAY;
 }

@@ -320,8 +320,8 @@ extern "C" {
   SLEQP_EXPORT bool sleqp_sparse_vector_is_valid(const SleqpSparseVec* vec);
 
   /**
-   * Returns whether the given vector is *finite*, i.e., whether
-   * - the stored `data` is free of (IEEE) infs and NaNs
+   * Returns whether the entries of the given vector are finite with respect to
+   *  \ref sleqp_is_finite(double)
    **/
   SLEQP_EXPORT bool sleqp_sparse_vector_is_finite(const SleqpSparseVec* vec);
 

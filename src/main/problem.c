@@ -169,8 +169,6 @@ SLEQP_RETCODE convert_lb(const SleqpSparseVec* source_lb,
                          int expected_dim,
                          SleqpSparseVec** target_lb_star)
 {
-
-
   const double inf = sleqp_infinity();
 
   SLEQP_CALL(copy_create_vector(source_lb, expected_dim, target_lb_star));
@@ -180,7 +178,7 @@ SLEQP_RETCODE convert_lb(const SleqpSparseVec* source_lb,
   SLEQP_CALL(vector_map(target_lb, -INFINITY, -inf));
 
   sleqp_assert_msg(sleqp_sparse_vector_is_finite(target_lb),
-                   "Infinite bounds");
+                   "Lower bound is infinite");
 
   return SLEQP_OKAY;
 }
@@ -190,8 +188,6 @@ SLEQP_RETCODE convert_ub(const SleqpSparseVec* source_ub,
                          int expected_dim,
                          SleqpSparseVec** target_ub_star)
 {
-
-
   const double inf = sleqp_infinity();
 
   SLEQP_CALL(copy_create_vector(source_ub, expected_dim, target_ub_star));
@@ -201,7 +197,7 @@ SLEQP_RETCODE convert_ub(const SleqpSparseVec* source_ub,
   SLEQP_CALL(vector_map(target_ub, INFINITY, inf));
 
   sleqp_assert_msg(sleqp_sparse_vector_is_finite(target_ub),
-                   "Infinite bounds");
+                   "Upper bound is infinite");
 
   return SLEQP_OKAY;
 }
@@ -338,12 +334,14 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
     SLEQP_CALL(sleqp_sparse_matrix_copy(linear_coeffs,
                                         problem->linear_coeffs));
 
-    sleqp_assert_msg(sleqp_sparse_matrix_valid(problem->linear_coeffs),
-                     "Invalid linear coefficients");
+    sleqp_assert_msg(sleqp_sparse_matrix_is_valid(problem->linear_coeffs),
+                     "Linear coefficient matrix is invalid");
 
+    sleqp_assert_msg(sleqp_sparse_matrix_is_finite(problem->linear_coeffs),
+                     "Linear coefficient matrix is not all-finite");
 
     sleqp_assert_msg(sleqp_sparse_matrix_get_num_cols(problem->linear_coeffs) == num_variables,
-                     "Inconsistent linear constraint dimensions");
+                     "Linear constraint dimensions are inconsistent");
 
   }
 
@@ -510,24 +508,6 @@ SLEQP_RETCODE sleqp_problem_eval(SleqpProblem* problem,
   if(cons_jac)
   {
     SLEQP_CALL(sleqp_problem_cons_jac(problem, cons_indices, cons_jac));
-  }
-
-  if(func_grad && !sleqp_sparse_vector_is_valid(func_grad))
-  {
-    sleqp_log_error("Function returned invalid gradient");
-    return SLEQP_ILLEGAL_ARGUMENT;
-  }
-
-  if(cons_val && !sleqp_sparse_vector_is_valid(cons_val))
-  {
-    sleqp_log_error("Function returned invalid constraint values");
-    return SLEQP_ILLEGAL_ARGUMENT;
-  }
-
-  if(cons_jac && !sleqp_sparse_matrix_valid(cons_jac))
-  {
-    sleqp_log_error("Function returned invalid constraint Jacobian");
-    return SLEQP_ILLEGAL_ARGUMENT;
   }
 
   return SLEQP_OKAY;

@@ -182,7 +182,7 @@ static SLEQP_RETCODE fill_augmented_jacobian(SleqpAugJacobian* jacobian,
   SLEQP_CALL(sleqp_sparse_matrix_set_nnz(augmented_matrix,
                                          aug_total_nnz));
 
-  assert(sleqp_sparse_matrix_valid(augmented_matrix));
+  assert(sleqp_sparse_matrix_is_valid(augmented_matrix));
 
   return SLEQP_OKAY;
 }

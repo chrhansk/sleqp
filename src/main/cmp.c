@@ -1,5 +1,7 @@
 #include "cmp.h"
 
+#include <math.h>
+
 const double inf = 1e100;
 
 static double rel_diff(double x, double y)
@@ -21,6 +23,11 @@ double sleqp_infinity()
 
 bool sleqp_is_infinite(double value)
 {
+  if(isnan(value))
+  {
+    return false;
+  }
+
   return value >= sleqp_infinity() / 2.;
 }
 

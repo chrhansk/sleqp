@@ -124,10 +124,15 @@ extern "C" {
   /**
    * Returns whether the given matrix is valid, i.e. whether the
    * number of rows / columns is non-negative, all rows / columns are
-   * within their respective bounds and properly ordered and all
-   * entries are free of infs / nans.
+   * within their respective bounds and properly ordered.
    **/
-  bool sleqp_sparse_matrix_valid(const SleqpSparseMatrix* matrix);
+  bool sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix);
+
+  /**
+   * Returns whether the entries of the given matrix are finite with respect to
+   *  \ref sleqp_is_finite(double)
+   **/
+  bool sleqp_sparse_matrix_is_finite(const SleqpSparseMatrix* matrix);
 
 
 #ifdef __cplusplus

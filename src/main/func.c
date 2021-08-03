@@ -1,5 +1,7 @@
 #include "func.h"
 
+#include "cmp.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 
@@ -77,6 +79,9 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    int* cons_val_nnz,
                                    int* cons_jac_nnz)
 {
+  assert(sleqp_sparse_vector_is_valid(x));
+  assert(sleqp_sparse_vector_is_finite(x));
+
   SLEQP_CALL(sleqp_timer_start(func->set_timer));
 
   SLEQP_CALL(func->callbacks.set_value(func,
@@ -104,6 +109,9 @@ SLEQP_RETCODE sleqp_func_val(SleqpFunc* func,
                                         func->data));
 
     SLEQP_CALL(sleqp_timer_stop(func->val_timer));
+
+    sleqp_assert_msg(sleqp_is_finite(*func_val),
+                     "Returned infinite function value");
   }
 
   return SLEQP_OKAY;
@@ -123,6 +131,12 @@ SLEQP_RETCODE sleqp_func_grad(SleqpFunc* func,
                                          func->data));
 
     SLEQP_CALL(sleqp_timer_stop(func->grad_timer));
+
+    sleqp_assert_msg(sleqp_sparse_vector_is_valid(func_grad),
+                     "Returned invalid function gradient");
+
+    sleqp_assert_msg(sleqp_sparse_vector_is_finite(func_grad),
+                     "Returned function gradient is not all-finite");
   }
 
   return SLEQP_OKAY;
@@ -149,6 +163,12 @@ SLEQP_RETCODE sleqp_func_cons_val(SleqpFunc* func,
 
       SLEQP_CALL(sleqp_timer_stop(func->cons_val_timer));
     }
+
+    sleqp_assert_msg(sleqp_sparse_vector_is_valid(cons_val),
+                     "Returned invalid constraint values");
+
+    sleqp_assert_msg(sleqp_sparse_vector_is_finite(cons_val),
+                     "Returned constraint values are not all-finite");
   }
 
   return SLEQP_OKAY;
@@ -175,6 +195,12 @@ SLEQP_RETCODE sleqp_func_cons_jac(SleqpFunc* func,
 
       SLEQP_CALL(sleqp_timer_stop(func->cons_jac_timer));
     }
+
+    sleqp_assert_msg(sleqp_sparse_matrix_is_valid(cons_jac),
+                     "Returned invalid constraint Jacobian");
+
+    sleqp_assert_msg(sleqp_sparse_matrix_is_finite(cons_jac),
+                     "Returned constraint Jacobian is not all-finite");
   }
 
   return SLEQP_OKAY;
@@ -194,24 +220,6 @@ SLEQP_RETCODE sleqp_func_eval(SleqpFunc* func,
   SLEQP_CALL(sleqp_func_cons_val(func, cons_indices, cons_val));
 
   SLEQP_CALL(sleqp_func_cons_jac(func, cons_indices, cons_jac));
-
-  if(func_grad && !sleqp_sparse_vector_is_valid(func_grad))
-  {
-    sleqp_log_error("Function returned invalid gradient");
-    return SLEQP_ILLEGAL_ARGUMENT;
-  }
-
-  if(cons_val && !sleqp_sparse_vector_is_valid(cons_val))
-  {
-    sleqp_log_error("Function returned invalid constraint values");
-    return SLEQP_ILLEGAL_ARGUMENT;
-  }
-
-  if(cons_jac && !sleqp_sparse_matrix_valid(cons_jac))
-  {
-    sleqp_log_error("Function returned invalid constraint Jacobian");
-    return SLEQP_ILLEGAL_ARGUMENT;
-  }
 
   return SLEQP_OKAY;
 }
@@ -293,7 +301,10 @@ SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
   assert(func->num_constraints == cons_duals->dim);
 
   assert(sleqp_sparse_vector_is_valid(direction));
+  assert(sleqp_sparse_vector_is_finite(direction));
+
   assert(sleqp_sparse_vector_is_valid(cons_duals));
+  assert(sleqp_sparse_vector_is_finite(cons_duals));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(product));
 
@@ -308,11 +319,11 @@ SLEQP_RETCODE sleqp_func_hess_prod(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_timer_stop(func->hess_timer));
 
-  if(!sleqp_sparse_vector_is_valid(product))
-  {
-    sleqp_log_error("Function returned invalid Hessian product");
-    return SLEQP_ILLEGAL_ARGUMENT;
-  }
+  sleqp_assert_msg(sleqp_sparse_vector_is_valid(product),
+                   "Returned invalid Hessian product");
+
+  sleqp_assert_msg(sleqp_sparse_vector_is_finite(product),
+                   "Returned Hessian product is not all-finite");
 
   return SLEQP_OKAY;
 }
