@@ -56,6 +56,32 @@ class ConstrainedMinimizeTest(unittest.TestCase):
     self.expected_sol = np.array([1.4, 1.7])
     self.bounds = ((0, None), (0, None))
 
+
+  def test_infeasible(self):
+
+    infeas_cons_matrix = np.array([[1., 1.],
+                                   [1., 1.]])
+
+    infeas_lb = np.array([1.,
+                          -np.inf])
+
+    infeas_ub = np.array([np.inf,
+                          0.])
+
+    infeas_cons = LinearConstraint(infeas_cons_matrix,
+                                   infeas_lb,
+                                   infeas_ub)
+
+    res = sleqp.minimize(self.obj,
+                         self.initial_sol,
+                         jac=self.grad,
+                         hessp=self.hessp,
+                         bounds=self.bounds,
+                         constraints=infeas_cons)
+
+    self.assertFalse(res.success)
+    self.assertTrue(res.maxcv > 0.)
+
   def test_linear_constraint(self):
 
     res = sleqp.minimize(self.obj,

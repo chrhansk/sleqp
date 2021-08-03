@@ -8,6 +8,7 @@ class _DocEnum(Enum):
         self._value_ = value
         if doc is not None:
             self.__doc__ = doc
+            self.desc    = doc
         return self
 
 

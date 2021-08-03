@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.optimize import OptimizeResult
 
 import sleqp
 
@@ -78,17 +79,23 @@ class _MinFunc:
     return prod
 
 
-class OptimizeResult:
-  def __init__(self, solver):
-    self.x = solver.solution.primal
-    self.status = solver.status
-    self.success = (self.status == sleqp.Status.Optimal)
-    self.nit = solver.iterations
-    self.fun = solver.solution.func_val
+def _create_result(solver):
+  solution = solver.solution
 
-  def __getitem__(self, key):
-    return getattr(self, key)
+  result = OptimizeResult()
 
+  result["x"] = solution.primal
+  result["success"] = (solver.status == sleqp.Status.Optimal)
+  result["status"] = solver.status.value
+  result["message"] = solver.status.desc
+
+  result["fun"] = solution.func_val
+  result["jac"] = solution.func_grad
+  result["nit"] = solver.iterations
+
+  result["maxcv"] = solver.states[sleqp.SolverState.ScaledFeasRes]
+
+  return result
 
 def _add_solver_callback(solver, callback):
 
@@ -132,8 +139,8 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
         the algorithm execution is terminated. The signature is: ``callback(xk)``
         where ``xk`` is the current guess.
   :type callback: callable, optional
-  :return: An improved guess
-  :rtype: :class:`numpy.ndarray`, shape (n,)
+  :return: The optimization result
+  :rtype: :class:`scipy.optimize.Optimizeresult`
   """
   if not isinstance(args, tuple):
     args = (args,)
@@ -184,4 +191,4 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
 
   solver.solve(100, 3600)
 
-  return OptimizeResult(solver)
+  return _create_result(solver)
