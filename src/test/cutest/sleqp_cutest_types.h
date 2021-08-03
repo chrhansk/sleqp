@@ -1,5 +1,5 @@
-#ifndef SLEQP_CUTEST_DEFS_H
-#define SLEQP_CUTEST_DEFS_H
+#ifndef SLEQP_CUTEST_TYPES_H
+#define SLEQP_CUTEST_TYPES_H
 
 #include <cutest.h>
 
@@ -28,4 +28,4 @@ extern "C" {
 }
 #endif
 
-#endif /* SLEQP_CUTEST_DEFS_H */
+#endif /* SLEQP_CUTEST_TYPES_H */

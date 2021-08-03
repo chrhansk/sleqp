@@ -5,7 +5,7 @@
 #include "log.h"
 #include "mem.h"
 
-#include "sleqp_cutest_defs.h"
+#include "sleqp_cutest_types.h"
 
 typedef struct CUTestUnconsFuncData
 {

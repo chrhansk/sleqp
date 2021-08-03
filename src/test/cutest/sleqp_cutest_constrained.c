@@ -7,7 +7,7 @@
 #include "mem.h"
 #include "sparse/sparse_matrix.h"
 
-#include "sleqp_cutest_defs.h"
+#include "sleqp_cutest_types.h"
 
 typedef struct CUTestConsFuncData
 {

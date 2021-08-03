@@ -34,7 +34,7 @@ enable_language (Fortran)
 
 add_library(sleqp_cutest
   STATIC
-  sleqp_cutest_defs.c
+  sleqp_cutest_types.c
   sleqp_cutest_driver.c
   sleqp_cutest_data.c
   sleqp_cutest_constrained.c
@@ -166,6 +166,12 @@ find_package(GETOPT REQUIRED)
 add_custom_target(cutest_solvers)
 add_custom_target(cutest_libraries)
 
+set(WITH_OPENMP ${OpenMP_FOUND})
+
+configure_file(cutest_defs.h.in
+  "${CMAKE_CURRENT_BINARY_DIR}/cutest_defs.h"
+  @ONLY)
+
 foreach(s ${SIFPROBLEMS_EXT})
   string(REPLACE ".SIF" "" PROBLEM ${s})
 
@@ -223,7 +229,7 @@ foreach(s ${SIFPROBLEMS_EXT})
     sleqp_cutest_main.c)
 
   target_include_directories("${SOLVER_NAME}"
-    PRIVATE "${GETOPT_INCLUDE_DIR}")
+    PRIVATE "${GETOPT_INCLUDE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}")
 
   target_compile_definitions("${SOLVER_NAME}"
     PRIVATE
@@ -238,6 +244,11 @@ foreach(s ${SIFPROBLEMS_EXT})
     "cutest_${PROBLEM}"
     gfortran
     cutest)
+
+  if(OpenMP_FOUND)
+    target_link_libraries("${SOLVER_NAME}"
+      OpenMP::OpenMP_C)
+  endif()
 
   add_test(NAME "${SOLVER_NAME}" COMMAND "${SOLVER_NAME}")
 

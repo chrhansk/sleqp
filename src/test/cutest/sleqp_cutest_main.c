@@ -1,6 +1,12 @@
 #include <stdlib.h>
 #include <getopt.h>
 
+#include "cutest_defs.h"
+
+#ifdef WITH_OPENMP
+#include <omp.h>
+#endif
+
 #include "pub_log.h"
 #include "pub_types.h"
 
@@ -48,6 +54,10 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
     case 't':
       options->max_num_threads = atoi(optarg);
       sleqp_log_debug("Using up to %d threads", options->max_num_threads);
+
+#ifdef WITH_OPENMP
+      omp_set_num_threads(options->max_num_threads);
+#endif
       break;
 
     default:

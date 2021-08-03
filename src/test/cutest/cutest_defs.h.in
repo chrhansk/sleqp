@@ -1,0 +1,14 @@
+#ifndef CUTEST_DEFS_H
+#define CUTEST_DEFS_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#cmakedefine WITH_OPENMP
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* CUTEST_DEFS_H */

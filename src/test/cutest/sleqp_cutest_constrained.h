@@ -4,7 +4,7 @@
 #include "sleqp.h"
 
 #include "sleqp_cutest_data.h"
-#include "sleqp_cutest_defs.h"
+#include "sleqp_cutest_types.h"
 
 #ifdef __cplusplus
 extern "C" {

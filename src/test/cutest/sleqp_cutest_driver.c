@@ -7,7 +7,7 @@
 #include "mem.h"
 #include "options.h"
 
-#include "sleqp_cutest_defs.h"
+#include "sleqp_cutest_types.h"
 #include "sleqp_cutest_data.h"
 #include "sleqp_cutest_constrained.h"
 #include "sleqp_cutest_unconstrained.h"

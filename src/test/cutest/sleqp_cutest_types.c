@@ -1,4 +1,4 @@
-#include "sleqp_cutest_defs.h"
+#include "sleqp_cutest_types.h"
 
 const logical cutest_true = TRUE_;
 const logical cutest_false = FALSE_;
