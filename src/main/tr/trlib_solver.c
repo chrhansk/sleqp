@@ -419,7 +419,7 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                       data->v,
                                       scale));
 
-        assert(sleqp_sparse_matrix_valid(data->Q));
+        assert(sleqp_sparse_matrix_is_valid(data->Q));
       }
 
       break;
@@ -475,7 +475,7 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                       flt2));
 
         assert(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q));
-        assert(sleqp_sparse_matrix_valid(data->Q));
+        assert(sleqp_sparse_matrix_is_valid(data->Q));
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->g, data->gm));
 
@@ -609,7 +609,7 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
         {
           const int num_rows = sleqp_sparse_matrix_get_num_rows(data->Q);
           SLEQP_CALL(sleqp_sparse_matrix_resize(data->Q, num_rows, iter));
-          assert(sleqp_sparse_matrix_valid(data->Q));
+          assert(sleqp_sparse_matrix_is_valid(data->Q));
         }
 
         assert(iter == sleqp_sparse_matrix_get_num_cols(data->Q));
@@ -637,7 +637,7 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
         assert(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q));
 
-        assert(sleqp_sparse_matrix_valid(data->Q));
+        assert(sleqp_sparse_matrix_is_valid(data->Q));
 
       }
       break;
