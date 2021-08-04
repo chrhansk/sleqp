@@ -304,9 +304,9 @@ SLEQP_RETCODE create_transformed_var_lb(SleqpTransformation* transformation)
 
   for(int k = 0; k < num_converted_bounds; ++k)
   {
-    const int i = converted_bounds[k].constraint;
+    const int j = converted_bounds[k].variable;
 
-    transformation->dense_cache[i] = SLEQP_MAX(transformation->dense_cache[i],
+    transformation->dense_cache[j] = SLEQP_MAX(transformation->dense_cache[j],
                                                converted_bounds[k].var_lb);
   }
 
@@ -370,9 +370,9 @@ SLEQP_RETCODE create_transformed_var_ub(SleqpTransformation* transformation)
 
   for(int k = 0; k < num_converted_bounds; ++k)
   {
-    const int i = converted_bounds[k].constraint;
+    const int j = converted_bounds[k].variable;
 
-    transformation->dense_cache[i] = SLEQP_MIN(transformation->dense_cache[i],
+    transformation->dense_cache[j] = SLEQP_MIN(transformation->dense_cache[j],
                                                converted_bounds[k].var_ub);
   }
 
