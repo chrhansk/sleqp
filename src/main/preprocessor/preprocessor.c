@@ -131,7 +131,7 @@ SLEQP_RETCODE convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor
 
   SleqpBoundState bound_state = 0;
 
-  if(sleqp_is_finite(preprocessor->linear_lb[i]))
+  if(sleqp_is_finite(lb))
   {
     if(lb > preprocessor->var_lb[j])
     {
@@ -140,7 +140,7 @@ SLEQP_RETCODE convert_linear_constraint_to_bound(SleqpPreprocessor* preprocessor
     }
   }
 
-  if(sleqp_is_finite(preprocessor->linear_ub[i]))
+  if(sleqp_is_finite(ub))
   {
     if(ub < preprocessor->var_ub[j])
     {
