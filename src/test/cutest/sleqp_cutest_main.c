@@ -30,7 +30,7 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
 
     int c = getopt_long(argc,
                         argv,
-                        "lpn",
+                        "lpnt",
                         long_options,
                         &option_index);
     if (c == -1)

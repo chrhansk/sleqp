@@ -7,6 +7,7 @@
 #include "dual_estimation.h"
 #include "mem.h"
 #include "newton.h"
+#include "working_step.h"
 #include "util.h"
 
 #include "sparse/sparse_factorization_umfpack.h"
@@ -87,6 +88,7 @@ void newton_teardown()
 
 START_TEST(newton_wide_step)
 {
+  SleqpWorkingStep* working_step;
   SleqpNewtonData* newton_data;
 
   SleqpSparseVec* expected_step;
@@ -118,8 +120,11 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
+  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
+
   ASSERT_CALL(sleqp_newton_data_create(&newton_data,
                                        problem,
+                                       working_step,
                                        params,
                                        options));
 
@@ -140,6 +145,8 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_newton_data_release(&newton_data));
 
+  ASSERT_CALL(sleqp_working_step_release(&working_step));
+
   ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
 
   ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
@@ -152,6 +159,7 @@ END_TEST
 
 START_TEST(newton_small_step)
 {
+  SleqpWorkingStep* working_step;
   SleqpNewtonData* newton_data;
 
   SleqpSparseVec* expected_step;
@@ -183,8 +191,11 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
+  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
+
   ASSERT_CALL(sleqp_newton_data_create(&newton_data,
                                        problem,
+                                       working_step,
                                        params,
                                        options));
 
@@ -204,6 +215,8 @@ START_TEST(newton_small_step)
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
   ASSERT_CALL(sleqp_newton_data_release(&newton_data));
+
+  ASSERT_CALL(sleqp_working_step_release(&working_step));
 
   ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
 

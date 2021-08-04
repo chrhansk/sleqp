@@ -26,6 +26,7 @@
 #include "soc.h"
 #include "sr1.h"
 #include "timer.h"
+#include "working_step.h"
 #include "util.h"
 
 #include "lp/lpi.h"
@@ -91,6 +92,8 @@ struct SleqpSolver
   double cauchy_step_length;
 
   SleqpSparseVec* multipliers;
+
+  SleqpWorkingStep* working_step;
 
   SleqpNewtonData* newton_data;
 
@@ -521,8 +524,13 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->multipliers,
                                               num_constraints));
 
+  SLEQP_CALL(sleqp_working_step_create(&solver->working_step,
+                                       solver->problem,
+                                       params));
+
   SLEQP_CALL(sleqp_newton_data_create(&solver->newton_data,
                                       solver->problem,
+                                      solver->working_step,
                                       params,
                                       options));
 
@@ -2461,6 +2469,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->newton_step));
 
   SLEQP_CALL(sleqp_newton_data_release(&solver->newton_data));
+
+  SLEQP_CALL(sleqp_working_step_release(&solver->working_step));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->multipliers));
 

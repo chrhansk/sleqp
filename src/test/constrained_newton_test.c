@@ -11,6 +11,7 @@
 #include "problem.h"
 #include "util.h"
 #include "working_set.h"
+#include "working_step.h"
 
 static const int num_variables = 2;
 static const int num_constraints = 1;
@@ -239,6 +240,7 @@ START_TEST(newton_constrained_step)
   SleqpParams* params;
   SleqpOptions* options;
 
+  SleqpWorkingStep* working_step;
   SleqpNewtonData* newton_data;
 
   SleqpSparseFactorization* factorization;
@@ -268,8 +270,11 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
 
+  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
+
   ASSERT_CALL(sleqp_newton_data_create(&newton_data,
                                        problem,
+                                       working_step,
                                        params,
                                        options));
 
@@ -288,6 +293,8 @@ START_TEST(newton_constrained_step)
   ck_assert(sleqp_sparse_vector_eq(actual_step, expected_step, tolerance));
 
   ASSERT_CALL(sleqp_newton_data_release(&newton_data));
+
+    ASSERT_CALL(sleqp_working_step_release(&working_step));
 
   ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
 

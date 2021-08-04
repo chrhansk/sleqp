@@ -42,6 +42,7 @@ set(COMMON_SRC
   types.c
   util.c
   working_set.c
+  working_step.c
   lp/lpi.c)
 
 

@@ -12,6 +12,7 @@
 #include "problem.h"
 #include "iterate.h"
 #include "timer.h"
+#include "working_step.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,6 +23,7 @@ extern "C" {
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
                                          SleqpProblem* problem,
+                                         SleqpWorkingStep* step,
                                          SleqpParams* params,
                                          SleqpOptions* options);
 
