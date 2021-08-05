@@ -35,6 +35,7 @@ static const int num_constraints = 0;
 static const int num_residuals = 3;
 
 SleqpParams* params;
+SleqpOptions* options;
 SleqpFunc* rosenbrock_lsq_func;
 
 static SLEQP_RETCODE rosenbrock_lsq_set(SleqpFunc* func,
@@ -152,6 +153,8 @@ void rosenbrock_lsq_setup()
 
   ASSERT_CALL(sleqp_params_create(&params));
 
+  ASSERT_CALL(sleqp_options_create(&options));
+
   ASSERT_CALL(sleqp_malloc(&rosenbrock_func_data));
 
   ASSERT_CALL(sleqp_alloc_array(&rosenbrock_func_data->x, num_variables));
@@ -161,16 +164,13 @@ void rosenbrock_lsq_setup()
   rosenbrock_func_data->b = 100.;
 
   SleqpLSQCallbacks callbacks = {
-    .set_value            = rosenbrock_lsq_set,
-    .lsq_eval             = rosenbrock_lsq_eval,
-    .lsq_jac_forward      = rosenbrock_lsq_jac_forward,
-    .lsq_jac_adjoint      = rosenbrock_lsq_jac_adjoint,
-    .additional_func_val  = NULL,
-    .additional_func_grad = NULL,
-    .additional_cons_val  = NULL,
-    .additional_cons_jac  = NULL,
-    .additional_hess_prod = NULL,
-    .func_free            = NULL
+    .set_value       = rosenbrock_lsq_set,
+    .lsq_residuals   = rosenbrock_lsq_eval,
+    .lsq_jac_forward = rosenbrock_lsq_jac_forward,
+    .lsq_jac_adjoint = rosenbrock_lsq_jac_adjoint,
+    .cons_val        = NULL,
+    .cons_jac        = NULL,
+    .func_free       = NULL
   };
 
   ASSERT_CALL(sleqp_lsq_func_create(&rosenbrock_lsq_func,
@@ -193,6 +193,8 @@ void rosenbrock_lsq_teardown()
 
   sleqp_free(&rosenbrock_func_data);
 
+  ASSERT_CALL(sleqp_options_release(&options));
+
   ASSERT_CALL(sleqp_params_release(&params));
 
   rosenbrock_teardown();
@@ -200,21 +202,8 @@ void rosenbrock_lsq_teardown()
 
 START_TEST(test_unconstrained_solve)
 {
-  SleqpSparseVec* expected_solution;
-
-  SleqpOptions* options;
   SleqpProblem* problem;
   SleqpSolver* solver;
-
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution,
-                                         num_variables,
-                                         num_variables));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 1.));
-
-  ASSERT_CALL(sleqp_options_create(&options));
 
   ASSERT_CALL(sleqp_options_set_int(options,
                                     SLEQP_OPTION_INT_DERIV_CHECK,
@@ -248,18 +237,79 @@ START_TEST(test_unconstrained_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   rosenbrock_optimal,
+                                   1e-6));
+
+  ASSERT_CALL(sleqp_solver_release(&solver));
+
+  ASSERT_CALL(sleqp_problem_release(&problem));
+}
+END_TEST
+
+START_TEST(test_scaled_solve)
+{
+  SleqpProblem* problem;
+  SleqpScaling* scaling;
+  SleqpSolver* solver;
+
+  ASSERT_CALL(sleqp_scaling_create(&scaling,
+                                   num_variables,
+                                   num_constraints));
+
+  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling,
+                                            -2));
+
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling,
+                                           0,
+                                           -1));
+
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling,
+                                           1,
+                                           -1));
+
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
+
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          rosenbrock_lsq_func,
+                                          params,
+                                          rosenbrock_var_lb,
+                                          rosenbrock_var_ub,
+                                          rosenbrock_cons_lb,
+                                          rosenbrock_cons_ub));
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  options,
+                                  rosenbrock_initial,
+                                  scaling));
+
+  // 100 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
+
+  SleqpIterate* solution_iterate;
+
+  ASSERT_CALL(sleqp_solver_get_solution(solver,
+                                        &solution_iterate));
+
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+
+  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+
+  ck_assert(sleqp_sparse_vector_eq(actual_solution,
+                                   rosenbrock_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
+  ASSERT_CALL(sleqp_scaling_release(&scaling));
 }
 END_TEST
+
 
 Suite* lsq_test_suite()
 {
@@ -275,6 +325,8 @@ Suite* lsq_test_suite()
                             rosenbrock_lsq_teardown);
 
   tcase_add_test(tc_uncons, test_unconstrained_solve);
+  tcase_add_test(tc_uncons, test_scaled_solve);
+
   suite_add_tcase(suite, tc_uncons);
 
   return suite;

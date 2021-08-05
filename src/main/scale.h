@@ -18,6 +18,15 @@ extern "C" {
   double sleqp_scale_func_val(SleqpScaling* scaling,
                               double func_val);
 
+  SLEQP_RETCODE sleqp_scale_lsq_residuals(SleqpScaling* scaling,
+                                          SleqpSparseVec* lsq_residuals);
+
+  SLEQP_RETCODE sleqp_scale_lsq_forward_direction(SleqpScaling* scaling,
+                                                  SleqpSparseVec* forward_direction);
+
+  SLEQP_RETCODE sleqp_scale_lsq_adjoint_direction(SleqpScaling* scaling,
+                                                  SleqpSparseVec* adjoint_direction);
+
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_scale_func_grad(SleqpScaling* scaling,
                                       SleqpSparseVec* func_grad);

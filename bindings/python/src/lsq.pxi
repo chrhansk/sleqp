@@ -1,8 +1,8 @@
 #cython: language_level=3
 
-cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval(csleqp.SleqpFunc* func,
-                                         csleqp.SleqpSparseVec* residual,
-                                         void* func_data):
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals(csleqp.SleqpFunc* func,
+                                              csleqp.SleqpSparseVec* residual,
+                                              void* func_data):
   try:
     func_obj = (<object> func_data)
 
@@ -16,13 +16,13 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval(csleqp.SleqpFunc* func,
   return csleqp.SLEQP_OKAY
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_lsq_eval_nogil(csleqp.SleqpFunc* func,
-                                               csleqp.SleqpSparseVec* residual,
-                                               void* func_data) nogil:
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals_nogil(csleqp.SleqpFunc* func,
+                                                    csleqp.SleqpSparseVec* residual,
+                                                    void* func_data) nogil:
   with gil:
-    return sleqp_lsq_eval(func,
-                          residual,
-                          func_data)
+    return sleqp_lsq_residuals(func,
+                               residual,
+                               func_data)
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(csleqp.SleqpFunc* func,
@@ -96,25 +96,16 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint_nogil(csleqp.SleqpFunc* func,
 cdef set_lsq_func_callbacks(csleqp.SleqpLSQCallbacks* callbacks):
   if release_gil:
     callbacks.set_value            = &sleqp_func_set_nogil
-    callbacks.lsq_eval             = &sleqp_lsq_eval_nogil
+    callbacks.lsq_residuals        = &sleqp_lsq_residuals_nogil
     callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward_nogil
     callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint_nogil
-    callbacks.additional_func_val  = &sleqp_func_val_nogil
-    callbacks.additional_func_grad = &sleqp_func_grad_nogil
-    callbacks.additional_cons_val  = &sleqp_func_cons_val_nogil
-    callbacks.additional_cons_jac  = &sleqp_func_cons_jac_nogil
-    callbacks.additional_hess_prod = &sleqp_func_hess_product_nogil
-    callbacks.additional_hess_prod = &sleqp_func_hess_product_nogil
+    callbacks.cons_val             = &sleqp_func_cons_val_nogil
   else:
     callbacks.set_value            = &sleqp_func_set
-    callbacks.lsq_eval             = &sleqp_lsq_eval
+    callbacks.lsq_residuals        = &sleqp_lsq_residuals
     callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward
     callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint
-    callbacks.additional_func_val  = &sleqp_func_val
-    callbacks.additional_func_grad = &sleqp_func_grad
-    callbacks.additional_cons_val  = &sleqp_func_cons_val
-    callbacks.additional_cons_jac  = &sleqp_func_cons_jac
-    callbacks.additional_hess_prod = &sleqp_func_hess_product
+    callbacks.cons_val             = &sleqp_func_cons_val
 
   callbacks.func_free = &sleqp_func_free
 

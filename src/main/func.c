@@ -14,6 +14,7 @@ struct SleqpFunc
   SleqpFuncCallbacks callbacks;
 
   bool hessian_psd;
+  SLEQP_FUNC_TYPE type;
 
   int num_variables;
   int num_constraints;
@@ -53,6 +54,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   func->num_variables = num_variables;
   func->num_constraints = num_constraints;
   func->data = func_data;
+  func->type = SLEQP_FUNC_TYPE_REGULAR;
 
   SLEQP_CALL(sleqp_timer_create(&func->set_timer));
   SLEQP_CALL(sleqp_timer_create(&func->val_timer));
@@ -246,6 +248,19 @@ SLEQP_RETCODE sleqp_func_set_psd_hessian(SleqpFunc* func,
                                          bool value)
 {
   func->hessian_psd = value;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_FUNC_TYPE sleqp_func_get_type(SleqpFunc* func)
+{
+  return func->type;
+}
+
+SLEQP_RETCODE sleqp_func_set_type(SleqpFunc* func,
+                                  SLEQP_FUNC_TYPE func_type)
+{
+  func->type = func_type;
 
   return SLEQP_OKAY;
 }

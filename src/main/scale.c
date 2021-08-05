@@ -31,6 +31,25 @@ struct SleqpScaling
   double* max_cache;
 };
 
+static SLEQP_RETCODE apply_const_scaling(SleqpSparseVec* vec,
+                                         int value)
+{
+  for(int k = 0; k < vec->nnz; ++k)
+  {
+    vec->data[k] = ldexp(vec->data[k], value);
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE apply_const_unscaling(SleqpSparseVec* vec,
+                                           int value)
+{
+  SLEQP_CALL(apply_const_scaling(vec, (-1)*value));
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE apply_unscaling(SleqpSparseVec* vec,
                                      int* scales,
                                      int offset)
@@ -235,6 +254,24 @@ double sleqp_scale_func_val(SleqpScaling* scaling,
                             double func_val)
 {
   return ldexp(func_val, (-1) * scaling->func_weight);
+}
+
+SLEQP_RETCODE sleqp_scale_lsq_residuals(SleqpScaling* scaling,
+                                        SleqpSparseVec* lsq_residuals)
+{
+  return apply_const_unscaling(lsq_residuals, scaling->func_weight);
+}
+
+SLEQP_RETCODE sleqp_scale_lsq_forward_direction(SleqpScaling* scaling,
+                                                SleqpSparseVec* forward_direction)
+{
+  return apply_unscaling(forward_direction, scaling->var_weights, 0);
+}
+
+SLEQP_RETCODE sleqp_scale_lsq_adjoint_direction(SleqpScaling* scaling,
+                                                SleqpSparseVec* adjoint_direction)
+{
+    return apply_const_unscaling(adjoint_direction, scaling->func_weight);
 }
 
 SLEQP_RETCODE sleqp_scale_point(SleqpScaling* scaling,

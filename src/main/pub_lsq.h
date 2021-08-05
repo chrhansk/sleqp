@@ -16,9 +16,14 @@ extern "C" {
 #endif
 
   /**
+   * A least-squares function consists of a residual \f$ r : \mathbb{R}^n \to \mathbb{R}^k \f$
+   * defining the objective as \f$ 1/2 \|r(x)\|^2 \f$ subjecting to the usual constraints.
+   **/
+
+  /**
    * Evaluates the residual.
    * \f[
-   *    \nabla_{x} c(x) d
+   *    r(x)
    * \f]
    * This is useful when the constraints part is used to represent a least-squares residual.
    *
@@ -27,16 +32,15 @@ extern "C" {
    * @param[in,out] func_data         The function data
    *
    */
-  typedef SLEQP_RETCODE (*SLEQP_LSQ_EVAL)(SleqpFunc* func,
-                                          SleqpSparseVec* residual,
-                                          void* func_data);
+  typedef SLEQP_RETCODE (*SLEQP_LSQ_RESIDUALS)(SleqpFunc* func,
+                                               SleqpSparseVec* residual,
+                                               void* func_data);
 
   /**
-   * Evaluates the product of the Jacobian of the constraints part and a direction.
+   * Evaluates the product of the Jacobian of the residual with a direction \f$ d \in \mathbb{R}^n \f$.
    * \f[
-   *    \nabla_{x} c(x) d
+   *    J_r(x) d
    * \f]
-   * This is useful when the constraints part is used to represent a least-squares residual.
    *
    * @param[in]     func              The function
    * @param[in]     forward_direction The direction \f$ d \f$
@@ -50,11 +54,10 @@ extern "C" {
                                                  void* func_data);
 
   /**
-   * Evaluates the product of the transposed Jacobian of the constraints part and a direction.
+   * Evaluates the product of the Jacobian of the residual with a direction \f$ d \in \mathbb{R}^k \f$.
    * \f[
-   *    d^T \nabla_{x} c(x)
+   *    d^T J_r(x)
    * \f]
-   * This is useful when the constraints part is used to represent a least-squares residual.
    *
    * @param[in]     func              The function
    * @param[in]     adjoint_direction The direction \f$ d \f$
@@ -69,14 +72,11 @@ extern "C" {
 
   typedef struct {
     SLEQP_FUNC_SET set_value;
-    SLEQP_LSQ_EVAL lsq_eval;
+    SLEQP_LSQ_RESIDUALS lsq_residuals;
     SLEQP_LSQ_JAC_FORWARD lsq_jac_forward;
     SLEQP_LSQ_JAC_ADJOINT lsq_jac_adjoint;
-    SLEQP_FUNC_VAL additional_func_val;
-    SLEQP_FUNC_GRAD additional_func_grad;
-    SLEQP_FUNC_CONS_VAL additional_cons_val;
-    SLEQP_FUNC_CONS_JAC additional_cons_jac;
-    SLEQP_HESS_PROD additional_hess_prod;
+    SLEQP_FUNC_CONS_VAL cons_val;
+    SLEQP_FUNC_CONS_JAC cons_jac;
     SLEQP_FUNC_FREE func_free;
   } SleqpLSQCallbacks;
 
@@ -89,6 +89,26 @@ extern "C" {
                                       double levenberg_marquardt,
                                       SleqpParams* params,
                                       void* func_data);
+
+  SLEQP_EXPORT
+  double sleqp_lsq_func_get_levenberg_marquardt(SleqpFunc* func);
+
+  SLEQP_EXPORT
+  int sleqp_lsq_func_num_residuals(SleqpFunc* func);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_lsq_func_residuals(SleqpFunc* func,
+                                         SleqpSparseVec* residuals);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_lsq_func_jac_forward(SleqpFunc* func,
+                                           const SleqpSparseVec* forward_direction,
+                                           SleqpSparseVec* product);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_lsq_func_jac_adjoint(SleqpFunc* func,
+                                           const SleqpSparseVec* adjoint_direction,
+                                           SleqpSparseVec* product);
 
   /**
    * Sets the callbacks of this LSQ function to the specified ones

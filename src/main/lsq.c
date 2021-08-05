@@ -68,9 +68,9 @@ static SLEQP_RETCODE compute_lsq_residual(SleqpFunc* func,
   {
     SLEQP_CALL(sleqp_sparse_vector_clear(lsq_data->lsq_residual));
 
-    SLEQP_CALL(lsq_data->callbacks.lsq_eval(func,
-                                            lsq_data->lsq_residual,
-                                            lsq_data->func_data));
+    SLEQP_CALL(lsq_data->callbacks.lsq_residuals(func,
+                                                 lsq_data->lsq_residual,
+                                                 lsq_data->func_data));
 
     lsq_data->has_lsq_residual = true;
   }
@@ -84,20 +84,9 @@ static SLEQP_RETCODE lsq_func_val(SleqpFunc* func,
 {
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
 
-  *func_val = 0.;
-
-  if(lsq_data->callbacks.additional_func_val)
-  {
-    //lsq_data->func_data
-    //SLEQP_CALL(sleqp_func_val(lsq_data->func, &additional_func_val));
-    SLEQP_CALL(lsq_data->callbacks.additional_func_val(func,
-                                                       func_val,
-                                                       lsq_data->func_data));
-  }
-
   SLEQP_CALL(compute_lsq_residual(func, lsq_data));
 
-  *func_val += .5 * sleqp_sparse_vector_norm_sq(lsq_data->lsq_residual);
+  *func_val = .5 * sleqp_sparse_vector_norm_sq(lsq_data->lsq_residual);
 
   return SLEQP_OKAY;
 }
@@ -113,32 +102,10 @@ lsq_func_grad(SleqpFunc* func,
 
   SLEQP_CALL(compute_lsq_residual(func, lsq_data));
 
-  if(lsq_data->callbacks.additional_func_grad)
-  {
-    SLEQP_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
-                                                   lsq_data->lsq_residual,
-                                                   lsq_data->lsq_grad,
-                                                   lsq_data->func_data));
-
-    SLEQP_CALL(lsq_data->callbacks.additional_func_grad(func,
-                                                        lsq_data->grad_cache,
-                                                        lsq_data->func_data));
-
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(lsq_data->grad_cache,
-                                              lsq_data->lsq_grad,
-                                              1.,
-                                              1.,
-                                              lsq_data->zero_eps,
-                                              func_grad));
-
-  }
-  else
-  {
-    SLEQP_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
-                                                   lsq_data->lsq_residual,
-                                                   func_grad,
-                                                   lsq_data->func_data));
-  }
+  SLEQP_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
+                                                 lsq_data->lsq_residual,
+                                                 func_grad,
+                                                 lsq_data->func_data));
 
   return SLEQP_OKAY;
 }
@@ -153,12 +120,12 @@ lsq_func_cons_val(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
 
-  if(lsq_data->callbacks.additional_cons_val)
+  if(lsq_data->callbacks.cons_val)
   {
-    SLEQP_CALL(lsq_data->callbacks.additional_cons_val(func,
-                                                       cons_indices,
-                                                       cons_val,
-                                                       lsq_data->func_data));
+    SLEQP_CALL(lsq_data->callbacks.cons_val(func,
+                                            cons_indices,
+                                            cons_val,
+                                            lsq_data->func_data));
   }
 
   return SLEQP_OKAY;
@@ -174,12 +141,12 @@ lsq_func_cons_jac(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
 
-  if(lsq_data->callbacks.additional_cons_jac)
+  if(lsq_data->callbacks.cons_jac)
   {
-    SLEQP_CALL(lsq_data->callbacks.additional_cons_jac(func,
-                                                       cons_indices,
-                                                       cons_jac,
-                                                       lsq_data->func_data));
+    SLEQP_CALL(lsq_data->callbacks.cons_jac(func,
+                                            cons_indices,
+                                            cons_jac,
+                                            lsq_data->func_data));
   }
 
   return SLEQP_OKAY;
@@ -209,55 +176,23 @@ static SLEQP_RETCODE lsq_func_hess_product(SleqpFunc* func,
 
   if(func_dual)
   {
-    if(lsq_data->callbacks.additional_hess_prod)
-    {
-      SLEQP_CALL(lsq_data->callbacks.additional_hess_prod(func,
-                                                          func_dual,
-                                                          direction,
-                                                          cons_duals,
-                                                          lsq_data->hess_prod,
-                                                          lsq_data->func_data));
+    SLEQP_CALL(lsq_data->callbacks.lsq_jac_forward(func,
+                                                   direction,
+                                                   lsq_data->lsq_forward,
+                                                   lsq_data->func_data));
 
-      SLEQP_CALL(lsq_data->callbacks.lsq_jac_forward(func,
-                                                     direction,
-                                                     lsq_data->lsq_forward,
-                                                     lsq_data->func_data));
+    SLEQP_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
+                                                   lsq_data->lsq_forward,
+                                                   lsq_data->lsq_hess_prod,
+                                                   lsq_data->func_data));
 
-      SLEQP_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
-                                                     lsq_data->lsq_forward,
-                                                     lsq_data->lsq_hess_prod,
-                                                     lsq_data->func_data));
-
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(lsq_data->hess_prod,
-                                                lsq_data->lsq_hess_prod,
-                                                1.,
-                                                (*func_dual),
-                                                lsq_data->zero_eps,
-                                                initial_product_dest));
-    }
-    else
-    {
-      SLEQP_CALL(lsq_data->callbacks.lsq_jac_forward(func,
-                                                     direction,
-                                                     lsq_data->lsq_forward,
-                                                     lsq_data->func_data));
-
-      SLEQP_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
-                                                     lsq_data->lsq_forward,
-                                                     initial_product_dest,
-                                                     lsq_data->func_data));
-    }
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(lsq_data->hess_prod,
+                                              lsq_data->lsq_hess_prod,
+                                              1.,
+                                              (*func_dual),
+                                              lsq_data->zero_eps,
+                                              initial_product_dest));
   }
-  else if(lsq_data->callbacks.additional_hess_prod)
-  {
-    SLEQP_CALL(lsq_data->callbacks.additional_hess_prod(func,
-                                                        func_dual,
-                                                        direction,
-                                                        cons_duals,
-                                                        initial_product_dest,
-                                                        lsq_data->func_data));
-  }
-
 
   if(additional_term)
   {
@@ -373,19 +308,86 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
   SleqpFunc* func = *fstar;
 
   SLEQP_CALL(sleqp_func_set_psd_hessian(func, true));
+  SLEQP_CALL(sleqp_func_set_type(func, SLEQP_FUNC_TYPE_LSQ));
 
   return SLEQP_OKAY;
+}
+
+double sleqp_lsq_func_get_levenberg_marquardt(SleqpFunc* func)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  return lsq_data->levenberg_marquardt;
+}
+
+int sleqp_lsq_func_num_residuals(SleqpFunc* func)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  return lsq_data->num_residuals;
+}
+
+SLEQP_RETCODE sleqp_lsq_func_residuals(SleqpFunc* func,
+                                       SleqpSparseVec* residuals)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  return lsq_data->callbacks.lsq_residuals(func,
+                                           residuals,
+                                           lsq_data->func_data);
+
+}
+
+SLEQP_RETCODE sleqp_lsq_func_jac_forward(SleqpFunc* func,
+                                         const SleqpSparseVec* forward_direction,
+                                         SleqpSparseVec* product)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  return lsq_data->callbacks.lsq_jac_forward(func,
+                                             forward_direction,
+                                             product,
+                                             lsq_data->func_data);
+}
+
+SLEQP_RETCODE sleqp_lsq_func_jac_adjoint(SleqpFunc* func,
+                                         const SleqpSparseVec* adjoint_direction,
+                                         SleqpSparseVec* product)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  return lsq_data->callbacks.lsq_jac_adjoint(func,
+                                             adjoint_direction,
+                                             product,
+                                             lsq_data->func_data);
 }
 
 SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
                                            SleqpLSQCallbacks* callbacks)
 {
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
   void* func_data = sleqp_func_get_data(func);
-
-  if(!func_data)
-  {
-    return SLEQP_OKAY;
-  }
+  assert(func_data);
 
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
 

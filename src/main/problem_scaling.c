@@ -3,6 +3,7 @@
 #include "cmp.h"
 #include "func.h"
 #include "log.h"
+#include "lsq.h"
 #include "math_error.h"
 #include "mem.h"
 #include "sparse/sparse_matrix.h"
@@ -23,17 +24,18 @@ struct SleqpProblemScaling
   SleqpSparseVec* unscaled_value;
 
   SleqpSparseVec* scaled_direction;
+
   SleqpSparseVec* scaled_cons_duals;
 };
 
-static SLEQP_RETCODE
-scaled_func_set_value(SleqpFunc* func,
-                      SleqpSparseVec* scaled_value,
-                      SLEQP_VALUE_REASON reason,
-                      int* func_grad_nnz,
-                      int* cons_val_nnz,
-                      int* cons_jac_nnz,
-                      void* func_data)
+
+static SLEQP_RETCODE scaled_func_set_value(SleqpFunc* func,
+                                           SleqpSparseVec* scaled_value,
+                                           SLEQP_VALUE_REASON reason,
+                                           int* func_grad_nnz,
+                                           int* cons_val_nnz,
+                                           int* cons_jac_nnz,
+                                           void* func_data)
 {
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
   SleqpScaling* scaling = problem_scaling->scaling;
@@ -66,6 +68,7 @@ scaled_func_set_value(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+static
 SLEQP_RETCODE scaled_func_val(SleqpFunc* func,
                               double* func_val,
                               void* func_data)
@@ -80,6 +83,7 @@ SLEQP_RETCODE scaled_func_val(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+static
 SLEQP_RETCODE scaled_func_grad(SleqpFunc* func,
                                SleqpSparseVec* func_grad,
                                void* func_data)
@@ -94,6 +98,7 @@ SLEQP_RETCODE scaled_func_grad(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+static
 SLEQP_RETCODE scaled_func_cons_val(SleqpFunc* func,
                                    const SleqpSparseVec* cons_indices,
                                    SleqpSparseVec* cons_val,
@@ -109,6 +114,7 @@ SLEQP_RETCODE scaled_func_cons_val(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+static
 SLEQP_RETCODE scaled_func_cons_jac(SleqpFunc* func,
                                    const SleqpSparseVec* cons_indices,
                                    SleqpSparseMatrix* cons_jac,
@@ -124,13 +130,13 @@ SLEQP_RETCODE scaled_func_cons_jac(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE
-scaled_func_hess_prod(SleqpFunc* func,
-                      const double* func_dual,
-                      const SleqpSparseVec* direction,
-                      const SleqpSparseVec* cons_duals,
-                      SleqpSparseVec* product,
-                      void* func_data)
+static
+SLEQP_RETCODE scaled_func_hess_prod(SleqpFunc* func,
+                                    const double* func_dual,
+                                    const SleqpSparseVec* direction,
+                                    const SleqpSparseVec* cons_duals,
+                                    SleqpSparseVec* product,
+                                    void* func_data)
 {
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
   SleqpScaling* scaling = problem_scaling->scaling;
@@ -175,6 +181,142 @@ scaled_func_hess_prod(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+static
+SLEQP_RETCODE scaled_lsq_func_residuals(SleqpFunc* func,
+                                        SleqpSparseVec* residuals,
+                                        void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
+  SleqpScaling* scaling = problem_scaling->scaling;
+
+  SLEQP_CALL(sleqp_lsq_func_residuals(problem_scaling->func,
+                                      residuals));
+
+  SLEQP_CALL(sleqp_scale_lsq_residuals(scaling,
+                                       residuals));
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE scaled_lsq_func_jac_forward(SleqpFunc* func,
+                                          const SleqpSparseVec* forward_direction,
+                                          SleqpSparseVec* product,
+                                          void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
+  SleqpScaling* scaling = problem_scaling->scaling;
+
+  SleqpSparseVec* scaled_direction = problem_scaling->scaled_direction;
+
+  SLEQP_CALL(sleqp_sparse_vector_resize(scaled_direction,
+                                        forward_direction->dim));
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(forward_direction, scaled_direction));
+
+  SLEQP_CALL(sleqp_scale_lsq_forward_direction(scaling, scaled_direction));
+
+  SLEQP_CALL(sleqp_lsq_func_jac_forward(problem_scaling->func,
+                                        forward_direction,
+                                        product));
+
+  SLEQP_CALL(sleqp_scale_lsq_adjoint_direction(scaling, product));
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE scaled_lsq_func_jac_adjoint(SleqpFunc* func,
+                                          const SleqpSparseVec* adjoint_direction,
+                                          SleqpSparseVec* product,
+                                          void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*) func_data;
+  SleqpScaling* scaling = problem_scaling->scaling;
+
+  SleqpSparseVec* scaled_direction = problem_scaling->scaled_direction;
+
+  SLEQP_CALL(sleqp_sparse_vector_resize(scaled_direction,
+                                        adjoint_direction->dim));
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(adjoint_direction, scaled_direction));
+
+  SLEQP_CALL(sleqp_scale_lsq_adjoint_direction(scaling, scaled_direction));
+
+  SLEQP_CALL(sleqp_lsq_func_jac_adjoint(problem_scaling->func,
+                                        scaled_direction,
+                                        product));
+
+  SLEQP_CALL(sleqp_scale_lsq_forward_direction(scaling, product));
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE func_create(SleqpProblemScaling* problem_scaling)
+{
+  SleqpProblem* problem = problem_scaling->problem;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  SleqpFuncCallbacks callbacks = {
+    .set_value = scaled_func_set_value,
+    .func_val = scaled_func_val,
+    .func_grad = scaled_func_grad,
+    .cons_val = scaled_func_cons_val,
+    .cons_jac = scaled_func_cons_jac,
+    .hess_prod = scaled_func_hess_prod,
+    .func_free = NULL
+  };
+
+  SLEQP_CALL(sleqp_func_create(&(problem_scaling->scaled_func),
+                               &callbacks,
+                               num_variables,
+                               num_constraints,
+                               problem_scaling));
+
+  SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(problem_scaling->func),
+                                       sleqp_func_get_hess_struct(problem_scaling->scaled_func)));
+
+  SLEQP_CALL(sleqp_func_set_psd_hessian(problem_scaling->scaled_func,
+                                        sleqp_func_has_psd_hessian(problem_scaling->func)));
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE lsq_func_create(SleqpProblemScaling* problem_scaling)
+{
+  SleqpProblem* problem = problem_scaling->problem;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  SleqpLSQCallbacks callbacks = {
+    .set_value = scaled_func_set_value,
+    .lsq_residuals = scaled_lsq_func_residuals,
+    .lsq_jac_forward = scaled_lsq_func_jac_forward,
+    .lsq_jac_adjoint = scaled_lsq_func_jac_adjoint,
+    .cons_val = scaled_func_cons_val,
+    .cons_jac = scaled_func_cons_jac,
+    .func_free = NULL
+  };
+
+  const double levenberg_marquardt = sleqp_lsq_func_get_levenberg_marquardt(problem_scaling->func);
+  const int num_residuals = sleqp_lsq_func_num_residuals(problem_scaling->func);
+
+  SLEQP_CALL(sleqp_lsq_func_create(&(problem_scaling->scaled_func),
+                                   &callbacks,
+                                   num_variables,
+                                   num_constraints,
+                                   num_residuals,
+                                   levenberg_marquardt,
+                                   problem_scaling->params,
+                                   problem_scaling));
+
+  return SLEQP_OKAY;
+}
 
 SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
                                            SleqpScaling* scaling,
@@ -220,24 +362,15 @@ SLEQP_RETCODE sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   SLEQP_CALL(sleqp_scaling_capture(problem_scaling->scaling));
 
-  SleqpFuncCallbacks callbacks = {
-    .set_value = scaled_func_set_value,
-    .func_val = scaled_func_val,
-    .func_grad = scaled_func_grad,
-    .cons_val = scaled_func_cons_val,
-    .cons_jac = scaled_func_cons_jac,
-    .hess_prod = scaled_func_hess_prod,
-    .func_free = NULL
-  };
-
-  SLEQP_CALL(sleqp_func_create(&(problem_scaling->scaled_func),
-                               &callbacks,
-                               num_variables,
-                               num_constraints,
-                               problem_scaling));
-
-  SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(problem_scaling->func),
-                                       sleqp_func_get_hess_struct(problem_scaling->scaled_func)));
+  switch(sleqp_func_get_type(problem_scaling->func))
+  {
+  case SLEQP_FUNC_TYPE_REGULAR:
+    SLEQP_CALL(func_create(problem_scaling));
+    break;
+  case SLEQP_FUNC_TYPE_LSQ:
+    SLEQP_CALL(lsq_func_create(problem_scaling));
+    break;
+  }
 
   SLEQP_CALL(sleqp_problem_create(&(problem_scaling->scaled_problem),
                                   problem_scaling->scaled_func,

@@ -396,9 +396,9 @@ cdef extern from "sleqp.h":
 
   # LSQ
 
-  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_EVAL)(SleqpFunc* func,
-                                           SleqpSparseVec* residual,
-                                           void* func_data)
+  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_RESIDUALS)(SleqpFunc* func,
+                                                SleqpSparseVec* residual,
+                                                void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(SleqpFunc* func,
                                                   SleqpSparseVec* forward_direction,
@@ -411,16 +411,13 @@ cdef extern from "sleqp.h":
                                                   void* func_data)
 
   ctypedef struct SleqpLSQCallbacks:
-    SLEQP_FUNC_SET set_value,
-    SLEQP_LSQ_EVAL lsq_eval,
+    SLEQP_FUNC_SET        set_value,
+    SLEQP_LSQ_RESIDUALS   lsq_residuals,
     SLEQP_LSQ_JAC_FORWARD lsq_jac_forward,
     SLEQP_LSQ_JAC_ADJOINT lsq_jac_adjoint,
-    SLEQP_FUNC_VAL additional_func_val,
-    SLEQP_FUNC_GRAD additional_func_grad,
-    SLEQP_FUNC_CONS_VAL additional_cons_val,
-    SLEQP_FUNC_CONS_JAC additional_cons_jac,
-    SLEQP_HESS_PROD additional_hess_prod,
-    SLEQP_FUNC_FREE func_free
+    SLEQP_FUNC_CONS_VAL   cons_val,
+    SLEQP_FUNC_CONS_JAC   cons_jac,
+    SLEQP_FUNC_FREE       func_free
 
   SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                       SleqpLSQCallbacks* callbacks,

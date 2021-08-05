@@ -26,6 +26,11 @@ extern "C" {
     SLEQP_VALUE_REASON_REJECTED_ITERATE,
   } SLEQP_VALUE_REASON;
 
+  typedef enum {
+    SLEQP_FUNC_TYPE_REGULAR,
+    SLEQP_FUNC_TYPE_LSQ
+  } SLEQP_FUNC_TYPE;
+
   /**
    * Sets the current input vector
    *

@@ -72,6 +72,11 @@ extern "C" {
   SLEQP_RETCODE sleqp_func_set_psd_hessian(SleqpFunc* func,
                                            bool value);
 
+  SLEQP_FUNC_TYPE sleqp_func_get_type(SleqpFunc* func);
+
+  SLEQP_RETCODE sleqp_func_set_type(SleqpFunc* func,
+                                    SLEQP_FUNC_TYPE func_type);
+
   /**
    * Returns the setting timer of this function. This timer records
    * the setting of function values.
