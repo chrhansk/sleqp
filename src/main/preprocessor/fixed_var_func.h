@@ -7,6 +7,7 @@
  **/
 
 #include "func.h"
+#include "params.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +18,13 @@ extern "C" {
                                             int num_fixed,
                                             const int* fixed_indices,
                                             const double* fixed_values);
+
+  SLEQP_RETCODE sleqp_fixed_var_lsq_func_create(SleqpFunc** star,
+                                                SleqpFunc* func,
+                                                SleqpParams* params,
+                                                int num_fixed,
+                                                const int* fixed_indices,
+                                                const double* fixed_values);
 
 #ifdef __cplusplus
 }

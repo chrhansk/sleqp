@@ -171,11 +171,24 @@ SLEQP_RETCODE create_transformed_func(SleqpTransformation* transformation,
   }
   else
   {
-    SLEQP_CALL(sleqp_fixed_var_func_create(star,
-                                           func,
-                                           num_fixed_vars,
-                                           fixed_var_indices,
-                                           fixed_var_values));
+    switch(sleqp_func_get_type(func))
+    {
+    case SLEQP_FUNC_TYPE_REGULAR:
+      SLEQP_CALL(sleqp_fixed_var_func_create(star,
+                                             func,
+                                             num_fixed_vars,
+                                             fixed_var_indices,
+                                             fixed_var_values));
+      break;
+    case SLEQP_FUNC_TYPE_LSQ:
+      SLEQP_CALL(sleqp_fixed_var_lsq_func_create(star,
+                                                 func,
+                                                 transformation->params,
+                                                 num_fixed_vars,
+                                                 fixed_var_indices,
+                                                 fixed_var_values));
+      break;
+    }
   }
 
   assert(sleqp_func_get_num_variables(*star) == sleqp_problem_num_variables(problem) - num_fixed_vars);

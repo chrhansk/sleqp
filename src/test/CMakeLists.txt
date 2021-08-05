@@ -11,7 +11,8 @@ set(TEST_COMMON_SRC
   test_common.c
   quadcons_fixture.c
   quadfunc_fixture.c
-  rosenbrock_fixture.c)
+  rosenbrock_fixture.c
+  rosenbrock_lsq_fixture.c)
 
 add_library(test_common
   EXCLUDE_FROM_ALL

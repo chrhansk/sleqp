@@ -8,18 +8,28 @@
 
 #include "test_common.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-extern SleqpFunc* rosenbrock_func;
+  extern const int rosenbrock_num_variables;
+  extern const int rosenbrock_num_constraints;
 
-extern SleqpSparseVec* rosenbrock_var_lb;
-extern SleqpSparseVec* rosenbrock_var_ub;
-extern SleqpSparseVec* rosenbrock_cons_lb;
-extern SleqpSparseVec* rosenbrock_cons_ub;
-extern SleqpSparseVec* rosenbrock_initial;
-extern SleqpSparseVec* rosenbrock_optimal;
+  extern SleqpFunc* rosenbrock_func;
 
-void rosenbrock_setup();
+  extern SleqpSparseVec* rosenbrock_var_lb;
+  extern SleqpSparseVec* rosenbrock_var_ub;
+  extern SleqpSparseVec* rosenbrock_cons_lb;
+  extern SleqpSparseVec* rosenbrock_cons_ub;
+  extern SleqpSparseVec* rosenbrock_initial;
+  extern SleqpSparseVec* rosenbrock_optimal;
 
-void rosenbrock_teardown();
+  void rosenbrock_setup();
+
+  void rosenbrock_teardown();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ROSENBROCK_FIXTURE_H */

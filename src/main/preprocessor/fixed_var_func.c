@@ -2,6 +2,7 @@
 
 #include "fail.h"
 #include "cmp.h"
+#include "lsq.h"
 #include "mem.h"
 
 #include "preprocessor/preprocessing.h"
@@ -222,21 +223,76 @@ SLEQP_RETCODE create_fixed_var_hess_struct(const SleqpHessianStruct* source,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_fixed_var_func_create(SleqpFunc** star,
-                                          SleqpFunc* func,
-                                          int num_fixed,
-                                          const int* fixed_indices,
-                                          const double* fixed_values)
+static
+SLEQP_RETCODE fixed_lsq_func_residuals(SleqpFunc* func,
+                                       SleqpSparseVec* residuals,
+                                       void* data)
 {
-  FixedVarFuncData* func_data;
+  FixedVarFuncData* func_data = (FixedVarFuncData*) data;
 
+  return sleqp_lsq_func_residuals(func_data->func, residuals);
+}
+
+static
+SLEQP_RETCODE fixed_lsq_func_jac_forward(SleqpFunc* func,
+                                         const SleqpSparseVec* forward_direction,
+                                         SleqpSparseVec* product,
+                                         void* data)
+{
+  FixedVarFuncData* func_data = (FixedVarFuncData*) data;
+
+  SleqpSparseVec* reduced_direction = func_data->product;
+
+  SLEQP_CALL(sleqp_preprocessing_remove_entries(forward_direction,
+                                                reduced_direction,
+                                                func_data->num_fixed,
+                                                func_data->fixed_indices));
+
+  SLEQP_CALL(sleqp_lsq_func_jac_forward(func_data->func,
+                                        reduced_direction,
+                                        product));
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE fixed_lsq_func_jac_adjoint(SleqpFunc* func,
+                                         const SleqpSparseVec* adjoint_direction,
+                                         SleqpSparseVec* product,
+                                         void* data)
+{
+  FixedVarFuncData* func_data = (FixedVarFuncData*) data;
+
+  SleqpSparseVec* full_product = func_data->direction;
+
+  SLEQP_CALL(sleqp_lsq_func_jac_adjoint(func_data->func,
+                                        adjoint_direction,
+                                        full_product));
+
+  SLEQP_CALL(sleqp_preprocessing_remove_entries(full_product,
+                                                product,
+                                                func_data->num_fixed,
+                                                func_data->fixed_indices));
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE create_fixed_var_func_data(FixedVarFuncData** star,
+                                         SleqpFunc* func,
+                                         int num_fixed,
+                                         const int* fixed_indices,
+                                         const double* fixed_values)
+{
   const int num_variables = sleqp_func_get_num_variables(func);
   const int num_constraints = sleqp_func_get_num_constraints(func);
 
   assert(num_fixed >= 0);
   assert(num_fixed <= num_variables);
 
-  SLEQP_CALL(sleqp_malloc(&func_data));
+  SLEQP_CALL(sleqp_malloc(star));
+
+  FixedVarFuncData* func_data = *star;
 
   *func_data = (FixedVarFuncData) {0};
 
@@ -293,12 +349,37 @@ SLEQP_RETCODE sleqp_fixed_var_func_create(SleqpFunc** star,
                                         num_variables,
                                         0));
 
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_fixed_var_func_create(SleqpFunc** star,
+                                          SleqpFunc* func,
+                                          int num_fixed,
+                                          const int* fixed_indices,
+                                          const double* fixed_values)
+{
+  FixedVarFuncData* func_data;
+
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_REGULAR);
+
+  const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_constraints = sleqp_func_get_num_constraints(func);
+
+  assert(num_fixed >= 0);
+  assert(num_fixed <= num_variables);
+
+  SLEQP_CALL(create_fixed_var_func_data(&func_data,
+                                        func,
+                                        num_fixed,
+                                        fixed_indices,
+                                        fixed_values));
+
   SleqpFuncCallbacks callbacks = {
     .set_value = fixed_var_func_set,
-    .func_val = fixed_var_func_val,
+    .func_val  = fixed_var_func_val,
     .func_grad = fixed_var_func_grad,
-    .cons_val = fixed_var_cons_val,
-    .cons_jac = fixed_var_cons_jac,
+    .cons_val  = fixed_var_cons_val,
+    .cons_jac  = fixed_var_cons_jac,
     .hess_prod = fixed_var_hess_prod,
     .func_free = fixed_func_free
   };
@@ -318,6 +399,54 @@ SLEQP_RETCODE sleqp_fixed_var_func_create(SleqpFunc** star,
                                           sleqp_func_get_hess_struct(fixed_var_func),
                                           num_fixed,
                                           fixed_indices));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_fixed_var_lsq_func_create(SleqpFunc** star,
+                                              SleqpFunc* func,
+                                              SleqpParams* params,
+                                              int num_fixed,
+                                              const int* fixed_indices,
+                                              const double* fixed_values)
+{
+  FixedVarFuncData* func_data;
+
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+
+  const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_constraints = sleqp_func_get_num_constraints(func);
+
+  assert(num_fixed >= 0);
+  assert(num_fixed <= num_variables);
+
+  SLEQP_CALL(create_fixed_var_func_data(&func_data,
+                                        func,
+                                        num_fixed,
+                                        fixed_indices,
+                                        fixed_values));
+
+  SleqpLSQCallbacks callbacks = {
+    .set_value       = fixed_var_func_set,
+    .lsq_residuals   = fixed_lsq_func_residuals,
+    .lsq_jac_forward = fixed_lsq_func_jac_forward,
+    .lsq_jac_adjoint = fixed_lsq_func_jac_adjoint,
+    .cons_val        = fixed_var_cons_val,
+    .cons_jac        = fixed_var_cons_jac,
+    .func_free       = fixed_func_free
+  };
+
+  const double levenberg_marquardt = sleqp_lsq_func_get_levenberg_marquardt(func);
+  const int num_residuals = sleqp_lsq_func_num_residuals(func);
+
+  SLEQP_CALL(sleqp_lsq_func_create(star,
+                                   &callbacks,
+                                   num_variables - num_fixed,
+                                   num_constraints,
+                                   num_residuals,
+                                   levenberg_marquardt,
+                                   params,
+                                   (void*) func_data));
 
   return SLEQP_OKAY;
 }
