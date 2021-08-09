@@ -139,10 +139,10 @@ SLEQP_RETCODE sleqp_transformation_convert_primal(SleqpTransformation* transform
                                                        &fixed_var_indices,
                                                        &fixed_var_values));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(source,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(source,
                                                 target,
-                                                num_fixed_vars,
-                                                fixed_var_indices));
+                                                fixed_var_indices,
+                                                num_fixed_vars));
 
   return SLEQP_OKAY;
 }
@@ -328,10 +328,10 @@ SLEQP_RETCODE create_transformed_var_lb(SleqpTransformation* transformation)
                                           num_variables,
                                           zero_eps));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(transformation->sparse_cache,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(transformation->sparse_cache,
                                                 transformation->transformed_var_lb,
-                                                num_fixed_vars,
-                                                fixed_var_indices));
+                                                fixed_var_indices,
+                                                num_fixed_vars));
 
   return SLEQP_OKAY;
 }
@@ -394,10 +394,10 @@ SLEQP_RETCODE create_transformed_var_ub(SleqpTransformation* transformation)
                                           num_variables,
                                           zero_eps));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(transformation->sparse_cache,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(transformation->sparse_cache,
                                                 transformation->transformed_var_ub,
-                                                num_fixed_vars,
-                                                fixed_var_indices));
+                                                fixed_var_indices,
+                                                num_fixed_vars));
 
   return SLEQP_OKAY;
 }
@@ -503,22 +503,22 @@ SLEQP_RETCODE transform_linear_constraints(SleqpTransformation* transformation)
                                                                   &num_removed_cons,
                                                                   &removed_cons_indices));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(redundant_linear_lb,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(redundant_linear_lb,
                                                 transformation->transformed_linear_lb,
-                                                num_removed_cons,
-                                                removed_cons_indices));
+                                                removed_cons_indices,
+                                                num_removed_cons));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(redundant_linear_ub,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(redundant_linear_ub,
                                                 transformation->transformed_linear_ub,
-                                                num_removed_cons,
-                                                removed_cons_indices));
+                                                removed_cons_indices,
+                                                num_removed_cons));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_matrix_entries(sleqp_problem_linear_coeffs(problem),
-                                                       transformation->transformed_linear_coeffs,
-                                                       num_fixed_vars,
-                                                       fixed_var_indices,
-                                                       num_removed_cons,
-                                                       removed_cons_indices));
+  SLEQP_CALL(sleqp_sparse_matrix_remove_entries(sleqp_problem_linear_coeffs(problem),
+                                                transformation->transformed_linear_coeffs,
+                                                fixed_var_indices,
+                                                num_fixed_vars,
+                                                removed_cons_indices,
+                                                num_removed_cons));
 
   return SLEQP_OKAY;
 }

@@ -454,6 +454,179 @@ bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
   return true;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_remove_rows(const SleqpSparseMatrix* source,
+                                              SleqpSparseMatrix* target,
+                                              const int* row_indices,
+                                              int num_row_entries)
+{
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
+                                         sleqp_sparse_matrix_get_nnz(source)));
+
+  SLEQP_CALL(sleqp_sparse_matrix_clear(target));
+
+  assert(sleqp_sparse_matrix_get_num_cols(source) ==
+         sleqp_sparse_matrix_get_num_cols(target));
+
+  assert(sleqp_sparse_matrix_get_num_rows(source) ==
+         sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
+
+  assert(row_indices || (num_row_entries == 0));
+
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
+
+  double* source_data = sleqp_sparse_matrix_get_data(source);
+  int* source_rows = sleqp_sparse_matrix_get_rows(source);
+  int* source_cols = sleqp_sparse_matrix_get_cols(source);
+
+  for(int col = 0; col < num_cols; ++col)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(target,
+                                               col));
+
+    int row_offset = 0;
+
+    for(int k = source_cols[col]; k < source_cols[col + 1]; ++k)
+    {
+      const int row = source_rows[k];
+
+      while(row_offset < num_row_entries && row_indices[row_offset] < row)
+      {
+        ++row_offset;
+      }
+
+      if(row_offset < num_row_entries && row_indices[row_offset] == row)
+      {
+        continue;
+      }
+
+      SLEQP_CALL(sleqp_sparse_matrix_push(target,
+                                          row - row_offset,
+                                          col,
+                                          source_data[k]));
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source,
+                                                 SleqpSparseMatrix* target,
+                                                 const int* col_indices,
+                                                 int num_col_entries,
+                                                 const int* row_indices,
+                                                 int num_row_entries)
+{
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
+                                         sleqp_sparse_matrix_get_nnz(source)));
+
+  SLEQP_CALL(sleqp_sparse_matrix_clear(target));
+
+  assert(sleqp_sparse_matrix_get_num_cols(source) ==
+         sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
+
+  assert(sleqp_sparse_matrix_get_num_rows(source) ==
+         sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
+
+  assert(row_indices || (num_row_entries == 0));
+  assert(col_indices || (num_col_entries == 0));
+
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
+
+  double* source_data = sleqp_sparse_matrix_get_data(source);
+  int* source_rows = sleqp_sparse_matrix_get_rows(source);
+  int* source_cols = sleqp_sparse_matrix_get_cols(source);
+
+  int col_offset = 0;
+
+  for(int col = 0; col < num_cols; ++col)
+  {
+    if(col_offset < num_col_entries && col_indices[col_offset] <= col)
+    {
+      ++col_offset;
+      continue;
+    }
+
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(target,
+                                               col - col_offset));
+
+    int row_offset = 0;
+
+    for(int k = source_cols[col]; k < source_cols[col + 1]; ++k)
+    {
+      const int row = source_rows[k];
+
+      while(row_offset < num_row_entries && row_indices[row_offset] < row)
+      {
+        ++row_offset;
+      }
+
+      if(row_offset < num_row_entries && row_indices[row_offset] == row)
+      {
+        continue;
+      }
+
+      SLEQP_CALL(sleqp_sparse_matrix_push(target,
+                                          row - row_offset,
+                                          col - col_offset,
+                                          source_data[k]));
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_remove_cols(const SleqpSparseMatrix* source,
+                                              SleqpSparseMatrix* target,
+                                              const int* col_indices,
+                                              int num_col_entries)
+{
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
+                                         sleqp_sparse_matrix_get_nnz(source)));
+
+  SLEQP_CALL(sleqp_sparse_matrix_clear(target));
+
+  assert(sleqp_sparse_matrix_get_num_cols(source) ==
+         sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
+
+  assert(sleqp_sparse_matrix_get_num_rows(source) ==
+         sleqp_sparse_matrix_get_num_rows(target));
+
+  assert(col_indices || (num_col_entries == 0));
+
+
+  const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
+
+  double* source_data = sleqp_sparse_matrix_get_data(source);
+  int* source_rows = sleqp_sparse_matrix_get_rows(source);
+  int* source_cols = sleqp_sparse_matrix_get_cols(source);
+
+  int col_offset = 0;
+
+  for(int col = 0; col < num_cols; ++col)
+  {
+    if(col_offset < num_col_entries && col_indices[col_offset] <= col)
+    {
+      ++col_offset;
+      continue;
+    }
+
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(target,
+                                               col - col_offset));
+
+    for(int k = source_cols[col]; k < source_cols[col + 1]; ++k)
+    {
+      const int row = source_rows[k];
+
+      SLEQP_CALL(sleqp_sparse_matrix_push(target,
+                                          row,
+                                          col - col_offset,
+                                          source_data[k]));
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix)
 {
   matrix->nnz = 0;

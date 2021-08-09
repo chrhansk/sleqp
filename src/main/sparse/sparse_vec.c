@@ -594,6 +594,46 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(const SleqpSparseVec* x,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_vector_remove_entries(const SleqpSparseVec* source,
+                                                 SleqpSparseVec* target,
+                                                 const int* entry_indices,
+                                                 int num_entries)
+{
+  SLEQP_CALL(sleqp_sparse_vector_clear(target));
+
+  assert(source->dim == target->dim + num_entries);
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(target, source->nnz));
+
+  int k_f = 0;
+  int offset = 0;
+
+  for(int k = 0; k < source->nnz; ++k)
+  {
+    const int i = source->indices[k];
+    const double v = source->data[k];
+
+    while(k_f < num_entries &&
+          entry_indices[k_f] < i)
+    {
+      ++k_f;
+      ++offset;
+    }
+
+    if(k_f < num_entries &&
+       entry_indices[k_f] == i)
+    {
+      continue;
+    }
+
+    SLEQP_CALL(sleqp_sparse_vector_push(target,
+                                        i - offset,
+                                        v));
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
                                           FILE* output)
 {

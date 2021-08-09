@@ -79,10 +79,10 @@ SLEQP_RETCODE fixed_var_func_grad(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_func_grad(func_data->func, func_data->grad));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(func_data->grad,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(func_data->grad,
                                                 func_grad,
-                                                func_data->num_fixed,
-                                                func_data->fixed_indices));
+                                                func_data->fixed_indices,
+                                                func_data->num_fixed));
 
   return SLEQP_OKAY;
 }
@@ -110,10 +110,10 @@ SLEQP_RETCODE fixed_var_cons_jac(SleqpFunc* func,
                                  cons_indices,
                                  func_data->jacobian));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_matrix_cols(func_data->jacobian,
-                                                    cons_jac,
-                                                    func_data->num_fixed,
-                                                    func_data->fixed_indices));
+  SLEQP_CALL(sleqp_sparse_matrix_remove_cols(func_data->jacobian,
+                                             cons_jac,
+                                             func_data->fixed_indices,
+                                             func_data->num_fixed));
 
   return SLEQP_OKAY;
 }
@@ -139,10 +139,10 @@ SLEQP_RETCODE fixed_var_hess_prod(SleqpFunc* func,
                                   cons_duals,
                                   func_data->product));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(func_data->product,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(func_data->product,
                                                 product,
-                                                func_data->num_fixed,
-                                                func_data->fixed_indices));
+                                                func_data->fixed_indices,
+                                                func_data->num_fixed));
 
   return SLEQP_OKAY;
 }
@@ -243,10 +243,10 @@ SLEQP_RETCODE fixed_lsq_func_jac_forward(SleqpFunc* func,
 
   SleqpSparseVec* reduced_direction = func_data->product;
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(forward_direction,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(forward_direction,
                                                 reduced_direction,
-                                                func_data->num_fixed,
-                                                func_data->fixed_indices));
+                                                func_data->fixed_indices,
+                                                func_data->num_fixed));
 
   SLEQP_CALL(sleqp_lsq_func_jac_forward(func_data->func,
                                         reduced_direction,
@@ -269,10 +269,10 @@ SLEQP_RETCODE fixed_lsq_func_jac_adjoint(SleqpFunc* func,
                                         adjoint_direction,
                                         full_product));
 
-  SLEQP_CALL(sleqp_preprocessing_remove_entries(full_product,
+  SLEQP_CALL(sleqp_sparse_vector_remove_entries(full_product,
                                                 product,
-                                                func_data->num_fixed,
-                                                func_data->fixed_indices));
+                                                func_data->fixed_indices,
+                                                func_data->num_fixed));
 
   return SLEQP_OKAY;
 }

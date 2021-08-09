@@ -83,6 +83,23 @@ extern "C" {
                               const SleqpSparseMatrix* second,
                               double eps);
 
+  SLEQP_RETCODE sleqp_sparse_matrix_remove_rows(const SleqpSparseMatrix* source,
+                                                SleqpSparseMatrix* target,
+                                                const int* row_indices,
+                                                int num_row_entries);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_remove_cols(const SleqpSparseMatrix* source,
+                                                SleqpSparseMatrix* target,
+                                                const int* col_indices,
+                                                int num_col_entries);
+
+  SLEQP_RETCODE sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source,
+                                                   SleqpSparseMatrix* target,
+                                                   const int* col_indices,
+                                                   int num_col_entries,
+                                                   const int* row_indices,
+                                                   int num_row_entries);
+
   /**
    * Clears the given matrix, i.e., removes all of its elements
    *
