@@ -50,14 +50,8 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data
   SLEQP_CALL(sleqp_sparse_vector_resize(dual_sol,
                                         sleqp_working_set_size(working_set)));
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(neg_grad));
-
-  SLEQP_CALL(sleqp_sparse_vector_reserve(neg_grad, grad->nnz));
-
-  for(int k = 0; k < grad->nnz; ++k)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_push(neg_grad, grad->indices[k], -1.*grad->data[k]));
-  }
+  SLEQP_CALL(sleqp_sparse_vector_copy(grad, neg_grad));
+  SLEQP_CALL(sleqp_sparse_vector_scale(neg_grad, -1.));
 
   SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
                                            neg_grad,
@@ -73,8 +67,8 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data
     SLEQP_CALL(sleqp_sparse_vector_reserve(cons_dual, dual_sol->nnz));
     SLEQP_CALL(sleqp_sparse_vector_reserve(vars_dual, dual_sol->nnz));
 
-    vars_dual->nnz = 0;
-    cons_dual->nnz = 0;
+    SLEQP_CALL(sleqp_sparse_vector_clear(cons_dual));
+    SLEQP_CALL(sleqp_sparse_vector_clear(vars_dual));
 
     for(int k = 0; k < dual_sol->nnz; ++k)
     {

@@ -132,9 +132,19 @@ static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
     const SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
     const SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_ub, -1., 1., zero_eps, upper_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values,
+                                              var_ub,
+                                              -1.,
+                                              1.,
+                                              zero_eps,
+                                              upper_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, var_lb, -1., 1., zero_eps, lower_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values,
+                                              var_lb,
+                                              -1.,
+                                              1.,
+                                              zero_eps,
+                                              lower_diff));
 
     int k_lower = 0, k_upper = 0;
 
