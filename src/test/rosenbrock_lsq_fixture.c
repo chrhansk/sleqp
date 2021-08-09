@@ -1,5 +1,7 @@
 #include "rosenbrock_lsq_fixture.h"
 
+#include <math.h>
+
 #include "lsq.h"
 #include "params.h"
 
