@@ -11,11 +11,13 @@ set(COMMON_SRC
   preprocessor/preprocessor.c
   preprocessor/restore.c
   preprocessor/transform.c
+  solver/callback.c
   solver/cauchy_step.c
   solver/iteration.c
   solver/print.c
   solver/state.c
   solver/step.c
+  solver/time.c
   solver/trial_point.c
   solver/trust_radius.c
   assert.c
