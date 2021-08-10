@@ -211,6 +211,10 @@ extern "C" {
   SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
                                                bool* optimal);
 
+  SLEQP_RETCODE sleqp_solver_set_func_value(SleqpSolver* solver,
+                                            SleqpIterate* iterate,
+                                            SLEQP_VALUE_REASON reason);
+
   SLEQP_RETCODE sleqp_solver_accept_step(SleqpSolver* solver);
 
   SLEQP_RETCODE sleqp_solver_reject_step(SleqpSolver* solver);

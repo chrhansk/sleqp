@@ -169,16 +169,16 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
   // Step computation
   if(perform_newton_step)
   {
-    SLEQP_CALL(compute_trial_point_newton(solver,
-                                          &model_trial_value,
-                                          &full_step));
+    SLEQP_CALL(sleqp_solver_compute_trial_point_newton(solver,
+                                                       &model_trial_value,
+                                                       &full_step));
   }
   else
   {
-    SLEQP_CALL(compute_trial_point_simple(solver,
-                                          &model_trial_value,
-                                          quadratic_model,
-                                          &full_step));
+    SLEQP_CALL(sleqp_solver_compute_trial_point_simple(solver,
+                                                       &model_trial_value,
+                                                       quadratic_model,
+                                                       &full_step));
   }
 
   SLEQP_CALL(compute_step_lengths(solver));
@@ -187,7 +187,9 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
 
   sleqp_assert_is_geq(model_reduction, 0., zero_eps);
 
-  SLEQP_CALL(set_func_value(solver, trial_iterate, SLEQP_VALUE_REASON_TRYING_ITERATE));
+  SLEQP_CALL(sleqp_solver_set_func_value(solver,
+                                         trial_iterate,
+                                         SLEQP_VALUE_REASON_TRYING_ITERATE));
 
   double func_val;
 
@@ -271,15 +273,15 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
     {
       sleqp_log_debug("Computing second-order correction");
 
-      SLEQP_CALL(compute_trial_point_soc(solver));
+      SLEQP_CALL(sleqp_solver_compute_trial_point_soc(solver));
 
       solver->boundary_step = sleqp_is_geq(solver->soc_step_norm,
                                            solver->trust_radius,
                                            eps);
 
-      SLEQP_CALL(set_func_value(solver,
-                                trial_iterate,
-                                SLEQP_VALUE_REASON_TRYING_SOC_ITERATE));
+      SLEQP_CALL(sleqp_solver_set_func_value(solver,
+                                             trial_iterate,
+                                             SLEQP_VALUE_REASON_TRYING_SOC_ITERATE));
 
       double func_val;
 

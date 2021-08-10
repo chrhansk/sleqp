@@ -1,8 +1,8 @@
 #include "solver.h"
 
-static SLEQP_RETCODE set_func_value(SleqpSolver* solver,
-                                    SleqpIterate* iterate,
-                                    SLEQP_VALUE_REASON reason)
+SLEQP_RETCODE sleqp_solver_set_func_value(SleqpSolver* solver,
+                                          SleqpIterate* iterate,
+                                          SLEQP_VALUE_REASON reason)
 {
   SleqpProblem* problem = solver->problem;
 
@@ -33,9 +33,9 @@ SLEQP_RETCODE sleqp_solver_reject_step(SleqpSolver* solver)
 {
   SleqpIterate* iterate = solver->iterate;
 
-  SLEQP_CALL(set_func_value(solver,
-                            iterate,
-                            SLEQP_VALUE_REASON_REJECTED_ITERATE));
+  SLEQP_CALL(sleqp_solver_set_func_value(solver,
+                                         iterate,
+                                         SLEQP_VALUE_REASON_REJECTED_ITERATE));
 
   return SLEQP_OKAY;
 }
@@ -46,9 +46,9 @@ SLEQP_RETCODE sleqp_solver_accept_step(SleqpSolver* solver)
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
-  SLEQP_CALL(set_func_value(solver,
-                            trial_iterate,
-                            SLEQP_VALUE_REASON_ACCEPTED_ITERATE));
+  SLEQP_CALL(sleqp_solver_set_func_value(solver,
+                                         trial_iterate,
+                                         SLEQP_VALUE_REASON_ACCEPTED_ITERATE));
 
   // get the remaining data to fill the iterate
 
@@ -92,7 +92,7 @@ SLEQP_RETCODE sleqp_solver_accept_step(SleqpSolver* solver)
   SleqpCallbackHandler* handler = solver->callback_handlers[SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE];
 
   if (sleqp_callback_handler_size(handler) != 0) {
-    SLEQP_CALL(restore_original_iterate(solver));
+    SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
 
     SLEQP_CALLBACK_HANDLER_EXECUTE(handler, SLEQP_ACCEPTED_ITERATE, solver,
                                    solver->original_iterate);

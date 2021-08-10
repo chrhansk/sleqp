@@ -12,8 +12,10 @@ set(COMMON_SRC
   preprocessor/restore.c
   preprocessor/transform.c
   solver/cauchy_step.c
+  solver/iteration.c
   solver/print.c
   solver/state.c
+  solver/step.c
   solver/trial_point.c
   solver/trust_radius.c
   assert.c
