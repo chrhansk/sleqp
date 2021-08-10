@@ -38,7 +38,7 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
-                                       SleqpIterate* iterate,
+                                       const SleqpSparseVec* cons_val,
                                        SleqpSparseVec* violation);
 
   SLEQP_NODISCARD

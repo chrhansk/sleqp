@@ -223,14 +223,14 @@ SLEQP_RETCODE sleqp_violated_constraints(SleqpProblem* problem,
 }
 
 SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
-                                     SleqpIterate* iterate,
+                                     const SleqpSparseVec* cons_val,
                                      SleqpSparseVec* violation)
 {
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
   SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
   SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
-  SleqpSparseVec* c = sleqp_iterate_get_cons_val(iterate);
+  const SleqpSparseVec* c = cons_val;
 
   const int dim = c->dim;
 
