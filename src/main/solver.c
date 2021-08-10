@@ -759,6 +759,24 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+// Bound on the criticality measure used in
+// "On the Convergence of Successive Linear Programming Algorithms"
+static double compute_criticality_bound(SleqpSolver* solver)
+{
+  double objective_value;
+
+  SLEQP_CALL(sleqp_cauchy_get_objective_value(solver->cauchy_data,
+                                              &objective_value));
+
+  const double reduction = solver->current_merit_value - objective_value;
+
+  sleqp_assert_is_geq(reduction, 0., eps);
+
+  const double criticality_bound = reduction / SLEQP_MIN(solver->lp_trust_radius, 1.);
+
+  return criticality_bound;
+}
+
 static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
                                                     double* cauchy_merit_value,
                                                     bool* full_step)
@@ -779,19 +797,8 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
                                   solver->penalty_parameter,
                                   SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-    double objective_value;
+    const double criticality_bound = compute_criticality_bound(solver);
 
-    SLEQP_CALL(sleqp_cauchy_get_objective_value(solver->cauchy_data,
-                                                &objective_value));
-
-    const double reduction = solver->current_merit_value - objective_value;
-
-    sleqp_assert_is_geq(reduction, 0., eps);
-
-    const double criticality_bound = reduction / SLEQP_MIN(solver->lp_trust_radius, 1.);
-
-    // Bound on the criticality measure used in
-    // "On the Convergence of Successive Linear Programming Algorithms"
     sleqp_log_debug("Criticality bound: %g", criticality_bound);
 
 
@@ -908,19 +915,8 @@ static SLEQP_RETCODE compute_cauchy_step(SleqpSolver* solver,
                                   solver->penalty_parameter,
                                   SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-    double objective_value;
+    const double criticality_bound = compute_criticality_bound(solver);
 
-    SLEQP_CALL(sleqp_cauchy_get_objective_value(solver->cauchy_data,
-                                                &objective_value));
-
-    const double reduction = solver->current_merit_value - objective_value;
-
-    sleqp_assert_is_geq(reduction, 0., eps);
-
-    const double criticality_bound = reduction / SLEQP_MIN(solver->lp_trust_radius, 1.);
-
-    // Bound on the criticality measure used in
-    // "On the Convergence of Successive Linear Programming Algorithms"
     sleqp_log_debug("Criticality bound: %g", criticality_bound);
 
 
