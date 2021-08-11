@@ -105,6 +105,15 @@ SLEQP_RETCODE sleqp_solver_compute_trial_point_newton(SleqpSolver* solver,
                                               true,
                                               full_step));
 
+  SLEQP_TR_SOLVER tr_solver = sleqp_options_get_int(solver->options,
+                                                    SLEQP_OPTION_INT_TR_SOLVER);
+
+  if(tr_solver == SLEQP_TR_SOLVER_LSQR)
+  {
+    SLEQP_CALL(sleqp_lsqr_solver_compute_step(solver->lsqr_solver,
+                                              solver->newton_step));
+  }
+  else
   // compute Newton step
   {
     SLEQP_CALL(sleqp_newton_set_time_limit(solver->newton_data,
@@ -113,13 +122,13 @@ SLEQP_RETCODE sleqp_solver_compute_trial_point_newton(SleqpSolver* solver,
     SLEQP_CALL(sleqp_newton_compute_step(solver->newton_data,
                                          solver->multipliers,
                                          solver->newton_step));
-
-    SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &one,
-                                       solver->newton_step,
-                                       solver->multipliers,
-                                       solver->newton_hessian_step));
   }
+
+  SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                     &one,
+                                     solver->newton_step,
+                                     solver->multipliers,
+                                     solver->newton_hessian_step));
 
   {
     SLEQP_LINESEARCH lineserach = sleqp_options_get_int(solver->options,

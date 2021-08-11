@@ -46,6 +46,7 @@ class TRSolver(_DocEnum):
   """
   TRlib = csleqp.SLEQP_TR_SOLVER_TRLIB, "The trlib implementation of the Generalized Lanczos method"
   CG    = csleqp.SLEQP_TR_SOLVER_CG, "Steihaug's conjugate gradient method"
+  LSQR  = csleqp.SLEQP_TR_SOLVER_LSQR, "LSQR solver for LSQ functions"
   Auto  = csleqp.SLEQP_TR_SOLVER_AUTO, "Automatically chosen"
 
 class LineSearch(_DocEnum):

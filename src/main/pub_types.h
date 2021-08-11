@@ -98,6 +98,7 @@ extern "C" {
   typedef enum {
     SLEQP_TR_SOLVER_TRLIB = 0,
     SLEQP_TR_SOLVER_CG,
+    SLEQP_TR_SOLVER_LSQR,
     SLEQP_TR_SOLVER_AUTO
   } SLEQP_TR_SOLVER;
 

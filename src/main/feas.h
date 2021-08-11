@@ -42,6 +42,12 @@ extern "C" {
                                        SleqpSparseVec* violation);
 
   SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_feasibility_residuals(SleqpProblem* problem,
+                                            const SleqpSparseVec* cons_val,
+                                            SleqpSparseVec* residuals,
+                                            SleqpWorkingSet* working_set);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,
                                          SleqpSparseVec* cons_val,
                                          double* max_violation);

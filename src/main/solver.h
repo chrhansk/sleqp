@@ -9,6 +9,7 @@
 #include "deriv_check.h"
 #include "dual_estimation.h"
 #include "linesearch.h"
+#include "lsqr.h"
 #include "merit.h"
 #include "newton.h"
 #include "parametric.h"
@@ -79,6 +80,8 @@ extern "C" {
     SleqpWorkingStep* working_step;
 
     SleqpNewtonData* newton_data;
+
+    SleqpLSQRSolver* lsqr_solver;
 
     SleqpSparseVec* newton_step;
 

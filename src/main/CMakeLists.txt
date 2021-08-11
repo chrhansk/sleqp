@@ -37,6 +37,7 @@ set(COMMON_SRC
   linesearch.c
   log.c
   lsq.c
+  lsqr.c
   options.c
   parametric.c
   penalty.c

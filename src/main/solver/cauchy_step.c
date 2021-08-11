@@ -88,6 +88,15 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
                                         solver->trust_radius,
                                         solver->penalty_parameter));
 
+    if(solver->lsqr_solver)
+    {
+      SLEQP_CALL(sleqp_lsqr_solver_set_iterate(solver->lsqr_solver,
+                                               iterate,
+                                               solver->aug_jacobian,
+                                               solver->trust_radius,
+                                               solver->penalty_parameter));
+    }
+
     SLEQP_CALL(estimate_dual_values(solver, iterate));
 
     SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
@@ -205,6 +214,15 @@ static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
                                         solver->aug_jacobian,
                                         solver->trust_radius,
                                         solver->penalty_parameter));
+
+    if(solver->lsqr_solver)
+    {
+      SLEQP_CALL(sleqp_lsqr_solver_set_iterate(solver->lsqr_solver,
+                                               iterate,
+                                               solver->aug_jacobian,
+                                               solver->trust_radius,
+                                               solver->penalty_parameter));
+    }
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
 

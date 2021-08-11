@@ -337,6 +337,18 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                        solver->problem,
                                        params));
 
+
+  SLEQP_TR_SOLVER tr_solver = sleqp_options_get_int(options,
+                                                    SLEQP_OPTION_INT_TR_SOLVER);
+
+  if(tr_solver == SLEQP_TR_SOLVER_LSQR)
+  {
+    SLEQP_CALL(sleqp_lsqr_solver_create(&solver->lsqr_solver,
+                                        solver->problem,
+                                        solver->working_step,
+                                        solver->params));
+  }
+
   SLEQP_CALL(sleqp_newton_data_create(&solver->newton_data,
                                       solver->problem,
                                       solver->working_step,
@@ -728,6 +740,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_working_set_release(&solver->parametric_original_working_set));
 
   SLEQP_CALL(sleqp_parametric_solver_release(&solver->parametric_solver));
+
+  SLEQP_CALL(sleqp_lsqr_solver_release(&solver->lsqr_solver));
 
   SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
 

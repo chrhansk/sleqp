@@ -53,6 +53,7 @@ cdef extern from "sleqp.h":
   ctypedef enum SLEQP_TR_SOLVER:
     SLEQP_TR_SOLVER_TRLIB
     SLEQP_TR_SOLVER_CG
+    SLEQP_TR_SOLVER_LSQR
     SLEQP_TR_SOLVER_AUTO
 
   ctypedef enum SLEQP_PARAMETRIC_CAUCHY:

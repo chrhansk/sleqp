@@ -125,7 +125,7 @@ SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
   }
   else
   {
-    assert(tr_solver == SLEQP_TR_SOLVER_TRLIB);
+    // assert(tr_solver == SLEQP_TR_SOLVER_TRLIB);
 
     SLEQP_CALL(sleqp_trlib_solver_create(&data->tr_solver,
                                          problem,
