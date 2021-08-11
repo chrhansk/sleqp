@@ -63,6 +63,10 @@ extern "C" {
                                            int num_rows,
                                            int num_cols);
 
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_scale(SleqpSparseMatrix* matrix,
+                                          double scale);
+
   /**
    * Returns the number of columns of the given matrix
    **/

@@ -13,6 +13,8 @@
 #include "cmp.h"
 #include "mem.h"
 
+#include "tr/tr_util.h"
+
 typedef struct SleqpSteihaugSolver SleqpSteihaugSolver;
 
 struct SleqpSteihaugSolver
@@ -274,35 +276,11 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
 
     if(z_next_nrm_sq >= trust_radius*trust_radius)
     {
-      // find tau >= 0 such that p_k = z + tau*d_j satisfies ||p_k|| = Delta_k
-
-      double z_dot_d;
-
-      SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->d, &z_dot_d));
-
-      const double d_nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
-      const double z_nrm_sq = z_curr_nrm_sq;
-
-      assert(d_nrm_sq > 0.);
-
-      const double inner = z_dot_d*z_dot_d - d_nrm_sq*(z_nrm_sq - trust_radius*trust_radius);
-
-      const double tau = 1./d_nrm_sq * (-z_dot_d + sqrt(inner));
-
-      assert(tau >= 0);
-
-      // set p_k = z_{j+1} + (tau-alpha)*d_j satisfies ||p_k|| = Delta_k
-      // return p_k
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->z,
-                                                solver->d,
-                                                1.,
-                                                tau,
-                                                zero_eps,
-                                                newton_step));
-
-      sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(newton_step),
-                                   trust_radius,
-                                   eps));
+      SLEQP_CALL(sleqp_tr_compute_bdry_sol(solver->z,
+                                           solver->d,
+                                           params,
+                                           trust_radius,
+                                           newton_step));
 
       sleqp_log_debug("CG solver found boundary solution after %d iterations",
                       iteration);

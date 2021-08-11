@@ -99,6 +99,24 @@ SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_scale(SleqpSparseMatrix* matrix,
+                                        double scale)
+{
+  if(scale == 0.)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_clear(matrix));
+
+    return SLEQP_OKAY;
+  }
+
+  for(int index = 0; index < matrix->nnz; ++index)
+  {
+    matrix->data[index] *= scale;
+  }
+
+  return SLEQP_OKAY;
+}
+
 int sleqp_sparse_matrix_get_num_cols(const SleqpSparseMatrix* matrix)
 {
   return matrix->num_cols;

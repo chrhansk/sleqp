@@ -3,6 +3,7 @@ set(COMMON_SRC
   sparse/sparse_matrix.c
   sparse/sparse_vec.c
   tr/tr_solver.c
+  tr/tr_util.c
   tr/trlib_solver.c
   tr/steihaug_solver.c
   preprocessor/fixed_var_func.c
