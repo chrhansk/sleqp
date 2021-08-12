@@ -100,12 +100,14 @@ cdef set_lsq_func_callbacks(csleqp.SleqpLSQCallbacks* callbacks):
     callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward_nogil
     callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint_nogil
     callbacks.cons_val             = &sleqp_func_cons_val_nogil
+    callbacks.cons_jac             = &sleqp_func_cons_jac_nogil
   else:
     callbacks.set_value            = &sleqp_func_set
     callbacks.lsq_residuals        = &sleqp_lsq_residuals
     callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward
     callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint
     callbacks.cons_val             = &sleqp_func_cons_val
+    callbacks.cons_jac             = &sleqp_func_cons_jac
 
   callbacks.func_free = &sleqp_func_free
 
