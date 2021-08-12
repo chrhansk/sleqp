@@ -18,6 +18,7 @@ class Status(_DocEnum):
   """
   Optimal    = csleqp.SLEQP_OPTIMAL, "An optimal solution was found"
   Feasible   = csleqp.SLEQP_FEASIBLE, "A feasible solution was found"
+  Unbounded  = csleqp.SLEQP_UNBOUNDED, "The problem appears unbounded"
   Infeasible = csleqp.SLEQP_INFEASIBLE, "No feasible solution was found"
   Invalid    = csleqp.SLEQP_INVALID
 

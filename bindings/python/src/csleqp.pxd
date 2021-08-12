@@ -31,6 +31,7 @@ cdef extern from "sleqp.h":
   ctypedef enum SLEQP_STATUS:
     SLEQP_OPTIMAL,
     SLEQP_FEASIBLE,
+    SLEQP_UNBOUNDED,
     SLEQP_INFEASIBLE,
     SLEQP_INVALID
 
