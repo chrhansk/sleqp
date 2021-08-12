@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "cmp.h"
 #include "iterate.h"
 #include "log.h"
 #include "mem.h"
@@ -26,6 +27,10 @@ SLEQP_RETCODE report_result(SleqpSolver* solver,
 
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  double* cache;
+
+  SLEQP_CALL(sleqp_alloc_array(&cache, SLEQP_MAX(num_variables, num_constraints)));
 
   SLEQP_STATUS status = sleqp_solver_get_status(solver);
   SleqpIterate* iterate;
@@ -60,26 +65,43 @@ SLEQP_RETCODE report_result(SleqpSolver* solver,
 
   const double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
 
-  double violation;
+  double feas_res;
 
   SLEQP_CALL(sleqp_iterate_feasibility_residuum(problem,
                                                 iterate,
-                                                &violation));
+                                                &feas_res));
+
+  double stat_res;
+
+  SLEQP_CALL(sleqp_iterate_stationarity_residuum(problem,
+                                                 iterate,
+                                                 cache,
+                                                 &stat_res));
+
+  double slack_res;
+
+  SLEQP_CALL(sleqp_iterate_slackness_residuum(problem,
+                                              iterate,
+                                              &slack_res));
 
   fprintf(stdout,
-          "%s;%d;%d;%s;%f;%f;%d;%f;%d;%f;%f;%f\n",
+          "%s;%d;%d;%s;%f;%.14e;%.14e;%.14e;%d;%f;%d;%f;%f;%f\n",
           probname,
           num_variables,
           num_constraints,
           descriptions[status],
           sleqp_iterate_get_func_val(iterate),
-          violation,
+          feas_res,
+          slack_res,
+          stat_res,
           iterations,
           elapsed_seconds,
           last_step_bdry,
           last_trust_radius,
           min_rayleigh,
           max_rayleigh);
+
+  sleqp_free(&cache);
 
   return SLEQP_OKAY;
 }
