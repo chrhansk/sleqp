@@ -90,9 +90,11 @@ static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver)
 }
 
 SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
-                                             bool* optimal)
+                                             bool* optimal,
+                                             bool* unbounded)
 {
   *optimal = false;
+  *unbounded = false;
 
   SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface,
                                       sleqp_solver_remaining_time(solver)));
@@ -120,6 +122,16 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
 
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
+
+  const double obj_lower = sleqp_params_get(solver->params,
+                                            SLEQP_PARAM_OBJ_LOWER);
+
+  if(sleqp_iterate_get_func_val(iterate) <= obj_lower)
+  {
+    *unbounded = true;
+
+    return SLEQP_OKAY;
+  }
 
   const double accepted_reduction = sleqp_params_get(solver->params,
                                                      SLEQP_PARAM_ACCEPTED_REDUCTION);

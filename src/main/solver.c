@@ -460,7 +460,7 @@ const char* sleqp_solver_info(const SleqpSolver* solver)
 
   snprintf(solver_info,
            SOLVER_INFO_BUF_SIZE,
-           "Sleqp version %s [LP solver: %s] [factorization: %s] [GitHash %s]",
+           "Sleqp version %s [LP solver: %s] [Factorization: %s] [GitHash %s]",
            SLEQP_VERSION,
            lps_info,
            fact_info,
@@ -578,10 +578,13 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     }
 
     bool optimal;
+    bool unbounded;
 
     SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
 
-    SLEQP_CALL(sleqp_solver_perform_iteration(solver, &optimal));
+    SLEQP_CALL(sleqp_solver_perform_iteration(solver,
+                                              &optimal,
+                                              &unbounded));
 
     SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
 
@@ -600,6 +603,13 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
       solver->status = SLEQP_OPTIMAL;
       break;
     }
+
+    if(unbounded)
+    {
+      sleqp_log_debug("Detected unboundedness");
+      solver->status = SLEQP_UNBOUNDED;
+      break;
+    }
   }
 
   if(reached_deadpoint)
@@ -613,7 +623,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                                 solver->iterate,
                                                 &violation));
 
-  if(solver->status != SLEQP_OPTIMAL)
+  if(solver->status == SLEQP_INVALID)
   {
     const bool feasible = sleqp_iterate_is_feasible(iterate,
                                                     solver->feasibility_residuum,

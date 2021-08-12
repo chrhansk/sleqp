@@ -42,6 +42,7 @@ extern "C" {
   typedef enum {
     SLEQP_OPTIMAL,
     SLEQP_FEASIBLE,
+    SLEQP_UNBOUNDED,
     SLEQP_INFEASIBLE,
     SLEQP_INVALID
   } SLEQP_STATUS;

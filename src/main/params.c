@@ -15,6 +15,7 @@ struct SleqpParams
 
 #define ZERO_EPS_DEFAULT 1e-20
 #define EPS_DEFAULT 1e-10
+#define OBJ_LOWER_DEFAULT -1e20
 
 #define DERIV_PERTURBATION_DEFAULT 1e-8
 #define DERIV_TOL_DEFAULT 1e-4
@@ -48,6 +49,7 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
   params->values[SLEQP_PARAM_ZERO_EPS] = ZERO_EPS_DEFAULT;
   params->values[SLEQP_PARAM_EPS] = EPS_DEFAULT;
+  params->values[SLEQP_PARAM_OBJ_LOWER] = OBJ_LOWER_DEFAULT;
   params->values[SLEQP_PARAM_DERIV_PERTURBATION] = DERIV_PERTURBATION_DEFAULT;
   params->values[SLEQP_PARAM_DERIV_TOL] = DERIV_TOL_DEFAULT;
   params->values[SLEQP_PARAM_CAUCHY_TAU] = CAUCHY_TAU_DEFAULT;

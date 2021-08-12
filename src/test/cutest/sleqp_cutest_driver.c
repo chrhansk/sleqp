@@ -22,6 +22,7 @@ SLEQP_RETCODE report_result(SleqpSolver* solver,
     [SLEQP_FEASIBLE] = "feasible",
     [SLEQP_OPTIMAL] = "optimal",
     [SLEQP_INFEASIBLE] = "infeasible",
+    [SLEQP_UNBOUNDED] = "unbounded",
     [SLEQP_INVALID] = "invalid"
   };
 
