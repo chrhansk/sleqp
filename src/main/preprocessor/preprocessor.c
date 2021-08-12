@@ -525,16 +525,28 @@ SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
 
   SleqpProblem* problem = preprocessor->original_problem;
 
+  const double feas_eps = sleqp_params_get(preprocessor->params,
+                                           SLEQP_PARAM_FEASIBILITY_TOL);
+
   SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_linear_lb(problem),
                                         preprocessor->linear_lb));
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_linear_ub(problem),
                                         preprocessor->linear_ub));
 
+  SleqpPreprocessingState* state = preprocessor->preprocessing_state;
+
+  SleqpConstraintState* linear_cons_states = sleqp_preprocessing_state_linear_constraint_states(state);
+
   const int num_linear_constraints = sleqp_problem_num_linear_constraints(problem);
 
   for(int i = 0; i < num_linear_constraints; ++i)
   {
+    if(linear_cons_states[i].state != SLEQP_CONS_UNCHANGED)
+    {
+      continue;
+    }
+
     const int count = preprocessor->linear_cons_counts[i];
 
     if(sleqp_is_infinite(-preprocessor->linear_lb[i]) &&
@@ -565,9 +577,7 @@ SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
 
   for (int i = 0; i < num_linear_constraints; ++i)
   {
-    const int count = preprocessor->linear_cons_counts[i];
-
-    if(count <= 1)
+    if(linear_cons_states[i].state != SLEQP_CONS_UNCHANGED)
     {
       continue;
     }
@@ -575,8 +585,8 @@ SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
     if(!sleqp_is_infinite(-preprocessor->linear_min[i]) &&
        !sleqp_is_infinite(preprocessor->linear_max[i]))
     {
-      if(preprocessor->linear_lb[i] <= preprocessor->linear_min[i] &&
-         preprocessor->linear_ub[i] >= preprocessor->linear_max[i])
+      if(sleqp_is_lt(preprocessor->linear_lb[i], preprocessor->linear_min[i], feas_eps) &&
+         sleqp_is_gt(preprocessor->linear_ub[i], preprocessor->linear_max[i], feas_eps))
       {
         SLEQP_CALL(sleqp_preprocessing_state_remove_linear_constraint(preprocessor->preprocessing_state,
                                                                       i));
@@ -585,7 +595,6 @@ SLEQP_RETCODE remove_redundant_constraints(SleqpPreprocessor* preprocessor)
   }
 
   SLEQP_CALL(check_for_constraint_infeasibility(preprocessor));
-
 
   SLEQP_CALL(compute_variable_bounds(preprocessor));
 
@@ -663,6 +672,7 @@ SLEQP_RETCODE sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   SLEQP_CALL(sleqp_restoration_create(&preprocessor->restoration,
                                       preprocessor->preprocessing_state,
+                                      preprocessor->transformed_problem,
                                       params));
 
   SleqpPreprocessingState* state = preprocessor->preprocessing_state;

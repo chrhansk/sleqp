@@ -14,6 +14,7 @@ struct SleqpRestoration
 
   SleqpPreprocessingState* preprocessing_state;
   SleqpProblem* original_problem;
+  SleqpProblem* transformed_problem;
 
   SleqpParams* params;
 
@@ -26,11 +27,66 @@ struct SleqpRestoration
   double* cache;
   SleqpSparseVec* stationarity_residuals;
   double* dense_stationarity_residuals;
+
+  // Maps from transformed to original
+  int* linear_cons_map;
+  int* var_map;
 };
 
+static
+SLEQP_RETCODE create_maps(SleqpRestoration* restoration)
+{
+  SleqpPreprocessingState* state = restoration->preprocessing_state;
+
+  SleqpProblem* problem = sleqp_preprocessing_state_get_problem(state);
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_linear = sleqp_problem_num_linear_constraints(problem);
+
+  {
+    SleqpVariableState* var_states = sleqp_preprocessing_state_variable_states(state);
+
+    int offset = 0;
+
+    for(int j = 0; j < num_variables; ++j)
+    {
+      if(var_states[j].state == SLEQP_VAR_UNCHANGED)
+      {
+        restoration->var_map[j - offset] = j;
+      }
+      else
+      {
+        ++offset;
+      }
+    }
+  }
+
+  {
+    SleqpConstraintState* linear_cons_states = sleqp_preprocessing_state_linear_constraint_states(state);
+
+    int offset = 0;
+
+    for(int i = 0; i < num_linear; ++i)
+    {
+      if(linear_cons_states[i].state == SLEQP_CONS_UNCHANGED)
+      {
+        restoration->linear_cons_map[i - offset] = i;
+      }
+      else
+      {
+        ++offset;
+      }
+    }
+  }
+
+
+
+  return SLEQP_OKAY;
+}
 
 SLEQP_RETCODE sleqp_restoration_create(SleqpRestoration** star,
                                        SleqpPreprocessingState* preprocessing_state,
+                                       SleqpProblem* transformed_problem,
                                        SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -47,6 +103,9 @@ SLEQP_RETCODE sleqp_restoration_create(SleqpRestoration** star,
 
   restoration->original_problem = problem;
   SLEQP_CALL(sleqp_problem_capture(restoration->original_problem));
+
+  restoration->transformed_problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(restoration->transformed_problem));
 
   restoration->params = params;
   SLEQP_CALL(sleqp_params_capture(restoration->params));
@@ -65,6 +124,16 @@ SLEQP_RETCODE sleqp_restoration_create(SleqpRestoration** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&restoration->stationarity_residuals, num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&restoration->dense_stationarity_residuals, num_variables));
+
+  {
+    const int num_variables = sleqp_problem_num_variables(transformed_problem);
+    const int num_linear = sleqp_problem_num_linear_constraints(transformed_problem);
+
+    SLEQP_CALL(sleqp_alloc_array(&restoration->linear_cons_map, num_linear));
+    SLEQP_CALL(sleqp_alloc_array(&restoration->var_map, num_variables));
+
+    SLEQP_CALL(create_maps(restoration));
+  }
 
   return SLEQP_OKAY;
 }
@@ -564,11 +633,8 @@ SLEQP_RETCODE correct_fixed_variables(SleqpRestoration* restoration)
 
 static
 SLEQP_RETCODE prepare_duals(SleqpRestoration* restoration,
-                            const SleqpIterate* transformed,
-                            SleqpIterate* original)
+                            const SleqpIterate* transformed)
 {
-  SleqpPreprocessingState* preprocessing_state = restoration->preprocessing_state;
-
   SleqpProblem* problem = restoration->original_problem;
 
   const int num_general = sleqp_problem_num_general_constraints(problem);
@@ -576,34 +642,19 @@ SLEQP_RETCODE prepare_duals(SleqpRestoration* restoration,
   SLEQP_CALL(reset_duals(restoration));
 
   {
-    SleqpVariableState* var_states = sleqp_preprocessing_state_variable_states(preprocessing_state);
-
     SleqpSparseVec* var_dual = sleqp_iterate_get_vars_dual(transformed);
 
-    int offset = 0;
     for(int k = 0; k < var_dual->nnz; ++k)
     {
       int j = var_dual->indices[k];
       double v = var_dual->data[k];
 
-      if(var_states[j + offset].state == SLEQP_VAR_UNCHANGED)
-      {
-        restoration->var_dual[j + offset] = v;
-      }
-      else
-      {
-        assert(var_states[j + offset].state & SLEQP_VAR_FIXED);
-        ++offset;
-      }
+      restoration->var_dual[restoration->var_map[j]] = v;
     }
   }
 
   {
-    SleqpConstraintState* linear_cons_states = sleqp_preprocessing_state_linear_constraint_states(preprocessing_state);
-
     SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(transformed);
-
-    int offset = 0;
 
     for(int k = 0; k < cons_dual->nnz; ++k)
     {
@@ -616,17 +667,9 @@ SLEQP_RETCODE prepare_duals(SleqpRestoration* restoration,
         continue;
       }
 
-      const int i_general = i;
       i -= num_general;
 
-      if(linear_cons_states[i + offset].state == SLEQP_CONS_UNCHANGED)
-      {
-        restoration->cons_dual[i_general + offset] = v;
-      }
-      else
-      {
-        ++offset;
-      }
+      restoration->cons_dual[num_general + restoration->linear_cons_map[i]] = v;
     }
   }
 
@@ -677,7 +720,7 @@ SLEQP_RETCODE sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
                                  sleqp_iterate_get_working_set(transformed),
                                  sleqp_iterate_get_working_set(original)));
 
-  SLEQP_CALL(prepare_duals(restoration, transformed, original));
+  SLEQP_CALL(prepare_duals(restoration, transformed));
 
   SLEQP_CALL(compute_stationarity_residuals(restoration, original));
 
@@ -731,6 +774,9 @@ SLEQP_RETCODE restoration_free(SleqpRestoration** star)
 {
   SleqpRestoration* restoration = *star;
 
+  sleqp_free(&restoration->var_map);
+  sleqp_free(&restoration->linear_cons_map);
+
   sleqp_free(&restoration->dense_stationarity_residuals);
 
   SLEQP_CALL(sleqp_sparse_vector_free(&restoration->stationarity_residuals));
@@ -745,6 +791,7 @@ SLEQP_RETCODE restoration_free(SleqpRestoration** star)
 
   SLEQP_CALL(sleqp_params_release(&restoration->params));
 
+  SLEQP_CALL(sleqp_problem_release(&restoration->transformed_problem));
   SLEQP_CALL(sleqp_problem_release(&restoration->original_problem));
 
   SLEQP_CALL(sleqp_preprocessing_state_release(&restoration->preprocessing_state));
