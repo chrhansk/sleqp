@@ -128,7 +128,17 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
 
   if(sleqp_iterate_get_func_val(iterate) <= obj_lower)
   {
-    *unbounded = true;
+    const double feas_eps = sleqp_params_get(solver->params,
+                                             SLEQP_PARAM_FEASIBILITY_TOL);
+
+    const bool feasible = sleqp_iterate_is_feasible(iterate,
+                                                    solver->feasibility_residuum,
+                                                    feas_eps);
+
+    if(feasible)
+    {
+      *unbounded = true;
+    }
 
     return SLEQP_OKAY;
   }
