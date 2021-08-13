@@ -548,29 +548,18 @@ bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
     return false;
   }
 
-  double multiplier_norm = 0.;
-
+  if(stationarity_residuum >= stat_eps)
   {
-    multiplier_norm += sleqp_sparse_vector_norm_sq(iterate->cons_dual);
-    multiplier_norm += sleqp_sparse_vector_norm_sq(iterate->vars_dual);
-
-    multiplier_norm = sqrt(multiplier_norm);
-  }
-
-  if(stationarity_residuum >= stat_eps * (1. + multiplier_norm))
-  {
-    sleqp_log_debug("Iterate is not optimal, residuum: %e, multiplier norm: %e",
-                    stationarity_residuum,
-                    multiplier_norm);
+    sleqp_log_debug("Iterate is not optimal, stationarity residuum: %e",
+                    stationarity_residuum);
 
     return false;
   }
 
-  if(slackness_residuum >= slack_eps * (1. + multiplier_norm))
+  if(slackness_residuum >= slack_eps)
   {
-    sleqp_log_debug("Iterate does not satisfy complementary slackness, residuum: %e, multiplier norm: %e",
-                    slackness_residuum,
-                    multiplier_norm);
+    sleqp_log_debug("Iterate is not optimal, slackness residuum: %e",
+                    slackness_residuum);
     return false;
   }
 
