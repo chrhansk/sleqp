@@ -21,13 +21,16 @@ class SolverTest(unittest.TestCase):
                                  cons_lb,
                                  cons_ub)
 
-  def get_solver(self, options=None):
+  def get_solver(self, options=None, params=None):
 
     if options is None:
       options = sleqp.Options()
 
+    if params is None:
+      params = self.params
+
     return sleqp.Solver(self.problem,
-                        self.params,
+                        params,
                         options,
                         initial_sol)
 
@@ -69,9 +72,13 @@ class SolverTest(unittest.TestCase):
     self.assertTrue(np.allclose(expected_sol, solution.primal))
 
   def test_solve_no_newton(self):
-    options = sleqp.Options(perform_newton_step=False)
+    tol = 1e-4
 
-    solver = self.get_solver(options=options)
+    options = sleqp.Options(perform_newton_step=False)
+    params = sleqp.Params(stationarity_tolerance=tol)
+
+    solver = self.get_solver(options=options,
+                             params=params)
 
     solver.solve(max_num_iterations=1000)
 
@@ -79,7 +86,9 @@ class SolverTest(unittest.TestCase):
 
     solution = solver.solution
 
-    self.assertTrue(np.allclose(expected_sol, solution.primal))
+    self.assertTrue(np.allclose(expected_sol,
+                                solution.primal,
+                                rtol=tol))
 
   def test_solve_linear(self):
     options = sleqp.Options(use_quadratic_model=False)
