@@ -1,6 +1,7 @@
 #include "restore.h"
 
 #include "cmp.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 #include "util.h"
@@ -378,6 +379,11 @@ SLEQP_RETCODE correct_forcing_constraint(SleqpRestoration* restoration,
 
   double* residuals = restoration->dense_stationarity_residuals;
 
+  const double eps = sleqp_params_get(restoration->params,
+                                      SLEQP_PARAM_EPS);
+
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
   bool has_inverted_residual_sign = false;
   int max_index;
   double max_dual = 0.;
@@ -429,7 +435,12 @@ SLEQP_RETCODE correct_forcing_constraint(SleqpRestoration* restoration,
     }
 
     restoration->working_cons_states[forcing_constraint->constraint] = cons_state;
-    restoration->cons_dual[forcing_constraint->constraint] = max_dual;
+
+    const double cons_dual = max_dual;
+
+    assert(restoration->cons_dual[forcing_constraint->constraint] == 0.);
+
+    restoration->cons_dual[forcing_constraint->constraint] = cons_dual;
 
     for(int k = 0; k < num_variables; ++k)
     {
@@ -446,7 +457,16 @@ SLEQP_RETCODE correct_forcing_constraint(SleqpRestoration* restoration,
 
       restoration->working_var_states[j] = var_state;
 
-      restoration->var_dual[j] = - (residuals[j] + forcing_constraint->factors[k] * max_dual);
+      restoration->var_dual[j] = - (residuals[j] + forcing_constraint->factors[k] * cons_dual);
+
+      if(var_state == SLEQP_ACTIVE_LOWER)
+      {
+        sleqp_assert_is_leq(restoration->var_dual[j], 0., eps);
+      }
+      else if(var_state == SLEQP_ACTIVE_UPPER)
+      {
+        sleqp_assert_is_geq(restoration->var_dual[j], 0., eps);
+      }
 
       residuals[j] = 0.;
     }
