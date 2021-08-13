@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 #include <threads.h>
 
 #include "aug_jacobian.h"
@@ -444,19 +445,32 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   return SLEQP_OKAY;
 }
 
+void print_solver(char* buffer,
+                  int len,
+                  const char* name,
+                  const char* version)
+{
+  if(strlen(version) == 0)
+  {
+    snprintf(buffer, len, "%s", name);
+  }
+  else
+  {
+    snprintf(buffer, len, "%s %s", name, version);
+  }
+}
+
 const char* sleqp_solver_info(const SleqpSolver* solver)
 {
-  snprintf(lps_info,
-           INFO_BUF_SIZE,
-           "%s %s",
-           sleqp_lpi_get_name(solver->lp_interface),
-           sleqp_lpi_get_version(solver->lp_interface));
+  print_solver(lps_info,
+               INFO_BUF_SIZE,
+               sleqp_lpi_get_name(solver->lp_interface),
+               sleqp_lpi_get_version(solver->lp_interface));
 
-  snprintf(fact_info,
-           INFO_BUF_SIZE,
-           "%s %s",
-           sleqp_sparse_factorization_get_name(solver->factorization),
-           sleqp_sparse_factorization_get_version(solver->factorization));
+  print_solver(fact_info,
+               INFO_BUF_SIZE,
+               sleqp_sparse_factorization_get_name(solver->factorization),
+               sleqp_sparse_factorization_get_version(solver->factorization));
 
   snprintf(solver_info,
            SOLVER_INFO_BUF_SIZE,
