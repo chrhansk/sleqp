@@ -67,16 +67,19 @@ START_TEST(test_direct)
 {
   test_step_rule(SLEQP_STEP_RULE_DIRECT);
 }
+END_TEST
 
 START_TEST(test_window)
 {
   test_step_rule(SLEQP_STEP_RULE_WINDOW);
 }
+END_TEST
 
 START_TEST(test_minstep)
 {
   test_step_rule(SLEQP_STEP_RULE_MINSTEP);
 }
+END_TEST
 
 Suite* unconstrained_test_suite()
 {
