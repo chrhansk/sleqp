@@ -21,8 +21,7 @@ cdef class Params:
                   'slackness_tolerance',
                   'stationarity_tolerance',
                   'accepted_reduction',
-                  'deadpoint_bound',
-                  'newton_relative_tolerance']
+                  'deadpoint_bound']
 
     for key, value in values.items():
       self._set_prop(key, value)
@@ -106,11 +105,6 @@ cdef class Params:
     return csleqp.sleqp_params_get(self.params,
                                    csleqp.SLEQP_PARAM_DEADPOINT_BOUND)
 
-  @property
-  def newton_relative_tolerance(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_NEWTON_RELATIVE_TOL)
-
   @zero_eps.setter
   def zero_eps(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set(self.params,
@@ -193,12 +187,6 @@ cdef class Params:
   def deadpoint_bound(self, value: float) -> None:
     csleqp_call(csleqp.sleqp_params_set(self.params,
                                         csleqp.SLEQP_PARAM_DEADPOINT_BOUND,
-                                        value))
-
-  @newton_relative_tolerance.setter
-  def newton_relative_tolerance(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_NEWTON_RELATIVE_TOL,
                                         value))
 
   def values(self) -> set:

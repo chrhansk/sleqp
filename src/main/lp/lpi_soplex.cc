@@ -10,6 +10,8 @@
 #include "log.h"
 #include "mem.h"
 
+static const double tolerance_factor = 1e-1;
+
 struct SoPlexBasis
 {
   SoPlexBasis(int num_cols, int num_rows)
@@ -57,7 +59,6 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
   assert(soplex.setRealParam(soplex::SoPlexBase<double>::INFTY,
                              sleqp_infinity()));
 
-  /*
   const double feas_eps = sleqp_params_get(params,
                                            SLEQP_PARAM_FEASIBILITY_TOL);
 
@@ -65,11 +66,10 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
                                            SLEQP_PARAM_STATIONARITY_TOL);
 
   assert(soplex.setRealParam(soplex::SoPlexBase<double>::FEASTOL,
-                             feas_eps));
+                             feas_eps*tolerance_factor));
 
   assert(soplex.setRealParam(soplex::SoPlexBase<double>::OPTTOL,
-                             stat_eps));
-  */
+                             stat_eps*tolerance_factor));
 
   soplex::SPxOut spxout;
 

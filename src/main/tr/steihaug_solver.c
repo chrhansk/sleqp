@@ -15,9 +15,9 @@
 
 #include "tr/tr_util.h"
 
-typedef struct SleqpSteihaugSolver SleqpSteihaugSolver;
+static const double tolerance_factor = 1e-2;
 
-struct SleqpSteihaugSolver
+typedef struct
 {
   SleqpProblem* problem;
   SleqpParams* params;
@@ -36,7 +36,7 @@ struct SleqpSteihaugSolver
   double min_rayleigh, max_rayleigh;
 
   SleqpTimer* timer;
-};
+}  SleqpSteihaugSolver;
 
 
 static SLEQP_RETCODE steihaug_solver_free(void **star)
@@ -120,7 +120,11 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   solver->max_rayleigh = 1.;
 
   const double one = 1.;
-  const double rel_tol = sleqp_params_get (solver->params, SLEQP_PARAM_NEWTON_RELATIVE_TOL);
+
+  const double stat_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_STATIONARITY_TOL);
+
+  const double rel_tol = stat_eps * tolerance_factor;
 
   SleqpProblem* problem = solver->problem;
   SleqpParams* params = solver->params;

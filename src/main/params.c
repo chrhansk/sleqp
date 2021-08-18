@@ -35,8 +35,6 @@ struct SleqpParams
 
 #define DEADPOINT_BOUND_DEFAULT 1e-10
 
-#define NEWTON_RELATIVE_TOL_DEFAULT 1e-8
-
 SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -62,7 +60,6 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
   params->values[SLEQP_PARAM_STATIONARITY_TOL] = STATIONARITY_TOL_DEFAULT;
   params->values[SLEQP_PARAM_ACCEPTED_REDUCTION] = ACCEPTED_REDUCTION_DEFAULT;
   params->values[SLEQP_PARAM_DEADPOINT_BOUND] = DEADPOINT_BOUND_DEFAULT;
-  params->values[SLEQP_PARAM_NEWTON_RELATIVE_TOL] = NEWTON_RELATIVE_TOL_DEFAULT;
 
   return SLEQP_OKAY;
 }

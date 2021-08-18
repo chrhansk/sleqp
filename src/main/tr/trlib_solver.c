@@ -9,6 +9,8 @@
 #include "cmp.h"
 #include "mem.h"
 
+static const double tolerance_factor = 1e-2;
+
 typedef struct
 {
   SleqpProblem* problem;
@@ -266,10 +268,13 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
   const double inf = sleqp_infinity();
 
-  const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
 
-  const double rel_tol = sleqp_params_get(data->params,
-                                          SLEQP_PARAM_NEWTON_RELATIVE_TOL);
+  const double stat_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_STATIONARITY_TOL);
+
+  const double rel_tol = stat_eps * tolerance_factor;
 
   trlib_int_t equality = 0;
   trlib_int_t maxlanczos = data->trlib_maxiter;
