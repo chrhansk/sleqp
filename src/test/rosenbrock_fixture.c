@@ -215,8 +215,6 @@ void rosenbrock_teardown()
 
   ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_var_lb));
 
-
-
   ASSERT_CALL(sleqp_func_release(&rosenbrock_func));
 
   sleqp_free(&func_data->x);

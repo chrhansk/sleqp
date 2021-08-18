@@ -427,7 +427,7 @@ SLEQP_RETCODE sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
   return SLEQP_OKAY;
 }
 
-double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
+double* sleqp_sparse_vector_at(const SleqpSparseVec* vec,
                                int index)
 {
   assert(index < vec->dim);
@@ -443,7 +443,7 @@ double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
   return NULL;
 }
 
-double sleqp_sparse_vector_value_at(SleqpSparseVec* vec,
+double sleqp_sparse_vector_value_at(const SleqpSparseVec* vec,
                                     int index)
 {
   const double* ptr = sleqp_sparse_vector_at(vec, index);

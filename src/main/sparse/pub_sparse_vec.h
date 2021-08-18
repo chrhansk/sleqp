@@ -255,7 +255,7 @@ extern "C" {
    * @param[in] vector   A pointer to the vector
    * @param[in] index    The desired index
    **/
-  SLEQP_EXPORT double* sleqp_sparse_vector_at(SleqpSparseVec* vec,
+  SLEQP_EXPORT double* sleqp_sparse_vector_at(const SleqpSparseVec* vec,
                                               int index);
 
   /**
@@ -264,7 +264,7 @@ extern "C" {
    * @param[in] vector   A pointer to the vector
    * @param[in] index    The desired index
    **/
-  SLEQP_EXPORT double sleqp_sparse_vector_value_at(SleqpSparseVec* vec,
+  SLEQP_EXPORT double sleqp_sparse_vector_value_at(const SleqpSparseVec* vec,
                                                    int index);
 
   /**
