@@ -17,6 +17,8 @@
 #include "soc.h"
 #include "sr1.h"
 
+#include "step/step_rule.h"
+
 #include "preprocessor/preprocessor.h"
 
 #ifdef __cplusplus
@@ -56,6 +58,8 @@ extern "C" {
     SleqpOptions* options;
 
     SleqpDerivCheckData* deriv_check;
+
+    SleqpStepRule* step_rule;
 
     SleqpIterate* iterate;
 

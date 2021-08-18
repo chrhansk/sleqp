@@ -23,6 +23,7 @@
 #define FLOAT_ERR_FLAGS_DEFAULT            (FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID)
 #define BFGS_SIZING_DEFAULT                SLEQP_BFGS_SIZING_CENTERED_OL
 #define TR_SOLVER_DEFAULT                  SLEQP_TR_SOLVER_AUTO
+#define STEP_RULE_DEFAULT                  SLEQP_STEP_RULE_DIRECT
 #define LINESEARCH_DEFAULT                 SLEQP_LINESEARCH_APPROX
 #define NUM_THREADS_DEFAULT                SLEQP_NONE
 
@@ -66,6 +67,7 @@ SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
   options->int_values[SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS]         = FLOAT_ERR_FLAGS_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_BFGS_SIZING]               = BFGS_SIZING_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_TR_SOLVER]                 = TR_SOLVER_DEFAULT;
+  options->int_values[SLEQP_OPTION_INT_STEP_RULE]                 = STEP_RULE_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_LINESEARCH]                = LINESEARCH_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_PARAMETRIC_CAUCHY]         = PARAMETRIC_CAUCHY_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_NUM_THREADS]               = NUM_THREADS_DEFAULT;

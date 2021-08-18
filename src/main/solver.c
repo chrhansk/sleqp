@@ -21,6 +21,8 @@
 
 #include "lp/lpi.h"
 
+#include "step/step_rule.h"
+
 #define INFO_BUF_SIZE 100
 #define SOLVER_INFO_BUF_SIZE 400
 
@@ -303,6 +305,11 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_check,
                                         solver->problem,
                                         params));
+
+  SLEQP_CALL(sleqp_step_rule_create_default(&solver->step_rule,
+                                            solver->problem,
+                                            solver->params,
+                                            solver->options));
 
   const int num_lp_variables = num_variables + 2*num_constraints;
   const int num_lp_constraints = num_constraints;
@@ -808,6 +815,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->original_violation));
 
   SLEQP_CALL(sleqp_iterate_release(&solver->iterate));
+
+  SLEQP_CALL(sleqp_step_rule_release(&solver->step_rule));
 
   SLEQP_CALL(sleqp_deriv_checker_free(&solver->deriv_check));
 

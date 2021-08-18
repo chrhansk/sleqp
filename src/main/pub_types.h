@@ -127,6 +127,12 @@ extern "C" {
     SLEQP_PREPROCESSING_RESULT_INFEASIBLE
   } SLEQP_PREPROCESSING_RESULT;
 
+  typedef enum {
+    SLEQP_STEP_RULE_DIRECT,
+    SLEQP_STEP_RULE_WINDOW,
+    SLEQP_STEP_RULE_MINSTEP
+  } SLEQP_STEP_RULE;
+
   /**None value to be used in place of integer parameters **/
 #define SLEQP_NONE (-1)
 

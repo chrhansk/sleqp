@@ -11,6 +11,7 @@ set(TEST_COMMON_SRC
   test_common.c
   quadcons_fixture.c
   quadfunc_fixture.c
+  log_rosenbrock_fixture.c
   rosenbrock_fixture.c
   rosenbrock_lsq_fixture.c)
 
@@ -50,6 +51,8 @@ add_unit_test(sparse/sleqp_sparse_matrix_test)
 
 add_unit_test(preprocessor/fixed_var_func_test)
 add_unit_test(preprocessor/preprocessor_test)
+
+add_unit_test(step/step_rule_test)
 
 add_unit_test(callback_test)
 add_unit_test(cauchy_test)

@@ -46,15 +46,19 @@ set(COMMON_SRC
   merit.c
   problem.c
   scale.c
-  sr1.c
   soc.c
   solver.c
+  sr1.c
   timer.c
   types.c
   util.c
   working_set.c
   working_step.c
-  lp/lpi.c)
+  lp/lpi.c
+  step/step_rule.c
+  step/step_rule_direct.c
+  step/step_rule_minstep.c
+  step/step_rule_window.c)
 
 
 add_library(sleqp_objects OBJECT

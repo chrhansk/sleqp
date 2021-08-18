@@ -50,6 +50,14 @@ class TRSolver(_DocEnum):
   LSQR  = csleqp.SLEQP_TR_SOLVER_LSQR, "LSQR solver for LSQ functions"
   Auto  = csleqp.SLEQP_TR_SOLVER_AUTO, "Automatically chosen"
 
+class StepRule(_DocEnum):
+  """
+  The step rule used
+  """
+  Direct = csleqp.SLEQP_STEP_RULE_DIRECT, "Direct"
+  Window = csleqp.SLEQP_STEP_RULE_WINDOW, "Sliding window"
+  MinStep = csleqp.SLEQP_STEP_RULE_MINSTEP, "Min-step"
+
 class LineSearch(_DocEnum):
   """
   The linesearch used

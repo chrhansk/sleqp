@@ -6,7 +6,32 @@
 #include "fail.h"
 #include "penalty.h"
 
-static SLEQP_RETCODE set_residuum(SleqpSolver* solver)
+static
+SLEQP_RETCODE evaluate_at_trial_iterate(SleqpSolver* solver)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpIterate* trial_iterate = solver->trial_iterate;
+
+  SLEQP_CALL(sleqp_solver_set_func_value(solver,
+                                         trial_iterate,
+                                         SLEQP_VALUE_REASON_TRYING_ITERATE));
+
+  double func_val;
+
+  SLEQP_CALL(sleqp_problem_eval(problem,
+                                NULL,
+                                &func_val,
+                                NULL,
+                                sleqp_iterate_get_cons_val(trial_iterate),
+                                NULL));
+
+  SLEQP_CALL(sleqp_iterate_set_func_val(trial_iterate, func_val));
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE set_residuum(SleqpSolver* solver)
 {
   SLEQP_CALL(sleqp_iterate_slackness_residuum(solver->problem,
                                               solver->iterate,
@@ -24,7 +49,8 @@ static SLEQP_RETCODE set_residuum(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE check_derivative(SleqpSolver* solver)
+static
+SLEQP_RETCODE check_derivative(SleqpSolver* solver)
 {
   SleqpOptions* options = solver->options;
   SleqpIterate* iterate = solver->iterate;
@@ -49,7 +75,47 @@ static SLEQP_RETCODE check_derivative(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver)
+static
+SLEQP_RETCODE update_trust_radii(SleqpSolver* solver,
+                                 double reduction_ratio,
+                                 double trial_step_norm,
+                                 bool step_accepted)
+{
+  const SleqpOptions* options = solver->options;
+
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  const bool quadratic_model = sleqp_options_get_bool(options,
+                                                      SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
+
+  const bool perform_newton_step = quadratic_model &&
+    sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
+
+  const double trial_step_infnorm = sleqp_sparse_vector_inf_norm(solver->trial_step);
+  const double cauchy_step_infnorm = sleqp_sparse_vector_inf_norm(solver->cauchy_step);
+
+  if(perform_newton_step)
+  {
+    SLEQP_CALL(sleqp_solver_update_trust_radius(solver,
+                                                reduction_ratio,
+                                                step_accepted,
+                                                trial_step_norm));
+  }
+
+  SLEQP_CALL(sleqp_solver_update_lp_trust_radius(solver,
+                                                 step_accepted,
+                                                 trial_step_infnorm,
+                                                 cauchy_step_infnorm,
+                                                 solver->cauchy_step_length,
+                                                 zero_eps,
+                                                 &(solver->lp_trust_radius)));
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver)
 {
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
@@ -120,9 +186,6 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
   const double eps = sleqp_params_get(solver->params,
                                       SLEQP_PARAM_EPS);
 
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
-
   const double obj_lower = sleqp_params_get(solver->params,
                                             SLEQP_PARAM_OBJ_LOWER);
 
@@ -142,9 +205,6 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
 
     return SLEQP_OKAY;
   }
-
-  const double accepted_reduction = sleqp_params_get(solver->params,
-                                                     SLEQP_PARAM_ACCEPTED_REDUCTION);
 
   double exact_iterate_value, model_iterate_value;
 
@@ -180,12 +240,8 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
                                 solver->stationarity_residuum))
     {
       *optimal = true;
+      return SLEQP_OKAY;
     }
-  }
-
-  if(*optimal)
-  {
-    return SLEQP_OKAY;
   }
 
   // Step computation
@@ -205,36 +261,16 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
 
   SLEQP_CALL(compute_step_lengths(solver));
 
-  double model_reduction = model_iterate_value - model_trial_value;
+  SLEQP_CALL(evaluate_at_trial_iterate(solver));
 
-  sleqp_assert_is_geq(model_reduction, 0., zero_eps);
-
-  SLEQP_CALL(sleqp_solver_set_func_value(solver,
-                                         trial_iterate,
-                                         SLEQP_VALUE_REASON_TRYING_ITERATE));
-
-  double func_val;
-
-  SLEQP_CALL(sleqp_problem_eval(problem,
-                                NULL,
-                                &func_val,
-                                NULL,
-                                sleqp_iterate_get_cons_val(trial_iterate),
-                                NULL));
-
-  SLEQP_CALL(sleqp_iterate_set_func_val(trial_iterate, func_val));
-
-  double actual_reduction = 0.;
+  double exact_trial_value;
 
   {
-    double exact_trial_value;
 
     SLEQP_CALL(sleqp_merit_func(solver->merit_data,
                                 trial_iterate,
                                 solver->penalty_parameter,
                                 &exact_trial_value));
-
-    actual_reduction = exact_iterate_value - exact_trial_value;
 
     sleqp_log_debug("Current merit function value: %e, trial merit function value: %e",
                     exact_iterate_value,
@@ -242,20 +278,18 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
 
   }
 
-  double reduction_ratio = 1.;
+  double reduction_ratio = SLEQP_NONE;
+  bool step_accepted = true;
 
-  if(actual_reduction != model_reduction)
-  {
-    reduction_ratio = actual_reduction / model_reduction;
-  }
+  SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
+                                   exact_iterate_value,
+                                   exact_trial_value,
+                                   model_trial_value,
+                                   &step_accepted,
+                                   &reduction_ratio));
 
-  sleqp_log_debug("Reduction ratio: %e, actual: %e, predicted: %e",
-                  reduction_ratio,
-                  actual_reduction,
-                  model_reduction);
-
-  const double trial_step_infnorm = sleqp_sparse_vector_inf_norm(solver->trial_step);
-  const double cauchy_step_infnorm = sleqp_sparse_vector_inf_norm(solver->cauchy_step);
+  sleqp_log_debug("Reduction ratio: %e",
+                  reduction_ratio);
 
   double trial_step_norm = sleqp_sparse_vector_norm(solver->trial_step);
 
@@ -265,11 +299,9 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
                                        solver->trust_radius,
                                        eps);
 
-  bool step_accepted = true;
-
   solver->last_step_type = SLEQP_STEPTYPE_REJECTED;
 
-  if(reduction_ratio >= accepted_reduction)
+  if(step_accepted)
   {
     sleqp_log_debug("Trial step accepted");
 
@@ -301,20 +333,7 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
                                            solver->trust_radius,
                                            eps);
 
-      SLEQP_CALL(sleqp_solver_set_func_value(solver,
-                                             trial_iterate,
-                                             SLEQP_VALUE_REASON_TRYING_SOC_ITERATE));
-
-      double func_val;
-
-      SLEQP_CALL(sleqp_problem_eval(problem,
-                                    NULL,
-                                    &func_val,
-                                    NULL,
-                                    sleqp_iterate_get_cons_val(trial_iterate),
-                                    NULL));
-
-      SLEQP_CALL(sleqp_iterate_set_func_val(trial_iterate, func_val));
+      SLEQP_CALL(evaluate_at_trial_iterate(solver));
 
       double soc_exact_trial_value;
 
@@ -323,26 +342,15 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
                                   solver->penalty_parameter,
                                   &soc_exact_trial_value));
 
-      const double soc_actual_reduction = exact_iterate_value - soc_exact_trial_value;
+      SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
+                                       exact_iterate_value,
+                                       soc_exact_trial_value,
+                                       model_trial_value,
+                                       &step_accepted,
+                                       &reduction_ratio));
 
-      reduction_ratio = 1.;
-
-      // The denominator of the SOC reduction ratio is the quadratic reduction
-      // with respect to the original (not the corrected) trial step
-      if(soc_actual_reduction != model_reduction)
-      {
-        reduction_ratio = soc_actual_reduction / model_reduction;
-      }
-
-      sleqp_log_debug("SOC Reduction ratio: %e, actual: %e, predicted: %e",
-                      reduction_ratio,
-                      soc_actual_reduction,
-                      model_reduction);
-
-      if(reduction_ratio >= accepted_reduction)
-      {
-        step_accepted = true;
-      }
+      sleqp_log_debug("SOC Reduction ratio: %e",
+                      reduction_ratio);
 
       if(step_accepted)
       {
@@ -367,21 +375,10 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
 
   // update trust radii, penalty parameter
   {
-    if(perform_newton_step)
-    {
-      SLEQP_CALL(sleqp_solver_update_trust_radius(solver,
-                                                  reduction_ratio,
-                                                  step_accepted,
-                                                  trial_step_norm));
-    }
-
-    SLEQP_CALL(sleqp_solver_update_lp_trust_radius(solver,
-                                                   step_accepted,
-                                                   trial_step_infnorm,
-                                                   cauchy_step_infnorm,
-                                                   solver->cauchy_step_length,
-                                                   zero_eps,
-                                                   &(solver->lp_trust_radius)));
+    SLEQP_CALL(update_trust_radii(solver,
+                                  reduction_ratio,
+                                  trial_step_norm,
+                                  step_accepted));
 
     SLEQP_CALL(sleqp_update_penalty(problem,
                                     iterate,

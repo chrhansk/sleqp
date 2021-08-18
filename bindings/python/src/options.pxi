@@ -18,6 +18,7 @@ cdef class Options:
                   'max_newton_iterations',
                   'bfgs_sizing',
                   'tr_solver',
+                  'step_rule',
                   'linesearch',
                   'parametric_cauchy',
                   'enable_preprocessor']
@@ -92,6 +93,13 @@ cdef class Options:
     cdef int tr_solver = csleqp.sleqp_options_get_int(self.options,
                                                       csleqp.SLEQP_OPTION_INT_TR_SOLVER)
     return TRSolver(tr_solver)
+
+  @property
+  def step_rule(self) -> StepRule:
+    cdef int step_rule = csleqp.sleqp_options_get_int(self.options,
+                                                      csleqp.SLEQP_OPTION_INT_STEP_RULE)
+
+    return StepRule(step_rule)
 
   @property
   def linesearch(self) -> LineSearch:
@@ -183,6 +191,12 @@ cdef class Options:
   def tr_solver(self, value):
     csleqp_call(csleqp.sleqp_options_set_int(self.options,
                                              csleqp.SLEQP_OPTION_INT_TR_SOLVER,
+                                             value.value))
+
+  @step_rule.setter
+  def step_rule(self, value):
+    csleqp_call(csleqp.sleqp_options_set_int(self.options,
+                                             csleqp.SLEQP_OPTION_INT_STEP_RULE,
                                              value.value))
 
   @linesearch.setter
