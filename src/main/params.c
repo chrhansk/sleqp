@@ -35,7 +35,7 @@ struct SleqpParams
 
 #define DEADPOINT_BOUND_DEFAULT 1e-10
 
-#define NEWTON_RELATIVE_TOL_DEFAULT 1e-6
+#define NEWTON_RELATIVE_TOL_DEFAULT 1e-8
 
 SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 {
