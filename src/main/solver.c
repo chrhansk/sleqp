@@ -540,7 +540,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
     const double func_val = sleqp_iterate_get_func_val(iterate);
 
-    if(total_violation >= 10. * func_val)
+    if(total_violation > 10. * SLEQP_ABS(func_val))
     {
       sleqp_log_warn("Problem is badly scaled, constraint violation %g significantly exceeds function value of %g",
                      total_violation,
