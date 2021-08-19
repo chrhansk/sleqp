@@ -257,6 +257,7 @@ int sleqp_cutest_run(const char* filename,
   }
   else
   {
+    sleqp_log_error("Failed to solve problem %s", probname);
     success = false;
   }
 
