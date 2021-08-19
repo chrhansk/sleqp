@@ -391,13 +391,13 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                      zero_eps,
                                      newton_step));
 
-#if !defined(NDEBUG)
-
   SLEQP_CALL(print_residuals(data,
                              multipliers,
                              data->gradient,
                              tr_step,
                              reduced_trust_radius));
+
+#if !defined(NDEBUG)
 
   // Initial direction and trust region direction
   // must be orthogonal
