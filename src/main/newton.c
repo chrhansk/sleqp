@@ -248,11 +248,21 @@ SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
                                            tr_prod,
                                            NULL));
 
-  const double stationarity_res = sleqp_sparse_vector_inf_norm(tr_prod);
+  const double stat_res = sleqp_sparse_vector_inf_norm(tr_prod);
 
   sleqp_log_debug("Trust region feasibility residuum: %.14e, stationarity residuum: %.14e",
                   SLEQP_MAX(radius_res, projection_res),
-                  stationarity_res);
+                  stat_res);
+
+  const double stat_tol = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_STATIONARITY_TOL);
+
+  if(stat_res >= stat_tol)
+  {
+    sleqp_log_warn("Newton stationarity residuum of %e exceeds desired stationarity tolerance of %e",
+                   stat_res,
+                   stat_tol);
+  }
 
   return SLEQP_OKAY;
 }

@@ -582,7 +582,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
     return SLEQP_OKAY;
   }
 
-  sleqp_log_debug("Beginning Cauchy-Newton line search, initial step length: %f, quadratic merit at Cauchy point: %f",
+  sleqp_log_debug("Beginning Cauchy-Newton line search, initial step length: %g, quadratic merit at Cauchy point: %g",
                   alpha,
                   cauchy_quadratic_merit_value);
 
@@ -677,14 +677,17 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
 #endif
 
-    sleqp_log_debug("Cauchy-Newton line search iteration %d, step length: %g, quadratic merit value: %g",
+    const double scaled_product = alpha*quadratic_merit_gradient_product;
+
+    sleqp_log_debug("Cauchy-Newton line search iteration %d, step length: %g, quadratic merit value: %g, scaled inner product: %g",
                     iteration,
                     alpha,
-                    quadratic_merit_value);
+                    quadratic_merit_value,
+                    scaled_product);
 
     // check convergence or abort if the stepsize becomes too small
 
-    if(quadratic_merit_value <= cauchy_quadratic_merit_value + eta*alpha*quadratic_merit_gradient_product)
+    if(quadratic_merit_value <= cauchy_quadratic_merit_value + eta*scaled_product)
     {
       (*step_length) = alpha;
       (*trial_quadratic_merit_value) = quadratic_merit_value;

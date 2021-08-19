@@ -503,13 +503,18 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   const double feas_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_FEASIBILITY_TOL);
 
-  sleqp_log_info("Solving a problem with %d variables, %d constraints",
-                 num_variables,
-                 num_constraints);
-
   SLEQP_CALL(sleqp_set_and_evaluate(problem,
                                     iterate,
                                     SLEQP_VALUE_REASON_INIT));
+
+  {
+    SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+
+    sleqp_log_info("Solving a problem with %d variables, %d constraints, %d Jacobian nonzeros",
+                   num_variables,
+                   num_constraints,
+                   sleqp_sparse_matrix_get_nnz(cons_jac));
+  }
 
   // ensure that the unscaled iterate is initialized
   if(solver->scaling_data)
