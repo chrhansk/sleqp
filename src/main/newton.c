@@ -205,11 +205,42 @@ SLEQP_RETCODE sleqp_newton_add_violated_multipliers(SleqpNewtonData* data,
 }
 
 static
-SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
-                              const SleqpSparseVec* multipliers,
-                              const SleqpSparseVec* gradient,
-                              SleqpSparseVec* tr_step,
-                              double trust_radius)
+SLEQP_RETCODE projection_residuum(SleqpNewtonData* data,
+                                  SleqpSparseVec* tr_step,
+                                  double* residuum)
+{
+  const double zero_eps = sleqp_params_get(data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  SleqpAugJacobian* jacobian = data->jacobian;
+
+  SleqpSparseVec* sparse_cache = data->sparse_cache;
+  SleqpSparseVec* residuals = data->tr_hessian_product;
+
+  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
+                                           tr_step,
+                                           sparse_cache,
+                                           NULL));
+
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sparse_cache,
+                                            tr_step,
+                                            1.,
+                                            -1.,
+                                            zero_eps,
+                                            residuals));
+
+  *residuum = sleqp_sparse_vector_inf_norm(residuals);
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE stationarity_residuum(SleqpNewtonData* data,
+                                    const SleqpSparseVec* multipliers,
+                                    const SleqpSparseVec* gradient,
+                                    SleqpSparseVec* tr_step,
+                                    double tr_dual,
+                                    double* residuum)
 {
   SleqpProblem* problem = data->problem;
 
@@ -219,16 +250,6 @@ SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
 
   const double zero_eps = sleqp_params_get(data->params,
                                            SLEQP_PARAM_ZERO_EPS);
-
-  const double step_norm = sleqp_sparse_vector_norm(tr_step);
-  const double radius_res = step_norm - trust_radius;
-
-  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                           tr_step,
-                                           sparse_cache,
-                                           NULL));
-
-  const double projection_res = sleqp_sparse_vector_inf_norm(sparse_cache);
 
   double one = 1.;
 
@@ -243,15 +264,49 @@ SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
                                      zero_eps,
                                      sparse_cache));
 
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sparse_cache,
+                                            tr_step,
+                                            1.,
+                                            tr_dual,
+                                            zero_eps,
+                                            tr_prod));
+
   SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                           sparse_cache,
                                            tr_prod,
+                                           sparse_cache,
                                            NULL));
 
-  const double stat_res = sleqp_sparse_vector_inf_norm(tr_prod);
+  (*residuum) = sleqp_sparse_vector_inf_norm(sparse_cache);
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
+                              const SleqpSparseVec* multipliers,
+                              const SleqpSparseVec* gradient,
+                              SleqpSparseVec* tr_step,
+                              double trust_radius,
+                              double tr_dual)
+{
+  const double step_norm = sleqp_sparse_vector_norm(tr_step);
+  const double radius_res = SLEQP_MAX(step_norm - trust_radius, 0.);
+
+  double proj_res = 0.;
+
+  SLEQP_CALL(projection_residuum(data, tr_step, &proj_res));
+
+  double stat_res = 0.;
+
+  SLEQP_CALL(stationarity_residuum(data,
+                                   multipliers,
+                                   gradient,
+                                   tr_step,
+                                   tr_dual,
+                                   &stat_res));
 
   sleqp_log_debug("Trust region feasibility residuum: %.14e, stationarity residuum: %.14e",
-                  SLEQP_MAX(radius_res, projection_res),
+                  SLEQP_MAX(radius_res, proj_res),
                   stat_res);
 
   const double stat_tol = sleqp_params_get(data->params,
@@ -360,11 +415,6 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     return SLEQP_OKAY;
   }
 
-  /*
-    SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
-    int working_set_size = sleqp_working_set_size(working_set);
-  */
-
   SleqpFunc* func = sleqp_problem_func(problem);
 
   SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
@@ -395,7 +445,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                              multipliers,
                              data->gradient,
                              tr_step,
-                             reduced_trust_radius));
+                             reduced_trust_radius,
+                             tr_dual));
 
 #if !defined(NDEBUG)
 
