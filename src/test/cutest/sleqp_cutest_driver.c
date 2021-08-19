@@ -1,6 +1,8 @@
 #include "sleqp_cutest_driver.h"
 
 #include <assert.h>
+#include <errno.h>
+#include <string.h>
 
 #include "cmp.h"
 #include "iterate.h"
@@ -16,7 +18,8 @@
 static
 SLEQP_RETCODE report_result(SleqpSolver* solver,
                             SleqpProblem* problem,
-                            const char* probname)
+                            const char* probname,
+                            FILE* output)
 {
   const char* descriptions[] = {
     [SLEQP_FEASIBLE] = "feasible",
@@ -85,7 +88,7 @@ SLEQP_RETCODE report_result(SleqpSolver* solver,
                                               iterate,
                                               &slack_res));
 
-  fprintf(stdout,
+  fprintf(output,
           "%s;%d;%d;%s;%f;%.14e;%.14e;%.14e;%d;%f;%d;%f;%f;%f\n",
           probname,
           num_variables,
@@ -121,6 +124,26 @@ int sleqp_cutest_run(const char* filename,
   integer CUTEst_ncons;       /* number of constraints */
 
   bool CUTest_constrained = false;
+
+  FILE* output;
+
+  if(cutest_options->output)
+  {
+    output = fopen(cutest_options->output, "w");
+
+    if(!output)
+    {
+      sleqp_log_error("Failed to open %s: %s, aborting.",
+                      cutest_options->output,
+                      strerror(errno));
+
+      return EXIT_FAILURE;
+    }
+  }
+  else
+  {
+    output = stdout;
+  }
 
   ierr = 0;
   FORTRAN_open(&funit, filename, &ierr);
@@ -223,7 +246,7 @@ int sleqp_cutest_run(const char* filename,
 
   if(retcode == SLEQP_OKAY)
   {
-    SLEQP_CALL(report_result(solver, problem, probname));
+    SLEQP_CALL(report_result(solver, problem, probname, output));
 
     SLEQP_STATUS status = sleqp_solver_get_status(solver);
 
@@ -260,5 +283,11 @@ int sleqp_cutest_run(const char* filename,
                     funit);
   }
 
-  return !(success);
+  if(cutest_options->output)
+  {
+    fclose(output);
+  }
+
+  return success ? EXIT_SUCCESS : EXIT_FAILURE;
+  //return !(success);
 }

@@ -25,12 +25,13 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
       {"enable_preprocessing",        no_argument,       0, 'p'},
       {"force_nonlinear_constraints", no_argument,       0, 'n'},
       {"max_num_threads",             required_argument, 0, 't'},
+      {"output",                      required_argument, 0, 'o'},
       {0,                             0,                 0,  0}
     };
 
     int c = getopt_long(argc,
                         argv,
-                        "lpnt",
+                        "lpnto",
                         long_options,
                         &option_index);
     if (c == -1)
@@ -60,6 +61,10 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
 #endif
       break;
 
+    case 'o':
+      options->output = optarg;
+      sleqp_log_debug("Setting output to %s", optarg);
+      break;
     default:
       sleqp_log_error("Invalid option %o", c);
       return EXIT_FAILURE;

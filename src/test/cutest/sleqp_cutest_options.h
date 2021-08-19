@@ -13,6 +13,8 @@ typedef struct
   bool enable_preprocessing;
   bool force_nonlinear_constraints;
   int max_num_threads;
+  const char* output;
+
 } SleqpCutestOptions;
 
 #ifdef __cplusplus
