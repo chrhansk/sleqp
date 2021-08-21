@@ -1,15 +1,19 @@
 #include "step_rule.h"
 
 #include <assert.h>
+#include <float.h>
 
 #include "step/step_rule_direct.h"
 #include "step/step_rule_minstep.h"
 #include "step/step_rule_window.h"
 
+#include "cmp.h"
 #include "mem.h"
 
 static const int window_size = 25;
 static const int step_count = 2;
+
+static const double eps_factor = 10.;
 
 struct SleqpStepRule
 {
@@ -155,4 +159,22 @@ SLEQP_RETCODE sleqp_step_rule_create_default(SleqpStepRule** star,
   }
 
   return SLEQP_OKAY;
+}
+
+double sleqp_step_rule_reduction_ratio(const double exact_reduction,
+                                       const double model_reduction)
+{
+  const double eps = eps_factor * DBL_EPSILON;
+
+  const double corr_model_reduction = model_reduction - eps;
+  const double corr_exact_reduction = exact_reduction - eps;
+
+  // Safeguard against roundoff errors
+  if(SLEQP_ABS(corr_model_reduction) <= eps &&
+     SLEQP_ABS(corr_exact_reduction) <= eps)
+  {
+    return 1.;
+  }
+
+  return corr_exact_reduction / corr_model_reduction;
 }

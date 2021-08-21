@@ -19,12 +19,8 @@ static SLEQP_RETCODE step_rule_direct_apply(double iterate_merit,
   const double exact_reduction = iterate_merit - trial_exact_merit;
   const double model_reduction = iterate_merit - trial_model_merit;
 
-  *reduction_ratio = 1.;
-
-  if(exact_reduction != model_reduction)
-  {
-    *reduction_ratio = exact_reduction / model_reduction;
-  }
+  *reduction_ratio = sleqp_step_rule_reduction_ratio(exact_reduction,
+                                                     model_reduction);
 
   const double accepted_reduction = sleqp_params_get(step_rule->params,
                                                      SLEQP_PARAM_ACCEPTED_REDUCTION);

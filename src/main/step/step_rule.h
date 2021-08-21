@@ -59,6 +59,9 @@ extern "C" {
                                                SleqpParams* params,
                                                const SleqpOptions* options);
 
+  double sleqp_step_rule_reduction_ratio(const double exact_reduction,
+                                         const double model_reduction);
+
 #ifdef __cplusplus
 }
 #endif
