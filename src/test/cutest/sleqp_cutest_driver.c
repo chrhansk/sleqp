@@ -236,7 +236,7 @@ int sleqp_cutest_run(const char* filename,
                                  NULL));
 
   const int max_num_iterations = -1;
-  const double time_limit = 3600;
+  const double time_limit = cutest_options->time_limit;
 
   bool success = true;
 

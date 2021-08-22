@@ -26,6 +26,7 @@ add_library(sleqp_cutest
   sleqp_cutest_driver.c
   sleqp_cutest_data.c
   sleqp_cutest_constrained.c
+  sleqp_cutest_options.c
   sleqp_cutest_unconstrained.c)
 
 target_link_libraries(sleqp_cutest sleqp)
