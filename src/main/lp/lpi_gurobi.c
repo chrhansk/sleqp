@@ -20,6 +20,8 @@ typedef struct SleqpLpiGRB
   GRBenv* env;
   GRBmodel* model;
 
+  SLEQP_LPI_STATUS status;
+
   int num_cols;
   int num_rows;
 
@@ -75,6 +77,7 @@ static SLEQP_RETCODE gurobi_create_problem(void** star,
   lp_interface->num_cols = num_cols;
   lp_interface->num_rows = num_rows;
   lp_interface->num_lp_cols = num_rows + num_cols;
+  lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
 
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->col_basis, num_cols));
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->slack_basis, num_rows));
@@ -161,6 +164,18 @@ static SLEQP_RETCODE gurobi_create_problem(void** star,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE gurobi_write(void* lp_data, const char* filename)
+{
+  SleqpLpiGRB* lp_interface = lp_data;
+
+  GRBenv* env = lp_interface->env;
+  GRBmodel* model = lp_interface->model;
+
+  SLEQP_GRB_CALL(GRBwrite(model, filename), env);
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE gurobi_solve(void* lp_data,
                                   int num_cols,
                                   int num_rows,
@@ -171,8 +186,6 @@ static SLEQP_RETCODE gurobi_solve(void* lp_data,
 
   GRBenv* env = lp_interface->env;
   GRBmodel* model = lp_interface->model;
-
-  // SLEQP_GRB_CALL(GRBwrite(model, "file.lp"), env);
 
   if(time_limit != SLEQP_NONE)
   {
@@ -188,9 +201,38 @@ static SLEQP_RETCODE gurobi_solve(void* lp_data,
 
   SLEQP_GRB_CALL(GRBgetintattr(model, GRB_INT_ATTR_STATUS, &sol_stat), env);
 
-  assert(sol_stat == GRB_OPTIMAL);
+  switch(sol_stat)
+  {
+  case GRB_OPTIMAL:
+    lp_interface->status = SLEQP_LPI_STATUS_OPTIMAL;
+    break;
+  case GRB_INFEASIBLE:
+    lp_interface->status = SLEQP_LPI_STATUS_INF;
+    break;
+  case GRB_INF_OR_UNBD:
+    lp_interface->status = SLEQP_LPI_STATUS_INF_OR_UNBOUNDED;
+    break;
+  case GRB_UNBOUNDED:
+    lp_interface->status = SLEQP_LPI_STATUS_UNBOUNDED;
+    break;
+  case GRB_TIME_LIMIT:
+    lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
+    return SLEQP_ABORT_TIME;
+    break;
+  default:
+    sleqp_log_error("Invalid Gurobi status: %d", sol_stat);
+    lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
+    return SLEQP_INTERNAL_ERROR;
+  }
 
   return SLEQP_OKAY;
+}
+
+static SLEQP_LPI_STATUS gurobi_get_status(void* lp_data)
+{
+  SleqpLpiGRB* lp_interface = lp_data;
+
+  return lp_interface->status;
 }
 
 static SLEQP_RETCODE gurobi_set_bounds(void* lp_data,
@@ -589,6 +631,7 @@ SLEQP_RETCODE sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
   SleqpLPiCallbacks callbacks = {
     .create_problem      = gurobi_create_problem,
     .solve               = gurobi_solve,
+    .get_status          = gurobi_get_status,
     .set_bounds          = gurobi_set_bounds,
     .set_coefficients    = gurobi_set_coefficients,
     .set_objective       = gurobi_set_objective,

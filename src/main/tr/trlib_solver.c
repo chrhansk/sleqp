@@ -253,7 +253,6 @@ static SLEQP_RETCODE check_optimality(SolverData* data,
   return SLEQP_OKAY;
 }
 
-
 static SLEQP_RETCODE trlib_loop(SolverData* data,
                                 SleqpAugJacobian* jacobian,
                                 SleqpSparseVec* multipliers,
@@ -684,12 +683,16 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
     }
   }
 
-  if(!exhausted_time_limit)
+  SLEQP_CALL(sleqp_timer_stop(data->timer));
+
+  if(exhausted_time_limit)
+  {
+    return SLEQP_ABORT_TIME;
+  }
+  else
   {
     assert((*trlib_ret) != TRLIB_CLR_CONTINUE);
   }
-
-  SLEQP_CALL(sleqp_timer_stop(data->timer));
 
   return SLEQP_OKAY;
 }

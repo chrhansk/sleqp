@@ -17,13 +17,14 @@ extern "C" {
 #include "pub_log.h"
 
   typedef enum {
-    SLEQP_OKAY = 0,
-    SLEQP_NOMEM,
-    SLEQP_FAILED_ASSERTION,
-    SLEQP_ILLEGAL_ARGUMENT,
-    SLEQP_INVALID_DERIV,
-    SLEQP_INTERNAL_ERROR,
-    SLEQP_MATH_ERROR
+    SLEQP_NOMEM            = -6,
+    SLEQP_FAILED_ASSERTION = -5,
+    SLEQP_ILLEGAL_ARGUMENT = -4,
+    SLEQP_INVALID_DERIV    = -3,
+    SLEQP_INTERNAL_ERROR   = -2,
+    SLEQP_MATH_ERROR       = -1,
+    SLEQP_OKAY             = 0,
+    SLEQP_ABORT_TIME       = 1
   } SLEQP_RETCODE;
 
 #ifdef SLEQP_HAVE_WARN_UNUSED_RESULT
@@ -50,21 +51,25 @@ extern "C" {
     SLEQP_STATUS_ABORT_TIME
   } SLEQP_STATUS;
 
-  extern const char* const sleqp_retcode_names[];
+  const char* sleqp_retcode_str(SLEQP_RETCODE retcode);
 
-#define SLEQP_CALL(x)                                                      \
-  do                                                                       \
-  {                                                                        \
-    SLEQP_RETCODE status;                                                  \
-    if( (status = (x)) != SLEQP_OKAY )                                     \
-    {                                                                      \
-       sleqp_log_error("Error <%d> (%s) in function %s",                   \
-                       status,                                             \
-                       sleqp_retcode_names[status],                        \
-                       __func__);                                          \
-      return status;                                                       \
-    }                                                                      \
-  }                                                                        \
+#define SLEQP_CALL(x)                                    \
+  do                                                     \
+  {                                                      \
+    const SLEQP_RETCODE _status = (x);                   \
+    if(_status < SLEQP_OKAY)                             \
+    {                                                    \
+       sleqp_log_error("Error <%d> (%s) in function %s", \
+                       _status,                          \
+                       sleqp_retcode_str(_status),       \
+                       __func__);                        \
+      return _status;                                    \
+    }                                                    \
+    else if(_status != SLEQP_OKAY)                       \
+    {                                                    \
+      return _status;                                    \
+    }                                                    \
+  }                                                      \
   while(0)
 
   typedef enum {

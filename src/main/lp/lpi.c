@@ -94,6 +94,11 @@ SLEQP_RETCODE sleqp_lpi_solve(SleqpLPi* lp_interface)
   return SLEQP_OKAY;
 }
 
+SLEQP_LPI_STATUS sleqp_get_status(SleqpLPi* lp_interface)
+{
+  return lp_interface->callbacks.get_status(lp_interface->lp_data);
+}
+
 SLEQP_RETCODE sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
                                    double* cons_lb,
                                    double* cons_ub,

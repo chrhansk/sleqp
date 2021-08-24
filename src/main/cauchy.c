@@ -632,6 +632,14 @@ SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchy* cauchy_data,
 
   SLEQP_CALL(sleqp_lpi_solve(cauchy_data->lp_interface));
 
+  SLEQP_LPI_STATUS status = sleqp_get_status(cauchy_data->lp_interface);
+
+  if(status != SLEQP_LPI_STATUS_OPTIMAL)
+  {
+    sleqp_log_error("Invalid LP status: %d", status);
+    return SLEQP_INTERNAL_ERROR;
+  }
+
 #if !defined(NDEBUG)
   {
     bool valid_basis = false;

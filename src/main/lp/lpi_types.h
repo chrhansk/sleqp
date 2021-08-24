@@ -28,6 +28,15 @@ extern "C" {
     SLEQP_BASESTAT_ZERO  = 3              /**< free variable is non-basic and set to zero */
   } SLEQP_BASESTAT;
 
+  typedef enum
+  {
+    SLEQP_LPI_STATUS_UNKNOWN,
+    SLEQP_LPI_STATUS_OPTIMAL,
+    SLEQP_LPI_STATUS_INF,
+    SLEQP_LPI_STATUS_INF_OR_UNBOUNDED,
+    SLEQP_LPI_STATUS_UNBOUNDED,
+  } SLEQP_LPI_STATUS;
+
   typedef SLEQP_RETCODE (*SLEQP_LPI_CREATE)(void** lp_data,
                                             int num_variables,
                                             int num_constraints,
@@ -38,6 +47,8 @@ extern "C" {
                                            int num_variables,
                                            int num_constraints,
                                            double time_limit);
+
+  typedef SLEQP_LPI_STATUS (*SLEQP_GET_STATUS)(void* lp_data);
 
   typedef SLEQP_RETCODE (*SLEQP_LPI_SET_BOUNDS)(void* lp_data,
                                                 int num_variables,
@@ -94,6 +105,7 @@ extern "C" {
   typedef struct {
     SLEQP_LPI_CREATE create_problem;
     SLEQP_LPI_SOLVE solve;
+    SLEQP_GET_STATUS get_status;
     SLEQP_LPI_SET_BOUNDS set_bounds;
     SLEQP_LPI_SET_COEFFICIENTS set_coefficients;
     SLEQP_LPI_SET_OBJECTIVE set_objective;

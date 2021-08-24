@@ -43,6 +43,8 @@ struct SleqpLpiSoplex
 
   int num_cols;
   int num_rows;
+
+  SLEQP_LPI_STATUS status;
 };
 
 static SLEQP_RETCODE soplex_create_problem(void** lp_data,
@@ -110,6 +112,7 @@ static SLEQP_RETCODE soplex_create_problem(void** lp_data,
 
   spx->num_cols = num_cols;
   spx->num_rows = num_rows;
+  spx->status   = SLEQP_LPI_STATUS_UNKNOWN;
 
   soplex.setIntParam(soplex::SoPlex::OBJSENSE,
                      soplex::SoPlex::OBJSENSE_MINIMIZE);
@@ -179,6 +182,32 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
     status = soplex.optimize();
   }
 
+  switch(status)
+  {
+  case soplex::SPxSolver::ABORT_TIME:
+    spx->status = SLEQP_LPI_STATUS_UNKNOWN;
+    return SLEQP_ABORT_TIME;
+    break;
+  case soplex::SPxSolver::OPTIMAL:
+    spx->status = SLEQP_LPI_STATUS_OPTIMAL;
+    break;
+  case soplex::SPxSolver::UNBOUNDED:
+    spx->status = SLEQP_LPI_STATUS_UNBOUNDED;
+    break;
+  case soplex::SPxSolver::INFEASIBLE:
+    spx->status = SLEQP_LPI_STATUS_INF;
+    break;
+  case soplex::SPxSolver::INForUNBD:
+    spx->status = SLEQP_LPI_STATUS_INF_OR_UNBOUNDED;
+    break;
+  default:
+    sleqp_log_error("Invalid SoPlex status: %d", status);
+    spx->status = SLEQP_LPI_STATUS_UNKNOWN;
+    return SLEQP_INTERNAL_ERROR;
+  }
+
+  assert(soplex.hasBasis());
+
   //soplex.writeFileReal("test.lp");
 
   /*
@@ -239,14 +268,14 @@ static SLEQP_RETCODE soplex_solve(void* lp_data,
   }
   */
 
-  if(!(status == soplex::SPxSolver::OPTIMAL &&
-       soplex.hasBasis()))
-  {
-    sleqp_log_error("Failed to solve LP");
-    return SLEQP_INTERNAL_ERROR;
-  }
-
   return SLEQP_OKAY;
+}
+
+static SLEQP_LPI_STATUS soplex_get_status(void* lp_data)
+{
+  SleqpLpiSoplex* spx = (SleqpLpiSoplex*) lp_data;
+
+  return spx->status;
 }
 
 static SLEQP_RETCODE soplex_set_bounds(void* lp_data,
@@ -548,6 +577,7 @@ extern "C"
     SleqpLPiCallbacks callbacks = {
       .create_problem      = soplex_create_problem,
       .solve               = soplex_solve,
+      .get_status          = soplex_get_status,
       .set_bounds          = soplex_set_bounds,
       .set_coefficients    = soplex_set_coefficients,
       .set_objective       = soplex_set_objective,

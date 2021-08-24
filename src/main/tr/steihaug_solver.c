@@ -36,7 +36,7 @@ typedef struct
   double min_rayleigh, max_rayleigh;
 
   SleqpTimer* timer;
-}  SleqpSteihaugSolver;
+} SleqpSteihaugSolver;
 
 
 static SLEQP_RETCODE steihaug_solver_free(void **star)
@@ -180,16 +180,21 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
 
   SLEQP_CALL(sleqp_sparse_vector_dot(solver->r, solver->g, &r_dot_g));
 
+  bool reached_time_limit = false;
+
   // loop over pCG iterations j
   for(int iteration = 0;; ++iteration)
   {
-    if(solver->max_iter != SLEQP_NONE && iteration >= solver->max_iter)
+    if(solver->max_iter != SLEQP_NONE &&
+       iteration >= solver->max_iter)
     {
       break;
     }
 
-    if(time_limit != SLEQP_NONE && sleqp_timer_elapsed(solver->timer) >= time_limit)
+    if(time_limit != SLEQP_NONE &&
+       sleqp_timer_elapsed(solver->timer) >= time_limit)
     {
+      reached_time_limit = true;
       break;
     }
 
@@ -338,6 +343,11 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
                                 eps));
 
   SLEQP_CALL(sleqp_timer_stop(solver->timer));
+
+  if(reached_time_limit)
+  {
+    return SLEQP_ABORT_TIME;
+  }
 
   return SLEQP_OKAY;
 }
