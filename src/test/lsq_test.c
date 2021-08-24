@@ -71,7 +71,7 @@ START_TEST(test_unconstrained_solve)
   ASSERT_CALL(sleqp_solver_get_solution(solver,
                                         &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
@@ -117,7 +117,7 @@ START_TEST(test_lsqr_solve)
   ASSERT_CALL(sleqp_solver_get_solution(solver,
                                         &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
@@ -194,7 +194,7 @@ START_TEST(test_constrained_lsqr_solve)
   ASSERT_CALL(sleqp_solver_get_solution(solver,
                                         &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
@@ -261,7 +261,7 @@ START_TEST(test_scaled_solve)
   ASSERT_CALL(sleqp_solver_get_solution(solver,
                                         &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 

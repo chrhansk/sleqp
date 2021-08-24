@@ -147,7 +147,7 @@ START_TEST(test_unbounded_solve)
   ASSERT_CALL(sleqp_solver_get_solution(solver,
                                         &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_UNBOUNDED);
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_UNBOUNDED);
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 

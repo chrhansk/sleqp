@@ -215,9 +215,7 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_solver_restore_original_iterate(SleqpSolver* solver);
 
-  SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
-                                               bool* optimal,
-                                               bool* unbounded);
+  SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver);
 
   SLEQP_RETCODE sleqp_solver_set_func_value(SleqpSolver* solver,
                                             SleqpIterate* iterate,

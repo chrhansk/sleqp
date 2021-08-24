@@ -500,8 +500,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  const double feas_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_FEASIBILITY_TOL);
+  solver->status = SLEQP_STATUS_RUNNING;
 
   SLEQP_CALL(sleqp_set_and_evaluate(problem,
                                     iterate,
@@ -560,9 +559,9 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     }
   }
 
-  solver->status = SLEQP_INVALID;
-
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
+
+  solver->status = SLEQP_STATUS_RUNNING;
 
   solver->time_limit = time_limit;
   solver->abort_next = false;
@@ -574,43 +573,37 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   const double deadpoint_bound = sleqp_params_get(solver->params,
                                                   SLEQP_PARAM_DEADPOINT_BOUND);
 
-  bool reached_deadpoint = false;
-
   SLEQP_CALL(sleqp_solver_print_header(solver));
 
   // main solving loop
   while(true)
   {
-    if(time_limit != SLEQP_NONE)
+    if(time_limit != SLEQP_NONE &&
+       solver->elapsed_seconds >= time_limit)
     {
-      if(solver->elapsed_seconds >= time_limit)
-      {
-        sleqp_log_info("Exhausted time limit, terminating");
-        break;
-      }
+      sleqp_log_info("Exhausted time limit, terminating");
+      solver->status = SLEQP_STATUS_ABORT_TIME;
+      break;
     }
 
     if(max_num_iterations != SLEQP_NONE &&
        solver->iteration >= max_num_iterations)
     {
       sleqp_log_info("Reached iteration limit, terminating");
+      solver->status = SLEQP_STATUS_ABORT_ITER;
       break;
     }
 
     if(solver->abort_next)
     {
       sleqp_log_info("Abortion requested, terminating");
+      solver->status = SLEQP_STATUS_ABORT_MANUAL;
       break;
     }
 
-    bool optimal;
-    bool unbounded;
-
     SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
 
-    SLEQP_CALL(sleqp_solver_perform_iteration(solver,
-                                              &optimal,
-                                              &unbounded));
+    SLEQP_CALL(sleqp_solver_perform_iteration(solver));
 
     SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
 
@@ -619,44 +612,24 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     if(solver->lp_trust_radius <= deadpoint_bound ||
        solver->trust_radius <= deadpoint_bound)
     {
-      reached_deadpoint = true;
+      sleqp_log_warn("Reached dead point");
+      solver->status = SLEQP_STATUS_ABORT_DEADPOINT;
       break;
     }
 
-    if(optimal)
+    if(solver->status != SLEQP_STATUS_RUNNING)
     {
-      sleqp_log_debug("Achieved optimality");
-      solver->status = SLEQP_OPTIMAL;
-      break;
-    }
-
-    if(unbounded)
-    {
-      sleqp_log_debug("Detected unboundedness");
-      solver->status = SLEQP_UNBOUNDED;
       break;
     }
   }
 
-  if(reached_deadpoint)
-  {
-    sleqp_log_warn("Reached dead point");
-  }
+  assert(solver->status != SLEQP_STATUS_RUNNING);
 
   double violation;
 
   SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
                                                 solver->iterate,
                                                 &violation));
-
-  if(solver->status == SLEQP_INVALID)
-  {
-    const bool feasible = sleqp_iterate_is_feasible(iterate,
-                                                    solver->feasibility_residuum,
-                                                    feas_eps);
-
-    solver->status = feasible ? SLEQP_FEASIBLE : SLEQP_INFEASIBLE;
-  }
 
   SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_FINISHED],
                                  SLEQP_FINISHED,

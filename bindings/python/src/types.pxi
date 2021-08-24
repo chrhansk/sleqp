@@ -16,11 +16,14 @@ class Status(_DocEnum):
   """
   The status resulting from the solution process
   """
-  Optimal    = csleqp.SLEQP_OPTIMAL, "An optimal solution was found"
-  Feasible   = csleqp.SLEQP_FEASIBLE, "A feasible solution was found"
-  Unbounded  = csleqp.SLEQP_UNBOUNDED, "The problem appears unbounded"
-  Infeasible = csleqp.SLEQP_INFEASIBLE, "No feasible solution was found"
-  Invalid    = csleqp.SLEQP_INVALID
+  Unkown         = csleqp.SLEQP_STATUS_UNKNOWN, "Unknown state"
+  Running        = csleqp.SLEQP_STATUS_RUNNING, "Solver is running"
+  Optimal        = csleqp.SLEQP_STATUS_OPTIMAL, "An optimal solution was found"
+  Unbounded      = csleqp.SLEQP_STATUS_UNBOUNDED, "Problem appears unbounded"
+  AbortDeadpoint = csleqp.SLEQP_STATUS_ABORT_DEADPOINT, "Reached a dead point"
+  AbortIter      = csleqp.SLEQP_STATUS_ABORT_ITER, "Aborted after reaching iteration limit"
+  AbortManual    = csleqp.SLEQP_STATUS_ABORT_MANUAL, "Manual abort requested"
+  AbortTime      = csleqp.SLEQP_STATUS_ABORT_TIME, "Aborted after reaching time limit"
 
 class DerivCheck(Flag):
   Skip             = csleqp.SLEQP_DERIV_CHECK_SKIP

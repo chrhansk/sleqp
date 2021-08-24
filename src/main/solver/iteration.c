@@ -155,12 +155,9 @@ SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
-                                             bool* optimal,
-                                             bool* unbounded)
+SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 {
-  *optimal = false;
-  *unbounded = false;
+  assert(solver->status == SLEQP_STATUS_RUNNING);
 
   SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface,
                                       sleqp_solver_remaining_time(solver)));
@@ -200,10 +197,10 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
 
     if(feasible)
     {
-      *unbounded = true;
+      sleqp_log_debug("Detected unboundedness");
+      solver->status = SLEQP_STATUS_UNBOUNDED;
+      return SLEQP_OKAY;
     }
-
-    return SLEQP_OKAY;
   }
 
   double exact_iterate_value, model_iterate_value;
@@ -239,7 +236,8 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver,
                                 solver->slackness_residuum,
                                 solver->stationarity_residuum))
     {
-      *optimal = true;
+      sleqp_log_debug("Achieved optimality");
+      solver->status = SLEQP_STATUS_OPTIMAL;
       return SLEQP_OKAY;
     }
   }

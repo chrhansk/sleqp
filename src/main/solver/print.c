@@ -160,11 +160,13 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                        double violation)
 {
   const char* descriptions[] = {
-    [SLEQP_FEASIBLE]   = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "feasible"   SLEQP_FORMAT_RESET,
-    [SLEQP_OPTIMAL]    = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN  "optimal"    SLEQP_FORMAT_RESET,
-    [SLEQP_INFEASIBLE] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "infeasible" SLEQP_FORMAT_RESET,
-    [SLEQP_UNBOUNDED]  = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "unbounded"  SLEQP_FORMAT_RESET,
-    [SLEQP_INVALID]    = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "Invalid"    SLEQP_FORMAT_RESET
+    [SLEQP_STATUS_UNKNOWN]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "unknown"    SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_RUNNING]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "running"    SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_OPTIMAL]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN  "optimal"    SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_UNBOUNDED]       = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "unbounded"  SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_ABORT_ITER]      = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached iteration limit"  SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_ABORT_TIME]      = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached time limit"  SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_ABORT_DEADPOINT] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached dead point"  SLEQP_FORMAT_RESET,
   };
 
   SleqpFunc* original_func = sleqp_problem_func(solver->original_problem);
@@ -286,26 +288,6 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                 solver->elapsed_seconds));
 
   sleqp_log_info("%30s: %8.2fs", "Solving time", solver->elapsed_seconds);
-
-  if(solver->status == SLEQP_INFEASIBLE)
-  {
-    SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
-
-    SleqpSparseVec* original_cons_val = sleqp_iterate_get_cons_val(solver->original_iterate);
-
-    SLEQP_CALL(sleqp_violation_values(solver->original_problem,
-                                      original_cons_val,
-                                      solver->original_violation));
-
-    sleqp_log_info("Violations with respect to original problem: ");
-
-    for(int index = 0; index < solver->original_violation->nnz; ++index)
-    {
-      sleqp_log_info("(%d) = %e",
-                     solver->original_violation->indices[index],
-                     solver->original_violation->data[index]);
-    }
-  }
 
   return SLEQP_OKAY;
 }
