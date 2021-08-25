@@ -164,8 +164,7 @@ extern "C" {
    * Creates a new function
    *
    * @param[out] fstar            A pointer to the function to be created
-   * @param[in]  setx             A callback to set the input vector
-   * @param[in]  eval             A callback to evaluate the function and gradient
+   * @param[in]  callbacks        A callback to the function callbacks
    * @param[in]  num_variables    The number of variables
    * @param[in]  num_constraints  The number of constraints
    * @param[in]  func_data        The function data

@@ -1,5 +1,5 @@
-#ifndef WORKING_STEP_H
-#define WORKING_STEP_H
+#ifndef SLEQP_WORKING_STEP_H
+#define SLEQP_WORKING_STEP_H
 
 /**
  * @file working_step.h
@@ -49,4 +49,4 @@ extern "C" {
 }
 #endif
 
-#endif /* WORKING_STEP_H */
+#endif /* SLEQP_WORKING_STEP_H */

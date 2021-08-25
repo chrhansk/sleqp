@@ -1,5 +1,5 @@
-#ifndef STEP_RULE_MINSTEP_H
-#define STEP_RULE_MINSTEP_H
+#ifndef SLEQP_STEP_RULE_MINSTEP_H
+#define SLEQP_STEP_RULE_MINSTEP_H
 
 #include "step_rule.h"
 
@@ -23,4 +23,4 @@ extern "C" {
 }
 #endif
 
-#endif /* STEP_RULE_MINSTEP_H */
+#endif /* SLEQP_STEP_RULE_MINSTEP_H */

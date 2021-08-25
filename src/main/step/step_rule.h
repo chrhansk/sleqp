@@ -1,5 +1,5 @@
-#ifndef STEP_RULE_H
-#define STEP_RULE_H
+#ifndef SLEQP_STEP_RULE_H
+#define SLEQP_STEP_RULE_H
 
 #include "iterate.h"
 #include "options.h"
@@ -66,4 +66,4 @@ extern "C" {
 }
 #endif
 
-#endif /* STEP_RULE_H */
+#endif /* SLEQP_STEP_RULE_H */

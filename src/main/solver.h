@@ -1,5 +1,5 @@
-#ifndef SOLVER_H
-#define SOLVER_H
+#ifndef SLEQP_SOLVER_H
+#define SLEQP_SOLVER_H
 
 #include "pub_solver.h"
 
@@ -229,4 +229,4 @@ extern "C" {
 }
 #endif
 
-#endif /* SOLVER_H */
+#endif /* SLEQP_SOLVER_H */

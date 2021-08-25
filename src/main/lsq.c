@@ -213,6 +213,7 @@ static SLEQP_RETCODE lsq_func_free(void* func_data)
   {
     return SLEQP_OKAY;
   }
+
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
 
   if(lsq_data->callbacks.func_free)

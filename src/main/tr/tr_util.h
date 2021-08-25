@@ -1,5 +1,5 @@
-#ifndef TR_UTIL_H
-#define TR_UTIL_H
+#ifndef SLEQP_TR_UTIL_H
+#define SLEQP_TR_UTIL_H
 
 #include "params.h"
 #include "sparse/sparse_vec.h"
@@ -18,4 +18,4 @@ extern "C" {
 }
 #endif
 
-#endif /* TR_UTIL_H */
+#endif /* SLEQP_TR_UTIL_H */
