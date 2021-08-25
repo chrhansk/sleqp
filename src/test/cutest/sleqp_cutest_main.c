@@ -161,6 +161,8 @@ int main(int argc, char *argv[])
 
   SleqpCutestOptions options = (SleqpCutestOptions) {0};
 
+  sleqp_cutest_options_default(&options);
+
   if(parse_command_line_options(argc, argv, &options) != EXIT_SUCCESS)
   {
     return EXIT_FAILURE;

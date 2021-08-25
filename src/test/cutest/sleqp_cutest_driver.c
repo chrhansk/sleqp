@@ -22,11 +22,13 @@ SLEQP_RETCODE report_result(SleqpSolver* solver,
                             FILE* output)
 {
   const char* descriptions[] = {
-    [SLEQP_FEASIBLE] = "feasible",
-    [SLEQP_OPTIMAL] = "optimal",
-    [SLEQP_INFEASIBLE] = "infeasible",
-    [SLEQP_UNBOUNDED] = "unbounded",
-    [SLEQP_INVALID] = "invalid"
+    [SLEQP_STATUS_UNKNOWN]         = "unknown",
+    [SLEQP_STATUS_RUNNING]         = "running",
+    [SLEQP_STATUS_OPTIMAL]         = "optimal",
+    [SLEQP_STATUS_UNBOUNDED]       = "unbounded",
+    [SLEQP_STATUS_ABORT_ITER]      = "abort_iter_limit",
+    [SLEQP_STATUS_ABORT_TIME]      = "abort_time_limit",
+    [SLEQP_STATUS_ABORT_DEADPOINT] = "abort_dead_point",
   };
 
   const int num_variables = sleqp_problem_num_variables(problem);
@@ -249,11 +251,6 @@ int sleqp_cutest_run(const char* filename,
     SLEQP_CALL(report_result(solver, problem, probname, output));
 
     SLEQP_STATUS status = sleqp_solver_get_status(solver);
-
-    if(status == SLEQP_INVALID)
-    {
-      success = false;
-    }
   }
   else
   {
