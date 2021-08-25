@@ -84,14 +84,14 @@ SLEQP_RETCODE sleqp_lpi_solve(SleqpLPi* lp_interface)
 {
   SLEQP_CALL(sleqp_timer_start(lp_interface->timer));
 
-  SLEQP_CALL(lp_interface->callbacks.solve(lp_interface->lp_data,
-                                           lp_interface->num_variables,
-                                           lp_interface->num_constraints,
-                                           lp_interface->time_limit));
+  SLEQP_RETCODE retcode = lp_interface->callbacks.solve(lp_interface->lp_data,
+                                                        lp_interface->num_variables,
+                                                        lp_interface->num_constraints,
+                                                        lp_interface->time_limit);
 
   SLEQP_CALL(sleqp_timer_stop(lp_interface->timer));
 
-  return SLEQP_OKAY;
+  return retcode;
 }
 
 SLEQP_LPI_STATUS sleqp_get_status(SleqpLPi* lp_interface)

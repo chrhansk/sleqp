@@ -603,18 +603,18 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
 
-    SLEQP_RETCODE status = sleqp_solver_perform_iteration(solver);
+    SLEQP_RETCODE solver_status = sleqp_solver_perform_iteration(solver);
 
-    if(status == SLEQP_ABORT_TIME)
+    SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
+
+    if(solver_status == SLEQP_ABORT_TIME)
     {
       sleqp_log_info("Exhausted time limit, terminating");
       solver->status = SLEQP_STATUS_ABORT_TIME;
       break;
     }
 
-    SLEQP_CALL(status);
-
-    SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
+    SLEQP_CALL(solver_status);
 
     solver->elapsed_seconds = sleqp_timer_get_ttl(solver->elapsed_timer);
 

@@ -73,7 +73,7 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
 
     case 's':
       options->time_limit = atof(optarg);
-      sleqp_log_debug("Setting time limit to %s", optarg);
+      sleqp_log_debug("Setting time limit to %ss", optarg);
       break;
 
     case 'o':
@@ -118,7 +118,7 @@ int handle_cutest_child(const char* probname,
 
   const int num_minutes = (time_limit / (double) minute) + grace_minutes;
 
-  for(int i = 0; i < num_minutes; ++i)
+  for(int i = 0; i < num_minutes;)
   {
     int ret = sigtimedwait(&child_mask, NULL, &ts);
 
@@ -131,13 +131,22 @@ int handle_cutest_child(const char* probname,
     {
       assert(ret == -1);
 
+      // timer reached limit
       if(errno == EAGAIN)
+      {
+        ++i;
+        continue;
+      }
+      // interrupted by signal
+      else if(errno == EINTR)
       {
         continue;
       }
-
-      sleqp_log_error("Failed to wait for child termination: %s",
-                      strerror(errno));
+      else
+      {
+        sleqp_log_error("Failed to wait for child termination: %s",
+                        strerror(errno));
+      }
 
       break;
     }
