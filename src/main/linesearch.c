@@ -701,19 +701,21 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
       break;
     }
-    else if(alpha <= cutoff_threshold)
+
+    // Update
     {
+      alpha *= tau;
+    }
+
+    if(alpha <= cutoff_threshold)
+    {
+      alpha = 0.;
       (*step_length) = 0.;
       (*trial_quadratic_merit_value) = cauchy_quadratic_merit_value;
 
       SLEQP_CALL(sleqp_sparse_vector_copy(cauchy_step, trial_step));
 
       break;
-    }
-
-    // Update
-    {
-      alpha *= tau;
     }
 
   }
