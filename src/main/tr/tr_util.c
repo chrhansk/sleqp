@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <math.h>
 
+#include "cmp.h"
 #include "fail.h"
 
 SLEQP_RETCODE sleqp_tr_compute_bdry_sol(const SleqpSparseVec* previous,
@@ -13,6 +14,11 @@ SLEQP_RETCODE sleqp_tr_compute_bdry_sol(const SleqpSparseVec* previous,
 {
   const double zero_eps = sleqp_params_get(params,
                                            SLEQP_PARAM_ZERO_EPS);
+
+  const double eps = sleqp_params_get(params,
+                                      SLEQP_PARAM_EPS);
+
+  SLEQP_NUM_ASSERT_PARAM(eps);
 
   double prev_dot_d = 0.;
 
@@ -43,8 +49,8 @@ SLEQP_RETCODE sleqp_tr_compute_bdry_sol(const SleqpSparseVec* previous,
                                             zero_eps,
                                             result));
 
-  sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(newton_step),
-                               trust_radius,
+  sleqp_num_assert(sleqp_is_eq(sleqp_sparse_vector_norm(result),
+                               radius,
                                eps));
 
   return SLEQP_OKAY;

@@ -44,6 +44,11 @@ static double compute_criticality_bound(SleqpSolver* solver)
 
   const double reduction = solver->current_merit_value - objective_value;
 
+  const double eps = sleqp_params_get(solver->params,
+                                      SLEQP_PARAM_EPS);
+
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
   sleqp_assert_is_geq(reduction, 0., eps);
 
   const double criticality_bound = reduction / SLEQP_MIN(solver->lp_trust_radius, 1.);
