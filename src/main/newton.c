@@ -357,14 +357,14 @@ SLEQP_RETCODE compute_gradient(SleqpNewtonData* data,
   SLEQP_CALL(sleqp_sparse_vector_add(data->initial_hessian_product,
                                      func_grad,
                                      zero_eps,
-                                     data->gradient));
+                                     data->sparse_cache));
 
   SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(cons_jac,
                                                       violated_cons_mult,
                                                       zero_eps,
                                                       data->jacobian_product));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->gradient,
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache,
                                             data->jacobian_product,
                                             1.,
                                             penalty_parameter,
