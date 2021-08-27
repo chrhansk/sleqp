@@ -29,7 +29,6 @@ struct SleqpWorkingStep
 
   SleqpSparseVec* initial_cons_val;
 
-  SleqpSparseVec* violated_variable_multipliers;
   SleqpSparseVec* violated_constraint_multipliers;
 
   SleqpSparseVec* sparse_cache;
@@ -80,9 +79,6 @@ SLEQP_RETCODE sleqp_working_step_create(SleqpWorkingStep** star,
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->initial_cons_val,
                                               num_constraints));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->violated_variable_multipliers,
-                                              num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->violated_constraint_multipliers,
                                               num_constraints));
@@ -413,11 +409,6 @@ SLEQP_RETCODE compute_violated_multipliers(SleqpWorkingStep* step,
 
   // Compute violated multipliers
   {
-    SLEQP_CALL(sleqp_violated_variable_multipliers(problem,
-                                                   step->initial_point,
-                                                   step->violated_variable_multipliers,
-                                                   working_set));
-
     SLEQP_CALL(sleqp_violated_constraint_multipliers(problem,
                                                      step->initial_cons_val,
                                                      step->violated_constraint_multipliers,
@@ -463,11 +454,6 @@ SleqpSparseVec* sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingSte
   return step->violated_constraint_multipliers;
 }
 
-SleqpSparseVec* sleqp_working_step_get_violated_vars_multipliers(SleqpWorkingStep* step)
-{
-  return step->violated_variable_multipliers;
-}
-
 static
 SLEQP_RETCODE working_step_free(SleqpWorkingStep** star)
 {
@@ -483,7 +469,6 @@ SLEQP_RETCODE working_step_free(SleqpWorkingStep** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&step->sparse_cache));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&step->violated_constraint_multipliers));
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->violated_variable_multipliers));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&step->initial_cons_val));
 

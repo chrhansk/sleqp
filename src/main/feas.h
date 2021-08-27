@@ -25,12 +25,6 @@ extern "C" {
                                                       SleqpWorkingSet* working_set);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_violated_variable_multipliers(SleqpProblem* problem,
-                                                    SleqpSparseVec* primal,
-                                                    SleqpSparseVec* multipliers,
-                                                    SleqpWorkingSet* working_set);
-
-  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_violated_constraints(SleqpProblem* problem,
                                            SleqpSparseVec* cons_val,
                                            int* violated_constraints,

@@ -348,8 +348,6 @@ SLEQP_RETCODE compute_gradient(SleqpNewtonData* data,
 
   SleqpSparseVec* violated_cons_mult = sleqp_working_step_get_violated_cons_multipliers(data->working_step);
 
-  SleqpSparseVec* violated_vars_mult = sleqp_working_step_get_violated_vars_multipliers(data->working_step);
-
   SLEQP_CALL(sleqp_problem_hess_prod(problem,
                                      &one,
                                      initial_step,
@@ -368,13 +366,6 @@ SLEQP_RETCODE compute_gradient(SleqpNewtonData* data,
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->gradient,
                                             data->jacobian_product,
-                                            1.,
-                                            penalty_parameter,
-                                            zero_eps,
-                                            data->sparse_cache));
-
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache,
-                                            violated_vars_mult,
                                             1.,
                                             penalty_parameter,
                                             zero_eps,

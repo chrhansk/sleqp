@@ -37,8 +37,6 @@ extern "C" {
 
   SleqpSparseVec* sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step);
 
-  SleqpSparseVec* sleqp_working_step_get_violated_vars_multipliers(SleqpWorkingStep* step);
-
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_working_step_capture(SleqpWorkingStep* step);
 
