@@ -644,9 +644,36 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
 
   for(int index = 0; index < vec->nnz; ++index)
   {
-    fprintf(output, "(%d) = %e\n",
+    fprintf(output, "(%d) = %.14e\n",
             vec->indices[index],
             vec->data[index]);
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_dump(const SleqpSparseVec* vec,
+                                       FILE* output)
+{
+  int k = 0;
+
+  for(int i = 0; i < vec->dim;++i)
+  {
+    if(k >= vec->nnz)
+    {
+      fprintf(output, "0.\n");
+      continue;
+    }
+
+    if(vec->indices[k] == i)
+    {
+      fprintf(output, "%.14e\n", vec->data[k]);
+      ++k;
+    }
+    else
+    {
+      fprintf(output, "0.\n");
+    }
   }
 
   return SLEQP_OKAY;
