@@ -1,6 +1,7 @@
 #include "dual_estimation.h"
 
 #include "cmp.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 
@@ -60,10 +61,10 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data
 
   int num_clipped_vars = 0, num_clipped_cons = 0;
 
-  {
-    SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
-    SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
+  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
+  SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
 
+  {
     SLEQP_CALL(sleqp_sparse_vector_reserve(cons_dual, dual_sol->nnz));
     SLEQP_CALL(sleqp_sparse_vector_reserve(vars_dual, dual_sol->nnz));
 
@@ -152,6 +153,26 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data
       }
     }
   }
+
+#ifndef NDEBUG
+
+  bool supports_cons_dual, supports_vars_dual;
+
+  SLEQP_CALL(sleqp_working_set_supports_cons_dual(working_set,
+                                                  cons_dual,
+                                                  &supports_cons_dual));
+
+  sleqp_assert_msg(supports_cons_dual,
+                   "Working set does not support estimated constraint duals");
+
+  SLEQP_CALL(sleqp_working_set_supports_vars_dual(working_set,
+                                                  vars_dual,
+                                                  &supports_vars_dual));
+
+  sleqp_assert_msg(supports_vars_dual,
+                   "Working set does not support estimated variable duals");
+
+#endif
 
   sleqp_log_debug("Dual estimation clipped %d variable and %d constraint duals",
                   num_clipped_vars,

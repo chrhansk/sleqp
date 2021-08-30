@@ -9,6 +9,8 @@
 
 #define INITIAL_LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
+#define DEFAULT_BUF_SIZE 1024
+
 SLEQP_RETCODE sleqp_solver_print_header(SleqpSolver* solver)
 {
   sleqp_log_info(HEADER_FORMAT,
@@ -73,23 +75,23 @@ SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
     [SLEQP_STEPTYPE_REJECTED] = "Rejected"
   };
 
-  char jac_condition_buf[1024];
+  char jac_condition_buf[DEFAULT_BUF_SIZE];
 
   if(aug_jac_condition != SLEQP_NONE)
   {
     snprintf(jac_condition_buf,
-             1024,
+             DEFAULT_BUF_SIZE,
              "%14e",
              aug_jac_condition);
   }
   else
   {
     snprintf(jac_condition_buf,
-             1024,
+             DEFAULT_BUF_SIZE,
              "-");
   }
 
-  char working_set_buf[1024];
+  char working_set_buf[DEFAULT_BUF_SIZE];
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(solver->iterate);
 
@@ -98,13 +100,13 @@ SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
   if(sleqp_working_set_eq(working_set, trial_working_set))
   {
     snprintf(working_set_buf,
-             1024,
+             DEFAULT_BUF_SIZE,
              "--");
   }
   else
   {
     snprintf(working_set_buf,
-             1024,
+             DEFAULT_BUF_SIZE,
              "%dv/%dc",
              sleqp_working_set_num_active_vars(working_set),
              sleqp_working_set_num_active_cons(working_set));

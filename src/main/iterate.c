@@ -424,32 +424,33 @@ write_stationarity_resiudals_to_cache(SleqpIterate* iterate,
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
+  const SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+  const SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
 
-  SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
-  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
+  const SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
+  const SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
 
   const int num_rows = sleqp_sparse_matrix_get_num_rows(cons_jac);
   const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
 
-  int* cons_jac_cols = sleqp_sparse_matrix_get_cols(cons_jac);
-  int* cons_jac_rows = sleqp_sparse_matrix_get_rows(cons_jac);
-  double* cons_jac_data = sleqp_sparse_matrix_get_data(cons_jac);
+  const int* cons_jac_cols = sleqp_sparse_matrix_get_cols(cons_jac);
+  const int* cons_jac_rows = sleqp_sparse_matrix_get_rows(cons_jac);
+  const double* cons_jac_data = sleqp_sparse_matrix_get_data(cons_jac);
 
   assert(num_variables == num_cols);
   assert(num_constraints == num_rows);
 
   for(int j = 0; j < num_variables; ++j)
   {
-    int k_d = 0, k_j = cons_jac_cols[j];
+    int k_d = 0;
+    int k_j = cons_jac_cols[j];
 
     double sum = 0.;
 
     while(k_d < cons_dual->nnz && k_j < cons_jac_cols[j + 1])
     {
-      int d_idx = cons_dual->indices[k_d];
-      int j_idx = cons_jac_rows[k_j];
+      const int d_idx = cons_dual->indices[k_d];
+      const int j_idx = cons_jac_rows[k_j];
 
       if(d_idx < j_idx)
       {

@@ -1,6 +1,7 @@
 #ifndef SLEQP_FAIL_H
 #define SLEQP_FAIL_H
 
+#include "cmp.h"
 #include "defs.h"
 #include "types.h"
 #include "log.h"
