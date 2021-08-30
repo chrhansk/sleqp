@@ -130,11 +130,14 @@ set(CUTESTSRC
 foreach(s ${CUTESTSRC})
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90"
-    COMMAND sed -f "${CUTEST_BASE}/seds/double.sed" "${CUTEST_BASE}/src/tools/${s}.f90" > "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90")
+    COMMAND sed -f "${CUTEST_BASE}/seds/double.sed" "${CUTEST_BASE}/src/tools/${s}.f90" > "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90"
+    MAIN_DEPENDENCY "${CUTEST_BASE}/src/tools/${s}.f90"
+    DEPENDS "${CUTEST_BASE}/seds/double.sed")
   add_custom_command(
     OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}sized.f90"
     COMMAND sed -f "${CUTEST_BASE}/seds/cutersize.sed" "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90" > "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}sized.f90"
-    DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90")
+    MAIN_DEPENDENCY "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}d.f90"
+    DEPENDS "${CUTEST_BASE}/seds/cutersize.sed")
   if(NOT (${s} STREQUAL "readin" OR ${s} STREQUAL "fortran_ops"))
     set(cutestsrc ${cutestsrc} "${CMAKE_CURRENT_BINARY_DIR}/cutestd/${s}sized.f90")
   endif(NOT (${s} STREQUAL "readin" OR ${s} STREQUAL "fortran_ops"))
