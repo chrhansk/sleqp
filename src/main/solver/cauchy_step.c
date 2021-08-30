@@ -17,6 +17,28 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
                                              iterate,
                                              solver->estimation_residuals,
                                              solver->aug_jacobian));
+
+#ifndef NDEBUG
+
+    double unclipped_residuum = sleqp_sparse_vector_inf_norm(solver->estimation_residuals);
+    double residuum;
+
+    SLEQP_CALL(sleqp_iterate_stationarity_residuum(solver->problem,
+                                                   solver->iterate,
+                                                   solver->dense_cache,
+                                                   &residuum));
+
+    const double eps = sleqp_params_get(solver->params,
+                                        SLEQP_PARAM_EPS);
+
+    SLEQP_NUM_ASSERT_PARAM(eps);
+
+    sleqp_assert_is_geq(residuum,
+                        unclipped_residuum,
+                        eps);
+
+#endif
+
   }
   else
   {
@@ -284,7 +306,7 @@ static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
 #if !defined(NDEBUG)
 
     {
-      double actual_quadratic_merit_value;
+      double actual_quadratic_merit_value, exact_iterate_value;
 
       double func_dual = 1.;
 
@@ -299,6 +321,18 @@ static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
       sleqp_assert_is_eq(*cauchy_merit_value,
                          actual_quadratic_merit_value,
                          eps);
+
+      SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+                                  iterate,
+                                  solver->penalty_parameter,
+                                  &exact_iterate_value));
+
+      // quadratic merit at d = 0 corresponds to the
+      // exact iterate value. The Cauchy step should
+      // be at least as good
+      sleqp_assert_is_leq(*cauchy_merit_value,
+                          exact_iterate_value,
+                          eps);
     }
 
 #endif
