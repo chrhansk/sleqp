@@ -13,17 +13,23 @@
 #include <omp.h>
 #endif
 
-#include "pub_log.h"
-#include "pub_types.h"
+#include "log.h"
+#include "types.h"
+#include "timer.h"
 
 #include "sleqp_cutest_driver.h"
 #include "sleqp_cutest_options.h"
 
-const int minute = 60;
-const int grace_minutes = 1;
+const char* filename = PROBLEM_OUTSDIF_D; /* CUTEst data file */
+const char* probname = PROBLEM_NAME;
 
-int
-parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
+const int grace_seconds = 60;
+
+
+static int
+parse_command_line_options(int argc,
+                           char *argv[],
+                           SleqpCutestOptions* options)
 {
   while(true)
   {
@@ -33,6 +39,7 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
       {"enable_logging",              no_argument,       0, 'l'},
       {"enable_preprocessing",        no_argument,       0, 'p'},
       {"force_nonlinear_constraints", no_argument,       0, 'n'},
+      {"no_fork",                     no_argument,       0, 'f'},
       {"max_num_threads",             required_argument, 0, 't'},
       {"time_limit"     ,             required_argument, 0, 's'},
       {"output",                      required_argument, 0, 'o'},
@@ -41,7 +48,7 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
 
     int c = getopt_long(argc,
                         argv,
-                        "lpntso",
+                        "lpnftso",
                         long_options,
                         &option_index);
     if (c == -1)
@@ -62,9 +69,14 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
       options->force_nonlinear_constraints = true;
       break;
 
+    case 'f':
+      options->no_fork = true;
+      break;
+
     case 't':
       options->max_num_threads = atoi(optarg);
-      sleqp_log_debug("Using up to %d threads", options->max_num_threads);
+      sleqp_log_debug("Using up to %d threads",
+                      options->max_num_threads);
 
 #ifdef WITH_OPENMP
       omp_set_num_threads(options->max_num_threads);
@@ -73,15 +85,17 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
 
     case 's':
       options->time_limit = atof(optarg);
-      sleqp_log_debug("Setting time limit to %ss", optarg);
+      sleqp_log_debug("Setting time limit to %ss",
+                      optarg);
       break;
 
     case 'o':
       options->output = optarg;
-      sleqp_log_debug("Setting output to %s", optarg);
+      sleqp_log_debug("Setting output to %s",
+                      optarg);
       break;
     default:
-      sleqp_log_error("Invalid option %o", c);
+      sleqp_log_error("Invalid option");
       return EXIT_FAILURE;
     }
   }
@@ -95,15 +109,20 @@ parse_command_line_options(int argc, char *argv[], SleqpCutestOptions* options)
   return EXIT_SUCCESS;
 }
 
-int handle_cutest_child(const char* probname,
-                        double time_limit,
-                        pid_t child_pid)
+static int
+handle_cutest_child(const char* probname,
+                    double time_limit,
+                    pid_t child_pid)
 {
+  SleqpTimer* timer;
+
   sigset_t child_mask, old_mask;
   sigemptyset(&child_mask);
   sigaddset(&child_mask, SIGCHLD);
 
-  if (sigprocmask(SIG_BLOCK, &child_mask, &old_mask) == -1)
+  SLEQP_CALL(sleqp_timer_create(&timer));
+
+  if(sigprocmask(SIG_BLOCK, &child_mask, &old_mask) == -1)
   {
     sleqp_log_error("Failed to set signal mask: %s",
                     strerror(errno));
@@ -111,33 +130,45 @@ int handle_cutest_child(const char* probname,
     return EXIT_FAILURE;
   }
 
-  struct timespec ts = {0};
-  ts.tv_sec = minute;
+  bool child_exited = false;
 
-  bool exited = false;
+  const double total_time = time_limit + grace_seconds;
+  int remaining_time = total_time;
 
-  const int num_minutes = (time_limit / (double) minute) + grace_minutes;
-
-  for(int i = 0; i < num_minutes;)
+  while(true)
   {
+    const double elapsed = sleqp_timer_get_ttl(timer);
+    remaining_time = total_time - elapsed;
+
+    if(remaining_time <= 0)
+    {
+      break;
+    }
+
+    struct timespec ts = {0};
+    ts.tv_sec = remaining_time;
+
+    SLEQP_CALL(sleqp_timer_start(timer));
+
     int ret = sigtimedwait(&child_mask, NULL, &ts);
+
+    SLEQP_CALL(sleqp_timer_stop(timer));
 
     if(ret > 0)
     {
-      exited = true;
+      child_exited = true;
       break;
     }
     else
     {
       assert(ret == -1);
 
-      // timer reached limit
+      // sigtimedwait() reached limit
       if(errno == EAGAIN)
       {
-        ++i;
-        continue;
+        break;
       }
-      // interrupted by signal
+      // sigtimedwait() was interrupted by signal
       else if(errno == EINTR)
       {
         continue;
@@ -152,7 +183,7 @@ int handle_cutest_child(const char* probname,
     }
   }
 
-  if(!exited)
+  if(!child_exited)
   {
     sleqp_log_error("Killing solver %s after deadline expired",
                     probname);
@@ -160,23 +191,14 @@ int handle_cutest_child(const char* probname,
     kill(child_pid, SIGTERM);
   }
 
+  SLEQP_CALL(sleqp_timer_free(&timer));
+
   return EXIT_SUCCESS;
 }
 
-int main(int argc, char *argv[])
+static int
+run_cutest_forking(SleqpCutestOptions *options)
 {
-  const char* filename = PROBLEM_OUTSDIF_D; /* CUTEst data file */
-  const char* probname = PROBLEM_NAME;
-
-  SleqpCutestOptions options = (SleqpCutestOptions) {0};
-
-  sleqp_cutest_options_default(&options);
-
-  if(parse_command_line_options(argc, argv, &options) != EXIT_SUCCESS)
-  {
-    return EXIT_FAILURE;
-  }
-
   pid_t pid = fork();
 
   if(pid == -1)
@@ -187,7 +209,7 @@ int main(int argc, char *argv[])
   else if(pid == 0)
   {
     // child
-    return sleqp_cutest_run(filename, probname, &options);
+    return sleqp_cutest_run(filename, probname, options);
   }
   else
   {
@@ -195,8 +217,31 @@ int main(int argc, char *argv[])
     assert(pid > 0);
 
     return handle_cutest_child(probname,
-                               options.time_limit,
+                               options->time_limit,
                                pid);
+  }
+
+  return EXIT_SUCCESS;
+}
+
+int main(int argc, char *argv[])
+{
+  SleqpCutestOptions options = (SleqpCutestOptions) {0};
+
+  sleqp_cutest_options_default(&options);
+
+  if(parse_command_line_options(argc, argv, &options) != EXIT_SUCCESS)
+  {
+    return EXIT_FAILURE;
+  }
+
+  if(options.no_fork)
+  {
+    return sleqp_cutest_run(filename, probname, &options);
+  }
+  else
+  {
+    return run_cutest_forking(&options);
   }
 
   return EXIT_SUCCESS;

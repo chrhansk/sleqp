@@ -12,6 +12,7 @@ extern "C" {
     bool enable_logging;
     bool enable_preprocessing;
     bool force_nonlinear_constraints;
+    bool no_fork;
     int max_num_threads;
     double time_limit;
     const char* output;
