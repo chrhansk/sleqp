@@ -35,6 +35,9 @@ extern "C" {
 
   double sleqp_working_step_get_reduced_trust_radius(SleqpWorkingStep* step);
 
+  double sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
+                                                 double penalty_parameter);
+
   SleqpSparseVec* sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step);
 
   SLEQP_NODISCARD

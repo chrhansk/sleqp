@@ -374,6 +374,61 @@ SLEQP_RETCODE compute_gradient(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_newton_objective(SleqpNewtonData* data,
+                                     const SleqpSparseVec* multipliers,
+                                     const SleqpSparseVec* direction,
+                                     double* objective)
+{
+  assert(data->iterate);
+
+  SleqpProblem* problem = data->problem;
+  SleqpIterate* iterate = data->iterate;
+
+  const double one = 1.;
+  double bilinear_product = 0.;
+
+  SLEQP_CALL(sleqp_problem_hess_bilinear(problem,
+                                         &one,
+                                         direction,
+                                         multipliers,
+                                         &bilinear_product));
+
+  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
+
+  double obj_inner_prod = 0.;
+
+  SLEQP_CALL(sleqp_sparse_vector_dot(direction, func_grad, &obj_inner_prod));
+
+  double cons_inner_prod = 0.;
+
+  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
+                                     data->jacobian_product,
+                                     &cons_inner_prod));
+
+  const double offset = sleqp_working_step_get_objective_offset(data->working_step,
+                                                                data->penalty_parameter);
+
+  *objective = offset + obj_inner_prod + cons_inner_prod + .5*bilinear_product;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE print_objective(SleqpNewtonData* data,
+                              SleqpSparseVec* multipliers,
+                              SleqpSparseVec* newton_step)
+{
+  double objective;
+
+  SLEQP_CALL(sleqp_newton_objective(data,
+                                    multipliers,
+                                    newton_step,
+                                    &objective));
+
+  sleqp_log_debug("Newton objective: %g", objective);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                         SleqpSparseVec* multipliers,
                                         SleqpSparseVec* newton_step)
@@ -431,6 +486,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                      initial_step,
                                      zero_eps,
                                      newton_step));
+
+  SLEQP_CALL(print_objective(data, multipliers, newton_step));
 
   SLEQP_CALL(print_residuals(data,
                              multipliers,

@@ -36,6 +36,9 @@ struct SleqpWorkingStep
 
   double reduced_trust_radius;
   bool initial_step_in_working_set;
+
+  double obj_offset;
+  double diff_offset;
 };
 
 SLEQP_RETCODE sleqp_working_step_create(SleqpWorkingStep** star,
@@ -90,6 +93,66 @@ SLEQP_RETCODE sleqp_working_step_create(SleqpWorkingStep** star,
                                SLEQP_MAX(num_variables, num_constraints)));
 
   return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE compute_offset(SleqpWorkingStep* step,
+                                    SleqpIterate* iterate)
+{
+  SleqpProblem* problem = step->problem;
+
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  SleqpSparseVec* lower_diff = step->lower_diff;
+  SleqpSparseVec* upper_diff = step->upper_diff;
+
+  assert(lower_diff->dim == num_constraints);
+  assert(upper_diff->dim == num_constraints);
+
+  double offset = 0.;
+
+  const SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+
+  for(int k = 0; k < upper_diff->nnz; ++k)
+  {
+    int i = upper_diff->indices[k];
+
+    const SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set,
+                                                                                 i);
+
+    if(cons_state != SLEQP_INACTIVE)
+    {
+      continue;
+    }
+
+    offset += upper_diff->data[k];
+  }
+
+  for(int k = 0; k < lower_diff->nnz; ++k)
+  {
+    int i = lower_diff->indices[k];
+
+    const SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set,
+                                                                                 i);
+
+    if(cons_state != SLEQP_INACTIVE)
+    {
+      continue;
+    }
+
+    offset += lower_diff->data[k];
+  }
+
+  step->diff_offset = offset;
+
+  step->obj_offset = sleqp_iterate_get_func_val(iterate);
+
+  return SLEQP_OKAY;
+}
+
+double sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
+                                               double penalty_parameter)
+{
+  return step->obj_offset + penalty_parameter*step->diff_offset;
 }
 
 static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
@@ -267,6 +330,8 @@ static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
         ++k_upper;
       }
     }
+
+    SLEQP_CALL(compute_offset(step, iterate));
   }
 
   return SLEQP_OKAY;
@@ -413,6 +478,9 @@ SLEQP_RETCODE compute_violated_multipliers(SleqpWorkingStep* step,
                                                      step->initial_cons_val,
                                                      step->violated_constraint_multipliers,
                                                      working_set));
+
+    sleqp_log_debug("Violated constraints at initial Newton step: %d",
+                    step->violated_constraint_multipliers->nnz);
   }
 
   return SLEQP_OKAY;
