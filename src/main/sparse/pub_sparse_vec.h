@@ -311,18 +311,6 @@ extern "C" {
                                             FILE* output);
 
   /**
-   * Dumps this vector to the given file. The vector
-   * is printed out as a set of lines each consisting
-   * one entry
-   *
-   * @param[in]  vec     A pointer to the vector
-   * @param[in]  output  A pointer to an output `FILE*`
-   **/
-  SLEQP_EXPORT SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_sparse_vector_dump(const SleqpSparseVec* vec,
-                                         FILE* output);
-
-  /**
    * Returns whether the given vector is *valid*, i.e., whether
    * - `nnz` non-negative and less than or equal to `nnz_max`
    * - all indices are non-negative and less than or equal to `dim`

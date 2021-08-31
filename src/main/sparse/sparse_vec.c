@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "log.h"
@@ -675,6 +676,23 @@ SLEQP_RETCODE sleqp_sparse_vector_dump(const SleqpSparseVec* vec,
       fprintf(output, "0.\n");
     }
   }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_sparse_vector_dump_to_file(const SleqpSparseVec* vec,
+                                               const char* name)
+{
+  FILE* output = fopen(name, "w");
+
+  if(!output)
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  SLEQP_CALL(sleqp_sparse_vector_dump(vec, output));
+
+  fclose(output);
 
   return SLEQP_OKAY;
 }

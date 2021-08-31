@@ -711,6 +711,23 @@ SLEQP_RETCODE sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
+                                               const char* name)
+{
+  FILE* output = fopen(name, "w");
+
+  if(!output)
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  SLEQP_CALL(sleqp_sparse_matrix_dump(matrix, output));
+
+  fclose(output);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
                                        SleqpSparseMatrix* target)
 {

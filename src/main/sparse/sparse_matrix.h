@@ -128,6 +128,10 @@ extern "C" {
   SLEQP_RETCODE sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix,
                                          FILE* output);
 
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
+                                                 const char* name);
+
   /**
    * Copies the given matrix
    *
