@@ -209,8 +209,20 @@ static
 SLEQP_RETCODE solver_create_iterates(SleqpSolver* solver,
                                      SleqpSparseVec* primal)
 {
+  SleqpProblem* original_problem = solver->original_problem;
+
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
+
+  {
+    SleqpSparseVec* var_lb = sleqp_problem_var_lb(original_problem);
+    SleqpSparseVec* var_ub = sleqp_problem_var_ub(original_problem);
+
+    if(!sleqp_sparse_vector_is_boxed(primal, var_lb, var_ub))
+    {
+      sleqp_log_warn("Initial solution violates variable bounds");
+    }
+  }
 
   SLEQP_CALL(solver_convert_primal(solver,
                                    primal,
@@ -237,7 +249,7 @@ SLEQP_RETCODE solver_create_iterates(SleqpSolver* solver,
   if(solver->scaling_data || solver->preprocessor)
   {
     SLEQP_CALL(sleqp_iterate_create(&solver->original_iterate,
-                                    solver->original_problem,
+                                    original_problem,
                                     primal));
 
     solver->restore_original_iterate = true;
