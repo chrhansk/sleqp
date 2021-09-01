@@ -155,34 +155,9 @@ SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
+static bool check_for_unboundedness(SleqpSolver* solver,
+                                    SleqpIterate* iterate)
 {
-  assert(solver->status == SLEQP_STATUS_RUNNING);
-
-  SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface,
-                                      sleqp_solver_remaining_time(solver)));
-
-  const SleqpOptions* options = solver->options;
-
-  const bool quadratic_model = sleqp_options_get_bool(options,
-                                                      SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
-
-  const bool perform_newton_step = quadratic_model &&
-    sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
-
-  SleqpProblem* problem = solver->problem;
-  SleqpIterate* iterate = solver->iterate;
-  SleqpIterate* trial_iterate = solver->trial_iterate;
-
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
-  assert(sleqp_sparse_vector_is_boxed(sleqp_iterate_get_primal(iterate),
-                                      sleqp_problem_var_lb(problem),
-                                      sleqp_problem_var_ub(problem)));
-
-  const double eps = sleqp_params_get(solver->params,
-                                      SLEQP_PARAM_EPS);
-
   const double obj_lower = sleqp_params_get(solver->params,
                                             SLEQP_PARAM_OBJ_LOWER);
 
@@ -199,8 +174,56 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
     {
       sleqp_log_debug("Detected unboundedness");
       solver->status = SLEQP_STATUS_UNBOUNDED;
-      return SLEQP_OKAY;
+      return true;
     }
+  }
+
+  return false;
+}
+
+static bool check_for_optimality(SleqpSolver* solver,
+                                 SleqpIterate* iterate)
+{
+  // Optimality check with respect to scaled problem
+  if(sleqp_iterate_is_optimal(iterate,
+                              solver->params,
+                              solver->feasibility_residuum,
+                              solver->slackness_residuum,
+                              solver->stationarity_residuum))
+  {
+    sleqp_log_debug("Achieved optimality");
+    solver->status = SLEQP_STATUS_OPTIMAL;
+    return true;
+  }
+
+  return false;
+}
+
+SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
+{
+  assert(solver->status == SLEQP_STATUS_RUNNING);
+
+  SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface,
+                                      sleqp_solver_remaining_time(solver)));
+
+  const SleqpOptions* options = solver->options;
+
+  SleqpProblem* problem = solver->problem;
+  SleqpIterate* iterate = solver->iterate;
+  SleqpIterate* trial_iterate = solver->trial_iterate;
+
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  assert(sleqp_sparse_vector_is_boxed(sleqp_iterate_get_primal(iterate),
+                                      sleqp_problem_var_lb(problem),
+                                      sleqp_problem_var_ub(problem)));
+
+  const double eps = sleqp_params_get(solver->params,
+                                      SLEQP_PARAM_EPS);
+
+  if(check_for_unboundedness(solver, iterate))
+  {
+    return SLEQP_OKAY;
   }
 
   double exact_iterate_value, model_iterate_value;
@@ -224,74 +247,61 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
   double model_trial_value;
 
   bool full_step;
+  bool reject_step = false;
 
   // Derivative check
   SLEQP_CALL(check_derivative(solver));
 
-  // Optimality check with respect to scaled problem
+  if(check_for_optimality(solver, iterate))
   {
-    if(sleqp_iterate_is_optimal(iterate,
-                                solver->params,
-                                solver->feasibility_residuum,
-                                solver->slackness_residuum,
-                                solver->stationarity_residuum))
-    {
-      sleqp_log_debug("Achieved optimality");
-      solver->status = SLEQP_STATUS_OPTIMAL;
-      return SLEQP_OKAY;
-    }
+    return SLEQP_OKAY;
   }
 
   // Step computation
-  if(perform_newton_step)
-  {
-    SLEQP_CALL(sleqp_solver_compute_trial_point_newton(solver,
-                                                       &model_trial_value,
-                                                       &full_step));
-  }
-  else
-  {
-    SLEQP_CALL(sleqp_solver_compute_trial_point_simple(solver,
-                                                       &model_trial_value,
-                                                       quadratic_model,
-                                                       &full_step));
-  }
+  SLEQP_CALL(sleqp_solver_compute_trial_point(solver,
+                                              &model_trial_value,
+                                              &full_step,
+                                              &reject_step));
 
   SLEQP_CALL(compute_step_lengths(solver));
 
-  SLEQP_CALL(evaluate_at_trial_iterate(solver));
+  bool step_accepted = !reject_step;
+
+  const double trial_step_norm = sleqp_sparse_vector_norm(solver->trial_step);
+
+  double reduction_ratio = SLEQP_NONE;
 
   double exact_trial_value;
 
+  if(step_accepted)
   {
+    SLEQP_CALL(evaluate_at_trial_iterate(solver));
 
-    SLEQP_CALL(sleqp_merit_func(solver->merit_data,
-                                trial_iterate,
-                                solver->penalty_parameter,
-                                &exact_trial_value));
+    {
 
-    sleqp_log_debug("Current merit function value: %e, trial merit function value: %e",
-                    exact_iterate_value,
-                    exact_trial_value);
+      SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+                                  trial_iterate,
+                                  solver->penalty_parameter,
+                                  &exact_trial_value));
 
+      sleqp_log_debug("Current merit function value: %e, trial merit function value: %e",
+                      exact_iterate_value,
+                      exact_trial_value);
+
+    }
+
+    SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
+                                     exact_iterate_value,
+                                     exact_trial_value,
+                                     model_trial_value,
+                                     &step_accepted,
+                                     &reduction_ratio));
+
+    sleqp_log_debug("Reduction ratio: %e",
+                    reduction_ratio);
+
+    sleqp_log_debug("Trial step norm: %e", trial_step_norm);
   }
-
-  double reduction_ratio = SLEQP_NONE;
-  bool step_accepted = true;
-
-  SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
-                                   exact_iterate_value,
-                                   exact_trial_value,
-                                   model_trial_value,
-                                   &step_accepted,
-                                   &reduction_ratio));
-
-  sleqp_log_debug("Reduction ratio: %e",
-                  reduction_ratio);
-
-  double trial_step_norm = sleqp_sparse_vector_norm(solver->trial_step);
-
-  sleqp_log_debug("Trial step norm: %e", trial_step_norm);
 
   solver->boundary_step = sleqp_is_geq(trial_step_norm,
                                        solver->trust_radius,
@@ -317,6 +327,7 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
     sleqp_log_debug("Trial step rejected");
 
     step_accepted = false;
+    reject_step = false;
 
     const bool perform_soc = sleqp_options_get_bool(options,
                                                     SLEQP_OPTION_BOOL_PERFORM_SOC);
@@ -325,39 +336,46 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
     {
       sleqp_log_debug("Computing second-order correction");
 
-      SLEQP_CALL(sleqp_solver_compute_trial_point_soc(solver));
+      SLEQP_CALL(sleqp_solver_compute_trial_point_soc(solver, &reject_step));
 
-      solver->boundary_step = sleqp_is_geq(solver->soc_step_norm,
+      const double soc_step_norm = sleqp_sparse_vector_norm(solver->soc_step);
+
+      solver->boundary_step = sleqp_is_geq(soc_step_norm,
                                            solver->trust_radius,
                                            eps);
 
-      SLEQP_CALL(evaluate_at_trial_iterate(solver));
-
-      double soc_exact_trial_value;
-
-      SLEQP_CALL(sleqp_merit_func(solver->merit_data,
-                                  trial_iterate,
-                                  solver->penalty_parameter,
-                                  &soc_exact_trial_value));
-
-      SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
-                                       exact_iterate_value,
-                                       soc_exact_trial_value,
-                                       model_trial_value,
-                                       &step_accepted,
-                                       &reduction_ratio));
-
-      sleqp_log_debug("SOC Reduction ratio: %e",
-                      reduction_ratio);
+      step_accepted = !reject_step;
 
       if(step_accepted)
       {
-        solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED_SOC;
-        sleqp_log_debug("Second-order correction accepted");
-      }
-      else
-      {
-        sleqp_log_debug("Second-order correction rejected");
+        SLEQP_CALL(evaluate_at_trial_iterate(solver));
+
+        double soc_exact_trial_value;
+
+        SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+                                    trial_iterate,
+                                    solver->penalty_parameter,
+                                    &soc_exact_trial_value));
+
+        SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
+                                         exact_iterate_value,
+                                         soc_exact_trial_value,
+                                         model_trial_value,
+                                         &step_accepted,
+                                         &reduction_ratio));
+
+        sleqp_log_debug("SOC Reduction ratio: %e",
+                        reduction_ratio);
+
+        if(step_accepted)
+        {
+          solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED_SOC;
+          sleqp_log_debug("Second-order correction accepted");
+        }
+        else
+        {
+          sleqp_log_debug("Second-order correction rejected");
+        }
       }
     }
   }

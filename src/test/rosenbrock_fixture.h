@@ -24,6 +24,29 @@ extern "C" {
   extern SleqpSparseVec* rosenbrock_initial;
   extern SleqpSparseVec* rosenbrock_optimal;
 
+  SLEQP_RETCODE rosenbrock_set(SleqpFunc* func,
+                               SleqpSparseVec* x,
+                               SLEQP_VALUE_REASON reason,
+                               int* func_grad_nnz,
+                               int* cons_val_nnz,
+                               int* cons_jac_nnz,
+                               void* func_data);
+
+  SLEQP_RETCODE rosenbrock_val(SleqpFunc* func,
+                               double* func_val,
+                               void* func_data);
+
+  SLEQP_RETCODE rosenbrock_grad(SleqpFunc* func,
+                                SleqpSparseVec* func_grad,
+                                void* func_data);
+
+  SLEQP_RETCODE rosenbrock_hess_prod(SleqpFunc* func,
+                                     const double* func_dual,
+                                     const SleqpSparseVec* direction,
+                                     const SleqpSparseVec* cons_duals,
+                                     SleqpSparseVec* product,
+                                     void* func_data);
+
   void rosenbrock_setup();
 
   void rosenbrock_teardown();

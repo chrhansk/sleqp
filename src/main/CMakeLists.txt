@@ -30,6 +30,7 @@ set(COMMON_SRC
   cmp.c
   deriv_check.c
   dual_estimation.c
+  dyn.c
   feas.c
   func.c
   iterate.c

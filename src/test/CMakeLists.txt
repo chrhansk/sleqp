@@ -9,6 +9,7 @@ include_directories(${CHECK_INCLUDE_DIRS})
 
 set(TEST_COMMON_SRC
   test_common.c
+  dyn_rosenbrock_fixture.c
   quadcons_fixture.c
   quadfunc_fixture.c
   log_rosenbrock_fixture.c
@@ -60,6 +61,7 @@ add_unit_test(constrained_cauchy_test)
 add_unit_test(constrained_newton_test)
 add_unit_test(constrained_test)
 add_unit_test(dual_estimation_test)
+add_unit_test(dyn_test)
 add_unit_test(lsq_test)
 add_unit_test(mem_test)
 add_unit_test(problem_scaling_test)

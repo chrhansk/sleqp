@@ -448,7 +448,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                    solver->problem,
                                    params));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_trial_point,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_step,
                                               num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache, SLEQP_MAX(num_variables, num_constraints)));
@@ -464,10 +464,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   return SLEQP_OKAY;
 }
 
-void print_solver(char* buffer,
-                  int len,
-                  const char* name,
-                  const char* version)
+static void print_solver(char* buffer,
+                         int len,
+                         const char* name,
+                         const char* version)
 {
   if(strlen(version) == 0)
   {
@@ -500,6 +500,60 @@ const char* sleqp_solver_info(const SleqpSolver* solver)
            SLEQP_GIT_COMMIT_HASH);
 
   return solver_info;
+}
+
+static SLEQP_RETCODE print_warning(SleqpSolver* solver)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpIterate* iterate = solver->iterate;
+
+  {
+    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_int(solver->options,
+                                                                SLEQP_OPTION_INT_DERIV_CHECK);
+
+    const bool inexact_hessian = (solver->bfgs_data || solver->sr1_data);
+
+    const int hessian_check_flags = SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE | SLEQP_DERIV_CHECK_SECOND_SIMPLE;
+
+    const bool hessian_check = (deriv_check & hessian_check_flags);
+
+    if(inexact_hessian && hessian_check)
+    {
+      sleqp_log_warn("Enabled second order derivative check while using a quasi-Newton method");
+    }
+
+    SleqpFunc* func = sleqp_problem_func(problem);
+
+    bool dynamic = (sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
+
+    const int first_check_flags = SLEQP_DERIV_CHECK_FIRST;
+
+    const bool first_check = (deriv_check & first_check_flags);
+
+    if(dynamic && first_check)
+    {
+      sleqp_log_warn("Enabled first order derivative check while using a dynamic function");
+    }
+  }
+
+  {
+    double total_violation;
+
+    SLEQP_CALL(sleqp_violation_one_norm(problem,
+                                        sleqp_iterate_get_cons_val(iterate),
+                                        &total_violation));
+
+    const double func_val = sleqp_iterate_get_func_val(iterate);
+
+    if(total_violation > 10. * SLEQP_ABS(func_val))
+    {
+      sleqp_log_warn("Problem is badly scaled, constraint violation %g significantly exceeds function value of %g",
+                     total_violation,
+                     func_val);
+    }
+  }
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
@@ -538,38 +592,7 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
   }
 
   // Warnings
-  {
-    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_int(solver->options,
-                                                                SLEQP_OPTION_INT_DERIV_CHECK);
-
-    const bool inexact_hessian = (solver->bfgs_data || solver->sr1_data);
-
-    const int hessian_check_flags = SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE | SLEQP_DERIV_CHECK_SECOND_SIMPLE;
-
-    const bool hessian_check = (deriv_check & hessian_check_flags);
-
-    if(inexact_hessian && hessian_check)
-    {
-      sleqp_log_warn("Enabled second order derivative check while using a quasi-Newton method");
-    }
-  }
-
-  {
-    double total_violation;
-
-    SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                        sleqp_iterate_get_cons_val(iterate),
-                                        &total_violation));
-
-    const double func_val = sleqp_iterate_get_func_val(iterate);
-
-    if(total_violation > 10. * SLEQP_ABS(func_val))
-    {
-      sleqp_log_warn("Problem is badly scaled, constraint violation %g significantly exceeds function value of %g",
-                     total_violation,
-                     func_val);
-    }
-  }
+  SLEQP_CALL(print_warning(solver));
 
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
@@ -747,7 +770,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   sleqp_free(&solver->dense_cache);
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_trial_point));
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_step));
 
   SLEQP_CALL(sleqp_soc_data_release(&solver->soc_data));
 

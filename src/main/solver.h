@@ -130,9 +130,7 @@ extern "C" {
     // SOC related
     SleqpSOC* soc_data;
 
-    SleqpSparseVec* soc_trial_point;
-
-    double soc_step_norm;
+    SleqpSparseVec* soc_step;
 
     double* dense_cache;
 
@@ -204,7 +202,17 @@ extern "C" {
                                                         double* trial_merit_value,
                                                         bool* full_step);
 
-  SLEQP_RETCODE sleqp_solver_compute_trial_point_soc(SleqpSolver* solver);
+  SLEQP_RETCODE sleqp_solver_compute_trial_point(SleqpSolver* solver,
+                                                 double* trial_merit_value,
+                                                 bool* full_step,
+                                                 bool* reject);
+
+  SLEQP_RETCODE sleqp_solver_compute_trial_point_det(SleqpSolver* solver,
+                                                     double* trial_merit_value,
+                                                     bool* full_step);
+
+  SLEQP_RETCODE sleqp_solver_compute_trial_point_soc(SleqpSolver* solver,
+                                                     bool* reject);
 
   SLEQP_RETCODE sleqp_solver_compute_cauchy_step(SleqpSolver* solver,
                                                  double* cauchy_merit_value,

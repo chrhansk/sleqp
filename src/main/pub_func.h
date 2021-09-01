@@ -28,7 +28,8 @@ extern "C" {
 
   typedef enum {
     SLEQP_FUNC_TYPE_REGULAR,
-    SLEQP_FUNC_TYPE_LSQ
+    SLEQP_FUNC_TYPE_LSQ,
+    SLEQP_FUNC_TYPE_DYNAMIC
   } SLEQP_FUNC_TYPE;
 
   /**

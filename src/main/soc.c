@@ -238,11 +238,11 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOC* soc_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_soc_compute_direction(SleqpSOC* soc_data,
-                                          SleqpAugJacobian* augmented_jacobian,
-                                          const SleqpIterate* iterate,
-                                          const SleqpIterate* trial_iterate,
-                                          SleqpSparseVec* soc_direction)
+SLEQP_RETCODE sleqp_soc_compute_correction(SleqpSOC* soc_data,
+                                           SleqpAugJacobian* augmented_jacobian,
+                                           const SleqpIterate* iterate,
+                                           const SleqpIterate* trial_iterate,
+                                           SleqpSparseVec* soc_direction)
 {
   SleqpSparseVec* rhs = soc_data->rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
@@ -263,6 +263,46 @@ SLEQP_RETCODE sleqp_soc_compute_direction(SleqpSOC* soc_data,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_soc_compute_step(SleqpSOC* soc_data,
+                                     SleqpAugJacobian* augmented_jacobian,
+                                     const SleqpIterate* iterate,
+                                     const SleqpSparseVec* trial_step,
+                                     const SleqpIterate* trial_iterate,
+                                     SleqpSparseVec* soc_step)
+{
+  assert(trial_step != soc_step);
+
+  SleqpProblem* problem = soc_data->problem;
+
+  SleqpSparseVec* trial_point = sleqp_iterate_get_primal(trial_iterate);
+
+  const double zero_eps = sleqp_params_get(soc_data->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  double max_step_length = 1.;
+
+  SLEQP_CALL(sleqp_soc_compute_correction(soc_data,
+                                          augmented_jacobian,
+                                          iterate,
+                                          trial_iterate,
+                                          soc_data->soc_direction));
+
+  SLEQP_CALL(sleqp_max_step_length(trial_point,
+                                   soc_data->soc_direction,
+                                   sleqp_problem_var_lb(problem),
+                                   sleqp_problem_var_ub(problem),
+                                   &max_step_length));
+
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_step,
+                                            soc_data->soc_direction,
+                                            1.,
+                                            max_step_length,
+                                            zero_eps,
+                                            soc_step));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
                                             SleqpAugJacobian* augmented_jacobian,
                                             const SleqpIterate* iterate,
@@ -279,7 +319,7 @@ SLEQP_RETCODE sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
   const double zero_eps = sleqp_params_get(soc_data->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_soc_compute_direction(soc_data,
+  SLEQP_CALL(sleqp_soc_compute_correction(soc_data,
                                          augmented_jacobian,
                                          iterate,
                                          trial_iterate,
