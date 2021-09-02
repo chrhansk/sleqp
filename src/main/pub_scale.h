@@ -27,9 +27,9 @@ extern "C" {
    * \end{aligned}
    * \f]
    *
-   * defined by scaling weights \f$ \lambda \in \mathbb{R} \f$,
-   * \f$ \alpha \in \mathbb{N}^{m} \f$,
-   * \f$ \beta \in \mathbb{N}^{n} \f$.
+   * defined by scaling weights \f$ \lambda \in \mathbb{Z} \f$,
+   * \f$ \alpha \in \mathbb{Z}^{m} \f$,
+   * \f$ \beta \in \mathbb{Z}^{n} \f$.
    *
    * The weights \f$ \alpha, \beta \f$ yield scaling
    * factors \f$ a, b \f$:
@@ -48,7 +48,7 @@ extern "C" {
    *
    * \f[
    * \begin{aligned}
-   * f'(\cdot) &:= \lambda f(B \cdot)      \\
+   * f'(\cdot) &:= 2^{\lambda} f(B \cdot)  \\
    * c'(\cdot) &:= A c(B \cdot)            \\
    * l' &:= A l                            \\
    * u' &:= A u                            \\
