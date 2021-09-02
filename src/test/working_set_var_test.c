@@ -52,7 +52,10 @@ void working_set_var_setup()
                                                  params,
                                                  options));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem,
+                                     iterate,
+                                     SLEQP_VALUE_REASON_NONE,
+                                     NULL));
 
   ASSERT_CALL(sleqp_cauchy_create(&cauchy_data,
                                   problem,
@@ -68,7 +71,10 @@ START_TEST(test_inactive)
   primal->data[0] = 1.5;
   primal->data[1] = 2.5;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem,
+                                     iterate,
+                                     SLEQP_VALUE_REASON_NONE,
+                                     NULL));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
@@ -98,7 +104,10 @@ START_TEST(test_active)
   primal->data[0] = 1.5;
   primal->data[1] = 2.5;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem,
+                                     iterate,
+                                     SLEQP_VALUE_REASON_NONE,
+                                     NULL));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
@@ -128,7 +137,10 @@ START_TEST(test_first_active)
   primal->data[0] = 1.;
   primal->data[1] = 2.5;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem,
+                                     iterate,
+                                     SLEQP_VALUE_REASON_NONE,
+                                     NULL));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 

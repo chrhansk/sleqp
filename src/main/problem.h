@@ -17,6 +17,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_problem_set_value(SleqpProblem* problem,
                                         SleqpSparseVec* x,
                                         SLEQP_VALUE_REASON reason,
+                                        bool* reject,
                                         int* func_grad_nnz,
                                         int* cons_val_nnz,
                                         int* cons_jac_nnz);

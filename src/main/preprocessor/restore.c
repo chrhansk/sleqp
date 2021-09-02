@@ -732,9 +732,18 @@ SLEQP_RETCODE sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
                             sleqp_iterate_get_primal(transformed),
                             sleqp_iterate_get_primal(original)));
 
+  bool reject = false;
+
   SLEQP_CALL(sleqp_set_and_evaluate(problem,
                                     original,
-                                    SLEQP_VALUE_REASON_NONE));
+                                    SLEQP_VALUE_REASON_NONE,
+                                    &reject));
+
+  if(reject)
+  {
+    sleqp_log_error("Function rejected restoration");
+    return SLEQP_INTERNAL_ERROR;
+  }
 
   SLEQP_CALL(prepare_working_set(restoration,
                                  sleqp_iterate_get_working_set(transformed),

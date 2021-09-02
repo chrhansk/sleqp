@@ -33,6 +33,7 @@ SleqpFunc* rosenbrock_lsq_func;
 static SLEQP_RETCODE rosenbrock_lsq_set(SleqpFunc* func,
                                         SleqpSparseVec* x,
                                         SLEQP_VALUE_REASON reason,
+                                        bool* reject,
                                         int* func_grad_nnz,
                                         int* cons_val_nnz,
                                         int* cons_jac_nnz,

@@ -143,11 +143,14 @@ void teardown()
 
 START_TEST(test_func_eval)
 {
+  bool reject;
+
   int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
+                                   &reject,
                                    &func_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
@@ -159,6 +162,7 @@ START_TEST(test_func_eval)
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
+                                   &reject,
                                    &func_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
@@ -176,9 +180,12 @@ START_TEST(test_func_grad)
 {
   int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
+  bool reject;
+
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
+                                   &reject,
                                    &func_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
@@ -188,6 +195,7 @@ START_TEST(test_func_grad)
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
+                                   &reject,
                                    &func_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
@@ -204,9 +212,12 @@ START_TEST(test_cons_jac)
 {
   int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
+  bool reject;
+
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
+                                   &reject,
                                    &func_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
@@ -221,6 +232,7 @@ START_TEST(test_cons_jac)
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
+                                   &reject,
                                    &func_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
@@ -244,9 +256,12 @@ START_TEST(test_hess_prod)
 {
   int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
+  bool reject;
+
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
+                                   &reject,
                                    &func_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
@@ -262,6 +277,7 @@ START_TEST(test_hess_prod)
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
+                                   &reject,
                                    &func_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));

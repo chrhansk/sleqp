@@ -1,7 +1,7 @@
 include(FetchContent)
 
 FetchContent_Declare(CUTEst
-  GIT_REPOSITORY https://github.com/optimizers/cutest-mirror
+  GIT_REPOSITORY https://github.com/ralna/CUTEst.git
   )
 
 FetchContent_Declare(sifdecode
@@ -144,8 +144,10 @@ foreach(s ${CUTESTSRC})
 endforeach(s)
 
 set(cutestsrc ${cutestsrc} "${CMAKE_CURRENT_BINARY_DIR}/cutestd/fortran_ops_mod.f90")
-add_library(cutest OBJECT ${cutestsrc})
-set_property(TARGET cutest PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+add_library(cutest_objects OBJECT ${cutestsrc})
+set_property(TARGET cutest_objects PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+
+add_library(cutest SHARED ${cutestsrc})
 
 file(GLOB SIFPROBLEMS_EXT RELATIVE ${MASTSIF_BASE} ${MASTSIF_BASE}/*.SIF)
 
@@ -202,7 +204,7 @@ foreach(s ${SIFPROBLEMS_EXT})
   add_library("cutest_${PROBLEM}"
     SHARED
     EXCLUDE_FROM_ALL
-    $<TARGET_OBJECTS:cutest>
+    $<TARGET_OBJECTS:cutest_objects>
     $<TARGET_OBJECTS:${PROBLEM}>)
 
   set_target_properties("cutest_${PROBLEM}" PROPERTIES
@@ -232,7 +234,7 @@ foreach(s ${SIFPROBLEMS_EXT})
     ${CMAKE_DL_LIBS}
     "cutest_${PROBLEM}"
     gfortran
-    cutest)
+    cutest_objects)
 
   if(OpenMP_FOUND)
     target_link_libraries("${SOLVER_NAME}"

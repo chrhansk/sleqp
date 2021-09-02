@@ -52,7 +52,8 @@ void scaling_setup()
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem,
                                      iterate,
-                                     SLEQP_VALUE_REASON_INIT));
+                                     SLEQP_VALUE_REASON_INIT,
+                                     NULL));
 }
 
 START_TEST(test_nominal_large)

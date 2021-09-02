@@ -7,14 +7,21 @@
 #include "penalty.h"
 
 static
-SLEQP_RETCODE evaluate_at_trial_iterate(SleqpSolver* solver)
+SLEQP_RETCODE evaluate_at_trial_iterate(SleqpSolver* solver,
+                                        bool* reject)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
   SLEQP_CALL(sleqp_solver_set_func_value(solver,
                                          trial_iterate,
-                                         SLEQP_VALUE_REASON_TRYING_ITERATE));
+                                         SLEQP_VALUE_REASON_TRYING_ITERATE,
+                                         reject));
+
+  if(*reject)
+  {
+    return SLEQP_OKAY;
+  }
 
   double func_val;
 
@@ -275,8 +282,12 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 
   if(step_accepted)
   {
-    SLEQP_CALL(evaluate_at_trial_iterate(solver));
+    SLEQP_CALL(evaluate_at_trial_iterate(solver,
+                                         &reject_step));
 
+    step_accepted = !reject_step;
+
+    if(step_accepted)
     {
 
       SLEQP_CALL(sleqp_merit_func(solver->merit_data,
@@ -288,19 +299,22 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
                       exact_iterate_value,
                       exact_trial_value);
 
+      SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
+                                       exact_iterate_value,
+                                       exact_trial_value,
+                                       model_trial_value,
+                                       &step_accepted,
+                                       &reduction_ratio));
+
+      sleqp_log_debug("Reduction ratio: %e",
+                      reduction_ratio);
+
+      sleqp_log_debug("Trial step norm: %e", trial_step_norm);
     }
-
-    SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
-                                     exact_iterate_value,
-                                     exact_trial_value,
-                                     model_trial_value,
-                                     &step_accepted,
-                                     &reduction_ratio));
-
-    sleqp_log_debug("Reduction ratio: %e",
-                    reduction_ratio);
-
-    sleqp_log_debug("Trial step norm: %e", trial_step_norm);
+    else
+    {
+      sleqp_log_debug("Manually rejected trial iterate");
+    }
   }
 
   solver->boundary_step = sleqp_is_geq(trial_step_norm,
@@ -348,24 +362,33 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 
       if(step_accepted)
       {
-        SLEQP_CALL(evaluate_at_trial_iterate(solver));
+        SLEQP_CALL(evaluate_at_trial_iterate(solver, &reject_step));
 
-        double soc_exact_trial_value;
+        step_accepted = !reject_step;
 
-        SLEQP_CALL(sleqp_merit_func(solver->merit_data,
-                                    trial_iterate,
-                                    solver->penalty_parameter,
-                                    &soc_exact_trial_value));
+        if(step_accepted)
+        {
+          double soc_exact_trial_value;
 
-        SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
-                                         exact_iterate_value,
-                                         soc_exact_trial_value,
-                                         model_trial_value,
-                                         &step_accepted,
-                                         &reduction_ratio));
+          SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+                                      trial_iterate,
+                                      solver->penalty_parameter,
+                                      &soc_exact_trial_value));
 
-        sleqp_log_debug("SOC Reduction ratio: %e",
-                        reduction_ratio);
+          SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
+                                           exact_iterate_value,
+                                           soc_exact_trial_value,
+                                           model_trial_value,
+                                           &step_accepted,
+                                           &reduction_ratio));
+
+          sleqp_log_debug("SOC Reduction ratio: %e",
+                          reduction_ratio);
+        }
+        else
+        {
+          sleqp_log_debug("Manually rejected SOC trial iterate");
+        }
 
         if(step_accepted)
         {

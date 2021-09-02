@@ -43,6 +43,7 @@ static inline double square(double v)
 SLEQP_RETCODE linquadfunc_set(SleqpFunc* func,
                               SleqpSparseVec* x,
                               SLEQP_VALUE_REASON reason,
+                              bool* reject,
                               int* func_grad_nnz,
                               int* cons_val_nnz,
                               int* cons_jac_nnz,
@@ -220,7 +221,10 @@ void newton_setup()
                                    problem,
                                    linquadfunc_x));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem,
+                                     iterate,
+                                     SLEQP_VALUE_REASON_NONE,
+                                     NULL));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
   ASSERT_CALL(sleqp_working_set_reset(working_set));

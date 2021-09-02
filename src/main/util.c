@@ -7,18 +7,31 @@
 
 SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                      SleqpIterate* iterate,
-                                     SLEQP_VALUE_REASON reason)
+                                     SLEQP_VALUE_REASON reason,
+                                     bool* reject)
 {
   int func_grad_nnz = 0;
   int cons_val_nnz = 0;
   int cons_jac_nnz = 0;
 
+  bool manual_reject = false;
+
   SLEQP_CALL(sleqp_problem_set_value(problem,
                                      sleqp_iterate_get_primal(iterate),
                                      reason,
+                                     &manual_reject,
                                      &func_grad_nnz,
                                      &cons_val_nnz,
                                      &cons_jac_nnz));
+
+  if(reject)
+  {
+    *reject = manual_reject;
+  }
+  else if(manual_reject)
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
 
   SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);

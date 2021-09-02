@@ -55,3 +55,14 @@ class RosenbrockFunc:
                         ((-4.*b*x)*dx + (2.*b)*dy)*func_dual])
 
     return product
+
+inf = np.inf
+
+var_lb = np.array([-inf, -inf])
+var_ub = np.array([inf, inf])
+
+cons_lb = np.array([])
+cons_ub = np.array([])
+
+expected_sol = np.array([1., 1.])
+initial_sol = np.array([0., 0.])

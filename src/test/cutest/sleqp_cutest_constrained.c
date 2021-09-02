@@ -526,6 +526,7 @@ cutest_cons_func_hess_product(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(cons_duals, data->multipliers));
 
+  /*
   {
     CUTEST_uhprod(&status,
                   &(data->num_variables),
@@ -535,6 +536,8 @@ cutest_cons_func_hess_product(SleqpFunc* func,
                   data->hessian_product);
 
     SLEQP_CUTEST_CHECK_STATUS(status);
+
+    data->goth = cutest_true;
 
     CUTEST_chcprod(&status,
                    &(data->num_variables),
@@ -546,11 +549,27 @@ cutest_cons_func_hess_product(SleqpFunc* func,
                    data->cons_hessian_product);
 
     SLEQP_CUTEST_CHECK_STATUS(status);
-  }
 
-  for(int i = 0; i < data->num_variables; ++i)
+    for(int i = 0; i < data->num_variables; ++i)
+    {
+      data->hessian_product[i] += data->cons_hessian_product[i];
+    }
+  }
+  */
+
   {
-    data->hessian_product[i] += data->cons_hessian_product[i];
+    CUTEST_chprod(&status,
+                  &(data->num_variables),
+                  &(data->num_constraints),
+                  &(data->goth),
+                  data->x,
+                  data->multipliers,
+                  data->direction,
+                  data->hessian_product);
+
+    SLEQP_CUTEST_CHECK_STATUS(status);
+
+    data->goth = cutest_true;
   }
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(product,

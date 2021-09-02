@@ -227,7 +227,8 @@ extern "C" {
 
   SLEQP_RETCODE sleqp_solver_set_func_value(SleqpSolver* solver,
                                             SleqpIterate* iterate,
-                                            SLEQP_VALUE_REASON reason);
+                                            SLEQP_VALUE_REASON reason,
+                                            bool* reject);
 
   SLEQP_RETCODE sleqp_solver_accept_step(SleqpSolver* solver);
 

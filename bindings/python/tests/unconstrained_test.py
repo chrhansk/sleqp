@@ -5,24 +5,12 @@ import unittest
 
 import sleqp
 
-from tests.rosenbrock_fixture import RosenbrockFunc
+from tests.rosenbrock_fixture import *
 
-num_variables = 2
-num_constraints = 0
 
 class UnconstrainedTest(unittest.TestCase):
 
   def setUp(self):
-    inf = sleqp.inf()
-
-    var_lb = np.array([-inf, -inf])
-    var_ub = np.array([inf, inf])
-
-    cons_lb = np.array([])
-    cons_ub = np.array([])
-
-    self.initial_sol = np.array([0., 0.])
-
     self.params = sleqp.Params()
 
     self.options = sleqp.Options()
@@ -39,16 +27,14 @@ class UnconstrainedTest(unittest.TestCase):
     self.solver = sleqp.Solver(problem,
                                self.params,
                                self.options,
-                               self.initial_sol)
-
-    self.expected_sol = np.array([1., 1.])
+                               initial_sol)
 
   def test_solve(self):
     self.solver.solve(100, 3600)
 
     self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
-    self.assertTrue(np.allclose(self.expected_sol,
+    self.assertTrue(np.allclose(expected_sol,
                                 self.solver.solution.primal))
 
   def test_solve_nogil(self):
@@ -59,7 +45,7 @@ class UnconstrainedTest(unittest.TestCase):
 
       self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
-      self.assertTrue(np.allclose(self.expected_sol,
+      self.assertTrue(np.allclose(expected_sol,
                                   self.solver.solution.primal))
 
     finally:

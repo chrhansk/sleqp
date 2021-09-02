@@ -38,6 +38,7 @@ static double sq(double x)
 static SLEQP_RETCODE func_set(SleqpFunc* func,
                               SleqpSparseVec* x,
                               SLEQP_VALUE_REASON reason,
+                              bool* reject,
                               int* func_grad_nnz,
                               int* cons_val_nnz,
                               int* cons_jac_nnz,
@@ -773,7 +774,10 @@ START_TEST(test_auto_scaled_solve)
                                    problem,
                                    x));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE));
+  ASSERT_CALL(sleqp_set_and_evaluate(problem,
+                                     iterate,
+                                     SLEQP_VALUE_REASON_NONE,
+                                     NULL));
 
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);

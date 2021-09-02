@@ -454,6 +454,7 @@ SleqpFunc* sleqp_problem_func(SleqpProblem* problem)
 SLEQP_RETCODE sleqp_problem_set_value(SleqpProblem* problem,
                                       SleqpSparseVec* x,
                                       SLEQP_VALUE_REASON reason,
+                                      bool* reject,
                                       int* func_grad_nnz,
                                       int* cons_val_nnz,
                                       int* cons_jac_nnz)
@@ -461,6 +462,7 @@ SLEQP_RETCODE sleqp_problem_set_value(SleqpProblem* problem,
   SLEQP_CALL(sleqp_func_set_value(problem->func,
                                   x,
                                   reason,
+                                  reject,
                                   func_grad_nnz,
                                   cons_val_nnz,
                                   cons_jac_nnz));

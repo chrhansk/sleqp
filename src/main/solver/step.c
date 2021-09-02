@@ -2,7 +2,8 @@
 
 SLEQP_RETCODE sleqp_solver_set_func_value(SleqpSolver* solver,
                                           SleqpIterate* iterate,
-                                          SLEQP_VALUE_REASON reason)
+                                          SLEQP_VALUE_REASON reason,
+                                          bool* reject)
 {
   SleqpProblem* problem = solver->problem;
 
@@ -10,12 +11,32 @@ SLEQP_RETCODE sleqp_solver_set_func_value(SleqpSolver* solver,
   int cons_val_nnz = 0;
   int cons_jac_nnz = 0;
 
+  bool manual_reject = false;
+
   SLEQP_CALL(sleqp_problem_set_value(problem,
                                      sleqp_iterate_get_primal(iterate),
                                      reason,
+                                     &manual_reject,
                                      &func_grad_nnz,
                                      &cons_val_nnz,
                                      &cons_jac_nnz));
+
+  if(reject)
+  {
+    *reject = manual_reject;
+  }
+
+  if(manual_reject)
+  {
+    if(reason != SLEQP_VALUE_REASON_TRYING_ITERATE &&
+       reason != SLEQP_VALUE_REASON_TRYING_SOC_ITERATE)
+    {
+      sleqp_log_error("Function can only reject trial steps");
+      return SLEQP_INTERNAL_ERROR;
+    }
+
+    return SLEQP_OKAY;
+  }
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(sleqp_iterate_get_func_grad(iterate),
                                          func_grad_nnz));
@@ -35,7 +56,8 @@ SLEQP_RETCODE sleqp_solver_reject_step(SleqpSolver* solver)
 
   SLEQP_CALL(sleqp_solver_set_func_value(solver,
                                          iterate,
-                                         SLEQP_VALUE_REASON_REJECTED_ITERATE));
+                                         SLEQP_VALUE_REASON_REJECTED_ITERATE,
+                                         NULL));
 
   return SLEQP_OKAY;
 }
@@ -48,7 +70,8 @@ SLEQP_RETCODE sleqp_solver_accept_step(SleqpSolver* solver)
 
   SLEQP_CALL(sleqp_solver_set_func_value(solver,
                                          trial_iterate,
-                                         SLEQP_VALUE_REASON_ACCEPTED_ITERATE));
+                                         SLEQP_VALUE_REASON_ACCEPTED_ITERATE,
+                                         NULL));
 
   // get the remaining data to fill the iterate
 

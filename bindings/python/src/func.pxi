@@ -4,6 +4,7 @@
 cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
                                          csleqp.SleqpSparseVec* x,
                                          csleqp.SLEQP_VALUE_REASON reason,
+                                         csleqp.bool* reject,
                                          int* func_grad_nnz,
                                          int* cons_val_nnz,
                                          int* cons_jac_nnz,
@@ -14,7 +15,13 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
 
     func_obj = (<object> func_data)
 
-    func_obj.set_value(x_array, ValueReason(reason))
+    do_reject = func_obj.set_value(x_array, ValueReason(reason))
+
+    if do_reject is True:
+      reject[0] = True
+      return csleqp.SLEQP_OKAY
+    else:
+      reject[0] = False
 
     def try_call(f):
       try:
@@ -36,6 +43,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
 cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpFunc* func,
                                                csleqp.SleqpSparseVec* x,
                                                csleqp.SLEQP_VALUE_REASON reason,
+                                               csleqp.bool* reject,
                                                int* func_grad_nnz,
                                                int* cons_val_nnz,
                                                int* cons_jac_nnz,
@@ -44,6 +52,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpFunc* func,
     return sleqp_func_set(func,
                           x,
                           reason,
+                          reject,
                           func_grad_nnz,
                           cons_val_nnz,
                           cons_jac_nnz,

@@ -37,6 +37,8 @@ extern "C" {
    *
    * @param[in]     func            The function
    * @param[in]     value           The value
+   * @param[in]     reason          The reason for setting \f$ x \f$
+   * @param[out]    reject          Whether to manually reject the step
    * @param[out]    func_grad_nnz   The number of nonzeros of the function gradient \f$ \nabla f(x) \f$
    * @param[out]    cons_val_nnz    The number of nonzeros of the constraint function \f$ c(x) \f$
    * @param[out]    cons_jac_nnz    The number of nonzeros of the constraint Jacobian \f$ J_c(x) \f$
@@ -45,6 +47,7 @@ extern "C" {
   typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
                                           SleqpSparseVec* value,
                                           SLEQP_VALUE_REASON reason,
+                                          bool* reject,
                                           int* func_grad_nnz,
                                           int* cons_val_nnz,
                                           int* cons_jac_nnz,

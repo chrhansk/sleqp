@@ -5,6 +5,8 @@ cimport libc.time
 
 cdef extern from "sleqp.h":
 
+  ctypedef bint bool
+
   cdef int SLEQP_VERSION_MAJOR
   cdef int SLEQP_VERSION_MINOR
   cdef int SLEQP_VERSION_PATCH
@@ -273,6 +275,7 @@ cdef extern from "sleqp.h":
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
                                            SleqpSparseVec* x,
                                            SLEQP_VALUE_REASON reason,
+                                           bool* reject,
                                            int* func_grad_nnz,
                                            int* cons_val_nnz,
                                            int* cons_jac_nnz,
@@ -609,12 +612,12 @@ cdef extern from "sleqp.h":
                                       int value)
 
 
-  bint sleqp_options_get_bool(const SleqpOptions* options,
+  bool sleqp_options_get_bool(const SleqpOptions* options,
                               SLEQP_OPTION_BOOL option)
 
   SLEQP_RETCODE sleqp_options_set_bool(SleqpOptions* options,
                                        SLEQP_OPTION_BOOL option,
-                                       bint value)
+                                       bool value)
 
   SLEQP_RETCODE sleqp_options_release(SleqpOptions** star)
 

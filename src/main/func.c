@@ -77,6 +77,7 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
 SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
                                    SleqpSparseVec* x,
                                    SLEQP_VALUE_REASON reason,
+                                   bool* reject,
                                    int* func_grad_nnz,
                                    int* cons_val_nnz,
                                    int* cons_jac_nnz)
@@ -84,11 +85,14 @@ SLEQP_RETCODE sleqp_func_set_value(SleqpFunc* func,
   assert(sleqp_sparse_vector_is_valid(x));
   assert(sleqp_sparse_vector_is_finite(x));
 
+  *reject = false;
+
   SLEQP_CALL(sleqp_timer_start(func->set_timer));
 
   SLEQP_CALL(func->callbacks.set_value(func,
                                        x,
                                        reason,
+                                       reject,
                                        func_grad_nnz,
                                        cons_val_nnz,
                                        cons_jac_nnz,

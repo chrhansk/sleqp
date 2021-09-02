@@ -249,6 +249,28 @@ static double compute_required_accuracy(SleqpSolver* solver,
   return required_accuracy_factor * model_reduction;
 }
 
+static SLEQP_RETCODE evaluate_iterate(SleqpSolver* solver,
+                                      SleqpProblem* problem,
+                                      SleqpIterate* iterate)
+{
+  double func_val;
+
+  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+  SleqpSparseVec* cons_val = sleqp_iterate_get_cons_val(iterate);
+
+  SLEQP_CALL(sleqp_problem_eval(problem,
+                                NULL,
+                                &func_val,
+                                func_grad,
+                                cons_val,
+                                cons_jac));
+
+  SLEQP_CALL(sleqp_iterate_set_func_val(iterate, func_val));
+
+  return SLEQP_OKAY;
+}
+
 static
 SLEQP_RETCODE solver_refine_step(SleqpSolver* solver,
                                  double* model_trial_value,
@@ -290,17 +312,13 @@ SLEQP_RETCODE solver_refine_step(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_dyn_func_set_accuracy(func, required_accuracy));
 
-    // TODO: We do not really need to *set* the function value again...
-    SLEQP_CALL(sleqp_set_and_evaluate(problem,
-                                      iterate,
-                                      SLEQP_VALUE_REASON_INIT));
+    SLEQP_CALL(evaluate_iterate(solver, problem, iterate));
 
     SLEQP_CALL(sleqp_merit_func(solver->merit_data,
                                 iterate,
                                 solver->penalty_parameter,
                                 &solver->current_merit_value));
 
-    // TODO: recompute more efficiently if possible
     if(perform_newton_step)
     {
       SLEQP_CALL(sleqp_solver_compute_trial_point_newton(solver,

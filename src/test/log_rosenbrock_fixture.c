@@ -33,6 +33,7 @@ static double eval()
 static SLEQP_RETCODE log_rosenbrock_set(SleqpFunc* func,
                                         SleqpSparseVec* v,
                                         SLEQP_VALUE_REASON reason,
+                                        bool* reject,
                                         int* func_grad_nnz,
                                         int* cons_val_nnz,
                                         int* cons_jac_nnz,

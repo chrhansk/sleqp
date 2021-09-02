@@ -568,9 +568,18 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   solver->status = SLEQP_STATUS_RUNNING;
 
+  bool reject_initial;
+
   SLEQP_CALL(sleqp_set_and_evaluate(problem,
                                     iterate,
-                                    SLEQP_VALUE_REASON_INIT));
+                                    SLEQP_VALUE_REASON_INIT,
+                                    &reject_initial));
+
+  if(reject_initial)
+  {
+    sleqp_log_error("Function rejected initial solution");
+    return SLEQP_INTERNAL_ERROR;
+  }
 
   {
     SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);

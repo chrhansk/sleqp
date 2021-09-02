@@ -21,7 +21,8 @@ extern "C" {
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                        SleqpIterate* iterate,
-                                       SLEQP_VALUE_REASON reason);
+                                       SLEQP_VALUE_REASON reason,
+                                       bool* reject);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,

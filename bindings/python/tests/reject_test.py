@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+
+import numpy as np
+import unittest
+
+import sleqp
+
+from .rosenbrock_fixture import *
+
+
+class RejectFunc:
+  def __init__(self):
+    self.func = RosenbrockFunc()
+    self.count = 0
+    self.rejected = False
+
+  def set_value(self, v, reason):
+    if reason == sleqp.ValueReason.TryingIterate:
+      self.count += 1
+      if self.count % 4 == 1:
+        # reject
+        self.rejected = True
+        return True
+
+    self.rejected = False
+
+    return self.func.set_value(v, reason)
+
+  def func_val(self):
+    assert not self.rejected
+    return self.func.func_val()
+
+  def func_grad_nnz(self):
+    assert not self.rejected
+    return self.func.func_grad_nnz()
+
+  def func_grad(self):
+    assert not self.rejected
+    return self.func.func_grad()
+
+  def cons_vals(self):
+    assert not self.rejected
+    return self.func.cons_vals()
+
+  def cons_jac(self):
+    assert not self.rejected
+    return self.func.cons_jac()
+
+  def hess_prod(self, *args):
+    assert not self.rejected
+    return self.func.hess_prod(*args)
+
+
+class RejectTest(unittest.TestCase):
+
+  def setUp(self):
+    self.params = sleqp.Params()
+
+    self.func = RejectFunc()
+
+    self.problem = sleqp.Problem(self.func,
+                                 self.params,
+                                 var_lb,
+                                 var_ub,
+                                 cons_lb,
+                                 cons_ub)
+
+  def test_solve(self):
+    options = sleqp.Options()
+
+    params = sleqp.Params()
+
+    solver = sleqp.Solver(self.problem,
+                          params,
+                          options,
+                          initial_sol)
+
+    solver.solve(max_num_iterations=100)
+
+    self.assertEqual(solver.status, sleqp.Status.Optimal)
+
+    solution = solver.solution
+
+    self.assertTrue(np.allclose(expected_sol, solution.primal))
