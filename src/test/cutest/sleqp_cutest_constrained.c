@@ -151,6 +151,7 @@ static
 SLEQP_RETCODE cutest_cons_func_set(SleqpFunc* func,
                                    SleqpSparseVec* x,
                                    SLEQP_VALUE_REASON reason,
+                                   bool* reject,
                                    int* func_grad_nnz,
                                    int* cons_val_nnz,
                                    int* cons_jac_nnz,
