@@ -26,6 +26,12 @@ extern "C" {
                                                 const int* fixed_indices,
                                                 const double* fixed_values);
 
+  SLEQP_RETCODE sleqp_fixed_var_dyn_func_create(SleqpFunc** star,
+                                                SleqpFunc* func,
+                                                int num_fixed,
+                                                const int* fixed_indices,
+                                                const double* fixed_values);
+
 #ifdef __cplusplus
 }
 #endif

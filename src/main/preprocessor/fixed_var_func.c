@@ -1,7 +1,8 @@
 #include "fixed_var_func.h"
 
-#include "fail.h"
 #include "cmp.h"
+#include "dyn.h"
+#include "fail.h"
 #include "lsq.h"
 #include "mem.h"
 
@@ -279,6 +280,36 @@ SLEQP_RETCODE fixed_lsq_func_jac_adjoint(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE fixed_dyn_func_val(SleqpFunc* func,
+                                 double accuracy,
+                                 double* func_val,
+                                 void* data)
+{
+  FixedVarFuncData* func_data = (FixedVarFuncData*) data;
+
+  SLEQP_CALL(sleqp_dyn_func_val(func_data->func,
+                                accuracy,
+                                func_val));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE fixed_dyn_func_cons_val(SleqpFunc* func,
+                                      double accuracy,
+                                      const SleqpSparseVec* cons_indices,
+                                      SleqpSparseVec* cons_val,
+                                      void* data)
+{
+  FixedVarFuncData* func_data = (FixedVarFuncData*) data;
+
+  SLEQP_CALL(sleqp_dyn_func_cons_val(func_data->func,
+                                     accuracy,
+                                     cons_indices,
+                                     cons_val));
+
+  return SLEQP_OKAY;
+}
+
 static
 SLEQP_RETCODE create_fixed_var_func_data(FixedVarFuncData** star,
                                          SleqpFunc* func,
@@ -449,6 +480,57 @@ SLEQP_RETCODE sleqp_fixed_var_lsq_func_create(SleqpFunc** star,
                                    levenberg_marquardt,
                                    params,
                                    (void*) func_data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_fixed_var_dyn_func_create(SleqpFunc** star,
+                                              SleqpFunc* func,
+                                              int num_fixed,
+                                              const int* fixed_indices,
+                                              const double* fixed_values)
+{
+  FixedVarFuncData* func_data;
+
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
+
+  const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_constraints = sleqp_func_get_num_constraints(func);
+
+  assert(num_fixed >= 0);
+  assert(num_fixed <= num_variables);
+
+  SLEQP_CALL(create_fixed_var_func_data(&func_data,
+                                        func,
+                                        num_fixed,
+                                        fixed_indices,
+                                        fixed_values));
+
+  SleqpDynFuncCallbacks callbacks = {
+    .set_value = fixed_var_func_set,
+    .func_val  = fixed_dyn_func_val,
+    .func_grad = fixed_var_func_grad,
+    .cons_val  = fixed_dyn_func_cons_val,
+    .cons_jac  = fixed_var_cons_jac,
+    .hess_prod = fixed_var_hess_prod,
+    .func_free = fixed_func_free
+  };
+
+  SLEQP_CALL(sleqp_dyn_func_create(star,
+                                   &callbacks,
+                                   num_variables - num_fixed,
+                                   num_constraints,
+                                   (void*) func_data));
+
+  SleqpFunc* fixed_var_func = *star;
+
+  SLEQP_CALL(sleqp_func_set_psd_hessian(fixed_var_func,
+                                        sleqp_func_has_psd_hessian(func)));
+
+  SLEQP_CALL(create_fixed_var_hess_struct(sleqp_func_get_hess_struct(func),
+                                          sleqp_func_get_hess_struct(fixed_var_func),
+                                          num_fixed,
+                                          fixed_indices));
 
   return SLEQP_OKAY;
 }

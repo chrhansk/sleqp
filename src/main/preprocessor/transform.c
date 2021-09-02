@@ -1,7 +1,8 @@
 #include "transform.h"
 
-#include "fail.h"
 #include "cmp.h"
+#include "dyn.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 
@@ -184,6 +185,13 @@ SLEQP_RETCODE create_transformed_func(SleqpTransformation* transformation,
       SLEQP_CALL(sleqp_fixed_var_lsq_func_create(star,
                                                  func,
                                                  transformation->params,
+                                                 num_fixed_vars,
+                                                 fixed_var_indices,
+                                                 fixed_var_values));
+      break;
+    case SLEQP_FUNC_TYPE_DYNAMIC:
+      SLEQP_CALL(sleqp_fixed_var_dyn_func_create(star,
+                                                 func,
                                                  num_fixed_vars,
                                                  fixed_var_indices,
                                                  fixed_var_values));
