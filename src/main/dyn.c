@@ -182,3 +182,41 @@ SLEQP_RETCODE sleqp_dyn_func_get_accuracy(SleqpFunc* func,
 
   return SLEQP_OKAY;
 }
+
+SLEQP_RETCODE sleqp_dyn_func_val(SleqpFunc* func,
+                                 double accuracy,
+                                 double* func_val)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
+
+  void* func_data = sleqp_func_get_data(func);
+
+  DynFuncData* data = (DynFuncData*) func_data;
+
+  SLEQP_CALL(data->callbacks.func_val(func,
+                                      accuracy,
+                                      func_val,
+                                      data->func_data));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_dyn_func_cons_val(SleqpFunc* func,
+                                      double accuracy,
+                                      const SleqpSparseVec* cons_indices,
+                                      SleqpSparseVec* cons_val)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
+
+  void* func_data = sleqp_func_get_data(func);
+
+  DynFuncData* data = (DynFuncData*) func_data;
+
+  SLEQP_CALL(data->callbacks.cons_val(func,
+                                      accuracy,
+                                      cons_indices,
+                                      cons_val,
+                                      data->func_data));
+
+  return SLEQP_OKAY;
+}
