@@ -280,6 +280,7 @@ SLEQP_RETCODE fixed_lsq_func_jac_adjoint(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+static
 SLEQP_RETCODE fixed_dyn_func_val(SleqpFunc* func,
                                  double accuracy,
                                  double* func_val,
@@ -294,6 +295,7 @@ SLEQP_RETCODE fixed_dyn_func_val(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
+static
 SLEQP_RETCODE fixed_dyn_func_cons_val(SleqpFunc* func,
                                       double accuracy,
                                       const SleqpSparseVec* cons_indices,
