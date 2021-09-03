@@ -65,19 +65,9 @@ SLEQP_RETCODE check_derivative(SleqpSolver* solver)
   const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_int(options,
                                                               SLEQP_OPTION_INT_DERIV_CHECK);
 
-  if(deriv_check & SLEQP_DERIV_CHECK_FIRST)
-  {
-    SLEQP_CALL(sleqp_deriv_check_first_order(solver->deriv_check, iterate));
-  }
-
-  if(deriv_check & SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE)
-  {
-    SLEQP_CALL(sleqp_deriv_check_second_order_exhaustive(solver->deriv_check, iterate));
-  }
-  else if(deriv_check & SLEQP_DERIV_CHECK_SECOND_SIMPLE)
-  {
-    SLEQP_CALL(sleqp_deriv_check_second_order_simple(solver->deriv_check, iterate));
-  }
+  SLEQP_CALL(sleqp_deriv_check_perform(solver->deriv_check,
+                                       iterate,
+                                       deriv_check));
 
   return SLEQP_OKAY;
 }

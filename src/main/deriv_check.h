@@ -22,16 +22,9 @@ extern "C" {
                                            SleqpParams* params);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_deriv_check_first_order(SleqpDerivCheckData* data,
-                                              SleqpIterate* iterate);
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_deriv_check_second_order_exhaustive(SleqpDerivCheckData* data,
-                                                          SleqpIterate* iterate);
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_deriv_check_second_order_simple(SleqpDerivCheckData* data,
-                                                      SleqpIterate* iterate);
+  SLEQP_RETCODE sleqp_deriv_check_perform(SleqpDerivCheckData* data,
+                                          SleqpIterate* iterate,
+                                          SLEQP_DERIV_CHECK flags);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_deriv_checker_free(SleqpDerivCheckData** star);

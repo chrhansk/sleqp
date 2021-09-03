@@ -66,6 +66,11 @@ extern "C" {
                                       int col);
 
   SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_get_col(const SleqpSparseMatrix* matrix,
+                                            int col,
+                                            SleqpSparseVec* vec);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
                                               SleqpSparseMatrix* target);
 

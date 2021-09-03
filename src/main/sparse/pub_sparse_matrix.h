@@ -11,6 +11,7 @@ extern "C" {
 #endif
 
 #include "export.h"
+#include "pub_sparse_vec.h"
 #include "pub_types.h"
 
   /**
@@ -122,6 +123,11 @@ extern "C" {
                                          int row,
                                          int col,
                                          double value);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_sparse_matrix_push_vec(SleqpSparseMatrix* matrix,
+                                             int col,
+                                             SleqpSparseVec* vec);
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,

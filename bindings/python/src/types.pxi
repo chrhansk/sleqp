@@ -27,7 +27,11 @@ class Status(_DocEnum):
 
 class DerivCheck(Flag):
   Skip             = csleqp.SLEQP_DERIV_CHECK_SKIP
+  FirstFunc        = csleqp.SLEQP_DERIV_CHECK_FIRST_FUNC
+  FirstCons        = csleqp.SLEQP_DERIV_CHECK_FIRST_CONS
   First            = csleqp.SLEQP_DERIV_CHECK_FIRST
+  SecondFunc       = csleqp.SLEQP_DERIV_CHECK_SECOND_FUNC
+  SecondCons       = csleqp.SLEQP_DERIV_CHECK_SECOND_CONS
   SecondExhaustive = csleqp.SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE
   SecondSimple     = csleqp.SLEQP_DERIV_CHECK_SECOND_SIMPLE
 
@@ -66,7 +70,7 @@ class LineSearch(_DocEnum):
   The linesearch used
   """
   Exact  = csleqp.SLEQP_LINESEARCH_EXACT, "Exact line search"
-  Appeox = csleqp.SLEQP_LINESEARCH_APPROX, "Approximate line search"
+  Approx = csleqp.SLEQP_LINESEARCH_APPROX, "Approximate line search"
 
 class ParametricCauchy(_DocEnum):
   """

@@ -181,6 +181,31 @@ SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_sparse_matrix_push_vec(SleqpSparseMatrix* matrix,
+                                           int col,
+                                           SleqpSparseVec* vec)
+{
+  assert(matrix->cols[col] == matrix->cols[col + 1]);
+  assert(vec->dim == matrix->num_rows);
+
+  assert((matrix->nnz_max - matrix->nnz) >= vec->nnz);
+
+  for(int i = 0; i < vec->nnz; ++i)
+  {
+    matrix->data[matrix->nnz + i] = vec->data[i];
+  }
+
+  for(int i = 0; i < vec->nnz; ++i)
+  {
+    matrix->rows[matrix->nnz + i] = vec->indices[i];
+  }
+
+  matrix->cols[col + 1] += vec->nnz;
+  matrix->nnz += vec->nnz;
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,
                                               int col)
 {
@@ -353,6 +378,29 @@ double sleqp_sparse_matrix_value_at(SleqpSparseMatrix* matrix,
   double* ptr = sleqp_sparse_matrix_at(matrix, row, col);
 
   return ptr ? *ptr : 0.;
+}
+
+SLEQP_RETCODE sleqp_sparse_matrix_get_col(const SleqpSparseMatrix* matrix,
+                                          int col,
+                                          SleqpSparseVec* vec)
+{
+  assert(matrix->num_rows == vec->dim);
+  assert(col >= 0);
+  assert(col < matrix->num_cols);
+
+  const int nnz = matrix->cols[col + 1] - matrix->cols[col];
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(vec, nnz));
+  SLEQP_CALL(sleqp_sparse_vector_clear(vec));
+
+  for(int i = matrix->cols[col]; i < matrix->cols[col + 1]; ++i)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_push(vec,
+                                        matrix->rows[i],
+                                        matrix->data[i]));
+  }
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,

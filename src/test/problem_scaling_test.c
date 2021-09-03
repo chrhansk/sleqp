@@ -188,8 +188,9 @@ START_TEST(test_first_order_deriv)
                                          scaled_problem,
                                          params));
 
-  ASSERT_CALL(sleqp_deriv_check_first_order(deriv_check_data,
-                                            scaled_iterate));
+  ASSERT_CALL(sleqp_deriv_check_perform(deriv_check_data,
+                                        scaled_iterate,
+                                        SLEQP_DERIV_CHECK_FIRST));
 
   ASSERT_CALL(sleqp_deriv_checker_free(&deriv_check_data));
 
@@ -219,8 +220,9 @@ START_TEST(test_second_order_deriv)
                                          scaled_problem,
                                          params));
 
-  ASSERT_CALL(sleqp_deriv_check_second_order_exhaustive(deriv_check_data,
-                                                        scaled_iterate));
+  ASSERT_CALL(sleqp_deriv_check_perform(deriv_check_data,
+                                        scaled_iterate,
+                                        SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   ASSERT_CALL(sleqp_deriv_checker_free(&deriv_check_data));
 
