@@ -507,30 +507,38 @@ static SLEQP_RETCODE print_warning(SleqpSolver* solver)
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
+  SleqpFunc* func = sleqp_problem_func(problem);
+
+  SLEQP_FUNC_TYPE func_type = sleqp_func_get_type(func);
+
+  const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_int(solver->options,
+                                                              SLEQP_OPTION_INT_DERIV_CHECK);
+
+  const int hessian_check_flags = (SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE |
+                                   SLEQP_DERIV_CHECK_SECOND_SIMPLE);
+
+  const bool hessian_check = (deriv_check & hessian_check_flags);
+
+  if(hessian_check)
   {
-    const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_int(solver->options,
-                                                                SLEQP_OPTION_INT_DERIV_CHECK);
+    const bool inexact_hessian = (solver->bfgs_data ||
+                                  solver->sr1_data ||
+                                  func_type == SLEQP_FUNC_TYPE_LSQ);
 
-    const bool inexact_hessian = (solver->bfgs_data || solver->sr1_data);
-
-    const int hessian_check_flags = SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE | SLEQP_DERIV_CHECK_SECOND_SIMPLE;
-
-    const bool hessian_check = (deriv_check & hessian_check_flags);
-
-    if(inexact_hessian && hessian_check)
+    if (inexact_hessian)
     {
-      sleqp_log_warn("Enabled second order derivative check while using a quasi-Newton method");
+      sleqp_log_warn("Enabled second order derivative check while using a "
+                     "quasi-Newton method");
     }
+  }
 
-    SleqpFunc* func = sleqp_problem_func(problem);
+  if(func_type == SLEQP_FUNC_TYPE_DYNAMIC)
+  {
+    const int check_first_flags = SLEQP_DERIV_CHECK_FIRST;
 
-    bool dynamic = (sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
+    const bool check_first = (deriv_check & check_first_flags);
 
-    const int first_check_flags = SLEQP_DERIV_CHECK_FIRST;
-
-    const bool first_check = (deriv_check & first_check_flags);
-
-    if(dynamic && first_check)
+    if(check_first)
     {
       sleqp_log_warn("Enabled first order derivative check while using a dynamic function");
     }
