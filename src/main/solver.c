@@ -363,6 +363,14 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   if(tr_solver == SLEQP_TR_SOLVER_LSQR)
   {
+    SleqpFunc* func = sleqp_problem_func(problem);
+
+    if(sleqp_func_get_type(func) != SLEQP_FUNC_TYPE_LSQ)
+    {
+      sleqp_log_error("LSQR solver is only available for LSQ problems");
+      return SLEQP_ILLEGAL_ARGUMENT;
+    }
+
     SLEQP_CALL(sleqp_lsqr_solver_create(&solver->lsqr_solver,
                                         solver->problem,
                                         solver->working_step,
