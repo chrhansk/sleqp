@@ -90,7 +90,7 @@ START_TEST(test_nominal_scale)
                                        1,
                                        nominal_values[1] - 1e-5));
 
-  ASSERT_CALL(sleqp_scale_iterate(scaling, iterate));
+  ASSERT_CALL(sleqp_scale_iterate(scaling, iterate, false));
 
   for(int index = 0; index < primal->nnz; ++index)
   {

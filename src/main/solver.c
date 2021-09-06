@@ -79,9 +79,15 @@ SLEQP_RETCODE do_restore_iterate(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_iterate_copy(solver->scaled_iterate, target));
 
+  SleqpProblem* problem = solver->problem;
+  SleqpFunc* func = sleqp_problem_func(problem);
+  const bool lsq = sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ;
+
   if(solver->scaling_data)
   {
-    SLEQP_CALL(sleqp_unscale_iterate(solver->scaling_data, target));
+    SLEQP_CALL(sleqp_unscale_iterate(solver->scaling_data,
+                                     target,
+                                     lsq));
   }
 
   return SLEQP_OKAY;
@@ -612,8 +618,12 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
     SLEQP_CALL(sleqp_iterate_copy(iterate,
                                   solver->original_iterate));
 
+    SleqpFunc* func = sleqp_problem_func(problem);
+    const bool lsq = sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ;
+
     SLEQP_CALL(sleqp_unscale_iterate(solver->scaling_data,
-                                     solver->original_iterate));
+                                     solver->original_iterate,
+                                     lsq));
   }
 
   // Warnings

@@ -18,6 +18,9 @@ extern "C" {
   double sleqp_scale_func_val(SleqpScaling* scaling,
                               double func_val);
 
+  double sleqp_scale_lsq_func_val(SleqpScaling* scaling,
+                                  double func_val);
+
   SLEQP_RETCODE sleqp_scale_lsq_residuals(SleqpScaling* scaling,
                                           SleqpSparseVec* lsq_residuals);
 
@@ -65,7 +68,8 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_scale_iterate(SleqpScaling* scaling,
-                                    SleqpIterate* iterate);
+                                    SleqpIterate* iterate,
+                                    bool lsq);
 
 
   SLEQP_NODISCARD
@@ -74,6 +78,9 @@ extern "C" {
 
   double sleqp_unscale_func_val(SleqpScaling* scaling,
                                 double unscaled_func_val);
+
+  double sleqp_unscale_lsq_func_val(SleqpScaling* scaling,
+                                    double func_val);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_unscale_func_grad(SleqpScaling* scaling,
@@ -102,7 +109,8 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_unscale_iterate(SleqpScaling* scaling,
-                                      SleqpIterate* scaled_iterate);
+                                      SleqpIterate* scaled_iterate,
+                                      bool lsq);
 
 
 #ifdef __cplusplus

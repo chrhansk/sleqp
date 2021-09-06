@@ -256,6 +256,12 @@ double sleqp_scale_func_val(SleqpScaling* scaling,
   return ldexp(func_val, (-1) * scaling->func_weight);
 }
 
+double sleqp_scale_lsq_func_val(SleqpScaling* scaling,
+                                double func_val)
+{
+  return ldexp(func_val, (-1) * 2 * scaling->func_weight);
+}
+
 SLEQP_RETCODE sleqp_scale_lsq_residuals(SleqpScaling* scaling,
                                         SleqpSparseVec* lsq_residuals)
 {
@@ -417,14 +423,28 @@ SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScaling* scaling,
 }
 
 SLEQP_RETCODE sleqp_scale_iterate(SleqpScaling* scaling,
-                                  SleqpIterate* scaled_iterate)
+                                  SleqpIterate* scaled_iterate,
+                                  bool lsq)
 {
   SLEQP_CALL(sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
 
-  const double scaled_func_val = sleqp_scale_func_val(scaling,
-                                                      sleqp_iterate_get_func_val(scaled_iterate));
+  const double func_val = sleqp_iterate_get_func_val(scaled_iterate);
 
-  SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, scaled_func_val));
+  if(lsq)
+  {
+    const double scaled_func_val = sleqp_scale_lsq_func_val(scaling,
+                                                            func_val);
+
+    SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, scaled_func_val));
+  }
+  else
+  {
+    const double scaled_func_val = sleqp_scale_func_val(scaling,
+                                                        func_val);
+
+    SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate,
+                                          scaled_func_val));
+  }
 
   SLEQP_CALL(sleqp_scale_func_grad(scaling,
                                    sleqp_iterate_get_func_grad(scaled_iterate)));
@@ -449,6 +469,12 @@ double sleqp_unscale_func_val(SleqpScaling* scaling,
                               double scaled_func_val)
 {
   return ldexp(scaled_func_val, scaling->func_weight);
+}
+
+double sleqp_unscale_lsq_func_val(SleqpScaling* scaling,
+                                  double scaled_func_val)
+{
+  return ldexp(scaled_func_val, 2 * scaling->func_weight);
 }
 
 SLEQP_RETCODE sleqp_unscale_point(SleqpScaling* scaling,
@@ -542,15 +568,26 @@ SLEQP_RETCODE sleqp_unscale_hessian_direction(SleqpScaling* scaling,
 
 
 SLEQP_RETCODE sleqp_unscale_iterate(SleqpScaling* scaling,
-                                    SleqpIterate* scaled_iterate)
+                                    SleqpIterate* scaled_iterate,
+                                    bool lsq)
 {
   SLEQP_CALL(sleqp_unscale_point(scaling,
                                  sleqp_iterate_get_primal(scaled_iterate)));
 
-  double func_val = sleqp_iterate_get_func_val(scaled_iterate);
+  const double func_val = sleqp_iterate_get_func_val(scaled_iterate);
 
-  SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate,
-                                        sleqp_unscale_func_val(scaling, func_val)));
+  if(lsq)
+  {
+    const double unscaled_func_val = sleqp_unscale_lsq_func_val(scaling, func_val);
+
+    SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, unscaled_func_val));
+  }
+  else
+  {
+    const double unscaled_func_val = sleqp_unscale_func_val(scaling, func_val);
+
+    SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, unscaled_func_val));
+  }
 
   SLEQP_CALL(sleqp_unscale_func_grad(scaling,
                                      sleqp_iterate_get_func_grad(scaled_iterate)));
