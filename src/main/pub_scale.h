@@ -62,6 +62,10 @@ extern "C" {
    * in the sense that the unscaling is inverse to the scaling
    * even on floating points.
    *
+   * In terms of least-squares functions, the objective scaling works
+   * by scaling the residual vector \f$ r(x) \f$ by \f$ 2^{\lambda} \f$.
+   * Consequently, the objective value is scaled by \f$ \approx 2^{2 \lambda} \f$.
+   *
    * @see Functions
    *
    *
