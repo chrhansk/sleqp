@@ -387,6 +387,8 @@ SLEQP_RETCODE compute_initial_step(SleqpWorkingStep* step,
 
   double alpha = 1.;
 
+  step->initial_step_in_working_set = true;
+
   if(initial_norm != 0.)
   {
     assert(initial_norm > 0.);
@@ -515,6 +517,11 @@ SleqpSparseVec* sleqp_working_step_get_step(SleqpWorkingStep* step)
 double sleqp_working_step_get_reduced_trust_radius(SleqpWorkingStep* step)
 {
   return step->reduced_trust_radius;
+}
+
+bool sleqp_working_step_in_working_set(SleqpWorkingStep* step)
+{
+  return step->initial_step_in_working_set;
 }
 
 SleqpSparseVec* sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step)

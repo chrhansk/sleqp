@@ -35,6 +35,8 @@ extern "C" {
 
   double sleqp_working_step_get_reduced_trust_radius(SleqpWorkingStep* step);
 
+  bool sleqp_working_step_in_working_set(SleqpWorkingStep* step);
+
   double sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
                                                  double penalty_parameter);
 

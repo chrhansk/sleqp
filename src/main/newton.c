@@ -32,8 +32,6 @@ struct SleqpNewtonData
   SleqpAugJacobian* jacobian;
   double penalty_parameter;
 
-  bool newton_step_in_working_set;
-
   SleqpSparseVec* gradient;
 
   SleqpSparseVec* initial_hessian_product;
@@ -510,7 +508,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
     sleqp_assert_is_zero(direction_dot, eps);
   }
 
-  if(data->newton_step_in_working_set)
+
+  if(sleqp_working_step_in_working_set(data->working_step))
   {
     // Direction must be in working set
     bool in_working_set = false;
