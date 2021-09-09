@@ -42,6 +42,7 @@ set(COMMON_SRC
   options.c
   parametric.c
   penalty.c
+  polish.c
   problem_scaling.c
   newton.c
   merit.c

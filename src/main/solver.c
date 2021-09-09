@@ -426,6 +426,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                      params,
                                      solver->merit_data));
 
+  SLEQP_CALL(sleqp_polishing_create(&solver->polishing,
+                                    solver->problem,
+                                    solver->params));
+
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy = sleqp_options_get_int(solver->options,
                                                                     SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
 
@@ -710,6 +714,15 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
                                                 solver->iterate,
                                                 &violation));
 
+  {
+    SLEQP_POLISHING_TYPE polishing_type = sleqp_options_get_int(solver->options,
+                                                                SLEQP_OPTION_INT_POLISHING_TYPE);
+
+    SLEQP_CALL(sleqp_polishing_polish(solver->polishing,
+                                      solver->iterate,
+                                      polishing_type));
+  }
+
   SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_FINISHED],
                                  SLEQP_FINISHED,
                                  solver,
@@ -830,6 +843,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_parametric_solver_release(&solver->parametric_solver));
 
   SLEQP_CALL(sleqp_lsqr_solver_release(&solver->lsqr_solver));
+
+  SLEQP_CALL(sleqp_polishing_release(&solver->polishing));
 
   SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
 

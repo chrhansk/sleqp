@@ -174,6 +174,21 @@ SLEQP_RETCODE sleqp_working_set_add_constraint(SleqpWorkingSet* working_set,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_working_set_add(SleqpWorkingSet* working_set,
+                                    int index,
+                                    bool constraint,
+                                    SLEQP_ACTIVE_STATE state)
+{
+  if(constraint)
+  {
+    return sleqp_working_set_add_constraint(working_set, index, state);
+  }
+  else
+  {
+    return sleqp_working_set_add_variable(working_set, index, state);
+  }
+}
+
 int sleqp_working_set_get_constraint_index(const SleqpWorkingSet* working_set,
                                            int index)
 {
@@ -218,6 +233,20 @@ SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(const SleqpWorkingSet*
 {
   assert(i < working_set->num_constraints);
   return working_set->constraint_states[i];
+}
+
+SLEQP_ACTIVE_STATE sleqp_working_set_get_state(const SleqpWorkingSet* working_set,
+                                               bool constraint,
+                                               int index)
+{
+  if(constraint)
+  {
+    return sleqp_working_set_get_constraint_state(working_set, index);
+  }
+  else
+  {
+    return sleqp_working_set_get_variable_state(working_set, index);
+  }
 }
 
 SleqpProblem* sleqp_working_set_get_problem(const SleqpWorkingSet* working_set)

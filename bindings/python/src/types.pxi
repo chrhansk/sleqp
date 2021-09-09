@@ -57,6 +57,14 @@ class TRSolver(_DocEnum):
   LSQR  = csleqp.SLEQP_TR_SOLVER_LSQR, "LSQR solver for LSQ functions"
   Auto  = csleqp.SLEQP_TR_SOLVER_AUTO, "Automatically chosen"
 
+class PolishingType(_DocEnum):
+  """
+  The polishing methods use
+  """
+  NoPolishing = csleqp.SLEQP_POLISHING_NONE, "No polishing"
+  ZeroDual    = csleqp.SLEQP_POLISHING_ZERO_DUAL, "Remove bounds and constraints with zero duals"
+  Inactive    = csleqp.SLEQP_POLISHING_INACTIVE, "Remove inactive bounds and constraints"
+
 class StepRule(_DocEnum):
   """
   The step rule used

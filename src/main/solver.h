@@ -13,6 +13,7 @@
 #include "merit.h"
 #include "newton.h"
 #include "parametric.h"
+#include "polish.h"
 #include "problem_scaling.h"
 #include "soc.h"
 #include "sr1.h"
@@ -107,6 +108,8 @@ extern "C" {
     SleqpMeritData* merit_data;
 
     SleqpLineSearchData* linesearch;
+
+    SleqpPolishing* polishing;
 
     SleqpParametricSolver* parametric_solver;
     SleqpWorkingSet* parametric_original_working_set;

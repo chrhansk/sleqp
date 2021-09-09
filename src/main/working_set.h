@@ -90,6 +90,12 @@ extern "C" {
                                                  int index,
                                                  SLEQP_ACTIVE_STATE state);
 
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_working_set_add(SleqpWorkingSet* working_set,
+                                      int index,
+                                      bool constraint,
+                                      SLEQP_ACTIVE_STATE state);
+
   /**
    * Returns the index of the given constraint with respect to the given
    * working set, or @ref SLEQP_NONE if the constraint is not contained

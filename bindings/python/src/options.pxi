@@ -18,6 +18,7 @@ cdef class Options:
                   'max_newton_iterations',
                   'bfgs_sizing',
                   'tr_solver',
+                  'polishing_type',
                   'step_rule',
                   'linesearch',
                   'parametric_cauchy',
@@ -93,6 +94,12 @@ cdef class Options:
     cdef int tr_solver = csleqp.sleqp_options_get_int(self.options,
                                                       csleqp.SLEQP_OPTION_INT_TR_SOLVER)
     return TRSolver(tr_solver)
+
+  @property
+  def polishing_type(self) -> PolishingType:
+    cdef int tr_solver = csleqp.sleqp_options_get_int(self.options,
+                                                      csleqp.SLEQP_OPTION_INT_POLISHING_TYPE)
+    return PolishingType(tr_solver)
 
   @property
   def step_rule(self) -> StepRule:
@@ -191,6 +198,12 @@ cdef class Options:
   def tr_solver(self, value):
     csleqp_call(csleqp.sleqp_options_set_int(self.options,
                                              csleqp.SLEQP_OPTION_INT_TR_SOLVER,
+                                             value.value))
+
+  @polishing_type.setter
+  def polishing_type(self, value):
+    csleqp_call(csleqp.sleqp_options_set_int(self.options,
+                                             csleqp.SLEQP_OPTION_INT_POLISHING_TYPE,
                                              value.value))
 
   @step_rule.setter

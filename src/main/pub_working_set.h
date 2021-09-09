@@ -44,6 +44,10 @@ extern "C" {
   SLEQP_EXPORT SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(const SleqpWorkingSet* working_set,
                                                                          int index);
 
+  SLEQP_EXPORT SLEQP_ACTIVE_STATE sleqp_working_set_get_state(const SleqpWorkingSet* working_set,
+                                                              bool constraint,
+                                                              int index);
+
   /**
    * Returns the problem underling the given working set
    *
