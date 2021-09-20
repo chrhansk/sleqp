@@ -186,13 +186,13 @@ test_install_package:
 test_install_make:
   <<: *test_install_template
   script:
-    - cd src/test/install
+    - cd $CI_PROJECT_DIR/src/test/install
     - ./test_make.sh
 
 test_install_cmake:
   <<: *test_install_template
   script:
-    - cd src/test/install
+    - cd $CI_PROJECT_DIR/src/test/install
     - ./test_cmake.sh
 
 trigger_downstream:
