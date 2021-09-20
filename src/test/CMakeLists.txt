@@ -42,6 +42,8 @@ function(add_unit_test TEST_NAME)
 
   target_compile_options(${BASE_NAME} PRIVATE ${CHECK_CFLAGS})
 
+  target_include_directories(${BASE_NAME} PRIVATE ${SLEQP_LOCAL_HEADER_DIR})
+
   add_dependencies(build_tests ${BASE_NAME})
 
   add_dependencies(${BASE_NAME} sleqp_local_headers)

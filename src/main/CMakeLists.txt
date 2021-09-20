@@ -96,15 +96,17 @@ if(DOXYGEN_FOUND)
   add_dependencies(doc c_doc)
 endif()
 
-target_include_directories(sleqp_objects
-  PRIVATE
-  ${CMAKE_BINARY_DIR}
-  "${CMAKE_BINARY_DIR}/sleqp"
-  ${SLEQP_FACT_INCLUDE_DIRS}
-  ${SLEQP_LPS_INCLUDE_DIRS})
-
 set(SLEQP_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "" FORCE)
 set(SLEQP_LIBRARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" CACHE STRING "" FORCE)
+
+set(SLEQP_LOCAL_HEADER_DIR "${CMAKE_BINARY_DIR}" CACHE STRING "" FORCE)
+
+target_include_directories(sleqp_objects
+  PRIVATE
+  ${SLEQP_LOCAL_HEADER_DIR}
+  "${SLEQP_LOCAL_HEADER_DIR}/sleqp"
+  ${SLEQP_FACT_INCLUDE_DIRS}
+  ${SLEQP_LPS_INCLUDE_DIRS})
 
 target_include_directories(sleqp_objects
   PUBLIC
