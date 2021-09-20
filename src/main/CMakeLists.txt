@@ -157,6 +157,8 @@ foreach(PUB_HEADER ${PUB_HEADERS})
   list(APPEND HEADER_INCLUDES ${HEADER_INCLUDE})
 endforeach()
 
+add_dependencies(sleqp sleqp_local_headers)
+
 string(JOIN "\n" PUB_HEADER_INCLUDES ${HEADER_INCLUDES})
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sleqp.h.in"
