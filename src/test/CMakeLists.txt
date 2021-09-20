@@ -46,7 +46,7 @@ function(add_unit_test TEST_NAME)
 
   add_dependencies(build_tests ${BASE_NAME})
 
-  add_dependencies(${BASE_NAME} sleqp_local_headers)
+  add_dependencies(${BASE_NAME} sleqp sleqp_local_headers)
 
   add_test(NAME ${BASE_NAME} COMMAND ${BASE_NAME} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 endfunction()
