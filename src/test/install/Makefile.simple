@@ -1,0 +1,11 @@
+CFLAGS=`pkg-config --cflags sleqp`
+LDFLAGS=`pkg-config --libs sleqp`
+
+run: build
+	./example
+
+build: example
+
+example: example.o
+
+example.o: example.c

@@ -4,7 +4,7 @@ stages:
   - test
   - build
   - package
-  - install
+  - test_install
   - downstream
 
 variables:
@@ -13,13 +13,13 @@ variables:
   DEFAULT_FACT: 'Umfpack'
 
 # run tests
-.test_template: &test_job
+.test_job_template: &test_job_template
   stage: test
   before_script:
     - mkdir -p build
   dependencies: []
 
-.test_report: &test_report
+.test_report_template: &test_report_template
   variables:
     TEST_EXPORT_XML: 1
   artifacts:
@@ -29,55 +29,55 @@ variables:
 
 # TODO: Run tests as soon as we can get a MUMPS version without OpenMP
 test_build_MUMPS:
-  <<: *test_job
+  <<: *test_job_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MUMPS -DSLEQP_LPS=$DEFAULT_LPS
     - make
 
 test_Umfpack:
-  <<: *test_job
-  <<: *test_report
+  <<: *test_job_template
+  <<: *test_report_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=Umfpack -DSLEQP_LPS=$DEFAULT_LPS
     - make all build_tests test
 
 test_MA27:
-  <<: *test_job
-  <<: *test_report
+  <<: *test_job_template
+  <<: *test_report_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA27 -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
 
 test_MA57:
-  <<: *test_job
-  <<: *test_report
+  <<: *test_job_template
+  <<: *test_report_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA57 -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
 
 test_MA86:
-  <<: *test_job
-  <<: *test_report
+  <<: *test_job_template
+  <<: *test_report_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA86 -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
 
 test_MA97:
-  <<: *test_job
-  <<: *test_report
+  <<: *test_job_template
+  <<: *test_report_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA97 -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
 
 test_coverage:
-  <<: *test_job
-  <<: *test_report
+  <<: *test_job_template
+  <<: *test_report_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_GENERATE_COVERAGE=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
@@ -86,7 +86,7 @@ test_coverage:
 # Excluding python tests since they are built by tox
 # Excluding problem scaling tests since valgrind messes with floating point exceptions
 test_memcheck:
-  <<: *test_job
+  <<: *test_job_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
@@ -94,7 +94,7 @@ test_memcheck:
     - ctest -T memcheck -E "python_sleqp_tests|problem_scaling_test"
 
 test_python:
-  <<: *test_job
+  <<: *test_job_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
@@ -167,13 +167,32 @@ package_sdist:
     paths:
       - bindings/python/dist/*.tar.gz
 
-install_package:
-  stage: install
+test_install_package:
+  stage: test_install
   only:
     - master
   script:
     - cd build
     - apt -y install ./*.deb
+
+.test_install_template: &test_install_template
+  stage: test_install
+  only:
+    - master
+  before_script:
+    - apt -y install ./*.deb
+
+test_install_make:
+  <<: *test_install_template
+  script:
+    - cd src/test/install
+    - ./test_make.sh
+
+test_install_cmake:
+  <<: *test_install_template
+  script:
+    - cd src/test/install
+    - ./test_cmake.sh
 
 trigger_downstream:
   stage: downstream
