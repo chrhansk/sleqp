@@ -149,7 +149,7 @@ foreach(PUB_HEADER ${PUB_HEADERS})
   set(HEADER_DEST "${CMAKE_BINARY_DIR}/sleqp/${HEADER_DIR}/${HEADER_NAME}")
 
   add_custom_command(
-    TARGET sleqp_local_headers POST_BUILD
+    TARGET sleqp_local_headers
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     ${HEADER_FULL}
     ${HEADER_DEST}
@@ -159,7 +159,7 @@ foreach(PUB_HEADER ${PUB_HEADERS})
   list(APPEND HEADER_INCLUDES ${HEADER_INCLUDE})
 endforeach()
 
-add_dependencies(sleqp sleqp_local_headers)
+add_dependencies(sleqp_objects sleqp_local_headers)
 
 string(JOIN "\n" PUB_HEADER_INCLUDES ${HEADER_INCLUDES})
 
