@@ -1,8 +1,8 @@
 #ifndef SLEQP_PUB_HESS_STRUCT_H
 #define SLEQP_PUB_HESS_STRUCT_H
 
-#include "export.h"
-#include "pub_types.h"
+#include "sleqp/export.h"
+#include "sleqp/pub_types.h"
 
 /**
  * @file pub_hess_struct.h

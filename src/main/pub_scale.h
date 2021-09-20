@@ -6,9 +6,9 @@
  * @brief Definition of the problem scaling.
  **/
 
-#include "export.h"
-#include "pub_problem.h"
-#include "pub_iterate.h"
+#include "sleqp/export.h"
+#include "sleqp/pub_problem.h"
+#include "sleqp/pub_iterate.h"
 
 #ifdef __cplusplus
 extern "C" {

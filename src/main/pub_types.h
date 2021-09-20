@@ -14,7 +14,7 @@ extern "C" {
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "pub_log.h"
+#include "sleqp/pub_log.h"
 
   typedef enum {
     SLEQP_NOMEM            = -6,

@@ -6,12 +6,12 @@
  * @brief Definition of the solver structure.
  **/
 
-#include "export.h"
-#include "pub_iterate.h"
-#include "pub_options.h"
-#include "pub_params.h"
-#include "pub_problem.h"
-#include "pub_scale.h"
+#include "sleqp/export.h"
+#include "sleqp/pub_iterate.h"
+#include "sleqp/pub_options.h"
+#include "sleqp/pub_params.h"
+#include "sleqp/pub_problem.h"
+#include "sleqp/pub_scale.h"
 
 #ifdef __cplusplus
 extern "C" {

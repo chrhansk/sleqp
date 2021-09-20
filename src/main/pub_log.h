@@ -3,8 +3,8 @@
 
 #include <time.h>
 
-#include "defs.h"
-#include "export.h"
+#include "sleqp/defs.h"
+#include "sleqp/export.h"
 
 #ifdef __cplusplus
 extern "C" {

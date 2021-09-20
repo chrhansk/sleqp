@@ -7,9 +7,9 @@
  **/
 
 
-#include "export.h"
-#include "pub_problem.h"
-#include "pub_working_set.h"
+#include "sleqp/export.h"
+#include "sleqp/pub_problem.h"
+#include "sleqp/pub_working_set.h"
 
 #include "sparse/pub_sparse_matrix.h"
 #include "sparse/pub_sparse_vec.h"

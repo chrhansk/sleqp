@@ -1,7 +1,7 @@
 #ifndef PUB_FUNC_H
 #define PUB_FUNC_H
 
-#include "pub_hess_struct.h"
+#include "sleqp/pub_hess_struct.h"
 #include "sparse/pub_sparse_matrix.h"
 #include "sparse/pub_sparse_vec.h"
 

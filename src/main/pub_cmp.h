@@ -6,8 +6,8 @@
  * @brief Definition of numerical comparison functions.
  **/
 
-#include "export.h"
-#include "pub_types.h"
+#include "sleqp/export.h"
+#include "sleqp/pub_types.h"
 
 #ifdef __cplusplus
 extern "C" {

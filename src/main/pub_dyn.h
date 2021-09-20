@@ -1,7 +1,7 @@
 #ifndef SLEQP_PUB_DYN_H
 #define SLEQP_PUB_DYN_H
 
-#include "pub_func.h"
+#include "sleqp/pub_func.h"
 
 #ifdef __cplusplus
 extern "C" {

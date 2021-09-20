@@ -1,10 +1,10 @@
 #ifndef SLEQP_PUB_PROBLEM_H
 #define SLEQP_PUB_PROBLEM_H
 
-#include "export.h"
+#include "sleqp/export.h"
 
-#include "pub_func.h"
-#include "pub_params.h"
+#include "sleqp/pub_func.h"
+#include "sleqp/pub_params.h"
 #include "sparse/pub_sparse_matrix.h"
 #include "sparse/pub_sparse_vec.h"
 

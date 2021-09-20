@@ -6,10 +6,10 @@
  * @brief Defintion of least squares functions.
  **/
 
-#include "export.h"
-#include "pub_iterate.h"
-#include "pub_problem.h"
-#include "sparse/pub_sparse_vec.h"
+#include "sleqp/export.h"
+#include "sleqp/pub_iterate.h"
+#include "sleqp/pub_problem.h"
+#include "sleqp/sparse/pub_sparse_vec.h"
 
 #ifdef __cplusplus
 extern "C" {

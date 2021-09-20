@@ -6,9 +6,9 @@
  * @brief Definition of working sets.
  **/
 
-#include "export.h"
+#include "sleqp/export.h"
 
-#include "pub_problem.h"
+#include "sleqp/pub_problem.h"
 
 #ifdef __cplusplus
 extern "C" {

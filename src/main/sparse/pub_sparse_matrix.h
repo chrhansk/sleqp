@@ -10,9 +10,9 @@
 extern "C" {
 #endif
 
-#include "export.h"
-#include "pub_sparse_vec.h"
-#include "pub_types.h"
+#include "sleqp/export.h"
+#include "sleqp/sparse/pub_sparse_vec.h"
+#include "sleqp/pub_types.h"
 
   /**
    * A sparse matrix data structure.
