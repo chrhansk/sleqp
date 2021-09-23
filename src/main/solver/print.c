@@ -60,9 +60,9 @@ SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
   bool exact = false;
   double basis_condition, aug_jac_condition;
 
-  SLEQP_CALL(sleqp_lpi_get_basis_condition(solver->lp_interface,
-                                           &exact,
-                                           &basis_condition));
+  SLEQP_CALL(sleqp_cauchy_get_basis_condition(solver->cauchy_data,
+                                              &exact,
+                                              &basis_condition));
 
   SLEQP_CALL(sleqp_aug_jacobian_get_condition_estimate(solver->aug_jacobian,
                                                        &aug_jac_condition));
@@ -277,9 +277,12 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                 "Substitutions",
                                 solver->elapsed_seconds));
 
-  SLEQP_CALL(solver_print_timer(sleqp_lpi_get_solve_timer(solver->lp_interface),
-                                "Solved LPs",
-                                solver->elapsed_seconds));
+  if(solver->lp_interface)
+  {
+    SLEQP_CALL(solver_print_timer(sleqp_lpi_get_solve_timer(solver->lp_interface),
+                                  "Solved LPs",
+                                  solver->elapsed_seconds));
+  }
 
   SLEQP_CALL(solver_print_timer(sleqp_newton_get_timer(solver->newton_data),
                                 "Solved EQPs",

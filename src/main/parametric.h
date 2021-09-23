@@ -13,10 +13,12 @@
  *
  **/
 
-#include "cauchy.h"
 #include "iterate.h"
 #include "linesearch.h"
 #include "merit.h"
+#include "options.h"
+
+#include "cauchy/cauchy.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -18,8 +18,6 @@
 extern "C" {
 #endif
 
-  typedef struct SleqpLPi SleqpLPi;
-
   typedef enum
   {
     SLEQP_BASESTAT_LOWER = 0,             /**< variable is at its lower bound */

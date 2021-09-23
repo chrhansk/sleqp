@@ -2,11 +2,12 @@
 #include <check.h>
 
 #include "aug_jacobian.h"
-#include "cauchy.h"
 #include "cmp.h"
 #include "dual_estimation.h"
 #include "mem.h"
 #include "util.h"
+
+#include "cauchy/standard_cauchy.h"
 
 #include "sparse/sparse_factorization_umfpack.h"
 
@@ -63,11 +64,11 @@ START_TEST(test_simply_constrained_dual_estimation)
                                      SLEQP_VALUE_REASON_NONE,
                                      NULL));
 
-  ASSERT_CALL(sleqp_cauchy_create(&cauchy_data,
-                                  problem,
-                                  params,
-                                  options,
-                                  lp_interface));
+  ASSERT_CALL(sleqp_standard_cauchy_create(&cauchy_data,
+                                           problem,
+                                           params,
+                                           options,
+                                           lp_interface));
 
   ASSERT_CALL(sleqp_working_set_create(&working_set,
                                        problem));
@@ -121,7 +122,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 
-  ASSERT_CALL(sleqp_lpi_free(&lp_interface));
+  ASSERT_CALL(sleqp_lpi_release(&lp_interface));
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 

@@ -8,6 +8,7 @@
 
 struct SleqpLPi
 {
+  int refcount;
   // data
   void* lp_data;
 
@@ -38,6 +39,8 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
   SleqpLPi* lp_interface = *lp_star;
 
   *lp_interface = (SleqpLPi) {0};
+
+  lp_interface->refcount = 1;
 
   lp_interface->name = strdup(name);
   lp_interface->version = strdup(version);
@@ -208,14 +211,10 @@ SLEQP_RETCODE sleqp_lpi_get_basis_condition(SleqpLPi* lp_interface,
                                                      condition);
 }
 
-SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_star)
+static SLEQP_RETCODE
+lpi_free(SleqpLPi** lp_star)
 {
   SleqpLPi* lp_interface = *lp_star;
-
-  if(!lp_interface)
-  {
-    return SLEQP_OKAY;
-  }
 
   lp_interface->callbacks.free_problem(&lp_interface->lp_data);
 
@@ -225,6 +224,32 @@ SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_star)
   sleqp_free(&lp_interface->name);
 
   sleqp_free(lp_star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_lpi_capture(SleqpLPi* lp_interface)
+{
+  ++lp_interface->refcount;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_lpi_release(SleqpLPi** star)
+{
+  SleqpLPi* lp_interface = *star;
+
+  if(!lp_interface)
+  {
+    return SLEQP_OKAY;
+  }
+
+  if(--lp_interface->refcount == 0)
+  {
+    SLEQP_CALL(lpi_free(star));
+  }
+
+  *star = NULL;
 
   return SLEQP_OKAY;
 }

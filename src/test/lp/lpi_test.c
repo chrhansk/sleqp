@@ -104,7 +104,7 @@ START_TEST(test_simplex_solve)
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&cons_matrix));
 
-  ASSERT_CALL(sleqp_lpi_free(&lp_interface));
+  ASSERT_CALL(sleqp_lpi_release(&lp_interface));
 
   ASSERT_CALL(sleqp_options_release(&options));
   ASSERT_CALL(sleqp_params_release(&params));
