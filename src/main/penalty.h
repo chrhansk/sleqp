@@ -1,8 +1,8 @@
 #ifndef SLEQP_PENALTY_H
 #define SLEQP_PENALTY_H
 
-#include "cauchy.h"
 #include "problem.h"
+#include "cauchy/cauchy.h"
 
 #ifdef __cplusplus
 extern "C" {

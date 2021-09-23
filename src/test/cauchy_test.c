@@ -3,7 +3,9 @@
 
 #include <check.h>
 
-#include "cauchy.h"
+#include "cauchy/cauchy.h"
+#include "cauchy/standard_cauchy.h"
+
 #include "cmp.h"
 #include "mem.h"
 #include "util.h"
@@ -226,11 +228,11 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_sparse_vector_create(&direction, 0, 0));
 
-  ASSERT_CALL(sleqp_cauchy_create(&cauchy_data,
-                                  problem,
-                                  params,
-                                  options,
-                                  lp_interface));
+  ASSERT_CALL(sleqp_standard_cauchy_create(&cauchy_data,
+                                           problem,
+                                           params,
+                                           options,
+                                           lp_interface));
 
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
                                        iterate,
@@ -258,7 +260,7 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_sparse_vector_free(&direction));
 
-  ASSERT_CALL(sleqp_lpi_free(&lp_interface));
+  ASSERT_CALL(sleqp_lpi_release(&lp_interface));
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 

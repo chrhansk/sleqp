@@ -671,6 +671,35 @@ SLEQP_RETCODE sleqp_problem_hess_bilinear(SleqpProblem* problem,
                                   bilinear_prod);
 }
 
+static bool vec_has_finite(const SleqpSparseVec* vec)
+{
+  assert(sleqp_sparse_vector_is_valid(vec));
+  assert(sleqp_sparse_vector_is_finite(vec));
+
+  if(vec->nnz != vec->dim)
+  {
+    return true;
+  }
+
+  for(int k = 0; k < vec->nnz; ++k)
+  {
+    if(sleqp_is_finite(SLEQP_ABS(vec->data[k])))
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool sleqp_problem_is_unconstrained(SleqpProblem* problem)
+{
+  return !(vec_has_finite(sleqp_problem_var_lb(problem)) ||
+           vec_has_finite(sleqp_problem_var_ub(problem)) ||
+           vec_has_finite(sleqp_problem_cons_lb(problem)) ||
+           vec_has_finite(sleqp_problem_cons_ub(problem)));
+}
+
 static SLEQP_RETCODE problem_free(SleqpProblem** star)
 {
   SleqpProblem* problem = *star;

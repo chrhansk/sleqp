@@ -1,4 +1,4 @@
-#include "cauchy.h"
+#include "standard_cauchy.h"
 
 #include <math.h>
 
@@ -8,9 +8,8 @@
 #include "problem.h"
 #include "merit.h"
 
-struct SleqpCauchy
+typedef struct
 {
-  int refcount;
   SleqpProblem* problem;
   SleqpParams* params;
   SleqpOptions* options;
@@ -41,13 +40,14 @@ struct SleqpCauchy
   double* dual_values;
 
   SleqpSparseVec* quadratic_gradient;
-};
+} CauchyData;
 
-SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
-                                  SleqpProblem* problem,
-                                  SleqpParams* params,
-                                  SleqpOptions* options,
-                                  SleqpLPi* lp_interface)
+static SLEQP_RETCODE
+cauchy_data_create(CauchyData** star,
+                   SleqpProblem* problem,
+                   SleqpParams* params,
+                   SleqpOptions* options,
+                   SleqpLPi* lp_interface)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -55,11 +55,9 @@ SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
 
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpCauchy* data = *star;
+  CauchyData* data = *star;
 
-  *data = (SleqpCauchy){0};
-
-  data->refcount = 1;
+  *data = (CauchyData) {0};
 
   data->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(data->problem));
@@ -88,6 +86,7 @@ SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
 
   data->has_coefficients = false;
 
+  SLEQP_CALL(sleqp_lpi_capture(lp_interface));
   data->lp_interface = lp_interface;
 
   SLEQP_CALL(sleqp_alloc_array(&data->objective, data->num_lp_variables));
@@ -118,9 +117,10 @@ SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
-                                       int num_variables,
-                                       int num_constraints)
+static SLEQP_RETCODE
+append_identities(SleqpSparseMatrix* cons_jac,
+                  int num_variables,
+                  int num_constraints)
 {
   assert(num_constraints == sleqp_sparse_matrix_get_num_rows(cons_jac));
   assert(num_variables == sleqp_sparse_matrix_get_num_cols(cons_jac));
@@ -171,9 +171,10 @@ static SLEQP_RETCODE append_identities(SleqpSparseMatrix* cons_jac,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE remove_identities(SleqpSparseMatrix* cons_jac,
-                                       int num_variables,
-                                       int num_constraints)
+static SLEQP_RETCODE
+remove_identities(SleqpSparseMatrix* cons_jac,
+                  int num_variables,
+                  int num_constraints)
 {
   const int num_rows = sleqp_sparse_matrix_get_num_rows(cons_jac);
   const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
@@ -188,10 +189,11 @@ static SLEQP_RETCODE remove_identities(SleqpSparseMatrix* cons_jac,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE create_cons_bounds(SleqpCauchy* cauchy_data,
-                                        SleqpIterate* iterate,
-                                        int num_variables,
-                                        int num_constraints)
+static SLEQP_RETCODE
+create_cons_bounds(CauchyData* cauchy_data,
+                   SleqpIterate* iterate,
+                   int num_variables,
+                   int num_constraints)
 {
   int k_c = 0, k_lb = 0, k_ub = 0;
 
@@ -255,10 +257,11 @@ static SLEQP_RETCODE create_cons_bounds(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE create_var_bounds(SleqpCauchy* cauchy_data,
-                                       SleqpIterate* iterate,
-                                       int num_variables,
-                                       int num_constraints)
+static SLEQP_RETCODE
+create_var_bounds(CauchyData* cauchy_data,
+                  SleqpIterate* iterate,
+                  int num_variables,
+                  int num_constraints)
 {
   SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
   SleqpProblem* problem = cauchy_data->problem;
@@ -325,9 +328,10 @@ static SLEQP_RETCODE create_var_bounds(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE create_objective(SleqpCauchy* cauchy_data,
-                                      SleqpSparseVec* gradient,
-                                      double penalty)
+static SLEQP_RETCODE
+create_objective(CauchyData* cauchy_data,
+                 SleqpSparseVec* gradient,
+                 double penalty)
 {
   SleqpProblem* problem = cauchy_data->problem;
 
@@ -362,7 +366,7 @@ static SLEQP_RETCODE create_objective(SleqpCauchy* cauchy_data,
 }
 
 static
-SLEQP_RETCODE cauchy_set_coefficients(SleqpCauchy* cauchy_data,
+SLEQP_RETCODE cauchy_set_coefficients(CauchyData* cauchy_data,
                                       SleqpSparseMatrix* cons_jac)
 {
   SleqpProblem* problem = cauchy_data->problem;
@@ -397,10 +401,12 @@ SLEQP_RETCODE cauchy_set_coefficients(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchy* cauchy_data,
-                                       SleqpIterate* iterate,
-                                       double trust_radius)
+static SLEQP_RETCODE
+standard_cauchy_set_iterate(SleqpIterate* iterate,
+                            double trust_radius,
+                            void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
 
   const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
@@ -437,9 +443,12 @@ SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_set_trust_radius(SleqpCauchy* cauchy_data,
-                                            double trust_radius)
+static SLEQP_RETCODE
+standard_cauchy_set_trust_radius(double trust_radius,
+                                 void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
+
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(cauchy_data->iterate);
 
   const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
@@ -461,8 +470,9 @@ SLEQP_RETCODE sleqp_cauchy_set_trust_radius(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE check_basis(SleqpCauchy* cauchy_data,
-                                 bool* valid_basis)
+static SLEQP_RETCODE
+check_basis(CauchyData* cauchy_data,
+            bool* valid_basis)
 {
   (*valid_basis) = true;
 
@@ -500,7 +510,8 @@ static SLEQP_RETCODE check_basis(SleqpCauchy* cauchy_data,
 }
 
 /*
-  static SLEQP_RETCODE check_direction_bounds(SleqpCauchyData* cauchy_data,
+  static SLEQP_RETCODE
+  check_direction_bounds(SleqpCauchyData* cauchy_data,
   bool* valid_direction)
   {
   SleqpProblem* problem = cauchy_data->problem;
@@ -578,7 +589,7 @@ static SLEQP_RETCODE check_basis(SleqpCauchy* cauchy_data,
 */
 
 static
-SLEQP_RETCODE restore_basis(SleqpCauchy* cauchy_data,
+SLEQP_RETCODE restore_basis(CauchyData* cauchy_data,
                             SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
 {
   if(cauchy_data->current_objective != objective_type &&
@@ -591,11 +602,14 @@ SLEQP_RETCODE restore_basis(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchy* cauchy_data,
-                                 SleqpSparseVec* gradient,
-                                 double penalty,
-                                 SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
+static SLEQP_RETCODE
+standard_cauchy_solve(SleqpSparseVec* gradient,
+                      double penalty,
+                      SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
+                      void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
+
   SLEQP_CALL(create_objective(cauchy_data,
                               gradient,
                               penalty));
@@ -671,9 +685,12 @@ SLEQP_RETCODE sleqp_cauchy_solve(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_get_objective_value(SleqpCauchy* cauchy_data,
-                                               double* objective_value)
+static SLEQP_RETCODE
+standard_cauchy_get_objective_value(double* objective_value,
+                                    void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
+
   SLEQP_CALL(sleqp_lpi_get_primal_sol(cauchy_data->lp_interface,
                                       objective_value,
                                       NULL));
@@ -683,9 +700,12 @@ SLEQP_RETCODE sleqp_cauchy_get_objective_value(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchy* cauchy_data,
-                                           SleqpIterate* iterate)
+static SLEQP_RETCODE
+standard_cauchy_get_working_set(SleqpIterate* iterate,
+                                void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
+
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   SLEQP_CALL(sleqp_working_set_reset(working_set));
@@ -872,9 +892,12 @@ SLEQP_RETCODE sleqp_cauchy_get_working_set(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchy* cauchy_data,
-                                         SleqpSparseVec* direction)
+static SLEQP_RETCODE
+standard_cauchy_get_direction(SleqpSparseVec* direction,
+                              void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
+
   const double zero_eps = sleqp_params_get(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
 
   const int num_variables = sleqp_problem_num_variables(cauchy_data->problem);
@@ -891,9 +914,12 @@ SLEQP_RETCODE sleqp_cauchy_get_direction(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchy* cauchy_data,
-                                              bool* locally_infeasible)
+static SLEQP_RETCODE
+standard_cauchy_locally_infeasible(bool* locally_infeasible,
+                                   void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
+
   *locally_infeasible = false;
 
   SleqpIterate* iterate = cauchy_data->iterate;
@@ -1029,9 +1055,12 @@ SLEQP_RETCODE sleqp_cauchy_locally_infeasible(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchy* cauchy_data,
-                                               SleqpIterate* iterate)
+static SLEQP_RETCODE
+standard_cauchy_get_dual_estimation(SleqpIterate* iterate,
+                                    void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
+
   SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
@@ -1130,9 +1159,12 @@ SLEQP_RETCODE sleqp_cauchy_get_dual_estimation(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchy* cauchy_data,
-                                         double* violation)
+static SLEQP_RETCODE
+standard_cauchy_get_violation(double* violation,
+                              void* data)
 {
+  CauchyData* cauchy_data = (CauchyData*) data;
+
   SleqpProblem* problem = cauchy_data->problem;
 
   const int num_variables = sleqp_problem_num_variables(problem);
@@ -1151,54 +1183,86 @@ SLEQP_RETCODE sleqp_cauchy_get_violation(SleqpCauchy* cauchy_data,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE cauchy_free(SleqpCauchy** star)
+static SLEQP_RETCODE
+standard_cauchy_get_basis_condition(bool* exact,
+                                    double* condition,
+                                    void* data)
 {
-  SleqpCauchy* data = *star;
+  CauchyData* cauchy_data = (CauchyData*) data;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->quadratic_gradient));
-
-  sleqp_free(&data->dual_values);
-  sleqp_free(&data->solution_values);
-
-  sleqp_free(&data->vars_ub);
-  sleqp_free(&data->vars_lb);
-
-  sleqp_free(&data->cons_ub);
-  sleqp_free(&data->cons_lb);
-
-  sleqp_free(&data->objective);
-
-  sleqp_free(&data->cons_stats);
-  sleqp_free(&data->var_stats);
-
-  SLEQP_CALL(sleqp_iterate_release(&data->iterate));
-
-  SLEQP_CALL(sleqp_options_release(&data->options));
-  SLEQP_CALL(sleqp_params_release(&data->params));
-
-  SLEQP_CALL(sleqp_problem_release(&data->problem));
-
-  sleqp_free(star);
+  SLEQP_CALL(sleqp_lpi_get_basis_condition(cauchy_data->lp_interface,
+                                           exact,
+                                           condition));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_cauchy_release(SleqpCauchy** star)
+static SLEQP_RETCODE
+standard_cauchy_free(void* star)
 {
-  SleqpCauchy* data = *star;
+  CauchyData* cauchy_data = (CauchyData*) star;
 
-  if(!data)
-  {
-    return SLEQP_OKAY;
-  }
+  SLEQP_CALL(sleqp_sparse_vector_free(&cauchy_data->quadratic_gradient));
 
-  if(--data->refcount == 0)
-  {
-    SLEQP_CALL(cauchy_free(star));
-  }
+  sleqp_free(&cauchy_data->dual_values);
+  sleqp_free(&cauchy_data->solution_values);
 
-  *star = NULL;
+  sleqp_free(&cauchy_data->vars_ub);
+  sleqp_free(&cauchy_data->vars_lb);
+
+  sleqp_free(&cauchy_data->cons_ub);
+  sleqp_free(&cauchy_data->cons_lb);
+
+  sleqp_free(&cauchy_data->objective);
+
+  SLEQP_CALL(sleqp_lpi_release(&cauchy_data->lp_interface));
+
+  sleqp_free(&cauchy_data->cons_stats);
+  sleqp_free(&cauchy_data->var_stats);
+
+  SLEQP_CALL(sleqp_iterate_release(&cauchy_data->iterate));
+
+  SLEQP_CALL(sleqp_options_release(&cauchy_data->options));
+  SLEQP_CALL(sleqp_params_release(&cauchy_data->params));
+
+  SLEQP_CALL(sleqp_problem_release(&cauchy_data->problem));
+
+  sleqp_free(&star);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_standard_cauchy_create(SleqpCauchy** star,
+                                           SleqpProblem* problem,
+                                           SleqpParams* params,
+                                           SleqpOptions* options,
+                                           SleqpLPi* lp_interface)
+{
+  CauchyData* cauchy_data;
+
+  SLEQP_CALL(cauchy_data_create(&cauchy_data,
+                                problem,
+                                params,
+                                options,
+                                lp_interface));
+
+  SleqpCauchyCallbacks callbacks = {
+    .set_iterate         = standard_cauchy_set_iterate,
+    .set_trust_radius    = standard_cauchy_set_trust_radius,
+    .solve               = standard_cauchy_solve,
+    .get_objective_value = standard_cauchy_get_objective_value,
+    .get_working_set     = standard_cauchy_get_working_set,
+    .get_direction       = standard_cauchy_get_direction,
+    .locally_infeasible  = standard_cauchy_locally_infeasible,
+    .get_dual_estimation = standard_cauchy_get_dual_estimation,
+    .get_violation       = standard_cauchy_get_violation,
+    .get_basis_condition = standard_cauchy_get_basis_condition,
+    .free                = standard_cauchy_free
+  };
+
+  SLEQP_CALL(sleqp_cauchy_create(star,
+                                 &callbacks,
+                                 (void*) cauchy_data));
 
   return SLEQP_OKAY;
 }

@@ -5,7 +5,6 @@
 
 #include "bfgs.h"
 #include "callback_handler.h"
-#include "cauchy.h"
 #include "deriv_check.h"
 #include "dual_estimation.h"
 #include "linesearch.h"
@@ -18,6 +17,8 @@
 #include "soc.h"
 #include "sr1.h"
 
+#include "cauchy/cauchy.h"
+#include "lp/lpi.h"
 #include "step/step_rule.h"
 
 #include "preprocessor/preprocessor.h"
