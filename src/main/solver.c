@@ -21,6 +21,10 @@
 
 #include "lp/lpi.h"
 
+#include "cauchy/box_constrained_cauchy.h"
+#include "cauchy/standard_cauchy.h"
+#include "cauchy/unconstrained_cauchy.h"
+
 #include "step/step_rule.h"
 
 #define INFO_BUF_SIZE 100
@@ -269,6 +273,50 @@ SLEQP_RETCODE solver_create_iterates(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+static
+SLEQP_RETCODE create_cauchy_solver(SleqpSolver* solver)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpParams* params = solver->params;
+  SleqpOptions* options = solver->options;
+
+
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  if(sleqp_problem_is_unconstrained(problem))
+  {
+    SLEQP_CALL(sleqp_unconstrained_cauchy_create(&solver->cauchy_data,
+                                                 problem,
+                                                 params));
+  }
+  else if(num_constraints == 0)
+  {
+    SLEQP_CALL(sleqp_box_constrained_cauchy_create(&solver->cauchy_data,
+                                                   problem,
+                                                   params));
+  }
+  else
+  {
+    const int num_variables = sleqp_problem_num_variables(problem);
+    const int num_lp_variables = num_variables + 2*num_constraints;
+    const int num_lp_constraints = num_constraints;
+
+    SLEQP_CALL(sleqp_lpi_create_default_interface(&solver->lp_interface,
+                                                  num_lp_variables,
+                                                  num_lp_constraints,
+                                                  params,
+                                                  options));
+
+    SLEQP_CALL(sleqp_standard_cauchy_create(&solver->cauchy_data,
+                                            problem,
+                                            params,
+                                            options,
+                                            solver->lp_interface));
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   SleqpProblem* problem,
                                   SleqpParams* params,
@@ -329,23 +377,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                             solver->params,
                                             solver->options));
 
-  const int num_lp_variables = num_variables + 2*num_constraints;
-  const int num_lp_constraints = num_constraints;
-
-  SLEQP_CALL(sleqp_lpi_create_default_interface(&solver->lp_interface,
-                                                num_lp_variables,
-                                                num_lp_constraints,
-                                                params,
-                                                options));
-
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->original_violation,
                                               num_constraints));
 
-  SLEQP_CALL(sleqp_cauchy_create(&solver->cauchy_data,
-                                 solver->problem,
-                                 params,
-                                 options,
-                                 solver->lp_interface));
+  SLEQP_CALL(create_cauchy_solver(solver));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_direction,
                                               num_variables));
@@ -499,10 +534,19 @@ static void print_solver(char* buffer,
 
 const char* sleqp_solver_info(const SleqpSolver* solver)
 {
-  print_solver(lps_info,
-               INFO_BUF_SIZE,
-               sleqp_lpi_get_name(solver->lp_interface),
-               sleqp_lpi_get_version(solver->lp_interface));
+  if(solver->lp_interface)
+  {
+    print_solver(lps_info,
+                 INFO_BUF_SIZE,
+                 sleqp_lpi_get_name(solver->lp_interface),
+                 sleqp_lpi_get_version(solver->lp_interface));
+  }
+  else
+  {
+    snprintf(lps_info,
+             INFO_BUF_SIZE,
+             "None");
+  }
 
   print_solver(fact_info,
                INFO_BUF_SIZE,
@@ -882,7 +926,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_cauchy_release(&solver->cauchy_data));
 
-  SLEQP_CALL(sleqp_lpi_free(&solver->lp_interface));
+  SLEQP_CALL(sleqp_lpi_release(&solver->lp_interface));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->original_violation));
 

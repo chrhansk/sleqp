@@ -2,7 +2,6 @@
 #include <check.h>
 #include <math.h>
 
-#include "cauchy.h"
 #include "cmp.h"
 #include "lsq.h"
 #include "mem.h"

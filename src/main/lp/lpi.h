@@ -18,6 +18,8 @@
 extern "C" {
 #endif
 
+  typedef struct SleqpLPi SleqpLPi;
+
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_interface,
                                            const char* name,
@@ -95,7 +97,10 @@ extern "C" {
                                               double* condition);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_lpi_free(SleqpLPi** lp_interface);
+  SLEQP_RETCODE sleqp_lpi_capture(SleqpLPi* lp_interface);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_lpi_release(SleqpLPi** star);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,

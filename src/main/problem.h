@@ -62,6 +62,8 @@ extern "C" {
                                             const SleqpSparseVec* cons_duals,
                                             double* bilinear_prod);
 
+  bool sleqp_problem_is_unconstrained(SleqpProblem* problem);
+
 #ifdef __cplusplus
 }
 #endif

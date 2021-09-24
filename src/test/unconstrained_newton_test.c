@@ -2,13 +2,14 @@
 #include <check.h>
 
 #include "aug_jacobian.h"
-#include "cauchy.h"
 #include "cmp.h"
 #include "dual_estimation.h"
 #include "mem.h"
 #include "newton.h"
 #include "working_step.h"
 #include "util.h"
+
+#include "cauchy/standard_cauchy.h"
 
 #include "sparse/sparse_factorization_umfpack.h"
 
@@ -65,18 +66,18 @@ void newton_setup()
                                      SLEQP_VALUE_REASON_INIT,
                                      NULL));
 
-  ASSERT_CALL(sleqp_cauchy_create(&cauchy_data,
-                                  problem,
-                                  params,
-                                  options,
-                                  lp_interface));
+  ASSERT_CALL(sleqp_standard_cauchy_create(&cauchy_data,
+                                           problem,
+                                           params,
+                                           options,
+                                           lp_interface));
 }
 
 void newton_teardown()
 {
   ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 
-  ASSERT_CALL(sleqp_lpi_free(&lp_interface));
+  ASSERT_CALL(sleqp_lpi_release(&lp_interface));
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 

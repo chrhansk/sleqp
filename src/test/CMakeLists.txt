@@ -14,7 +14,8 @@ set(TEST_COMMON_SRC
   quadfunc_fixture.c
   log_rosenbrock_fixture.c
   rosenbrock_fixture.c
-  rosenbrock_lsq_fixture.c)
+  rosenbrock_lsq_fixture.c
+  zero_func.c)
 
 add_library(test_common
   EXCLUDE_FROM_ALL
@@ -59,6 +60,7 @@ add_unit_test(preprocessor/preprocessor_test)
 
 add_unit_test(step/step_rule_test)
 
+add_unit_test(box_constrained_cauchy_test)
 add_unit_test(callback_test)
 add_unit_test(cauchy_test)
 add_unit_test(constrained_cauchy_test)
@@ -71,6 +73,7 @@ add_unit_test(mem_test)
 add_unit_test(problem_scaling_test)
 add_unit_test(scale_test)
 add_unit_test(second_order_test)
+add_unit_test(unconstrained_cauchy_test)
 add_unit_test(unconstrained_newton_test)
 add_unit_test(unconstrained_test)
 add_unit_test(unbounded_test)

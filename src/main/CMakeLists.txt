@@ -1,4 +1,8 @@
 set(COMMON_SRC
+  cauchy/cauchy.c
+  cauchy/box_constrained_cauchy.c
+  cauchy/standard_cauchy.c
+  cauchy/unconstrained_cauchy.c
   sparse/sparse_factorization.c
   sparse/sparse_matrix.c
   sparse/sparse_vec.c
@@ -26,7 +30,6 @@ set(COMMON_SRC
   bfgs.c
   hess_struct.c
   callback_handler.c
-  cauchy.c
   cmp.c
   deriv_check.c
   dual_estimation.c

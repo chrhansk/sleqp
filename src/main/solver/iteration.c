@@ -200,8 +200,11 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 {
   assert(solver->status == SLEQP_STATUS_RUNNING);
 
-  SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface,
-                                      sleqp_solver_remaining_time(solver)));
+  if(solver->lp_interface)
+  {
+    SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface,
+                                        sleqp_solver_remaining_time(solver)));
+  }
 
   const SleqpOptions* options = solver->options;
 
