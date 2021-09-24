@@ -200,7 +200,7 @@ SLEQP_RETCODE solver_create_problem(SleqpSolver* solver,
 
       if(preprocessing_result == SLEQP_PREPROCESSING_RESULT_INFEASIBLE)
       {
-        // ...
+        solver->status = SLEQP_STATUS_INFEASIBLE;
       }
     }
   }
@@ -635,6 +635,12 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  if(solver->status == SLEQP_STATUS_INFEASIBLE)
+  {
+    sleqp_log_debug("Problem is infeasible, aborting");
+    return SLEQP_OKAY;
+  }
 
   solver->status = SLEQP_STATUS_RUNNING;
 

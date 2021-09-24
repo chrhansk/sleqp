@@ -19,6 +19,7 @@ class Status(_DocEnum):
   Unkown         = csleqp.SLEQP_STATUS_UNKNOWN, "Unknown state"
   Running        = csleqp.SLEQP_STATUS_RUNNING, "Solver is running"
   Optimal        = csleqp.SLEQP_STATUS_OPTIMAL, "An optimal solution was found"
+  Infeasible     = csleqp.SLEQP_STATUS_INFEASIBLE, "Problem was detected to be infeasible"
   Unbounded      = csleqp.SLEQP_STATUS_UNBOUNDED, "Problem appears unbounded"
   AbortDeadpoint = csleqp.SLEQP_STATUS_ABORT_DEADPOINT, "Reached a dead point"
   AbortIter      = csleqp.SLEQP_STATUS_ABORT_ITER, "Aborted after reaching iteration limit"

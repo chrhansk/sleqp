@@ -162,13 +162,14 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                        double violation)
 {
   const char* descriptions[] = {
-    [SLEQP_STATUS_UNKNOWN]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "unknown"    SLEQP_FORMAT_RESET,
-    [SLEQP_STATUS_RUNNING]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "running"    SLEQP_FORMAT_RESET,
-    [SLEQP_STATUS_OPTIMAL]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN  "optimal"    SLEQP_FORMAT_RESET,
-    [SLEQP_STATUS_UNBOUNDED]       = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "unbounded"  SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_UNKNOWN]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "unknown"                  SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_RUNNING]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_YELLOW "running"                  SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_OPTIMAL]         = SLEQP_FORMAT_BOLD SLEQP_FORMAT_GREEN  "optimal"                  SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_INFEASIBLE]      = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "infeasible"               SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_UNBOUNDED]       = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "unbounded"                SLEQP_FORMAT_RESET,
     [SLEQP_STATUS_ABORT_ITER]      = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached iteration limit"  SLEQP_FORMAT_RESET,
-    [SLEQP_STATUS_ABORT_TIME]      = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached time limit"  SLEQP_FORMAT_RESET,
-    [SLEQP_STATUS_ABORT_DEADPOINT] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached dead point"  SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_ABORT_TIME]      = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached time limit"       SLEQP_FORMAT_RESET,
+    [SLEQP_STATUS_ABORT_DEADPOINT] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached dead point"       SLEQP_FORMAT_RESET,
   };
 
   SleqpFunc* original_func = sleqp_problem_func(solver->original_problem);
