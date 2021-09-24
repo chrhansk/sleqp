@@ -58,11 +58,14 @@ SLEQP_RETCODE sleqp_solver_get_int_state(const SleqpSolver* solver,
 {
   switch(state)
   {
-  case SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE:
-    (*value) = solver->last_step_type;
-    break;
   case SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY:
     (*value) = solver->boundary_step;
+    break;
+  case SLEQP_SOLVER_STATE_INT_ITERATION:
+    (*value) = solver->iteration;
+    break;
+  case SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE:
+    (*value) = solver->last_step_type;
     break;
   default:
     sleqp_log_error("Invalid state requested (%d)", value);

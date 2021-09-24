@@ -122,22 +122,23 @@ class SolverEvent(Enum):
   Finished           = csleqp.SLEQP_SOLVER_EVENT_FINISHED
 
 class SolverState(Enum):
-  TrustRadius = auto()
-  LPTrustRadius = auto()
-  ScaledFuncVal = auto()
-  ScaledMeritVal = auto()
-  ScaledFeasRes = auto()
-  ScaledStatRes = auto()
-  ScaledSlackRes = auto()
-  PenaltyParameter = auto()
-  MinRayleigh = auto()
-  MaxRayleigh = auto()
-  LastStepOnBoundary = auto()
-  LastStepType = auto()
-  ScaledStatResiduals = auto()
-  ScaledFeasResiduals = auto()
+  TrustRadius              = auto()
+  LPTrustRadius            = auto()
+  ScaledFuncVal            = auto()
+  ScaledMeritVal           = auto()
+  ScaledFeasRes            = auto()
+  ScaledStatRes            = auto()
+  ScaledSlackRes           = auto()
+  PenaltyParameter         = auto()
+  MinRayleigh              = auto()
+  MaxRayleigh              = auto()
+  LastStepOnBoundary       = auto()
+  Iteration                = auto()
+  LastStepType             = auto()
+  ScaledStatResiduals      = auto()
+  ScaledFeasResiduals      = auto()
   ScaledConsSlackResiduals = auto()
-  ScaledVarSlackResiduals = auto()
+  ScaledVarSlackResiduals  = auto()
 
 
 class StepType(Enum):

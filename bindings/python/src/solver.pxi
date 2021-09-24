@@ -246,6 +246,7 @@ cdef class Solver:
       SolverState.MinRayleigh:              self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH),
       SolverState.MaxRayleigh:              self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH),
       SolverState.LastStepType:             StepType(self._get_solver_int_state(csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE)),
+      SolverState.Iteration:                self._get_solver_int_state(csleqp.SLEQP_SOLVER_STATE_INT_ITERATION),
       SolverState.LastStepOnBoundary:       bool(self._get_solver_int_state(csleqp.SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY)),
       SolverState.ScaledStatResiduals:      stat_residuals,
       SolverState.ScaledFeasResiduals:      feas_residuals,
