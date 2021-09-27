@@ -19,9 +19,54 @@ typedef struct {
 
   SLEQP_ACTIVE_STATE* var_states;
 
+  bool* fixed_vars;
+
   double objective;
 
 } CauchyData;
+
+static SLEQP_RETCODE
+compute_fixed_vars(CauchyData* cauchy_data)
+{
+  SleqpProblem* problem = cauchy_data->problem;
+
+  const int num_variables = sleqp_problem_num_variables(problem);
+
+  SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
+  SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
+
+  int k_l = 0, k_u = 0;
+
+  for(int j = 0; j < num_variables; ++j)
+  {
+    while(k_l < var_lb->nnz && var_lb->indices[k_l] < j)
+    {
+      ++k_l;
+    }
+
+    while(k_u < var_ub->nnz && var_ub->indices[k_u] < j)
+    {
+      ++k_u;
+    }
+
+    const double l_val = (k_l < var_lb->nnz && var_lb->indices[k_l] == j) ? var_lb->data[k_l] : 0.;
+    const double u_val = (k_u < var_ub->nnz && var_ub->indices[k_u] == j) ? var_ub->data[k_u] : 0.;
+
+    if(sleqp_is_finite(l_val) &&
+       sleqp_is_finite(u_val) &&
+       l_val == u_val)
+    {
+      cauchy_data->fixed_vars[j] = true;
+    }
+    else
+    {
+      cauchy_data->fixed_vars[j] = false;
+    }
+
+  }
+
+  return SLEQP_OKAY;
+}
 
 static SLEQP_RETCODE
 compute_diffs(CauchyData* cauchy_data)
@@ -110,6 +155,7 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
   SleqpSparseVec* duals = cauchy_data->duals;
 
   double* objective = &(cauchy_data->objective);
+  bool* fixed_vars = cauchy_data->fixed_vars;
 
   (*objective) = sleqp_iterate_get_func_val(iterate);
 
@@ -151,7 +197,7 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
       }
       else
       {
-        cauchy_data->var_states[j] = (l_val == u_val) ? SLEQP_ACTIVE_BOTH : SLEQP_ACTIVE_UPPER;
+        cauchy_data->var_states[j] = (fixed_vars[j]) ? SLEQP_ACTIVE_BOTH : SLEQP_ACTIVE_UPPER;
 
         SLEQP_CALL(sleqp_sparse_vector_push(direction,
                                             j,
@@ -179,7 +225,7 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
       }
       else
       {
-        cauchy_data->var_states[j] = (l_val == u_val) ? SLEQP_ACTIVE_BOTH : SLEQP_ACTIVE_LOWER;
+        cauchy_data->var_states[j] = (fixed_vars[j]) ? SLEQP_ACTIVE_BOTH : SLEQP_ACTIVE_LOWER;
 
         SLEQP_CALL(sleqp_sparse_vector_push(direction,
                                             j,
@@ -295,6 +341,8 @@ box_constrained_cauchy_free(void* data)
 {
   CauchyData* cauchy_data = (CauchyData* ) data;
 
+  sleqp_free(&cauchy_data->fixed_vars);
+
   sleqp_free(&cauchy_data->var_states);
 
   SLEQP_CALL(sleqp_sparse_vector_free(&cauchy_data->duals));
@@ -355,6 +403,11 @@ cauchy_data_create(CauchyData** star,
 
   SLEQP_CALL(sleqp_alloc_array(&cauchy_data->var_states,
                                num_variables));
+
+  SLEQP_CALL(sleqp_alloc_array(&cauchy_data->fixed_vars,
+                               num_variables));
+
+  SLEQP_CALL(compute_fixed_vars(cauchy_data));
 
   return SLEQP_OKAY;
 }
