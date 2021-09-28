@@ -61,8 +61,17 @@ aug_jac_projection(SleqpSparseVec* rhs,
   SleqpIterate* iterate = jacobian->iterate;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(primal_sol));
-  SLEQP_CALL(sleqp_sparse_vector_clear(dual_sol));
+  if(primal_sol)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_clear(primal_sol));
+    SLEQP_CALL(sleqp_sparse_vector_reserve(primal_sol, rhs->nnz));
+  }
+
+  if(dual_sol)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_clear(dual_sol));
+    SLEQP_CALL(sleqp_sparse_vector_reserve(dual_sol, rhs->nnz));
+  }
 
   for(int k = 0; k < rhs->nnz ; ++k)
   {
@@ -72,13 +81,18 @@ aug_jac_projection(SleqpSparseVec* rhs,
 
     if(index == SLEQP_NONE)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(primal_sol, j, value));
+      if(primal_sol)
+      {
+        SLEQP_CALL(sleqp_sparse_vector_push(primal_sol, j, value));
+      }
     }
     else
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(dual_sol, index, value));
+      if(dual_sol)
+      {
+        SLEQP_CALL(sleqp_sparse_vector_push(dual_sol, index, value));
+      }
     }
-
   }
 
   return SLEQP_OKAY;
