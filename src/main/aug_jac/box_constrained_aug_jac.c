@@ -35,6 +35,7 @@ aug_jac_min_norm_solution(SleqpSparseVec* rhs,
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(sol));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(sol, rhs->nnz));
 
   for(int k = 0; k < rhs->nnz ; ++k)
   {

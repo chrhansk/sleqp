@@ -292,6 +292,10 @@ SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
   {
     SLEQP_CALL(sleqp_sparse_vector_clear(vector));
   }
+  else if(factor == 1.)
+  {
+    return SLEQP_OKAY;
+  }
 
   for(int k = 0; k < vector->nnz; ++k)
   {
