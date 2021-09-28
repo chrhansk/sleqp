@@ -105,7 +105,7 @@ static SLEQP_RETCODE steihaug_solver_rayleigh(double* min_rayleigh,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
+static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJac* jacobian,
                                            SleqpSparseVec* multipliers,
                                            SleqpSparseVec* gradient,
                                            SleqpSparseVec* newton_step,
@@ -159,7 +159,7 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
   SLEQP_CALL(sleqp_sparse_vector_copy(gradient, solver->r));
 
   // set g0 = P[r0]
-  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian, solver->r, solver->g, NULL));
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, solver->r, solver->g, NULL));
 
   // set d0 = -P[r0] = - P[nabla f_k] = -g0
   SLEQP_CALL(sleqp_sparse_vector_copy(solver->g, solver->d));
@@ -313,10 +313,10 @@ static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJacobian* jacobian,
     SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache, solver->r));
 
     // set g_{j+1} = P[r_{j+1}]
-    SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                             solver->r,
-                                             solver->g,
-                                             NULL));
+    SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                        solver->r,
+                                        solver->g,
+                                        NULL));
 
     // set beta_{j+1} = r_{j+1}^T * g_{j+1} / r_j^T * g_j
     beta = 1. / r_dot_g;

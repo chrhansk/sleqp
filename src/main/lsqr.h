@@ -23,7 +23,7 @@ extern "C" {
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lsqr_solver_set_iterate(SleqpLSQRSolver* solver,
                                               SleqpIterate* iterate,
-                                              SleqpAugJacobian* jacobian,
+                                              SleqpAugJac* jacobian,
                                               double trust_radius,
                                               double penalty_parameter);
 

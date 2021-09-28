@@ -6,7 +6,6 @@
  * @brief Definition of the EQP subproblem solver used to compute Newton (aka EQP) steps.
  **/
 
-#include "aug_jacobian.h"
 #include "options.h"
 #include "params.h"
 #include "problem.h"
@@ -33,7 +32,7 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* solver,
-                                      SleqpAugJacobian* jacobian,
+                                      SleqpAugJac* jacobian,
                                       SleqpSparseVec* multipliers,
                                       SleqpSparseVec* gradient,
                                       SleqpSparseVec* newton_step,

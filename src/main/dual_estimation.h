@@ -19,8 +19,9 @@
  **/
 
 #include "working_set.h"
-#include "aug_jacobian.h"
 #include "iterate.h"
+
+#include "aug_jac/aug_jac.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,7 +47,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
                                               SleqpIterate* iterate,
                                               SleqpSparseVec* residuum,
-                                              SleqpAugJacobian* aug_jacobian);
+                                              SleqpAugJac* aug_jacobian);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_dual_estimation_free(SleqpDualEstimation** star);

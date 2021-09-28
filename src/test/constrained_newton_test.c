@@ -13,6 +13,9 @@
 #include "working_set.h"
 #include "working_step.h"
 
+#include "aug_jac/standard_aug_jac.h"
+#include "sparse/sparse_factorization.h"
+
 static const int num_variables = 2;
 static const int num_constraints = 1;
 
@@ -248,7 +251,7 @@ START_TEST(newton_constrained_step)
   SleqpNewtonData* newton_data;
 
   SleqpSparseFactorization* factorization;
-  SleqpAugJacobian* jacobian;
+  SleqpAugJac* jacobian;
 
   double penalty_parameter = 1.;
   double trust_radius = 10.;
@@ -267,12 +270,12 @@ START_TEST(newton_constrained_step)
   ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
                                                         params));
 
-  ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
-                                        problem,
-                                        params,
-                                        factorization));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian,
+                                            problem,
+                                            params,
+                                            factorization));
 
-  ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
+  ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
   ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
 
@@ -300,7 +303,7 @@ START_TEST(newton_constrained_step)
 
     ASSERT_CALL(sleqp_working_step_release(&working_step));
 
-  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+  ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
   ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 

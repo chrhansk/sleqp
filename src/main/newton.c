@@ -29,7 +29,7 @@ struct SleqpNewtonData
   SleqpOptions* options;
 
   SleqpIterate* iterate;
-  SleqpAugJacobian* jacobian;
+  SleqpAugJac* aug_jac;
   double penalty_parameter;
 
   SleqpSparseVec* gradient;
@@ -150,7 +150,7 @@ SleqpTimer* sleqp_newton_get_timer(SleqpNewtonData* data)
 
 SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
                                        SleqpIterate* iterate,
-                                       SleqpAugJacobian* jacobian,
+                                       SleqpAugJac* jacobian,
                                        double trust_radius,
                                        double penalty_parameter)
 {
@@ -165,11 +165,11 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
   }
 
   {
-    SLEQP_CALL(sleqp_aug_jacobian_release(&data->jacobian));
+    SLEQP_CALL(sleqp_aug_jac_release(&data->aug_jac));
 
-    SLEQP_CALL(sleqp_aug_jacobian_capture(jacobian));
+    SLEQP_CALL(sleqp_aug_jac_capture(jacobian));
 
-    data->jacobian = jacobian;
+    data->aug_jac = jacobian;
   }
 
   SLEQP_CALL(sleqp_working_step_set_iterate(data->working_step,
@@ -210,15 +210,15 @@ SLEQP_RETCODE projection_residuum(SleqpNewtonData* data,
   const double zero_eps = sleqp_params_get(data->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
-  SleqpAugJacobian* jacobian = data->jacobian;
+  SleqpAugJac* jacobian = data->aug_jac;
 
   SleqpSparseVec* sparse_cache = data->sparse_cache;
   SleqpSparseVec* residuals = data->tr_hessian_product;
 
-  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                           tr_step,
-                                           sparse_cache,
-                                           NULL));
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                      tr_step,
+                                      sparse_cache,
+                                      NULL));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sparse_cache,
                                             tr_step,
@@ -242,7 +242,7 @@ SLEQP_RETCODE stationarity_residuum(SleqpNewtonData* data,
 {
   SleqpProblem* problem = data->problem;
 
-  SleqpAugJacobian* jacobian = data->jacobian;
+  SleqpAugJac* jacobian = data->aug_jac;
   SleqpSparseVec* sparse_cache = data->sparse_cache;
   SleqpSparseVec* tr_prod = data->tr_hessian_product;
 
@@ -269,10 +269,10 @@ SLEQP_RETCODE stationarity_residuum(SleqpNewtonData* data,
                                             zero_eps,
                                             tr_prod));
 
-  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                           tr_prod,
-                                           sparse_cache,
-                                           NULL));
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                      tr_prod,
+                                      sparse_cache,
+                                      NULL));
 
   (*residuum) = sleqp_sparse_vector_inf_norm(sparse_cache);
 
@@ -438,7 +438,7 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   SleqpSparseVec* tr_step = data->tr_step;
 
-  SleqpAugJacobian* jacobian = data->jacobian;
+  SleqpAugJac* jacobian = data->aug_jac;
   double tr_dual = 0.;
 
   const double eps = sleqp_params_get(data->params,
@@ -463,10 +463,10 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
 
   SleqpTimer* hess_timer = sleqp_func_get_hess_timer(func);
 
-  SleqpTimer* subst_timer = sleqp_aug_jacobian_get_substitution_timer(data->jacobian);
+  SleqpTimer* solve_timer = sleqp_aug_jac_solution_timer(data->aug_jac);
 
   const double hess_before = sleqp_timer_elapsed(hess_timer);
-  const double subst_before = sleqp_timer_elapsed(subst_timer);
+  const double solve_before = sleqp_timer_elapsed(solve_timer);
 
   SLEQP_CALL(sleqp_timer_start(data->timer));
 
@@ -529,9 +529,9 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
   SLEQP_CALL(sleqp_timer_stop(data->timer));
 
   const double hess_elapsed = sleqp_timer_elapsed(hess_timer) - hess_before;
-  const double subst_elapsed = sleqp_timer_elapsed(subst_timer) - subst_before;
+  const double solve_elapsed = sleqp_timer_elapsed(solve_timer) - solve_before;
 
-  SLEQP_CALL(sleqp_timer_add(data->timer, -(hess_elapsed + subst_elapsed)));
+  SLEQP_CALL(sleqp_timer_add(data->timer, -(hess_elapsed + solve_elapsed)));
 
   return SLEQP_OKAY;
 }
@@ -572,7 +572,7 @@ static SLEQP_RETCODE newton_data_free(SleqpNewtonData** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&data->gradient));
 
-  SLEQP_CALL(sleqp_aug_jacobian_release(&data->jacobian));
+  SLEQP_CALL(sleqp_aug_jac_release(&data->aug_jac));
   SLEQP_CALL(sleqp_iterate_release(&data->iterate));
 
   SLEQP_CALL(sleqp_options_release(&data->options));

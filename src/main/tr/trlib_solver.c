@@ -9,6 +9,8 @@
 #include "cmp.h"
 #include "mem.h"
 
+#include "sparse/sparse_matrix.h"
+
 static const double tolerance_factor = 1e-2;
 
 typedef struct
@@ -182,7 +184,7 @@ static SLEQP_RETCODE trlib_get_status_string(int value,
 }
 
 static SLEQP_RETCODE check_optimality(SolverData* data,
-                                      SleqpAugJacobian* jacobian,
+                                      SleqpAugJac* jacobian,
                                       SleqpSparseVec* multipliers,
                                       SleqpSparseVec* gradient,
                                       SleqpSparseVec* newton_step,
@@ -211,10 +213,10 @@ static SLEQP_RETCODE check_optimality(SolverData* data,
                                      zero_eps,
                                      data->g));
 
-  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                           data->g,
-                                           data->v,
-                                           NULL));
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                      data->g,
+                                      data->v,
+                                      NULL));
 
   const double vnorm = sleqp_sparse_vector_norm(data->v);
 
@@ -254,7 +256,7 @@ static SLEQP_RETCODE check_optimality(SolverData* data,
 }
 
 static SLEQP_RETCODE trlib_loop(SolverData* data,
-                                SleqpAugJacobian* jacobian,
+                                SleqpAugJac* jacobian,
                                 SleqpSparseVec* multipliers,
                                 SleqpSparseVec* gradient,
                                 double trust_radius,
@@ -381,10 +383,10 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
       SLEQP_CALL(sleqp_sparse_vector_clear(data->gm));
 
-      SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                               data->g,
-                                               data->v,
-                                               NULL));
+      SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                          data->g,
+                                          data->v,
+                                          NULL));
 
       SLEQP_CALL(sleqp_sparse_vector_copy(data->v, data->p));
 
@@ -492,10 +494,10 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->g));
 
-        SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                                 data->g,
-                                                 data->v,
-                                                 NULL));
+        SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                            data->g,
+                                            data->v,
+                                            NULL));
 
         g_dot_g = sleqp_sparse_vector_norm_sq(data->g);
 
@@ -526,10 +528,10 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->s, data->g));
 
-        SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                                 data->g,
-                                                 data->v,
-                                                 NULL));
+        SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                            data->g,
+                                            data->v,
+                                            NULL));
 
         SLEQP_CALL(sleqp_sparse_vector_dot(data->v,
                                            data->g,
@@ -556,10 +558,10 @@ static SLEQP_RETCODE trlib_loop(SolverData* data,
                                                 zero_eps,
                                                 data->h_lhs));
 
-      SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                               data->l,
-                                               data->sparse_cache,
-                                               NULL));
+      SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                          data->l,
+                                          data->sparse_cache,
+                                          NULL));
 
       SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache,
                                                 data->s,
@@ -709,7 +711,7 @@ static SLEQP_RETCODE trlib_rayleigh(double* min_rayleigh,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE trlib_solve(SleqpAugJacobian* jacobian,
+static SLEQP_RETCODE trlib_solve(SleqpAugJac* jacobian,
                                  SleqpSparseVec* multipliers,
                                  SleqpSparseVec* gradient,
                                  SleqpSparseVec* newton_step,
@@ -737,10 +739,10 @@ static SLEQP_RETCODE trlib_solve(SleqpAugJacobian* jacobian,
 
   // We may loose some orthogonality in the process, reproject to
   // be sure
-  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                           data->s,
-                                           newton_step,
-                                           NULL));
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                      data->s,
+                                      newton_step,
+                                      NULL));
 
   // check optimality
 

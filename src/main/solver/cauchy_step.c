@@ -16,7 +16,7 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
     SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
                                              iterate,
                                              solver->estimation_residuals,
-                                             solver->aug_jacobian));
+                                             solver->aug_jac));
 
 #ifndef NDEBUG
 
@@ -106,12 +106,12 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
     SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
                                             iterate));
 
-    SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
-                                              iterate));
+    SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
+                                         iterate));
 
     SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
                                         iterate,
-                                        solver->aug_jacobian,
+                                        solver->aug_jac,
                                         solver->trust_radius,
                                         solver->penalty_parameter));
 
@@ -119,7 +119,7 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
     {
       SLEQP_CALL(sleqp_lsqr_solver_set_iterate(solver->lsqr_solver,
                                                iterate,
-                                               solver->aug_jacobian,
+                                               solver->aug_jac,
                                                solver->trust_radius,
                                                solver->penalty_parameter));
     }
@@ -154,8 +154,8 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
   if(!sleqp_working_set_eq(solver->parametric_original_working_set,
                            sleqp_iterate_get_working_set(iterate)))
   {
-    SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
-                                              iterate));
+    SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
+                                         iterate));
   }
 
   SLEQP_CALL(sleqp_linesearch_set_iterate(solver->linesearch,
@@ -165,7 +165,7 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
                                       iterate,
-                                      solver->aug_jacobian,
+                                      solver->aug_jac,
                                       solver->trust_radius,
                                       solver->penalty_parameter));
 
@@ -233,12 +233,12 @@ static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
     SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
                                             iterate));
 
-    SLEQP_CALL(sleqp_aug_jacobian_set_iterate(solver->aug_jacobian,
-                                              iterate));
+    SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
+                                         iterate));
 
     SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
                                         iterate,
-                                        solver->aug_jacobian,
+                                        solver->aug_jac,
                                         solver->trust_radius,
                                         solver->penalty_parameter));
 
@@ -246,7 +246,7 @@ static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
     {
       SLEQP_CALL(sleqp_lsqr_solver_set_iterate(solver->lsqr_solver,
                                                iterate,
-                                               solver->aug_jacobian,
+                                               solver->aug_jac,
                                                solver->trust_radius,
                                                solver->penalty_parameter));
     }

@@ -5,7 +5,6 @@
 #include <string.h>
 #include <threads.h>
 
-#include "aug_jacobian.h"
 #include "cmp.h"
 #include "defs.h"
 #include "fail.h"
@@ -20,6 +19,10 @@
 #include "util.h"
 
 #include "lp/lpi.h"
+
+#include "aug_jac/box_constrained_aug_jac.h"
+#include "aug_jac/standard_aug_jac.h"
+#include "aug_jac/unconstrained_aug_jac.h"
 
 #include "cauchy/box_constrained_cauchy.h"
 #include "cauchy/standard_cauchy.h"
@@ -280,7 +283,6 @@ SLEQP_RETCODE create_cauchy_solver(SleqpSolver* solver)
   SleqpParams* params = solver->params;
   SleqpOptions* options = solver->options;
 
-
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
   if(sleqp_problem_is_unconstrained(problem))
@@ -312,6 +314,40 @@ SLEQP_RETCODE create_cauchy_solver(SleqpSolver* solver)
                                             params,
                                             options,
                                             solver->lp_interface));
+  }
+
+  return SLEQP_OKAY;
+}
+
+static
+SLEQP_RETCODE create_aug_jac(SleqpSolver* solver)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpParams* params = solver->params;
+
+  const int num_constraints = sleqp_problem_num_constraints(problem);
+
+  if(sleqp_problem_is_unconstrained(problem))
+  {
+    SLEQP_CALL(sleqp_unconstrained_aug_jac_create(&solver->aug_jac,
+                                                  problem));
+  }
+  else if(num_constraints == 0)
+  {
+    SLEQP_CALL(sleqp_box_constrained_aug_jac_create(&solver->aug_jac,
+                                                    problem));
+  }
+  else
+  {
+    // create sparse factorization
+
+    SLEQP_CALL(sleqp_sparse_factorization_create_default(&solver->factorization,
+                                                         params));
+
+    SLEQP_CALL(sleqp_standard_aug_jac_create(&solver->aug_jac,
+                                             problem,
+                                             params,
+                                             solver->factorization));
   }
 
   return SLEQP_OKAY;
@@ -436,15 +472,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->initial_trial_point,
                                               num_variables));
 
-  // create sparse factorization
-
-  SLEQP_CALL(sleqp_sparse_factorization_create_default(&solver->factorization,
-                                                       params));
-
-  SLEQP_CALL(sleqp_aug_jacobian_create(&solver->aug_jacobian,
-                                       solver->problem,
-                                       params,
-                                       solver->factorization));
+  SLEQP_CALL(create_aug_jac(solver));
 
   SLEQP_CALL(sleqp_dual_estimation_create(&solver->estimation_data,
                                           solver->problem));
@@ -548,10 +576,19 @@ const char* sleqp_solver_info(const SleqpSolver* solver)
              "None");
   }
 
-  print_solver(fact_info,
-               INFO_BUF_SIZE,
-               sleqp_sparse_factorization_get_name(solver->factorization),
-               sleqp_sparse_factorization_get_version(solver->factorization));
+  if(solver->factorization)
+  {
+    print_solver(fact_info,
+                 INFO_BUF_SIZE,
+                 sleqp_sparse_factorization_get_name(solver->factorization),
+                 sleqp_sparse_factorization_get_version(solver->factorization));
+  }
+  else
+  {
+    snprintf(fact_info,
+             INFO_BUF_SIZE,
+             "None");
+  }
 
   snprintf(solver_info,
            SOLVER_INFO_BUF_SIZE,
@@ -904,7 +941,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_dual_estimation_free(&solver->estimation_data));
 
-  SLEQP_CALL(sleqp_aug_jacobian_release(&solver->aug_jacobian));
+  SLEQP_CALL(sleqp_aug_jac_release(&solver->aug_jac));
 
   SLEQP_CALL(sleqp_sparse_factorization_release(&solver->factorization));
 

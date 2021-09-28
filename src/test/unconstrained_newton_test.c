@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "aug_jacobian.h"
 #include "cmp.h"
 #include "dual_estimation.h"
 #include "mem.h"
@@ -9,6 +8,7 @@
 #include "working_step.h"
 #include "util.h"
 
+#include "aug_jac/standard_aug_jac.h"
 #include "cauchy/standard_cauchy.h"
 
 #include "sparse/sparse_factorization_umfpack.h"
@@ -99,7 +99,7 @@ START_TEST(newton_wide_step)
   SleqpSparseVec* actual_step;
 
   SleqpSparseFactorization* factorization;
-  SleqpAugJacobian* jacobian;
+  SleqpAugJac* jacobian;
 
   const int num_variables = sleqp_problem_num_variables(problem);
 
@@ -117,12 +117,12 @@ START_TEST(newton_wide_step)
                                                         params));
 
   // create with empty active set
-  ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
-                                        problem,
-                                        params,
-                                        factorization));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian,
+                                            problem,
+                                            params,
+                                            factorization));
 
-  ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
+  ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
   ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
 
@@ -151,7 +151,7 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_working_step_release(&working_step));
 
-  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+  ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
   ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 
@@ -170,7 +170,7 @@ START_TEST(newton_small_step)
   SleqpSparseVec* actual_step;
 
   SleqpSparseFactorization* factorization;
-  SleqpAugJacobian* jacobian;
+  SleqpAugJac* jacobian;
 
   const int num_variables = sleqp_problem_num_variables(problem);
 
@@ -188,12 +188,12 @@ START_TEST(newton_small_step)
                                                         params));
 
   // create with empty active set
-  ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
-                                        problem,
-                                        params,
-                                        factorization));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian,
+                                            problem,
+                                            params,
+                                            factorization));
 
-  ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
+  ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
   ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
 
@@ -222,7 +222,7 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_working_step_release(&working_step));
 
-  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+  ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
   ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 

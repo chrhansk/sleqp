@@ -1,16 +1,16 @@
 #ifndef SLEQP_TR_TYPES_H
 #define SLEQP_TR_TYPES_H
 
-#include "aug_jacobian.h"
 #include "problem.h"
 
+#include "aug_jac/aug_jac.h"
 #include "sparse/sparse_vec.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-  typedef SLEQP_RETCODE (*SLEQP_TR_SOLVER_SOLVE)(SleqpAugJacobian* jacobian,
+  typedef SLEQP_RETCODE (*SLEQP_TR_SOLVER_SOLVE)(SleqpAugJac* jacobian,
                                                  SleqpSparseVec* multipliers,
                                                  SleqpSparseVec* gradient,
                                                  SleqpSparseVec* newton_step,

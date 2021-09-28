@@ -20,6 +20,7 @@
 #include "cauchy/cauchy.h"
 #include "lp/lpi.h"
 #include "step/step_rule.h"
+#include "sparse/sparse_factorization.h"
 
 #include "preprocessor/preprocessor.h"
 
@@ -101,7 +102,7 @@ extern "C" {
 
     SleqpSparseFactorization* factorization;
 
-    SleqpAugJacobian* aug_jacobian;
+    SleqpAugJac* aug_jac;
 
     SleqpDualEstimation* estimation_data;
     SleqpSparseVec* estimation_residuals;

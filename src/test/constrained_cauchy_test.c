@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "aug_jacobian.h"
 #include "cmp.h"
 #include "dual_estimation.h"
 #include "mem.h"
 #include "util.h"
+
+#include "aug_jac/standard_aug_jac.h"
 
 #include "cauchy/standard_cauchy.h"
 
@@ -101,7 +102,7 @@ START_TEST(test_dual_variable)
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
   SleqpSparseFactorization* factorization;
-  SleqpAugJacobian* jacobian;
+  SleqpAugJac* jacobian;
   SleqpDualEstimation* estimation_data;
 
   double trust_radius = 0.1, penalty_parameter = 1.;
@@ -123,12 +124,12 @@ START_TEST(test_dual_variable)
   ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
                                                         params));
 
-  ASSERT_CALL(sleqp_aug_jacobian_create(&jacobian,
-                                        problem,
-                                        params,
-                                        factorization));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian,
+                                            problem,
+                                            params,
+                                            factorization));
 
-  ASSERT_CALL(sleqp_aug_jacobian_set_iterate(jacobian, iterate));
+  ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
   ASSERT_CALL(sleqp_dual_estimation_create(&estimation_data, problem));
 
@@ -146,7 +147,7 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_dual_estimation_free(&estimation_data));
 
-  ASSERT_CALL(sleqp_aug_jacobian_release(&jacobian));
+  ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
   ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
 

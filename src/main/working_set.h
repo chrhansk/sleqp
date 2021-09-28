@@ -105,7 +105,7 @@ extern "C" {
    * @param[in]  index                 The constraint index
    **/
   int sleqp_working_set_get_constraint_index(const SleqpWorkingSet* working_set,
-                                                          int index);
+                                             int index);
 
   /**
    * Returns the index of the given variable with respect to the given
@@ -116,7 +116,7 @@ extern "C" {
    * @param[in]  index                 The variable index
    **/
   int sleqp_working_set_get_variable_index(const SleqpWorkingSet* working_set,
-                                                        int index);
+                                           int index);
 
   /**
    * Returns the content of the working set at the given working set index,
@@ -126,7 +126,7 @@ extern "C" {
    * @param[in]  index                 The working set index
    **/
   int sleqp_working_set_get_content(const SleqpWorkingSet* working_set,
-                                                 int index);
+                                    int index);
 
 
 #ifdef __cplusplus

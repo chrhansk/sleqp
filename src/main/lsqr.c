@@ -2,7 +2,6 @@
 
 #include <math.h>
 
-#include "aug_jacobian.h"
 #include "cmp.h"
 #include "fail.h"
 #include "feas.h"
@@ -12,6 +11,7 @@
 #include "util.h"
 #include "working_step.h"
 
+#include "aug_jac/aug_jac.h"
 #include "tr/tr_util.h"
 
 static const double tolerance_factor = 1e-2;
@@ -79,7 +79,7 @@ struct SleqpLSQRSolver {
 
   // SleqpSparseVec* projected_direction;
 
-  SleqpAugJacobian* jacobian;
+  SleqpAugJac* jacobian;
 
   double trust_radius;
   double penalty_parameter;
@@ -398,13 +398,13 @@ SLEQP_RETCODE compute_rhs(SleqpLSQRSolver* solver)
 
 SLEQP_RETCODE sleqp_lsqr_solver_set_iterate(SleqpLSQRSolver* solver,
                                             SleqpIterate* iterate,
-                                            SleqpAugJacobian* jacobian,
+                                            SleqpAugJac* aug_jac,
                                             double trust_radius,
                                             double penalty_parameter)
 {
   SLEQP_CALL(sleqp_working_step_set_iterate(solver->working_step,
                                             iterate,
-                                            jacobian,
+                                            aug_jac,
                                             trust_radius));
 
   {
@@ -416,11 +416,11 @@ SLEQP_RETCODE sleqp_lsqr_solver_set_iterate(SleqpLSQRSolver* solver,
   }
 
   {
-    SLEQP_CALL(sleqp_aug_jacobian_release(&solver->jacobian));
+    SLEQP_CALL(sleqp_aug_jac_release(&solver->jacobian));
 
-    SLEQP_CALL(sleqp_aug_jacobian_capture(jacobian));
+    SLEQP_CALL(sleqp_aug_jac_capture(aug_jac));
 
-    solver->jacobian = jacobian;
+    solver->jacobian = aug_jac;
   }
 
   solver->trust_radius = sleqp_working_step_get_reduced_trust_radius(solver->working_step);
@@ -451,7 +451,7 @@ SLEQP_RETCODE forward_product(SleqpLSQRSolver* solver,
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_aug_jacobian_projection(solver->jacobian,
+  SLEQP_CALL(sleqp_aug_jac_projection(solver->jacobian,
                                            direction,
                                            solver->forward.projected_direction,
                                            NULL));
@@ -536,7 +536,7 @@ SLEQP_RETCODE adjoint_product(SleqpLSQRSolver* solver,
                                      zero_eps,
                                      solver->adjoint.product));
 
-  SLEQP_CALL(sleqp_aug_jacobian_projection(solver->jacobian,
+  SLEQP_CALL(sleqp_aug_jac_projection(solver->jacobian,
                                            solver->adjoint.product,
                                            product,
                                            NULL));
@@ -777,7 +777,7 @@ SLEQP_RETCODE lsqr_solver_free(SleqpLSQRSolver** star)
     SLEQP_CALL(sleqp_sparse_vector_free(&solver->lsqr.u));
   }
 
-  SLEQP_CALL(sleqp_aug_jacobian_release(&solver->jacobian));
+  SLEQP_CALL(sleqp_aug_jac_release(&solver->jacobian));
 
   sleqp_free(&solver->dense_cache);
 

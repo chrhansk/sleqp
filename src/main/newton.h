@@ -6,13 +6,14 @@
  * @brief Definition of functions used for the computation of Newton (aka EQP) steps.
  **/
 
-#include "aug_jacobian.h"
 #include "options.h"
 #include "params.h"
 #include "problem.h"
 #include "iterate.h"
 #include "timer.h"
 #include "working_step.h"
+
+#include "aug_jac/aug_jac.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -36,7 +37,7 @@ extern "C" {
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
                                          SleqpIterate* iterate,
-                                         SleqpAugJacobian* jacobian,
+                                         SleqpAugJac* jacobian,
                                          double trust_radius,
                                          double penalty_parameter);
 

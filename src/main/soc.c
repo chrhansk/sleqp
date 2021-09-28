@@ -239,7 +239,7 @@ static SLEQP_RETCODE add_constraint_entries(SleqpSOC* soc_data,
 }
 
 SLEQP_RETCODE sleqp_soc_compute_correction(SleqpSOC* soc_data,
-                                           SleqpAugJacobian* augmented_jacobian,
+                                           SleqpAugJac* aug_jac,
                                            const SleqpIterate* iterate,
                                            const SleqpIterate* trial_iterate,
                                            SleqpSparseVec* soc_direction)
@@ -258,13 +258,13 @@ SLEQP_RETCODE sleqp_soc_compute_correction(SleqpSOC* soc_data,
   SLEQP_CALL(add_variable_entries(soc_data, iterate, trial_iterate));
   SLEQP_CALL(add_constraint_entries(soc_data, iterate, trial_iterate));
 
-  SLEQP_CALL(sleqp_aug_jacobian_min_norm_solution(augmented_jacobian, rhs, soc_direction));
+  SLEQP_CALL(sleqp_aug_jac_min_norm_solution(aug_jac, rhs, soc_direction));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_soc_compute_step(SleqpSOC* soc_data,
-                                     SleqpAugJacobian* augmented_jacobian,
+                                     SleqpAugJac* aug_jac,
                                      const SleqpIterate* iterate,
                                      const SleqpSparseVec* trial_step,
                                      const SleqpIterate* trial_iterate,
@@ -282,7 +282,7 @@ SLEQP_RETCODE sleqp_soc_compute_step(SleqpSOC* soc_data,
   double max_step_length = 1.;
 
   SLEQP_CALL(sleqp_soc_compute_correction(soc_data,
-                                          augmented_jacobian,
+                                          aug_jac,
                                           iterate,
                                           trial_iterate,
                                           soc_data->soc_direction));
@@ -304,7 +304,7 @@ SLEQP_RETCODE sleqp_soc_compute_step(SleqpSOC* soc_data,
 }
 
 SLEQP_RETCODE sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
-                                            SleqpAugJacobian* augmented_jacobian,
+                                            SleqpAugJac* aug_jac,
                                             const SleqpIterate* iterate,
                                             const SleqpSparseVec* trial_step,
                                             const SleqpIterate* trial_iterate,
@@ -320,7 +320,7 @@ SLEQP_RETCODE sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
                                            SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_soc_compute_correction(soc_data,
-                                         augmented_jacobian,
+                                         aug_jac,
                                          iterate,
                                          trial_iterate,
                                          soc_data->soc_direction));

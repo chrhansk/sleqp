@@ -157,7 +157,7 @@ double sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
 
 static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
                                          SleqpIterate* iterate,
-                                         SleqpAugJacobian* jacobian)
+                                         SleqpAugJac* jacobian)
 {
   SleqpProblem* problem = step->problem;
 
@@ -340,13 +340,13 @@ static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
 static
 SLEQP_RETCODE compute_initial_direction(SleqpWorkingStep* step,
                                         SleqpIterate* iterate,
-                                        SleqpAugJacobian* jacobian)
+                                        SleqpAugJac* jacobian)
 {
   SLEQP_CALL(compute_initial_rhs(step, iterate, jacobian));
 
-  SLEQP_CALL(sleqp_aug_jacobian_min_norm_solution(jacobian,
-                                                  step->initial_rhs,
-                                                  step->initial_direction));
+  SLEQP_CALL(sleqp_aug_jac_min_norm_solution(jacobian,
+                                             step->initial_rhs,
+                                             step->initial_direction));
 
 #if !defined(NDEBUG)
 
@@ -490,7 +490,7 @@ SLEQP_RETCODE compute_violated_multipliers(SleqpWorkingStep* step,
 
 SLEQP_RETCODE sleqp_working_step_set_iterate(SleqpWorkingStep* step,
                                              SleqpIterate* iterate,
-                                             SleqpAugJacobian* jacobian,
+                                             SleqpAugJac* jacobian,
                                              double trust_radius)
 {
   SLEQP_CALL(compute_initial_direction(step, iterate, jacobian));

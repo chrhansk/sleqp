@@ -51,7 +51,7 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
 
 
 SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* solver,
-                                    SleqpAugJacobian* jacobian,
+                                    SleqpAugJac* jacobian,
                                     SleqpSparseVec* multipliers,
                                     SleqpSparseVec* gradient,
                                     SleqpSparseVec* newton_step,

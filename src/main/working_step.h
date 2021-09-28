@@ -6,11 +6,12 @@
  * @brief Definition of functions used for the computation of the initial step towards the working set.
  **/
 
-#include "aug_jacobian.h"
 #include "options.h"
 #include "params.h"
 #include "problem.h"
 #include "iterate.h"
+
+#include "aug_jac/aug_jac.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +27,7 @@ extern "C" {
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_working_step_set_iterate(SleqpWorkingStep* step,
                                                SleqpIterate* iterate,
-                                               SleqpAugJacobian* jacobian,
+                                               SleqpAugJac* jacobian,
                                                double trust_radius);
 
   SleqpSparseVec* sleqp_working_step_get_direction(SleqpWorkingStep* step);

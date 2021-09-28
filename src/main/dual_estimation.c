@@ -1,5 +1,7 @@
 #include "dual_estimation.h"
 
+#include <assert.h>
+
 #include "cmp.h"
 #include "fail.h"
 #include "log.h"
@@ -36,7 +38,7 @@ SLEQP_RETCODE sleqp_dual_estimation_create(SleqpDualEstimation** star,
 SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
                                             SleqpIterate* iterate,
                                             SleqpSparseVec* residuum,
-                                            SleqpAugJacobian* jacobian)
+                                            SleqpAugJac* jacobian)
 {
   SleqpProblem* problem = estimation_data->problem;
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
@@ -54,10 +56,10 @@ SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data
   SLEQP_CALL(sleqp_sparse_vector_copy(grad, neg_grad));
   SLEQP_CALL(sleqp_sparse_vector_scale(neg_grad, -1.));
 
-  SLEQP_CALL(sleqp_aug_jacobian_projection(jacobian,
-                                           neg_grad,
-                                           residuum,
-                                           dual_sol));
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
+                                      neg_grad,
+                                      residuum,
+                                      dual_sol));
 
   int num_clipped_vars = 0, num_clipped_cons = 0;
 

@@ -64,8 +64,9 @@ SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
                                               &exact,
                                               &basis_condition));
 
-  SLEQP_CALL(sleqp_aug_jacobian_get_condition_estimate(solver->aug_jacobian,
-                                                       &aug_jac_condition));
+  SLEQP_CALL(sleqp_aug_jac_condition(solver->aug_jac,
+                                     &exact,
+                                     &aug_jac_condition));
 
   const char* steptype_descriptions[] = {
     [SLEQP_STEPTYPE_NONE] = "",
@@ -270,11 +271,11 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                   solver->elapsed_seconds));
   }
 
-  SLEQP_CALL(solver_print_timer(sleqp_aug_jacobian_get_factorization_timer(solver->aug_jacobian),
+  SLEQP_CALL(solver_print_timer(sleqp_aug_jac_creation_timer(solver->aug_jac),
                                 "Factorizations",
                                 solver->elapsed_seconds));
 
-  SLEQP_CALL(solver_print_timer(sleqp_aug_jacobian_get_substitution_timer(solver->aug_jacobian),
+  SLEQP_CALL(solver_print_timer(sleqp_aug_jac_solution_timer(solver->aug_jac),
                                 "Substitutions",
                                 solver->elapsed_seconds));
 

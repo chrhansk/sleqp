@@ -1,4 +1,8 @@
 set(COMMON_SRC
+  aug_jac/aug_jac.c
+  aug_jac/box_constrained_aug_jac.c
+  aug_jac/standard_aug_jac.c
+  aug_jac/unconstrained_aug_jac.c
   cauchy/cauchy.c
   cauchy/box_constrained_cauchy.c
   cauchy/standard_cauchy.c
@@ -26,7 +30,6 @@ set(COMMON_SRC
   solver/trial_point.c
   solver/trust_radius.c
   assert.c
-  aug_jacobian.c
   bfgs.c
   hess_struct.c
   callback_handler.c

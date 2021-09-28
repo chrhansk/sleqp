@@ -395,7 +395,7 @@ compute_trial_point_soc_deterministic(SleqpSolver* solver,
   *reject = false;
 
   SLEQP_CALL(sleqp_soc_compute_step(solver->soc_data,
-                                    solver->aug_jacobian,
+                                    solver->aug_jac,
                                     iterate,
                                     solver->trial_step,
                                     trial_iterate,
@@ -425,7 +425,7 @@ compute_trial_point_soc_dynamic(SleqpSolver* solver,
                                                       SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
 
   SLEQP_CALL(sleqp_soc_compute_step(solver->soc_data,
-                                    solver->aug_jacobian,
+                                    solver->aug_jac,
                                     iterate,
                                     solver->trial_step,
                                     trial_iterate,

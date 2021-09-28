@@ -1,7 +1,6 @@
 #include <stdlib.h>
 #include <check.h>
 
-#include "aug_jacobian.h"
 #include "cmp.h"
 #include "dual_estimation.h"
 #include "mem.h"

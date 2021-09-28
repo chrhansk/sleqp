@@ -6,10 +6,11 @@
  * @brief Definition of SOC (second-order correction) functions.
  **/
 
-#include "aug_jacobian.h"
 #include "iterate.h"
 #include "problem.h"
 #include "util.h"
+
+#include "aug_jac/aug_jac.h"
 
 
 #ifdef __cplusplus
@@ -25,14 +26,14 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_soc_compute_correction(SleqpSOC* soc_data,
-                                             SleqpAugJacobian* augmented_jacobian,
+                                             SleqpAugJac* augmented_jacobian,
                                              const SleqpIterate* iterate,
                                              const SleqpIterate* trial_iterate,
                                              SleqpSparseVec* soc_direction);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_soc_compute_step(SleqpSOC* soc_data,
-                                       SleqpAugJacobian* augmented_jacobian,
+                                       SleqpAugJac* augmented_jacobian,
                                        const SleqpIterate* iterate,
                                        const SleqpSparseVec* trial_step,
                                        const SleqpIterate* trial_iterate,
@@ -40,7 +41,7 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
-                                              SleqpAugJacobian* augmented_jacobian,
+                                              SleqpAugJac* augmented_jacobian,
                                               const SleqpIterate* iterate,
                                               const SleqpSparseVec* trial_step,
                                               const SleqpIterate* trial_iterate,
