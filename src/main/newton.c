@@ -320,6 +320,34 @@ SLEQP_RETCODE print_residuals(SleqpNewtonData* data,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE check_spectrum(SleqpNewtonData* data)
+{
+  SleqpParams* params = data->params;
+
+  SleqpProblem* problem = data->problem;
+  SleqpFunc* func = sleqp_problem_func(problem);
+
+  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+
+  double min_rayleigh = 0., max_rayleigh = 0.;
+
+  SLEQP_CALL(sleqp_newton_current_rayleigh(data,
+                                           &min_rayleigh,
+                                           &max_rayleigh));
+
+  assert(min_rayleigh <= max_rayleigh);
+
+  sleqp_log_debug("Spectrum: %.14e, %.14e", min_rayleigh, max_rayleigh);
+
+  if(sleqp_func_has_psd_hessian(func) && sleqp_is_neg(min_rayleigh, eps))
+  {
+    sleqp_log_warn("Encountered negative Rayleigh quotient (%.14e) on PSD Hessian",
+                   min_rayleigh);
+  }
+
+  return SLEQP_OKAY;
+}
+
 // compute the EQP gradient. Given as the sum of the
 // EQP Hessian with the initial solution, the objective
 // function gradient and the violated multipliers
@@ -479,6 +507,8 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
                                    tr_step,
                                    reduced_trust_radius,
                                    &tr_dual));
+
+  SLEQP_CALL(check_spectrum(data));
 
   SLEQP_CALL(sleqp_sparse_vector_add(tr_step,
                                      initial_step,
