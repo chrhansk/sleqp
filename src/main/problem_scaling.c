@@ -219,7 +219,7 @@ SLEQP_RETCODE scaled_lsq_func_jac_forward(SleqpFunc* func,
   SLEQP_CALL(sleqp_scale_lsq_forward_direction(scaling, scaled_direction));
 
   SLEQP_CALL(sleqp_lsq_func_jac_forward(problem_scaling->func,
-                                        forward_direction,
+                                        scaled_direction,
                                         product));
 
   SLEQP_CALL(sleqp_scale_lsq_adjoint_direction(scaling, product));

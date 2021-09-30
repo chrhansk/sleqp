@@ -346,6 +346,8 @@ SLEQP_RETCODE sleqp_lsq_func_residuals(SleqpFunc* func,
 
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
 
+  assert(residuals->dim == sleqp_lsq_func_num_residuals(func));
+
   SLEQP_CALL(compute_lsq_residual(func,
                                   lsq_data));
 
@@ -365,6 +367,10 @@ SLEQP_RETCODE sleqp_lsq_func_jac_forward(SleqpFunc* func,
 
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
 
+  assert(product != forward_direction);
+  assert(forward_direction->dim == sleqp_func_get_num_variables(func));
+  assert(product->dim == sleqp_lsq_func_num_residuals(func));
+
   SLEQP_CALL(sleqp_sparse_vector_clear(product));
 
   return lsq_data->callbacks.lsq_jac_forward(func,
@@ -382,6 +388,10 @@ SLEQP_RETCODE sleqp_lsq_func_jac_adjoint(SleqpFunc* func,
   assert(func_data);
 
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  assert(product != adjoint_direction);
+  assert(adjoint_direction->dim == sleqp_lsq_func_num_residuals(func));
+  assert(product->dim == sleqp_func_get_num_variables(func));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(product));
 
