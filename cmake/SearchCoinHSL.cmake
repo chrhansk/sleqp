@@ -10,10 +10,18 @@ if(PKG_CONFIG_FOUND)
   pkg_check_modules(CoinHSL coinhsl)
 endif()
 
+find_package(BLAS)
+
 if(CoinHSL_FOUND)
   include(SearchMETIS)
   if(METIS_FOUND)
     set(CoinHSL_LIBRARIES ${CoinHSL_LIBRARIES} ${METIS_LIBRARIES})
+  else()
+    unset(CoinHSL_FOUND)
+  endif()
+
+  if(BLAS_FOUND)
+    set(CoinHSL_LIBRARIES ${CoinHSL_LIBRARIES} ${BLAS_LIBRARIES})
   else()
     unset(CoinHSL_FOUND)
   endif()
