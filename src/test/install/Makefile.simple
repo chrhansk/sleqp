@@ -7,5 +7,6 @@ run: build
 build: example
 
 example: example.o
+	$(CC) -o $@ $? $(LDFLAGS)
 
 example.o: example.c
