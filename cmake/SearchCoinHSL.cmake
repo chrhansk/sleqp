@@ -11,6 +11,7 @@ if(PKG_CONFIG_FOUND)
 endif()
 
 find_package(BLAS)
+find_package(LAPACK)
 
 if(CoinHSL_FOUND)
   include(SearchMETIS)
@@ -22,6 +23,12 @@ if(CoinHSL_FOUND)
 
   if(BLAS_FOUND)
     set(CoinHSL_LIBRARIES ${CoinHSL_LIBRARIES} ${BLAS_LIBRARIES})
+  else()
+    unset(CoinHSL_FOUND)
+  endif()
+
+  if(LAPACK_FOUND)
+    set(CoinHSL_LIBRARIES ${CoinHSL_LIBRARIES} ${LAPACK_LIBRARIES})
   else()
     unset(CoinHSL_FOUND)
   endif()
