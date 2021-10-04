@@ -398,6 +398,8 @@ aug_jac_free(void* data)
 
   SLEQP_CALL(sleqp_problem_release(&jacobian->problem));
 
+  sleqp_free(&jacobian);
+
   return SLEQP_OKAY;
 }
 
