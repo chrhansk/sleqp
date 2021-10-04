@@ -3,7 +3,7 @@
 cimport libc.stdio
 cimport libc.time
 
-cdef extern from "sleqp/sleqp.h":
+cdef extern from "sleqp.h":
 
   ctypedef bint bool
 
