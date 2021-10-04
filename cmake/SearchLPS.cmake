@@ -38,6 +38,10 @@ add_lp_solver(
   SOURCES "lpi_gurobi.c")
 
 add_lp_solver(
+  NAME "HiGHS"
+  SOURCES "lpi_highs.c")
+
+add_lp_solver(
   NAME "SoPlex"
   SOURCES "lpi_soplex.cc"
   DEPS_DEBIAN "scipoptsuite (>= 7.0.0)")

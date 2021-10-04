@@ -28,14 +28,14 @@ variables:
       junit: ./build/*.xml
 
 # TODO: Run tests as soon as we can get a MUMPS version without OpenMP
-test_build_MUMPS:
+test_fact_build_MUMPS:
   <<: *test_job_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MUMPS -DSLEQP_LPS=$DEFAULT_LPS
     - make
 
-test_Umfpack:
+test_fact_Umfpack:
   <<: *test_job_template
   <<: *test_report_template
   script:
@@ -43,7 +43,7 @@ test_Umfpack:
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=Umfpack -DSLEQP_LPS=$DEFAULT_LPS
     - make all build_tests test
 
-test_MA27:
+test_fact_MA27:
   <<: *test_job_template
   <<: *test_report_template
   script:
@@ -51,7 +51,7 @@ test_MA27:
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA27 -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
 
-test_MA57:
+test_fact_MA57:
   <<: *test_job_template
   <<: *test_report_template
   script:
@@ -59,7 +59,7 @@ test_MA57:
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA57 -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
 
-test_MA86:
+test_fact_MA86:
   <<: *test_job_template
   <<: *test_report_template
   script:
@@ -67,12 +67,20 @@ test_MA86:
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA86 -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
 
-test_MA97:
+test_fact_MA97:
   <<: *test_job_template
   <<: *test_report_template
   script:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA97 -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
+
+test_lps_HiGHS:
+  <<: *test_job_template
+  <<: *test_report_template
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=HiGHS
     - make build_tests test
 
 test_coverage:
