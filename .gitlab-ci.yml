@@ -203,6 +203,12 @@ test_install_cmake:
     - cd $CI_PROJECT_DIR/src/test/install
     - ./test_cmake.sh
 
+test_install_python_sdist:
+  <<: *test_install_template
+  script:
+    - cd $CI_PROJECT_DIR
+    - ./src/test/install/test_python_sdist.sh
+
 trigger_downstream:
   stage: downstream
   only:
