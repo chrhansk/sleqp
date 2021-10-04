@@ -7,3 +7,4 @@ dist
 setup.py
 **/*.so
 tox.ini
+local_config.py

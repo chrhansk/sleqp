@@ -10,6 +10,11 @@ if(PythonInterp_FOUND AND PythonLibs_FOUND)
 
   add_python_project(
     PROJECT_NAME "sleqp"
+    CONFIG_FILES
+    "local_config.py.in"
+    "setup.py.in"
+    "tox.ini.in"
+    "docs/conf.py.in"
     PROJECT_COMPONENT "python")
 
   add_dependencies(python_sleqp sleqp_local_headers sleqp)

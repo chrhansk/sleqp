@@ -1,0 +1,3 @@
+local_libdirs = ['@SLEQP_LIBRARY_DIR@']
+
+local_include_dirs = ['@CMAKE_BINARY_DIR@']

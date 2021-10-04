@@ -11,7 +11,7 @@ function(add_python_project)
     PARSE_ARGV 0 ARGS
     ""
     "PROJECT_NAME;PROJECT_COMPONENT"
-    ""
+    "CONFIG_FILES"
     )
 
   set(PROJECT_NAME "${ARGS_PROJECT_NAME}")
@@ -22,36 +22,24 @@ function(add_python_project)
 
   set(DOC_DIR "${PROJECT_DIR}/docs")
 
-  set(SETUP_PY_IN "${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in")
   set(SETUP_PY    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
-
-  set(TOX_INI_IN "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini.in")
-  set(TOX_INI    "${CMAKE_CURRENT_SOURCE_DIR}/tox.ini")
-
-  set(DOC_CONF_PY_IN "${DOC_DIR}/conf.py.in")
-  set(DOC_CONF_PY "${DOC_DIR}/conf.py")
 
   set(DOC_TARGET "python_${PROJECT_NAME}_doc")
 
   set(PYTHON_CFLAGS "")
+
+  foreach(CONFIG_FILE ${ARGS_CONFIG_FILES})
+    get_filename_component(RESULT_FILE ${CONFIG_FILE} NAME_WLE)
+    configure_file(${CONFIG_FILE}
+      "${CMAKE_CURRENT_SOURCE_DIR}/${RESULT_FILE}"
+      @ONLY)
+  endforeach()
 
   if(CMAKE_C_FLAGS)
     set(PYTHON_CFLAGS "${CMAKE_C_FLAGS}")
   elseif(CMAKE_BUILD_TYPE)
     set(PYTHON_CFLAGS "${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE}}")
   endif()
-
-  configure_file(${SETUP_PY_IN}
-    ${SETUP_PY}
-    @ONLY)
-
-  configure_file(${TOX_INI_IN}
-    ${TOX_INI}
-    @ONLY)
-
-  configure_file(${DOC_CONF_PY_IN}
-    ${DOC_CONF_PY}
-    @ONLY)
 
   add_custom_target(${TARGET_NAME} ALL)
 
