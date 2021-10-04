@@ -55,18 +55,60 @@ SLEQP_RETCODE sleqp_solver_print_initial_line(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE print_cond(char cond_buffer[DEFAULT_BUF_SIZE],
+                                bool exact,
+                                double condition)
+{
+  if(condition != SLEQP_NONE)
+  {
+    if(exact)
+    {
+      snprintf(cond_buffer,
+               DEFAULT_BUF_SIZE,
+               "%.4e",
+               condition);
+    }
+    else
+    {
+      snprintf(cond_buffer,
+               DEFAULT_BUF_SIZE,
+               "~%.4e",
+               condition);
+    }
+  }
+  else
+  {
+    snprintf(cond_buffer,
+             DEFAULT_BUF_SIZE,
+             "n/a");
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
 {
   bool exact = false;
   double basis_condition, aug_jac_condition;
 
-  SLEQP_CALL(sleqp_cauchy_get_basis_condition(solver->cauchy_data,
-                                              &exact,
-                                              &basis_condition));
+  char jac_cond_buf[DEFAULT_BUF_SIZE];
+  char basis_cond_buf[DEFAULT_BUF_SIZE];
 
   SLEQP_CALL(sleqp_aug_jac_condition(solver->aug_jac,
                                      &exact,
                                      &aug_jac_condition));
+
+  SLEQP_CALL(print_cond(jac_cond_buf,
+                        exact,
+                        aug_jac_condition));
+
+  SLEQP_CALL(sleqp_cauchy_get_basis_condition(solver->cauchy_data,
+                                              &exact,
+                                              &basis_condition));
+
+  SLEQP_CALL(print_cond(basis_cond_buf,
+                        exact,
+                        basis_condition));
 
   const char* steptype_descriptions[] = {
     [SLEQP_STEPTYPE_NONE] = "",
@@ -75,22 +117,6 @@ SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
     [SLEQP_STEPTYPE_ACCEPTED_SOC] = "Accepted SOC",
     [SLEQP_STEPTYPE_REJECTED] = "Rejected"
   };
-
-  char jac_condition_buf[DEFAULT_BUF_SIZE];
-
-  if(aug_jac_condition != SLEQP_NONE)
-  {
-    snprintf(jac_condition_buf,
-             DEFAULT_BUF_SIZE,
-             "%14e",
-             aug_jac_condition);
-  }
-  else
-  {
-    snprintf(jac_condition_buf,
-             DEFAULT_BUF_SIZE,
-             "-");
-  }
 
   char working_set_buf[DEFAULT_BUF_SIZE];
 
@@ -124,8 +150,8 @@ SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
                  working_set_buf,
                  solver->lp_trust_radius,
                  solver->trust_radius,
-                 basis_condition,
-                 jac_condition_buf,
+                 basis_cond_buf,
+                 jac_cond_buf,
                  solver->primal_diff_norm,
                  solver->dual_diff_norm,
                  steptype_descriptions[solver->last_step_type]);

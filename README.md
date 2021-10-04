@@ -5,6 +5,7 @@
 For the solution of the linear programming problem, one of the following packages is required:
 
 * [Gurobi](https://www.gurobi.com/)
+* [HiGHS](https://www.highs.dev/)
 * [SoPlex](https://soplex.zib.de/)
 
 For factorizations, one of the following libraries is required:
