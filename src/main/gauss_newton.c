@@ -1,4 +1,4 @@
-#include "lsqr.h"
+#include "gauss_newton.h"
 
 #include <math.h>
 
@@ -12,22 +12,10 @@
 #include "working_step.h"
 
 #include "aug_jac/aug_jac.h"
-#include "tr/tr_util.h"
+
+#include "tr/lsqr.h"
 
 static const double tolerance_factor = 1e-2;
-
-typedef struct {
-  SleqpSparseVec* u;
-  SleqpSparseVec* v;
-  SleqpSparseVec* w;
-
-  SleqpSparseVec* p;
-  SleqpSparseVec* q;
-
-  SleqpSparseVec* x;
-
-  SleqpSparseVec* d;
-} LSQR;
 
 typedef struct {
   SleqpSparseVec* projected_direction;
@@ -46,7 +34,7 @@ typedef struct {
 
 } Adjoint;
 
-struct SleqpLSQRSolver {
+struct SleqpGaussNewtonSolver {
   int refcount;
 
   SleqpProblem* problem;
@@ -74,10 +62,12 @@ struct SleqpLSQRSolver {
   int adjoint_dim;
   int num_violated_cons;
 
+  SleqpLSQRSolver* lsqr_solver;
+
+  SleqpSparseVec* sol;
+
   SleqpSparseVec* sparse_cache;
   double* dense_cache;
-
-  // SleqpSparseVec* projected_direction;
 
   SleqpAugJac* jacobian;
 
@@ -86,19 +76,28 @@ struct SleqpLSQRSolver {
 
   Forward forward;
   Adjoint adjoint;
-  LSQR lsqr;
 };
 
-SLEQP_RETCODE sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
-                                       SleqpProblem* problem,
-                                       SleqpWorkingStep* step,
-                                       SleqpParams* params)
+static
+SLEQP_RETCODE forward_product(const SleqpSparseVec* direction,
+                              SleqpSparseVec* product,
+                              void* data);
+
+static
+SLEQP_RETCODE adjoint_product(const SleqpSparseVec* direction,
+                              SleqpSparseVec* product,
+                              void* data);
+
+SLEQP_RETCODE sleqp_gauss_newton_solver_create(SleqpGaussNewtonSolver** star,
+                                               SleqpProblem* problem,
+                                               SleqpWorkingStep* step,
+                                               SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  SleqpLSQRSolver* solver = *star;
+  SleqpGaussNewtonSolver* solver = *star;
 
-  *solver = (SleqpLSQRSolver) {0};
+  *solver = (SleqpGaussNewtonSolver) {0};
 
   solver->refcount = 1;
 
@@ -148,34 +147,26 @@ SLEQP_RETCODE sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
   SLEQP_CALL(sleqp_alloc_array(&solver->removed_cons,
                                num_constraints));
 
+  SleqpLSQRCallbacks callbacks = {
+    .prod_forward = forward_product,
+    .prod_adjoint = adjoint_product,
+  };
+
+  SLEQP_CALL(sleqp_lsqr_solver_create(&solver->lsqr_solver,
+                                      params,
+                                      num_variables,
+                                      0,
+                                      &callbacks,
+                                      solver));
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sol,
+                                              num_variables));
+
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache,
                                               num_constraints));
 
   SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
                                num_constraints));
-
-  {
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->lsqr.u,
-                                                0));
-
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->lsqr.v,
-                                                solver->forward_dim));
-
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->lsqr.w,
-                                                solver->forward_dim));
-
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->lsqr.p,
-                                                0));
-
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->lsqr.q,
-                                                solver->forward_dim));
-
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->lsqr.x,
-                                                solver->forward_dim));
-
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->lsqr.d,
-                                                solver->forward_dim));
-  }
 
   {
     SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->forward.lsq_product,
@@ -209,7 +200,7 @@ SLEQP_RETCODE sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
 }
 
 static
-SLEQP_RETCODE compute_lsq_rhs(SleqpLSQRSolver* solver)
+SLEQP_RETCODE compute_lsq_rhs(SleqpGaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = sleqp_problem_func(problem);
@@ -237,7 +228,7 @@ SLEQP_RETCODE compute_lsq_rhs(SleqpLSQRSolver* solver)
 }
 
 static
-SLEQP_RETCODE compute_cons_rhs(SleqpLSQRSolver* solver)
+SLEQP_RETCODE compute_cons_rhs(SleqpGaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -289,7 +280,7 @@ SLEQP_RETCODE compute_cons_rhs(SleqpLSQRSolver* solver)
 }
 
 static
-SLEQP_RETCODE compute_cons_matrix(SleqpLSQRSolver* solver)
+SLEQP_RETCODE compute_cons_matrix(SleqpGaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -316,7 +307,7 @@ SLEQP_RETCODE compute_cons_matrix(SleqpLSQRSolver* solver)
 }
 
 static
-SLEQP_RETCODE compute_removed_cons(SleqpLSQRSolver* solver)
+SLEQP_RETCODE compute_removed_cons(SleqpGaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   const int num_constraints = sleqp_problem_num_constraints(problem);
@@ -343,16 +334,10 @@ SLEQP_RETCODE compute_removed_cons(SleqpLSQRSolver* solver)
 }
 
 static
-SLEQP_RETCODE resize_to_dimensions(SleqpLSQRSolver* solver)
+SLEQP_RETCODE resize_to_dimensions(SleqpGaussNewtonSolver* solver)
 {
   SLEQP_CALL(sleqp_sparse_vector_resize(solver->adjoint.cons_direction,
                                         solver->num_violated_cons));
-
-  SLEQP_CALL(sleqp_sparse_vector_resize(solver->lsqr.u,
-                                        solver->adjoint_dim));
-
-  SLEQP_CALL(sleqp_sparse_vector_resize(solver->lsqr.p,
-                                        solver->adjoint_dim));
 
   SLEQP_CALL(sleqp_sparse_vector_resize(solver->rhs,
                                         solver->adjoint_dim));
@@ -360,11 +345,15 @@ SLEQP_RETCODE resize_to_dimensions(SleqpLSQRSolver* solver)
   SLEQP_CALL(sleqp_sparse_vector_resize(solver->forward.scaled_cons_product,
                                         solver->num_violated_cons));
 
+  SLEQP_CALL(sleqp_lsqr_solver_resize(solver->lsqr_solver,
+                                      solver->forward_dim,
+                                      solver->adjoint_dim));
+
   return SLEQP_OKAY;
 }
 
 static
-SLEQP_RETCODE set_adjoint_dimension(SleqpLSQRSolver* solver)
+SLEQP_RETCODE set_adjoint_dimension(SleqpGaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = sleqp_problem_func(problem);
@@ -381,7 +370,7 @@ SLEQP_RETCODE set_adjoint_dimension(SleqpLSQRSolver* solver)
 }
 
 static
-SLEQP_RETCODE compute_rhs(SleqpLSQRSolver* solver)
+SLEQP_RETCODE compute_rhs(SleqpGaussNewtonSolver* solver)
 {
   SLEQP_CALL(compute_lsq_rhs(solver));
 
@@ -396,11 +385,11 @@ SLEQP_RETCODE compute_rhs(SleqpLSQRSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_solver_set_iterate(SleqpLSQRSolver* solver,
-                                            SleqpIterate* iterate,
-                                            SleqpAugJac* aug_jac,
-                                            double trust_radius,
-                                            double penalty_parameter)
+SLEQP_RETCODE sleqp_gauss_newton_solver_set_iterate(SleqpGaussNewtonSolver* solver,
+                                                    SleqpIterate* iterate,
+                                                    SleqpAugJac* aug_jac,
+                                                    double trust_radius,
+                                                    double penalty_parameter)
 {
   SLEQP_CALL(sleqp_working_step_set_iterate(solver->working_step,
                                             iterate,
@@ -438,10 +427,12 @@ SLEQP_RETCODE sleqp_lsqr_solver_set_iterate(SleqpLSQRSolver* solver,
 }
 
 static
-SLEQP_RETCODE forward_product(SleqpLSQRSolver* solver,
-                              SleqpSparseVec* direction,
-                              SleqpSparseVec* product)
+SLEQP_RETCODE forward_product(const SleqpSparseVec* direction,
+                              SleqpSparseVec* product,
+                              void* data)
 {
+  SleqpGaussNewtonSolver* solver = (SleqpGaussNewtonSolver*) data;
+
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = sleqp_problem_func(problem);
 
@@ -452,9 +443,9 @@ SLEQP_RETCODE forward_product(SleqpLSQRSolver* solver,
                                            SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_aug_jac_projection(solver->jacobian,
-                                           direction,
-                                           solver->forward.projected_direction,
-                                           NULL));
+                                      direction,
+                                      solver->forward.projected_direction,
+                                      NULL));
 
   SLEQP_CALL(sleqp_lsq_func_jac_forward(func,
                                         solver->forward.projected_direction,
@@ -477,10 +468,12 @@ SLEQP_RETCODE forward_product(SleqpLSQRSolver* solver,
 }
 
 static
-SLEQP_RETCODE adjoint_product(SleqpLSQRSolver* solver,
-                              SleqpSparseVec* direction,
-                              SleqpSparseVec* product)
+SLEQP_RETCODE adjoint_product(const SleqpSparseVec* direction,
+                              SleqpSparseVec* product,
+                              void* data)
 {
+  SleqpGaussNewtonSolver* solver = (SleqpGaussNewtonSolver*) data;
+
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = sleqp_problem_func(problem);
 
@@ -537,177 +530,42 @@ SLEQP_RETCODE adjoint_product(SleqpLSQRSolver* solver,
                                      solver->adjoint.product));
 
   SLEQP_CALL(sleqp_aug_jac_projection(solver->jacobian,
-                                           solver->adjoint.product,
-                                           product,
-                                           NULL));
+                                      solver->adjoint.product,
+                                      product,
+                                      NULL));
 
   return SLEQP_OKAY;
 }
 
 static
-SLEQP_RETCODE normalize(SleqpSparseVec* vec,
-                        double* norm)
+SLEQP_RETCODE solve_lsqr(SleqpGaussNewtonSolver* solver)
 {
-  *norm = sleqp_sparse_vector_norm(vec);
-
-  if(*norm)
-  {
-    SLEQP_CALL(sleqp_sparse_vector_scale(vec, 1./(*norm)));
-  }
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE lsqr_loop(SleqpLSQRSolver* solver)
-{
-  SleqpProblem* problem = solver->problem;
-  const int num_variables = sleqp_problem_num_variables(problem);
-  int iteration = 0;
-
-  const double eps = sleqp_params_get(solver->params,
-                                      SLEQP_PARAM_EPS);
-
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
-
   const double stat_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_STATIONARITY_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
 
-  {
-    sleqp_log_debug("Solving a LSQR subproblem with %d constraint residuals",
-                    solver->num_violated_cons);
-  }
-
-  SleqpSparseVec* x = solver->lsqr.x;
-  SleqpSparseVec* u = solver->lsqr.u;
-  SleqpSparseVec* v = solver->lsqr.v;
-  SleqpSparseVec* w = solver->lsqr.w;
-
-  SleqpSparseVec* p = solver->lsqr.p;
-  SleqpSparseVec* q = solver->lsqr.q;
-
-  SleqpSparseVec* d = solver->lsqr.d;
-
-  SleqpSparseVec* b = solver->rhs;
-  SleqpSparseVec* t = solver->sparse_cache;
-
-  double alpha, beta;
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(b, u));
-  SLEQP_CALL(normalize(u, &beta));
-
-  SLEQP_CALL(adjoint_product(solver, u, v));
-  SLEQP_CALL(normalize(v, &alpha));
-
-  SLEQP_CALL(sleqp_sparse_vector_copy(v, w));
-
-  SLEQP_CALL(sleqp_sparse_vector_clear(x));
-
-  double phib = beta;
-  double rhob = alpha;
-
-  for(iteration = 1; iteration <= num_variables; ++iteration)
-  {
-    // Continue bidiagonalization
-    SLEQP_CALL(forward_product(solver, v, p));
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(p, u, 1., -alpha, zero_eps, t));
-    SLEQP_CALL(sleqp_sparse_vector_copy(t, u));
-    SLEQP_CALL(normalize(u, &beta));
-
-    SLEQP_CALL(adjoint_product(solver, u, q));
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(q, v, 1., -beta, zero_eps, t));
-    SLEQP_CALL(sleqp_sparse_vector_copy(t, v));
-    SLEQP_CALL(normalize(v, &alpha));
-
-    // Construct next orthogonal transformation (Givens rotation)
-    double rho = hypot(rhob, beta);
-    const double c = rhob / rho;
-    const double s = beta / rho;
-    double theta = s * alpha;
-    rhob = (-c) * alpha;
-    double phi = c * phib;
-    phib = s * phib;
-
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(x,
-                                              w,
-                                              1.,
-                                              phi / rho,
-                                              zero_eps,
-                                              t));
-
-    const double norm = sleqp_sparse_vector_norm(t);
-
-    if(sleqp_is_gt(norm, solver->trust_radius, eps))
-    {
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(x,
-                                                t,
-                                                -1.,
-                                                1.,
-                                                zero_eps,
-                                                d));
-
-      SLEQP_CALL(sleqp_tr_compute_bdry_sol(x,
-                                           d,
-                                           solver->params,
-                                           solver->trust_radius,
-                                           t));
-
-      SLEQP_CALL(sleqp_sparse_vector_copy(t, x));
-
-      sleqp_log_debug("LSQR solver terminated with a boundary solution after %d steps",
-                      iteration);
-
-      return SLEQP_OKAY;
-    }
-
-    SLEQP_CALL(sleqp_sparse_vector_copy(t, x));
-
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(v,
-                                              w,
-                                              1.,
-                                              - theta / rho,
-                                              zero_eps,
-                                              t));
-
-    SLEQP_CALL(sleqp_sparse_vector_copy(t, w));
-
-    const double res = phib;
-    const double objective = .5 * (res * res);
-
-    const double opt_res = phib * alpha * fabs(c);
-
-    sleqp_log_debug("Iteration %d, objective %e, residuum %e",
-                    iteration,
-                    objective,
-                    opt_res);
-
-    if(opt_res <= rel_tol)
-    {
-      break;
-    }
-  }
-
-  sleqp_log_debug("LSQR solver terminated with an interior solution after %d iterations",
-                  iteration);
+  SLEQP_CALL(sleqp_lsqr_solver_solve(solver->lsqr_solver,
+                                     solver->rhs,
+                                     rel_tol,
+                                     solver->trust_radius,
+                                     solver->sol));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_solver_compute_step(SleqpLSQRSolver* solver,
-                                             SleqpSparseVec* step)
+SLEQP_RETCODE sleqp_gauss_newton_solver_compute_step(SleqpGaussNewtonSolver* solver,
+                                                     SleqpSparseVec* step)
 {
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
   SleqpSparseVec* initial_step = sleqp_working_step_get_step(solver->working_step);
 
-  SLEQP_CALL(lsqr_loop(solver));
+  SLEQP_CALL(solve_lsqr(solver));
 
   SLEQP_CALL(sleqp_sparse_vector_add(initial_step,
-                                     solver->lsqr.x,
+                                     solver->sol,
                                      zero_eps,
                                      step));
 
@@ -739,9 +597,9 @@ SLEQP_RETCODE sleqp_lsqr_solver_compute_step(SleqpLSQRSolver* solver,
 }
 
 static
-SLEQP_RETCODE lsqr_solver_free(SleqpLSQRSolver** star)
+SLEQP_RETCODE lsqr_solver_free(SleqpGaussNewtonSolver** star)
 {
-  SleqpLSQRSolver* solver = *star;
+  SleqpGaussNewtonSolver* solver = *star;
 
   if(!solver)
   {
@@ -764,24 +622,15 @@ SLEQP_RETCODE lsqr_solver_free(SleqpLSQRSolver** star)
     SLEQP_CALL(sleqp_sparse_vector_free(&solver->forward.scaled_cons_product));
   }
 
-  {
-    SLEQP_CALL(sleqp_sparse_vector_free(&solver->lsqr.d));
-    SLEQP_CALL(sleqp_sparse_vector_free(&solver->lsqr.x));
-
-    SLEQP_CALL(sleqp_sparse_vector_free(&solver->lsqr.q));
-    SLEQP_CALL(sleqp_sparse_vector_free(&solver->lsqr.p));
-
-    SLEQP_CALL(sleqp_sparse_vector_free(&solver->lsqr.w));
-
-    SLEQP_CALL(sleqp_sparse_vector_free(&solver->lsqr.v));
-    SLEQP_CALL(sleqp_sparse_vector_free(&solver->lsqr.u));
-  }
-
   SLEQP_CALL(sleqp_aug_jac_release(&solver->jacobian));
 
   sleqp_free(&solver->dense_cache);
 
+  SLEQP_CALL(sleqp_lsqr_solver_release(&solver->lsqr_solver));
+
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->sparse_cache));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->sol));
 
   sleqp_free(&solver->removed_cons);
 
@@ -808,16 +657,16 @@ SLEQP_RETCODE lsqr_solver_free(SleqpLSQRSolver** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_solver_capture(SleqpLSQRSolver* solver)
+SLEQP_RETCODE sleqp_gauss_newton_solver_capture(SleqpGaussNewtonSolver* solver)
 {
   ++solver->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_solver_release(SleqpLSQRSolver** star)
+SLEQP_RETCODE sleqp_gauss_newton_solver_release(SleqpGaussNewtonSolver** star)
 {
-  SleqpLSQRSolver* solver = *star;
+  SleqpGaussNewtonSolver* solver = *star;
 
   if(!solver)
   {

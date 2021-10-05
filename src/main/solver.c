@@ -448,10 +448,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
       return SLEQP_ILLEGAL_ARGUMENT;
     }
 
-    SLEQP_CALL(sleqp_lsqr_solver_create(&solver->lsqr_solver,
-                                        solver->problem,
-                                        solver->working_step,
-                                        solver->params));
+    SLEQP_CALL(sleqp_gauss_newton_solver_create(&solver->gauss_newton_solver,
+                                                solver->problem,
+                                                solver->working_step,
+                                                solver->params));
   }
 
   SLEQP_CALL(sleqp_newton_data_create(&solver->newton_data,
@@ -929,7 +929,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_parametric_solver_release(&solver->parametric_solver));
 
-  SLEQP_CALL(sleqp_lsqr_solver_release(&solver->lsqr_solver));
+  SLEQP_CALL(sleqp_gauss_newton_solver_release(&solver->gauss_newton_solver));
 
   SLEQP_CALL(sleqp_polishing_release(&solver->polishing));
 

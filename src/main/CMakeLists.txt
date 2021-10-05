@@ -10,6 +10,7 @@ set(COMMON_SRC
   sparse/sparse_factorization.c
   sparse/sparse_matrix.c
   sparse/sparse_vec.c
+  tr/lsqr.c
   tr/tr_solver.c
   tr/tr_util.c
   tr/trlib_solver.c
@@ -39,12 +40,12 @@ set(COMMON_SRC
   dyn.c
   feas.c
   func.c
+  gauss_newton.c
   iterate.c
   params.c
   linesearch.c
   log.c
   lsq.c
-  lsqr.c
   options.c
   parametric.c
   penalty.c

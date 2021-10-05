@@ -115,13 +115,13 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
                                         solver->trust_radius,
                                         solver->penalty_parameter));
 
-    if(solver->lsqr_solver)
+    if(solver->gauss_newton_solver)
     {
-      SLEQP_CALL(sleqp_lsqr_solver_set_iterate(solver->lsqr_solver,
-                                               iterate,
-                                               solver->aug_jac,
-                                               solver->trust_radius,
-                                               solver->penalty_parameter));
+      SLEQP_CALL(sleqp_gauss_newton_solver_set_iterate(solver->gauss_newton_solver,
+                                                       iterate,
+                                                       solver->aug_jac,
+                                                       solver->trust_radius,
+                                                       solver->penalty_parameter));
     }
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
@@ -242,13 +242,13 @@ static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
                                         solver->trust_radius,
                                         solver->penalty_parameter));
 
-    if(solver->lsqr_solver)
+    if(solver->gauss_newton_solver)
     {
-      SLEQP_CALL(sleqp_lsqr_solver_set_iterate(solver->lsqr_solver,
-                                               iterate,
-                                               solver->aug_jac,
-                                               solver->trust_radius,
-                                               solver->penalty_parameter));
+      SLEQP_CALL(sleqp_gauss_newton_solver_set_iterate(solver->gauss_newton_solver,
+                                                       iterate,
+                                                       solver->aug_jac,
+                                                       solver->trust_radius,
+                                                       solver->penalty_parameter));
     }
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));

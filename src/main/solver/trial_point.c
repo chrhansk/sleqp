@@ -152,8 +152,8 @@ SLEQP_RETCODE sleqp_solver_compute_trial_point_newton(SleqpSolver* solver,
 
   if(tr_solver == SLEQP_TR_SOLVER_LSQR)
   {
-    SLEQP_CALL(sleqp_lsqr_solver_compute_step(solver->lsqr_solver,
-                                              solver->newton_step));
+    SLEQP_CALL(sleqp_gauss_newton_solver_compute_step(solver->gauss_newton_solver,
+                                                      solver->newton_step));
   }
   else
   // compute Newton step
