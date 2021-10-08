@@ -145,42 +145,26 @@ SLEQP_RETCODE solver_create_problem(SleqpSolver* solver,
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
+  SLEQP_CALL(sleqp_quasi_newton_create_default(&solver->quasi_newton,
+                                               func,
+                                               params,
+                                               options));
+
+  if(solver->quasi_newton)
   {
-    const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_int(options,
-                                                                  SLEQP_OPTION_INT_HESSIAN_EVAL);
+    func = sleqp_quasi_newton_get_func(solver->quasi_newton);
+  }
 
-    if(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
-       hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
-    {
-      SLEQP_CALL(sleqp_bfgs_create(&solver->bfgs_data,
-                                   func,
-                                   params,
-                                   options));
-
-      func = sleqp_bfgs_get_func(solver->bfgs_data);
-    }
-
-    if(hessian_eval == SLEQP_HESSIAN_EVAL_SR1)
-    {
-      SLEQP_CALL(sleqp_sr1_create(&solver->sr1_data,
+  SLEQP_CALL(sleqp_problem_create(&solver->scaled_problem,
                                   func,
                                   params,
-                                  options));
-
-      func = sleqp_sr1_get_func(solver->sr1_data);
-    }
-
-    SLEQP_CALL(sleqp_problem_create(&solver->scaled_problem,
-                                    func,
-                                    params,
-                                    sleqp_problem_var_lb(scaled_problem),
-                                    sleqp_problem_var_ub(scaled_problem),
-                                    sleqp_problem_general_lb(scaled_problem),
-                                    sleqp_problem_general_ub(scaled_problem),
-                                    sleqp_problem_linear_coeffs(scaled_problem),
-                                    sleqp_problem_linear_lb(scaled_problem),
-                                    sleqp_problem_linear_ub(scaled_problem)));
-  }
+                                  sleqp_problem_var_lb(scaled_problem),
+                                  sleqp_problem_var_ub(scaled_problem),
+                                  sleqp_problem_general_lb(scaled_problem),
+                                  sleqp_problem_general_ub(scaled_problem),
+                                  sleqp_problem_linear_coeffs(scaled_problem),
+                                  sleqp_problem_linear_lb(scaled_problem),
+                                  sleqp_problem_linear_ub(scaled_problem)));
 
   const bool enable_preprocesor = sleqp_options_get_bool(solver->options,
                                                          SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR);
@@ -620,8 +604,7 @@ static SLEQP_RETCODE print_warning(SleqpSolver* solver)
 
   if(hessian_check)
   {
-    const bool inexact_hessian = (solver->bfgs_data ||
-                                  solver->sr1_data ||
+    const bool inexact_hessian = (solver->quasi_newton ||
                                   func_type == SLEQP_FUNC_TYPE_LSQ);
 
     if (inexact_hessian)
@@ -864,14 +847,9 @@ SLEQP_RETCODE sleqp_solver_reset(SleqpSolver* solver)
 
   solver->penalty_parameter = 10.;
 
-  if(solver->bfgs_data)
+  if(solver->quasi_newton)
   {
-    SLEQP_CALL(sleqp_bfgs_reset(solver->bfgs_data));
-  }
-
-  if(solver->sr1_data)
-  {
-    SLEQP_CALL(sleqp_sr1_reset(solver->sr1_data));
+    SLEQP_CALL(sleqp_quasi_newton_reset(solver->quasi_newton));
   }
 
   return SLEQP_OKAY;
@@ -1004,9 +982,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_problem_release(&solver->scaled_problem));
 
-  SLEQP_CALL(sleqp_sr1_release(&solver->sr1_data));
-
-  SLEQP_CALL(sleqp_bfgs_release(&solver->bfgs_data));
+  SLEQP_CALL(sleqp_quasi_newton_release(&solver->quasi_newton));
 
   SLEQP_CALL(sleqp_problem_release(&solver->original_problem));
 

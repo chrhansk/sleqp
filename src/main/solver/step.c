@@ -82,20 +82,12 @@ SLEQP_RETCODE sleqp_solver_accept_step(SleqpSolver* solver)
                                 sleqp_iterate_get_cons_val(trial_iterate),
                                 sleqp_iterate_get_cons_jac(trial_iterate)));
 
-  if(solver->bfgs_data)
+  if(solver->quasi_newton)
   {
-    SLEQP_CALL(sleqp_bfgs_push(solver->bfgs_data,
-                               solver->iterate,
-                               solver->trial_iterate,
-                               solver->multipliers));
-  }
-
-  if(solver->sr1_data)
-  {
-    SLEQP_CALL(sleqp_sr1_push(solver->sr1_data,
-                              solver->iterate,
-                              solver->trial_iterate,
-                              solver->multipliers));
+    SLEQP_CALL(sleqp_quasi_newton_push(solver->quasi_newton,
+                                       solver->iterate,
+                                       solver->trial_iterate,
+                                       solver->multipliers));
   }
 
   // perform simple swaps

@@ -3,7 +3,6 @@
 
 #include "pub_solver.h"
 
-#include "bfgs.h"
 #include "callback_handler.h"
 #include "deriv_check.h"
 #include "dual_estimation.h"
@@ -15,10 +14,10 @@
 #include "polish.h"
 #include "problem_scaling.h"
 #include "soc.h"
-#include "sr1.h"
 
 #include "cauchy/cauchy.h"
 #include "lp/lpi.h"
+#include "quasi_newton/quasi_newton.h"
 #include "step/step_rule.h"
 #include "sparse/sparse_factorization.h"
 
@@ -147,13 +146,7 @@ extern "C" {
 
     double feasibility_residuum;
 
-    // BFGS related
-
-    SleqpBFGS* bfgs_data;
-
-    // SR1 related
-
-    SleqpSR1* sr1_data;
+    SleqpQuasiNewton* quasi_newton;
 
     // parameters, adjusted throughout...
 

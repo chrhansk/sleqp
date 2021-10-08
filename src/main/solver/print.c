@@ -202,7 +202,7 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
   SleqpFunc* original_func = sleqp_problem_func(solver->original_problem);
   SleqpFunc* func = sleqp_problem_func(solver->problem);
 
-  const bool with_hessian = !(solver->sr1_data || solver->bfgs_data);
+  const bool with_hessian = !(solver->quasi_newton);
 
   sleqp_log_info(SLEQP_FORMAT_BOLD "%30s: %s" SLEQP_FORMAT_RESET,
                  "Solution status",
@@ -275,25 +275,14 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                   solver->elapsed_seconds));
   }
 
-  if(solver->bfgs_data)
+  if(solver->quasi_newton)
   {
     SLEQP_CALL(solver_print_timer(sleqp_func_get_hess_timer(func),
-                                  "BFGS products",
+                                  "quasi-Newton products",
                                   solver->elapsed_seconds));
 
-    SLEQP_CALL(solver_print_timer(sleqp_bfgs_update_timer(solver->bfgs_data),
-                                  "BFGS updates",
-                                  solver->elapsed_seconds));
-  }
-
-  if(solver->sr1_data)
-  {
-    SLEQP_CALL(solver_print_timer(sleqp_func_get_hess_timer(func),
-                                  "SR1 products",
-                                  solver->elapsed_seconds));
-
-    SLEQP_CALL(solver_print_timer(sleqp_sr1_update_timer(solver->sr1_data),
-                                  "SR1 updates",
+    SLEQP_CALL(solver_print_timer(sleqp_quasi_newton_update_timer(solver->quasi_newton),
+                                  "quasi-Newton updates",
                                   solver->elapsed_seconds));
   }
 

@@ -21,6 +21,9 @@ set(COMMON_SRC
   preprocessor/preprocessor.c
   preprocessor/restore.c
   preprocessor/transform.c
+  quasi_newton/quasi_newton.c
+  quasi_newton/bfgs.c
+  quasi_newton/sr1.c
   solver/callback.c
   solver/cauchy_step.c
   solver/iteration.c
@@ -31,7 +34,6 @@ set(COMMON_SRC
   solver/trial_point.c
   solver/trust_radius.c
   assert.c
-  bfgs.c
   hess_struct.c
   callback_handler.c
   cmp.c
@@ -57,7 +59,6 @@ set(COMMON_SRC
   scale.c
   soc.c
   solver.c
-  sr1.c
   timer.c
   types.c
   util.c
