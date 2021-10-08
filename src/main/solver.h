@@ -157,6 +157,8 @@ extern "C" {
 
     // parameters, adjusted throughout...
 
+    bool locally_infeasible;
+
     double trust_radius;
 
     double lp_trust_radius;
