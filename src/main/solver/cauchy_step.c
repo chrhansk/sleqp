@@ -78,9 +78,37 @@ static double compute_criticality_bound(SleqpSolver* solver)
   return criticality_bound;
 }
 
-static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
-                                                    double* cauchy_merit_value,
-                                                    bool* full_step)
+static SLEQP_RETCODE
+compute_cauchy_direction(SleqpSolver* solver)
+{
+  SleqpIterate* iterate = solver->iterate;
+
+  SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
+                                      iterate,
+                                      solver->lp_trust_radius));
+
+  SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
+                                sleqp_iterate_get_func_grad(iterate),
+                                solver->penalty_parameter,
+                                SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+
+  const double criticality_bound = compute_criticality_bound(solver);
+
+  sleqp_log_debug("Criticality bound: %g", criticality_bound);
+
+  SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
+                                        solver->cauchy_direction));
+
+  SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
+                                          iterate));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+compute_cauchy_step_parametric(SleqpSolver* solver,
+                               double* cauchy_merit_value,
+                               bool* full_step)
 {
   SleqpIterate* iterate = solver->iterate;
 
@@ -89,22 +117,7 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
   SLEQP_NUM_ASSERT_PARAM(eps);
 
   {
-    SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
-                                        iterate,
-                                        solver->lp_trust_radius));
-
-    SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
-                                  sleqp_iterate_get_func_grad(iterate),
-                                  solver->penalty_parameter,
-                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
-
-    const double criticality_bound = compute_criticality_bound(solver);
-
-    sleqp_log_debug("Criticality bound: %g", criticality_bound);
-
-
-    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
-                                            iterate));
+    SLEQP_CALL(compute_cauchy_direction(solver));
 
     SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
                                          iterate));
@@ -125,9 +138,6 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
     }
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
-
-    SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
-                                          solver->cauchy_direction));
   }
 
   {
@@ -196,10 +206,11 @@ static SLEQP_RETCODE compute_cauchy_step_parametric(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
-                                                double* cauchy_merit_value,
-                                                bool quadratic_model,
-                                                bool* full_step)
+static SLEQP_RETCODE
+compute_cauchy_step_simple(SleqpSolver* solver,
+                           double* cauchy_merit_value,
+                           bool quadratic_model,
+                           bool* full_step)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -216,22 +227,7 @@ static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
 
   // compute Cauchy direction / step and dual estimation
   {
-    SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
-                                        iterate,
-                                        solver->lp_trust_radius));
-
-    SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
-                                  sleqp_iterate_get_func_grad(iterate),
-                                  solver->penalty_parameter,
-                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
-
-    const double criticality_bound = compute_criticality_bound(solver);
-
-    sleqp_log_debug("Criticality bound: %g", criticality_bound);
-
-
-    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
-                                            iterate));
+    SLEQP_CALL(compute_cauchy_direction(solver));
 
     SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
                                          iterate));
@@ -252,9 +248,6 @@ static SLEQP_RETCODE compute_cauchy_step_simple(SleqpSolver* solver,
     }
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
-
-    SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
-                                          solver->cauchy_direction));
 
 #if !defined(NDEBUG)
 
