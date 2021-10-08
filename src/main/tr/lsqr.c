@@ -153,7 +153,7 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
-  sleqp_log_debug("Solving a LSQR subproblem with %d rows, %d columns",
+  sleqp_log_debug("Solving a least-squares subproblem with %d rows, %d columns",
                   solver->adjoint_dim,
                   solver->forward_dim);
 

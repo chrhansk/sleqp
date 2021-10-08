@@ -1,6 +1,19 @@
 #ifndef SLEQP_LSQR_H
 #define SLEQP_LSQR_H
 
+/**
+ * @file lsqr.h
+ * @brief Solve a linear least-squares problem.
+ *
+ * Solves \f$ \min_{x} \|Ax - b\|_2^2 \f$ where
+ * \f$ A \f$ is given in terms of forward and
+ * adjoint products using the LSQR iterative
+ * algorithm. Optionally, a trust region can be
+ * specified, in which case the iterations are
+ * aborted as soon as the iterates leave the
+ * trust region.
+ **/
+
 #include "lsqr_types.h"
 #include "params.h"
 
