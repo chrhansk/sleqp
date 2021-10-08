@@ -11,7 +11,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_update_penalty(SleqpProblem* problem,
                                      SleqpIterate* iterate,
                                      SleqpCauchy* cauchy_data,
-                                     double* penalty_parameter);
+                                     double* penalty_parameter,
+                                     bool* locally_infeasible);
 
 #ifdef __cplusplus
 }

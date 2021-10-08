@@ -2,6 +2,7 @@
 
 #include "cmp.h"
 #include "fail.h"
+#include "penalty.h"
 
 static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
                                           SleqpIterate* iterate)
@@ -81,6 +82,7 @@ static double compute_criticality_bound(SleqpSolver* solver)
 static SLEQP_RETCODE
 compute_cauchy_direction(SleqpSolver* solver)
 {
+  SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
   SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
@@ -101,6 +103,30 @@ compute_cauchy_direction(SleqpSolver* solver)
 
   SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
                                           iterate));
+
+  const double original_penalty = solver->penalty_parameter;
+
+  SLEQP_CALL(sleqp_update_penalty(problem,
+                                  iterate,
+                                  solver->cauchy_data,
+                                  &(solver->penalty_parameter),
+                                  &(solver->locally_infeasible)));
+
+  /*
+  if(solver->locally_infeasible)
+  {
+    return SLEQP_OKAY;
+  }
+  */
+
+  if(original_penalty != solver->penalty_parameter)
+  {
+    SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
+                                          solver->cauchy_direction));
+
+    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data,
+                                            iterate));
+  }
 
   return SLEQP_OKAY;
 }

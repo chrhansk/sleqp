@@ -4,7 +4,6 @@
 
 #include "cmp.h"
 #include "fail.h"
-#include "penalty.h"
 
 static
 SLEQP_RETCODE evaluate_at_trial_iterate(SleqpSolver* solver,
@@ -405,18 +404,10 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 
   SLEQP_CALL(sleqp_solver_print_line(solver));
 
-  // update trust radii, penalty parameter
-  {
-    SLEQP_CALL(update_trust_radii(solver,
-                                  reduction_ratio,
-                                  trial_step_norm,
-                                  step_accepted));
-
-    SLEQP_CALL(sleqp_update_penalty(problem,
-                                    iterate,
-                                    solver->cauchy_data,
-                                    &(solver->penalty_parameter)));
-  }
+  SLEQP_CALL(update_trust_radii(solver,
+                                reduction_ratio,
+                                trial_step_norm,
+                                step_accepted));
 
   // update current iterate
 
