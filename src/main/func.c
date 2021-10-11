@@ -269,12 +269,12 @@ SLEQP_RETCODE sleqp_func_set_type(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-int sleqp_func_get_num_variables(SleqpFunc* func)
+int sleqp_func_get_num_variables(const SleqpFunc* func)
 {
   return func->num_variables;
 }
 
-int sleqp_func_get_num_constraints(SleqpFunc* func)
+int sleqp_func_get_num_constraints(const SleqpFunc* func)
 {
   return func->num_constraints;
 }

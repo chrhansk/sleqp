@@ -182,12 +182,12 @@ extern "C" {
   /**
    * Returns the number of variables \f$ n \f$.
    **/
-  SLEQP_EXPORT int sleqp_func_get_num_variables(SleqpFunc* func);
+  SLEQP_EXPORT int sleqp_func_get_num_variables(const SleqpFunc* func);
 
   /**
    * Returns the number of constraints \f$ m \f$.
    **/
-  SLEQP_EXPORT int sleqp_func_get_num_constraints(SleqpFunc* func);
+  SLEQP_EXPORT int sleqp_func_get_num_constraints(const SleqpFunc* func);
 
   /**
    * Sets the callbacks of this function to the specified ones
