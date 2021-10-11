@@ -20,7 +20,7 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_violated_constraint_multipliers(SleqpProblem* problem,
-                                                      SleqpSparseVec* cons_vals,
+                                                      const SleqpSparseVec* cons_vals,
                                                       SleqpSparseVec* multipliers,
                                                       SleqpWorkingSet* working_set);
 
@@ -35,11 +35,22 @@ extern "C" {
                                        const SleqpSparseVec* cons_val,
                                        SleqpSparseVec* violation);
 
+  /**
+   * Computes the residuals of the given constraint values with respect
+   * to the upper / lower bounds of the underlying problem.
+   * The residuals are unsigned (i.e., always non-negative).
+   **/
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_feasibility_residuals(SleqpProblem* problem,
                                             const SleqpSparseVec* cons_val,
                                             SleqpSparseVec* residuals,
                                             SleqpWorkingSet* working_set);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_signed_feasibility_residuals(SleqpProblem* problem,
+                                                   const SleqpSparseVec* cons_val,
+                                                   SleqpSparseVec* residuals,
+                                                   SleqpWorkingSet* working_set);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,

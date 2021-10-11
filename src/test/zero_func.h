@@ -2,6 +2,7 @@
 #define ZERO_FUNC_H
 
 #include "func.h"
+#include "params.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,6 +11,12 @@ extern "C" {
   SLEQP_RETCODE zero_func_create(SleqpFunc** star,
                                  int num_variables,
                                  int num_constraints);
+
+  SLEQP_RETCODE zero_lsq_func_create(SleqpFunc** star,
+                                     SleqpParams* params,
+                                     int num_variables,
+                                     int num_constraints,
+                                     int num_residuals);
 
 #ifdef __cplusplus
 }

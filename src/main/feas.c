@@ -4,13 +4,13 @@
 #include "log.h"
 
 SLEQP_RETCODE sleqp_violated_constraint_multipliers(SleqpProblem* problem,
-                                                    SleqpSparseVec* cons_vals,
+                                                    const SleqpSparseVec* cons_vals,
                                                     SleqpSparseVec* multipliers,
                                                     SleqpWorkingSet* working_set)
 {
-  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
-  SleqpSparseVec* v = cons_vals;
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpSparseVec* v = cons_vals;
 
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
@@ -221,10 +221,12 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_feasibility_residuals(SleqpProblem* problem,
-                                          const SleqpSparseVec* cons_val,
-                                          SleqpSparseVec* residuals,
-                                          SleqpWorkingSet* working_set)
+static SLEQP_RETCODE
+feasibility_residuals(SleqpProblem* problem,
+                      const SleqpSparseVec* cons_val,
+                      SleqpSparseVec* residuals,
+                      SleqpWorkingSet* working_set,
+                      bool signed_residuals)
 {
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
@@ -284,8 +286,19 @@ SLEQP_RETCODE sleqp_feasibility_residuals(SleqpProblem* problem,
     const double upper_residual = SLEQP_MAX(c_val - ub_val, 0.);
     const double lower_residual = SLEQP_MAX(lb_val - c_val, 0.);
 
-    const double residual = SLEQP_MAX(lower_residual,
-                                       upper_residual);
+    assert(upper_residual == 0. || lower_residual == 0.);
+
+    double residual = 0.;
+
+    if(signed_residuals)
+    {
+      residual = (upper_residual != 0.) ? upper_residual : (-lower_residual);
+    }
+    else
+    {
+      residual = SLEQP_MAX(lower_residual,
+                           upper_residual);
+    }
 
     if(residual != 0.)
     {
@@ -296,6 +309,30 @@ SLEQP_RETCODE sleqp_feasibility_residuals(SleqpProblem* problem,
   }
 
   return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_feasibility_residuals(SleqpProblem* problem,
+                                          const SleqpSparseVec* cons_val,
+                                          SleqpSparseVec* residuals,
+                                          SleqpWorkingSet* working_set)
+{
+  return feasibility_residuals(problem,
+                               cons_val,
+                               residuals,
+                               working_set,
+                               false);
+}
+
+SLEQP_RETCODE sleqp_signed_feasibility_residuals(SleqpProblem* problem,
+                                                 const SleqpSparseVec* cons_val,
+                                                 SleqpSparseVec* residuals,
+                                                 SleqpWorkingSet* working_set)
+{
+  return feasibility_residuals(problem,
+                               cons_val,
+                               residuals,
+                               working_set,
+                               true);
 }
 
 SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,

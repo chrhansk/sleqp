@@ -258,10 +258,10 @@ SLEQP_RETCODE compute_cons_rhs(SleqpGaussNewtonSolver* solver)
                                      zero_eps,
                                      solver->linear_cons_val));
 
-  SLEQP_CALL(sleqp_feasibility_residuals(problem,
-                                         solver->linear_cons_val,
-                                         solver->linear_cons_residuals,
-                                         working_set));
+  SLEQP_CALL(sleqp_signed_feasibility_residuals(problem,
+                                                solver->linear_cons_val,
+                                                solver->linear_cons_residuals,
+                                                working_set));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(solver->scaled_cons_residuals));
 
@@ -274,7 +274,7 @@ SLEQP_RETCODE compute_cons_rhs(SleqpGaussNewtonSolver* solver)
                                                 solver->num_removed_cons));
 
   SLEQP_CALL(sleqp_sparse_vector_scale(solver->scaled_cons_residuals,
-                                       solver->penalty_parameter));
+                                       (-1.) * solver->penalty_parameter));
 
   return SLEQP_OKAY;
 }
