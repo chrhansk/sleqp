@@ -23,6 +23,8 @@ SleqpIterate* iterate;
 SleqpAugJac* aug_jac;
 
 SleqpSparseVec* direction;
+SleqpSparseVec* point;
+SleqpSparseVec* initial;
 
 void gauss_newton_setup()
 {
@@ -51,10 +53,18 @@ void gauss_newton_setup()
                                                  problem));
 
   ASSERT_CALL(sleqp_sparse_vector_create_empty(&direction, linear_lsq_num_variables));
+
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(&point, linear_lsq_num_variables));
+
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&initial, linear_lsq_num_variables));
 }
 
 void gauss_newton_teardown()
 {
+  ASSERT_CALL(sleqp_sparse_vector_free(&initial));
+
+  ASSERT_CALL(sleqp_sparse_vector_free(&point));
+
   ASSERT_CALL(sleqp_sparse_vector_free(&direction));
 
   ASSERT_CALL(sleqp_aug_jac_release(&aug_jac));
@@ -70,14 +80,29 @@ void gauss_newton_teardown()
   linear_lsq_teardown();
 }
 
-// LSQR direction should point to optimum
-START_TEST(test_solve)
+void compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
 {
   const double penalty_parameter = 1.;
-  const double trust_radius = 100.;
+  const double trust_radius = 1e6;
 
-  const double eps = sleqp_params_get(linear_lsq_params,
-                                      SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_get(linear_lsq_params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  ASSERT_CALL(sleqp_sparse_vector_copy(initial,
+                                       sleqp_iterate_get_primal(iterate)));
+
+  bool reject;
+  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+
+  ASSERT_CALL(sleqp_problem_set_value(problem,
+                                      initial,
+                                      SLEQP_VALUE_REASON_NONE,
+                                      &reject,
+                                      &func_grad_nnz,
+                                      &cons_val_nnz,
+                                      &cons_jac_nnz));
+
+  assert(!reject);
 
   ASSERT_CALL(sleqp_gauss_newton_solver_set_iterate(gauss_newton_solver,
                                                     iterate,
@@ -88,7 +113,42 @@ START_TEST(test_solve)
   ASSERT_CALL(sleqp_gauss_newton_solver_compute_step(gauss_newton_solver,
                                                      direction));
 
-  ck_assert(sleqp_sparse_vector_eq(direction, linear_lsq_optimal, eps));
+  ASSERT_CALL(sleqp_sparse_vector_add(initial,
+                                      direction,
+                                      zero_eps,
+                                      point));
+}
+
+// LSQR direction should point to optimum
+START_TEST(test_solve)
+{
+  const double eps = sleqp_params_get(linear_lsq_params,
+                                      SLEQP_PARAM_EPS);
+
+  compute_point(linear_lsq_initial, point);
+
+  ck_assert(sleqp_sparse_vector_eq(point, linear_lsq_optimal, eps));
+}
+END_TEST
+
+// LSQR direction should point to optimum
+START_TEST(test_solve_start)
+{
+  const double eps = sleqp_params_get(linear_lsq_params,
+                                      SLEQP_PARAM_EPS);
+
+  {
+    double values[] = {20., 20.};
+
+    ASSERT_CALL(sleqp_sparse_vector_from_raw(initial,
+                                             values,
+                                             linear_lsq_num_variables,
+                                             0.));
+  }
+
+  compute_point(initial, point);
+
+  ck_assert(sleqp_sparse_vector_eq(point, linear_lsq_optimal, eps));
 }
 END_TEST
 
@@ -130,6 +190,8 @@ Suite* gauss_newton_test_suite()
                             gauss_newton_teardown);
 
   tcase_add_test(tc_solve, test_solve);
+
+  tcase_add_test(tc_solve, test_solve_start);
 
   tcase_add_test(tc_solve, test_solve_small);
 
