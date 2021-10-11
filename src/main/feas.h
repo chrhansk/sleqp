@@ -46,6 +46,12 @@ extern "C" {
                                             SleqpSparseVec* residuals,
                                             SleqpWorkingSet* working_set);
 
+  /**
+   * Computes the residuals of the given constraint values with respect
+   * to the upper / lower bounds of the underlying problem.
+   * The residuals are signed, i.e., positive if a constraint value exceeds its
+   * upper bound, and negative if the lower bound exceeds the constraint value.
+   **/
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_signed_feasibility_residuals(SleqpProblem* problem,
                                                    const SleqpSparseVec* cons_val,
