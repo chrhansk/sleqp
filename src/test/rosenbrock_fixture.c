@@ -1,5 +1,8 @@
 #include "rosenbrock_fixture.h"
 
+#include "cmp.h"
+#include "mem.h"
+
 const int rosenbrock_num_variables = 2;
 const int rosenbrock_num_constraints = 0;
 

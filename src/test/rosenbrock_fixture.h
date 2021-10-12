@@ -1,9 +1,7 @@
 #ifndef ROSENBROCK_FIXTURE_H
 #define ROSENBROCK_FIXTURE_H
 
-#include "cmp.h"
 #include "func.h"
-#include "mem.h"
 #include "sparse/sparse_vec.h"
 
 #include "test_common.h"

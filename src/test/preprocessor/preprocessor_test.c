@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include <check.h>
 
+#include "cmp.h"
 #include "options.h"
 #include "problem.h"
+#include "mem.h"
 #include "solver.h"
 #include "working_set.h"
 
