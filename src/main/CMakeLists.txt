@@ -53,6 +53,7 @@ set(COMMON_SRC
   penalty.c
   polish.c
   problem_scaling.c
+  restoration.c
   newton.c
   merit.c
   problem.c

@@ -16,6 +16,7 @@ set(TEST_COMMON_SRC
   log_rosenbrock_fixture.c
   rosenbrock_fixture.c
   rosenbrock_lsq_fixture.c
+  wachbieg_fixture.c
   zero_func.c)
 
 add_library(test_common
@@ -73,6 +74,7 @@ add_unit_test(gauss_newton_test)
 add_unit_test(lsq_test)
 add_unit_test(mem_test)
 add_unit_test(problem_scaling_test)
+add_unit_test(restoration_test)
 add_unit_test(scale_test)
 add_unit_test(second_order_test)
 add_unit_test(unconstrained_cauchy_test)
