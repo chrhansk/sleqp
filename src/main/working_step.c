@@ -417,7 +417,7 @@ SLEQP_RETCODE compute_initial_step(SleqpWorkingStep* step,
 
       // we know that the scaled initial solution
       // has norm equal to norm_ratio * trust_radius
-      step->reduced_trust_radius *= sqrt(1. - norm_ratio * norm_ratio);
+      step->reduced_trust_radius = trust_radius * sqrt(1. - (norm_ratio * norm_ratio));
     }
   }
   else
