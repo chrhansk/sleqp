@@ -135,6 +135,36 @@ static SLEQP_RETCODE adjoint_product(SleqpLSQRSolver* solver,
                                         solver->data);
 }
 
+static SLEQP_RETCODE
+compute_objective(SleqpLSQRSolver* solver,
+                  const SleqpSparseVec* rhs,
+                  const SleqpSparseVec* sol,
+                  double* objective,
+                  double* opt_res)
+{
+  const double zero_eps = sleqp_params_get(solver->params,
+                                           SLEQP_PARAM_ZERO_EPS);
+
+  SLEQP_CALL(forward_product(solver, sol, solver->p));
+
+  SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->p,
+                                            rhs,
+                                            1.,
+                                            -1.,
+                                            zero_eps,
+                                            solver->u));
+
+  SLEQP_CALL(adjoint_product(solver, solver->u, solver->w));
+
+  const double res = sleqp_sparse_vector_norm(solver->u);
+
+  (*objective) = .5 * (res * res);
+
+  (*opt_res) = sleqp_sparse_vector_norm(solver->w);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
                                       const SleqpSparseVec* rhs,
                                       double rel_tol,
@@ -185,6 +215,16 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
   double phib = beta;
   double rhob = alpha;
 
+  {
+    const double res = phib;
+    const double objective = .5 * (res * res);
+    const double opt_res = phib * alpha;
+
+    sleqp_log_debug("Initial objective: %e, residuum: %e",
+                    objective,
+                    opt_res);
+  }
+
   for(iteration = 1; iteration <= forward_dim; ++iteration)
   {
     // Continue bidiagonalization
@@ -233,7 +273,25 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
 
       SLEQP_CALL(sleqp_sparse_vector_copy(t, x));
 
-      sleqp_log_debug("LSQR solver terminated with a boundary solution after %d steps",
+#ifndef NDEBUG
+      {
+        double objective;
+        double opt_res;
+
+        SLEQP_CALL(compute_objective(solver,
+                                     rhs,
+                                     x,
+                                     &objective,
+                                     &opt_res));
+
+        sleqp_log_debug("Iteration %d, objective: %e, residuum: %e",
+                        iteration,
+                        objective,
+                        opt_res);
+      }
+#endif
+
+      sleqp_log_debug("LSQR solver terminated with a boundary solution after %d iterations",
                       iteration);
 
       return SLEQP_OKAY;
@@ -255,7 +313,7 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
 
     const double opt_res = phib * alpha * fabs(c);
 
-    sleqp_log_debug("Iteration %d, objective %e, residuum %e",
+    sleqp_log_debug("Iteration %d, objective: %e, residuum: %e",
                     iteration,
                     objective,
                     opt_res);
