@@ -93,7 +93,7 @@ void newton_teardown()
 START_TEST(newton_wide_step)
 {
   SleqpWorkingStep* working_step;
-  SleqpNewtonSolver* newton_solver;
+  SleqpEQPSolver* newton_solver;
 
   SleqpSparseVec* expected_step;
   SleqpSparseVec* actual_step;
@@ -128,26 +128,26 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_newton_solver_create(&newton_solver,
                                          problem,
-                                         working_step,
                                          params,
-                                         options));
+                                         options,
+                                         working_step));
 
-  ASSERT_CALL(sleqp_newton_set_iterate(newton_solver,
-                                       iterate,
-                                       jacobian,
-                                       trust_radius,
-                                       penalty_parameter));
+  ASSERT_CALL(sleqp_eqp_solver_set_iterate(newton_solver,
+                                           iterate,
+                                           jacobian,
+                                           trust_radius,
+                                           penalty_parameter));
 
   // we use the default (empty) active set for the Newton step,
   // trust region size should be large to ensure that
   // the solution is that of the unrestricted step
-  ASSERT_CALL(sleqp_newton_compute_step(newton_solver,
-                                        sleqp_iterate_get_cons_dual(iterate),
-                                        actual_step));
+  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
+                                            sleqp_iterate_get_cons_dual(iterate),
+                                            actual_step));
 
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
-  ASSERT_CALL(sleqp_newton_solver_release(&newton_solver));
+  ASSERT_CALL(sleqp_eqp_solver_release(&newton_solver));
 
   ASSERT_CALL(sleqp_working_step_release(&working_step));
 
@@ -164,7 +164,7 @@ END_TEST
 START_TEST(newton_small_step)
 {
   SleqpWorkingStep* working_step;
-  SleqpNewtonSolver* newton_solver;
+  SleqpEQPSolver* newton_solver;
 
   SleqpSparseVec* expected_step;
   SleqpSparseVec* actual_step;
@@ -199,26 +199,26 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_newton_solver_create(&newton_solver,
                                          problem,
-                                         working_step,
                                          params,
-                                         options));
+                                         options,
+                                         working_step));
 
-  ASSERT_CALL(sleqp_newton_set_iterate(newton_solver,
-                                       iterate,
-                                       jacobian,
-                                       trust_radius,
-                                       penalty_parameter));
+  ASSERT_CALL(sleqp_eqp_solver_set_iterate(newton_solver,
+                                           iterate,
+                                           jacobian,
+                                           trust_radius,
+                                           penalty_parameter));
 
   // we use the default (empty) active set for the Newton step,
   // trust region size should be so small that
   // the solution is on the boundary of the feasible set
-  ASSERT_CALL(sleqp_newton_compute_step(newton_solver,
-                                        sleqp_iterate_get_cons_dual(iterate),
-                                        actual_step));
+  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
+                                            sleqp_iterate_get_cons_dual(iterate),
+                                            actual_step));
 
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
-  ASSERT_CALL(sleqp_newton_solver_release(&newton_solver));
+  ASSERT_CALL(sleqp_eqp_solver_release(&newton_solver));
 
   ASSERT_CALL(sleqp_working_step_release(&working_step));
 

@@ -106,8 +106,8 @@ static SLEQP_RETCODE steihaug_solver_rayleigh(double* min_rayleigh,
 }
 
 static SLEQP_RETCODE steihaug_solver_solve(SleqpAugJac* jacobian,
-                                           SleqpSparseVec* multipliers,
-                                           SleqpSparseVec* gradient,
+                                           const SleqpSparseVec* multipliers,
+                                           const SleqpSparseVec* gradient,
                                            SleqpSparseVec* newton_step,
                                            double trust_radius,
                                            double* tr_dual,

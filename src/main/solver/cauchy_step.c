@@ -49,8 +49,8 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
                                                 iterate));
   }
 
-  SLEQP_CALL(sleqp_newton_add_violated_multipliers(solver->newton_solver,
-                                                   solver->multipliers));
+  SLEQP_CALL(sleqp_eqp_solver_add_violated_multipliers(solver->eqp_solver,
+                                                       solver->multipliers));
 
   return SLEQP_OKAY;
 }
@@ -148,20 +148,11 @@ compute_cauchy_step_parametric(SleqpSolver* solver,
     SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
                                          iterate));
 
-    SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_solver,
-                                        iterate,
-                                        solver->aug_jac,
-                                        solver->trust_radius,
-                                        solver->penalty_parameter));
-
-    if(solver->gauss_newton_solver)
-    {
-      SLEQP_CALL(sleqp_gauss_newton_solver_set_iterate(solver->gauss_newton_solver,
-                                                       iterate,
-                                                       solver->aug_jac,
-                                                       solver->trust_radius,
-                                                       solver->penalty_parameter));
-    }
+    SLEQP_CALL(sleqp_eqp_solver_set_iterate(solver->eqp_solver,
+                                            iterate,
+                                            solver->aug_jac,
+                                            solver->trust_radius,
+                                            solver->penalty_parameter));
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
   }
@@ -199,11 +190,11 @@ compute_cauchy_step_parametric(SleqpSolver* solver,
                                           solver->penalty_parameter,
                                           solver->trust_radius));
 
-  SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_solver,
-                                      iterate,
-                                      solver->aug_jac,
-                                      solver->trust_radius,
-                                      solver->penalty_parameter));
+  SLEQP_CALL(sleqp_eqp_solver_set_iterate(solver->eqp_solver,
+                                          iterate,
+                                          solver->aug_jac,
+                                          solver->trust_radius,
+                                          solver->penalty_parameter));
 
 #if !defined(NDEBUG)
 
@@ -258,20 +249,11 @@ compute_cauchy_step_simple(SleqpSolver* solver,
     SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
                                          iterate));
 
-    SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_solver,
-                                        iterate,
-                                        solver->aug_jac,
-                                        solver->trust_radius,
-                                        solver->penalty_parameter));
-
-    if(solver->gauss_newton_solver)
-    {
-      SLEQP_CALL(sleqp_gauss_newton_solver_set_iterate(solver->gauss_newton_solver,
-                                                       iterate,
-                                                       solver->aug_jac,
-                                                       solver->trust_radius,
-                                                       solver->penalty_parameter));
-    }
+    SLEQP_CALL(sleqp_eqp_solver_set_iterate(solver->eqp_solver,
+                                            iterate,
+                                            solver->aug_jac,
+                                            solver->trust_radius,
+                                            solver->penalty_parameter));
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
 

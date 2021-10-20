@@ -6,14 +6,14 @@
 #include "callback_handler.h"
 #include "deriv_check.h"
 #include "dual_estimation.h"
+#include "eqp.h"
 #include "linesearch.h"
-#include "gauss_newton.h"
 #include "merit.h"
-#include "newton.h"
 #include "parametric.h"
 #include "polish.h"
 #include "problem_scaling.h"
 #include "soc.h"
+#include "working_step.h"
 
 #include "cauchy/cauchy.h"
 #include "lp/lpi.h"
@@ -85,9 +85,7 @@ extern "C" {
 
     SleqpWorkingStep* working_step;
 
-    SleqpNewtonSolver* newton_solver;
-
-    SleqpGaussNewtonSolver* gauss_newton_solver;
+    SleqpEQPSolver* eqp_solver;
 
     SleqpSparseVec* newton_step;
 

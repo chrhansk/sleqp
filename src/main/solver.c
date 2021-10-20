@@ -9,8 +9,10 @@
 #include "defs.h"
 #include "fail.h"
 #include "feas.h"
+#include "gauss_newton.h"
 #include "iterate.h"
 #include "mem.h"
+#include "newton.h"
 #include "penalty.h"
 #include "scale.h"
 
@@ -432,17 +434,19 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
       return SLEQP_ILLEGAL_ARGUMENT;
     }
 
-    SLEQP_CALL(sleqp_gauss_newton_solver_create(&solver->gauss_newton_solver,
+    SLEQP_CALL(sleqp_gauss_newton_solver_create(&solver->eqp_solver,
                                                 solver->problem,
-                                                solver->working_step,
-                                                solver->params));
+                                                solver->params,
+                                                solver->working_step));
   }
-
-  SLEQP_CALL(sleqp_newton_solver_create(&solver->newton_solver,
-                                        solver->problem,
-                                        solver->working_step,
-                                        params,
-                                        options));
+  else
+  {
+    SLEQP_CALL(sleqp_newton_solver_create(&solver->eqp_solver,
+                                          solver->problem,
+                                          params,
+                                          options,
+                                          solver->working_step));
+  }
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->newton_step,
                                               num_variables));
@@ -907,8 +911,6 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_parametric_solver_release(&solver->parametric_solver));
 
-  SLEQP_CALL(sleqp_gauss_newton_solver_release(&solver->gauss_newton_solver));
-
   SLEQP_CALL(sleqp_polishing_release(&solver->polishing));
 
   SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
@@ -933,7 +935,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->newton_step));
 
-  SLEQP_CALL(sleqp_newton_solver_release(&solver->newton_solver));
+  SLEQP_CALL(sleqp_eqp_solver_release(&solver->eqp_solver));
 
   SLEQP_CALL(sleqp_working_step_release(&solver->working_step));
 

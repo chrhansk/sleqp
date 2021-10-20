@@ -34,8 +34,10 @@ typedef struct {
 
 } Adjoint;
 
-struct SleqpGaussNewtonSolver {
+typedef struct {
   int refcount;
+
+  double time_limit;
 
   SleqpProblem* problem;
   SleqpWorkingStep* working_step;
@@ -76,7 +78,7 @@ struct SleqpGaussNewtonSolver {
 
   Forward forward;
   Adjoint adjoint;
-};
+} GaussNewtonSolver;
 
 static
 SLEQP_RETCODE forward_product(const SleqpSparseVec* direction,
@@ -88,18 +90,21 @@ SLEQP_RETCODE adjoint_product(const SleqpSparseVec* direction,
                               SleqpSparseVec* product,
                               void* data);
 
-SLEQP_RETCODE sleqp_gauss_newton_solver_create(SleqpGaussNewtonSolver** star,
-                                               SleqpProblem* problem,
-                                               SleqpWorkingStep* step,
-                                               SleqpParams* params)
+static SLEQP_RETCODE
+gauss_newton_solver_create(GaussNewtonSolver** star,
+                           SleqpProblem* problem,
+                           SleqpWorkingStep* step,
+                           SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  SleqpGaussNewtonSolver* solver = *star;
+  GaussNewtonSolver* solver = *star;
 
-  *solver = (SleqpGaussNewtonSolver) {0};
+  *solver = (GaussNewtonSolver) {0};
 
   solver->refcount = 1;
+
+  solver->time_limit = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_problem_capture(problem));
   solver->problem = problem;
@@ -199,8 +204,19 @@ SLEQP_RETCODE sleqp_gauss_newton_solver_create(SleqpGaussNewtonSolver** star,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_lsq_rhs(SleqpGaussNewtonSolver* solver)
+static SLEQP_RETCODE
+gauss_newton_set_time_limit(double time_limit,
+                            void* data)
+{
+  GaussNewtonSolver* solver = (GaussNewtonSolver*) data;
+
+  solver->time_limit = time_limit;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+compute_lsq_rhs(GaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = sleqp_problem_func(problem);
@@ -227,8 +243,8 @@ SLEQP_RETCODE compute_lsq_rhs(SleqpGaussNewtonSolver* solver)
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_cons_rhs(SleqpGaussNewtonSolver* solver)
+static SLEQP_RETCODE
+compute_cons_rhs(GaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -279,8 +295,8 @@ SLEQP_RETCODE compute_cons_rhs(SleqpGaussNewtonSolver* solver)
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_cons_matrix(SleqpGaussNewtonSolver* solver)
+static SLEQP_RETCODE
+compute_cons_matrix(GaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -306,8 +322,8 @@ SLEQP_RETCODE compute_cons_matrix(SleqpGaussNewtonSolver* solver)
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_removed_cons(SleqpGaussNewtonSolver* solver)
+static SLEQP_RETCODE
+compute_removed_cons(GaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   const int num_constraints = sleqp_problem_num_constraints(problem);
@@ -330,11 +346,13 @@ SLEQP_RETCODE compute_removed_cons(SleqpGaussNewtonSolver* solver)
     }
   }
 
+  assert(k == violated_cons_mult->nnz);
+
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE resize_to_dimensions(SleqpGaussNewtonSolver* solver)
+static SLEQP_RETCODE
+resize_to_dimensions(GaussNewtonSolver* solver)
 {
   SLEQP_CALL(sleqp_sparse_vector_resize(solver->adjoint.cons_direction,
                                         solver->num_violated_cons));
@@ -352,8 +370,8 @@ SLEQP_RETCODE resize_to_dimensions(SleqpGaussNewtonSolver* solver)
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE set_adjoint_dimension(SleqpGaussNewtonSolver* solver)
+static SLEQP_RETCODE
+set_adjoint_dimension(GaussNewtonSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = sleqp_problem_func(problem);
@@ -369,8 +387,8 @@ SLEQP_RETCODE set_adjoint_dimension(SleqpGaussNewtonSolver* solver)
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_rhs(SleqpGaussNewtonSolver* solver)
+static SLEQP_RETCODE
+compute_rhs(GaussNewtonSolver* solver)
 {
   SLEQP_CALL(compute_lsq_rhs(solver));
 
@@ -385,12 +403,15 @@ SLEQP_RETCODE compute_rhs(SleqpGaussNewtonSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_gauss_newton_solver_set_iterate(SleqpGaussNewtonSolver* solver,
-                                                    SleqpIterate* iterate,
-                                                    SleqpAugJac* aug_jac,
-                                                    double trust_radius,
-                                                    double penalty_parameter)
+static SLEQP_RETCODE
+gauss_newton_solver_set_iterate(SleqpIterate* iterate,
+                                SleqpAugJac* aug_jac,
+                                double trust_radius,
+                                double penalty_parameter,
+                                void* data)
 {
+  GaussNewtonSolver* solver = (GaussNewtonSolver*) data;
+
   SLEQP_CALL(sleqp_working_step_set_iterate(solver->working_step,
                                             iterate,
                                             aug_jac,
@@ -426,12 +447,12 @@ SLEQP_RETCODE sleqp_gauss_newton_solver_set_iterate(SleqpGaussNewtonSolver* solv
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE forward_product(const SleqpSparseVec* direction,
-                              SleqpSparseVec* product,
-                              void* data)
+static SLEQP_RETCODE
+forward_product(const SleqpSparseVec* direction,
+                SleqpSparseVec* product,
+                void* data)
 {
-  SleqpGaussNewtonSolver* solver = (SleqpGaussNewtonSolver*) data;
+  GaussNewtonSolver* solver = (GaussNewtonSolver*) data;
 
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = sleqp_problem_func(problem);
@@ -467,12 +488,12 @@ SLEQP_RETCODE forward_product(const SleqpSparseVec* direction,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE adjoint_product(const SleqpSparseVec* direction,
-                              SleqpSparseVec* product,
-                              void* data)
+static SLEQP_RETCODE
+adjoint_product(const SleqpSparseVec* direction,
+                SleqpSparseVec* product,
+                void* data)
 {
-  SleqpGaussNewtonSolver* solver = (SleqpGaussNewtonSolver*) data;
+  GaussNewtonSolver* solver = (GaussNewtonSolver*) data;
 
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func = sleqp_problem_func(problem);
@@ -537,13 +558,17 @@ SLEQP_RETCODE adjoint_product(const SleqpSparseVec* direction,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE solve_lsqr(SleqpGaussNewtonSolver* solver)
+static SLEQP_RETCODE
+solve_lsqr(GaussNewtonSolver* solver)
 {
   const double stat_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_STATIONARITY_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
+
+  sleqp_log_debug("Computing a Gauss-Newton step with %d residuals, %d violated constraints",
+                  solver->adjoint_dim - solver->num_violated_cons,
+                  solver->num_violated_cons);
 
   SLEQP_CALL(sleqp_lsqr_solver_solve(solver->lsqr_solver,
                                      solver->rhs,
@@ -554,9 +579,13 @@ SLEQP_RETCODE solve_lsqr(SleqpGaussNewtonSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_gauss_newton_solver_compute_step(SleqpGaussNewtonSolver* solver,
-                                                     SleqpSparseVec* step)
+static SLEQP_RETCODE
+gauss_newton_solver_compute_step(const SleqpSparseVec* multipliers,
+                                 SleqpSparseVec* step,
+                                 void* data)
 {
+  GaussNewtonSolver* solver = (GaussNewtonSolver*) data;
+
   const double zero_eps = sleqp_params_get(solver->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
@@ -596,10 +625,25 @@ SLEQP_RETCODE sleqp_gauss_newton_solver_compute_step(SleqpGaussNewtonSolver* sol
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE lsqr_solver_free(SleqpGaussNewtonSolver** star)
+static SLEQP_RETCODE
+gauss_newton_current_rayleigh(double* min_rayleigh,
+                              double* max_rayleigh,
+                              void* data)
 {
-  SleqpGaussNewtonSolver* solver = *star;
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+gauss_newton_add_violated_multipliers(SleqpSparseVec* multipliers,
+                                      void* data)
+{
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+gauss_newton_solver_free(void* data)
+{
+  GaussNewtonSolver* solver = (GaussNewtonSolver*) data;
 
   if(!solver)
   {
@@ -652,33 +696,35 @@ SLEQP_RETCODE lsqr_solver_free(SleqpGaussNewtonSolver** star)
   SLEQP_CALL(sleqp_working_step_release(&solver->working_step));
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
 
-  sleqp_free(star);
+  sleqp_free(&solver);
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_gauss_newton_solver_capture(SleqpGaussNewtonSolver* solver)
+SLEQP_RETCODE sleqp_gauss_newton_solver_create(SleqpEQPSolver** star,
+                                               SleqpProblem* problem,
+                                               SleqpParams* params,
+                                               SleqpWorkingStep* step)
 {
-  ++solver->refcount;
+  SleqpEQPCallbacks callbacks = {
+    .set_iterate              = gauss_newton_solver_set_iterate,
+    .set_time_limit           = gauss_newton_set_time_limit,
+    .add_violated_multipliers = gauss_newton_add_violated_multipliers,
+    .compute_step             = gauss_newton_solver_compute_step,
+    .current_rayleigh         = gauss_newton_current_rayleigh,
+    .free                     = gauss_newton_solver_free
+  };
 
-  return SLEQP_OKAY;
-}
+  GaussNewtonSolver* solver;
 
-SLEQP_RETCODE sleqp_gauss_newton_solver_release(SleqpGaussNewtonSolver** star)
-{
-  SleqpGaussNewtonSolver* solver = *star;
+  SLEQP_CALL(gauss_newton_solver_create(&solver,
+                                        problem,
+                                        step,
+                                        params));
 
-  if(!solver)
-  {
-    return SLEQP_OKAY;
-  }
-
-  if(--solver->refcount == 0)
-  {
-    SLEQP_CALL(lsqr_solver_free(star));
-  }
-
-  *star = NULL;
+  SLEQP_CALL(sleqp_eqp_solver_create(star,
+                                     &callbacks,
+                                     (void*) solver));
 
   return SLEQP_OKAY;
 }

@@ -11,8 +11,8 @@ extern "C" {
 #endif
 
   typedef SLEQP_RETCODE (*SLEQP_TR_SOLVER_SOLVE)(SleqpAugJac* jacobian,
-                                                 SleqpSparseVec* multipliers,
-                                                 SleqpSparseVec* gradient,
+                                                 const SleqpSparseVec* multipliers,
+                                                 const SleqpSparseVec* gradient,
                                                  SleqpSparseVec* newton_step,
                                                  double trust_radius,
                                                  double* tr_dual,

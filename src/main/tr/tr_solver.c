@@ -52,8 +52,8 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
 
 SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* solver,
                                     SleqpAugJac* jacobian,
-                                    SleqpSparseVec* multipliers,
-                                    SleqpSparseVec* gradient,
+                                    const SleqpSparseVec* multipliers,
+                                    const SleqpSparseVec* gradient,
                                     SleqpSparseVec* newton_step,
                                     double trust_radius,
                                     double* tr_dual)

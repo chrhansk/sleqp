@@ -40,6 +40,7 @@ set(COMMON_SRC
   deriv_check.c
   dual_estimation.c
   dyn.c
+  eqp.c
   feas.c
   func.c
   gauss_newton.c

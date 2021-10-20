@@ -18,7 +18,7 @@ SleqpProblem* problem;
 
 SleqpWorkingStep* working_step;
 
-SleqpGaussNewtonSolver* gauss_newton_solver;
+SleqpEQPSolver* gauss_newton_solver;
 
 SleqpIterate* iterate;
 
@@ -50,8 +50,8 @@ void unconstrained_setup()
 
   ASSERT_CALL(sleqp_gauss_newton_solver_create(&gauss_newton_solver,
                                                problem,
-                                               working_step,
-                                               linear_lsq_params));
+                                               linear_lsq_params,
+                                               working_step));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linear_lsq_initial));
 
@@ -77,7 +77,7 @@ void unconstrained_teardown()
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
-  ASSERT_CALL(sleqp_gauss_newton_solver_release(&gauss_newton_solver));
+  ASSERT_CALL(sleqp_eqp_solver_release(&gauss_newton_solver));
 
   ASSERT_CALL(sleqp_working_step_release(&working_step));
 
@@ -106,14 +106,15 @@ void compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
 
   assert(!reject);
 
-  ASSERT_CALL(sleqp_gauss_newton_solver_set_iterate(gauss_newton_solver,
-                                                    iterate,
-                                                    aug_jac,
-                                                    trust_radius,
-                                                    penalty_parameter));
+  ASSERT_CALL(sleqp_eqp_solver_set_iterate(gauss_newton_solver,
+                                           iterate,
+                                           aug_jac,
+                                           trust_radius,
+                                           penalty_parameter));
 
-  ASSERT_CALL(sleqp_gauss_newton_solver_compute_step(gauss_newton_solver,
-                                                     direction));
+  ASSERT_CALL(sleqp_eqp_solver_compute_step(gauss_newton_solver,
+                                            NULL,
+                                            direction));
 
   ASSERT_CALL(sleqp_sparse_vector_add(initial,
                                       direction,
@@ -184,14 +185,15 @@ START_TEST(test_unconstrained_small)
   const double eps = sleqp_params_get(linear_lsq_params,
                                       SLEQP_PARAM_EPS);
 
-  ASSERT_CALL(sleqp_gauss_newton_solver_set_iterate(gauss_newton_solver,
-                                                    iterate,
-                                                    aug_jac,
-                                                    trust_radius,
-                                                    penalty_parameter));
+  ASSERT_CALL(sleqp_eqp_solver_set_iterate(gauss_newton_solver,
+                                           iterate,
+                                           aug_jac,
+                                           trust_radius,
+                                           penalty_parameter));
 
-  ASSERT_CALL(sleqp_gauss_newton_solver_compute_step(gauss_newton_solver,
-                                                     direction));
+  ASSERT_CALL(sleqp_eqp_solver_compute_step(gauss_newton_solver,
+                                            NULL,
+                                            direction));
 
   ck_assert(sleqp_is_eq(sleqp_sparse_vector_norm(direction),
                         trust_radius,
@@ -231,8 +233,8 @@ void constrained_setup()
 
   ASSERT_CALL(sleqp_gauss_newton_solver_create(&gauss_newton_solver,
                                                problem,
-                                               working_step,
-                                               linear_lsq_params));
+                                               linear_lsq_params,
+                                               working_step));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linear_lsq_initial));
 
@@ -258,7 +260,7 @@ void constrained_teardown()
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
-  ASSERT_CALL(sleqp_gauss_newton_solver_release(&gauss_newton_solver));
+  ASSERT_CALL(sleqp_eqp_solver_release(&gauss_newton_solver));
 
   ASSERT_CALL(sleqp_working_step_release(&working_step));
 

@@ -19,7 +19,7 @@
 #include "tr/trlib_solver.h"
 #include "tr/steihaug_solver.h"
 
-struct SleqpNewtonSolver
+typedef struct
 {
   int refcount;
   SleqpProblem* problem;
@@ -46,22 +46,23 @@ struct SleqpNewtonSolver
   SleqpTRSolver* tr_solver;
 
   SleqpTimer* timer;
-};
+} NewtonSolver;
 
-SLEQP_RETCODE sleqp_newton_solver_create(SleqpNewtonSolver** star,
-                                         SleqpProblem* problem,
-                                         SleqpWorkingStep* step,
-                                         SleqpParams* params,
-                                         SleqpOptions* options)
+static SLEQP_RETCODE
+newton_solver_create(NewtonSolver** star,
+                     SleqpProblem* problem,
+                     SleqpWorkingStep* step,
+                     SleqpParams* params,
+                     SleqpOptions* options)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpNewtonSolver* solver = *star;
+  NewtonSolver* solver = *star;
 
-  *solver = (SleqpNewtonSolver) {0};
+  *solver = (NewtonSolver) {0};
 
   solver->refcount = 1;
 
@@ -136,24 +137,44 @@ SLEQP_RETCODE sleqp_newton_solver_create(SleqpNewtonSolver** star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonSolver* solver,
-                                          double time_limit)
+static SLEQP_RETCODE
+newton_solver_current_rayleigh(double* min_rayleigh,
+                               double* max_rayleigh,
+                               void* data)
 {
+  NewtonSolver* solver = (NewtonSolver*) data;
+
+  SLEQP_CALL(sleqp_tr_solver_current_rayleigh(solver->tr_solver,
+                                              min_rayleigh,
+                                              max_rayleigh));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+newton_solver_set_time_limit(double time_limit,
+                             void* data)
+{
+  NewtonSolver* solver = (NewtonSolver*) data;
+
   return sleqp_tr_solver_set_time_limit(solver->tr_solver,
                                         time_limit);
 }
 
-SleqpTimer* sleqp_newton_get_timer(SleqpNewtonSolver* solver)
+SleqpTimer* sleqp_newton_get_timer(NewtonSolver* solver)
 {
   return solver->timer;
 }
 
-SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonSolver* solver,
-                                       SleqpIterate* iterate,
-                                       SleqpAugJac* jacobian,
-                                       double trust_radius,
-                                       double penalty_parameter)
+static SLEQP_RETCODE
+newton_solver_set_iterate(SleqpIterate* iterate,
+                          SleqpAugJac* jacobian,
+                          double trust_radius,
+                          double penalty_parameter,
+                          void* data)
 {
+  NewtonSolver* solver = (NewtonSolver*) data;
+
   solver->penalty_parameter = penalty_parameter;
 
   {
@@ -180,9 +201,12 @@ SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonSolver* solver,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_add_violated_multipliers(SleqpNewtonSolver* solver,
-                                                    SleqpSparseVec* multipliers)
+static SLEQP_RETCODE
+newton_solver_add_violated_multipliers(SleqpSparseVec* multipliers,
+                                       void* data)
 {
+  NewtonSolver* solver = (NewtonSolver*) data;
+
   assert(solver->iterate);
 
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(solver->iterate);
@@ -203,7 +227,7 @@ SLEQP_RETCODE sleqp_newton_add_violated_multipliers(SleqpNewtonSolver* solver,
 }
 
 static
-SLEQP_RETCODE projection_residuum(SleqpNewtonSolver* solver,
+SLEQP_RETCODE projection_residuum(NewtonSolver* solver,
                                   SleqpSparseVec* tr_step,
                                   double* residuum)
 {
@@ -232,13 +256,13 @@ SLEQP_RETCODE projection_residuum(SleqpNewtonSolver* solver,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE stationarity_residuum(SleqpNewtonSolver* solver,
-                                    const SleqpSparseVec* multipliers,
-                                    const SleqpSparseVec* gradient,
-                                    SleqpSparseVec* tr_step,
-                                    double tr_dual,
-                                    double* residuum)
+static SLEQP_RETCODE
+stationarity_residuum(NewtonSolver* solver,
+                      const SleqpSparseVec* multipliers,
+                      const SleqpSparseVec* gradient,
+                      SleqpSparseVec* tr_step,
+                      double tr_dual,
+                      double* residuum)
 {
   SleqpProblem* problem = solver->problem;
 
@@ -279,13 +303,13 @@ SLEQP_RETCODE stationarity_residuum(SleqpNewtonSolver* solver,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE print_residuals(SleqpNewtonSolver* solver,
-                              const SleqpSparseVec* multipliers,
-                              const SleqpSparseVec* gradient,
-                              SleqpSparseVec* tr_step,
-                              double trust_radius,
-                              double tr_dual)
+static SLEQP_RETCODE
+print_residuals(NewtonSolver* solver,
+                const SleqpSparseVec* multipliers,
+                const SleqpSparseVec* gradient,
+                SleqpSparseVec* tr_step,
+                double trust_radius,
+                double tr_dual)
 {
   const double step_norm = sleqp_sparse_vector_norm(tr_step);
   const double radius_res = SLEQP_MAX(step_norm - trust_radius, 0.);
@@ -320,7 +344,8 @@ SLEQP_RETCODE print_residuals(SleqpNewtonSolver* solver,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE check_spectrum(SleqpNewtonSolver* solver)
+static SLEQP_RETCODE
+check_spectrum(NewtonSolver* solver)
 {
   SleqpParams* params = solver->params;
 
@@ -331,9 +356,9 @@ static SLEQP_RETCODE check_spectrum(SleqpNewtonSolver* solver)
 
   double min_rayleigh = 0., max_rayleigh = 0.;
 
-  SLEQP_CALL(sleqp_newton_current_rayleigh(solver,
-                                           &min_rayleigh,
-                                           &max_rayleigh));
+  SLEQP_CALL(newton_solver_current_rayleigh(&min_rayleigh,
+                                            &max_rayleigh,
+                                            solver));
 
   assert(min_rayleigh <= max_rayleigh);
 
@@ -351,9 +376,9 @@ static SLEQP_RETCODE check_spectrum(SleqpNewtonSolver* solver)
 // compute the EQP gradient. Given as the sum of the
 // EQP Hessian with the initial solution, the objective
 // function gradient and the violated multipliers
-static
-SLEQP_RETCODE compute_gradient(SleqpNewtonSolver* solver,
-                               SleqpSparseVec* multipliers)
+static SLEQP_RETCODE
+compute_gradient(NewtonSolver* solver,
+                 const SleqpSparseVec* multipliers)
 {
   assert(solver->iterate);
 
@@ -400,10 +425,11 @@ SLEQP_RETCODE compute_gradient(SleqpNewtonSolver* solver,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_objective(SleqpNewtonSolver* solver,
-                                     const SleqpSparseVec* multipliers,
-                                     const SleqpSparseVec* direction,
-                                     double* objective)
+static SLEQP_RETCODE
+newton_objective(NewtonSolver* solver,
+                 const SleqpSparseVec* multipliers,
+                 const SleqpSparseVec* direction,
+                 double* objective)
 {
   assert(solver->iterate);
 
@@ -439,26 +465,29 @@ SLEQP_RETCODE sleqp_newton_objective(SleqpNewtonSolver* solver,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE print_objective(SleqpNewtonSolver* solver,
-                              SleqpSparseVec* multipliers,
-                              SleqpSparseVec* newton_step)
+static SLEQP_RETCODE
+print_objective(NewtonSolver* solver,
+                const SleqpSparseVec* multipliers,
+                SleqpSparseVec* newton_step)
 {
   double objective;
 
-  SLEQP_CALL(sleqp_newton_objective(solver,
-                                    multipliers,
-                                    newton_step,
-                                    &objective));
+  SLEQP_CALL(newton_objective(solver,
+                              multipliers,
+                              newton_step,
+                              &objective));
 
   sleqp_log_debug("Newton objective: %g", objective);
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonSolver* solver,
-                                        SleqpSparseVec* multipliers,
-                                        SleqpSparseVec* newton_step)
+static SLEQP_RETCODE
+newton_solver_compute_step(const SleqpSparseVec* multipliers,
+                           SleqpSparseVec* newton_step,
+                           void* data)
 {
+  NewtonSolver* solver = (NewtonSolver*) data;
   assert(solver->iterate);
 
   SleqpProblem* problem = solver->problem;
@@ -566,21 +595,10 @@ SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonSolver* solver,
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_newton_current_rayleigh(SleqpNewtonSolver* solver,
-                                            double* min_rayleigh,
-                                            double* max_rayleigh)
+static SLEQP_RETCODE
+newton_solver_free(void* data)
 {
-  SLEQP_CALL(sleqp_tr_solver_current_rayleigh(solver->tr_solver,
-                                              min_rayleigh,
-                                              max_rayleigh));
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE newton_data_free(SleqpNewtonSolver** star)
-{
-  SleqpNewtonSolver* solver = *star;
+  NewtonSolver* solver = (NewtonSolver*) data;
 
   if(!solver)
   {
@@ -612,33 +630,37 @@ static SLEQP_RETCODE newton_data_free(SleqpNewtonSolver** star)
 
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
 
-  sleqp_free(star);
+  sleqp_free(&solver);
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_solver_capture(SleqpNewtonSolver* data)
+SLEQP_RETCODE sleqp_newton_solver_create(SleqpEQPSolver** star,
+                                         SleqpProblem* problem,
+                                         SleqpParams* params,
+                                         SleqpOptions* options,
+                                         SleqpWorkingStep* step)
 {
-  ++data->refcount;
+  SleqpEQPCallbacks callbacks = {
+    .set_iterate              = newton_solver_set_iterate,
+    .set_time_limit           = newton_solver_set_time_limit,
+    .add_violated_multipliers = newton_solver_add_violated_multipliers,
+    .compute_step             = newton_solver_compute_step,
+    .current_rayleigh         = newton_solver_current_rayleigh,
+    .free                     = newton_solver_free
+  };
 
-  return SLEQP_OKAY;
-}
+  NewtonSolver* solver;
 
-SLEQP_RETCODE sleqp_newton_solver_release(SleqpNewtonSolver** star)
-{
-  SleqpNewtonSolver* data = *star;
+  SLEQP_CALL(newton_solver_create(&solver,
+                                  problem,
+                                  step,
+                                  params,
+                                  options));
 
-  if(!data)
-  {
-    return SLEQP_OKAY;
-  }
-
-  if(--data->refcount == 0)
-  {
-    SLEQP_CALL(newton_data_free(star));
-  }
-
-  *star = NULL;
+  SLEQP_CALL(sleqp_eqp_solver_create(star,
+                                     &callbacks,
+                                     (void*) solver));
 
   return SLEQP_OKAY;
 }

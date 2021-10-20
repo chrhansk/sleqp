@@ -301,7 +301,7 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                   solver->elapsed_seconds));
   }
 
-  SLEQP_CALL(solver_print_timer(sleqp_newton_get_timer(solver->newton_solver),
+  SLEQP_CALL(solver_print_timer(sleqp_eqp_solver_get_timer(solver->eqp_solver),
                                 "Solved EQPs",
                                 solver->elapsed_seconds));
 

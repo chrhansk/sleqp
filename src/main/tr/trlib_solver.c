@@ -185,9 +185,9 @@ static SLEQP_RETCODE trlib_get_status_string(int value,
 
 static SLEQP_RETCODE check_optimality(SolverData* data,
                                       SleqpAugJac* jacobian,
-                                      SleqpSparseVec* multipliers,
-                                      SleqpSparseVec* gradient,
-                                      SleqpSparseVec* newton_step,
+                                      const SleqpSparseVec* multipliers,
+                                      const SleqpSparseVec* gradient,
+                                      const SleqpSparseVec* newton_step,
                                       bool bdry_sol,
                                       bool* is_optimal)
 {
@@ -257,8 +257,8 @@ static SLEQP_RETCODE check_optimality(SolverData* data,
 
 static SLEQP_RETCODE trlib_loop(SolverData* data,
                                 SleqpAugJac* jacobian,
-                                SleqpSparseVec* multipliers,
-                                SleqpSparseVec* gradient,
+                                const SleqpSparseVec* multipliers,
+                                const SleqpSparseVec* gradient,
                                 double trust_radius,
                                 double time_limit,
                                 trlib_int_t* trlib_ret)
@@ -712,8 +712,8 @@ static SLEQP_RETCODE trlib_rayleigh(double* min_rayleigh,
 }
 
 static SLEQP_RETCODE trlib_solve(SleqpAugJac* jacobian,
-                                 SleqpSparseVec* multipliers,
-                                 SleqpSparseVec* gradient,
+                                 const SleqpSparseVec* multipliers,
+                                 const SleqpSparseVec* gradient,
                                  SleqpSparseVec* newton_step,
                                  double trust_radius,
                                  double* tr_dual,
