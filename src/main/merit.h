@@ -16,12 +16,12 @@ extern "C" {
 #include "params.h"
 
 
-  typedef struct SleqpMeritData SleqpMeritData;
+  typedef struct SleqpMeritData SleqpMerit;
 
   SLEQP_NODISCARD SLEQP_RETCODE
-  sleqp_merit_data_create(SleqpMeritData** star,
-                          SleqpProblem* problem,
-                          SleqpParams* params);
+  sleqp_merit_create(SleqpMerit** star,
+                     SleqpProblem* problem,
+                     SleqpParams* params);
 
   /**
    * Computes the exact merit value at the given
@@ -33,14 +33,14 @@ extern "C" {
    *              + v \left(\sum_{i=1}^{m} \max(l_i - c_i(x), 0) \right)
    * \f]
    *
-   * @param[in]  merit_data        Merit data
+   * @param[in]  merit             Merit data
    * @param[in]  iterate           The current iterate
    * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
    * @param[out] merit_value       The exact merit value
    *
    **/
   SLEQP_NODISCARD SLEQP_RETCODE
-  sleqp_merit_func(SleqpMeritData* merit_data,
+  sleqp_merit_func(SleqpMerit* merit,
                    SleqpIterate* iterate,
                    double penalty_parameter,
                    double* merit_value);
@@ -57,7 +57,7 @@ extern "C" {
    * \f]
    *
    *
-   * @param[in]  merit_data        Merit data
+   * @param[in]  merit             Merit data
    * @param[in]  iterate           The current iterate \f$ overline{x} \f$
    * @param[in]  direction         The direction \f$ d \f$
    * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
@@ -65,7 +65,7 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD SLEQP_RETCODE
-  sleqp_merit_linear(SleqpMeritData* merit_data,
+  sleqp_merit_linear(SleqpMerit* merit,
                      SleqpIterate* iterate,
                      const SleqpSparseVec* direction,
                      double penalty_parameter,
@@ -82,7 +82,7 @@ extern "C" {
    *
    * The computation involves the computation of one Hessian product of the underlying function
    *
-   * @param[in]  merit_data        Merit data
+   * @param[in]  merit             Merit data
    * @param[in]  iterate           The current iterate \f$ overline{x} \f$
    * @param[in]  direction         The direction \f$ d \f$
    * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
@@ -90,7 +90,7 @@ extern "C" {
    *
    **/
   SLEQP_NODISCARD SLEQP_RETCODE
-  sleqp_merit_quadratic(SleqpMeritData* merit_data,
+  sleqp_merit_quadratic(SleqpMerit* merit,
                         SleqpIterate* iterate,
                         const double* func_dual,
                         const SleqpSparseVec* direction,
@@ -99,10 +99,10 @@ extern "C" {
                         double* merit_value);
 
   SLEQP_NODISCARD SLEQP_RETCODE
-  sleqp_merit_data_capture(SleqpMeritData* merit_data);
+  sleqp_merit_capture(SleqpMerit* merit);
 
   SLEQP_NODISCARD SLEQP_RETCODE
-  sleqp_merit_data_release(SleqpMeritData** star);
+  sleqp_merit_release(SleqpMerit** star);
 
 
 #ifdef __cplusplus

@@ -37,7 +37,7 @@ struct SleqpLineSearchData
 
   SleqpProblem* problem;
   SleqpParams* params;
-  SleqpMeritData* merit_data;
+  SleqpMerit* merit;
 
   SleqpIterate* iterate;
   double penalty_parameter;
@@ -72,7 +72,7 @@ struct SleqpLineSearchData
 SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
                                       SleqpProblem* problem,
                                       SleqpParams* params,
-                                      SleqpMeritData* merit_data)
+                                      SleqpMerit* merit)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -92,9 +92,9 @@ SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
   SLEQP_CALL(sleqp_params_capture(params));
   linesearch->params = params;
 
-  SLEQP_CALL(sleqp_merit_data_capture(merit_data));
+  SLEQP_CALL(sleqp_merit_capture(merit));
 
-  linesearch->merit_data = merit_data;
+  linesearch->merit = merit;
 
   SLEQP_CALL(sleqp_alloc_array(&linesearch->prod_cache,
                                num_constraints));
@@ -161,7 +161,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                            double* quadratic_merit_value)
 {
   SleqpProblem* problem = linesearch->problem;
-  SleqpMeritData* merit_data = linesearch->merit_data;
+  SleqpMerit* merit_data = linesearch->merit;
 
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
@@ -386,7 +386,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
                                           double* trial_quadratic_merit_value)
 {
   SleqpProblem* problem = linesearch->problem;
-  SleqpMeritData* merit_data = linesearch->merit_data;
+  SleqpMerit* merit_data = linesearch->merit;
   SleqpIterate* iterate = linesearch->iterate;
   const double penalty_parameter = linesearch->penalty_parameter;
 
@@ -1035,7 +1035,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
                                               zero_eps,
                                               linesearch->test_direction));
 
-    SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit_data,
+    SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit,
                                      iterate,
                                      &one,
                                      linesearch->test_direction,
@@ -1095,7 +1095,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
                                                   zero_eps,
                                                   linesearch->test_direction));
 
-        SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit_data,
+        SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit,
                                          iterate,
                                          &one,
                                          linesearch->test_direction,
@@ -1138,7 +1138,7 @@ SLEQP_RETCODE sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
 
     double actual_quadratic_merit;
 
-    SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit_data,
+    SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit,
                                      iterate,
                                      &one,
                                      trial_step,
@@ -1182,7 +1182,7 @@ static SLEQP_RETCODE linesearch_free(SleqpLineSearchData** star)
   SLEQP_CALL(sleqp_sparse_vector_free(&linesearch->cauchy_point));
   sleqp_free(&linesearch->prod_cache);
 
-  SLEQP_CALL(sleqp_merit_data_release(&linesearch->merit_data));
+  SLEQP_CALL(sleqp_merit_release(&linesearch->merit));
 
   SLEQP_CALL(sleqp_iterate_release(&linesearch->iterate));
 

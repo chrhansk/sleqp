@@ -464,14 +464,14 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->estimation_residuals,
                                               num_variables));
 
-  SLEQP_CALL(sleqp_merit_data_create(&solver->merit_data,
-                                     solver->problem,
-                                     params));
+  SLEQP_CALL(sleqp_merit_create(&solver->merit,
+                                solver->problem,
+                                params));
 
   SLEQP_CALL(sleqp_linesearch_create(&solver->linesearch,
                                      solver->problem,
                                      params,
-                                     solver->merit_data));
+                                     solver->merit));
 
   SLEQP_CALL(sleqp_polishing_create(&solver->polishing,
                                     solver->problem,
@@ -486,7 +486,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                               solver->problem,
                                               solver->params,
                                               solver->options,
-                                              solver->merit_data,
+                                              solver->merit,
                                               solver->linesearch));
 
     SLEQP_CALL(sleqp_working_set_create(&solver->parametric_original_working_set, solver->problem));
@@ -913,7 +913,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
 
-  SLEQP_CALL(sleqp_merit_data_release(&solver->merit_data));
+  SLEQP_CALL(sleqp_merit_release(&solver->merit));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->estimation_residuals));
 

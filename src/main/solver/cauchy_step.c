@@ -212,7 +212,7 @@ compute_cauchy_step_parametric(SleqpSolver* solver,
 
     double func_dual = 1.;
 
-    SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
+    SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                      iterate,
                                      &func_dual,
                                      solver->cauchy_step,
@@ -329,7 +329,7 @@ compute_cauchy_step_simple(SleqpSolver* solver,
 
       double func_dual = 1.;
 
-      SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
+      SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                        iterate,
                                        &func_dual,
                                        solver->cauchy_step,
@@ -341,7 +341,7 @@ compute_cauchy_step_simple(SleqpSolver* solver,
                          actual_quadratic_merit_value,
                          eps);
 
-      SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+      SLEQP_CALL(sleqp_merit_func(solver->merit,
                                   iterate,
                                   solver->penalty_parameter,
                                   &exact_iterate_value));

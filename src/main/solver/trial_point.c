@@ -80,7 +80,7 @@ SLEQP_RETCODE sleqp_solver_compute_trial_point_simple(SleqpSolver* solver,
 
   // Compute merit value
   {
-    SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
+    SLEQP_CALL(sleqp_merit_linear(solver->merit,
                                   solver->iterate,
                                   trial_step,
                                   solver->penalty_parameter,
@@ -104,7 +104,7 @@ SLEQP_RETCODE sleqp_solver_compute_trial_point_simple(SleqpSolver* solver,
 
       double func_dual = 1.;
 
-      SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
+      SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                        iterate,
                                        &func_dual,
                                        solver->cauchy_step,
@@ -215,7 +215,7 @@ SLEQP_RETCODE sleqp_solver_compute_trial_point_newton(SleqpSolver* solver,
 
     double func_dual = 1.;
 
-    SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
+    SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                      iterate,
                                      &func_dual,
                                      solver->trial_step,
@@ -314,7 +314,7 @@ SLEQP_RETCODE solver_refine_step(SleqpSolver* solver,
 
     SLEQP_CALL(evaluate_iterate(solver, problem, iterate));
 
-    SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+    SLEQP_CALL(sleqp_merit_func(solver->merit,
                                 iterate,
                                 solver->penalty_parameter,
                                 &solver->current_merit_value));
@@ -437,7 +437,7 @@ compute_trial_point_soc_dynamic(SleqpSolver* solver,
   {
     const double one = 1.;
 
-    SLEQP_CALL(sleqp_merit_quadratic(solver->merit_data,
+    SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                      iterate,
                                      &one,
                                      solver->soc_step,
@@ -447,7 +447,7 @@ compute_trial_point_soc_dynamic(SleqpSolver* solver,
   }
   else
   {
-    SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
+    SLEQP_CALL(sleqp_merit_linear(solver->merit,
                                   iterate,
                                   solver->soc_step,
                                   solver->penalty_parameter,

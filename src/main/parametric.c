@@ -13,7 +13,7 @@ struct SleqpParametricSolver
   int refcount;
   SleqpProblem* problem;
   SleqpParams* params;
-  SleqpMeritData* merit_data;
+  SleqpMerit* merit;
   SleqpLineSearchData* linesearch;
 
   double exact_violation;
@@ -34,7 +34,7 @@ SLEQP_RETCODE sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                              SleqpProblem* problem,
                                              SleqpParams* params,
                                              SleqpOptions* options,
-                                             SleqpMeritData* merit_data,
+                                             SleqpMerit* merit,
                                              SleqpLineSearchData* linesearch)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -49,8 +49,8 @@ SLEQP_RETCODE sleqp_parametric_solver_create(SleqpParametricSolver** star,
   solver->params = params;
   SLEQP_CALL(sleqp_params_capture(solver->params));
 
-  solver->merit_data = merit_data;
-  SLEQP_CALL(sleqp_merit_data_capture(solver->merit_data));
+  solver->merit = merit;
+  SLEQP_CALL(sleqp_merit_capture(solver->merit));
 
   solver->linesearch = linesearch;
   SLEQP_CALL(sleqp_linesearch_capture(solver->linesearch));
@@ -208,7 +208,7 @@ search_forward(SleqpParametricSolver* solver,
     {
       *quadratic_merit = 0.;
 
-      SLEQP_CALL(sleqp_merit_linear(solver->merit_data,
+      SLEQP_CALL(sleqp_merit_linear(solver->merit,
                                     iterate,
                                     cauchy_direction,
                                     penalty_parameter,
@@ -446,7 +446,7 @@ SLEQP_RETCODE parametric_solver_free(SleqpParametricSolver** star)
 
   SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
 
-  SLEQP_CALL(sleqp_merit_data_release(&solver->merit_data));
+  SLEQP_CALL(sleqp_merit_release(&solver->merit));
 
   SLEQP_CALL(sleqp_params_release(&solver->params));
 

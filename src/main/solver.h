@@ -106,7 +106,7 @@ extern "C" {
     SleqpDualEstimation* estimation_data;
     SleqpSparseVec* estimation_residuals;
 
-    SleqpMeritData* merit_data;
+    SleqpMerit* merit;
 
     SleqpLineSearchData* linesearch;
 

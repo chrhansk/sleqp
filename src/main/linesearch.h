@@ -27,7 +27,7 @@ extern "C" {
   SLEQP_RETCODE sleqp_linesearch_create(SleqpLineSearchData** star,
                                         SleqpProblem* problem,
                                         SleqpParams* params,
-                                        SleqpMeritData* merit_data);
+                                        SleqpMerit* merit);
 
   /**
    * Sets the iterate to be used for subsequent line searches as well

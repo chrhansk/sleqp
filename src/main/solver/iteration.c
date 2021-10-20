@@ -228,7 +228,7 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
   double exact_iterate_value, model_iterate_value;
 
   {
-    SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+    SLEQP_CALL(sleqp_merit_func(solver->merit,
                                 iterate,
                                 solver->penalty_parameter,
                                 &exact_iterate_value));
@@ -282,7 +282,7 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
     if(step_accepted)
     {
 
-      SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+      SLEQP_CALL(sleqp_merit_func(solver->merit,
                                   trial_iterate,
                                   solver->penalty_parameter,
                                   &exact_trial_value));
@@ -362,7 +362,7 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
         {
           double soc_exact_trial_value;
 
-          SLEQP_CALL(sleqp_merit_func(solver->merit_data,
+          SLEQP_CALL(sleqp_merit_func(solver->merit,
                                       trial_iterate,
                                       solver->penalty_parameter,
                                       &soc_exact_trial_value));

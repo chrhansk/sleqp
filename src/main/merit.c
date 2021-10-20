@@ -23,51 +23,51 @@ struct SleqpMeritData
   SleqpSparseVec* sparse_cache;
 };
 
-SLEQP_RETCODE sleqp_merit_data_create(SleqpMeritData** star,
-                                      SleqpProblem* problem,
-                                      SleqpParams* params)
+SLEQP_RETCODE sleqp_merit_create(SleqpMerit** star,
+                                 SleqpProblem* problem,
+                                 SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpMeritData* merit_data = *star;
+  SleqpMerit* merit = *star;
 
-  merit_data->refcount = 1;
+  merit->refcount = 1;
 
-  merit_data->problem = problem;
-  SLEQP_CALL(sleqp_problem_capture(merit_data->problem));
+  merit->problem = problem;
+  SLEQP_CALL(sleqp_problem_capture(merit->problem));
 
   SLEQP_CALL(sleqp_params_capture(params));
-  merit_data->params = params;
+  merit->params = params;
 
-  merit_data->cache_size = SLEQP_MAX(num_constraints,
+  merit->cache_size = SLEQP_MAX(num_constraints,
                                      num_variables);
 
-  SLEQP_CALL(sleqp_alloc_array(&merit_data->dense_cache, merit_data->cache_size));
+  SLEQP_CALL(sleqp_alloc_array(&merit->dense_cache, merit->cache_size));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->jac_dot_sparse,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit->jac_dot_sparse,
                                               num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->combined_cons_val,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit->combined_cons_val,
                                               num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->multipliers,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit->multipliers,
                                               num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit_data->sparse_cache,
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&merit->sparse_cache,
                                               num_constraints));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
+SLEQP_RETCODE sleqp_merit_func(SleqpMerit* merit,
                                SleqpIterate* iterate,
                                double penalty_parameter,
                                double* merit_value)
 {
-  SleqpProblem* problem = merit_data->problem;
+  SleqpProblem* problem = merit->problem;
 
   *merit_value = sleqp_iterate_get_func_val(iterate);
 
@@ -82,17 +82,17 @@ SLEQP_RETCODE sleqp_merit_func(SleqpMeritData* merit_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
+SLEQP_RETCODE sleqp_merit_linear(SleqpMerit* merit,
                                  SleqpIterate* iterate,
                                  const SleqpSparseVec* direction,
                                  double penalty_parameter,
                                  double* merit_value)
 {
-  SleqpProblem* problem = merit_data->problem;
+  SleqpProblem* problem = merit->problem;
 
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  const double zero_eps = sleqp_params_get(merit_data->params,
+  const double zero_eps = sleqp_params_get(merit->params,
                                            SLEQP_PARAM_ZERO_EPS);
 
   double objective_dot;
@@ -105,22 +105,22 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_get_cons_jac(iterate),
                                                 direction,
-                                                merit_data->dense_cache));
+                                                merit->dense_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(merit_data->jac_dot_sparse,
-                                          merit_data->dense_cache,
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(merit->jac_dot_sparse,
+                                          merit->dense_cache,
                                           num_constraints,
                                           zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(merit_data->jac_dot_sparse,
+  SLEQP_CALL(sleqp_sparse_vector_add(merit->jac_dot_sparse,
                                      sleqp_iterate_get_cons_val(iterate),
                                      zero_eps,
-                                     merit_data->combined_cons_val));
+                                     merit->combined_cons_val));
 
   double total_violation;
 
   SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      merit_data->combined_cons_val,
+                                      merit->combined_cons_val,
                                       &total_violation));
 
   (*merit_value) += penalty_parameter * total_violation;
@@ -128,7 +128,7 @@ SLEQP_RETCODE sleqp_merit_linear(SleqpMeritData* merit_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_merit_quadratic(SleqpMeritData* merit_data,
+SLEQP_RETCODE sleqp_merit_quadratic(SleqpMerit* merit,
                                     SleqpIterate* iterate,
                                     const double* func_dual,
                                     const SleqpSparseVec* direction,
@@ -136,11 +136,11 @@ SLEQP_RETCODE sleqp_merit_quadratic(SleqpMeritData* merit_data,
                                     double penalty_parameter,
                                     double* merit_value)
 {
-  SleqpProblem* problem = merit_data->problem;
+  SleqpProblem* problem = merit->problem;
 
   double linear_merit_value;
 
-  SLEQP_CALL(sleqp_merit_linear(merit_data,
+  SLEQP_CALL(sleqp_merit_linear(merit,
                                 iterate,
                                 direction,
                                 penalty_parameter,
@@ -159,53 +159,53 @@ SLEQP_RETCODE sleqp_merit_quadratic(SleqpMeritData* merit_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE merit_data_free(SleqpMeritData** star)
+static SLEQP_RETCODE merit_free(SleqpMerit** star)
 {
-  SleqpMeritData* merit_data = *star;
+  SleqpMerit* merit = *star;
 
-  if(!merit_data)
+  if(!merit)
   {
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->sparse_cache));
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit->sparse_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->multipliers));
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit->multipliers));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->combined_cons_val));
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit->combined_cons_val));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&merit_data->jac_dot_sparse));
+  SLEQP_CALL(sleqp_sparse_vector_free(&merit->jac_dot_sparse));
 
-  sleqp_free(&merit_data->dense_cache);
+  sleqp_free(&merit->dense_cache);
 
-  SLEQP_CALL(sleqp_params_release(&merit_data->params));
+  SLEQP_CALL(sleqp_params_release(&merit->params));
 
-  SLEQP_CALL(sleqp_problem_release(&merit_data->problem));
+  SLEQP_CALL(sleqp_problem_release(&merit->problem));
 
   sleqp_free(star);
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_merit_data_capture(SleqpMeritData* merit_data)
+SLEQP_RETCODE sleqp_merit_capture(SleqpMerit* merit)
 {
-  ++merit_data->refcount;
+  ++merit->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_merit_data_release(SleqpMeritData** star)
+SLEQP_RETCODE sleqp_merit_release(SleqpMerit** star)
 {
-  SleqpMeritData* merit_data = *star;
+  SleqpMerit* merit = *star;
 
-  if(!merit_data)
+  if(!merit)
   {
     return SLEQP_OKAY;
   }
 
-  if(--merit_data->refcount == 0)
+  if(--merit->refcount == 0)
   {
-    SLEQP_CALL(merit_data_free(star));
+    SLEQP_CALL(merit_free(star));
   }
 
   *star = NULL;

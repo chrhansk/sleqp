@@ -31,7 +31,7 @@ extern "C" {
                                                SleqpProblem* problem,
                                                SleqpParams* params,
                                                SleqpOptions* options,
-                                               SleqpMeritData* merit_data,
+                                               SleqpMerit* merit,
                                                SleqpLineSearchData* linesearch);
 
   SLEQP_NODISCARD
