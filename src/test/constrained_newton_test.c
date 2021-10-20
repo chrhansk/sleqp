@@ -248,7 +248,7 @@ START_TEST(newton_constrained_step)
   SleqpOptions* options;
 
   SleqpWorkingStep* working_step;
-  SleqpNewtonData* newton_data;
+  SleqpNewtonSolver* newton_solver;
 
   SleqpSparseFactorization* factorization;
   SleqpAugJac* jacobian;
@@ -279,19 +279,19 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
 
-  ASSERT_CALL(sleqp_newton_data_create(&newton_data,
-                                       problem,
-                                       working_step,
-                                       params,
-                                       options));
+  ASSERT_CALL(sleqp_newton_solver_create(&newton_solver,
+                                         problem,
+                                         working_step,
+                                         params,
+                                         options));
 
-  ASSERT_CALL(sleqp_newton_set_iterate(newton_data,
+  ASSERT_CALL(sleqp_newton_set_iterate(newton_solver,
                                        iterate,
                                        jacobian,
                                        trust_radius,
                                        penalty_parameter));
 
-  ASSERT_CALL(sleqp_newton_compute_step(newton_data,
+  ASSERT_CALL(sleqp_newton_compute_step(newton_solver,
                                         sleqp_iterate_get_cons_dual(iterate),
                                         actual_step));
 
@@ -299,9 +299,9 @@ START_TEST(newton_constrained_step)
 
   ck_assert(sleqp_sparse_vector_eq(actual_step, expected_step, tolerance));
 
-  ASSERT_CALL(sleqp_newton_data_release(&newton_data));
+  ASSERT_CALL(sleqp_newton_solver_release(&newton_solver));
 
-    ASSERT_CALL(sleqp_working_step_release(&working_step));
+  ASSERT_CALL(sleqp_working_step_release(&working_step));
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 

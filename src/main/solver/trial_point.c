@@ -158,10 +158,10 @@ SLEQP_RETCODE sleqp_solver_compute_trial_point_newton(SleqpSolver* solver,
   else
   // compute Newton step
   {
-    SLEQP_CALL(sleqp_newton_set_time_limit(solver->newton_data,
+    SLEQP_CALL(sleqp_newton_set_time_limit(solver->newton_solver,
                                            sleqp_solver_remaining_time(solver)));
 
-    SLEQP_CALL(sleqp_newton_compute_step(solver->newton_data,
+    SLEQP_CALL(sleqp_newton_compute_step(solver->newton_solver,
                                          solver->multipliers,
                                          solver->newton_step));
   }

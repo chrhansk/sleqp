@@ -49,7 +49,7 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
                                                 iterate));
   }
 
-  SLEQP_CALL(sleqp_newton_add_violated_multipliers(solver->newton_data,
+  SLEQP_CALL(sleqp_newton_add_violated_multipliers(solver->newton_solver,
                                                    solver->multipliers));
 
   return SLEQP_OKAY;
@@ -148,7 +148,7 @@ compute_cauchy_step_parametric(SleqpSolver* solver,
     SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
                                          iterate));
 
-    SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
+    SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_solver,
                                         iterate,
                                         solver->aug_jac,
                                         solver->trust_radius,
@@ -199,7 +199,7 @@ compute_cauchy_step_parametric(SleqpSolver* solver,
                                           solver->penalty_parameter,
                                           solver->trust_radius));
 
-  SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
+  SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_solver,
                                       iterate,
                                       solver->aug_jac,
                                       solver->trust_radius,
@@ -258,7 +258,7 @@ compute_cauchy_step_simple(SleqpSolver* solver,
     SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac,
                                          iterate));
 
-    SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_data,
+    SLEQP_CALL(sleqp_newton_set_iterate(solver->newton_solver,
                                         iterate,
                                         solver->aug_jac,
                                         solver->trust_radius,

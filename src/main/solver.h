@@ -85,7 +85,7 @@ extern "C" {
 
     SleqpWorkingStep* working_step;
 
-    SleqpNewtonData* newton_data;
+    SleqpNewtonSolver* newton_solver;
 
     SleqpGaussNewtonSolver* gauss_newton_solver;
 

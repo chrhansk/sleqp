@@ -438,11 +438,11 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                                 solver->params));
   }
 
-  SLEQP_CALL(sleqp_newton_data_create(&solver->newton_data,
-                                      solver->problem,
-                                      solver->working_step,
-                                      params,
-                                      options));
+  SLEQP_CALL(sleqp_newton_solver_create(&solver->newton_solver,
+                                        solver->problem,
+                                        solver->working_step,
+                                        params,
+                                        options));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->newton_step,
                                               num_variables));
@@ -933,7 +933,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->newton_step));
 
-  SLEQP_CALL(sleqp_newton_data_release(&solver->newton_data));
+  SLEQP_CALL(sleqp_newton_solver_release(&solver->newton_solver));
 
   SLEQP_CALL(sleqp_working_step_release(&solver->working_step));
 

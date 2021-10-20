@@ -19,54 +19,54 @@
 extern "C" {
 #endif
 
-  typedef struct SleqpNewtonData SleqpNewtonData;
+  typedef struct SleqpNewtonSolver SleqpNewtonSolver;
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_data_create(SleqpNewtonData** star,
-                                         SleqpProblem* problem,
-                                         SleqpWorkingStep* step,
-                                         SleqpParams* params,
-                                         SleqpOptions* options);
+  SLEQP_RETCODE sleqp_newton_solver_create(SleqpNewtonSolver** star,
+                                           SleqpProblem* problem,
+                                           SleqpWorkingStep* step,
+                                           SleqpParams* params,
+                                           SleqpOptions* options);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonData* data,
+  SLEQP_RETCODE sleqp_newton_set_time_limit(SleqpNewtonSolver* data,
                                             double time_limit);
 
-  SleqpTimer* sleqp_newton_get_timer(SleqpNewtonData* data);
+  SleqpTimer* sleqp_newton_get_timer(SleqpNewtonSolver* data);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonData* data,
+  SLEQP_RETCODE sleqp_newton_set_iterate(SleqpNewtonSolver* data,
                                          SleqpIterate* iterate,
                                          SleqpAugJac* jacobian,
                                          double trust_radius,
                                          double penalty_parameter);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_objective(SleqpNewtonData* data,
+  SLEQP_RETCODE sleqp_newton_objective(SleqpNewtonSolver* data,
                                        const SleqpSparseVec* multipliers,
                                        const SleqpSparseVec* direction,
                                        double* objective);
 
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_add_violated_multipliers(SleqpNewtonData* data,
+  SLEQP_RETCODE sleqp_newton_add_violated_multipliers(SleqpNewtonSolver* data,
                                                       SleqpSparseVec* multipliers);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonData* data,
+  SLEQP_RETCODE sleqp_newton_compute_step(SleqpNewtonSolver* data,
                                           SleqpSparseVec* multipliers,
                                           SleqpSparseVec* newton_step);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_current_rayleigh(SleqpNewtonData* data,
+  SLEQP_RETCODE sleqp_newton_current_rayleigh(SleqpNewtonSolver* data,
                                               double* min_rayleigh,
                                               double* max_rayleigh);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_data_capture(SleqpNewtonData* data);
+  SLEQP_RETCODE sleqp_newton_solver_capture(SleqpNewtonSolver* data);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_data_release(SleqpNewtonData** star);
+  SLEQP_RETCODE sleqp_newton_solver_release(SleqpNewtonSolver** star);
 
 #ifdef __cplusplus
 }

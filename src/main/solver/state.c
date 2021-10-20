@@ -8,7 +8,7 @@ SLEQP_RETCODE sleqp_solver_get_real_state(const SleqpSolver* solver,
 {
   double min_rayleigh, max_rayleigh;
 
-  SLEQP_CALL(sleqp_newton_current_rayleigh(solver->newton_data,
+  SLEQP_CALL(sleqp_newton_current_rayleigh(solver->newton_solver,
                                            &min_rayleigh,
                                            &max_rayleigh));
 
