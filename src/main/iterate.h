@@ -46,14 +46,14 @@ extern "C" {
                                                     double* stationarity_residuum);
 
   bool sleqp_iterate_is_feasible(SleqpIterate* iterate,
-                                              double feasibility_residuum,
-                                              double feasibility_tolerance);
+                                 double feasibility_residuum,
+                                 double feasibility_tolerance);
 
   bool sleqp_iterate_is_optimal(SleqpIterate* iterate,
-                                             SleqpParams* params,
-                                             double feasibility_residuum,
-                                             double slackness_residuum,
-                                             double stationarity_residuum);
+                                SleqpParams* params,
+                                double feasibility_residuum,
+                                double slackness_residuum,
+                                double stationarity_residuum);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_iterate_get_violated_constraints(SleqpProblem* problem,

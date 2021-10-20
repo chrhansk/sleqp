@@ -74,13 +74,13 @@ SLEQP_RETCODE sleqp_eqp_solver_compute_step(SleqpEQPSolver* solver,
 {
   SLEQP_CALL(sleqp_timer_start(solver->timer));
 
-  SLEQP_CALL(solver->callbacks.compute_step(multipliers,
-                                            newton_step,
-                                            solver->eqp_data));
+  SLEQP_RETCODE status = solver->callbacks.compute_step(multipliers,
+                                                        newton_step,
+                                                        solver->eqp_data);
 
   SLEQP_CALL(sleqp_timer_stop(solver->timer));
 
-  return SLEQP_OKAY;
+  return status;
 }
 
 SLEQP_RETCODE sleqp_eqp_solver_current_rayleigh(SleqpEQPSolver* solver,

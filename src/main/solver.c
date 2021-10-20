@@ -755,7 +755,8 @@ SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
 
     SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
 
-    if(solver_status == SLEQP_ABORT_TIME)
+    if(solver_status == SLEQP_ABORT_TIME ||
+       sleqp_solver_remaining_time(solver) < 0.)
     {
       sleqp_log_info("Exhausted time limit, terminating");
       solver->status = SLEQP_STATUS_ABORT_TIME;

@@ -82,6 +82,19 @@ SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
   return SLEQP_OKAY;
 }
 
+static double
+currently_elapsed(SleqpTimer* timer)
+{
+  if(!timer->running)
+  {
+    return 0.;
+  }
+
+  clock_t end = clock();
+
+  return ((double) (end - timer->start)) / CLOCKS_PER_SEC;
+}
+
 SLEQP_RETCODE sleqp_timer_add(SleqpTimer* timer, double value)
 {
   timer->last_elapsed += value;
@@ -94,7 +107,7 @@ SLEQP_RETCODE sleqp_timer_add(SleqpTimer* timer, double value)
 
 double sleqp_timer_elapsed(SleqpTimer* timer)
 {
-  return timer->last_elapsed;
+  return timer->last_elapsed + currently_elapsed(timer);
 }
 
 double sleqp_timer_get_avg(SleqpTimer* timer)
@@ -111,7 +124,7 @@ double sleqp_timer_get_avg(SleqpTimer* timer)
 
 double sleqp_timer_get_ttl(SleqpTimer* timer)
 {
-  return timer->total_elapsed;
+  return timer->total_elapsed + currently_elapsed(timer);
 }
 
 double sleqp_timer_get_std(SleqpTimer* timer)
