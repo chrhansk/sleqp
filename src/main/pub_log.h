@@ -11,11 +11,12 @@ extern "C" {
 #endif
 
   typedef enum {
-    SLEQP_LOG_ERROR = 0,
-    SLEQP_LOG_WARN = 1,
-    SLEQP_LOG_INFO = 2,
-    SLEQP_LOG_DEBUG = 3,
-    SLEQP_NUM_LOG_LEVELS = 4}
+    SLEQP_LOG_SILENT = 0,
+    SLEQP_LOG_ERROR = 1,
+    SLEQP_LOG_WARN = 2,
+    SLEQP_LOG_INFO = 3,
+    SLEQP_LOG_DEBUG = 4,
+    SLEQP_NUM_LOG_LEVELS = 5}
     SLEQP_LOG_LEVEL;
 
   SLEQP_EXPORT SLEQP_LOG_LEVEL sleqp_log_level();
