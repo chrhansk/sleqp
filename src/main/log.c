@@ -17,6 +17,7 @@ struct LevelInfo
 
 static struct LevelInfo const level_infos[SLEQP_NUM_LOG_LEVELS] =
 {
+  {"silent", SLEQP_FORMAT_RED},
   {"error", SLEQP_FORMAT_RED},
   {"warn", SLEQP_FORMAT_YELLOW},
   {"info", SLEQP_FORMAT_GREEN},
