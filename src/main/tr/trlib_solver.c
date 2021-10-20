@@ -874,9 +874,9 @@ SLEQP_RETCODE sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   SLEQP_CALL(sleqp_timer_create(&data->timer));
 
   SleqpTRCallbacks callbacks = {
-    .solve = trlib_solve,
+    .solve    = trlib_solve,
     .rayleigh = trlib_rayleigh,
-    .free = trlib_free
+    .free     = trlib_free
   };
 
   SLEQP_CALL(sleqp_tr_solver_create(solver_star, &callbacks, (void*) data));

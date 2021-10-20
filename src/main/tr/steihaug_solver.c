@@ -385,9 +385,9 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
   SLEQP_CALL(sleqp_timer_create(&solver->timer));
 
   SleqpTRCallbacks callbacks = {
-    .solve = steihaug_solver_solve,
+    .solve    = steihaug_solver_solve,
     .rayleigh = steihaug_solver_rayleigh,
-    .free = steihaug_solver_free
+    .free     = steihaug_solver_free
   };
 
   SLEQP_CALL(sleqp_tr_solver_create(solver_star, &callbacks, (void*) solver));

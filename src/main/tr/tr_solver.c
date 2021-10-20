@@ -48,8 +48,6 @@ SLEQP_RETCODE sleqp_tr_solver_create(SleqpTRSolver** star,
   return SLEQP_OKAY;
 }
 
-
-
 SLEQP_RETCODE sleqp_tr_solver_solve(SleqpTRSolver* solver,
                                     SleqpAugJac* jacobian,
                                     const SleqpSparseVec* multipliers,
