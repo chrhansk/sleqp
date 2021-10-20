@@ -5,13 +5,16 @@
 
 #include "cmp.h"
 #include "mem.h"
-
+#include "timer.h"
 #include "tr_util.h"
 
 struct SleqpLSQRSolver {
   int refcount;
 
+  double time_limit;
+
   SleqpParams* params;
+  SleqpTimer* timer;
 
   int forward_dim;
   int adjoint_dim;
@@ -45,9 +48,12 @@ SLEQP_RETCODE sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
   *solver = (SleqpLSQRSolver) {0};
 
   solver->refcount = 1;
+  solver->time_limit = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_params_capture(params));
   solver->params = params;
+
+  SLEQP_CALL(sleqp_timer_create(&solver->timer));
 
   solver->forward_dim = forward_dim;
   solver->adjoint_dim = adjoint_dim;
@@ -75,6 +81,14 @@ SLEQP_RETCODE sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache,
                                               0));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_lsqr_set_time_limit(SleqpLSQRSolver* solver,
+                                        double time_limit)
+{
+  solver->time_limit = time_limit;
 
   return SLEQP_OKAY;
 }
@@ -187,6 +201,8 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
                   solver->adjoint_dim,
                   solver->forward_dim);
 
+  SLEQP_CALL(sleqp_timer_start(solver->timer));
+
   SleqpSparseVec* x = sol;
   SleqpSparseVec* u = solver->u;
   SleqpSparseVec* v = solver->v;
@@ -224,6 +240,8 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
                     objective,
                     opt_res);
   }
+
+  bool reached_time_limit = false;
 
   for(iteration = 1; iteration <= forward_dim; ++iteration)
   {
@@ -291,6 +309,8 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
       }
 #endif
 
+      SLEQP_CALL(sleqp_timer_stop(solver->timer));
+
       sleqp_log_debug("LSQR solver terminated with a boundary solution after %d iterations",
                       iteration);
 
@@ -322,6 +342,20 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
     {
       break;
     }
+
+    if(solver->time_limit != SLEQP_NONE &&
+       sleqp_timer_elapsed(solver->timer) >= solver->time_limit)
+    {
+      reached_time_limit = true;
+      break;
+    }
+  }
+
+  SLEQP_CALL(sleqp_timer_stop(solver->timer));
+
+  if(reached_time_limit)
+  {
+    return SLEQP_ABORT_TIME;
   }
 
   sleqp_log_debug("LSQR solver terminated with an interior solution after %d iterations",
@@ -357,6 +391,8 @@ lsqr_solver_free(SleqpLSQRSolver** star)
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->v));
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->u));
+
+  SLEQP_CALL(sleqp_timer_free(&solver->timer));
 
   SLEQP_CALL(sleqp_params_release(&solver->params));
 

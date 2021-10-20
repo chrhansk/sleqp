@@ -37,8 +37,6 @@ typedef struct {
 typedef struct {
   int refcount;
 
-  double time_limit;
-
   SleqpProblem* problem;
   SleqpWorkingStep* working_step;
   SleqpParams* params;
@@ -103,8 +101,6 @@ gauss_newton_solver_create(GaussNewtonSolver** star,
   *solver = (GaussNewtonSolver) {0};
 
   solver->refcount = 1;
-
-  solver->time_limit = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_problem_capture(problem));
   solver->problem = problem;
@@ -210,7 +206,8 @@ gauss_newton_set_time_limit(double time_limit,
 {
   GaussNewtonSolver* solver = (GaussNewtonSolver*) data;
 
-  solver->time_limit = time_limit;
+  SLEQP_CALL(sleqp_lsqr_set_time_limit(solver->lsqr_solver,
+                                       time_limit));
 
   return SLEQP_OKAY;
 }

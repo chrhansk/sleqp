@@ -31,6 +31,11 @@ extern "C" {
                                          SleqpLSQRCallbacks* callbacks,
                                          void* data);
 
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_lsqr_set_time_limit(SleqpLSQRSolver* solver,
+                                          double time_limit);
+
+  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lsqr_solver_resize(SleqpLSQRSolver* solver,
                                          int forward_dim,
                                          int adjoint_dim);
