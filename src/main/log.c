@@ -7,6 +7,7 @@
 
 #define TIME_BUF_SIZE 128
 #define TOTAL_BUF_SIZE 2048
+#define EXTENDED_BUF_SIZE 4096
 
 struct LevelInfo
 {
@@ -78,32 +79,25 @@ void sleqp_log_set_handler(SLEQP_LOG_HANDLER value)
   handler = value;
 }
 
-
 void sleqp_log_trace_level(int level, const char *file, int line, const char *fmt, ...)
 {
-
-  char buf[TIME_BUF_SIZE];
-
-  time_t t = time(NULL);
-  struct tm *lt = localtime(&t);
-
-  buf[strftime(buf, TIME_BUF_SIZE - 1, "%H:%M:%S", lt)] = '\0';
-
-  fprintf(stderr,
-          "[" SLEQP_FORMAT_BOLD "%s %s%5s" SLEQP_FORMAT_RESET "] "
-          SLEQP_FORMAT_DARK "%s:%d " SLEQP_FORMAT_RESET,
-          buf,
-          level_infos[level].color,
-          level_infos[level].name,
-          file,
-          line);
+  char message_buf[TOTAL_BUF_SIZE];
+  char total_buf[EXTENDED_BUF_SIZE];
 
   va_list args;
 
   va_start(args, fmt);
-  vfprintf(stderr, fmt, args);
+  vsnprintf(message_buf, TOTAL_BUF_SIZE, fmt, args);
   va_end(args);
 
-  fprintf(stderr, "\n");
+  time_t t = time(NULL);
 
+  snprintf(total_buf,
+           EXTENDED_BUF_SIZE,
+           SLEQP_FORMAT_DARK "%s:%d " SLEQP_FORMAT_RESET "%s",
+           file,
+           line,
+           message_buf);
+
+  handler(level, t, total_buf);
 }
