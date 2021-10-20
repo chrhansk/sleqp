@@ -77,6 +77,30 @@ SLEQP_RETCODE accepted_iterate(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+START_TEST(test_add_invalid_number)
+{
+  sleqp_log_set_level(SLEQP_LOG_SILENT);
+
+  ck_assert_int_eq(sleqp_solver_add_callback(solver,
+                                             -1,
+                                             NULL,
+                                             NULL),
+                   SLEQP_ILLEGAL_ARGUMENT);
+}
+END_TEST
+
+START_TEST(test_remove_invalid_number)
+{
+  sleqp_log_set_level(SLEQP_LOG_SILENT);
+
+  ck_assert_int_eq(sleqp_solver_remove_callback(solver,
+                                                -1,
+                                                NULL,
+                                                NULL),
+                   SLEQP_ILLEGAL_ARGUMENT);
+}
+END_TEST
+
 START_TEST(test_simple_callback)
 {
   CallbackData callback_data;
@@ -137,6 +161,9 @@ Suite* callback_test_suite()
 
   tcase_add_test(tc_callback, test_simple_callback);
   tcase_add_test(tc_callback, test_remove_callback);
+
+  tcase_add_test(tc_callback, test_add_invalid_number);
+  tcase_add_test(tc_callback, test_remove_invalid_number);
 
   suite_add_tcase(suite, tc_callback);
 
