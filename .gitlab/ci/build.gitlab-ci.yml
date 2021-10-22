@@ -1,0 +1,13 @@
+build:
+  stage: build
+  only:
+    - master
+  script:
+    - mkdir -p build
+    - cd build
+    - cmake .. -DCMAKE_INSTALL_PREFIX="/usr" -DCMAKE_BUILD_TYPE="Release" -DSLEQP_ENABLE_UNIT_TESTS=Off -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - make -j$(nproc)
+  artifacts:
+    paths:
+      - build
+      - bindings/python
