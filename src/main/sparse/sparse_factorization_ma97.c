@@ -192,10 +192,11 @@ static SLEQP_RETCODE ma97_get_error_string(int value, const char** message)
   } while(0)
 
 typedef enum {
-  MC68_ORDER_APX_MINDEG = 1,
-  MC68_ORDER_MINDEG     = 2,
-  MC68_ORDER_METIS      = 3,
-  MC68_ORDER_MA47       = 4,
+  MC68_ORDER_USER_SUPPLIED = 0,
+  MC68_ORDER_APX_MINDEG    = 1,
+  MC68_ORDER_MINDEG        = 2,
+  MC68_ORDER_METIS         = 3,
+  MC68_ORDER_MA47          = 4,
 } MC68_ORDER;
 
 typedef enum {
@@ -239,6 +240,8 @@ static SLEQP_RETCODE ma97_data_create(MA97Data** star)
   // We expect all matrices here to be non-singular,
   // error out otherwise
   ma97_data->control.action = 0;
+
+  ma97_data->control.ordering = MC68_ORDER_USER_SUPPLIED;
 
   if(ma97_verbose)
   {
