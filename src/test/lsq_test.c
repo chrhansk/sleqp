@@ -84,6 +84,59 @@ START_TEST(test_unconstrained_solve)
 }
 END_TEST
 
+START_TEST(test_lm_factor)
+{
+  SleqpProblem* problem;
+  SleqpSolver* solver;
+
+  ASSERT_CALL(sleqp_params_set(params,
+                               SLEQP_PARAM_STATIONARITY_TOL,
+                               1e-8));
+
+  ASSERT_CALL(sleqp_lsq_func_set_lm_factor(rosenbrock_lsq_func,
+                                           1e-2));
+
+  ASSERT_CALL(sleqp_options_set_int(options,
+                                    SLEQP_OPTION_INT_DERIV_CHECK,
+                                    SLEQP_DERIV_CHECK_FIRST));
+
+  ASSERT_CALL(sleqp_problem_create_simple(&problem,
+                                          rosenbrock_lsq_func,
+                                          params,
+                                          rosenbrock_var_lb,
+                                          rosenbrock_var_ub,
+                                          rosenbrock_cons_lb,
+                                          rosenbrock_cons_ub));
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  options,
+                                  rosenbrock_initial,
+                                  NULL));
+
+  // 100 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
+
+  SleqpIterate* solution_iterate;
+
+  ASSERT_CALL(sleqp_solver_get_solution(solver,
+                                        &solution_iterate));
+
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+
+  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+
+  ck_assert(sleqp_sparse_vector_eq(actual_solution,
+                                   rosenbrock_optimal,
+                                   1e-6));
+
+  ASSERT_CALL(sleqp_solver_release(&solver));
+
+  ASSERT_CALL(sleqp_problem_release(&problem));
+}
+END_TEST
+
 START_TEST(test_lsqr_solve)
 {
   SleqpProblem* problem;
@@ -291,6 +344,7 @@ Suite* lsq_test_suite()
                             lsq_teardown);
 
   tcase_add_test(tc_uncons, test_unconstrained_solve);
+  tcase_add_test(tc_uncons, test_lm_factor);
   tcase_add_test(tc_uncons, test_lsqr_solve);
   tcase_add_test(tc_uncons, test_constrained_lsqr_solve);
   tcase_add_test(tc_uncons, test_scaled_solve);

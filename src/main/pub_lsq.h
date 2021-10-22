@@ -86,7 +86,7 @@ extern "C" {
                                       int num_variables,
                                       int num_constraints,
                                       int num_residuals,
-                                      double levenberg_marquardt,
+                                      double lm_factor,
                                       SleqpParams* params,
                                       void* func_data);
 
@@ -96,6 +96,10 @@ extern "C" {
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
                                              SleqpLSQCallbacks* callbacks);
+
+  SLEQP_EXPORT SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_lsq_func_set_lm_factor(SleqpFunc* func,
+                                             double lm_factor);
 
 
 #ifdef __cplusplus

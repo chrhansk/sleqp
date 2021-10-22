@@ -16,7 +16,7 @@ typedef struct SleqpLSQData
 
   SleqpLSQCallbacks callbacks;
 
-  double levenberg_marquardt;
+  double lm_factor;
 
   // num_residuals
   SleqpSparseVec* lsq_forward;
@@ -192,7 +192,7 @@ static SLEQP_RETCODE lsq_func_hess_product(SleqpFunc* func,
   SLEQP_CALL(sleqp_sparse_vector_clear(lsq_data->lsq_forward));
   SLEQP_CALL(sleqp_sparse_vector_clear(lsq_data->lsq_hess_prod));
 
-  const bool additional_term = (lsq_data->levenberg_marquardt != 0.);
+  const bool additional_term = (lsq_data->lm_factor != 0.);
 
   if(additional_term)
   {
@@ -207,7 +207,7 @@ static SLEQP_RETCODE lsq_func_hess_product(SleqpFunc* func,
     SLEQP_CALL(sleqp_sparse_vector_add_scaled(initial_product,
                                               direction,
                                               1.,
-                                              lsq_data->levenberg_marquardt,
+                                              lsq_data->lm_factor,
                                               lsq_data->zero_eps,
                                               product));
   }
@@ -256,7 +256,7 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
                                     int num_variables,
                                     int num_constraints,
                                     int num_residuals,
-                                    double levenberg_marquardt,
+                                    double lm_factor,
                                     SleqpParams* params,
                                     void* func_data)
 {
@@ -273,7 +273,7 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
 
   data->callbacks = *callbacks;
 
-  data->levenberg_marquardt = levenberg_marquardt;
+  data->lm_factor = lm_factor;
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->lsq_forward,
                                               num_residuals));
@@ -323,7 +323,7 @@ double sleqp_lsq_func_get_levenberg_marquardt(SleqpFunc* func)
 
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
 
-  return lsq_data->levenberg_marquardt;
+  return lsq_data->lm_factor;
 }
 
 int sleqp_lsq_func_num_residuals(SleqpFunc* func)
@@ -411,6 +411,20 @@ SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
   SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
 
   lsq_data->callbacks = *callbacks;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE sleqp_lsq_func_set_lm_factor(SleqpFunc* func,
+                                           double lm_factor)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*) func_data;
+
+  lsq_data->lm_factor = lm_factor;
 
   return SLEQP_OKAY;
 }
