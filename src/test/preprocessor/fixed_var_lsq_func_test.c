@@ -68,10 +68,14 @@ void setup()
   ASSERT_CALL(sleqp_sparse_vector_create_full(&fixed_initial,
                                               rosenbrock_num_variables - num_fixed));
 
+  const double fixed_value = sleqp_sparse_vector_value_at(rosenbrock_initial,
+                                                          1);
+
+  fixed_values[0] = fixed_value;
+
   ASSERT_CALL(sleqp_sparse_vector_push(fixed_initial,
                                        0,
-                                       sleqp_sparse_vector_value_at(rosenbrock_initial,
-                                                                    1)));
+                                       fixed_value));
 
   bool reject;
 
@@ -160,8 +164,6 @@ END_TEST
 
 START_TEST(test_jac_adjoint)
 {
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
-
   ASSERT_CALL(sleqp_sparse_vector_push(adjoint, 1, 1.));
 
   ASSERT_CALL(sleqp_lsq_func_jac_adjoint(rosenbrock_lsq_func,

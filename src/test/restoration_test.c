@@ -212,6 +212,8 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_options_release(&options));
 
+  ASSERT_CALL(sleqp_sparse_vector_free(&residuals));
+
   ASSERT_CALL(sleqp_sparse_vector_free(&initial));
 }
 END_TEST

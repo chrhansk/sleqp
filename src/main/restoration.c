@@ -415,6 +415,8 @@ SLEQP_RETCODE sleqp_restoration_problem_create(SleqpProblem** star,
                                          empty,
                                          empty));
 
+  SLEQP_CALL(sleqp_func_release(&restoration_func));
+
   SLEQP_CALL(sleqp_sparse_vector_free(&empty));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&restoration_var_ub));
