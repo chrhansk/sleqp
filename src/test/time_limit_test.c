@@ -89,8 +89,6 @@ delay_func_cons_val(SleqpFunc* func,
                     SleqpSparseVec* cons_val,
                     void* func_data)
 {
-  delay();
-
   return SLEQP_OKAY;
 }
 
@@ -100,8 +98,6 @@ delay_func_cons_jac(SleqpFunc* func,
                     SleqpSparseMatrix* cons_jac,
                     void* func_data)
 {
-  delay();
-
   return SLEQP_OKAY;
 }
 
@@ -113,8 +109,6 @@ delay_func_hess_prod(SleqpFunc* func,
                      SleqpSparseVec* result,
                      void* func_data)
 {
-  delay();
-
   return SLEQP_OKAY;
 }
 

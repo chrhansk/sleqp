@@ -7,348 +7,39 @@
 #include "util.h"
 
 #include "test_common.h"
+#include "constrained_fixture.h"
 
-SleqpSparseVec* var_lb;
-SleqpSparseVec* var_ub;
-SleqpSparseVec* cons_lb;
-SleqpSparseVec* cons_ub;
-SleqpSparseVec* x;
 
 SleqpParams* params;
 SleqpOptions* options;
-
-SleqpSparseVec* expected_solution;
-
-static const int num_variables = 4;
-static const int num_constraints = 2;
-
-typedef struct FuncData
-{
-  double* values;
-  double* duals;
-  double* direction;
-
-} FuncData;
-
-static double sq(double x)
-{
-  return x*x;
-}
-
-static SLEQP_RETCODE func_set(SleqpFunc* func,
-                              SleqpSparseVec* x,
-                              SLEQP_VALUE_REASON reason,
-                              bool* reject,
-                              int* func_grad_nnz,
-                              int* cons_val_nnz,
-                              int* cons_jac_nnz,
-                              void* func_data)
-{
-  FuncData* data = (FuncData*) func_data;
-
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->values));
-
-  *func_grad_nnz = num_variables;
-  *cons_val_nnz = num_constraints;
-  *cons_jac_nnz = num_constraints * num_variables;
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE func_val(SleqpFunc* func,
-                              double* func_val,
-                              void* func_data)
-{
-  FuncData* data = (FuncData*) func_data;
-  double* x = data->values;
-
-  (*func_val) = x[0]*x[3]*(x[0] + x[1]+ x[2]) + x[2];
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE func_grad(SleqpFunc* func,
-                               SleqpSparseVec* func_grad,
-                               void* func_data)
-{
-  FuncData* data = (FuncData*) func_data;
-  double* x = data->values;
-
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                      0,
-                                      (x[0] + x[1] + x[2])*x[3] + x[0]*x[3]));
-
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                      1,
-                                      x[0]*x[3]));
-
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                      2,
-                                      x[0]*x[3] + 1));
-
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                      3,
-                                      (x[0] + x[1] + x[2])*x[0]));
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE cons_val(SleqpFunc* func,
-                              const SleqpSparseVec* cons_indices,
-                              SleqpSparseVec* cons_val,
-                              void* func_data)
-{
-  FuncData* data = (FuncData*) func_data;
-  double* x = data->values;
-
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                      0,
-                                      x[0]*x[1]*x[2]*x[3]));
-
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                      1,
-                                      sq(x[0]) + sq(x[1]) + sq(x[2]) +  sq(x[3])));
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE cons_jac(SleqpFunc* func,
-                              const SleqpSparseVec* cons_indices,
-                              SleqpSparseMatrix* cons_jac,
-                              void* func_data)
-{
-  FuncData* data = (FuncData*) func_data;
-  double* x = data->values;
-
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      0,
-                                      0,
-                                      x[1]*x[2]*x[3]));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      1,
-                                      0,
-                                      2*x[0]));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      0,
-                                      1,
-                                      x[0]*x[2]*x[3]));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      1,
-                                      1,
-                                      2*x[1]));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 2));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      0,
-                                      2,
-                                      x[0]*x[1]*x[3]));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      1,
-                                      2,
-                                      2*x[2]));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 3));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      0,
-                                      3,
-                                      x[0]*x[1]*x[2]));
-
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      1,
-                                      3,
-                                      2*x[3]));
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE func_hess_prod(SleqpFunc* func,
-                                    const double* func_dual,
-                                    const SleqpSparseVec* direction,
-                                    const SleqpSparseVec* cons_duals,
-                                    SleqpSparseVec* product,
-                                    void* func_data)
-{
-  FuncData* data = (FuncData*) func_data;
-
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(cons_duals, data->duals));
-
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, data->direction));
-
-  double* x = data->values;
-
-  double* duals = data->duals;
-  double* dir = data->direction;
-
-  double f_dual = func_dual ? *func_dual : 0.;
-
-  SLEQP_CALL(sleqp_sparse_vector_reserve(product, num_variables));
-
-  {
-    double v = 0.;
-
-    v += (2*x[3]*f_dual + 2*duals[1])*dir[0];
-    v += (x[3]*f_dual + x[2]*x[3]*duals[0])*dir[1];
-    v += (x[3]*f_dual + x[1]*x[3]*duals[0])*dir[2];
-    v += ((2*x[0] +x[1] + x[2])*f_dual + x[1]*x[2]*duals[0])*dir[3];
-
-    SLEQP_CALL(sleqp_sparse_vector_push(product, 0, v));
-  }
-
-  {
-    double v = 0.;
-
-    v += (x[3]*f_dual + x[2]*x[3]*duals[0])*dir[0];
-    v += (2*duals[1])*dir[1];
-    v += (x[0]*x[3]*duals[0])*dir[2];
-    v += (x[0]*f_dual + (x[0]*x[2])*duals[0])*dir[3];
-
-    SLEQP_CALL(sleqp_sparse_vector_push(product, 1, v));
-  }
-
-  {
-    double v = 0.;
-
-    v += (x[3]*f_dual + x[1]*x[3]*duals[0])*dir[0];
-    v += (x[0]*x[3]*duals[0])*dir[1];
-    v += (2*duals[1])*dir[2];
-    v += (x[0]*f_dual + x[0]*x[1]*duals[0])*dir[3];
-
-    SLEQP_CALL(sleqp_sparse_vector_push(product, 2, v));
-  }
-
-  {
-    double v = 0.;
-
-    v += ((2*x[0] + x[1] + x[2])*f_dual + x[1]*x[2]*duals[0])*dir[0];
-    v += (x[0]*f_dual + x[0]*x[2]*duals[0])*dir[1];
-    v += (x[0]*f_dual + x[0]*x[1]*duals[0])*dir[2];
-    v += (2*duals[1])*dir[3];
-
-    SLEQP_CALL(sleqp_sparse_vector_push(product, 3, v));
-  }
-
-  return SLEQP_OKAY;
-}
-
-FuncData* func_data;
-SleqpFunc* func;
-
-SleqpParams* params;
 SleqpProblem* problem;
 
-void constrained_setup()
+void constrained_test_setup()
 {
-  const double inf = sleqp_infinity();
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&var_lb,
-                                         num_variables,
-                                         num_variables));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&var_ub,
-                                         num_variables,
-                                         num_variables));
-
-  for(int i = 0; i < num_variables; ++i)
-  {
-    ASSERT_CALL(sleqp_sparse_vector_push(var_lb, i, 1.));
-    ASSERT_CALL(sleqp_sparse_vector_push(var_ub, i, 5.));
-  }
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&cons_lb,
-                                         num_constraints,
-                                         num_constraints));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&cons_ub,
-                                         num_constraints,
-                                         num_constraints));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(cons_lb, 0, 25.));
-  ASSERT_CALL(sleqp_sparse_vector_push(cons_lb, 1, 40.));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(cons_ub, 0, inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(cons_ub, 1, 40.));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&x,
-                                         num_variables,
-                                         num_variables));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(x, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(x, 1, 5.));
-  ASSERT_CALL(sleqp_sparse_vector_push(x, 2, 5.));
-  ASSERT_CALL(sleqp_sparse_vector_push(x, 3, 1.));
-
-  ASSERT_CALL(sleqp_malloc(&func_data));
-
-  ASSERT_CALL(sleqp_alloc_array(&func_data->values, num_variables));
-  ASSERT_CALL(sleqp_alloc_array(&func_data->duals, num_constraints));
-  ASSERT_CALL(sleqp_alloc_array(&func_data->direction, num_variables));
-
-  SleqpFuncCallbacks callbacks = {
-    .set_value = func_set,
-    .func_val  = func_val,
-    .func_grad = func_grad,
-    .cons_val  = cons_val,
-    .cons_jac  = cons_jac,
-    .hess_prod = func_hess_prod,
-    .func_free = NULL
-  };
-
-  ASSERT_CALL(sleqp_func_create(&func,
-                                &callbacks,
-                                num_variables,
-                                num_constraints,
-                                func_data));
+  constrained_setup();
 
   ASSERT_CALL(sleqp_params_create(&params));
 
   ASSERT_CALL(sleqp_options_create(&options));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
-                                          func,
+                                          constrained_func,
                                           params,
-                                          var_lb,
-                                          var_ub,
-                                          cons_lb,
-                                          cons_ub));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&expected_solution, 4, 4));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 1, 4.742999));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 2, 3.821151));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_solution, 3, 1.379408));
+                                          constrained_var_lb,
+                                          constrained_var_ub,
+                                          constrained_cons_lb,
+                                          constrained_cons_ub));
 }
 
-void constrained_teardown()
+void constrained_test_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&expected_solution));
-
   ASSERT_CALL(sleqp_problem_release(&problem));
 
   ASSERT_CALL(sleqp_options_release(&options));
 
   ASSERT_CALL(sleqp_params_release(&params));
 
-  ASSERT_CALL(sleqp_func_release(&func));
-
-  sleqp_free(&func_data->direction);
-  sleqp_free(&func_data->duals);
-  sleqp_free(&func_data->values);
-  sleqp_free(&func_data);
-
-  ASSERT_CALL(sleqp_sparse_vector_free(&x));
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_lb));
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_lb));
+  constrained_teardown();
 }
 
 START_TEST(test_solve)
@@ -363,7 +54,7 @@ START_TEST(test_solve)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   NULL));
 
   // 100 iterations should be plenty...
@@ -379,7 +70,7 @@ START_TEST(test_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -398,7 +89,7 @@ START_TEST(test_exact_linesearch)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   NULL));
 
   // 100 iterations should be plenty...
@@ -414,7 +105,7 @@ START_TEST(test_exact_linesearch)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -433,7 +124,7 @@ START_TEST(test_parametric_solve)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   NULL));
 
   // 100 iterations should be plenty...
@@ -449,7 +140,7 @@ START_TEST(test_parametric_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -472,7 +163,7 @@ START_TEST(test_sr1_solve)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   NULL));
 
   // 100 iterations should be plenty...
@@ -488,7 +179,7 @@ START_TEST(test_sr1_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -515,7 +206,7 @@ START_TEST(test_bfgs_solve_no_sizing)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   NULL));
 
   // 100 iterations should be plenty...
@@ -531,7 +222,7 @@ START_TEST(test_bfgs_solve_no_sizing)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -554,7 +245,7 @@ START_TEST(test_bfgs_solve_centered_ol_sizing)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   NULL));
 
   // 100 iterations should be plenty...
@@ -570,7 +261,7 @@ START_TEST(test_bfgs_solve_centered_ol_sizing)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -587,18 +278,15 @@ START_TEST(test_unscaled_solve)
 
   SleqpScaling* scaling;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   num_variables,
-                                   num_constraints));
+                                   constrained_num_variables,
+                                   constrained_num_constraints));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   scaling));
 
   // 100 iterations should be plenty...
@@ -614,7 +302,7 @@ START_TEST(test_unscaled_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -634,8 +322,8 @@ START_TEST(test_scaled_solve)
   SleqpScaling* scaling;
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   num_variables,
-                                   num_constraints));
+                                   constrained_num_variables,
+                                   constrained_num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
 
@@ -649,7 +337,7 @@ START_TEST(test_scaled_solve)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   scaling));
 
   // 100 iterations should be plenty...
@@ -665,7 +353,7 @@ START_TEST(test_scaled_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -688,12 +376,9 @@ START_TEST(test_scaled_sr1_solve)
                                     SLEQP_OPTION_INT_HESSIAN_EVAL,
                                     SLEQP_HESSIAN_EVAL_SR1));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   num_variables,
-                                   num_constraints));
+                                   constrained_num_variables,
+                                   constrained_num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
 
@@ -707,7 +392,7 @@ START_TEST(test_scaled_sr1_solve)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   scaling));
 
   // 100 iterations should be plenty...
@@ -723,7 +408,7 @@ START_TEST(test_scaled_sr1_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -746,12 +431,9 @@ START_TEST(test_scaled_bfgs_solve)
                                     SLEQP_OPTION_INT_HESSIAN_EVAL,
                                     SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   num_variables,
-                                   num_constraints));
+                                   constrained_num_variables,
+                                   constrained_num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
 
@@ -765,7 +447,7 @@ START_TEST(test_scaled_bfgs_solve)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   scaling));
 
   // 100 iterations should be plenty...
@@ -781,7 +463,7 @@ START_TEST(test_scaled_bfgs_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -807,19 +489,16 @@ START_TEST(test_auto_scaled_solve)
 
   ASSERT_CALL(sleqp_iterate_create(&iterate,
                                    problem,
-                                   x));
+                                   constrained_initial));
 
   ASSERT_CALL(sleqp_set_and_evaluate(problem,
                                      iterate,
                                      SLEQP_VALUE_REASON_NONE,
                                      NULL));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   num_variables,
-                                   num_constraints));
+                                   constrained_num_variables,
+                                   constrained_num_constraints));
 
   ASSERT_CALL(sleqp_func_scaling_from_gradient(scaling,
                                                sleqp_iterate_get_func_grad(iterate),
@@ -833,7 +512,7 @@ START_TEST(test_auto_scaled_solve)
                                   problem,
                                   params,
                                   options,
-                                  x,
+                                  constrained_initial,
                                   scaling));
 
   // 100 iterations should be plenty...
@@ -849,7 +528,7 @@ START_TEST(test_auto_scaled_solve)
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   expected_solution,
+                                   constrained_optimal,
                                    1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
@@ -870,8 +549,8 @@ Suite* constrained_test_suite()
   tc_cons = tcase_create("Constrained solution test");
 
   tcase_add_checked_fixture(tc_cons,
-                            constrained_setup,
-                            constrained_teardown);
+                            constrained_test_setup,
+                            constrained_test_teardown);
 
   tcase_add_test(tc_cons, test_solve);
 
