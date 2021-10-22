@@ -28,6 +28,9 @@ SleqpSparseVec* fixed_value;
 SleqpSparseVec* grad;
 SleqpSparseVec* fixed_grad;
 
+SleqpSparseVec* cons_val;
+SleqpSparseVec* fixed_cons_val;
+
 SleqpSparseMatrix* cons_jac;
 SleqpSparseMatrix* fixed_cons_jac;
 
@@ -76,6 +79,12 @@ void setup()
 
   ASSERT_CALL(sleqp_sparse_vector_push(value, 0, 1.));
   ASSERT_CALL(sleqp_sparse_vector_push(value, 1, 2.));
+
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&cons_val,
+                                              num_constraints));
+
+  ASSERT_CALL(sleqp_sparse_vector_create_full(&fixed_cons_val,
+                                              num_constraints));
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&cons_jac,
                                          num_constraints,
@@ -126,6 +135,9 @@ void teardown()
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&fixed_cons_jac));
   ASSERT_CALL(sleqp_sparse_matrix_release(&cons_jac));
+
+  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_cons_val));
+  ASSERT_CALL(sleqp_sparse_vector_free(&cons_val));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&fixed_grad));
   ASSERT_CALL(sleqp_sparse_vector_free(&grad));
@@ -204,6 +216,45 @@ START_TEST(test_func_grad)
 
   ck_assert(sleqp_sparse_vector_value_at(fixed_grad, 0) ==
             sleqp_sparse_vector_value_at(grad, 1));
+
+}
+END_TEST
+
+START_TEST(test_cons_val)
+{
+  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+
+  bool reject;
+
+  ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
+                                   fixed_value,
+                                   SLEQP_VALUE_REASON_NONE,
+                                   &reject,
+                                   &func_grad_nnz,
+                                   &cons_val_nnz,
+                                   &cons_jac_nnz));
+
+  ASSERT_CALL(sleqp_func_cons_val(fixed_var_func,
+                                  NULL,
+                                  fixed_cons_val));
+
+  ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
+                                   value,
+                                   SLEQP_VALUE_REASON_NONE,
+                                   &reject,
+                                   &func_grad_nnz,
+                                   &cons_val_nnz,
+                                   &cons_jac_nnz));
+
+  ASSERT_CALL(sleqp_func_cons_val(quadconsfunc,
+                                  NULL,
+                                  cons_val));
+
+  for(int i = 0; i <num_constraints; ++i)
+  {
+    ck_assert(sleqp_sparse_vector_value_at(cons_val, i) ==
+              sleqp_sparse_vector_value_at(fixed_cons_val, i));
+  }
 
 }
 END_TEST
@@ -310,6 +361,8 @@ Suite* fixed_var_test_suite()
   tcase_add_test(tc_eval, test_func_eval);
 
   tcase_add_test(tc_eval, test_func_grad);
+
+  tcase_add_test(tc_eval, test_cons_val);
 
   tcase_add_test(tc_eval, test_cons_jac);
 
