@@ -60,6 +60,7 @@ add_unit_test(sparse/sleqp_sparse_matrix_test)
 
 add_unit_test(preprocessor/fixed_var_func_test)
 add_unit_test(preprocessor/fixed_var_lsq_func_test)
+add_unit_test(preprocessor/fixed_var_dynamic_func_test)
 
 add_unit_test(preprocessor/preprocessor_test)
 
