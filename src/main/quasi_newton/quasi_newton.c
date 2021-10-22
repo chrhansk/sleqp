@@ -227,9 +227,11 @@ quasi_newton_free(SleqpQuasiNewton** star)
 
   SLEQP_CALL(sleqp_timer_free(&(quasi_newton->update_timer)));
 
+  SLEQP_CALL(quasi_newton->callbacks.free(quasi_newton->quasi_newton_data));
+
   SLEQP_CALL(sleqp_func_release(&(quasi_newton->func)));
 
-  SLEQP_CALL(quasi_newton->callbacks.free(quasi_newton->quasi_newton_data));
+  SLEQP_CALL(sleqp_func_release(&quasi_newton->quasi_newton_func));
 
   sleqp_free(star);
 
