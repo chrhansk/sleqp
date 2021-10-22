@@ -13,9 +13,6 @@
 SleqpSparseVec* residuals;
 SleqpSparseVec* fixed_residuals;
 
-SleqpSparseVec* residuals;
-SleqpSparseVec* fixed_residuals;
-
 SleqpSparseVec* forward;
 SleqpSparseVec* fixed_forward;
 
