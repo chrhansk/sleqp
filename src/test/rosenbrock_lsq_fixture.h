@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+  extern const int rosenbrock_num_residuals;
+
   extern SleqpFunc* rosenbrock_lsq_func;
 
   void rosenbrock_lsq_setup();

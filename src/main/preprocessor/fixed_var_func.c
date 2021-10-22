@@ -244,15 +244,13 @@ SLEQP_RETCODE fixed_lsq_func_jac_forward(SleqpFunc* func,
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*) data;
 
-  SleqpSparseVec* reduced_direction = func_data->product;
-
-  SLEQP_CALL(sleqp_sparse_vector_remove_entries(forward_direction,
-                                                reduced_direction,
-                                                func_data->fixed_indices,
-                                                func_data->num_fixed));
+  SLEQP_CALL(sleqp_preprocessing_add_zero_entries(forward_direction,
+                                                  func_data->direction,
+                                                  func_data->num_fixed,
+                                                  func_data->fixed_indices));
 
   SLEQP_CALL(sleqp_lsq_func_jac_forward(func_data->func,
-                                        reduced_direction,
+                                        func_data->direction,
                                         product));
 
   return SLEQP_OKAY;

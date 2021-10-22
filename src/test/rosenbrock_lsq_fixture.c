@@ -26,6 +26,8 @@ static const int num_variables = 2;
 static const int num_constraints = 0;
 static const int num_residuals = 3;
 
+const int rosenbrock_num_residuals = num_residuals;
+
 static SleqpParams* params;
 
 SleqpFunc* rosenbrock_lsq_func;
