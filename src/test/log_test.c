@@ -1,11 +1,12 @@
 #include <check.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "test_common.h"
 
 bool handler_called = false;
 
-const char* handler_message;
+char* handler_message = NULL;
 
 const char* error_message = "error";
 const char* info_message = "info";
@@ -14,20 +15,25 @@ void log_handler(SLEQP_LOG_LEVEL level,
                  time_t time,
                  const char* message)
 {
-  handler_message = message;
+  free(handler_message);
+  handler_message = NULL;
+
+  handler_message = strdup(message);
   handler_called = true;
 }
 
 void log_setup()
 {
   handler_called = false;
+  handler_message = NULL;
 
   sleqp_log_set_handler(log_handler);
 }
 
 void log_teardown()
 {
-
+  free(handler_message);
+  handler_message = NULL;
 }
 
 START_TEST(test_log_msg)
