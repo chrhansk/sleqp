@@ -1,0 +1,6 @@
+trigger_downstream:
+  stage: downstream
+  only:
+    - master
+  trigger:
+    project: code/INDo
