@@ -63,7 +63,7 @@ test_memcheck:
     - cd build
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests
-    - ctest -T memcheck -E "python_sleqp_tests|problem_scaling_test"
+    - ctest -T memcheck -E "python_sleqp_tests|problem_scaling_test" --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=1"
 
 test_python:
   extends: .test
