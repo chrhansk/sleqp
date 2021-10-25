@@ -61,8 +61,8 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
 }
 
 SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
-                                             SleqpIterate* iterate,
-                                             SleqpSparseVec* direction,
+                                             const SleqpIterate* iterate,
+                                             const SleqpSparseVec* direction,
                                              double* cache,
                                              double eps,
                                              bool* in_working_set)
@@ -75,8 +75,8 @@ SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
                                                 direction,
                                                 cache));
 
-  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
@@ -139,10 +139,10 @@ SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
 }
 
 
-SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
-                                    SleqpSparseVec* d,
-                                    SleqpSparseVec* l,
-                                    SleqpSparseVec* u,
+SLEQP_RETCODE sleqp_max_step_length(const SleqpSparseVec* x,
+                                    const SleqpSparseVec* d,
+                                    const SleqpSparseVec* l,
+                                    const SleqpSparseVec* u,
                                     double* max_step_length)
 {
   const int dim = x->dim;

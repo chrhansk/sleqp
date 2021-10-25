@@ -85,8 +85,8 @@ SLEQP_RETCODE sleqp_violated_constraints(SleqpProblem* problem,
                                          int* num_violated_constraints)
 {
   SleqpSparseVec* c = cons_val;
-  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
   int k_c = 0, k_lb = 0, k_ub = 0;
 
@@ -152,8 +152,8 @@ SLEQP_RETCODE sleqp_violation_values(SleqpProblem* problem,
 {
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   const SleqpSparseVec* c = cons_val;
 
   const int dim = c->dim;
@@ -230,8 +230,8 @@ feasibility_residuals(SleqpProblem* problem,
 {
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   const SleqpSparseVec* c = cons_val;
 
   const int dim = c->dim;
@@ -341,8 +341,8 @@ SLEQP_RETCODE sleqp_violation_inf_norm(SleqpProblem* problem,
 {
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   SleqpSparseVec* c = cons_val;
 
   const int dim = c->dim;
@@ -405,8 +405,8 @@ SLEQP_RETCODE sleqp_violation_one_norm(SleqpProblem* problem,
 {
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   SleqpSparseVec* c = cons_val;
 
   const int dim = c->dim;

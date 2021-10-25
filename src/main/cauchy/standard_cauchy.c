@@ -197,8 +197,8 @@ create_cons_bounds(CauchyData* cauchy_data,
 {
   int k_c = 0, k_lb = 0, k_ub = 0;
 
-  SleqpSparseVec* lb = sleqp_problem_cons_lb(cauchy_data->problem);
-  SleqpSparseVec* ub = sleqp_problem_cons_ub(cauchy_data->problem);
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(cauchy_data->problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(cauchy_data->problem);
 
   SleqpSparseVec* val = sleqp_iterate_get_cons_val(iterate);
 
@@ -266,8 +266,8 @@ create_var_bounds(CauchyData* cauchy_data,
   SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
   SleqpProblem* problem = cauchy_data->problem;
 
-  SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
-  SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
+  const SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
 
   const double trust_radius = cauchy_data->trust_radius;
 
@@ -732,8 +732,8 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
 
   {
     SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
-    SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
-    SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
+    const SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
+    const SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
 
     int k_x = 0, k_lb = 0, k_ub = 0;
 
@@ -796,8 +796,8 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
     SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
     SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
 
-    SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-    SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+    const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+    const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
     for(int i = 0; i < num_constraints; ++i)
     {
@@ -949,8 +949,8 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible,
   // Check if trust region is active
   {
     SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
-    SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
-    SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
+    const SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
+    const SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
 
     int k_x = 0, k_lb = 0, k_ub = 0;
 
@@ -1011,8 +1011,8 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible,
     SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
     SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
 
-    SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-    SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+    const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+    const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
     for(int i = 0; i < num_constraints; ++i)
     {

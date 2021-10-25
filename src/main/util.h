@@ -26,17 +26,17 @@ extern "C" {
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
-                                               SleqpIterate* iterate,
-                                               SleqpSparseVec* direction,
+                                               const SleqpIterate* iterate,
+                                               const SleqpSparseVec* direction,
                                                double* cache,
                                                double eps,
                                                bool* in_working_set);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_max_step_length(SleqpSparseVec* x,
-                                      SleqpSparseVec* direction,
-                                      SleqpSparseVec* var_lb,
-                                      SleqpSparseVec* var_ub,
+  SLEQP_RETCODE sleqp_max_step_length(const SleqpSparseVec* x,
+                                      const SleqpSparseVec* direction,
+                                      const SleqpSparseVec* var_lb,
+                                      const SleqpSparseVec* var_ub,
                                       double* max_step_length);
 
 #ifdef __cplusplus

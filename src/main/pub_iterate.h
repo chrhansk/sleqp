@@ -30,7 +30,7 @@ extern "C" {
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
                                      SleqpProblem* problem,
-                                     SleqpSparseVec* x);
+                                     const SleqpSparseVec* x);
 
   /**
    * The current point. Has dimension = num_variables.

@@ -56,7 +56,7 @@ struct SleqpIterate
 
 SLEQP_RETCODE sleqp_iterate_create(SleqpIterate** star,
                                    SleqpProblem* problem,
-                                   SleqpSparseVec* x)
+                                   const SleqpSparseVec* x)
 {
   SLEQP_CALL(sleqp_malloc(star));
 

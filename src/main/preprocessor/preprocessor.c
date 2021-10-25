@@ -73,7 +73,7 @@ SLEQP_RETCODE compute_cons_counts(SleqpPreprocessor* preprocessor)
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_linear_constraints = sleqp_problem_num_linear_constraints(problem);
 
-  SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+  const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
   assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs) == num_linear_constraints);
   assert(sleqp_sparse_matrix_get_num_cols(linear_coeffs) == num_variables);
@@ -184,7 +184,7 @@ SLEQP_RETCODE compute_variable_bounds(SleqpPreprocessor* preprocessor)
     preprocessor->var_max[j] = preprocessor->var_ub[j];
   }
 
-  SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+  const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
   assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs) == num_linear);
   assert(sleqp_sparse_matrix_get_num_cols(linear_coeffs) == num_variables);
@@ -263,7 +263,7 @@ SLEQP_RETCODE compute_linear_bounds(SleqpPreprocessor* preprocessor)
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_linear = sleqp_problem_num_linear_constraints(problem);
 
-  SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+  const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
   assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs) == num_linear);
   assert(sleqp_sparse_matrix_get_num_cols(linear_coeffs) == num_variables);

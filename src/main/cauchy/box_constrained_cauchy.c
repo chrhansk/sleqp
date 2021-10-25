@@ -32,8 +32,8 @@ compute_fixed_vars(CauchyData* cauchy_data)
 
   const int num_variables = sleqp_problem_num_variables(problem);
 
-  SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
-  SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
+  const SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
+  const SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
 
   int k_l = 0, k_u = 0;
 
@@ -74,8 +74,8 @@ compute_diffs(CauchyData* cauchy_data)
   SleqpProblem* problem = cauchy_data->problem;
   SleqpIterate* iterate = cauchy_data->iterate;
 
-  SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
-  SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
+  const SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
+  const SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
   SleqpSparseVec* primal = sleqp_iterate_get_primal(iterate);
 
   assert(sleqp_sparse_vector_is_boxed(primal, var_lb, var_ub));

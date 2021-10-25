@@ -42,11 +42,11 @@ SLEQP_RETCODE sleqp_polishing_create(SleqpPolishing** star,
 
 static
 SLEQP_RETCODE polish_inactive_range(SleqpPolishing* polishing,
-                                    SleqpWorkingSet* source_set,
-                                    SleqpSparseVec* lb,
-                                    SleqpSparseVec* primal,
-                                    SleqpSparseVec* ub,
-                                    SleqpSparseVec* dual,
+                                    const SleqpWorkingSet* source_set,
+                                    const SleqpSparseVec* lb,
+                                    const SleqpSparseVec* primal,
+                                    const SleqpSparseVec* ub,
+                                    const SleqpSparseVec* dual,
                                     bool constraints,
                                     int* num_removed)
 {
@@ -137,8 +137,8 @@ SLEQP_RETCODE polish_inactive_range(SleqpPolishing* polishing,
 
 static
 SLEQP_RETCODE polish_zero_dual_range(SleqpPolishing* polishing,
-                                     SleqpWorkingSet* source_set,
-                                     SleqpSparseVec* dual,
+                                     const SleqpWorkingSet* source_set,
+                                     const SleqpSparseVec* dual,
                                      bool constraints,
                                      int* num_removed)
 {

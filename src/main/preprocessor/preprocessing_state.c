@@ -166,7 +166,7 @@ SLEQP_RETCODE sleqp_preprocessing_state_add_forcing_constraint(SleqpPreprocessin
 
   assert(linear_states[constraint].state == SLEQP_CONS_UNCHANGED);
 
-  SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+  const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
   double* linear_data = sleqp_sparse_matrix_get_data(linear_coeffs);
   int* linear_rows = sleqp_sparse_matrix_get_rows(linear_coeffs);
