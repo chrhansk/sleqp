@@ -12,7 +12,7 @@
 const int num_variables = 1;
 const int num_constraints = 1;
 
-const unsigned int delay_time = 2;
+const double delay_time = 1e-4;
 
 double value;
 
@@ -186,7 +186,7 @@ void time_limit_teardown()
   ASSERT_CALL(sleqp_func_release(&func));
 }
 
-const double time_limit = 1.;
+const double time_limit = 1e-6;
 
 START_TEST(test_solve)
 {
