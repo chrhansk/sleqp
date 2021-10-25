@@ -6,47 +6,33 @@ test_fact_build_MUMPS:
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MUMPS -DSLEQP_LPS=$DEFAULT_LPS
     - make
 
-test_fact_Umfpack:
-  extends: .test
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=Umfpack -DSLEQP_LPS=$DEFAULT_LPS
-    - make all build_tests test
 
-test_fact_MA27:
+test_fact:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA27 -DSLEQP_LPS=$DEFAULT_LPS
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$FACT -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
+  parallel:
+    matrix:
+      - FACT:
+          - Umfpack
+          - MA27
+          - MA57
+          - MA86
+          - MA97
 
-test_fact_MA57:
+test_lps:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA57 -DSLEQP_LPS=$DEFAULT_LPS
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$LPS
     - make build_tests test
-
-test_fact_MA86:
-  extends: .test
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA86 -DSLEQP_LPS=$DEFAULT_LPS
-    - make build_tests test
-
-test_fact_MA97:
-  extends: .test
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MA97 -DSLEQP_LPS=$DEFAULT_LPS
-    - make build_tests test
-
-test_lps_HiGHS:
-  extends: .test
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=HiGHS
-    - make build_tests test
+  parallel:
+    matrix:
+      - LPS:
+        - SoPlex
+        - HiGHS
 
 test_coverage:
   extends: .test
@@ -64,6 +50,9 @@ test_memcheck:
     - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests
     - ctest -T memcheck -E "python_sleqp_tests|problem_scaling_test" --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=1"
+  artifacts:
+    paths:
+      - build/Testing/Temporary/MemoryChecker.*.log
 
 test_python:
   extends: .test

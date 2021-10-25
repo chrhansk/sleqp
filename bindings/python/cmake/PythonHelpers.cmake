@@ -22,16 +22,18 @@ function(add_python_project)
 
   set(DOC_DIR "${PROJECT_DIR}/docs")
 
-  set(SETUP_PY    "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
+  set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
 
   set(DOC_TARGET "python_${PROJECT_NAME}_doc")
 
   set(PYTHON_CFLAGS "")
 
   foreach(CONFIG_FILE ${ARGS_CONFIG_FILES})
+    get_filename_component(CONFIG_FILE ${CONFIG_FILE} ABSOLUTE)
     get_filename_component(RESULT_FILE ${CONFIG_FILE} NAME_WLE)
+    get_filename_component(RESULT_DIR ${CONFIG_FILE} DIRECTORY)
     configure_file(${CONFIG_FILE}
-      "${CMAKE_CURRENT_SOURCE_DIR}/${RESULT_FILE}"
+      "${RESULT_DIR}/${RESULT_FILE}"
       @ONLY)
   endforeach()
 
@@ -49,9 +51,9 @@ function(add_python_project)
 
   if(MAKE)
     add_custom_command(
-    TARGET ${DOC_TARGET}
-    COMMAND ${MAKE} html
-    WORKING_DIRECTORY ${DOC_DIR})
+      TARGET ${DOC_TARGET}
+      COMMAND ${MAKE} html
+      WORKING_DIRECTORY ${DOC_DIR})
 
   add_dependencies(${DOC_TARGET} ${TARGET_NAME})
 
