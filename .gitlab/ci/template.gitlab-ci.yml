@@ -1,0 +1,13 @@
+.test:
+  stage: test
+  before_script:
+    - mkdir -p build
+  dependencies: []
+
+.test_install:
+  stage: postpackage
+  only:
+    - master
+  before_script:
+    - cd build
+    - apt -y install ./*.deb

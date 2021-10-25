@@ -1,0 +1,25 @@
+test_install_package:
+  stage: postpackage
+  only:
+    - master
+  script:
+    - cd build
+    - apt -y install ./*.deb
+
+test_install_make:
+  extends: .test_install
+  script:
+    - cd $CI_PROJECT_DIR/src/test/install
+    - ./test_make.sh
+
+test_install_cmake:
+  extends: .test_install
+  script:
+    - cd $CI_PROJECT_DIR/src/test/install
+    - ./test_cmake.sh
+
+test_install_python_sdist:
+  extends: .test_install
+  script:
+    - cd $CI_PROJECT_DIR
+    - ./src/test/install/test_python_sdist.sh

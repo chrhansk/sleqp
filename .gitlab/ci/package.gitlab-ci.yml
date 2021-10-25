@@ -1,0 +1,45 @@
+package:
+  stage: package
+  only:
+    - master
+  dependencies:
+    - build
+  script:
+    - cd build
+    - make package
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - build/*.deb
+      - build/*.bz2
+
+package_wheel:
+  stage: package
+  only:
+    - master
+  dependencies:
+    - build
+  script:
+    - cd build
+    - make python_sleqp_bdist_wheel
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - bindings/python/dist/*.whl
+
+package_sdist:
+  stage: package
+  only:
+    - master
+  dependencies:
+    - build
+  script:
+    - cd build
+    - make python_sleqp_sdist
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - bindings/python/dist/*.tar.gz

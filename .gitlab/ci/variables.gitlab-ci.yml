@@ -1,0 +1,4 @@
+variables:
+  CTEST_OUTPUT_ON_FAILURE: '1'
+  DEFAULT_LPS: 'SoPlex'
+  DEFAULT_FACT: 'Umfpack'
