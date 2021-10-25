@@ -4,7 +4,12 @@
 *.egg-info
 .eggs
 dist
-setup.py
 **/*.so
-tox.ini
+
+# Generated files:
+
 local_config.py
+setup.py
+tox.ini
+docs/conf.py
+
