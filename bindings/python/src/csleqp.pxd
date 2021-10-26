@@ -212,10 +212,10 @@ cdef extern from "sleqp.h":
 
 
   ctypedef enum SLEQP_LOG_LEVEL:
-    SLEQP_LOG_ERROR = 0,
-    SLEQP_LOG_WARN = 1,
-    SLEQP_LOG_INFO = 2,
-    SLEQP_LOG_DEBUG = 3
+    SLEQP_LOG_ERROR,
+    SLEQP_LOG_WARN,
+    SLEQP_LOG_INFO,
+    SLEQP_LOG_DEBUG
 
   # Sparse vectors
   SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,
