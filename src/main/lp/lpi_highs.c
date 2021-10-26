@@ -1,6 +1,8 @@
 #include "lpi_highs.h"
 
 #include <assert.h>
+#include <math.h>
+
 #include <interfaces/highs_c_api.h>
 
 #include "cmp.h"
