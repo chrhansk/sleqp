@@ -299,6 +299,16 @@ static SLEQP_LPI_STATUS highs_get_status(void* lp_data)
   return lp_interface->status;
 }
 
+static double adjust_neg_inf(double value)
+{
+  return sleqp_is_infinite(-value) ? -INFINITY : value;
+}
+
+static double adjust_pos_inf(double value)
+{
+  return sleqp_is_infinite(value) ? INFINITY : value;
+}
+
 static SLEQP_RETCODE highs_set_bounds(void* lp_data,
                                       int num_cols,
                                       int num_rows,
@@ -314,16 +324,16 @@ static SLEQP_RETCODE highs_set_bounds(void* lp_data,
   {
     SLEQP_HIGHS_CALL(Highs_changeColBounds(highs,
                                            i,
-                                           vars_lb[i],
-                                           vars_ub[i]), highs);
+                                           adjust_neg_inf(vars_lb[i]),
+                                           adjust_pos_inf(vars_ub[i])), highs);
   }
 
   for(int i = 0; i < num_rows; ++i)
   {
     SLEQP_HIGHS_CALL(Highs_changeRowBounds(highs,
                                            i,
-                                           cons_lb[i],
-                                           cons_ub[i]), highs);
+                                           adjust_neg_inf(cons_lb[i]),
+                                           adjust_pos_inf(cons_ub[i])), highs);
   }
 
   return SLEQP_OKAY;
