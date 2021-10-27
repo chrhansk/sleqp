@@ -121,8 +121,11 @@ SLEQP_RETCODE sleqp_solver_compute_trial_point_simple(SleqpSolver* solver,
 
   }
 
+  SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_step,
+                                      solver->trial_step));
+
   SLEQP_CALL(compute_trial_iterate_from_direction(solver,
-                                                  solver->cauchy_step));
+                                                  solver->trial_step));
 
   return SLEQP_OKAY;
 }
