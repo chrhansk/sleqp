@@ -2,6 +2,7 @@
 
 from enum import Enum, Flag, auto
 
+
 class _DocEnum(Enum):
     def __new__(cls, value, doc=None):
         self = object.__new__(cls)  # calling super().__new__(value) here would fail
@@ -26,6 +27,7 @@ class Status(_DocEnum):
   AbortManual    = csleqp.SLEQP_STATUS_ABORT_MANUAL, "Manual abort requested"
   AbortTime      = csleqp.SLEQP_STATUS_ABORT_TIME, "Aborted after reaching time limit"
 
+
 class DerivCheck(Flag):
   Skip             = csleqp.SLEQP_DERIV_CHECK_SKIP
   FirstFunc        = csleqp.SLEQP_DERIV_CHECK_FIRST_FUNC
@@ -36,6 +38,7 @@ class DerivCheck(Flag):
   SecondExhaustive = csleqp.SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE
   SecondSimple     = csleqp.SLEQP_DERIV_CHECK_SECOND_SIMPLE
 
+
 class HessianEval(_DocEnum):
   """
   The evaluation method used for Hessian products
@@ -45,9 +48,11 @@ class HessianEval(_DocEnum):
   SimpleBFGS = csleqp.SLEQP_HESSIAN_EVAL_SIMPLE_BFGS, "The BFGS method for convex functions"
   DampedBFGS = csleqp.SLEQP_HESSIAN_EVAL_DAMPED_BFGS, "A damped BFGS method "
 
+
 class Sizing(Enum):
   NoSizing   = csleqp.SLEQP_BFGS_SIZING_NONE
   CenteredOL = csleqp.SLEQP_BFGS_SIZING_CENTERED_OL
+
 
 class TRSolver(_DocEnum):
   """
@@ -58,6 +63,7 @@ class TRSolver(_DocEnum):
   LSQR  = csleqp.SLEQP_TR_SOLVER_LSQR, "LSQR solver for LSQ functions"
   Auto  = csleqp.SLEQP_TR_SOLVER_AUTO, "Automatically chosen"
 
+
 class PolishingType(_DocEnum):
   """
   The polishing methods use
@@ -65,6 +71,7 @@ class PolishingType(_DocEnum):
   NoPolishing = csleqp.SLEQP_POLISHING_NONE, "No polishing"
   ZeroDual    = csleqp.SLEQP_POLISHING_ZERO_DUAL, "Remove bounds and constraints with zero duals"
   Inactive    = csleqp.SLEQP_POLISHING_INACTIVE, "Remove inactive bounds and constraints"
+
 
 class StepRule(_DocEnum):
   """
@@ -74,12 +81,14 @@ class StepRule(_DocEnum):
   Window = csleqp.SLEQP_STEP_RULE_WINDOW, "Sliding window"
   MinStep = csleqp.SLEQP_STEP_RULE_MINSTEP, "Min-step"
 
+
 class LineSearch(_DocEnum):
   """
   The linesearch used
   """
   Exact  = csleqp.SLEQP_LINESEARCH_EXACT, "Exact line search"
   Approx = csleqp.SLEQP_LINESEARCH_APPROX, "Approximate line search"
+
 
 class ParametricCauchy(_DocEnum):
   """
@@ -88,6 +97,7 @@ class ParametricCauchy(_DocEnum):
   Disabled = csleqp.SLEQP_PARAMETRIC_CAUCHY_DISABLED, "Disable parametric Cauchy"
   Coarse   = csleqp.SLEQP_PARAMETRIC_CAUCHY_COARSE, "Coarse parametric Cauchy"
   Fine     = csleqp.SLEQP_PARAMETRIC_CAUCHY_FINE, "Fine parametric Cauchy"
+
 
 class ValueReason(_DocEnum):
   """
@@ -101,6 +111,7 @@ class ValueReason(_DocEnum):
   TryingSOCIterate = csleqp.SLEQP_VALUE_REASON_TRYING_SOC_ITERATE, "Trying a second-order correction"
   RejectedIterate  = csleqp.SLEQP_VALUE_REASON_REJECTED_ITERATE, "Rejected an iterate restoring the previous"
 
+
 class ActiveState(_DocEnum):
   """
   The state of a variable or constraint in the working set
@@ -110,6 +121,7 @@ class ActiveState(_DocEnum):
   ActiveUpper = csleqp.SLEQP_ACTIVE_UPPER, "Variable or constraint is active at its upper bound"
   ActiveBoth  = csleqp.SLEQP_ACTIVE_BOTH, "Variable or constraint is active at both bounds (which must coincide)"
 
+
 class DualEstimationType(_DocEnum):
   """
   The type of dual estimation used
@@ -117,10 +129,12 @@ class DualEstimationType(_DocEnum):
   LP      = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LP, "Dual variables of the LP"
   LSQ     = csleqp.SLEQP_DUAL_ESTIMATION_TYPE_LSQ, "Least-squares estimation"
 
+
 class SolverEvent(Enum):
   AcceptedIterate    = csleqp.SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE
   PerformedIteration = csleqp.SLEQP_SOLVER_EVENT_PERFORMED_ITERATION
   Finished           = csleqp.SLEQP_SOLVER_EVENT_FINISHED
+
 
 class SolverState(Enum):
   TrustRadius              = auto()
