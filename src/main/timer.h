@@ -39,6 +39,11 @@ extern "C" {
 
   int sleqp_timer_get_num_runs(SleqpTimer* timer);
 
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_timer_display(SleqpTimer* timer,
+                                    const char* description,
+                                    double total_elapsed);
+
   SLEQP_NODISCARD SLEQP_RETCODE sleqp_timer_free(SleqpTimer** star);
 
 #ifdef __cplusplus

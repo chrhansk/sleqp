@@ -337,13 +337,13 @@ search_backtracking(SleqpParametricSolver* solver,
 
   if(i == solver->max_num_resolves)
   {
-    double step_length;
+    bool full_step;
 
     SLEQP_CALL(sleqp_linesearch_cauchy_step(solver->linesearch,
                                             cauchy_direction,
                                             multipliers,
                                             cauchy_hessian_direction,
-                                            &step_length,
+                                            &full_step,
                                             quadratic_merit));
   }
 

@@ -5,21 +5,13 @@
 
 #include "callback_handler.h"
 #include "deriv_check.h"
-#include "dual_estimation.h"
-#include "eqp.h"
-#include "linesearch.h"
 #include "merit.h"
-#include "parametric.h"
 #include "polish.h"
 #include "problem_scaling.h"
-#include "soc.h"
-#include "working_step.h"
+#include "trial_point.h"
 
-#include "cauchy/cauchy.h"
-#include "lp/lpi.h"
 #include "quasi_newton/quasi_newton.h"
 #include "step/step_rule.h"
-#include "sparse/sparse_factorization.h"
 
 #include "preprocessor/preprocessor.h"
 
@@ -61,6 +53,8 @@ extern "C" {
 
     SleqpDerivCheckData* deriv_check;
 
+    SleqpTrialPointSolver* trial_point_solver;
+
     SleqpStepRule* step_rule;
 
     SleqpIterate* iterate;
@@ -69,49 +63,11 @@ extern "C" {
 
     SleqpSparseVec* original_violation;
 
-    SleqpLPi* lp_interface;
-
-    SleqpCauchy* cauchy_data;
-
-    SleqpSparseVec* cauchy_direction;
-
-    SleqpSparseVec* cauchy_step;
-
-    SleqpSparseVec* cauchy_hessian_step;
-
-    double cauchy_step_length;
-
-    SleqpSparseVec* multipliers;
-
-    SleqpWorkingStep* working_step;
-
-    SleqpEQPSolver* eqp_solver;
-
-    SleqpSparseVec* newton_step;
-
-    SleqpSparseVec* newton_hessian_step;
-
-    SleqpSparseVec* trial_step;
-
     SLEQP_STEPTYPE last_step_type;
-
-    SleqpSparseVec* initial_trial_point;
-
-    SleqpSparseFactorization* factorization;
-
-    SleqpAugJac* aug_jac;
-
-    SleqpDualEstimation* estimation_data;
-    SleqpSparseVec* estimation_residuals;
 
     SleqpMerit* merit;
 
-    SleqpLineSearchData* linesearch;
-
     SleqpPolishing* polishing;
-
-    SleqpParametricSolver* parametric_solver;
-    SleqpWorkingSet* parametric_original_working_set;
 
     SleqpCallbackHandler** callback_handlers;
 
@@ -128,11 +84,6 @@ extern "C" {
     double dual_diff_norm;
 
     double current_merit_value;
-
-    // SOC related
-    SleqpSOC* soc_data;
-
-    SleqpSparseVec* soc_step;
 
     double* dense_cache;
 
@@ -187,35 +138,9 @@ extern "C" {
                                                     bool trial_step_accepted,
                                                     double trial_step_infnorm,
                                                     double cauchy_step_infnorm,
-                                                    double cauchy_step_length,
+                                                    bool full_cauchy_step,
                                                     double eps,
                                                     double* lp_trust_radius);
-
-  SLEQP_RETCODE sleqp_solver_compute_trial_point_simple(SleqpSolver* solver,
-                                                        double* cauchy_merit_value,
-                                                        bool quadratic_model,
-                                                        bool* full_step);
-
-  SLEQP_RETCODE sleqp_solver_compute_trial_point_newton(SleqpSolver* solver,
-                                                        double* trial_merit_value,
-                                                        bool* full_step);
-
-  SLEQP_RETCODE sleqp_solver_compute_trial_point(SleqpSolver* solver,
-                                                 double* trial_merit_value,
-                                                 bool* full_step,
-                                                 bool* reject);
-
-  SLEQP_RETCODE sleqp_solver_compute_trial_point_det(SleqpSolver* solver,
-                                                     double* trial_merit_value,
-                                                     bool* full_step);
-
-  SLEQP_RETCODE sleqp_solver_compute_trial_point_soc(SleqpSolver* solver,
-                                                     bool* reject);
-
-  SLEQP_RETCODE sleqp_solver_compute_cauchy_step(SleqpSolver* solver,
-                                                 double* cauchy_merit_value,
-                                                 bool quadratic_model,
-                                                 bool* full_step);
 
   double sleqp_solver_remaining_time(SleqpSolver* solver);
 

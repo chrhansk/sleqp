@@ -6,7 +6,7 @@ SLEQP_RETCODE sleqp_solver_update_lp_trust_radius(SleqpSolver* solver,
                                                   bool trial_step_accepted,
                                                   double trial_step_infnorm,
                                                   double cauchy_step_infnorm,
-                                                  double cauchy_step_length,
+                                                  bool full_cauchy_step,
                                                   double eps,
                                                   double* lp_trust_radius)
 {
@@ -24,7 +24,7 @@ SLEQP_RETCODE sleqp_solver_update_lp_trust_radius(SleqpSolver* solver,
 
     update_lhs = SLEQP_MAX(update_lhs, scaled_trust_radius);
 
-    if(sleqp_is_eq(cauchy_step_length, 1., eps))
+    if(full_cauchy_step)
     {
       (*lp_trust_radius) *= 7.;
     }

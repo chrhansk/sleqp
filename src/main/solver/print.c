@@ -3,11 +3,11 @@
 #include "feas.h"
 #include "log.h"
 
-#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
+#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14s |%14s |%14e |%14e | %18s"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14e | %18s"
 
-#define INITIAL_LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
+#define INITIAL_LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s | %18s"
 
 #define DEFAULT_BUF_SIZE 1024
 
@@ -55,6 +55,7 @@ SLEQP_RETCODE sleqp_solver_print_initial_line(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
+/*
 static SLEQP_RETCODE print_cond(char cond_buffer[DEFAULT_BUF_SIZE],
                                 bool exact,
                                 double condition)
@@ -85,12 +86,16 @@ static SLEQP_RETCODE print_cond(char cond_buffer[DEFAULT_BUF_SIZE],
 
   return SLEQP_OKAY;
 }
+*/
 
 SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
 {
+  /*
   bool exact = false;
   double basis_condition, aug_jac_condition;
+  */
 
+  /*
   char jac_cond_buf[DEFAULT_BUF_SIZE];
   char basis_cond_buf[DEFAULT_BUF_SIZE];
 
@@ -109,6 +114,7 @@ SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
   SLEQP_CALL(print_cond(basis_cond_buf,
                         exact,
                         basis_condition));
+  */
 
   const char* steptype_descriptions[] = {
     [SLEQP_STEPTYPE_NONE] = "",
@@ -150,37 +156,13 @@ SLEQP_RETCODE sleqp_solver_print_line(SleqpSolver* solver)
                  working_set_buf,
                  solver->lp_trust_radius,
                  solver->trust_radius,
+                 /*
                  basis_cond_buf,
                  jac_cond_buf,
+                 */
                  solver->primal_diff_norm,
                  solver->dual_diff_norm,
                  steptype_descriptions[solver->last_step_type]);
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE solver_print_timer(SleqpTimer* timer,
-                                        const char* message,
-                                        double total_elapsed)
-{
-  const int buf_size = 4096;
-  char buffer[buf_size];
-
-  const int num_runs = sleqp_timer_get_num_runs(timer);
-  const double avg_time = sleqp_timer_get_avg(timer);
-  const double total_time = sleqp_timer_get_ttl(timer);
-  const double percent = (total_time / total_elapsed) * 100.;
-
-  snprintf(buffer,
-           buf_size,
-           "%30s: %5d (%.6fs avg, %8.2fs total = %5.2f%%)",
-           message,
-           num_runs,
-           avg_time,
-           total_time,
-           percent);
-
-  sleqp_log_info(buffer);
 
   return SLEQP_OKAY;
 }
@@ -198,6 +180,8 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
     [SLEQP_STATUS_ABORT_TIME]      = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached time limit"       SLEQP_FORMAT_RESET,
     [SLEQP_STATUS_ABORT_DEADPOINT] = SLEQP_FORMAT_BOLD SLEQP_FORMAT_RED    "reached dead point"       SLEQP_FORMAT_RESET,
   };
+
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
   SleqpFunc* original_func = sleqp_problem_func(solver->original_problem);
   SleqpFunc* func = sleqp_problem_func(solver->problem);
@@ -248,66 +232,46 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                  "Iterations",
                  solver->iteration);
 
-  SLEQP_CALL(solver_print_timer(sleqp_func_get_set_timer(original_func),
-                                "Setting function values",
-                                solver->elapsed_seconds));
+  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_set_timer(original_func),
+                                 "Setting function values",
+                                 solver->elapsed_seconds));
 
-  SLEQP_CALL(solver_print_timer(sleqp_func_get_val_timer(original_func),
-                                "Function evaluations",
-                                solver->elapsed_seconds));
+  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_val_timer(original_func),
+                                 "Function evaluations",
+                                 solver->elapsed_seconds));
 
-  SLEQP_CALL(solver_print_timer(sleqp_func_get_grad_timer(original_func),
-                                "Gradient evaluations",
-                                solver->elapsed_seconds));
+  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_grad_timer(original_func),
+                                 "Gradient evaluations",
+                                 solver->elapsed_seconds));
 
-  SLEQP_CALL(solver_print_timer(sleqp_func_get_cons_val_timer(original_func),
-                                "Constraint evaluations",
-                                solver->elapsed_seconds));
+  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_cons_val_timer(original_func),
+                                 "Constraint evaluations",
+                                 solver->elapsed_seconds));
 
-  SLEQP_CALL(solver_print_timer(sleqp_func_get_cons_jac_timer(original_func),
-                                "Jacobian evaluations",
-                                solver->elapsed_seconds));
+  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_cons_jac_timer(original_func),
+                                 "Jacobian evaluations",
+                                 solver->elapsed_seconds));
 
   if(with_hessian)
   {
-    SLEQP_CALL(solver_print_timer(sleqp_func_get_hess_timer(original_func),
-                                  "Hessian products",
-                                  solver->elapsed_seconds));
+    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_hess_timer(original_func),
+                                   "Hessian products",
+                                   solver->elapsed_seconds));
   }
 
   if(solver->quasi_newton)
   {
-    SLEQP_CALL(solver_print_timer(sleqp_func_get_hess_timer(func),
-                                  "quasi-Newton products",
-                                  solver->elapsed_seconds));
+    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_hess_timer(func),
+                                   "quasi-Newton products",
+                                   solver->elapsed_seconds));
 
-    SLEQP_CALL(solver_print_timer(sleqp_quasi_newton_update_timer(solver->quasi_newton),
-                                  "quasi-Newton updates",
-                                  solver->elapsed_seconds));
+    SLEQP_CALL(sleqp_timer_display(sleqp_quasi_newton_update_timer(solver->quasi_newton),
+                                   "quasi-Newton updates",
+                                   solver->elapsed_seconds));
   }
 
-  SLEQP_CALL(solver_print_timer(sleqp_aug_jac_creation_timer(solver->aug_jac),
-                                "Factorizations",
-                                solver->elapsed_seconds));
-
-  SLEQP_CALL(solver_print_timer(sleqp_aug_jac_solution_timer(solver->aug_jac),
-                                "Substitutions",
-                                solver->elapsed_seconds));
-
-  if(solver->lp_interface)
-  {
-    SLEQP_CALL(solver_print_timer(sleqp_lpi_get_solve_timer(solver->lp_interface),
-                                  "Solved LPs",
-                                  solver->elapsed_seconds));
-  }
-
-  SLEQP_CALL(solver_print_timer(sleqp_eqp_solver_get_timer(solver->eqp_solver),
-                                "Solved EQPs",
-                                solver->elapsed_seconds));
-
-  SLEQP_CALL(solver_print_timer(sleqp_linesearch_get_timer(solver->linesearch),
-                                "Line searches",
-                                solver->elapsed_seconds));
+  SLEQP_CALL(sleqp_trial_point_solver_print_stats(trial_point_solver,
+                                                  solver->elapsed_seconds));
 
   sleqp_log_info("%30s: %8.2fs", "Solving time", solver->elapsed_seconds);
 

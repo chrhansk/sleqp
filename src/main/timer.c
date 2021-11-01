@@ -7,6 +7,8 @@
 #include "log.h"
 #include "mem.h"
 
+#define BUF_SIZE 512
+
 struct SleqpTimer
 {
   clock_t start;
@@ -144,6 +146,31 @@ double sleqp_timer_get_std(SleqpTimer* timer)
 int sleqp_timer_get_num_runs(SleqpTimer* timer)
 {
   return timer->num_runs;
+}
+
+SLEQP_RETCODE sleqp_timer_display(SleqpTimer* timer,
+                                  const char* description,
+                                  double total_elapsed)
+{
+  char buffer[BUF_SIZE];
+
+  const int num_runs = sleqp_timer_get_num_runs(timer);
+  const double avg_time = sleqp_timer_get_avg(timer);
+  const double total_time = sleqp_timer_get_ttl(timer);
+  const double percent = (total_time / total_elapsed) * 100.;
+
+  snprintf(buffer,
+           BUF_SIZE,
+           "%30s: %5d (%.6fs avg, %8.2fs total = %5.2f%%)",
+           description,
+           num_runs,
+           avg_time,
+           total_time,
+           percent);
+
+  sleqp_log_info(buffer);
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_timer_free(SleqpTimer** star)

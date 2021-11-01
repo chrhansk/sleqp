@@ -68,6 +68,10 @@ SLEQP_RETCODE sleqp_solver_accept_step(SleqpSolver* solver)
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
+
+  SleqpSparseVec* multipliers = sleqp_trial_point_solver_get_multipliers(trial_point_solver);
+
   SLEQP_CALL(sleqp_solver_set_func_value(solver,
                                          trial_iterate,
                                          SLEQP_VALUE_REASON_ACCEPTED_ITERATE,
@@ -87,7 +91,7 @@ SLEQP_RETCODE sleqp_solver_accept_step(SleqpSolver* solver)
     SLEQP_CALL(sleqp_quasi_newton_push(solver->quasi_newton,
                                        solver->iterate,
                                        solver->trial_iterate,
-                                       solver->multipliers));
+                                       multipliers));
   }
 
   // perform simple swaps

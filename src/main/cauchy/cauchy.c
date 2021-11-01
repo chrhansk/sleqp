@@ -1,10 +1,12 @@
 #include "cauchy.h"
 
+#include "cmp.h"
 #include "mem.h"
 
 struct SleqpCauchy
 {
   int refcount;
+  double trust_radius;
   SleqpCauchyCallbacks callbacks;
   void* cauchy_data;
 };
@@ -20,6 +22,7 @@ SLEQP_RETCODE sleqp_cauchy_create(SleqpCauchy** star,
   *cauchy = (SleqpCauchy){0};
 
   cauchy->refcount = 1;
+  cauchy->trust_radius = SLEQP_NONE;
 
   cauchy->callbacks = *callbacks;
 
@@ -40,6 +43,8 @@ SLEQP_RETCODE sleqp_cauchy_set_iterate(SleqpCauchy* cauchy,
 SLEQP_RETCODE sleqp_cauchy_set_trust_radius(SleqpCauchy* cauchy,
                                             double trust_radius)
 {
+  cauchy->trust_radius = trust_radius;
+
   return cauchy->callbacks.set_trust_radius(trust_radius,
                                             cauchy->cauchy_data);
 }
@@ -104,6 +109,22 @@ SLEQP_RETCODE sleqp_cauchy_get_basis_condition(SleqpCauchy* cauchy,
   return cauchy->callbacks.get_basis_condition(exact,
                                                condition,
                                                cauchy->cauchy_data);
+}
+
+SLEQP_RETCODE sleqp_cauchy_compute_criticality_bound(SleqpCauchy* cauchy,
+                                                     double merit_value,
+                                                     double* criticality_bound)
+{
+  double objective_value;
+
+  SLEQP_CALL(sleqp_cauchy_get_objective_value(cauchy,
+                                              &objective_value));
+
+  const double reduction = merit_value - objective_value;
+
+  *criticality_bound = reduction / SLEQP_MIN(cauchy->trust_radius, 1.);
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE sleqp_cauchy_capture(SleqpCauchy* cauchy)

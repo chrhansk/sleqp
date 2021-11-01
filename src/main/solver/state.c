@@ -6,11 +6,13 @@ SLEQP_RETCODE sleqp_solver_get_real_state(const SleqpSolver* solver,
                                           SLEQP_SOLVER_STATE_REAL state,
                                           double* value)
 {
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
+
   double min_rayleigh, max_rayleigh;
 
-  SLEQP_CALL(sleqp_eqp_solver_current_rayleigh(solver->eqp_solver,
-                                               &min_rayleigh,
-                                               &max_rayleigh));
+  SLEQP_CALL(sleqp_trial_point_solver_get_rayleigh(trial_point_solver,
+                                                   &min_rayleigh,
+                                                   &max_rayleigh));
 
   switch(state)
   {

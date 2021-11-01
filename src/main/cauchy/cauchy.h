@@ -58,6 +58,13 @@ extern "C" {
                                                  bool* exact,
                                                  double* condition);
 
+  // Bound on the criticality measure used in
+  // "On the Convergence of Successive Linear Programming Algorithms"
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_cauchy_compute_criticality_bound(SleqpCauchy* cauchy,
+                                                       double merit_value,
+                                                       double* criticality_bound);
+
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_cauchy_capture(SleqpCauchy* cauchy);
 

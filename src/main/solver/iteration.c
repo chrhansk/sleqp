@@ -75,8 +75,14 @@ static
 SLEQP_RETCODE update_trust_radii(SleqpSolver* solver,
                                  double reduction_ratio,
                                  double trial_step_norm,
+                                 bool full_cauchy_step,
                                  bool step_accepted)
 {
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
+
+  SleqpSparseVec* cauchy_step = sleqp_trial_point_solver_get_cauchy_step(trial_point_solver);
+  SleqpSparseVec* trial_step = sleqp_trial_point_solver_get_trial_step(trial_point_solver);
+
   const SleqpOptions* options = solver->options;
 
   const double zero_eps = sleqp_params_get(solver->params,
@@ -88,8 +94,8 @@ SLEQP_RETCODE update_trust_radii(SleqpSolver* solver,
   const bool perform_newton_step = quadratic_model &&
     sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
 
-  const double trial_step_infnorm = sleqp_sparse_vector_inf_norm(solver->trial_step);
-  const double cauchy_step_infnorm = sleqp_sparse_vector_inf_norm(solver->cauchy_step);
+  const double trial_step_infnorm = sleqp_sparse_vector_inf_norm(trial_step);
+  const double cauchy_step_infnorm = sleqp_sparse_vector_inf_norm(cauchy_step);
 
   if(perform_newton_step)
   {
@@ -103,7 +109,7 @@ SLEQP_RETCODE update_trust_radii(SleqpSolver* solver,
                                                  step_accepted,
                                                  trial_step_infnorm,
                                                  cauchy_step_infnorm,
-                                                 solver->cauchy_step_length,
+                                                 full_cauchy_step,
                                                  zero_eps,
                                                  &(solver->lp_trust_radius)));
 
@@ -177,7 +183,8 @@ static bool check_for_unboundedness(SleqpSolver* solver,
   return false;
 }
 
-static bool check_for_optimality(SleqpSolver* solver,
+static bool
+check_for_optimality(SleqpSolver* solver,
                                  SleqpIterate* iterate)
 {
   // Optimality check with respect to scaled problem
@@ -195,17 +202,36 @@ static bool check_for_optimality(SleqpSolver* solver,
   return false;
 }
 
+static SLEQP_RETCODE
+prepare_trial_point_solver(SleqpSolver* solver)
+{
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_iterate(trial_point_solver,
+                                                  solver->iterate));
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_time_limit(trial_point_solver,
+                                                     sleqp_solver_remaining_time(solver)));
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_trust_radius(trial_point_solver,
+                                                       solver->trust_radius));
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_lp_trust_radius(trial_point_solver,
+                                                          solver->lp_trust_radius));
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_penalty(trial_point_solver,
+                                                  solver->penalty_parameter));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 {
   assert(solver->status == SLEQP_STATUS_RUNNING);
 
-  if(solver->lp_interface)
-  {
-    SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface,
-                                        sleqp_solver_remaining_time(solver)));
-  }
-
   const SleqpOptions* options = solver->options;
+
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -224,6 +250,8 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
   {
     return SLEQP_OKAY;
   }
+
+  SLEQP_CALL(prepare_trial_point_solver(solver));
 
   double exact_iterate_value, model_iterate_value;
 
@@ -245,7 +273,7 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 
   double model_trial_value;
 
-  bool full_step;
+  bool full_cauchy_step;
   bool reject_step = false;
 
   // Derivative check
@@ -257,16 +285,19 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
   }
 
   // Step computation
-  SLEQP_CALL(sleqp_solver_compute_trial_point(solver,
-                                              &model_trial_value,
-                                              &full_step,
-                                              &reject_step));
+  SLEQP_CALL(sleqp_trial_point_solver_compute_trial_point(trial_point_solver,
+                                                          trial_iterate,
+                                                          &model_trial_value,
+                                                          &full_cauchy_step,
+                                                          &reject_step));
 
   SLEQP_CALL(compute_step_lengths(solver));
 
   bool step_accepted = !reject_step;
 
-  const double trial_step_norm = sleqp_sparse_vector_norm(solver->trial_step);
+  SleqpSparseVec* trial_step = sleqp_trial_point_solver_get_trial_step(trial_point_solver);
+
+  const double trial_step_norm = sleqp_sparse_vector_norm(trial_step);
 
   double reduction_ratio = SLEQP_NONE;
 
@@ -319,7 +350,7 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
   {
     sleqp_log_debug("Trial step accepted");
 
-    if(full_step)
+    if(full_cauchy_step)
     {
       solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED_FULL;
     }
@@ -342,9 +373,13 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
     {
       sleqp_log_debug("Computing second-order correction");
 
-      SLEQP_CALL(sleqp_solver_compute_trial_point_soc(solver, &reject_step));
+      SLEQP_CALL(sleqp_trial_point_solver_compute_trial_point_soc(trial_point_solver,
+                                                                  trial_iterate,
+                                                                  &reject_step));
 
-      const double soc_step_norm = sleqp_sparse_vector_norm(solver->soc_step);
+      SleqpSparseVec* soc_step = sleqp_trial_point_solver_get_soc_step(trial_point_solver);
+
+      const double soc_step_norm = sleqp_sparse_vector_norm(soc_step);
 
       solver->boundary_step = sleqp_is_geq(soc_step_norm,
                                            solver->trust_radius,
@@ -407,7 +442,11 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
   SLEQP_CALL(update_trust_radii(solver,
                                 reduction_ratio,
                                 trial_step_norm,
+                                full_cauchy_step,
                                 step_accepted));
+
+  SLEQP_CALL(sleqp_trial_point_solver_get_penalty(trial_point_solver,
+                                                  &solver->penalty_parameter));
 
   // update current iterate
 

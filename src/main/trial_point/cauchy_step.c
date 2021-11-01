@@ -1,11 +1,12 @@
-#include "solver.h"
+#include "trial_point.h"
 
 #include "cmp.h"
 #include "fail.h"
 #include "penalty.h"
 
-static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
-                                          SleqpIterate* iterate)
+static SLEQP_RETCODE
+estimate_dual_values(SleqpTrialPointSolver* solver,
+                     SleqpIterate* iterate)
 {
   SleqpOptions* options = solver->options;
 
@@ -55,32 +56,8 @@ static SLEQP_RETCODE estimate_dual_values(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-
-// Bound on the criticality measure used in
-// "On the Convergence of Successive Linear Programming Algorithms"
-static double compute_criticality_bound(SleqpSolver* solver)
-{
-  double objective_value;
-
-  SLEQP_CALL(sleqp_cauchy_get_objective_value(solver->cauchy_data,
-                                              &objective_value));
-
-  const double reduction = solver->current_merit_value - objective_value;
-
-  const double eps = sleqp_params_get(solver->params,
-                                      SLEQP_PARAM_EPS);
-
-  SLEQP_NUM_ASSERT_PARAM(eps);
-
-  sleqp_assert_is_geq(reduction, 0., eps);
-
-  const double criticality_bound = reduction / SLEQP_MIN(solver->lp_trust_radius, 1.);
-
-  return criticality_bound;
-}
-
 static SLEQP_RETCODE
-compute_cauchy_direction(SleqpSolver* solver)
+compute_cauchy_direction(SleqpTrialPointSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -94,7 +71,11 @@ compute_cauchy_direction(SleqpSolver* solver)
                                 solver->penalty_parameter,
                                 SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  const double criticality_bound = compute_criticality_bound(solver);
+  double criticality_bound;
+
+  SLEQP_CALL(sleqp_cauchy_compute_criticality_bound(solver->cauchy_data,
+                                                    solver->current_merit_value,
+                                                    &criticality_bound));
 
   sleqp_log_debug("Criticality bound: %g", criticality_bound);
 
@@ -112,12 +93,10 @@ compute_cauchy_direction(SleqpSolver* solver)
                                   &(solver->penalty_parameter),
                                   &(solver->locally_infeasible)));
 
-  /*
   if(solver->locally_infeasible)
   {
     return SLEQP_OKAY;
   }
-  */
 
   if(original_penalty != solver->penalty_parameter)
   {
@@ -132,7 +111,7 @@ compute_cauchy_direction(SleqpSolver* solver)
 }
 
 static SLEQP_RETCODE
-compute_cauchy_step_parametric(SleqpSolver* solver,
+compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
                                double* cauchy_merit_value,
                                bool* full_step)
 {
@@ -224,7 +203,7 @@ compute_cauchy_step_parametric(SleqpSolver* solver,
 }
 
 static SLEQP_RETCODE
-compute_cauchy_step_simple(SleqpSolver* solver,
+compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
                            double* cauchy_merit_value,
                            bool quadratic_model,
                            bool* full_step)
@@ -236,9 +215,6 @@ compute_cauchy_step_simple(SleqpSolver* solver,
                                       SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
-
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
 
   const double one = 1.;
 
@@ -281,8 +257,6 @@ compute_cauchy_step_simple(SleqpSolver* solver,
     {
       (*full_step) = true;
 
-      solver->cauchy_step_length = 1.;
-
       return SLEQP_OKAY;
     }
 
@@ -301,7 +275,7 @@ compute_cauchy_step_simple(SleqpSolver* solver,
                                             solver->cauchy_step,
                                             solver->multipliers,
                                             solver->cauchy_hessian_step,
-                                            &solver->cauchy_step_length,
+                                            full_step,
                                             cauchy_merit_value));
 
 #if !defined(NDEBUG)
@@ -338,22 +312,27 @@ compute_cauchy_step_simple(SleqpSolver* solver,
 
 #endif
 
-    (*full_step) = sleqp_is_eq(solver->cauchy_step_length,
-                               1.,
-                               zero_eps);
   }
 
   return SLEQP_OKAY;
 }
 
 
-SLEQP_RETCODE sleqp_solver_compute_cauchy_step(SleqpSolver* solver,
-                                               double* cauchy_merit_value,
-                                               bool quadratic_model,
-                                               bool* full_step)
+SLEQP_RETCODE
+sleqp_trial_point_solver_compute_cauchy_step(SleqpTrialPointSolver* solver,
+                                             double* cauchy_merit_value,
+                                             bool quadratic_model,
+                                             bool* full_step)
 {
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy = sleqp_options_get_int(solver->options,
                                                                     SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+
+  const double time_limit = sleqp_trial_point_solver_remaining_time(solver);
+
+  if(solver->lp_interface)
+  {
+    SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface, time_limit));
+  }
 
   if(parametric_cauchy != SLEQP_PARAMETRIC_CAUCHY_DISABLED)
   {

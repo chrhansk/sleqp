@@ -25,13 +25,12 @@ set(COMMON_SRC
   quasi_newton/bfgs.c
   quasi_newton/sr1.c
   solver/callback.c
-  solver/cauchy_step.c
+  #solver/cauchy_step.c
   solver/iteration.c
   solver/print.c
   solver/state.c
   solver/step.c
   solver/time.c
-  solver/trial_point.c
   solver/trust_radius.c
   assert.c
   hess_struct.c
@@ -63,6 +62,10 @@ set(COMMON_SRC
   solver.c
   timer.c
   types.c
+  trial_point.c
+  trial_point/cauchy_step.c
+  trial_point/print.c
+  trial_point/time.c
   util.c
   working_set.c
   working_step.c

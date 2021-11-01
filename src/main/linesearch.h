@@ -63,7 +63,7 @@ extern "C" {
                                              SleqpSparseVec* direction,
                                              const SleqpSparseVec* multipliers,
                                              SleqpSparseVec* hessian_direction,
-                                             double* step_length,
+                                             bool* full_step,
                                              double* quadratic_merit_value);
 
   /**
@@ -78,7 +78,7 @@ extern "C" {
    * @param[in]      newton_hessian_direction     The product of the Hessian with the Newton direction
    * @param[in]      multipliers                  The Hessian multipliers
    * @param[out]     trial_step                   The trial step
-   * @param[out]     step_length                  The computed step length
+   * @param[out]     full_step                    Whether the full LP step was accepted
    * @param[out]     quadratic_merit_value        The quadratic trial value for the trial step
    *
    **/

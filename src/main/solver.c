@@ -262,83 +262,6 @@ SLEQP_RETCODE solver_create_iterates(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE create_cauchy_solver(SleqpSolver* solver)
-{
-  SleqpProblem* problem = solver->problem;
-  SleqpParams* params = solver->params;
-  SleqpOptions* options = solver->options;
-
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
-  if(sleqp_problem_is_unconstrained(problem))
-  {
-    SLEQP_CALL(sleqp_unconstrained_cauchy_create(&solver->cauchy_data,
-                                                 problem,
-                                                 params));
-  }
-  else if(num_constraints == 0)
-  {
-    SLEQP_CALL(sleqp_box_constrained_cauchy_create(&solver->cauchy_data,
-                                                   problem,
-                                                   params));
-  }
-  else
-  {
-    const int num_variables = sleqp_problem_num_variables(problem);
-    const int num_lp_variables = num_variables + 2*num_constraints;
-    const int num_lp_constraints = num_constraints;
-
-    SLEQP_CALL(sleqp_lpi_create_default_interface(&solver->lp_interface,
-                                                  num_lp_variables,
-                                                  num_lp_constraints,
-                                                  params,
-                                                  options));
-
-    SLEQP_CALL(sleqp_standard_cauchy_create(&solver->cauchy_data,
-                                            problem,
-                                            params,
-                                            options,
-                                            solver->lp_interface));
-  }
-
-  return SLEQP_OKAY;
-}
-
-static
-SLEQP_RETCODE create_aug_jac(SleqpSolver* solver)
-{
-  SleqpProblem* problem = solver->problem;
-  SleqpParams* params = solver->params;
-
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
-  if(sleqp_problem_is_unconstrained(problem))
-  {
-    SLEQP_CALL(sleqp_unconstrained_aug_jac_create(&solver->aug_jac,
-                                                  problem));
-  }
-  else if(num_constraints == 0)
-  {
-    SLEQP_CALL(sleqp_box_constrained_aug_jac_create(&solver->aug_jac,
-                                                    problem));
-  }
-  else
-  {
-    // create sparse factorization
-
-    SLEQP_CALL(sleqp_sparse_factorization_create_default(&solver->factorization,
-                                                         params));
-
-    SLEQP_CALL(sleqp_standard_aug_jac_create(&solver->aug_jac,
-                                             problem,
-                                             params,
-                                             solver->factorization));
-  }
-
-  return SLEQP_OKAY;
-}
-
 SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                   SleqpProblem* problem,
                                   SleqpParams* params,
@@ -394,6 +317,11 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                         solver->problem,
                                         params));
 
+  SLEQP_CALL(sleqp_trial_point_solver_create(&solver->trial_point_solver,
+                                             solver->problem,
+                                             params,
+                                             options));
+
   SLEQP_CALL(sleqp_step_rule_create_default(&solver->step_rule,
                                             solver->problem,
                                             solver->params,
@@ -402,99 +330,13 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->original_violation,
                                               num_constraints));
 
-  SLEQP_CALL(create_cauchy_solver(solver));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_direction,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_step,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_hessian_step,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->multipliers,
-                                              num_constraints));
-
-  SLEQP_CALL(sleqp_working_step_create(&solver->working_step,
-                                       solver->problem,
-                                       params));
-
-
-  SLEQP_TR_SOLVER tr_solver = sleqp_options_get_int(options,
-                                                    SLEQP_OPTION_INT_TR_SOLVER);
-
-  if(tr_solver == SLEQP_TR_SOLVER_LSQR)
-  {
-    SleqpFunc* func = sleqp_problem_func(problem);
-
-    if(sleqp_func_get_type(func) != SLEQP_FUNC_TYPE_LSQ)
-    {
-      sleqp_log_error("LSQR solver is only available for LSQ problems");
-      return SLEQP_ILLEGAL_ARGUMENT;
-    }
-
-    SLEQP_CALL(sleqp_gauss_newton_solver_create(&solver->eqp_solver,
-                                                solver->problem,
-                                                solver->params,
-                                                solver->working_step));
-  }
-  else
-  {
-    SLEQP_CALL(sleqp_newton_solver_create(&solver->eqp_solver,
-                                          solver->problem,
-                                          params,
-                                          options,
-                                          solver->working_step));
-  }
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->newton_step,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->newton_hessian_step,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->trial_step,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->initial_trial_point,
-                                              num_variables));
-
-  SLEQP_CALL(create_aug_jac(solver));
-
-  SLEQP_CALL(sleqp_dual_estimation_create(&solver->estimation_data,
-                                          solver->problem));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->estimation_residuals,
-                                              num_variables));
-
   SLEQP_CALL(sleqp_merit_create(&solver->merit,
                                 solver->problem,
                                 params));
 
-  SLEQP_CALL(sleqp_linesearch_create(&solver->linesearch,
-                                     solver->problem,
-                                     params,
-                                     solver->merit));
-
   SLEQP_CALL(sleqp_polishing_create(&solver->polishing,
                                     solver->problem,
                                     solver->params));
-
-  SLEQP_PARAMETRIC_CAUCHY parametric_cauchy = sleqp_options_get_int(solver->options,
-                                                                    SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
-
-  if(parametric_cauchy != SLEQP_PARAMETRIC_CAUCHY_DISABLED)
-  {
-    SLEQP_CALL(sleqp_parametric_solver_create(&solver->parametric_solver,
-                                              solver->problem,
-                                              solver->params,
-                                              solver->options,
-                                              solver->merit,
-                                              solver->linesearch));
-
-    SLEQP_CALL(sleqp_working_set_create(&solver->parametric_original_working_set, solver->problem));
-  }
 
   SLEQP_CALL(sleqp_alloc_array(&solver->callback_handlers,
                                SLEQP_SOLVER_NUM_EVENTS));
@@ -513,14 +355,8 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->vars_dual_diff,
                                               num_variables));
 
-  SLEQP_CALL(sleqp_soc_data_create(&solver->soc_data,
-                                   solver->problem,
-                                   params));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->soc_step,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache, SLEQP_MAX(num_variables, num_constraints)));
+  SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
+                               SLEQP_MAX(num_variables, num_constraints)));
 
   SLEQP_CALL(sleqp_solver_reset(solver));
 
@@ -533,6 +369,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   return SLEQP_OKAY;
 }
 
+/*
 static void print_solver(char* buffer,
                          int len,
                          const char* name,
@@ -547,9 +384,11 @@ static void print_solver(char* buffer,
     snprintf(buffer, len, "%s %s", name, version);
   }
 }
+*/
 
 const char* sleqp_solver_info(const SleqpSolver* solver)
 {
+  /*
   if(solver->lp_interface)
   {
     print_solver(lps_info,
@@ -563,7 +402,13 @@ const char* sleqp_solver_info(const SleqpSolver* solver)
              INFO_BUF_SIZE,
              "None");
   }
+  */
 
+  snprintf(lps_info,
+           INFO_BUF_SIZE,
+           "None");
+
+  /*
   if(solver->factorization)
   {
     print_solver(fact_info,
@@ -577,6 +422,11 @@ const char* sleqp_solver_info(const SleqpSolver* solver)
              INFO_BUF_SIZE,
              "None");
   }
+  */
+
+  snprintf(fact_info,
+           INFO_BUF_SIZE,
+           "None");
 
   snprintf(solver_info,
            SOLVER_INFO_BUF_SIZE,
@@ -890,10 +740,6 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   sleqp_free(&solver->dense_cache);
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_step));
-
-  SLEQP_CALL(sleqp_soc_data_release(&solver->soc_data));
-
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->vars_dual_diff));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->cons_dual_diff));
@@ -910,49 +756,11 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   sleqp_free(&solver->callback_handlers);
 
-  SLEQP_CALL(sleqp_working_set_release(&solver->parametric_original_working_set));
-
-  SLEQP_CALL(sleqp_parametric_solver_release(&solver->parametric_solver));
-
   SLEQP_CALL(sleqp_polishing_release(&solver->polishing));
-
-  SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
 
   SLEQP_CALL(sleqp_merit_release(&solver->merit));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->estimation_residuals));
-
-  SLEQP_CALL(sleqp_dual_estimation_free(&solver->estimation_data));
-
-  SLEQP_CALL(sleqp_aug_jac_release(&solver->aug_jac));
-
-  SLEQP_CALL(sleqp_sparse_factorization_release(&solver->factorization));
-
   SLEQP_CALL(sleqp_iterate_release(&solver->trial_iterate));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->initial_trial_point));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->trial_step));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->newton_hessian_step));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->newton_step));
-
-  SLEQP_CALL(sleqp_eqp_solver_release(&solver->eqp_solver));
-
-  SLEQP_CALL(sleqp_working_step_release(&solver->working_step));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->multipliers));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_hessian_step));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_step));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_direction));
-
-  SLEQP_CALL(sleqp_cauchy_release(&solver->cauchy_data));
-
-  SLEQP_CALL(sleqp_lpi_release(&solver->lp_interface));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->original_violation));
 
@@ -961,6 +769,8 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_step_rule_release(&solver->step_rule));
 
   SLEQP_CALL(sleqp_deriv_checker_free(&solver->deriv_check));
+
+  SLEQP_CALL(sleqp_trial_point_solver_release(&solver->trial_point_solver));
 
   SLEQP_CALL(sleqp_options_release(&solver->options));
   SLEQP_CALL(sleqp_params_release(&solver->params));
