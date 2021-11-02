@@ -4,6 +4,7 @@
 #include <math.h>
 #include <time.h>
 
+#include "cmp.h"
 #include "log.h"
 #include "mem.h"
 
@@ -171,6 +172,30 @@ SLEQP_RETCODE sleqp_timer_display(SleqpTimer* timer,
   sleqp_log_info(buffer);
 
   return SLEQP_OKAY;
+}
+
+double sleqp_timer_remaining_time(SleqpTimer* timer,
+                                  double time_limit)
+{
+  if(time_limit != SLEQP_NONE)
+  {
+    double remaining_time = time_limit - sleqp_timer_get_ttl(timer);
+
+    return remaining_time;
+  }
+
+  return SLEQP_NONE;
+}
+
+bool sleqp_timer_exhausted_time_limit(SleqpTimer* timer,
+                                      double time_limit)
+{
+  if(time_limit == SLEQP_NONE)
+  {
+    return false;
+  }
+
+  return sleqp_timer_remaining_time(timer, time_limit) <= 0.;
 }
 
 SLEQP_RETCODE sleqp_timer_free(SleqpTimer** star)

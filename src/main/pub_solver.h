@@ -30,32 +30,6 @@ extern "C" {
                                           SleqpIterate* iterate,
                                           void* callback_data);
 
-  typedef enum {
-    SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
-    SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS,
-    SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL,
-    SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL,
-    SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
-    SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
-    SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES,
-    SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM,
-    SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH,
-    SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH,
-  } SLEQP_SOLVER_STATE_REAL;
-
-  typedef enum {
-    SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY,
-    SLEQP_SOLVER_STATE_INT_ITERATION,
-    SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE,
-  } SLEQP_SOLVER_STATE_INT;
-
-  typedef enum {
-    SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
-    SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
-    SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
-    SLEQP_SOLVER_STATE_VEC_SCALED_VAR_SLACK_RESIDUALS,
-  } SLEQP_SOLVER_STATE_VEC;
-
   typedef struct SleqpSolver SleqpSolver;
 
   /**
@@ -149,7 +123,8 @@ extern "C" {
    * @param[in]  solver           The solver
    *
    **/
-  SLEQP_EXPORT int sleqp_solver_get_iterations(const SleqpSolver* solver);
+  SLEQP_EXPORT
+  int sleqp_solver_get_iterations(const SleqpSolver* solver);
 
   /**
    * Returns the number of seconds elapsed during the last call to @ref sleqp_solver_solve
@@ -157,7 +132,8 @@ extern "C" {
    * @param[in]  solver           The solver
    *
    **/
-  SLEQP_EXPORT double sleqp_solver_get_elapsed_seconds(const SleqpSolver* solver);
+  SLEQP_EXPORT
+  double sleqp_solver_get_elapsed_seconds(const SleqpSolver* solver);
 
   SLEQP_EXPORT SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_solver_add_callback(SleqpSolver* solver,

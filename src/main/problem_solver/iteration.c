@@ -1,4 +1,4 @@
-#include "solver.h"
+#include "problem_solver.h"
 
 #include <math.h>
 
@@ -6,16 +6,16 @@
 #include "fail.h"
 
 static
-SLEQP_RETCODE evaluate_at_trial_iterate(SleqpSolver* solver,
+SLEQP_RETCODE evaluate_at_trial_iterate(SleqpProblemSolver* solver,
                                         bool* reject)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
-  SLEQP_CALL(sleqp_solver_set_func_value(solver,
-                                         trial_iterate,
-                                         SLEQP_VALUE_REASON_TRYING_ITERATE,
-                                         reject));
+  SLEQP_CALL(sleqp_problem_solver_set_func_value(solver,
+                                                 trial_iterate,
+                                                 SLEQP_VALUE_REASON_TRYING_ITERATE,
+                                                 reject));
 
   if(*reject)
   {
@@ -37,7 +37,7 @@ SLEQP_RETCODE evaluate_at_trial_iterate(SleqpSolver* solver,
 }
 
 static
-SLEQP_RETCODE set_residuum(SleqpSolver* solver)
+SLEQP_RETCODE set_residuum(SleqpProblemSolver* solver)
 {
   SLEQP_CALL(sleqp_iterate_slackness_residuum(solver->problem,
                                               solver->iterate,
@@ -56,7 +56,7 @@ SLEQP_RETCODE set_residuum(SleqpSolver* solver)
 }
 
 static
-SLEQP_RETCODE check_derivative(SleqpSolver* solver)
+SLEQP_RETCODE check_derivative(SleqpProblemSolver* solver)
 {
   SleqpOptions* options = solver->options;
   SleqpIterate* iterate = solver->iterate;
@@ -72,7 +72,7 @@ SLEQP_RETCODE check_derivative(SleqpSolver* solver)
 }
 
 static
-SLEQP_RETCODE update_trust_radii(SleqpSolver* solver,
+SLEQP_RETCODE update_trust_radii(SleqpProblemSolver* solver,
                                  double reduction_ratio,
                                  double trial_step_norm,
                                  bool full_cauchy_step,
@@ -99,25 +99,25 @@ SLEQP_RETCODE update_trust_radii(SleqpSolver* solver,
 
   if(perform_newton_step)
   {
-    SLEQP_CALL(sleqp_solver_update_trust_radius(solver,
-                                                reduction_ratio,
-                                                step_accepted,
-                                                trial_step_norm));
+    SLEQP_CALL(sleqp_problem_solver_update_trust_radius(solver,
+                                                        reduction_ratio,
+                                                        step_accepted,
+                                                        trial_step_norm));
   }
 
-  SLEQP_CALL(sleqp_solver_update_lp_trust_radius(solver,
-                                                 step_accepted,
-                                                 trial_step_infnorm,
-                                                 cauchy_step_infnorm,
-                                                 full_cauchy_step,
-                                                 zero_eps,
-                                                 &(solver->lp_trust_radius)));
+  SLEQP_CALL(sleqp_problem_solver_update_lp_trust_radius(solver,
+                                                         step_accepted,
+                                                         trial_step_infnorm,
+                                                         cauchy_step_infnorm,
+                                                         full_cauchy_step,
+                                                         zero_eps,
+                                                         &(solver->lp_trust_radius)));
 
   return SLEQP_OKAY;
 }
 
 static
-SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver)
+SLEQP_RETCODE compute_step_lengths(SleqpProblemSolver* solver)
 {
   SleqpIterate* iterate = solver->iterate;
   SleqpIterate* trial_iterate = solver->trial_iterate;
@@ -157,7 +157,7 @@ SLEQP_RETCODE compute_step_lengths(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-static bool check_for_unboundedness(SleqpSolver* solver,
+static bool check_for_unboundedness(SleqpProblemSolver* solver,
                                     SleqpIterate* iterate)
 {
   const double obj_lower = sleqp_params_get(solver->params,
@@ -184,8 +184,8 @@ static bool check_for_unboundedness(SleqpSolver* solver,
 }
 
 static bool
-check_for_optimality(SleqpSolver* solver,
-                                 SleqpIterate* iterate)
+check_for_optimality(SleqpProblemSolver* solver,
+                     SleqpIterate* iterate)
 {
   // Optimality check with respect to scaled problem
   if(sleqp_iterate_is_optimal(iterate,
@@ -203,15 +203,20 @@ check_for_optimality(SleqpSolver* solver,
 }
 
 static SLEQP_RETCODE
-prepare_trial_point_solver(SleqpSolver* solver)
+prepare_trial_point_solver(SleqpProblemSolver* solver)
 {
+  SleqpTimer* timer = solver->elapsed_timer;
+  double time_limit = solver->time_limit;
+
+  double remaining_time = sleqp_timer_remaining_time(timer,  time_limit);
+
   SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
   SLEQP_CALL(sleqp_trial_point_solver_set_iterate(trial_point_solver,
                                                   solver->iterate));
 
   SLEQP_CALL(sleqp_trial_point_solver_set_time_limit(trial_point_solver,
-                                                     sleqp_solver_remaining_time(solver)));
+                                                     remaining_time));
 
   SLEQP_CALL(sleqp_trial_point_solver_set_trust_radius(trial_point_solver,
                                                        solver->trust_radius));
@@ -225,7 +230,7 @@ prepare_trial_point_solver(SleqpSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
+SLEQP_RETCODE sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 {
   assert(solver->status == SLEQP_STATUS_RUNNING);
 
@@ -268,7 +273,7 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 
   if(solver->iteration == 0)
   {
-    SLEQP_CALL(sleqp_solver_print_initial_line(solver));
+    SLEQP_CALL(sleqp_problem_solver_print_initial_line(solver));
   }
 
   double model_trial_value;
@@ -434,10 +439,10 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 
   if(solver->iteration % 25 == 0)
   {
-    SLEQP_CALL(sleqp_solver_print_header(solver));
+    SLEQP_CALL(sleqp_problem_solver_print_header(solver));
   }
 
-  SLEQP_CALL(sleqp_solver_print_line(solver));
+  SLEQP_CALL(sleqp_problem_solver_print_line(solver));
 
   SLEQP_CALL(update_trust_radii(solver,
                                 reduction_ratio,
@@ -452,15 +457,15 @@ SLEQP_RETCODE sleqp_solver_perform_iteration(SleqpSolver* solver)
 
   if(step_accepted)
   {
-    SLEQP_CALL(sleqp_solver_accept_step(solver));
+    SLEQP_CALL(sleqp_problem_solver_accept_step(solver));
   }
   else
   {
-    SLEQP_CALL(sleqp_solver_reject_step(solver));
+    SLEQP_CALL(sleqp_problem_solver_reject_step(solver));
   }
 
-  SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_PERFORMED_ITERATION],
-                                 SLEQP_PERFORMED_ITERATION,
+  SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_PROBLEM_SOLVER_EVENT_PERFORMED_ITERATION],
+                                 SLEQP_PROBLEM_SOLVER_PERFORMED_ITERATION,
                                  solver);
 
   return SLEQP_OKAY;

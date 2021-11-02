@@ -327,11 +327,15 @@ sleqp_trial_point_solver_compute_cauchy_step(SleqpTrialPointSolver* solver,
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy = sleqp_options_get_int(solver->options,
                                                                     SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
 
-  const double time_limit = sleqp_trial_point_solver_remaining_time(solver);
+  SleqpTimer* timer = solver->elapsed_timer;
+  double time_limit = solver->time_limit;
+
+  double remaining_time = sleqp_timer_remaining_time(timer, time_limit);
 
   if(solver->lp_interface)
   {
-    SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface, time_limit));
+    SLEQP_CALL(sleqp_lpi_set_time_limit(solver->lp_interface,
+                                        remaining_time));
   }
 
   if(parametric_cauchy != SLEQP_PARAMETRIC_CAUCHY_DISABLED)

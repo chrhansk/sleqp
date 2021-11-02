@@ -25,13 +25,8 @@ set(COMMON_SRC
   quasi_newton/bfgs.c
   quasi_newton/sr1.c
   solver/callback.c
-  #solver/cauchy_step.c
-  solver/iteration.c
   solver/print.c
   solver/state.c
-  solver/step.c
-  solver/time.c
-  solver/trust_radius.c
   assert.c
   hess_struct.c
   callback_handler.c
@@ -62,6 +57,14 @@ set(COMMON_SRC
   solver.c
   timer.c
   types.c
+  problem_solver.c
+  problem_solver/callback.c
+  problem_solver/iteration.c
+  problem_solver/print.c
+  problem_solver/solve.c
+  problem_solver/state.c
+  problem_solver/step.c
+  problem_solver/trust_radius.c
   trial_point.c
   trial_point/cauchy_step.c
   trial_point/print.c

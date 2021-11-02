@@ -9,26 +9,12 @@
 #include "defs.h"
 #include "fail.h"
 #include "feas.h"
-#include "gauss_newton.h"
 #include "iterate.h"
 #include "mem.h"
-#include "newton.h"
-#include "penalty.h"
 #include "scale.h"
 
 #include "timer.h"
-#include "working_step.h"
 #include "util.h"
-
-#include "lp/lpi.h"
-
-#include "aug_jac/box_constrained_aug_jac.h"
-#include "aug_jac/standard_aug_jac.h"
-#include "aug_jac/unconstrained_aug_jac.h"
-
-#include "cauchy/box_constrained_cauchy.h"
-#include "cauchy/standard_cauchy.h"
-#include "cauchy/unconstrained_cauchy.h"
 
 #include "step/step_rule.h"
 
@@ -104,14 +90,9 @@ SLEQP_RETCODE do_restore_iterate(SleqpSolver* solver,
 
 SLEQP_RETCODE sleqp_solver_restore_original_iterate(SleqpSolver* solver)
 {
-  if(solver->restore_original_iterate)
-  {
-    SLEQP_CALL(do_restore_iterate(solver,
-                                  solver->iterate,
-                                  solver->original_iterate));
-
-    solver->restore_original_iterate = false;
-  }
+  SLEQP_CALL(do_restore_iterate(solver,
+                                sleqp_problem_solver_get_iterate(solver->problem_solver),
+                                solver->original_iterate));
 
   return SLEQP_OKAY;
 }
@@ -210,9 +191,6 @@ SLEQP_RETCODE solver_create_iterates(SleqpSolver* solver,
 {
   SleqpProblem* original_problem = solver->original_problem;
 
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
-
   {
     SleqpSparseVec* var_lb = sleqp_problem_var_lb(original_problem);
     SleqpSparseVec* var_ub = sleqp_problem_var_ub(original_problem);
@@ -227,37 +205,59 @@ SLEQP_RETCODE solver_create_iterates(SleqpSolver* solver,
                                    primal,
                                    solver->primal));
 
-  SLEQP_CALL(sleqp_iterate_create(&solver->iterate,
-                                  solver->problem,
-                                  solver->primal));
-
-  SLEQP_CALL(sleqp_sparse_vector_clip(solver->primal,
-                                      sleqp_problem_var_lb(solver->problem),
-                                      sleqp_problem_var_ub(solver->problem),
-                                      zero_eps,
-                                      sleqp_iterate_get_primal(solver->iterate)));
-
-  SLEQP_CALL(sleqp_iterate_create(&solver->trial_iterate,
-                                  solver->problem,
-                                  sleqp_iterate_get_primal(solver->iterate)));
-
   SLEQP_CALL(sleqp_iterate_create(&solver->scaled_iterate,
                                   solver->scaled_problem,
                                   primal));
 
-  if(solver->scaling_data || solver->preprocessor)
-  {
-    SLEQP_CALL(sleqp_iterate_create(&solver->original_iterate,
-                                    original_problem,
-                                    primal));
+  SLEQP_CALL(sleqp_iterate_create(&solver->original_iterate,
+                                  solver->original_problem,
+                                  primal));
 
-    solver->restore_original_iterate = true;
-  }
-  else
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+on_problem_solver_performed_iteration(SleqpProblemSolver* problem_solver,
+                                      void* callback_data)
+{
+  SleqpSolver* solver = (SleqpSolver*) callback_data;
+
+  SleqpCallbackHandler* handler = solver->callback_handlers[SLEQP_SOLVER_EVENT_PERFORMED_ITERATION];
+
+  SLEQP_CALLBACK_HANDLER_EXECUTE(handler,
+                                 SLEQP_PERFORMED_ITERATION,
+                                 solver);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+on_problem_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
+                                   SleqpIterate* iterate,
+                                   SleqpIterate* trial_iterate,
+                                   void* callback_data)
+{
+  SleqpSolver* solver = (SleqpSolver*) callback_data;
+
+  if(solver->quasi_newton)
   {
-    solver->original_iterate = solver->iterate;
-    solver->restore_original_iterate = false;
+    SleqpSparseVec* multipliers = sleqp_iterate_get_cons_dual(iterate);
+
+    SLEQP_CALL(sleqp_quasi_newton_push(solver->quasi_newton,
+                                       iterate,
+                                       trial_iterate,
+                                       multipliers));
   }
+
+  // TODO: make restoration more efficient
+  SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
+
+  SleqpCallbackHandler* handler = solver->callback_handlers[SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE];
+
+  SLEQP_CALLBACK_HANDLER_EXECUTE(handler,
+                                 SLEQP_ACCEPTED_ITERATE,
+                                 solver,
+                                 trial_iterate);
 
   return SLEQP_OKAY;
 }
@@ -279,6 +279,12 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
 
   solver->refcount = 1;
 
+  SLEQP_CALL(sleqp_params_capture(params));
+  solver->params = params;
+
+  SLEQP_CALL(sleqp_options_capture(options));
+  solver->options = options;
+
   const int num_original_variables = sleqp_problem_num_variables(problem);
 
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
@@ -289,17 +295,10 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
     solver->scaling_data = scaling_data;
   }
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  solver->params = params;
-
-  SLEQP_CALL(sleqp_options_capture(options));
-  solver->options = options;
-
   SLEQP_CALL(solver_create_problem(solver,
                                    problem));
 
   const int num_variables = sleqp_problem_num_variables(solver->problem);
-  const int num_constraints = sleqp_problem_num_constraints(solver->problem);
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->scaled_primal,
                                               num_original_variables));
@@ -310,53 +309,30 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(solver_create_iterates(solver,
                                     primal));
 
-  solver->iteration = 0;
-  solver->elapsed_seconds = 0.;
+  SLEQP_CALL(sleqp_problem_solver_create(&solver->problem_solver,
+                                         solver->problem,
+                                         params,
+                                         options,
+                                         solver->primal));
 
-  SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_check,
-                                        solver->problem,
-                                        params));
+  SLEQP_CALL(sleqp_problem_solver_add_callback(solver->problem_solver,
+                                               SLEQP_PROBLEM_SOLVER_EVENT_ACCEPTED_ITERATE,
+                                               on_problem_solver_accepted_iterate,
+                                               (void*) solver));
 
-  SLEQP_CALL(sleqp_trial_point_solver_create(&solver->trial_point_solver,
-                                             solver->problem,
-                                             params,
-                                             options));
-
-  SLEQP_CALL(sleqp_step_rule_create_default(&solver->step_rule,
-                                            solver->problem,
-                                            solver->params,
-                                            solver->options));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->original_violation,
-                                              num_constraints));
-
-  SLEQP_CALL(sleqp_merit_create(&solver->merit,
-                                solver->problem,
-                                params));
+  SLEQP_CALL(sleqp_problem_solver_add_callback(solver->problem_solver,
+                                               SLEQP_PROBLEM_SOLVER_EVENT_PERFORMED_ITERATION,
+                                               on_problem_solver_performed_iteration,
+                                               (void*) solver));
 
   SLEQP_CALL(sleqp_polishing_create(&solver->polishing,
                                     solver->problem,
                                     solver->params));
 
-  SLEQP_CALL(sleqp_alloc_array(&solver->callback_handlers,
-                               SLEQP_SOLVER_NUM_EVENTS));
-
   for(int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
   {
     SLEQP_CALL(sleqp_callback_handler_create(solver->callback_handlers + i));
   }
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->primal_diff,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cons_dual_diff,
-                                              num_constraints));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->vars_dual_diff,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
-                               SLEQP_MAX(num_variables, num_constraints)));
 
   SLEQP_CALL(sleqp_solver_reset(solver));
 
@@ -439,227 +415,6 @@ const char* sleqp_solver_info(const SleqpSolver* solver)
   return solver_info;
 }
 
-static SLEQP_RETCODE print_warning(SleqpSolver* solver)
-{
-  SleqpProblem* problem = solver->problem;
-  SleqpIterate* iterate = solver->iterate;
-
-  SleqpFunc* func = sleqp_problem_func(problem);
-
-  SLEQP_FUNC_TYPE func_type = sleqp_func_get_type(func);
-
-  const SLEQP_DERIV_CHECK deriv_check = sleqp_options_get_int(solver->options,
-                                                              SLEQP_OPTION_INT_DERIV_CHECK);
-
-  const int hessian_check_flags = (SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE |
-                                   SLEQP_DERIV_CHECK_SECOND_SIMPLE);
-
-  const bool hessian_check = (deriv_check & hessian_check_flags);
-
-  if(hessian_check)
-  {
-    const bool inexact_hessian = (solver->quasi_newton ||
-                                  func_type == SLEQP_FUNC_TYPE_LSQ);
-
-    if (inexact_hessian)
-    {
-      sleqp_log_warn("Enabled second order derivative check while using a "
-                     "quasi-Newton method");
-    }
-  }
-
-  if(func_type == SLEQP_FUNC_TYPE_DYNAMIC)
-  {
-    const int check_first_flags = SLEQP_DERIV_CHECK_FIRST;
-
-    const bool check_first = (deriv_check & check_first_flags);
-
-    if(check_first)
-    {
-      sleqp_log_warn("Enabled first order derivative check while using a dynamic function");
-    }
-  }
-
-  {
-    double total_violation;
-
-    SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                        sleqp_iterate_get_cons_val(iterate),
-                                        &total_violation));
-
-    const double func_val = sleqp_iterate_get_func_val(iterate);
-
-    if(total_violation > 10. * SLEQP_ABS(func_val))
-    {
-      sleqp_log_warn("Problem is badly scaled, constraint violation %g significantly exceeds function value of %g",
-                     total_violation,
-                     func_val);
-    }
-  }
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
-                                 int max_num_iterations,
-                                 double time_limit)
-{
-  SleqpProblem* problem = solver->problem;
-  SleqpIterate* iterate = solver->iterate;
-
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-
-  if(solver->status == SLEQP_STATUS_INFEASIBLE)
-  {
-    sleqp_log_debug("Problem is infeasible, aborting");
-    return SLEQP_OKAY;
-  }
-
-  solver->status = SLEQP_STATUS_RUNNING;
-
-  bool reject_initial;
-
-  SLEQP_CALL(sleqp_set_and_evaluate(problem,
-                                    iterate,
-                                    SLEQP_VALUE_REASON_INIT,
-                                    &reject_initial));
-
-  if(reject_initial)
-  {
-    sleqp_log_error("Function rejected initial solution");
-    return SLEQP_INTERNAL_ERROR;
-  }
-
-  {
-    SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-
-    sleqp_log_info("Solving a problem with %d variables, %d constraints, %d Jacobian nonzeros",
-                   num_variables,
-                   num_constraints,
-                   sleqp_sparse_matrix_get_nnz(cons_jac));
-  }
-
-  // ensure that the unscaled iterate is initialized
-  if(solver->scaling_data)
-  {
-    SLEQP_CALL(sleqp_iterate_copy(iterate,
-                                  solver->original_iterate));
-
-    SleqpFunc* func = sleqp_problem_func(problem);
-    const bool lsq = sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ;
-
-    SLEQP_CALL(sleqp_unscale_iterate(solver->scaling_data,
-                                     solver->original_iterate,
-                                     lsq));
-  }
-
-  // Warnings
-  SLEQP_CALL(print_warning(solver));
-
-  SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
-
-  solver->status = SLEQP_STATUS_RUNNING;
-
-  solver->time_limit = time_limit;
-  solver->abort_next = false;
-
-  solver->iteration = 0;
-  solver->elapsed_seconds = 0.;
-  solver->last_step_type = SLEQP_STEPTYPE_NONE;
-
-  const double deadpoint_bound = sleqp_params_get(solver->params,
-                                                  SLEQP_PARAM_DEADPOINT_BOUND);
-
-  SLEQP_CALL(sleqp_solver_print_header(solver));
-
-  // main solving loop
-  while(true)
-  {
-    if(time_limit != SLEQP_NONE &&
-       solver->elapsed_seconds >= time_limit)
-    {
-      sleqp_log_info("Exhausted time limit, terminating");
-      solver->status = SLEQP_STATUS_ABORT_TIME;
-      break;
-    }
-
-    if(max_num_iterations != SLEQP_NONE &&
-       solver->iteration >= max_num_iterations)
-    {
-      sleqp_log_info("Reached iteration limit, terminating");
-      solver->status = SLEQP_STATUS_ABORT_ITER;
-      break;
-    }
-
-    if(solver->abort_next)
-    {
-      sleqp_log_info("Abortion requested, terminating");
-      solver->status = SLEQP_STATUS_ABORT_MANUAL;
-      break;
-    }
-
-    SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
-
-    SLEQP_RETCODE solver_status = sleqp_solver_perform_iteration(solver);
-
-    SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
-
-    bool exhausted_time_limit = (time_limit != SLEQP_NONE &&
-                                 sleqp_solver_remaining_time(solver) < 0.);
-
-    if(solver_status == SLEQP_ABORT_TIME || exhausted_time_limit)
-    {
-      sleqp_log_info("Exhausted time limit, terminating");
-      solver->status = SLEQP_STATUS_ABORT_TIME;
-      break;
-    }
-
-    SLEQP_CALL(solver_status);
-
-    solver->elapsed_seconds = sleqp_timer_get_ttl(solver->elapsed_timer);
-
-    if(solver->lp_trust_radius <= deadpoint_bound ||
-       solver->trust_radius <= deadpoint_bound)
-    {
-      sleqp_log_warn("Reached dead point");
-      solver->status = SLEQP_STATUS_ABORT_DEADPOINT;
-      break;
-    }
-
-    if(solver->status != SLEQP_STATUS_RUNNING)
-    {
-      break;
-    }
-  }
-
-  assert(solver->status != SLEQP_STATUS_RUNNING);
-
-  double violation;
-
-  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
-                                                solver->iterate,
-                                                &violation));
-
-  {
-    SLEQP_POLISHING_TYPE polishing_type = sleqp_options_get_int(solver->options,
-                                                                SLEQP_OPTION_INT_POLISHING_TYPE);
-
-    SLEQP_CALL(sleqp_polishing_polish(solver->polishing,
-                                      solver->iterate,
-                                      polishing_type));
-  }
-
-  SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_FINISHED],
-                                 SLEQP_FINISHED,
-                                 solver,
-                                 solver->original_iterate);
-
-  SLEQP_CALL(sleqp_solver_print_stats(solver, violation));
-
-  return SLEQP_OKAY;
-}
-
 SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
                                         SleqpIterate** iterate)
 {
@@ -694,15 +449,7 @@ SLEQP_STATUS sleqp_solver_get_status(const SleqpSolver* solver)
 
 SLEQP_RETCODE sleqp_solver_reset(SleqpSolver* solver)
 {
-  const int num_variables = sleqp_problem_num_variables(solver->problem);
-
-  // initial trust region radii as suggested,
-  // penalty parameter as suggested:
-
-  solver->trust_radius = 1.;
-  solver->lp_trust_radius = .8 * (solver->trust_radius) * sqrt((double) num_variables);
-
-  solver->penalty_parameter = 10.;
+  SLEQP_CALL(sleqp_problem_solver_reset(solver->problem_solver));
 
   if(solver->quasi_newton)
   {
@@ -716,17 +463,67 @@ SLEQP_RETCODE sleqp_solver_abort(SleqpSolver* solver)
 {
   solver->abort_next = true;
 
+  SLEQP_CALL(sleqp_problem_solver_abort(solver->problem_solver));
+
   return SLEQP_OKAY;
 }
 
 int sleqp_solver_get_iterations(const SleqpSolver* solver)
 {
-  return solver->iteration;
+  return sleqp_problem_solver_get_iterations(solver->problem_solver);
 }
 
 double sleqp_solver_get_elapsed_seconds(const SleqpSolver* solver)
 {
-  return solver->elapsed_seconds;
+  return sleqp_problem_solver_get_elapsed_seconds(solver->problem_solver);
+}
+
+SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
+                                 int max_num_iterations,
+                                 double time_limit)
+{
+  if(solver->status == SLEQP_STATUS_INFEASIBLE)
+  {
+    sleqp_log_debug("Problem is infeasible, aborting");
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
+
+  SLEQP_CALL(sleqp_problem_solver_solve(solver->problem_solver,
+                                        max_num_iterations,
+                                        time_limit));
+
+  SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
+
+  solver->status = sleqp_problem_solver_get_status(solver->problem_solver);
+
+  SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
+
+  double violation;
+
+  SleqpIterate* iterate = sleqp_problem_solver_get_iterate(solver->problem_solver);
+
+  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
+                                                iterate,
+                                                &violation));
+
+  SLEQP_POLISHING_TYPE polishing_type = sleqp_options_get_int(solver->options,
+                                                              SLEQP_OPTION_INT_POLISHING_TYPE);
+
+  SLEQP_CALL(sleqp_polishing_polish(solver->polishing,
+                                    iterate,
+                                    polishing_type));
+
+  SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_FINISHED],
+                                 SLEQP_FINISHED,
+                                 solver,
+                                 solver->original_iterate);
+
+  SLEQP_CALL(sleqp_solver_print_stats(solver,
+                                      violation));
+
+  return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE solver_free(SleqpSolver** star)
@@ -738,42 +535,14 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
     return SLEQP_OKAY;
   }
 
-  sleqp_free(&solver->dense_cache);
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->vars_dual_diff));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cons_dual_diff));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->primal_diff));
-
-  if(solver->callback_handlers)
+  for(int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
   {
-    for(int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
-    {
-      SLEQP_CALL(sleqp_callback_handler_release(solver->callback_handlers + i));
-    }
+    SLEQP_CALL(sleqp_callback_handler_release(solver->callback_handlers + i));
   }
-
-  sleqp_free(&solver->callback_handlers);
 
   SLEQP_CALL(sleqp_polishing_release(&solver->polishing));
 
-  SLEQP_CALL(sleqp_merit_release(&solver->merit));
-
-  SLEQP_CALL(sleqp_iterate_release(&solver->trial_iterate));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->original_violation));
-
-  SLEQP_CALL(sleqp_iterate_release(&solver->iterate));
-
-  SLEQP_CALL(sleqp_step_rule_release(&solver->step_rule));
-
-  SLEQP_CALL(sleqp_deriv_checker_free(&solver->deriv_check));
-
-  SLEQP_CALL(sleqp_trial_point_solver_release(&solver->trial_point_solver));
-
-  SLEQP_CALL(sleqp_options_release(&solver->options));
-  SLEQP_CALL(sleqp_params_release(&solver->params));
+  SLEQP_CALL(sleqp_problem_solver_release(&solver->problem_solver));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->primal));
   SLEQP_CALL(sleqp_sparse_vector_free(&solver->scaled_primal));
@@ -782,10 +551,7 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_iterate_release(&solver->scaled_iterate));
 
-  if(solver->scaling_data || solver->preprocessor)
-  {
-    SLEQP_CALL(sleqp_iterate_release(&solver->original_iterate));
-  }
+  SLEQP_CALL(sleqp_iterate_release(&solver->original_iterate));
 
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
 
@@ -800,6 +566,9 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_quasi_newton_release(&solver->quasi_newton));
 
   SLEQP_CALL(sleqp_problem_release(&solver->original_problem));
+
+  SLEQP_CALL(sleqp_options_release(&solver->options));
+  SLEQP_CALL(sleqp_params_release(&solver->params));
 
   sleqp_free(star);
 

@@ -131,8 +131,6 @@ extern "C" {
                                                       double* min_rayleigh,
                                                       double* max_rayleigh);
 
-  double sleqp_trial_point_solver_remaining_time(SleqpTrialPointSolver* solver);
-
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_trial_point_solver_print_stats(SleqpTrialPointSolver* solver,
                                                      double elapsed_seconds);

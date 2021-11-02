@@ -442,7 +442,10 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
 
   const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
 
-  const double time_limit = sleqp_trial_point_solver_remaining_time(solver);
+  SleqpTimer* timer = solver->elapsed_timer;
+  double time_limit = solver->time_limit;
+
+  double remaining_time = sleqp_timer_remaining_time(timer, time_limit);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -456,7 +459,7 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
                                                           full_step));
 
   SLEQP_CALL(sleqp_eqp_solver_set_time_limit(solver->eqp_solver,
-                                             time_limit));
+                                             remaining_time));
 
   SLEQP_CALL(sleqp_eqp_solver_compute_step(solver->eqp_solver,
                                            solver->multipliers,
