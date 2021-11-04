@@ -281,8 +281,8 @@ SLEQP_RETCODE func_create(SleqpProblemScaling* problem_scaling)
   SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(problem_scaling->func),
                                        sleqp_func_get_hess_struct(problem_scaling->scaled_func)));
 
-  SLEQP_CALL(sleqp_func_set_psd_hessian(problem_scaling->scaled_func,
-                                        sleqp_func_has_psd_hessian(problem_scaling->func)));
+  SLEQP_CALL(sleqp_func_set_hess_flags(problem_scaling->scaled_func,
+                                       sleqp_func_hess_flags(problem_scaling->func)));
 
   return SLEQP_OKAY;
 }
@@ -444,13 +444,13 @@ SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling)
                                       sleqp_problem_general_lb(scaled_problem)));
 
   SLEQP_CALL(sleqp_scale_cons_general(scaling,
-                                     sleqp_problem_general_lb(scaled_problem)));
+                                      sleqp_problem_general_lb(scaled_problem)));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(sleqp_problem_general_ub(problem),
                                       sleqp_problem_general_ub(scaled_problem)));
 
   SLEQP_CALL(sleqp_scale_cons_general(scaling,
-                                     sleqp_problem_general_ub(scaled_problem)));
+                                      sleqp_problem_general_ub(scaled_problem)));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(sleqp_problem_linear_lb(problem),
                                       sleqp_problem_linear_lb(scaled_problem)));
@@ -466,12 +466,12 @@ SLEQP_RETCODE sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling)
 
   SLEQP_CALL(sleqp_sparse_matrix_copy(sleqp_problem_linear_coeffs(problem),
                                       sleqp_problem_linear_coeffs(scaled_problem)));
-  
+
   SLEQP_CALL(sleqp_scale_linear_coeffs(scaling,
                                        sleqp_problem_linear_coeffs(scaled_problem)));
 
-  
-  
+
+
 
   SLEQP_MATH_CHECK(error_flags, warn_flags);
 

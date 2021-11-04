@@ -31,12 +31,7 @@ print_warning(SleqpProblemSolver* solver)
 
   if(hessian_check)
   {
-    /*
-    const bool inexact_hessian = (solver->quasi_newton ||
-                                  func_type == SLEQP_FUNC_TYPE_LSQ);
-    */
-
-    const bool inexact_hessian = func_type == SLEQP_FUNC_TYPE_LSQ;
+    const bool inexact_hessian = sleqp_func_hess_inexact(func);
 
     if(inexact_hessian)
     {

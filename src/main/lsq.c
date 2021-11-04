@@ -309,7 +309,9 @@ SLEQP_RETCODE sleqp_lsq_func_create(SleqpFunc** fstar,
 
   SleqpFunc* func = *fstar;
 
-  SLEQP_CALL(sleqp_func_set_psd_hessian(func, true));
+  SLEQP_CALL(sleqp_func_set_hess_flags(func,
+                                       SLEQP_HESS_PSD | SLEQP_HESS_INEXACT));
+
   SLEQP_CALL(sleqp_func_set_type(func, SLEQP_FUNC_TYPE_LSQ));
 
   return SLEQP_OKAY;
