@@ -238,6 +238,19 @@ void wachbieg_setup()
   ASSERT_CALL(sleqp_sparse_vector_create_full(&wachbieg_optimal,
                                               wachbieg_num_variables));
 
+  // Note: This is not unique...
+  // General solutions: [x1, x2, x3] with
+  // x1 = x3 + b, x2 = (x3 + b)^2 + a, x3 >= 0 arbitrary
+  {
+    double values[3] = {1., 0., .5};
+
+    ASSERT_CALL(sleqp_sparse_vector_from_raw(wachbieg_optimal,
+                                             values,
+                                             wachbieg_num_variables,
+                                             0.));
+
+  }
+
 }
 
 void wachbieg_teardown()

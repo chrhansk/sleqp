@@ -13,7 +13,8 @@ struct SleqpFunc
 
   SleqpFuncCallbacks callbacks;
 
-  bool hessian_psd;
+  SLEQP_HESS_FLAGS hess_flags;
+
   SLEQP_FUNC_TYPE type;
 
   int num_variables;
@@ -49,7 +50,9 @@ SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
   func->refcount = 1;
 
   func->callbacks = *callbacks;
-  func->hessian_psd = false;
+
+  // Hessian is exact but not PSD
+  func->hess_flags = 0;
 
   func->num_variables = num_variables;
   func->num_constraints = num_constraints;
@@ -243,20 +246,71 @@ SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
   return func->hess_struct;
 }
 
-bool sleqp_func_has_psd_hessian(SleqpFunc* func)
+static void
+set_flag(SLEQP_HESS_FLAGS* flags,
+         SLEQP_HESS_FLAGS flag,
+         bool value)
 {
-  return func->hessian_psd;
+  if(value)
+  {
+    (*flags) |= flag;
+  }
+  else
+  {
+    (*flags) &= ~(flag);
+  }
 }
 
-SLEQP_RETCODE sleqp_func_set_psd_hessian(SleqpFunc* func,
-                                         bool value)
+SLEQP_HESS_FLAGS
+sleqp_func_hess_flags(const SleqpFunc* func)
 {
-  func->hessian_psd = value;
+  return func->hess_flags;
+}
+
+SLEQP_RETCODE
+sleqp_func_set_hess_flags(SleqpFunc* func,
+                          SLEQP_HESS_FLAGS flags)
+{
+  func->hess_flags = flags;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_FUNC_TYPE sleqp_func_get_type(SleqpFunc* func)
+bool
+sleqp_func_hess_inexact(const SleqpFunc* func)
+{
+  return func->hess_flags & SLEQP_HESS_INEXACT;
+}
+
+SLEQP_RETCODE
+sleqp_func_set_hess_inexact(SleqpFunc* func,
+                            bool value)
+{
+  set_flag(&(func->hess_flags),
+           SLEQP_HESS_INEXACT,
+           value);
+
+  return SLEQP_OKAY;
+}
+
+bool
+sleqp_func_hess_psd(const SleqpFunc* func)
+{
+  return func->hess_flags & SLEQP_HESS_PSD;
+}
+
+SLEQP_RETCODE
+sleqp_func_set_hess_psd(SleqpFunc* func,
+                        bool value)
+{
+  set_flag(&(func->hess_flags),
+           SLEQP_HESS_PSD,
+           value);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_FUNC_TYPE sleqp_func_get_type(const SleqpFunc* func)
 {
   return func->type;
 }

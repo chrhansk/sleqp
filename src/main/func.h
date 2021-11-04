@@ -17,6 +17,11 @@
 extern "C" {
 #endif
 
+  typedef enum {
+    SLEQP_HESS_INEXACT = (1 << 1),
+    SLEQP_HESS_PSD = (1 << 2),
+  } SLEQP_HESS_FLAGS;
+
   /**
    * Sets the current input vector of a function
    *
@@ -68,13 +73,25 @@ extern "C" {
                                                     const SleqpSparseVec* cons_indices,
                                                     SleqpSparseMatrix* cons_jac);
 
-  bool sleqp_func_has_psd_hessian(SleqpFunc* func);
+  SLEQP_HESS_FLAGS sleqp_func_hess_flags(const SleqpFunc* func);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_func_set_psd_hessian(SleqpFunc* func,
-                                           bool value);
+  SLEQP_RETCODE sleqp_func_set_hess_flags(SleqpFunc* func,
+                                          SLEQP_HESS_FLAGS flags);
 
-  SLEQP_FUNC_TYPE sleqp_func_get_type(SleqpFunc* func);
+  bool sleqp_func_hess_inexact(const SleqpFunc* func);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_func_set_hess_inexact(SleqpFunc* func,
+                                            bool value);
+
+  bool sleqp_func_hess_psd(const SleqpFunc* func);
+
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_func_set_hess_psd(SleqpFunc* func,
+                                        bool value);
+
+  SLEQP_FUNC_TYPE sleqp_func_get_type(const SleqpFunc* func);
 
   SLEQP_RETCODE sleqp_func_set_type(SleqpFunc* func,
                                     SLEQP_FUNC_TYPE func_type);

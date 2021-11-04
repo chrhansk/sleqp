@@ -884,7 +884,8 @@ SLEQP_RETCODE sleqp_bfgs_create(SleqpQuasiNewton** star,
   SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(func),
                                        sleqp_func_get_hess_struct(bfgs_func)));
 
-  SLEQP_CALL(sleqp_func_set_psd_hessian(bfgs_func, true));
+  SLEQP_CALL(sleqp_func_set_hess_flags(func,
+                                       SLEQP_HESS_PSD | SLEQP_HESS_INEXACT));
 
   return SLEQP_OKAY;
 }

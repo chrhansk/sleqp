@@ -157,7 +157,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                                            SleqpSparseVec* direction,
                                            const SleqpSparseVec* multipliers,
                                            SleqpSparseVec* hessian_direction,
-                                           double* step_length,
+                                           bool* full_step,
                                            double* quadratic_merit_value)
 {
   SleqpProblem* problem = linesearch->problem;
@@ -203,6 +203,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
 #endif
 
+  (*full_step) = true;
   (*quadratic_merit_value) = 0.;
 
   const double exact_merit_value = sleqp_iterate_get_func_val(iterate) + penalty_parameter*exact_violation;
@@ -362,10 +363,7 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                   delta,
                   (*quadratic_merit_value));
 
-  if(step_length)
-  {
-    *step_length = delta;
-  }
+  (*full_step) = false;
 
   sleqp_assert_is_leq(sleqp_sparse_vector_norm(direction), trust_radius, eps);
 

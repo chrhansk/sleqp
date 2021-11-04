@@ -425,8 +425,8 @@ SLEQP_RETCODE sleqp_fixed_var_func_create(SleqpFunc** star,
 
   SleqpFunc* fixed_var_func = *star;
 
-  SLEQP_CALL(sleqp_func_set_psd_hessian(fixed_var_func,
-                                        sleqp_func_has_psd_hessian(func)));
+  SLEQP_CALL(sleqp_func_set_hess_flags(fixed_var_func,
+                                       sleqp_func_hess_flags(func)));
 
   SLEQP_CALL(create_fixed_var_hess_struct(sleqp_func_get_hess_struct(func),
                                           sleqp_func_get_hess_struct(fixed_var_func),
@@ -524,8 +524,8 @@ SLEQP_RETCODE sleqp_fixed_var_dyn_func_create(SleqpFunc** star,
 
   SleqpFunc* fixed_var_func = *star;
 
-  SLEQP_CALL(sleqp_func_set_psd_hessian(fixed_var_func,
-                                        sleqp_func_has_psd_hessian(func)));
+  SLEQP_CALL(sleqp_func_set_hess_psd(fixed_var_func,
+                                     sleqp_func_hess_psd(func)));
 
   SLEQP_CALL(create_fixed_var_hess_struct(sleqp_func_get_hess_struct(func),
                                           sleqp_func_get_hess_struct(fixed_var_func),

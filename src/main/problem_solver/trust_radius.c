@@ -1,14 +1,15 @@
-#include "solver.h"
+#include "problem_solver.h"
 
 #include "cmp.h"
 
-SLEQP_RETCODE sleqp_solver_update_lp_trust_radius(SleqpSolver* solver,
-                                                  bool trial_step_accepted,
-                                                  double trial_step_infnorm,
-                                                  double cauchy_step_infnorm,
-                                                  double cauchy_step_length,
-                                                  double eps,
-                                                  double* lp_trust_radius)
+SLEQP_RETCODE
+sleqp_problem_solver_update_lp_trust_radius(SleqpProblemSolver* solver,
+                                            bool trial_step_accepted,
+                                            double trial_step_infnorm,
+                                            double cauchy_step_infnorm,
+                                            bool full_cauchy_step,
+                                            double eps,
+                                            double* lp_trust_radius)
 {
   if(trial_step_accepted)
   {
@@ -24,7 +25,7 @@ SLEQP_RETCODE sleqp_solver_update_lp_trust_radius(SleqpSolver* solver,
 
     update_lhs = SLEQP_MAX(update_lhs, scaled_trust_radius);
 
-    if(sleqp_is_eq(cauchy_step_length, 1., eps))
+    if(full_cauchy_step)
     {
       (*lp_trust_radius) *= 7.;
     }
@@ -45,10 +46,11 @@ SLEQP_RETCODE sleqp_solver_update_lp_trust_radius(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_solver_update_trust_radius(SleqpSolver* solver,
-                                               double reduction_ratio,
-                                               bool trial_step_accepted,
-                                               double direction_norm)
+SLEQP_RETCODE
+sleqp_problem_solver_update_trust_radius(SleqpProblemSolver* solver,
+                                         double reduction_ratio,
+                                         bool trial_step_accepted,
+                                         double direction_norm)
 {
   const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
 
