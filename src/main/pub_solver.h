@@ -39,7 +39,7 @@ extern "C" {
    * @param[in]  problem         The underlying problem
    * @param[in]  params          The problem parameters
    * @param[in]  options         The solver options
-   * @param[in]  x               The initial solution
+   * @param[in]  primal          The initial solution
    * @param[in]  scaling_data    The scaling to be used (may be `NULL`)
    **/
   SLEQP_EXPORT SLEQP_NODISCARD
@@ -47,7 +47,7 @@ extern "C" {
                                     SleqpProblem* problem,
                                     SleqpParams* params,
                                     SleqpOptions* options,
-                                    SleqpSparseVec* x,
+                                    SleqpSparseVec* primal,
                                     SleqpScaling* scaling_data);
 
   /**

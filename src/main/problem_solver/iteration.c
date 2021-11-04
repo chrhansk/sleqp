@@ -175,7 +175,7 @@ static bool check_for_unboundedness(SleqpProblemSolver* solver,
     if(feasible)
     {
       sleqp_log_debug("Detected unboundedness");
-      solver->status = SLEQP_STATUS_UNBOUNDED;
+      solver->status = SLEQP_PROBLEM_SOLVER_STATUS_UNBOUNDED;
       return true;
     }
   }
@@ -195,7 +195,7 @@ check_for_optimality(SleqpProblemSolver* solver,
                               solver->stationarity_residuum))
   {
     sleqp_log_debug("Achieved optimality");
-    solver->status = SLEQP_STATUS_OPTIMAL;
+    solver->status = SLEQP_PROBLEM_SOLVER_STATUS_OPTIMAL;
     return true;
   }
 
@@ -232,7 +232,7 @@ prepare_trial_point_solver(SleqpProblemSolver* solver)
 
 SLEQP_RETCODE sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 {
-  assert(solver->status == SLEQP_STATUS_RUNNING);
+  assert(solver->status == SLEQP_PROBLEM_SOLVER_STATUS_RUNNING);
 
   const SleqpOptions* options = solver->options;
 
@@ -295,6 +295,13 @@ SLEQP_RETCODE sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                                                           &model_trial_value,
                                                           &full_cauchy_step,
                                                           &reject_step));
+
+  if(sleqp_trial_point_solver_locally_infeasible(trial_point_solver) &&
+     solver->abort_on_local_infeasibility)
+  {
+    solver->status = SLEQP_PROBLEM_SOLVER_STATUS_LOCALLY_INFEASIBLE;
+    return SLEQP_OKAY;
+  }
 
   SLEQP_CALL(compute_step_lengths(solver));
 
@@ -435,6 +442,7 @@ SLEQP_RETCODE sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
     }
   }
 
+  ++solver->elapsed_iterations;
   ++solver->iteration;
 
   if(solver->iteration % 25 == 0)

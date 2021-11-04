@@ -5,11 +5,34 @@
 
 #define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14e | %18s"
+#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10s " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14e | %18s"
 
-#define INITIAL_LINE_FORMAT SLEQP_FORMAT_BOLD "%10d " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s | %18s"
+#define INITIAL_LINE_FORMAT SLEQP_FORMAT_BOLD "%10s " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s | %18s"
 
 #define DEFAULT_BUF_SIZE 1024
+
+static SLEQP_RETCODE
+print_iteration(SleqpProblemSolver* solver,
+                char* buf,
+                int buf_size)
+{
+  if(solver->solver_phase == SLEQP_SOLVER_PHASE_OPTIMIZATION)
+  {
+    snprintf(buf,
+             buf_size,
+             "%d",
+             solver->iteration);
+  }
+  else
+  {
+    snprintf(buf,
+             buf_size,
+             "R %d",
+             solver->iteration);
+  }
+
+  return SLEQP_OKAY;
+}
 
 SLEQP_RETCODE sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
 {
@@ -24,8 +47,10 @@ SLEQP_RETCODE sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
                  "Working set",
                  "LP tr",
                  "EQP tr",
+                 /*
                  "LP cond",
                  "Jac cond",
+                 */
                  "Primal step",
                  "Dual step",
                  "Step type");
@@ -35,8 +60,14 @@ SLEQP_RETCODE sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
 
 SLEQP_RETCODE sleqp_problem_solver_print_initial_line(SleqpProblemSolver* solver)
 {
+  char iteration_buf[DEFAULT_BUF_SIZE];
+
+  SLEQP_CALL(print_iteration(solver,
+                             iteration_buf,
+                             DEFAULT_BUF_SIZE));
+
   sleqp_log_info(INITIAL_LINE_FORMAT,
-                 solver->iteration,
+                 iteration_buf,
                  sleqp_iterate_get_func_val(solver->iterate),
                  solver->current_merit_value,
                  solver->feasibility_residuum,
@@ -93,9 +124,7 @@ SLEQP_RETCODE sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
   /*
   bool exact = false;
   double basis_condition, aug_jac_condition;
-  */
 
-  /*
   char jac_cond_buf[DEFAULT_BUF_SIZE];
   char basis_cond_buf[DEFAULT_BUF_SIZE];
 
@@ -126,6 +155,12 @@ SLEQP_RETCODE sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
 
   char working_set_buf[DEFAULT_BUF_SIZE];
 
+  char iteration_buf[DEFAULT_BUF_SIZE];
+
+  SLEQP_CALL(print_iteration(solver,
+                             iteration_buf,
+                             DEFAULT_BUF_SIZE));
+
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(solver->iterate);
 
   SleqpWorkingSet* trial_working_set = sleqp_iterate_get_working_set(solver->trial_iterate);
@@ -146,7 +181,7 @@ SLEQP_RETCODE sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
   }
 
   sleqp_log_info(LINE_FORMAT,
-                 solver->iteration,
+                 iteration_buf,
                  sleqp_iterate_get_func_val(solver->iterate),
                  solver->current_merit_value,
                  solver->feasibility_residuum,

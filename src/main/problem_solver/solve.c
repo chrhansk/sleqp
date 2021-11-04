@@ -79,7 +79,8 @@ print_warning(SleqpProblemSolver* solver)
 
 SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
                                          int max_num_iterations,
-                                         double time_limit)
+                                         double time_limit,
+                                         bool abort_on_local_infeasibility)
 {
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
@@ -87,7 +88,8 @@ SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  solver->status = SLEQP_STATUS_RUNNING;
+  solver->abort_on_local_infeasibility = abort_on_local_infeasibility;
+  solver->status = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
 
   bool reject_initial;
 
@@ -111,33 +113,17 @@ SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
                    sleqp_sparse_matrix_get_nnz(cons_jac));
   }
 
-  // ensure that the unscaled iterate is initialized
-  /*
-  if(solver->scaling_data)
-  {
-    SLEQP_CALL(sleqp_iterate_copy(iterate,
-                                  solver->original_iterate));
-
-    SleqpFunc* func = sleqp_problem_func(problem);
-    const bool lsq = sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ;
-
-    SLEQP_CALL(sleqp_unscale_iterate(solver->scaling_data,
-                                     solver->original_iterate,
-                                     lsq));
-  }
-  */
-
   // Warnings
   SLEQP_CALL(print_warning(solver));
 
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
-  solver->status = SLEQP_STATUS_RUNNING;
+  solver->status = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
 
   solver->time_limit = time_limit;
   solver->abort_next = false;
 
-  solver->iteration = 0;
+  solver->elapsed_iterations = 0;
   solver->last_step_type = SLEQP_STEPTYPE_NONE;
 
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
@@ -153,7 +139,7 @@ SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
     if(exhausted_time_limit(solver))
     {
       sleqp_log_info("Exhausted time limit, terminating");
-      solver->status = SLEQP_STATUS_ABORT_TIME;
+      solver->status = SLEQP_PROBLEM_SOLVER_STATUS_ABORT_TIME;
       break;
     }
 
@@ -161,14 +147,14 @@ SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
        solver->iteration >= max_num_iterations)
     {
       sleqp_log_info("Reached iteration limit, terminating");
-      solver->status = SLEQP_STATUS_ABORT_ITER;
+      solver->status = SLEQP_PROBLEM_SOLVER_STATUS_ABORT_ITER;
       break;
     }
 
     if(solver->abort_next)
     {
       sleqp_log_info("Abortion requested, terminating");
-      solver->status = SLEQP_STATUS_ABORT_MANUAL;
+      solver->status = SLEQP_PROBLEM_SOLVER_STATUS_ABORT_MANUAL;
       break;
     }
 
@@ -181,7 +167,7 @@ SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
     if(solver_status == SLEQP_ABORT_TIME || exhausted_time_limit(solver))
     {
       sleqp_log_info("Exhausted time limit, terminating");
-      solver->status = SLEQP_STATUS_ABORT_TIME;
+      solver->status = SLEQP_PROBLEM_SOLVER_STATUS_ABORT_TIME;
       break;
     }
 
@@ -191,17 +177,17 @@ SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
        solver->trust_radius <= deadpoint_bound)
     {
       sleqp_log_warn("Reached dead point");
-      solver->status = SLEQP_STATUS_ABORT_DEADPOINT;
+      solver->status = SLEQP_PROBLEM_SOLVER_STATUS_ABORT_DEADPOINT;
       break;
     }
 
-    if(solver->status != SLEQP_STATUS_RUNNING)
+    if(solver->status != SLEQP_PROBLEM_SOLVER_STATUS_RUNNING)
     {
       break;
     }
   }
 
-  assert(solver->status != SLEQP_STATUS_RUNNING);
+  assert(solver->status != SLEQP_PROBLEM_SOLVER_STATUS_RUNNING);
 
   return SLEQP_OKAY;
 }

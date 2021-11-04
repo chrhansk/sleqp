@@ -300,6 +300,11 @@ SLEQP_RETCODE sleqp_trial_point_solver_get_penalty(SleqpTrialPointSolver* solver
   return SLEQP_OKAY;
 }
 
+bool sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver)
+{
+  return solver->locally_infeasible;
+}
+
 SleqpSparseVec* sleqp_trial_point_solver_get_multipliers(SleqpTrialPointSolver* solver)
 {
   return solver->multipliers;

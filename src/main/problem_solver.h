@@ -6,6 +6,7 @@
 
 #include "callback_handler.h"
 #include "deriv_check.h"
+#include "problem_solver_types.h"
 #include "trial_point.h"
 
 #include "step/step_rule.h"
@@ -14,19 +15,15 @@
 extern "C" {
 #endif
 
-  typedef enum {
-    SLEQP_PROBLEM_SOLVER_EVENT_ACCEPTED_ITERATE = 0,
-    SLEQP_PROBLEM_SOLVER_EVENT_PERFORMED_ITERATION,
-    SLEQP_PROBLEM_SOLVER_NUM_EVENTS
-  } SLEQP_PROBLEM_SOLVER_EVENT;
-
-  typedef struct
+  struct SleqpProblemSolver
   {
     int refcount;
 
     SleqpProblem* problem;
     SleqpParams* params;
     SleqpOptions* options;
+
+    SLEQP_SOLVER_PHASE solver_phase;
 
     double* dense_cache;
 
@@ -49,7 +46,7 @@ extern "C" {
 
     SleqpCallbackHandler* callback_handlers[SLEQP_PROBLEM_SOLVER_NUM_EVENTS];
 
-    SLEQP_STATUS status;
+    SLEQP_PROBLEM_SOLVER_STATUS status;
 
     SLEQP_STEPTYPE last_step_type;
 
@@ -59,8 +56,6 @@ extern "C" {
 
     double feasibility_residuum;
 
-    bool locally_infeasible;
-
     double trust_radius;
 
     double lp_trust_radius;
@@ -68,6 +63,8 @@ extern "C" {
     double penalty_parameter;
 
     int iteration;
+
+    int elapsed_iterations;
 
     double time_limit;
 
@@ -81,15 +78,20 @@ extern "C" {
 
     double current_merit_value;
 
-  } SleqpProblemSolver;
+    bool abort_on_local_infeasibility;
+  };
 
-  typedef SLEQP_RETCODE (*SLEQP_PROBLEM_SOLVER_ACCEPTED_ITERATE)(SleqpProblemSolver* solver,
-                                                                 SleqpIterate* iterate,
-                                                                 SleqpIterate* trial_iterate,
-                                                                 void* callback_data);
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_solver_create(SleqpProblemSolver** star,
+                                            SLEQP_SOLVER_PHASE solver_phase,
+                                            SleqpProblem* problem,
+                                            SleqpParams* params,
+                                            SleqpOptions* options,
+                                            SleqpSparseVec* primal);
 
-  typedef SLEQP_RETCODE (*SLEQP_PROBLEM_SOLVER_PERFORMED_ITERATION)(SleqpProblemSolver* solver,
-                                                                    void* callback_data);
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
+                                                const SleqpSparseVec* primal);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_solver_add_callback(SleqpProblemSolver* solver,
@@ -104,25 +106,22 @@ extern "C" {
                                                      void* callback_data);
 
   SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_problem_solver_create(SleqpProblemSolver** star,
-                                            SleqpProblem* problem,
-                                            SleqpParams* params,
-                                            SleqpOptions* options,
-                                            SleqpSparseVec* primal);
-
-  SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_solver_reset(SleqpProblemSolver* solver);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_solver_abort(SleqpProblemSolver* solver);
 
-  int sleqp_problem_solver_get_iterations(const SleqpProblemSolver* solver);
+  SLEQP_NODISCARD
+  SLEQP_RETCODE sleqp_problem_solver_set_iteration(SleqpProblemSolver* solver,
+                                                   int iteration);
+
+  int sleqp_problem_solver_elapsed_iterations(const SleqpProblemSolver* solver);
 
   double sleqp_problem_solver_get_elapsed_seconds(const SleqpProblemSolver* solver);
 
   SleqpIterate* sleqp_problem_solver_get_iterate(const SleqpProblemSolver* solver);
 
-  SLEQP_STATUS sleqp_problem_solver_get_status(const SleqpProblemSolver* solver);
+  SLEQP_PROBLEM_SOLVER_STATUS sleqp_problem_solver_get_status(const SleqpProblemSolver* solver);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_solver_print_stats(const SleqpProblemSolver* solver);
@@ -175,7 +174,8 @@ extern "C" {
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
                                            int max_num_iterations,
-                                           double time_limit);
+                                           double time_limit,
+                                           bool abort_on_local_infeasibility);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE sleqp_problem_solver_reject_step(SleqpProblemSolver* solver);

@@ -107,7 +107,21 @@ SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                    elapsed_seconds));
   }
 
-  SLEQP_CALL(sleqp_problem_solver_print_stats(solver->problem_solver));
+  if(solver->restoration_problem_solver)
+  {
+    sleqp_log_info("%30s:", "Optimization phase");
+
+    SLEQP_CALL(sleqp_problem_solver_print_stats(solver->problem_solver));
+
+    sleqp_log_info("%30s:", "Restoration phase");
+
+    SLEQP_CALL(sleqp_problem_solver_print_stats(solver->restoration_problem_solver));
+  }
+
+  else
+  {
+    SLEQP_CALL(sleqp_problem_solver_print_stats(solver->problem_solver));
+  }
 
   sleqp_log_info("%30s: %8.2fs", "Solving time", elapsed_seconds);
 

@@ -1,35 +1,14 @@
 set(COMMON_SRC
+  assert.c
   aug_jac/aug_jac.c
   aug_jac/box_constrained_aug_jac.c
   aug_jac/standard_aug_jac.c
   aug_jac/unconstrained_aug_jac.c
-  cauchy/cauchy.c
+  callback_handler.c
   cauchy/box_constrained_cauchy.c
+  cauchy/cauchy.c
   cauchy/standard_cauchy.c
   cauchy/unconstrained_cauchy.c
-  sparse/sparse_factorization.c
-  sparse/sparse_matrix.c
-  sparse/sparse_vec.c
-  tr/lsqr.c
-  tr/tr_solver.c
-  tr/tr_util.c
-  tr/trlib_solver.c
-  tr/steihaug_solver.c
-  preprocessor/fixed_var_func.c
-  preprocessor/preprocessing.c
-  preprocessor/preprocessing_state.c
-  preprocessor/preprocessor.c
-  preprocessor/restore.c
-  preprocessor/transform.c
-  quasi_newton/quasi_newton.c
-  quasi_newton/bfgs.c
-  quasi_newton/sr1.c
-  solver/callback.c
-  solver/print.c
-  solver/state.c
-  assert.c
-  hess_struct.c
-  callback_handler.c
   cmp.c
   deriv_check.c
   dual_estimation.c
@@ -38,25 +17,27 @@ set(COMMON_SRC
   feas.c
   func.c
   gauss_newton.c
+  hess_struct.c
   iterate.c
-  params.c
   linesearch.c
   log.c
+  lp/lpi.c
   lsq.c
+  merit.c
+  newton.c
   options.c
   parametric.c
+  params.c
   penalty.c
   polish.c
-  problem_scaling.c
-  restoration.c
-  newton.c
-  merit.c
+  preprocessor/fixed_var_func.c
+  preprocessor/preprocessing.c
+  preprocessor/preprocessing_state.c
+  preprocessor/preprocessor.c
+  preprocessor/restore.c
+  preprocessor/transform.c
   problem.c
-  scale.c
-  soc.c
-  solver.c
-  timer.c
-  types.c
+  problem_scaling.c
   problem_solver.c
   problem_solver/callback.c
   problem_solver/iteration.c
@@ -65,18 +46,39 @@ set(COMMON_SRC
   problem_solver/state.c
   problem_solver/step.c
   problem_solver/trust_radius.c
+  quasi_newton/bfgs.c
+  quasi_newton/quasi_newton.c
+  quasi_newton/sr1.c
+  restoration.c
+  scale.c
+  soc.c
+  solver.c
+  solver/callback.c
+  solver/phase.c
+  solver/print.c
+  solver/solve.c
+  solver/state.c
+  sparse/sparse_factorization.c
+  sparse/sparse_matrix.c
+  sparse/sparse_vec.c
+  step/step_rule.c
+  step/step_rule_direct.c
+  step/step_rule_minstep.c
+  step/step_rule_window.c
+  timer.c
+  tr/lsqr.c
+  tr/steihaug_solver.c
+  tr/tr_solver.c
+  tr/tr_util.c
+  tr/trlib_solver.c
   trial_point.c
   trial_point/cauchy_step.c
   trial_point/print.c
   trial_point/time.c
+  types.c
   util.c
   working_set.c
-  working_step.c
-  lp/lpi.c
-  step/step_rule.c
-  step/step_rule_direct.c
-  step/step_rule_minstep.c
-  step/step_rule_window.c)
+  working_step.c)
 
 
 add_library(sleqp_objects OBJECT

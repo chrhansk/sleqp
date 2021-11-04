@@ -118,6 +118,8 @@ extern "C" {
   SLEQP_RETCODE sleqp_trial_point_solver_get_penalty(SleqpTrialPointSolver* solver,
                                                      double* penalty_parameter);
 
+  bool sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver);
+
   SleqpSparseVec* sleqp_trial_point_solver_get_multipliers(SleqpTrialPointSolver* solver);
 
   SleqpSparseVec* sleqp_trial_point_solver_get_cauchy_step(SleqpTrialPointSolver* solver);

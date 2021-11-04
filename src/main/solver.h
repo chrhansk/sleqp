@@ -49,11 +49,19 @@ extern "C" {
 
     SleqpProblem* problem;
 
+    SleqpProblemSolver* problem_solver;
+
+    SleqpProblem* restoration_problem;
+
+    SleqpProblemSolver* restoration_problem_solver;
+
+    SLEQP_SOLVER_PHASE solver_phase;
+
+    SleqpSparseVec* restoration_primal;
+
     SleqpTimer* elapsed_timer;
 
     SLEQP_STATUS status;
-
-    SleqpProblemSolver* problem_solver;
 
     SleqpPolishing* polishing;
 
@@ -63,11 +71,15 @@ extern "C" {
 
     double time_limit;
 
+    int iterations;
+
     bool abort_next;
   };
 
   SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
                                          double violation);
+
+  SLEQP_RETCODE sleqp_solver_toggle_phase(SleqpSolver* solver);
 
   SLEQP_RETCODE sleqp_solver_restore_original_iterate(SleqpSolver* solver);
 

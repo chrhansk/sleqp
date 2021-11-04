@@ -162,7 +162,7 @@ SLEQP_RETCODE sleqp_timer_display(SleqpTimer* timer,
 
   snprintf(buffer,
            BUF_SIZE,
-           "%30s: %5d (%.6fs avg, %8.2fs total = %5.2f%%)",
+           "%30s: %5d (%.6fs avg, %8.2fs total = %6.2f%%)",
            description,
            num_runs,
            avg_time,

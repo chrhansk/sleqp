@@ -62,6 +62,9 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
+  const bool enable_restoration = sleqp_options_get_bool(solver->options,
+                                                         SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE);
+
   SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
                                       iterate,
                                       solver->lp_trust_radius));
@@ -93,7 +96,7 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
                                   &(solver->penalty_parameter),
                                   &(solver->locally_infeasible)));
 
-  if(solver->locally_infeasible)
+  if(solver->locally_infeasible && enable_restoration)
   {
     return SLEQP_OKAY;
   }

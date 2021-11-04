@@ -310,6 +310,7 @@ SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     primal));
 
   SLEQP_CALL(sleqp_problem_solver_create(&solver->problem_solver,
+                                         SLEQP_SOLVER_PHASE_OPTIMIZATION,
                                          solver->problem,
                                          params,
                                          options,
@@ -470,60 +471,12 @@ SLEQP_RETCODE sleqp_solver_abort(SleqpSolver* solver)
 
 int sleqp_solver_get_iterations(const SleqpSolver* solver)
 {
-  return sleqp_problem_solver_get_iterations(solver->problem_solver);
+  return solver->iterations;
 }
 
 double sleqp_solver_get_elapsed_seconds(const SleqpSolver* solver)
 {
-  return sleqp_problem_solver_get_elapsed_seconds(solver->problem_solver);
-}
-
-SLEQP_RETCODE sleqp_solver_solve(SleqpSolver* solver,
-                                 int max_num_iterations,
-                                 double time_limit)
-{
-  if(solver->status == SLEQP_STATUS_INFEASIBLE)
-  {
-    sleqp_log_debug("Problem is infeasible, aborting");
-    return SLEQP_OKAY;
-  }
-
-  SLEQP_CALL(sleqp_timer_start(solver->elapsed_timer));
-
-  SLEQP_CALL(sleqp_problem_solver_solve(solver->problem_solver,
-                                        max_num_iterations,
-                                        time_limit));
-
-  SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
-
-  solver->status = sleqp_problem_solver_get_status(solver->problem_solver);
-
-  SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
-
-  double violation;
-
-  SleqpIterate* iterate = sleqp_problem_solver_get_iterate(solver->problem_solver);
-
-  SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
-                                                iterate,
-                                                &violation));
-
-  SLEQP_POLISHING_TYPE polishing_type = sleqp_options_get_int(solver->options,
-                                                              SLEQP_OPTION_INT_POLISHING_TYPE);
-
-  SLEQP_CALL(sleqp_polishing_polish(solver->polishing,
-                                    iterate,
-                                    polishing_type));
-
-  SLEQP_CALLBACK_HANDLER_EXECUTE(solver->callback_handlers[SLEQP_SOLVER_EVENT_FINISHED],
-                                 SLEQP_FINISHED,
-                                 solver,
-                                 solver->original_iterate);
-
-  SLEQP_CALL(sleqp_solver_print_stats(solver,
-                                      violation));
-
-  return SLEQP_OKAY;
+  return sleqp_timer_get_ttl(solver->elapsed_timer);
 }
 
 static SLEQP_RETCODE solver_free(SleqpSolver** star)
@@ -542,11 +495,6 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_polishing_release(&solver->polishing));
 
-  SLEQP_CALL(sleqp_problem_solver_release(&solver->problem_solver));
-
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->primal));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->scaled_primal));
-
   SLEQP_CALL(sleqp_timer_free(&solver->elapsed_timer));
 
   SLEQP_CALL(sleqp_iterate_release(&solver->scaled_iterate));
@@ -557,13 +505,25 @@ static SLEQP_RETCODE solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_problem_scaling_release(&solver->problem_scaling));
 
-  SLEQP_CALL(sleqp_scaling_release(&solver->scaling_data));
-
   SLEQP_CALL(sleqp_preprocessor_release(&solver->preprocessor));
+
+  SLEQP_CALL(sleqp_problem_solver_release(&solver->restoration_problem_solver));
+
+  SLEQP_CALL(sleqp_problem_release(&solver->restoration_problem));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->restoration_primal));
+
+  SLEQP_CALL(sleqp_problem_solver_release(&solver->problem_solver));
+
+  SLEQP_CALL(sleqp_quasi_newton_release(&solver->quasi_newton));
 
   SLEQP_CALL(sleqp_problem_release(&solver->scaled_problem));
 
-  SLEQP_CALL(sleqp_quasi_newton_release(&solver->quasi_newton));
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->primal));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&solver->scaled_primal));
+
+  SLEQP_CALL(sleqp_scaling_release(&solver->scaling_data));
 
   SLEQP_CALL(sleqp_problem_release(&solver->original_problem));
 

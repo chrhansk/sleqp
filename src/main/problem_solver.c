@@ -6,6 +6,7 @@
 #include "mem.h"
 
 SLEQP_RETCODE sleqp_problem_solver_create(SleqpProblemSolver** star,
+                                          SLEQP_SOLVER_PHASE solver_phase,
                                           SleqpProblem* problem,
                                           SleqpParams* params,
                                           SleqpOptions* options,
@@ -27,6 +28,8 @@ SLEQP_RETCODE sleqp_problem_solver_create(SleqpProblemSolver** star,
 
   SLEQP_CALL(sleqp_options_capture(options));
   solver->options = options;
+
+  solver->solver_phase = solver_phase;
 
   const int num_variables = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
@@ -90,6 +93,19 @@ SLEQP_RETCODE sleqp_problem_solver_create(SleqpProblemSolver** star,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
+                                              const SleqpSparseVec* primal)
+{
+  const int num_variables = sleqp_problem_num_variables(solver->problem);
+
+  assert(primal->dim == num_variables);
+
+  SLEQP_CALL(sleqp_sparse_vector_copy(primal,
+                                      sleqp_iterate_get_primal(solver->iterate)));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE sleqp_problem_solver_reset(SleqpProblemSolver* solver)
 {
   const int num_variables = sleqp_problem_num_variables(solver->problem);
@@ -112,9 +128,17 @@ SLEQP_RETCODE sleqp_problem_solver_abort(SleqpProblemSolver* solver)
   return SLEQP_OKAY;
 }
 
-int sleqp_problem_solver_get_iterations(const SleqpProblemSolver* solver)
+SLEQP_RETCODE sleqp_problem_solver_set_iteration(SleqpProblemSolver* solver,
+                                                 int iteration)
 {
-  return solver->iteration;
+  solver->iteration = iteration;
+
+  return SLEQP_OKAY;
+}
+
+int sleqp_problem_solver_elapsed_iterations(const SleqpProblemSolver* solver)
+{
+  return solver->elapsed_iterations;
 }
 
 double sleqp_problem_solver_get_elapsed_seconds(const SleqpProblemSolver* solver)
@@ -127,7 +151,7 @@ SleqpIterate* sleqp_problem_solver_get_iterate(const SleqpProblemSolver* solver)
   return solver->iterate;
 }
 
-SLEQP_STATUS sleqp_problem_solver_get_status(const SleqpProblemSolver* solver)
+SLEQP_PROBLEM_SOLVER_STATUS sleqp_problem_solver_get_status(const SleqpProblemSolver* solver)
 {
   return solver->status;
 }
