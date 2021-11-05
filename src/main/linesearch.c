@@ -346,6 +346,8 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
 
     delta *= tau;
 
+    (*full_step) = false;
+
     if(sleqp_is_zero(delta, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_clear(direction));
@@ -362,8 +364,6 @@ SLEQP_RETCODE sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
                   iteration,
                   delta,
                   (*quadratic_merit_value));
-
-  (*full_step) = false;
 
   sleqp_assert_is_leq(sleqp_sparse_vector_norm(direction), trust_radius, eps);
 
