@@ -139,7 +139,7 @@ SLEQP_RETCODE sleqp_problem_solver_solve(SleqpProblemSolver* solver,
     }
 
     if(max_num_iterations != SLEQP_NONE &&
-       solver->iteration >= max_num_iterations)
+       solver->elapsed_iterations >= max_num_iterations)
     {
       sleqp_log_info("Reached iteration limit, terminating");
       solver->status = SLEQP_PROBLEM_SOLVER_STATUS_ABORT_ITER;
