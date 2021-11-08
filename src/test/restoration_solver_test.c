@@ -23,6 +23,10 @@ void restoration_solver_setup()
   ASSERT_CALL(sleqp_params_create(&params));
   ASSERT_CALL(sleqp_options_create(&options));
 
+  ASSERT_CALL(sleqp_options_set_bool(options,
+                                     SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE,
+                                     true));
+
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           wachbieg_func,
                                           params,
