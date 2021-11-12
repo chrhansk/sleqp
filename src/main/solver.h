@@ -19,65 +19,66 @@
 
 struct SleqpSolver
 {
-        int refcount;
+  int refcount;
 
-        SleqpParams* params;
+  SleqpParams* params;
 
-        SleqpOptions* options;
+  SleqpOptions* options;
 
-        SleqpProblem* original_problem;
+  SleqpProblem* original_problem;
 
-        SleqpScaling* scaling_data;
+  SleqpScaling* scaling_data;
 
-        SleqpSparseVec* scaled_primal;
-        SleqpSparseVec* primal;
+  SleqpSparseVec* scaled_primal;
+  SleqpSparseVec* primal;
 
-        SleqpProblem* scaled_problem;
+  SleqpProblem* scaled_problem;
 
-        SleqpPreprocessor* preprocessor;
+  SleqpPreprocessor* preprocessor;
 
-        SleqpProblemScaling* problem_scaling;
+  SleqpProblemScaling* problem_scaling;
 
-        bool restore_original_iterate;
-        SleqpIterate* original_iterate;
+  bool restore_original_iterate;
+  SleqpIterate* original_iterate;
 
-        SleqpIterate* scaled_iterate;
+  SleqpIterate* scaled_iterate;
 
-        SleqpProblem* problem;
+  SleqpProblem* problem;
 
-        SleqpProblemSolver* problem_solver;
+  SleqpProblemSolver* problem_solver;
 
-        SleqpProblem* restoration_problem;
+  SleqpProblem* restoration_problem;
 
-        SleqpProblemSolver* restoration_problem_solver;
+  SleqpProblemSolver* restoration_problem_solver;
 
-        SLEQP_SOLVER_PHASE solver_phase;
+  SLEQP_SOLVER_PHASE solver_phase;
 
-        SleqpSparseVec* restoration_primal;
+  SleqpSparseVec* restoration_primal;
 
-        SleqpTimer* elapsed_timer;
+  SleqpTimer* elapsed_timer;
 
-        SLEQP_STATUS status;
+  SLEQP_STATUS status;
 
-        SleqpPolishing* polishing;
+  SleqpPolishing* polishing;
 
-        SleqpCallbackHandler* callback_handlers[SLEQP_SOLVER_NUM_EVENTS];
+  SleqpCallbackHandler* callback_handlers[SLEQP_SOLVER_NUM_EVENTS];
 
-        SleqpQuasiNewton* quasi_newton;
+  SleqpQuasiNewton* quasi_newton;
 
-        double time_limit;
+  double time_limit;
 
-        int iterations;
+  int iterations;
 
-        bool abort_next;
+  bool abort_next;
 };
 
-SLEQP_RETCODE sleqp_solver_print_stats(SleqpSolver* solver,
-                                       double violation);
+SLEQP_RETCODE
+sleqp_solver_print_stats(SleqpSolver* solver, double violation);
 
-SLEQP_RETCODE sleqp_solver_toggle_phase(SleqpSolver* solver);
+SLEQP_RETCODE
+sleqp_solver_toggle_phase(SleqpSolver* solver);
 
-SLEQP_RETCODE sleqp_solver_restore_original_iterate(SleqpSolver* solver);
-
+SLEQP_RETCODE
+sleqp_solver_restore_original_iterate(SleqpSolver* solver);
 
 #endif /* SLEQP_SOLVER_H */

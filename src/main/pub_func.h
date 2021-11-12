@@ -12,20 +12,22 @@
 
 typedef struct SleqpFunc SleqpFunc;
 
-typedef enum {
-        SLEQP_VALUE_REASON_NONE,
-        SLEQP_VALUE_REASON_INIT,
-        SLEQP_VALUE_REASON_CHECKING_DERIV,
-        SLEQP_VALUE_REASON_ACCEPTED_ITERATE,
-        SLEQP_VALUE_REASON_TRYING_ITERATE,
-        SLEQP_VALUE_REASON_TRYING_SOC_ITERATE,
-        SLEQP_VALUE_REASON_REJECTED_ITERATE,
+typedef enum
+{
+  SLEQP_VALUE_REASON_NONE,
+  SLEQP_VALUE_REASON_INIT,
+  SLEQP_VALUE_REASON_CHECKING_DERIV,
+  SLEQP_VALUE_REASON_ACCEPTED_ITERATE,
+  SLEQP_VALUE_REASON_TRYING_ITERATE,
+  SLEQP_VALUE_REASON_TRYING_SOC_ITERATE,
+  SLEQP_VALUE_REASON_REJECTED_ITERATE,
 } SLEQP_VALUE_REASON;
 
-typedef enum {
-        SLEQP_FUNC_TYPE_REGULAR,
-        SLEQP_FUNC_TYPE_LSQ,
-        SLEQP_FUNC_TYPE_DYNAMIC
+typedef enum
+{
+  SLEQP_FUNC_TYPE_REGULAR,
+  SLEQP_FUNC_TYPE_LSQ,
+  SLEQP_FUNC_TYPE_DYNAMIC
 } SLEQP_FUNC_TYPE;
 
 /**
@@ -35,9 +37,12 @@ typedef enum {
  * @param[in]     value           The value
  * @param[in]     reason          The reason for setting \f$ x \f$
  * @param[out]    reject          Whether to manually reject the step
- * @param[out]    func_grad_nnz   The number of nonzeros of the function gradient \f$ \nabla f(x) \f$
- * @param[out]    cons_val_nnz    The number of nonzeros of the constraint function \f$ c(x) \f$
- * @param[out]    cons_jac_nnz    The number of nonzeros of the constraint Jacobian \f$ J_c(x) \f$
+ * @param[out]    func_grad_nnz   The number of nonzeros of the function
+ *gradient \f$ \nabla f(x) \f$
+ * @param[out]    cons_val_nnz    The number of nonzeros of the constraint
+ *function \f$ c(x) \f$
+ * @param[out]    cons_jac_nnz    The number of nonzeros of the constraint
+ *Jacobian \f$ J_c(x) \f$
  * @param[in,out] func_data       The function data
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
@@ -57,7 +62,8 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
  *                                to be evaluated
  * @param[out]    func_val        The function value \f$ f(x) \f$
  * @param[out]    func_grad       The function gradient \f$ \nabla f(x) \f$
- * @param[out]    cons_val        The value of the constraint function \f$ c(x) \f$
+ * @param[out]    cons_val        The value of the constraint function \f$ c(x)
+ *\f$
  * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
  * @param[in,out] func_data       The function data
  **/
@@ -90,7 +96,8 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_GRAD)(SleqpFunc* func,
  * @param[in]     func            The function
  * @param[in]     cons_indices    The indices of the constraint function
  *                                to be evaluated
- * @param[out]    cons_val        The value of the constraint function \f$ c(x) \f$
+ * @param[out]    cons_val        The value of the constraint function \f$ c(x)
+ *\f$
  * @param[in,out] func_data       The function data
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
@@ -150,14 +157,15 @@ typedef SLEQP_RETCODE (*SLEQP_HESS_PROD)(SleqpFunc* func,
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_FREE)(void* func_data);
 
-typedef struct {
-        SLEQP_FUNC_SET set_value;
-        SLEQP_FUNC_VAL func_val;
-        SLEQP_FUNC_GRAD func_grad;
-        SLEQP_FUNC_CONS_VAL cons_val;
-        SLEQP_FUNC_CONS_JAC cons_jac;
-        SLEQP_HESS_PROD hess_prod;
-        SLEQP_FUNC_FREE func_free;
+typedef struct
+{
+  SLEQP_FUNC_SET set_value;
+  SLEQP_FUNC_VAL func_val;
+  SLEQP_FUNC_GRAD func_grad;
+  SLEQP_FUNC_CONS_VAL cons_val;
+  SLEQP_FUNC_CONS_JAC cons_jac;
+  SLEQP_HESS_PROD hess_prod;
+  SLEQP_FUNC_FREE func_free;
 } SleqpFuncCallbacks;
 
 /**
@@ -169,28 +177,30 @@ typedef struct {
  * @param[in]  num_constraints  The number of constraints
  * @param[in]  func_data        The function data
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
-                                                             SleqpFuncCallbacks* callbacks,
-                                                             int num_variables,
-                                                             int num_constraints,
-                                                             void* func_data);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_func_create(SleqpFunc** fstar,
+                  SleqpFuncCallbacks* callbacks,
+                  int num_variables,
+                  int num_constraints,
+                  void* func_data);
 
 /**
  * Returns the number of variables \f$ n \f$.
  **/
-SLEQP_EXPORT int sleqp_func_get_num_variables(const SleqpFunc* func);
+SLEQP_EXPORT int
+sleqp_func_get_num_variables(const SleqpFunc* func);
 
 /**
  * Returns the number of constraints \f$ m \f$.
  **/
-SLEQP_EXPORT int sleqp_func_get_num_constraints(const SleqpFunc* func);
+SLEQP_EXPORT int
+sleqp_func_get_num_constraints(const SleqpFunc* func);
 
 /**
  * Sets the callbacks of this function to the specified ones
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
-                                       SleqpFuncCallbacks* callbacks);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_func_set_callbacks(SleqpFunc* func, SleqpFuncCallbacks* callbacks);
 
 /**
  * Returns the Hessian structure of this function
@@ -199,22 +209,23 @@ SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
  *
  **/
 SLEQP_EXPORT
-SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func);
+SleqpHessianStruct*
+sleqp_func_get_hess_struct(SleqpFunc* func);
 
 /**
  * Returns the function data associated with the given function.
  **/
-SLEQP_EXPORT void* sleqp_func_get_data(SleqpFunc* func);
+SLEQP_EXPORT void*
+sleqp_func_get_data(SleqpFunc* func);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_func_capture(SleqpFunc* func);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_func_capture(SleqpFunc* func);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_func_release(SleqpFunc** fstar);
 
 /**
  * @}
  **/
-
 
 #endif /* PUB_FUNC_H */

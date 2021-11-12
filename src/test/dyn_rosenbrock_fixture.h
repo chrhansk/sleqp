@@ -5,8 +5,10 @@
 
 extern SleqpFunc* dyn_rosenbrock_func;
 
-void dyn_rosenbrock_setup();
+void
+dyn_rosenbrock_setup();
 
-void dyn_rosenbrock_teardown();
+void
+dyn_rosenbrock_teardown();
 
 #endif /* DYN_ROSENBROCK_FIXTURE_H */

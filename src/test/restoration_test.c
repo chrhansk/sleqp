@@ -1,9 +1,9 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
-#include "mem.h"
 #include "feas.h"
+#include "mem.h"
 #include "restoration.h"
 #include "solver.h"
 #include "util.h"
@@ -19,7 +19,8 @@ SleqpIterate* iterate;
 
 SleqpProblem* restoration_problem;
 
-void restoration_setup()
+void
+restoration_setup()
 {
   wachbieg_setup();
 
@@ -33,25 +34,21 @@ void restoration_setup()
                                           wachbieg_cons_lb,
                                           wachbieg_cons_ub));
 
-  ASSERT_CALL(sleqp_iterate_create(&iterate,
-                                   problem,
-                                   wachbieg_initial));
+  ASSERT_CALL(sleqp_iterate_create(&iterate, problem, wachbieg_initial));
 
   bool reject;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_NONE,
-                                     &reject));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, &reject));
 
   assert(!reject);
 
-  ASSERT_CALL(sleqp_restoration_problem_create(&restoration_problem,
-                                               params,
-                                               problem));
+  ASSERT_CALL(
+    sleqp_restoration_problem_create(&restoration_problem, params, problem));
 }
 
-void restoration_teardown()
+void
+restoration_teardown()
 {
   ASSERT_CALL(sleqp_problem_release(&restoration_problem));
 
@@ -70,21 +67,24 @@ START_TEST(test_transform)
 
   SleqpSparseVec* residuals;
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&restoration_primal,
-                                               sleqp_problem_num_variables(restoration_problem)));
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(
+    &restoration_primal,
+    sleqp_problem_num_variables(restoration_problem)));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&residuals,
-                                               sleqp_problem_num_constraints(problem)));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_empty(&residuals,
+                                     sleqp_problem_num_constraints(problem)));
 
   ASSERT_CALL(sleqp_feasibility_residuals(problem,
                                           sleqp_iterate_get_cons_val(iterate),
                                           residuals,
                                           NULL));
 
-  ASSERT_CALL(sleqp_restoration_problem_transform(problem,
-                                                  sleqp_iterate_get_primal(iterate),
-                                                  sleqp_iterate_get_cons_val(iterate),
-                                                  restoration_primal));
+  ASSERT_CALL(
+    sleqp_restoration_problem_transform(problem,
+                                        sleqp_iterate_get_primal(iterate),
+                                        sleqp_iterate_get_cons_val(iterate),
+                                        restoration_primal));
 
   SleqpIterate* restoration_iterate;
 
@@ -117,22 +117,24 @@ END_TEST
 
 START_TEST(test_restore)
 {
-  const double zero_eps = sleqp_params_get(params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpSparseVec* transformed_primal;
   SleqpSparseVec* restored_primal;
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&transformed_primal,
-                                               sleqp_problem_num_variables(restoration_problem)));
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(
+    &transformed_primal,
+    sleqp_problem_num_variables(restoration_problem)));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&restored_primal,
-                                               sleqp_problem_num_variables(problem)));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_empty(&restored_primal,
+                                     sleqp_problem_num_variables(problem)));
 
-  ASSERT_CALL(sleqp_restoration_problem_transform(problem,
-                                                  sleqp_iterate_get_primal(iterate),
-                                                  sleqp_iterate_get_cons_val(iterate),
-                                                  transformed_primal));
+  ASSERT_CALL(
+    sleqp_restoration_problem_transform(problem,
+                                        sleqp_iterate_get_primal(iterate),
+                                        sleqp_iterate_get_cons_val(iterate),
+                                        transformed_primal));
 
   ASSERT_CALL(sleqp_restoration_problem_restore(problem,
                                                 transformed_primal,
@@ -155,11 +157,13 @@ START_TEST(test_solve)
   SleqpOptions* options;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&initial,
-                                               sleqp_problem_num_variables(restoration_problem)));
+  ASSERT_CALL(sleqp_sparse_vector_create_empty(
+    &initial,
+    sleqp_problem_num_variables(restoration_problem)));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&residuals,
-                                               sleqp_problem_num_constraints(problem)));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_empty(&residuals,
+                                     sleqp_problem_num_constraints(problem)));
 
   ASSERT_CALL(sleqp_options_create(&options));
 
@@ -179,24 +183,22 @@ START_TEST(test_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver,
-                                        &solution_iterate));
+  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver),
-                   SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* transformed_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* transformed_solution
+    = sleqp_iterate_get_primal(solution_iterate);
 
-  ASSERT_CALL(sleqp_restoration_problem_restore(problem,
-                                                transformed_solution,
-                                                sleqp_iterate_get_primal(iterate)));
+  ASSERT_CALL(
+    sleqp_restoration_problem_restore(problem,
+                                      transformed_solution,
+                                      sleqp_iterate_get_primal(iterate)));
 
   bool reject;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_NONE,
-                                     &reject));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, &reject));
 
   assert(!reject);
 
@@ -205,8 +207,7 @@ START_TEST(test_solve)
                                           residuals,
                                           NULL));
 
-  ck_assert(sleqp_is_zero(sleqp_sparse_vector_inf_norm(residuals),
-                          1e-4));
+  ck_assert(sleqp_is_zero(sleqp_sparse_vector_inf_norm(residuals), 1e-4));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -218,10 +219,11 @@ START_TEST(test_solve)
 }
 END_TEST
 
-Suite* restoration_test_suite()
+Suite*
+restoration_test_suite()
 {
-  Suite *suite;
-  TCase *tc_restoration;
+  Suite* suite;
+  TCase* tc_restoration;
 
   suite = suite_create("Restoration tests");
 

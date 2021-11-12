@@ -6,12 +6,13 @@
  * @brief Defintion of UMFPACK sparse factorization method.
  **/
 
-#include "types.h"
-#include "sparse_matrix.h"
 #include "sparse_factorization.h"
+#include "sparse_matrix.h"
+#include "types.h"
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization** star,
-                                                        SleqpParams* params);
+SLEQP_RETCODE
+sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization** star,
+                                          SleqpParams* params);
 
 #endif /* SLEQP_SPARSE_FACTORIZATION_UMFPACK_H */

@@ -13,16 +13,14 @@ zero_func_set(SleqpFunc* func,
               void* func_data)
 {
   *func_grad_nnz = 0;
-  *cons_val_nnz = 0;
-  *cons_jac_nnz = 0;
+  *cons_val_nnz  = 0;
+  *cons_jac_nnz  = 0;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-zero_func_val(SleqpFunc* func,
-              double* func_val,
-              void* func_data)
+zero_func_val(SleqpFunc* func, double* func_val, void* func_data)
 {
   *func_val = 0.;
 
@@ -30,9 +28,7 @@ zero_func_val(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-zero_func_grad(SleqpFunc* func,
-               SleqpSparseVec* func_grad,
-               void* func_data)
+zero_func_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
 {
   return SLEQP_OKAY;
 }
@@ -92,46 +88,38 @@ zero_lsq_func_jac_adjoint(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE zero_func_create(SleqpFunc** star,
-                               int num_variables,
-                               int num_constraints)
+SLEQP_RETCODE
+zero_func_create(SleqpFunc** star, int num_variables, int num_constraints)
 {
 
-  SleqpFuncCallbacks callbacks = {
-    .set_value = zero_func_set,
-    .func_val  = zero_func_val,
-    .func_grad = zero_func_grad,
-    .cons_val  = zero_func_cons_val,
-    .cons_jac  = zero_func_cons_jac,
-    .hess_prod = zero_func_hess_prod,
-    .func_free = NULL
-  };
+  SleqpFuncCallbacks callbacks = {.set_value = zero_func_set,
+                                  .func_val  = zero_func_val,
+                                  .func_grad = zero_func_grad,
+                                  .cons_val  = zero_func_cons_val,
+                                  .cons_jac  = zero_func_cons_jac,
+                                  .hess_prod = zero_func_hess_prod,
+                                  .func_free = NULL};
 
-  SLEQP_CALL(sleqp_func_create(star,
-                               &callbacks,
-                               num_variables,
-                               num_constraints,
-                               NULL));
+  SLEQP_CALL(
+    sleqp_func_create(star, &callbacks, num_variables, num_constraints, NULL));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE zero_lsq_func_create(SleqpFunc** star,
-                                   SleqpParams* params,
-                                   int num_variables,
-                                   int num_constraints,
-                                   int num_residuals)
+SLEQP_RETCODE
+zero_lsq_func_create(SleqpFunc** star,
+                     SleqpParams* params,
+                     int num_variables,
+                     int num_constraints,
+                     int num_residuals)
 {
-  SleqpLSQCallbacks callbacks = {
-    .set_value       = zero_func_set,
-    .lsq_residuals   = zero_lsq_func_residuals,
-    .lsq_jac_forward = zero_lsq_func_jac_forward,
-    .lsq_jac_adjoint = zero_lsq_func_jac_adjoint,
-    .cons_val        = zero_func_cons_val,
-    .cons_jac        = zero_func_cons_jac,
-    .func_free       = NULL
-  };
+  SleqpLSQCallbacks callbacks = {.set_value       = zero_func_set,
+                                 .lsq_residuals   = zero_lsq_func_residuals,
+                                 .lsq_jac_forward = zero_lsq_func_jac_forward,
+                                 .lsq_jac_adjoint = zero_lsq_func_jac_adjoint,
+                                 .cons_val        = zero_func_cons_val,
+                                 .cons_jac        = zero_func_cons_jac,
+                                 .func_free       = NULL};
 
   SLEQP_CALL(sleqp_lsq_func_create(star,
                                    &callbacks,

@@ -2,11 +2,11 @@
 
 #include <math.h>
 
-#include "fail.h"
 #include "cmp.h"
+#include "fail.h"
 #include "mem.h"
-#include "problem.h"
 #include "merit.h"
+#include "problem.h"
 
 typedef struct
 {
@@ -57,7 +57,7 @@ cauchy_data_create(CauchyData** star,
 
   CauchyData* data = *star;
 
-  *data = (CauchyData) {0};
+  *data = (CauchyData){0};
 
   data->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(data->problem));
@@ -68,21 +68,22 @@ cauchy_data_create(CauchyData** star,
   SLEQP_CALL(sleqp_options_capture(options));
   data->options = options;
 
-  data->num_lp_variables = num_variables + 2 * num_constraints;
+  data->num_lp_variables   = num_variables + 2 * num_constraints;
   data->num_lp_constraints = num_constraints;
 
   data->trust_radius = SLEQP_NONE;
 
   assert(data->num_lp_variables == sleqp_lpi_get_num_variables(lp_interface));
-  assert(data->num_lp_constraints == sleqp_lpi_get_num_constraints(lp_interface));
+  assert(data->num_lp_constraints
+         == sleqp_lpi_get_num_constraints(lp_interface));
 
   SLEQP_CALL(sleqp_alloc_array(&data->var_stats, data->num_lp_variables));
   SLEQP_CALL(sleqp_alloc_array(&data->cons_stats, data->num_lp_constraints));
 
-  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT] = false;
+  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT]     = false;
   data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY] = false;
-  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED] = false;
-  data->current_objective = SLEQP_NONE;
+  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED]       = false;
+  data->current_objective                                  = SLEQP_NONE;
 
   data->has_coefficients = false;
 
@@ -99,16 +100,16 @@ cauchy_data_create(CauchyData** star,
 
   SLEQP_CALL(sleqp_alloc_array(&data->solution_values, data->num_lp_variables));
 
-  SLEQP_CALL(sleqp_alloc_array(&data->dual_values,
-                               SLEQP_MAX(data->num_lp_constraints,
-                                         data->num_lp_variables)));
+  SLEQP_CALL(sleqp_alloc_array(
+    &data->dual_values,
+    SLEQP_MAX(data->num_lp_constraints, data->num_lp_variables)));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->quadratic_gradient,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&data->quadratic_gradient, num_variables));
 
   const double inf = sleqp_infinity();
 
-  for(int j = num_variables; j < data->num_lp_variables; ++j)
+  for (int j = num_variables; j < data->num_lp_variables; ++j)
   {
     data->vars_lb[j] = 0;
     data->vars_ub[j] = inf;
@@ -125,7 +126,7 @@ append_identities(SleqpSparseMatrix* cons_jac,
   assert(num_constraints == sleqp_sparse_matrix_get_num_rows(cons_jac));
   assert(num_variables == sleqp_sparse_matrix_get_num_cols(cons_jac));
 
-  const int nnz = sleqp_sparse_matrix_get_nnz(cons_jac);
+  const int nnz      = sleqp_sparse_matrix_get_nnz(cons_jac);
   const int num_rows = sleqp_sparse_matrix_get_num_rows(cons_jac);
   const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
 
@@ -133,39 +134,30 @@ append_identities(SleqpSparseMatrix* cons_jac,
    * Reserve a litte more so we can add the two
    * identity matrices afterwards
    */
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac,
-                                         nnz + 2*num_constraints));
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, nnz + 2 * num_constraints));
 
   SLEQP_CALL(sleqp_sparse_matrix_resize(cons_jac,
                                         num_rows,
-                                        num_cols + 2*num_constraints));
+                                        num_cols + 2 * num_constraints));
 
   // append a + id
-  for(int i = 0; i < num_constraints; ++i)
+  for (int i = 0; i < num_constraints; ++i)
   {
     const int con = num_variables + i;
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
-                                               con));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, con));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        i,
-                                        con,
-                                        1.));
+    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, i, con, 1.));
   }
 
   // append a - id
-  for(int i = 0; i < num_constraints; ++i)
+  for (int i = 0; i < num_constraints; ++i)
   {
     const int con = num_variables + num_constraints + i;
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
-                                               con));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, con));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                        i,
-                                        con,
-                                        -1.));
+    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, i, con, -1.));
   }
 
   return SLEQP_OKAY;
@@ -180,11 +172,10 @@ remove_identities(SleqpSparseMatrix* cons_jac,
   const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
 
   assert(num_constraints == num_rows);
-  assert(num_variables + 2*num_constraints == num_cols);
+  assert(num_variables + 2 * num_constraints == num_cols);
 
-  SLEQP_CALL(sleqp_sparse_matrix_resize(cons_jac,
-                                        num_constraints,
-                                        num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_matrix_resize(cons_jac, num_constraints, num_variables));
 
   return SLEQP_OKAY;
 }
@@ -204,36 +195,36 @@ create_cons_bounds(CauchyData* cauchy_data,
 
   const double inf = sleqp_infinity();
 
-  for(int i = 0; i < num_constraints; ++i)
+  for (int i = 0; i < num_constraints; ++i)
   {
-    while(k_c < val->nnz && val->indices[k_c] < i)
+    while (k_c < val->nnz && val->indices[k_c] < i)
     {
       ++k_c;
     }
 
-    while(k_lb < lb->nnz && lb->indices[k_lb] < i)
+    while (k_lb < lb->nnz && lb->indices[k_lb] < i)
     {
       ++k_lb;
     }
 
-    while(k_ub < ub->nnz && ub->indices[k_ub] < i)
+    while (k_ub < ub->nnz && ub->indices[k_ub] < i)
     {
       ++k_ub;
     }
 
     const bool valid_ub = (k_ub < ub->nnz && ub->indices[k_ub] == i);
     const bool valid_lb = (k_lb < lb->nnz && lb->indices[k_lb] == i);
-    const bool valid_c = (k_c < val->nnz && val->indices[k_c] == i);
+    const bool valid_c  = (k_c < val->nnz && val->indices[k_c] == i);
 
     const double ubval = valid_ub ? ub->data[k_ub] : 0;
     const double lbval = valid_lb ? lb->data[k_lb] : 0;
-    const double cval = valid_c ? val->data[k_c] : 0;
+    const double cval  = valid_c ? val->data[k_c] : 0;
 
     assert(!sleqp_is_infinite(lbval));
     assert(!sleqp_is_infinite(-ubval));
     assert(sleqp_is_finite(cval));
 
-    if(sleqp_is_infinite(ubval))
+    if (sleqp_is_infinite(ubval))
     {
       cauchy_data->cons_ub[i] = inf;
     }
@@ -242,7 +233,7 @@ create_cons_bounds(CauchyData* cauchy_data,
       cauchy_data->cons_ub[i] = ubval - cval;
     }
 
-    if(sleqp_is_infinite(-lbval))
+    if (sleqp_is_infinite(-lbval))
     {
       cauchy_data->cons_lb[i] = -inf;
     }
@@ -263,7 +254,7 @@ create_var_bounds(CauchyData* cauchy_data,
                   int num_variables,
                   int num_constraints)
 {
-  SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
+  SleqpSparseVec* x     = sleqp_iterate_get_primal(iterate);
   SleqpProblem* problem = cauchy_data->problem;
 
   const SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
@@ -275,36 +266,36 @@ create_var_bounds(CauchyData* cauchy_data,
 
   int k_x = 0, k_lb = 0, k_ub = 0;
 
-  for(int j = 0; j < num_variables; ++j)
+  for (int j = 0; j < num_variables; ++j)
   {
-    while(k_x < x->nnz && x->indices[k_x] < j)
+    while (k_x < x->nnz && x->indices[k_x] < j)
     {
       ++k_x;
     }
 
-    while(k_lb < lb->nnz && lb->indices[k_lb] < j)
+    while (k_lb < lb->nnz && lb->indices[k_lb] < j)
     {
       ++k_lb;
     }
 
-    while(k_ub < ub->nnz && ub->indices[k_ub] < j)
+    while (k_ub < ub->nnz && ub->indices[k_ub] < j)
     {
       ++k_ub;
     }
 
-    const bool valid_x = (k_x < x->nnz) && (j == x->indices[k_x]);
+    const bool valid_x  = (k_x < x->nnz) && (j == x->indices[k_x]);
     const bool valid_ub = (k_ub < ub->nnz) && (j == ub->indices[k_ub]);
     const bool valid_lb = (k_lb < lb->nnz) && (j == lb->indices[k_lb]);
 
     const double ubval = valid_ub ? ub->data[k_ub] : 0.;
     const double lbval = valid_lb ? lb->data[k_lb] : 0.;
-    const double xval = valid_x ? x->data[k_x] : 0.;
+    const double xval  = valid_x ? x->data[k_x] : 0.;
 
     assert(!sleqp_is_infinite(lbval));
     assert(!sleqp_is_infinite(-ubval));
     assert(sleqp_is_finite(xval));
 
-    if(sleqp_is_infinite(ubval))
+    if (sleqp_is_infinite(ubval))
     {
       cauchy_data->vars_ub[j] = trust_radius;
     }
@@ -313,7 +304,7 @@ create_var_bounds(CauchyData* cauchy_data,
       cauchy_data->vars_ub[j] = SLEQP_MIN(ubval - xval, trust_radius);
     }
 
-    if(sleqp_is_infinite(-lbval))
+    if (sleqp_is_infinite(-lbval))
     {
       cauchy_data->vars_lb[j] = -trust_radius;
     }
@@ -335,28 +326,29 @@ create_objective(CauchyData* cauchy_data,
 {
   SleqpProblem* problem = cauchy_data->problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  const int num_lp_variables = sleqp_lpi_get_num_variables(cauchy_data->lp_interface);
+  const int num_lp_variables
+    = sleqp_lpi_get_num_variables(cauchy_data->lp_interface);
 
-  assert(num_lp_variables == num_variables + 2*num_constraints);
+  assert(num_lp_variables == num_variables + 2 * num_constraints);
 
-  for(int j = 0; j < num_variables; ++j)
+  for (int j = 0; j < num_variables; ++j)
   {
     cauchy_data->objective[j] = 0.;
   }
 
-  for(int j = num_variables; j < num_lp_variables; ++j)
+  for (int j = num_variables; j < num_lp_variables; ++j)
   {
     cauchy_data->objective[j] = penalty;
   }
 
-  if(gradient)
+  if (gradient)
   {
     assert(gradient->dim == num_variables);
 
-    for(int k = 0; k < gradient->nnz; ++k)
+    for (int k = 0; k < gradient->nnz; ++k)
     {
       cauchy_data->objective[gradient->indices[k]] = gradient->data[k];
     }
@@ -365,34 +357,28 @@ create_objective(CauchyData* cauchy_data,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE cauchy_set_coefficients(CauchyData* cauchy_data,
-                                      SleqpSparseMatrix* cons_jac)
+static SLEQP_RETCODE
+cauchy_set_coefficients(CauchyData* cauchy_data, SleqpSparseMatrix* cons_jac)
 {
   SleqpProblem* problem = cauchy_data->problem;
 
-  const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  const int num_variables   = sleqp_sparse_matrix_get_num_cols(cons_jac);
   const int num_constraints = sleqp_sparse_matrix_get_num_rows(cons_jac);
 
   bool fixed_jacobian = !(sleqp_problem_has_nonlinear_cons(problem));
 
-  if(fixed_jacobian && cauchy_data->has_coefficients)
+  if (fixed_jacobian && cauchy_data->has_coefficients)
   {
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(append_identities(cons_jac,
-                               num_variables,
-                               num_constraints));
+  SLEQP_CALL(append_identities(cons_jac, num_variables, num_constraints));
 
   assert(sleqp_sparse_matrix_is_valid(cons_jac));
 
-  SLEQP_CALL(sleqp_lpi_set_coefficients(cauchy_data->lp_interface,
-                                        cons_jac));
+  SLEQP_CALL(sleqp_lpi_set_coefficients(cauchy_data->lp_interface, cons_jac));
 
-  SLEQP_CALL(remove_identities(cons_jac,
-                               num_variables,
-                               num_constraints));
+  SLEQP_CALL(remove_identities(cons_jac, num_variables, num_constraints));
 
   assert(sleqp_sparse_matrix_is_valid(cons_jac));
 
@@ -406,10 +392,10 @@ standard_cauchy_set_iterate(SleqpIterate* iterate,
                             double trust_radius,
                             void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data     = (CauchyData*)data;
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
 
-  const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  const int num_variables   = sleqp_sparse_matrix_get_num_cols(cons_jac);
   const int num_constraints = sleqp_sparse_matrix_get_num_rows(cons_jac);
 
   assert(trust_radius > 0.);
@@ -422,15 +408,11 @@ standard_cauchy_set_iterate(SleqpIterate* iterate,
 
   SLEQP_CALL(sleqp_iterate_capture(cauchy_data->iterate));
 
-  SLEQP_CALL(create_var_bounds(cauchy_data,
-                               iterate,
-                               num_variables,
-                               num_constraints));
+  SLEQP_CALL(
+    create_var_bounds(cauchy_data, iterate, num_variables, num_constraints));
 
-  SLEQP_CALL(create_cons_bounds(cauchy_data,
-                                iterate,
-                                num_variables,
-                                num_constraints));
+  SLEQP_CALL(
+    create_cons_bounds(cauchy_data, iterate, num_variables, num_constraints));
 
   SLEQP_CALL(sleqp_lpi_set_bounds(cauchy_data->lp_interface,
                                   cauchy_data->cons_lb,
@@ -444,14 +426,14 @@ standard_cauchy_set_iterate(SleqpIterate* iterate,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_set_trust_radius(double trust_radius,
-                                 void* data)
+standard_cauchy_set_trust_radius(double trust_radius, void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(cauchy_data->iterate);
+  SleqpSparseMatrix* cons_jac
+    = sleqp_iterate_get_cons_jac(cauchy_data->iterate);
 
-  const int num_variables = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  const int num_variables   = sleqp_sparse_matrix_get_num_cols(cons_jac);
   const int num_constraints = sleqp_sparse_matrix_get_num_rows(cons_jac);
 
   cauchy_data->trust_radius = trust_radius;
@@ -471,21 +453,20 @@ standard_cauchy_set_trust_radius(double trust_radius,
 }
 
 static SLEQP_RETCODE
-check_basis(CauchyData* cauchy_data,
-            bool* valid_basis)
+check_basis(CauchyData* cauchy_data, bool* valid_basis)
 {
   (*valid_basis) = true;
 
   int basis_size = 0;
 
-  SLEQP_CALL(sleqp_lpi_get_varstats(cauchy_data->lp_interface,
-                                    cauchy_data->var_stats));
+  SLEQP_CALL(
+    sleqp_lpi_get_varstats(cauchy_data->lp_interface, cauchy_data->var_stats));
 
-  for(int j = 0; j < cauchy_data->num_lp_variables; ++j)
+  for (int j = 0; j < cauchy_data->num_lp_variables; ++j)
   {
     SLEQP_BASESTAT var_stat = cauchy_data->var_stats[j];
 
-    if(var_stat != SLEQP_BASESTAT_BASIC)
+    if (var_stat != SLEQP_BASESTAT_BASIC)
     {
       ++basis_size;
     }
@@ -494,11 +475,11 @@ check_basis(CauchyData* cauchy_data,
   SLEQP_CALL(sleqp_lpi_get_consstats(cauchy_data->lp_interface,
                                      cauchy_data->cons_stats));
 
-  for(int i = 0; i < cauchy_data->num_lp_constraints; ++i)
+  for (int i = 0; i < cauchy_data->num_lp_constraints; ++i)
   {
     SLEQP_BASESTAT cons_stat = cauchy_data->cons_stats[i];
 
-    if(cons_stat != SLEQP_BASESTAT_BASIC)
+    if (cons_stat != SLEQP_BASESTAT_BASIC)
     {
       ++basis_size;
     }
@@ -538,7 +519,8 @@ check_basis(CauchyData* cauchy_data,
   {
   const double dval = cauchy_data->solution_values[j];
 
-  if(sleqp_is_gt(dval, trust_radius, eps) || sleqp_is_lt(dval, -trust_radius, eps))
+  if(sleqp_is_gt(dval, trust_radius, eps) || sleqp_is_lt(dval, -trust_radius,
+  eps))
   {
   (*valid_direction) = false;
   }
@@ -577,7 +559,8 @@ check_basis(CauchyData* cauchy_data,
   const double xval = valid_x ? x->data[k_x] : 0.;
   const double dval = cauchy_data->solution_values[j];
 
-  if(sleqp_is_gt(xval + dval, ubval, eps) || sleqp_is_lt(xval + dval, lbval, eps))
+  if(sleqp_is_gt(xval + dval, ubval, eps) || sleqp_is_lt(xval + dval, lbval,
+  eps))
   {
   (*valid_direction) = false;
   }
@@ -588,15 +571,15 @@ check_basis(CauchyData* cauchy_data,
   }
 */
 
-static
-SLEQP_RETCODE restore_basis(CauchyData* cauchy_data,
-                            SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
+static SLEQP_RETCODE
+restore_basis(CauchyData* cauchy_data,
+              SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
 {
-  if(cauchy_data->current_objective != objective_type &&
-     cauchy_data->has_basis[objective_type])
+  if (cauchy_data->current_objective != objective_type
+      && cauchy_data->has_basis[objective_type])
   {
-    SLEQP_CALL(sleqp_lpi_restore_basis(cauchy_data->lp_interface,
-                                       objective_type));
+    SLEQP_CALL(
+      sleqp_lpi_restore_basis(cauchy_data->lp_interface, objective_type));
   }
 
   return SLEQP_OKAY;
@@ -608,21 +591,20 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
                       SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
                       void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(create_objective(cauchy_data,
-                              gradient,
-                              penalty));
+  SLEQP_CALL(create_objective(cauchy_data, gradient, penalty));
 
-  SLEQP_CALL(sleqp_lpi_set_objective(cauchy_data->lp_interface,
-                                     cauchy_data->objective));
+  SLEQP_CALL(
+    sleqp_lpi_set_objective(cauchy_data->lp_interface, cauchy_data->objective));
 
-  bool warm_start = sleqp_options_get_bool(cauchy_data->options,
-                                           SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP);
+  bool warm_start
+    = sleqp_options_get_bool(cauchy_data->options,
+                             SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP);
 
-  if(warm_start)
+  if (warm_start)
   {
-    switch(objective_type)
+    switch (objective_type)
     {
     case SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT:
       // fallthrough
@@ -630,11 +612,12 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
       SLEQP_CALL(restore_basis(cauchy_data, objective_type));
       break;
     case SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED:
-      if(cauchy_data->current_objective != SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED)
+      if (cauchy_data->current_objective != SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED)
       {
         // restart from the default, this should be closer
         // to the initial mixed one
-        SLEQP_CALL(restore_basis(cauchy_data, SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+        SLEQP_CALL(
+          restore_basis(cauchy_data, SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
       }
       break;
     default:
@@ -648,7 +631,7 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
 
   SLEQP_LPI_STATUS status = sleqp_get_status(cauchy_data->lp_interface);
 
-  if(status != SLEQP_LPI_STATUS_OPTIMAL)
+  if (status != SLEQP_LPI_STATUS_OPTIMAL)
   {
     sleqp_log_error("Invalid LP status: %d", status);
     return SLEQP_INTERNAL_ERROR;
@@ -675,7 +658,7 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
   */
 #endif
 
-  if(warm_start)
+  if (warm_start)
   {
     SLEQP_CALL(sleqp_lpi_save_basis(cauchy_data->lp_interface, objective_type));
   }
@@ -686,14 +669,12 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_objective_value(double* objective_value,
-                                    void* data)
+standard_cauchy_get_objective_value(double* objective_value, void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(sleqp_lpi_get_primal_sol(cauchy_data->lp_interface,
-                                      objective_value,
-                                      NULL));
+  SLEQP_CALL(
+    sleqp_lpi_get_primal_sol(cauchy_data->lp_interface, objective_value, NULL));
 
   (*objective_value) += sleqp_iterate_get_func_val(cauchy_data->iterate);
 
@@ -701,10 +682,9 @@ standard_cauchy_get_objective_value(double* objective_value,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_working_set(SleqpIterate* iterate,
-                                void* data)
+standard_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
@@ -712,8 +692,8 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
 
   assert(sleqp_working_set_valid(working_set));
 
-  SLEQP_CALL(sleqp_lpi_get_varstats(cauchy_data->lp_interface,
-                                    cauchy_data->var_stats));
+  SLEQP_CALL(
+    sleqp_lpi_get_varstats(cauchy_data->lp_interface, cauchy_data->var_stats));
 
   SLEQP_CALL(sleqp_lpi_get_consstats(cauchy_data->lp_interface,
                                      cauchy_data->cons_stats));
@@ -724,68 +704,64 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
 
   SleqpProblem* problem = cauchy_data->problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  const double eps = sleqp_params_get(cauchy_data->params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(cauchy_data->params, SLEQP_PARAM_EPS);
 
   {
-    SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
+    SleqpSparseVec* x        = sleqp_iterate_get_primal(iterate);
     const SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
     const SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
 
     int k_x = 0, k_lb = 0, k_ub = 0;
 
-    for(int i = 0; i < num_variables; ++i)
+    for (int i = 0; i < num_variables; ++i)
     {
-      while(k_x < x->nnz && x->indices[k_x] < i)
+      while (k_x < x->nnz && x->indices[k_x] < i)
       {
         ++k_x;
       }
 
-      while(k_lb < lb->nnz && lb->indices[k_lb] < i)
+      while (k_lb < lb->nnz && lb->indices[k_lb] < i)
       {
         ++k_lb;
       }
 
-      while(k_ub < ub->nnz && ub->indices[k_ub] < i)
+      while (k_ub < ub->nnz && ub->indices[k_ub] < i)
       {
         ++k_ub;
       }
 
-      const bool valid_x = (k_x < x->nnz) && (i == x->indices[k_x]);
+      const bool valid_x  = (k_x < x->nnz) && (i == x->indices[k_x]);
       const bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
       const bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
 
       const double ubval = valid_ub ? ub->data[k_ub] : 0.;
       const double lbval = valid_lb ? lb->data[k_lb] : 0.;
-      const double xval = valid_x ? x->data[k_x] : 0.;
+      const double xval  = valid_x ? x->data[k_x] : 0.;
 
       assert(cauchy_data->var_stats[i] != SLEQP_BASESTAT_ZERO);
 
       sleqp_assert_is_leq(lbval, xval, eps);
       sleqp_assert_is_leq(xval, ubval, eps);
 
-      if(sleqp_is_eq(lbval, ubval, eps))
+      if (sleqp_is_eq(lbval, ubval, eps))
       {
-        SLEQP_CALL(sleqp_working_set_add_variable(working_set,
-                                                  i,
-                                                  SLEQP_ACTIVE_BOTH));
+        SLEQP_CALL(
+          sleqp_working_set_add_variable(working_set, i, SLEQP_ACTIVE_BOTH));
       }
-      else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER) &&
-              ((xval - lbval) < trust_radius))
+      else if ((cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER)
+               && ((xval - lbval) < trust_radius))
       {
-        SLEQP_CALL(sleqp_working_set_add_variable(working_set,
-                                                  i,
-                                                  SLEQP_ACTIVE_LOWER));
+        SLEQP_CALL(
+          sleqp_working_set_add_variable(working_set, i, SLEQP_ACTIVE_LOWER));
       }
-      else if((cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER) &&
-              ((ubval - xval) < trust_radius))
+      else if ((cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER)
+               && ((ubval - xval) < trust_radius))
       {
-        SLEQP_CALL(sleqp_working_set_add_variable(working_set,
-                                                  i,
-                                                  SLEQP_ACTIVE_UPPER));
+        SLEQP_CALL(
+          sleqp_working_set_add_variable(working_set, i, SLEQP_ACTIVE_UPPER));
       }
     }
   }
@@ -799,21 +775,21 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
     const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
     const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
-    for(int i = 0; i < num_constraints; ++i)
+    for (int i = 0; i < num_constraints; ++i)
     {
       const SLEQP_BASESTAT cons_stat = cauchy_data->cons_stats[i];
 
-      if(cons_stat == SLEQP_BASESTAT_BASIC)
+      if (cons_stat == SLEQP_BASESTAT_BASIC)
       {
         continue;
       }
 
-      while(k_lb < lb->nnz && lb->indices[k_lb] < i)
+      while (k_lb < lb->nnz && lb->indices[k_lb] < i)
       {
         ++k_lb;
       }
 
-      while(k_ub < ub->nnz && ub->indices[k_ub] < i)
+      while (k_ub < ub->nnz && ub->indices[k_ub] < i)
       {
         ++k_ub;
       }
@@ -824,13 +800,13 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
       const double ubval = valid_ub ? ub->data[k_ub] : 0.;
       const double lbval = valid_lb ? lb->data[k_lb] : 0.;
 
-      assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC ||
-             upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
+      assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC
+             || upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
 
-      const bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER &&
-        upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
+      const bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER
+                              && upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
 
-      if(cons_stat == SLEQP_BASESTAT_ZERO)
+      if (cons_stat == SLEQP_BASESTAT_ZERO)
       {
         assert(sleqp_is_infinite(ubval));
         assert(sleqp_is_infinite(-lbval));
@@ -838,10 +814,9 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
         continue;
       }
 
-
-      if(sleqp_is_eq(lbval, ubval, eps))
+      if (sleqp_is_eq(lbval, ubval, eps))
       {
-        if(zero_slack)
+        if (zero_slack)
         {
           SLEQP_CALL(sleqp_working_set_add_constraint(working_set,
                                                       i,
@@ -850,9 +825,9 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
       }
       else
       {
-        if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_UPPER)
+        if (cauchy_data->cons_stats[i] == SLEQP_BASESTAT_UPPER)
         {
-          if(zero_slack)
+          if (zero_slack)
           {
 
             // the constraint c(x) + grad(c(x))*d +I s_l -I s_u  <= u
@@ -863,9 +838,9 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
                                                         SLEQP_ACTIVE_UPPER));
           }
         }
-        else if(cauchy_data->cons_stats[i] == SLEQP_BASESTAT_LOWER)
+        else if (cauchy_data->cons_stats[i] == SLEQP_BASESTAT_LOWER)
         {
-          if(zero_slack)
+          if (zero_slack)
           {
 
             // the constraint l <= c(x) + grad(c(x))*d +I s_l -I s_u
@@ -893,12 +868,12 @@ standard_cauchy_get_working_set(SleqpIterate* iterate,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_direction(SleqpSparseVec* direction,
-                              void* data)
+standard_cauchy_get_direction(SleqpSparseVec* direction, void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
-  const double zero_eps = sleqp_params_get(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
 
   const int num_variables = sleqp_problem_num_variables(cauchy_data->problem);
 
@@ -915,10 +890,9 @@ standard_cauchy_get_direction(SleqpSparseVec* direction,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_locally_infeasible(bool* locally_infeasible,
-                                   void* data)
+standard_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
   *locally_infeasible = false;
 
@@ -926,8 +900,8 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible,
 
   assert(iterate);
 
-  SLEQP_CALL(sleqp_lpi_get_varstats(cauchy_data->lp_interface,
-                                    cauchy_data->var_stats));
+  SLEQP_CALL(
+    sleqp_lpi_get_varstats(cauchy_data->lp_interface, cauchy_data->var_stats));
 
   SLEQP_CALL(sleqp_lpi_get_consstats(cauchy_data->lp_interface,
                                      cauchy_data->cons_stats));
@@ -938,64 +912,63 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible,
 
   SleqpProblem* problem = cauchy_data->problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  const double eps = sleqp_params_get(cauchy_data->params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(cauchy_data->params, SLEQP_PARAM_EPS);
 
   bool active_trust_region = false;
 
   // Check if trust region is active
   {
-    SleqpSparseVec* x = sleqp_iterate_get_primal(iterate);
+    SleqpSparseVec* x        = sleqp_iterate_get_primal(iterate);
     const SleqpSparseVec* lb = sleqp_problem_var_lb(problem);
     const SleqpSparseVec* ub = sleqp_problem_var_ub(problem);
 
     int k_x = 0, k_lb = 0, k_ub = 0;
 
-    for(int i = 0; i < num_variables; ++i)
+    for (int i = 0; i < num_variables; ++i)
     {
-      while(k_x < x->nnz && x->indices[k_x] < i)
+      while (k_x < x->nnz && x->indices[k_x] < i)
       {
         ++k_x;
       }
 
-      while(k_lb < lb->nnz && lb->indices[k_lb] < i)
+      while (k_lb < lb->nnz && lb->indices[k_lb] < i)
       {
         ++k_lb;
       }
 
-      while(k_ub < ub->nnz && ub->indices[k_ub] < i)
+      while (k_ub < ub->nnz && ub->indices[k_ub] < i)
       {
         ++k_ub;
       }
 
-      const bool valid_x = (k_x < x->nnz) && (i == x->indices[k_x]);
+      const bool valid_x  = (k_x < x->nnz) && (i == x->indices[k_x]);
       const bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
       const bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
 
       const double ubval = valid_ub ? ub->data[k_ub] : 0.;
       const double lbval = valid_lb ? lb->data[k_lb] : 0.;
-      const double xval = valid_x ? x->data[k_x] : 0.;
+      const double xval  = valid_x ? x->data[k_x] : 0.;
 
       assert(cauchy_data->var_stats[i] != SLEQP_BASESTAT_ZERO);
 
       sleqp_assert_is_leq(lbval, xval, eps);
       sleqp_assert_is_leq(xval, ubval, eps);
 
-      if(sleqp_is_eq(lbval, ubval, eps))
+      if (sleqp_is_eq(lbval, ubval, eps))
       {
         continue;
       }
-      else if(cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER &&
-              (xval - lbval) >= trust_radius)
+      else if (cauchy_data->var_stats[i] == SLEQP_BASESTAT_LOWER
+               && (xval - lbval) >= trust_radius)
       {
         active_trust_region = true;
         break;
       }
-      else if(cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER &&
-              ((ubval - xval) >= trust_radius))
+      else if (cauchy_data->var_stats[i] == SLEQP_BASESTAT_UPPER
+               && ((ubval - xval) >= trust_radius))
       {
         active_trust_region = true;
         break;
@@ -1014,32 +987,32 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible,
     const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
     const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
-    for(int i = 0; i < num_constraints; ++i)
+    for (int i = 0; i < num_constraints; ++i)
     {
       const SLEQP_BASESTAT cons_stat = cauchy_data->cons_stats[i];
 
-      if(cons_stat == SLEQP_BASESTAT_BASIC)
+      if (cons_stat == SLEQP_BASESTAT_BASIC)
       {
         continue;
       }
 
-      while(k_lb < lb->nnz && lb->indices[k_lb] < i)
+      while (k_lb < lb->nnz && lb->indices[k_lb] < i)
       {
         ++k_lb;
       }
 
-      while(k_ub < ub->nnz && ub->indices[k_ub] < i)
+      while (k_ub < ub->nnz && ub->indices[k_ub] < i)
       {
         ++k_ub;
       }
 
-      assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC ||
-             upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
+      assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC
+             || upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
 
-      bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER &&
-        upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
+      bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER
+                        && upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
 
-      if(!zero_slack)
+      if (!zero_slack)
       {
         feasible_direction = false;
       }
@@ -1056,25 +1029,24 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_dual_estimation(SleqpIterate* iterate,
-                                    void* data)
+standard_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
   SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
 
-  const double zero_eps = sleqp_params_get(cauchy_data->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpProblem* problem = cauchy_data->problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
-  if(vars_dual)
+  if (vars_dual)
   {
     assert(vars_dual->dim == num_variables);
 
@@ -1090,24 +1062,24 @@ standard_cauchy_get_dual_estimation(SleqpIterate* iterate,
     // Note: We rescale here since sign conventions vary...
     SLEQP_CALL(sleqp_sparse_vector_scale(vars_dual, -1.));
 
-    for(int k = 0; k < vars_dual->nnz; ++k)
+    for (int k = 0; k < vars_dual->nnz; ++k)
     {
       const int i = vars_dual->indices[k];
 
-      const SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(working_set,
-                                                                                i);
+      const SLEQP_ACTIVE_STATE var_state
+        = sleqp_working_set_get_variable_state(working_set, i);
 
-      if(var_state == SLEQP_INACTIVE)
+      if (var_state == SLEQP_INACTIVE)
       {
         vars_dual->data[k] = 0.;
       }
       else
       {
-        if(var_state == SLEQP_ACTIVE_UPPER)
+        if (var_state == SLEQP_ACTIVE_UPPER)
         {
           sleqp_assert_is_geq(vars_dual->data[k], 0., zero_eps);
         }
-        else if(var_state == SLEQP_ACTIVE_LOWER)
+        else if (var_state == SLEQP_ACTIVE_LOWER)
         {
           sleqp_assert_is_leq(vars_dual->data[k], 0., zero_eps);
         }
@@ -1115,7 +1087,7 @@ standard_cauchy_get_dual_estimation(SleqpIterate* iterate,
     }
   }
 
-  if(cons_dual)
+  if (cons_dual)
   {
     assert(cons_dual->dim == num_constraints);
 
@@ -1131,24 +1103,24 @@ standard_cauchy_get_dual_estimation(SleqpIterate* iterate,
     // Note: We rescale here since sign conventions vary...
     SLEQP_CALL(sleqp_sparse_vector_scale(cons_dual, -1.));
 
-    for(int k = 0; k < cons_dual->nnz; ++k)
+    for (int k = 0; k < cons_dual->nnz; ++k)
     {
       const int i = cons_dual->indices[k];
 
-      const SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_constraint_state(working_set,
-                                                                                  i);
+      const SLEQP_ACTIVE_STATE var_state
+        = sleqp_working_set_get_constraint_state(working_set, i);
 
-      if(var_state == SLEQP_INACTIVE)
+      if (var_state == SLEQP_INACTIVE)
       {
         cons_dual->data[k] = 0.;
       }
       else
       {
-        if(var_state == SLEQP_ACTIVE_UPPER)
+        if (var_state == SLEQP_ACTIVE_UPPER)
         {
           sleqp_assert_is_geq(cons_dual->data[k], 0., zero_eps);
         }
-        else if(var_state == SLEQP_ACTIVE_LOWER)
+        else if (var_state == SLEQP_ACTIVE_LOWER)
         {
           sleqp_assert_is_leq(cons_dual->data[k], 0., zero_eps);
         }
@@ -1160,10 +1132,9 @@ standard_cauchy_get_dual_estimation(SleqpIterate* iterate,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_violation(double* violation,
-                              void* data)
+standard_cauchy_get_violation(double* violation, void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
   SleqpProblem* problem = cauchy_data->problem;
 
@@ -1175,7 +1146,7 @@ standard_cauchy_get_violation(double* violation,
 
   (*violation) = 0.;
 
-  for(int j = num_variables; j < cauchy_data->num_lp_variables; ++j)
+  for (int j = num_variables; j < cauchy_data->num_lp_variables; ++j)
   {
     (*violation) += cauchy_data->solution_values[j];
   }
@@ -1184,15 +1155,12 @@ standard_cauchy_get_violation(double* violation,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_basis_condition(bool* exact,
-                                    double* condition,
-                                    void* data)
+standard_cauchy_get_basis_condition(bool* exact, double* condition, void* data)
 {
-  CauchyData* cauchy_data = (CauchyData*) data;
+  CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(sleqp_lpi_get_basis_condition(cauchy_data->lp_interface,
-                                           exact,
-                                           condition));
+  SLEQP_CALL(
+    sleqp_lpi_get_basis_condition(cauchy_data->lp_interface, exact, condition));
 
   return SLEQP_OKAY;
 }
@@ -1200,7 +1168,7 @@ standard_cauchy_get_basis_condition(bool* exact,
 static SLEQP_RETCODE
 standard_cauchy_free(void* star)
 {
-  CauchyData* cauchy_data = (CauchyData*) star;
+  CauchyData* cauchy_data = (CauchyData*)star;
 
   SLEQP_CALL(sleqp_sparse_vector_free(&cauchy_data->quadratic_gradient));
 
@@ -1232,37 +1200,32 @@ standard_cauchy_free(void* star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_standard_cauchy_create(SleqpCauchy** star,
-                                           SleqpProblem* problem,
-                                           SleqpParams* params,
-                                           SleqpOptions* options,
-                                           SleqpLPi* lp_interface)
+SLEQP_RETCODE
+sleqp_standard_cauchy_create(SleqpCauchy** star,
+                             SleqpProblem* problem,
+                             SleqpParams* params,
+                             SleqpOptions* options,
+                             SleqpLPi* lp_interface)
 {
   CauchyData* cauchy_data;
 
-  SLEQP_CALL(cauchy_data_create(&cauchy_data,
-                                problem,
-                                params,
-                                options,
-                                lp_interface));
+  SLEQP_CALL(
+    cauchy_data_create(&cauchy_data, problem, params, options, lp_interface));
 
-  SleqpCauchyCallbacks callbacks = {
-    .set_iterate         = standard_cauchy_set_iterate,
-    .set_trust_radius    = standard_cauchy_set_trust_radius,
-    .solve               = standard_cauchy_solve,
-    .get_objective_value = standard_cauchy_get_objective_value,
-    .get_working_set     = standard_cauchy_get_working_set,
-    .get_direction       = standard_cauchy_get_direction,
-    .locally_infeasible  = standard_cauchy_locally_infeasible,
-    .get_dual_estimation = standard_cauchy_get_dual_estimation,
-    .get_violation       = standard_cauchy_get_violation,
-    .get_basis_condition = standard_cauchy_get_basis_condition,
-    .free                = standard_cauchy_free
-  };
+  SleqpCauchyCallbacks callbacks
+    = {.set_iterate         = standard_cauchy_set_iterate,
+       .set_trust_radius    = standard_cauchy_set_trust_radius,
+       .solve               = standard_cauchy_solve,
+       .get_objective_value = standard_cauchy_get_objective_value,
+       .get_working_set     = standard_cauchy_get_working_set,
+       .get_direction       = standard_cauchy_get_direction,
+       .locally_infeasible  = standard_cauchy_locally_infeasible,
+       .get_dual_estimation = standard_cauchy_get_dual_estimation,
+       .get_violation       = standard_cauchy_get_violation,
+       .get_basis_condition = standard_cauchy_get_basis_condition,
+       .free                = standard_cauchy_free};
 
-  SLEQP_CALL(sleqp_cauchy_create(star,
-                                 &callbacks,
-                                 (void*) cauchy_data));
+  SLEQP_CALL(sleqp_cauchy_create(star, &callbacks, (void*)cauchy_data));
 
   return SLEQP_OKAY;
 }

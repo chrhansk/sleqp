@@ -7,10 +7,11 @@
 
 #define BUF_SIZE 2048
 
-void sleqp_log_assert_fail(const char *assertion,
-                           const char *file,
-                           unsigned int line,
-                           const char *function)
+void
+sleqp_log_assert_fail(const char* assertion,
+                      const char* file,
+                      unsigned int line,
+                      const char* function)
 {
   sleqp_log_error("%s:%d: %s: Assertion `%s' failed",
                   file,
@@ -21,11 +22,12 @@ void sleqp_log_assert_fail(const char *assertion,
   assert(false);
 }
 
-void sleqp_log_assert_fail_msg(const char *file,
-                               unsigned int line,
-                               const char *function,
-                               const char* format,
-                               ...)
+void
+sleqp_log_assert_fail_msg(const char* file,
+                          unsigned int line,
+                          const char* function,
+                          const char* format,
+                          ...)
 {
   char message_buf[BUF_SIZE];
 
@@ -35,11 +37,7 @@ void sleqp_log_assert_fail_msg(const char *file,
   vsnprintf(message_buf, BUF_SIZE, format, args);
   va_end(args);
 
-  sleqp_log_error("%s:%d: %s: %s",
-                  file,
-                  line,
-                  function,
-                  message_buf);
+  sleqp_log_error("%s:%d: %s: %s", file, line, function, message_buf);
 
   assert(false);
 }

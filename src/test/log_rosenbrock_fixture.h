@@ -20,8 +20,10 @@ extern SleqpSparseVec* log_rosenbrock_cons_ub;
 extern SleqpSparseVec* log_rosenbrock_initial;
 extern SleqpSparseVec* log_rosenbrock_optimal;
 
-void log_rosenbrock_setup();
+void
+log_rosenbrock_setup();
 
-void log_rosenbrock_teardown();
+void
+log_rosenbrock_teardown();
 
 #endif /* LOG_ROSENBROCK_FIXTURE_H */

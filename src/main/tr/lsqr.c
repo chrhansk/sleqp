@@ -8,7 +8,8 @@
 #include "timer.h"
 #include "tr_util.h"
 
-struct SleqpLSQRSolver {
+struct SleqpLSQRSolver
+{
   int refcount;
 
   double time_limit;
@@ -34,20 +35,21 @@ struct SleqpLSQRSolver {
   SleqpSparseVec* sparse_cache;
 };
 
-SLEQP_RETCODE sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
-                                       SleqpParams* params,
-                                       int forward_dim,
-                                       int adjoint_dim,
-                                       SleqpLSQRCallbacks* callbacks,
-                                       void* data)
+SLEQP_RETCODE
+sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
+                         SleqpParams* params,
+                         int forward_dim,
+                         int adjoint_dim,
+                         SleqpLSQRCallbacks* callbacks,
+                         void* data)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpLSQRSolver* solver = *star;
 
-  *solver = (SleqpLSQRSolver) {0};
+  *solver = (SleqpLSQRSolver){0};
 
-  solver->refcount = 1;
+  solver->refcount   = 1;
   solver->time_limit = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_params_capture(params));
@@ -59,43 +61,37 @@ SLEQP_RETCODE sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
   solver->adjoint_dim = adjoint_dim;
 
   solver->callbacks = *callbacks;
-  solver->data = data;
+  solver->data      = data;
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->u,
-                                              0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->u, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->v,
-                                              solver->forward_dim));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->v, solver->forward_dim));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->w,
-                                              solver->forward_dim));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->w, solver->forward_dim));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->p,
-                                              0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->p, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->q,
-                                              solver->forward_dim));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->q, solver->forward_dim));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d,
-                                              solver->forward_dim));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d, solver->forward_dim));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache,
-                                              0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache, 0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_set_time_limit(SleqpLSQRSolver* solver,
-                                        double time_limit)
+SLEQP_RETCODE
+sleqp_lsqr_set_time_limit(SleqpLSQRSolver* solver, double time_limit)
 {
   solver->time_limit = time_limit;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_solver_resize(SleqpLSQRSolver* solver,
-                                       int forward_dim,
-                                       int adjoint_dim)
+SLEQP_RETCODE
+sleqp_lsqr_solver_resize(SleqpLSQRSolver* solver,
+                         int forward_dim,
+                         int adjoint_dim)
 {
   solver->forward_dim = forward_dim;
   solver->adjoint_dim = adjoint_dim;
@@ -112,41 +108,39 @@ SLEQP_RETCODE sleqp_lsqr_solver_resize(SleqpLSQRSolver* solver,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE normalize(SleqpSparseVec* vec,
-                               double* norm)
+static SLEQP_RETCODE
+normalize(SleqpSparseVec* vec, double* norm)
 {
   *norm = sleqp_sparse_vector_norm(vec);
 
-  if(*norm)
+  if (*norm)
   {
-    SLEQP_CALL(sleqp_sparse_vector_scale(vec, 1./(*norm)));
+    SLEQP_CALL(sleqp_sparse_vector_scale(vec, 1. / (*norm)));
   }
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE forward_product(SleqpLSQRSolver* solver,
-                                     const SleqpSparseVec* direction,
-                                     SleqpSparseVec* product)
+static SLEQP_RETCODE
+forward_product(SleqpLSQRSolver* solver,
+                const SleqpSparseVec* direction,
+                SleqpSparseVec* product)
 {
   assert(direction->dim == solver->forward_dim);
   assert(product->dim == solver->adjoint_dim);
 
-  return solver->callbacks.prod_forward(direction,
-                                        product,
-                                        solver->data);
+  return solver->callbacks.prod_forward(direction, product, solver->data);
 }
 
-static SLEQP_RETCODE adjoint_product(SleqpLSQRSolver* solver,
-                                     const SleqpSparseVec* direction,
-                                     SleqpSparseVec* product)
+static SLEQP_RETCODE
+adjoint_product(SleqpLSQRSolver* solver,
+                const SleqpSparseVec* direction,
+                SleqpSparseVec* product)
 {
   assert(direction->dim == solver->adjoint_dim);
   assert(product->dim == solver->forward_dim);
 
-  return solver->callbacks.prod_adjoint(direction,
-                                        product,
-                                        solver->data);
+  return solver->callbacks.prod_adjoint(direction, product, solver->data);
 }
 
 static SLEQP_RETCODE
@@ -156,8 +150,8 @@ compute_objective(SleqpLSQRSolver* solver,
                   double* objective,
                   double* opt_res)
 {
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(forward_product(solver, sol, solver->p));
 
@@ -179,23 +173,23 @@ compute_objective(SleqpLSQRSolver* solver,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
-                                      const SleqpSparseVec* rhs,
-                                      double rel_tol,
-                                      double trust_radius,
-                                      SleqpSparseVec* sol)
+SLEQP_RETCODE
+sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
+                        const SleqpSparseVec* rhs,
+                        double rel_tol,
+                        double trust_radius,
+                        SleqpSparseVec* sol)
 {
   const int forward_dim = solver->forward_dim;
-  int iteration = 0;
+  int iteration         = 0;
 
   assert(rhs->dim == solver->adjoint_dim);
   assert(sol->dim == solver->forward_dim);
 
-  const double eps = sleqp_params_get(solver->params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
 
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   sleqp_log_debug("Solving a least-squares subproblem with %d rows, %d columns",
                   solver->adjoint_dim,
@@ -214,7 +208,7 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
   SleqpSparseVec* d = solver->d;
 
   const SleqpSparseVec* b = rhs;
-  SleqpSparseVec* t = solver->sparse_cache;
+  SleqpSparseVec* t       = solver->sparse_cache;
 
   double alpha, beta;
 
@@ -232,18 +226,16 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
   double rhob = alpha;
 
   {
-    const double res = phib;
+    const double res       = phib;
     const double objective = .5 * (res * res);
-    const double opt_res = phib * alpha;
+    const double opt_res   = phib * alpha;
 
-    sleqp_log_debug("Initial objective: %e, residuum: %e",
-                    objective,
-                    opt_res);
+    sleqp_log_debug("Initial objective: %e, residuum: %e", objective, opt_res);
   }
 
   bool reached_time_limit = false;
 
-  for(iteration = 1; iteration <= forward_dim; ++iteration)
+  for (iteration = 1; iteration <= forward_dim; ++iteration)
   {
     // Continue bidiagonalization
     SLEQP_CALL(forward_product(solver, v, p));
@@ -257,37 +249,25 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
     SLEQP_CALL(normalize(v, &alpha));
 
     // Construct next orthogonal transformation (Givens rotation)
-    double rho = hypot(rhob, beta);
+    double rho     = hypot(rhob, beta);
     const double c = rhob / rho;
     const double s = beta / rho;
-    double theta = s * alpha;
-    rhob = (-c) * alpha;
-    double phi = c * phib;
-    phib = s * phib;
+    double theta   = s * alpha;
+    rhob           = (-c) * alpha;
+    double phi     = c * phib;
+    phib           = s * phib;
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(x,
-                                              w,
-                                              1.,
-                                              phi / rho,
-                                              zero_eps,
-                                              t));
+    SLEQP_CALL(
+      sleqp_sparse_vector_add_scaled(x, w, 1., phi / rho, zero_eps, t));
 
     const double norm = sleqp_sparse_vector_norm(t);
 
-    if(trust_radius != SLEQP_NONE && sleqp_is_gt(norm, trust_radius, eps))
+    if (trust_radius != SLEQP_NONE && sleqp_is_gt(norm, trust_radius, eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(x,
-                                                t,
-                                                -1.,
-                                                1.,
-                                                zero_eps,
-                                                d));
+      SLEQP_CALL(sleqp_sparse_vector_add_scaled(x, t, -1., 1., zero_eps, d));
 
-      SLEQP_CALL(sleqp_tr_compute_bdry_sol(x,
-                                           d,
-                                           solver->params,
-                                           trust_radius,
-                                           t));
+      SLEQP_CALL(
+        sleqp_tr_compute_bdry_sol(x, d, solver->params, trust_radius, t));
 
       SLEQP_CALL(sleqp_sparse_vector_copy(t, x));
 
@@ -296,11 +276,7 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
         double objective;
         double opt_res;
 
-        SLEQP_CALL(compute_objective(solver,
-                                     rhs,
-                                     x,
-                                     &objective,
-                                     &opt_res));
+        SLEQP_CALL(compute_objective(solver, rhs, x, &objective, &opt_res));
 
         sleqp_log_debug("Iteration %d, objective: %e, residuum: %e",
                         iteration,
@@ -311,24 +287,21 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
 
       SLEQP_CALL(sleqp_timer_stop(solver->timer));
 
-      sleqp_log_debug("LSQR solver terminated with a boundary solution after %d iterations",
-                      iteration);
+      sleqp_log_debug(
+        "LSQR solver terminated with a boundary solution after %d iterations",
+        iteration);
 
       return SLEQP_OKAY;
     }
 
     SLEQP_CALL(sleqp_sparse_vector_copy(t, x));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(v,
-                                              w,
-                                              1.,
-                                              - theta / rho,
-                                              zero_eps,
-                                              t));
+    SLEQP_CALL(
+      sleqp_sparse_vector_add_scaled(v, w, 1., -theta / rho, zero_eps, t));
 
     SLEQP_CALL(sleqp_sparse_vector_copy(t, w));
 
-    const double res = phib;
+    const double res       = phib;
     const double objective = .5 * (res * res);
 
     const double opt_res = phib * alpha * fabs(c);
@@ -338,13 +311,13 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
                     objective,
                     opt_res);
 
-    if(opt_res <= rel_tol)
+    if (opt_res <= rel_tol)
     {
       break;
     }
 
-    if(solver->time_limit != SLEQP_NONE &&
-       sleqp_timer_elapsed(solver->timer) >= solver->time_limit)
+    if (solver->time_limit != SLEQP_NONE
+        && sleqp_timer_elapsed(solver->timer) >= solver->time_limit)
     {
       reached_time_limit = true;
       break;
@@ -353,18 +326,20 @@ SLEQP_RETCODE sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
 
   SLEQP_CALL(sleqp_timer_stop(solver->timer));
 
-  if(reached_time_limit)
+  if (reached_time_limit)
   {
     return SLEQP_ABORT_TIME;
   }
 
-  sleqp_log_debug("LSQR solver terminated with an interior solution after %d iterations",
-                  iteration);
+  sleqp_log_debug(
+    "LSQR solver terminated with an interior solution after %d iterations",
+    iteration);
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_solver_capture(SleqpLSQRSolver* solver)
+SLEQP_RETCODE
+sleqp_lsqr_solver_capture(SleqpLSQRSolver* solver)
 {
   ++solver->refcount;
   return SLEQP_OKAY;
@@ -375,7 +350,7 @@ lsqr_solver_free(SleqpLSQRSolver** star)
 {
   SleqpLSQRSolver* solver = *star;
 
-  if(!solver)
+  if (!solver)
   {
     return SLEQP_OKAY;
   }
@@ -401,16 +376,17 @@ lsqr_solver_free(SleqpLSQRSolver** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lsqr_solver_release(SleqpLSQRSolver** star)
+SLEQP_RETCODE
+sleqp_lsqr_solver_release(SleqpLSQRSolver** star)
 {
   SleqpLSQRSolver* solver = *star;
 
-  if(!solver)
+  if (!solver)
   {
     return SLEQP_OKAY;
   }
 
-  if(--(solver->refcount) == 0)
+  if (--(solver->refcount) == 0)
   {
     SLEQP_CALL(lsqr_solver_free(star));
   }

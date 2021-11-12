@@ -2,7 +2,6 @@
 
 #include "cmp.h"
 
-
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_time_limit(SleqpTrialPointSolver* solver,
                                         double time_limit)

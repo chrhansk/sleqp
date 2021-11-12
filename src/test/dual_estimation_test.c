@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "dual_estimation.h"
@@ -44,14 +44,12 @@ START_TEST(test_simply_constrained_dual_estimation)
                                           quadfunc_cons_lb,
                                           quadfunc_cons_ub));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  ASSERT_CALL(sleqp_iterate_create(&iterate,
-                                   problem,
-                                   quadfunc_x));
+  ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadfunc_x));
 
-  int num_lp_variables = num_variables + 2*num_constraints;
+  int num_lp_variables   = num_variables + 2 * num_constraints;
   int num_lp_constraints = num_constraints;
 
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
@@ -60,10 +58,8 @@ START_TEST(test_simply_constrained_dual_estimation)
                                                  params,
                                                  options));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_NONE,
-                                     NULL));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
   ASSERT_CALL(sleqp_standard_cauchy_create(&cauchy_data,
                                            problem,
@@ -71,37 +67,29 @@ START_TEST(test_simply_constrained_dual_estimation)
                                            options,
                                            lp_interface));
 
-  ASSERT_CALL(sleqp_working_set_create(&working_set,
-                                       problem));
+  ASSERT_CALL(sleqp_working_set_create(&working_set, problem));
 
-  ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
-                                                        params));
+  ASSERT_CALL(
+    sleqp_sparse_factorization_create_default(&factorization, params));
 
-  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian,
-                                            problem,
-                                            params,
-                                            factorization));
+  ASSERT_CALL(
+    sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
 
   ASSERT_CALL(sleqp_dual_estimation_create(&estimation_data, problem));
 
-  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
-                                       iterate,
-                                       trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
                                  sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
-                                           iterate));
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
-  ASSERT_CALL(sleqp_dual_estimation_compute(estimation_data,
-                                            iterate,
-                                            NULL,
-                                            jacobian));
+  ASSERT_CALL(
+    sleqp_dual_estimation_compute(estimation_data, iterate, NULL, jacobian));
 
   SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
 
@@ -135,10 +123,11 @@ START_TEST(test_simply_constrained_dual_estimation)
 }
 END_TEST
 
-Suite* dual_estimation_test_suite()
+Suite*
+dual_estimation_test_suite()
 {
-  Suite *suite;
-  TCase *tc_dual_estimation;
+  Suite* suite;
+  TCase* tc_dual_estimation;
 
   suite = suite_create("Dual estimation tests");
 

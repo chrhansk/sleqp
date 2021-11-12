@@ -7,14 +7,15 @@
 typedef struct SleqpAugJac SleqpAugJac;
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_aug_jac_create(SleqpAugJac** star,
-                                   SleqpProblem* problem,
-                                   SleqpAugJacCallbacks* callbacks,
-                                   void* aug_jac_data);
+SLEQP_RETCODE
+sleqp_aug_jac_create(SleqpAugJac** star,
+                     SleqpProblem* problem,
+                     SleqpAugJacCallbacks* callbacks,
+                     void* aug_jac_data);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac,
-                                        SleqpIterate* iterate);
+SLEQP_RETCODE
+sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac, SleqpIterate* iterate);
 
 /**
  * Computes the solution of the system \f$ A_W x = b_W \f$ with
@@ -30,9 +31,10 @@ SLEQP_RETCODE sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac,
  *
  **/
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
-                                              SleqpSparseVec* rhs,
-                                              SleqpSparseVec* sol);
+SLEQP_RETCODE
+sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
+                                SleqpSparseVec* rhs,
+                                SleqpSparseVec* sol);
 
 /**
  * Computes the projection of the right hand side onto the
@@ -52,24 +54,28 @@ SLEQP_RETCODE sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
  *
  **/
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_aug_jac_projection(SleqpAugJac* aug_jac,
-                                       SleqpSparseVec* rhs,
-                                       SleqpSparseVec* primal_sol,
-                                       SleqpSparseVec* dual_sol);
+SLEQP_RETCODE
+sleqp_aug_jac_projection(SleqpAugJac* aug_jac,
+                         SleqpSparseVec* rhs,
+                         SleqpSparseVec* primal_sol,
+                         SleqpSparseVec* dual_sol);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_aug_jac_condition(SleqpAugJac* aug_jac,
-                                      bool* exact,
-                                      double* condition);
+SLEQP_RETCODE
+sleqp_aug_jac_condition(SleqpAugJac* aug_jac, bool* exact, double* condition);
 
-SleqpTimer* sleqp_aug_jac_creation_timer(SleqpAugJac* aug_jac);
+SleqpTimer*
+sleqp_aug_jac_creation_timer(SleqpAugJac* aug_jac);
 
-SleqpTimer* sleqp_aug_jac_solution_timer(SleqpAugJac* aug_jac);
-
-SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_aug_jac_capture(SleqpAugJac* jacobian);
+SleqpTimer*
+sleqp_aug_jac_solution_timer(SleqpAugJac* aug_jac);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_aug_jac_release(SleqpAugJac** star);
+SLEQP_RETCODE
+sleqp_aug_jac_capture(SleqpAugJac* jacobian);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_aug_jac_release(SleqpAugJac** star);
 
 #endif /* SLEQP_AUG_JAC_H */

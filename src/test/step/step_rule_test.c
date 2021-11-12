@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "mem.h"
@@ -9,7 +9,8 @@
 
 #include "log_rosenbrock_fixture.h"
 
-void test_step_rule(SLEQP_STEP_RULE step_rule)
+void
+test_step_rule(SLEQP_STEP_RULE step_rule)
 {
   SleqpParams* params;
   SleqpOptions* options;
@@ -20,9 +21,8 @@ void test_step_rule(SLEQP_STEP_RULE step_rule)
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_STEP_RULE,
-                                    step_rule));
+  ASSERT_CALL(
+    sleqp_options_set_int(options, SLEQP_OPTION_INT_STEP_RULE, step_rule));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           log_rosenbrock_func,
@@ -43,16 +43,14 @@ void test_step_rule(SLEQP_STEP_RULE step_rule)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver,
-                                        &solution_iterate));
+  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
-  ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   log_rosenbrock_optimal,
-                                   1e-6));
+  ck_assert(
+    sleqp_sparse_vector_eq(actual_solution, log_rosenbrock_optimal, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -81,10 +79,11 @@ START_TEST(test_minstep)
 }
 END_TEST
 
-Suite* unconstrained_test_suite()
+Suite*
+unconstrained_test_suite()
 {
-  Suite *suite;
-  TCase *tc_step_rule;
+  Suite* suite;
+  TCase* tc_step_rule;
 
   suite = suite_create("Unconstrained tests");
 

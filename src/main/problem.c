@@ -47,16 +47,16 @@ typedef struct SleqpProblem
 
 } SleqpProblem;
 
-
-static SLEQP_RETCODE check_bounds(const SleqpSparseVec* lb,
-                                  const SleqpSparseVec* ub,
-                                  bool cons_bounds)
+static SLEQP_RETCODE
+check_bounds(const SleqpSparseVec* lb,
+             const SleqpSparseVec* ub,
+             bool cons_bounds)
 {
   assert(lb->dim == ub->dim);
 
   int k_lb = 0, k_ub = 0;
 
-  while(k_lb < lb->nnz || k_ub < ub->nnz)
+  while (k_lb < lb->nnz || k_ub < ub->nnz)
   {
     double lb_val = 0;
     double ub_val = 0;
@@ -72,28 +72,30 @@ static SLEQP_RETCODE check_bounds(const SleqpSparseVec* lb,
     valid_lb = valid_lb && (lb_i == idx);
     valid_ub = valid_ub && (ub_i == idx);
 
-    if(valid_lb)
+    if (valid_lb)
     {
       lb_val = lb->data[k_lb];
     }
 
-    if(valid_ub)
+    if (valid_ub)
     {
       ub_val = ub->data[k_ub];
     }
 
-    if(lb_val > ub_val)
+    if (lb_val > ub_val)
     {
-      if(cons_bounds)
+      if (cons_bounds)
       {
-        sleqp_log_error("Inconsistent constraint bound values at index %d: lower = %f > %f = upper",
+        sleqp_log_error("Inconsistent constraint bound values at index %d: "
+                        "lower = %f > %f = upper",
                         idx,
                         lb_val,
                         ub_val);
       }
       else
       {
-        sleqp_log_error("Inconsistent variable bound values at index %d: lower = %f > %f = upper",
+        sleqp_log_error("Inconsistent variable bound values at index %d: lower "
+                        "= %f > %f = upper",
                         idx,
                         lb_val,
                         ub_val);
@@ -102,29 +104,26 @@ static SLEQP_RETCODE check_bounds(const SleqpSparseVec* lb,
       return SLEQP_ILLEGAL_ARGUMENT;
     }
 
-    if(valid_lb)
+    if (valid_lb)
     {
       ++k_lb;
     }
 
-    if(valid_ub)
+    if (valid_ub)
     {
       ++k_ub;
     }
   }
 
-
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE vector_map(SleqpSparseVec* vector,
-                        double from,
-                        double to)
+static SLEQP_RETCODE
+vector_map(SleqpSparseVec* vector, double from, double to)
 {
-  for(int k = 0; k < vector->nnz; ++k)
+  for (int k = 0; k < vector->nnz; ++k)
   {
-    if(vector->data[k] == from)
+    if (vector->data[k] == from)
     {
       vector->data[k] = to;
     }
@@ -133,28 +132,26 @@ SLEQP_RETCODE vector_map(SleqpSparseVec* vector,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE copy_create_vector(const SleqpSparseVec* source,
-                                 int expected_dim,
-                                 SleqpSparseVec** target_star)
+static SLEQP_RETCODE
+copy_create_vector(const SleqpSparseVec* source,
+                   int expected_dim,
+                   SleqpSparseVec** target_star)
 {
-  sleqp_assert_msg(sleqp_sparse_vector_is_valid(source), "Invalid lower bounds");
+  sleqp_assert_msg(sleqp_sparse_vector_is_valid(source),
+                   "Invalid lower bounds");
 
   sleqp_assert_msg(source->dim == expected_dim, "Inconsistent dimensions");
 
-  if(*target_star)
+  if (*target_star)
   {
-    SLEQP_CALL(sleqp_sparse_vector_resize(*target_star,
-                                          expected_dim));
+    SLEQP_CALL(sleqp_sparse_vector_resize(*target_star, expected_dim));
 
-    SLEQP_CALL(sleqp_sparse_vector_reserve(*target_star,
-                                           source->nnz));
+    SLEQP_CALL(sleqp_sparse_vector_reserve(*target_star, source->nnz));
   }
   else
   {
-    SLEQP_CALL(sleqp_sparse_vector_create(target_star,
-                                          expected_dim,
-                                          source->nnz));
+    SLEQP_CALL(
+      sleqp_sparse_vector_create(target_star, expected_dim, source->nnz));
   }
 
   SleqpSparseVec* target = *target_star;
@@ -164,10 +161,10 @@ SLEQP_RETCODE copy_create_vector(const SleqpSparseVec* source,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE convert_lb(const SleqpSparseVec* source_lb,
-                         int expected_dim,
-                         SleqpSparseVec** target_lb_star)
+static SLEQP_RETCODE
+convert_lb(const SleqpSparseVec* source_lb,
+           int expected_dim,
+           SleqpSparseVec** target_lb_star)
 {
   const double inf = sleqp_infinity();
 
@@ -183,10 +180,10 @@ SLEQP_RETCODE convert_lb(const SleqpSparseVec* source_lb,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE convert_ub(const SleqpSparseVec* source_ub,
-                         int expected_dim,
-                         SleqpSparseVec** target_ub_star)
+static SLEQP_RETCODE
+convert_ub(const SleqpSparseVec* source_ub,
+           int expected_dim,
+           SleqpSparseVec** target_ub_star)
 {
   const double inf = sleqp_infinity();
 
@@ -202,8 +199,8 @@ SLEQP_RETCODE convert_ub(const SleqpSparseVec* source_ub,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE stack_bounds(SleqpProblem* problem)
+static SLEQP_RETCODE
+stack_bounds(SleqpProblem* problem)
 {
   SLEQP_CALL(sleqp_sparse_vector_concat(problem->general_lb,
                                         problem->linear_lb,
@@ -213,33 +210,32 @@ SLEQP_RETCODE stack_bounds(SleqpProblem* problem)
                                         problem->linear_ub,
                                         problem->cons_ub));
 
-  SLEQP_CALL(check_bounds(problem->cons_lb,
-                          problem->cons_ub,
-                          true));
+  SLEQP_CALL(check_bounds(problem->cons_lb, problem->cons_ub, true));
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE problem_create(SleqpProblem** star,
-                                    SleqpFunc* func,
-                                    SleqpParams* params,
-                                    const SleqpSparseVec* var_lb,
-                                    const SleqpSparseVec* var_ub,
-                                    const SleqpSparseVec* general_lb,
-                                    const SleqpSparseVec* general_ub)
+static SLEQP_RETCODE
+problem_create(SleqpProblem** star,
+               SleqpFunc* func,
+               SleqpParams* params,
+               const SleqpSparseVec* var_lb,
+               const SleqpSparseVec* var_ub,
+               const SleqpSparseVec* general_lb,
+               const SleqpSparseVec* general_ub)
 {
-  const int num_general = sleqp_func_get_num_constraints(func);
+  const int num_general   = sleqp_func_get_num_constraints(func);
   const int num_variables = sleqp_func_get_num_variables(func);
 
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpProblem* problem = *star;
 
-  *problem = (SleqpProblem) {0};
+  *problem = (SleqpProblem){0};
 
   problem->refcount = 1;
 
-  problem->num_variables = num_variables;
+  problem->num_variables           = num_variables;
   problem->num_general_constraints = num_general;
 
   SLEQP_CALL(convert_lb(var_lb, num_variables, &problem->var_lb));
@@ -259,40 +255,30 @@ static SLEQP_RETCODE problem_create(SleqpProblem** star,
                                         problem->num_variables,
                                         0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->cons_lb,
-                                              0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->cons_lb, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->cons_ub,
-                                              0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->cons_ub, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->linear_lb,
-                                              0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->linear_lb, 0));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->linear_ub,
-                                              0));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->linear_ub, 0));
 
-  SLEQP_CALL(check_bounds(problem->var_lb,
-                          problem->var_ub,
-                          false));
+  SLEQP_CALL(check_bounds(problem->var_lb, problem->var_ub, false));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_create_simple(SleqpProblem** star,
-                                          SleqpFunc* func,
-                                          SleqpParams* params,
-                                          const SleqpSparseVec* var_lb,
-                                          const SleqpSparseVec* var_ub,
-                                          const SleqpSparseVec* general_lb,
-                                          const SleqpSparseVec* general_ub)
+SLEQP_RETCODE
+sleqp_problem_create_simple(SleqpProblem** star,
+                            SleqpFunc* func,
+                            SleqpParams* params,
+                            const SleqpSparseVec* var_lb,
+                            const SleqpSparseVec* var_ub,
+                            const SleqpSparseVec* general_lb,
+                            const SleqpSparseVec* general_ub)
 {
-  SLEQP_CALL(problem_create(star,
-                            func,
-                            params,
-                            var_lb,
-                            var_ub,
-                            general_lb,
-                            general_ub));
+  SLEQP_CALL(
+    problem_create(star, func, params, var_lb, var_ub, general_lb, general_ub));
 
   SleqpProblem* problem = *star;
 
@@ -301,38 +287,34 @@ SLEQP_RETCODE sleqp_problem_create_simple(SleqpProblem** star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
-                                   SleqpFunc* func,
-                                   SleqpParams* params,
-                                   const SleqpSparseVec* var_lb,
-                                   const SleqpSparseVec* var_ub,
-                                   const SleqpSparseVec* general_lb,
-                                   const SleqpSparseVec* general_ub,
-                                   const SleqpSparseMatrix* linear_coeffs,
-                                   const SleqpSparseVec* linear_lb,
-                                   const SleqpSparseVec* linear_ub)
+SLEQP_RETCODE
+sleqp_problem_create(SleqpProblem** star,
+                     SleqpFunc* func,
+                     SleqpParams* params,
+                     const SleqpSparseVec* var_lb,
+                     const SleqpSparseVec* var_ub,
+                     const SleqpSparseVec* general_lb,
+                     const SleqpSparseVec* general_ub,
+                     const SleqpSparseMatrix* linear_coeffs,
+                     const SleqpSparseVec* linear_lb,
+                     const SleqpSparseVec* linear_ub)
 {
-  SLEQP_CALL(problem_create(star,
-                            func,
-                            params,
-                            var_lb,
-                            var_ub,
-                            general_lb,
-                            general_ub));
+  SLEQP_CALL(
+    problem_create(star, func, params, var_lb, var_ub, general_lb, general_ub));
 
   SleqpProblem* problem = *star;
 
   const int num_variables = problem->num_variables;
 
-  const int num_linear_constraints = sleqp_sparse_matrix_get_num_rows(linear_coeffs);
+  const int num_linear_constraints
+    = sleqp_sparse_matrix_get_num_rows(linear_coeffs);
 
   {
     SLEQP_CALL(sleqp_sparse_matrix_resize(problem->linear_coeffs,
                                           num_linear_constraints,
                                           num_variables));
 
-    SLEQP_CALL(sleqp_sparse_matrix_copy(linear_coeffs,
-                                        problem->linear_coeffs));
+    SLEQP_CALL(sleqp_sparse_matrix_copy(linear_coeffs, problem->linear_coeffs));
 
     sleqp_assert_msg(sleqp_sparse_matrix_is_valid(problem->linear_coeffs),
                      "Linear coefficient matrix is invalid");
@@ -340,13 +322,15 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
     sleqp_assert_msg(sleqp_sparse_matrix_is_finite(problem->linear_coeffs),
                      "Linear coefficient matrix is not all-finite");
 
-    sleqp_assert_msg(sleqp_sparse_matrix_get_num_cols(problem->linear_coeffs) == num_variables,
+    sleqp_assert_msg(sleqp_sparse_matrix_get_num_cols(problem->linear_coeffs)
+                       == num_variables,
                      "Linear constraint dimensions are inconsistent");
-
   }
 
-  SLEQP_CALL(convert_lb(linear_lb, num_linear_constraints, &problem->linear_lb));
-  SLEQP_CALL(convert_ub(linear_ub, num_linear_constraints, &problem->linear_ub));
+  SLEQP_CALL(
+    convert_lb(linear_lb, num_linear_constraints, &problem->linear_lb));
+  SLEQP_CALL(
+    convert_ub(linear_ub, num_linear_constraints, &problem->linear_ub));
 
   problem->num_linear_constraints = num_linear_constraints;
 
@@ -356,19 +340,22 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                           num_variables,
                                           0));
 
-    SLEQP_CALL(sleqp_sparse_vector_create_full(&problem->primal,
-                                               num_variables));
+    SLEQP_CALL(
+      sleqp_sparse_vector_create_full(&problem->primal, num_variables));
 
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->general_cons_val,
-                                                problem->num_general_constraints));
+    SLEQP_CALL(
+      sleqp_sparse_vector_create_empty(&problem->general_cons_val,
+                                       problem->num_general_constraints));
 
     SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->linear_cons_val,
                                                 num_linear_constraints));
 
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&problem->general_cons_duals,
-                                                problem->num_general_constraints));
+    SLEQP_CALL(
+      sleqp_sparse_vector_create_empty(&problem->general_cons_duals,
+                                       problem->num_general_constraints));
 
-    SLEQP_CALL(sleqp_alloc_array(&problem->dense_cache, num_linear_constraints));
+    SLEQP_CALL(
+      sleqp_alloc_array(&problem->dense_cache, num_linear_constraints));
   }
 
   SLEQP_CALL(stack_bounds(problem));
@@ -376,88 +363,104 @@ SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
   return SLEQP_OKAY;
 }
 
-bool sleqp_problem_has_nonlinear_cons(SleqpProblem* problem)
+bool
+sleqp_problem_has_nonlinear_cons(SleqpProblem* problem)
 {
   return problem->num_general_constraints != 0;
 }
 
-int sleqp_problem_num_variables(SleqpProblem* problem)
+int
+sleqp_problem_num_variables(SleqpProblem* problem)
 {
   return problem->num_variables;
 }
 
-SleqpSparseVec* sleqp_problem_var_lb(SleqpProblem* problem)
+SleqpSparseVec*
+sleqp_problem_var_lb(SleqpProblem* problem)
 {
   return problem->var_lb;
 }
 
-SleqpSparseVec* sleqp_problem_var_ub(SleqpProblem* problem)
+SleqpSparseVec*
+sleqp_problem_var_ub(SleqpProblem* problem)
 {
   return problem->var_ub;
 }
 
-SleqpSparseVec* sleqp_problem_general_lb(SleqpProblem* problem)
+SleqpSparseVec*
+sleqp_problem_general_lb(SleqpProblem* problem)
 {
   return problem->general_lb;
 }
 
-SleqpSparseVec* sleqp_problem_general_ub(SleqpProblem* problem)
+SleqpSparseVec*
+sleqp_problem_general_ub(SleqpProblem* problem)
 {
   return problem->general_ub;
 }
 
-SleqpSparseMatrix* sleqp_problem_linear_coeffs(SleqpProblem* problem)
+SleqpSparseMatrix*
+sleqp_problem_linear_coeffs(SleqpProblem* problem)
 {
   return problem->linear_coeffs;
 }
 
-SleqpSparseVec* sleqp_problem_linear_lb(SleqpProblem* problem)
+SleqpSparseVec*
+sleqp_problem_linear_lb(SleqpProblem* problem)
 {
   return problem->linear_lb;
 }
 
-SleqpSparseVec* sleqp_problem_linear_ub(SleqpProblem* problem)
+SleqpSparseVec*
+sleqp_problem_linear_ub(SleqpProblem* problem)
 {
   return problem->linear_ub;
 }
 
-SleqpSparseVec* sleqp_problem_cons_lb(SleqpProblem* problem)
+SleqpSparseVec*
+sleqp_problem_cons_lb(SleqpProblem* problem)
 {
   return problem->cons_lb;
 }
 
-SleqpSparseVec* sleqp_problem_cons_ub(SleqpProblem* problem)
+SleqpSparseVec*
+sleqp_problem_cons_ub(SleqpProblem* problem)
 {
   return problem->cons_ub;
 }
 
-int sleqp_problem_num_constraints(SleqpProblem* problem)
+int
+sleqp_problem_num_constraints(SleqpProblem* problem)
 {
   return problem->num_general_constraints + problem->num_linear_constraints;
 }
 
-int sleqp_problem_num_linear_constraints(SleqpProblem* problem)
+int
+sleqp_problem_num_linear_constraints(SleqpProblem* problem)
 {
   return problem->num_linear_constraints;
 }
 
-int sleqp_problem_num_general_constraints(SleqpProblem* problem)
+int
+sleqp_problem_num_general_constraints(SleqpProblem* problem)
 {
   return problem->num_general_constraints;
 }
 
-SleqpFunc* sleqp_problem_func(SleqpProblem* problem)
+SleqpFunc*
+sleqp_problem_func(SleqpProblem* problem)
 {
   return problem->func;
 }
 
-SLEQP_RETCODE sleqp_problem_set_value(SleqpProblem* problem,
-                                      SleqpSparseVec* x,
-                                      SLEQP_VALUE_REASON reason,
-                                      bool* reject,
-                                      int* func_grad_nnz,
-                                      int* cons_val_nnz,
-                                      int* cons_jac_nnz)
+SLEQP_RETCODE
+sleqp_problem_set_value(SleqpProblem* problem,
+                        SleqpSparseVec* x,
+                        SLEQP_VALUE_REASON reason,
+                        bool* reject,
+                        int* func_grad_nnz,
+                        int* cons_val_nnz,
+                        int* cons_jac_nnz)
 {
   SLEQP_CALL(sleqp_func_set_value(problem->func,
                                   x,
@@ -467,15 +470,15 @@ SLEQP_RETCODE sleqp_problem_set_value(SleqpProblem* problem,
                                   cons_val_nnz,
                                   cons_jac_nnz));
 
-  if(problem->primal)
+  if (problem->primal)
   {
     SLEQP_CALL(sleqp_sparse_vector_copy(x, problem->primal));
   }
 
-  if(problem->general_cons_jac)
+  if (problem->general_cons_jac)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_reserve(problem->general_cons_jac,
-                                           *cons_jac_nnz));
+    SLEQP_CALL(
+      sleqp_sparse_matrix_reserve(problem->general_cons_jac, *cons_jac_nnz));
   }
 
   (*cons_jac_nnz) += sleqp_sparse_matrix_get_nnz(problem->linear_coeffs);
@@ -485,29 +488,30 @@ SLEQP_RETCODE sleqp_problem_set_value(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_eval(SleqpProblem* problem,
-                                 const SleqpSparseVec* cons_indices,
-                                 double* func_val,
-                                 SleqpSparseVec* func_grad,
-                                 SleqpSparseVec* cons_val,
-                                 SleqpSparseMatrix* cons_jac)
+SLEQP_RETCODE
+sleqp_problem_eval(SleqpProblem* problem,
+                   const SleqpSparseVec* cons_indices,
+                   double* func_val,
+                   SleqpSparseVec* func_grad,
+                   SleqpSparseVec* cons_val,
+                   SleqpSparseMatrix* cons_jac)
 {
-  if(func_val)
+  if (func_val)
   {
     SLEQP_CALL(sleqp_problem_val(problem, func_val));
   }
 
-  if(func_grad)
+  if (func_grad)
   {
     SLEQP_CALL(sleqp_problem_grad(problem, func_grad));
   }
 
-  if(cons_val)
+  if (cons_val)
   {
     SLEQP_CALL(sleqp_problem_cons_val(problem, cons_indices, cons_val));
   }
 
-  if(cons_jac)
+  if (cons_jac)
   {
     SLEQP_CALL(sleqp_problem_cons_jac(problem, cons_indices, cons_jac));
   }
@@ -515,37 +519,36 @@ SLEQP_RETCODE sleqp_problem_eval(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_val(SleqpProblem* problem,
-                                double* func_val)
+SLEQP_RETCODE
+sleqp_problem_val(SleqpProblem* problem, double* func_val)
 {
   return sleqp_func_val(problem->func, func_val);
 }
 
-SLEQP_RETCODE sleqp_problem_grad(SleqpProblem* problem,
-                                 SleqpSparseVec* func_grad)
+SLEQP_RETCODE
+sleqp_problem_grad(SleqpProblem* problem, SleqpSparseVec* func_grad)
 {
   return sleqp_func_grad(problem->func, func_grad);
 }
 
-SLEQP_RETCODE sleqp_problem_cons_val(SleqpProblem* problem,
-                                     const SleqpSparseVec* cons_indices,
-                                     SleqpSparseVec* cons_val)
+SLEQP_RETCODE
+sleqp_problem_cons_val(SleqpProblem* problem,
+                       const SleqpSparseVec* cons_indices,
+                       SleqpSparseVec* cons_val)
 {
-  const double zero_eps = sleqp_params_get(problem->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(problem->params, SLEQP_PARAM_ZERO_EPS);
 
-  if(problem->num_linear_constraints == 0)
+  if (problem->num_linear_constraints == 0)
   {
-    return sleqp_func_cons_val(problem->func,
-                               cons_indices,
-                               cons_val);
+    return sleqp_func_cons_val(problem->func, cons_indices, cons_val);
   }
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(problem->linear_coeffs,
                                                 problem->primal,
                                                 problem->dense_cache));
 
-  if(problem->num_general_constraints == 0)
+  if (problem->num_general_constraints == 0)
   {
     return sleqp_sparse_vector_from_raw(cons_val,
                                         problem->dense_cache,
@@ -569,18 +572,17 @@ SLEQP_RETCODE sleqp_problem_cons_val(SleqpProblem* problem,
   }
 }
 
-SLEQP_RETCODE sleqp_problem_cons_jac(SleqpProblem* problem,
-                                     const SleqpSparseVec* cons_indices,
-                                     SleqpSparseMatrix* cons_jac)
+SLEQP_RETCODE
+sleqp_problem_cons_jac(SleqpProblem* problem,
+                       const SleqpSparseVec* cons_indices,
+                       SleqpSparseMatrix* cons_jac)
 {
-  if(problem->num_linear_constraints == 0)
+  if (problem->num_linear_constraints == 0)
   {
-    return sleqp_func_cons_jac(problem->func,
-                               cons_indices,
-                               cons_jac);
+    return sleqp_func_cons_jac(problem->func, cons_indices, cons_jac);
   }
 
-  if(problem->num_general_constraints == 0)
+  if (problem->num_general_constraints == 0)
   {
     return sleqp_sparse_matrix_copy(problem->linear_coeffs, cons_jac);
   }
@@ -594,22 +596,21 @@ SLEQP_RETCODE sleqp_problem_cons_jac(SleqpProblem* problem,
                                     cons_jac);
 }
 
-static
-SLEQP_RETCODE prepare_cons_duals(SleqpProblem* problem,
-                                 const SleqpSparseVec* cons_duals)
+static SLEQP_RETCODE
+prepare_cons_duals(SleqpProblem* problem, const SleqpSparseVec* cons_duals)
 {
-  SLEQP_CALL(sleqp_sparse_vector_reserve(problem->general_cons_duals,
-                                         cons_duals->nnz));
+  SLEQP_CALL(
+    sleqp_sparse_vector_reserve(problem->general_cons_duals, cons_duals->nnz));
 
   SLEQP_CALL(sleqp_sparse_vector_clear(problem->general_cons_duals));
 
   const int num_general = problem->num_general_constraints;
 
-  for(int k = 0; k < cons_duals->nnz; ++k)
+  for (int k = 0; k < cons_duals->nnz; ++k)
   {
     int i = cons_duals->indices[k];
 
-    if(i >= num_general)
+    if (i >= num_general)
     {
       break;
     }
@@ -617,19 +618,19 @@ SLEQP_RETCODE prepare_cons_duals(SleqpProblem* problem,
     SLEQP_CALL(sleqp_sparse_vector_push(problem->general_cons_duals,
                                         i,
                                         cons_duals->data[k]));
-
   }
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_hess_prod(SleqpProblem* problem,
-                                      const double* func_dual,
-                                      const SleqpSparseVec* direction,
-                                      const SleqpSparseVec* cons_duals,
-                                      SleqpSparseVec* product)
+SLEQP_RETCODE
+sleqp_problem_hess_prod(SleqpProblem* problem,
+                        const double* func_dual,
+                        const SleqpSparseVec* direction,
+                        const SleqpSparseVec* cons_duals,
+                        SleqpSparseVec* product)
 {
-  if(problem->num_linear_constraints == 0)
+  if (problem->num_linear_constraints == 0)
   {
     return sleqp_func_hess_prod(problem->func,
                                 func_dual,
@@ -647,13 +648,14 @@ SLEQP_RETCODE sleqp_problem_hess_prod(SleqpProblem* problem,
                               product);
 }
 
-SLEQP_RETCODE sleqp_problem_hess_bilinear(SleqpProblem* problem,
-                                          const double* func_dual,
-                                          const SleqpSparseVec* direction,
-                                          const SleqpSparseVec* cons_duals,
-                                          double* bilinear_prod)
+SLEQP_RETCODE
+sleqp_problem_hess_bilinear(SleqpProblem* problem,
+                            const double* func_dual,
+                            const SleqpSparseVec* direction,
+                            const SleqpSparseVec* cons_duals,
+                            double* bilinear_prod)
 {
-  if(problem->num_linear_constraints == 0)
+  if (problem->num_linear_constraints == 0)
   {
     return sleqp_func_hess_bilinear(problem->func,
                                     func_dual,
@@ -671,19 +673,20 @@ SLEQP_RETCODE sleqp_problem_hess_bilinear(SleqpProblem* problem,
                                   bilinear_prod);
 }
 
-static bool vec_has_finite(const SleqpSparseVec* vec)
+static bool
+vec_has_finite(const SleqpSparseVec* vec)
 {
   assert(sleqp_sparse_vector_is_valid(vec));
   assert(sleqp_sparse_vector_is_finite(vec));
 
-  if(vec->nnz != vec->dim)
+  if (vec->nnz != vec->dim)
   {
     return true;
   }
 
-  for(int k = 0; k < vec->nnz; ++k)
+  for (int k = 0; k < vec->nnz; ++k)
   {
-    if(sleqp_is_finite(SLEQP_ABS(vec->data[k])))
+    if (sleqp_is_finite(SLEQP_ABS(vec->data[k])))
     {
       return true;
     }
@@ -692,19 +695,21 @@ static bool vec_has_finite(const SleqpSparseVec* vec)
   return false;
 }
 
-bool sleqp_problem_is_unconstrained(SleqpProblem* problem)
+bool
+sleqp_problem_is_unconstrained(SleqpProblem* problem)
 {
-  return !(vec_has_finite(sleqp_problem_var_lb(problem)) ||
-           vec_has_finite(sleqp_problem_var_ub(problem)) ||
-           vec_has_finite(sleqp_problem_cons_lb(problem)) ||
-           vec_has_finite(sleqp_problem_cons_ub(problem)));
+  return !(vec_has_finite(sleqp_problem_var_lb(problem))
+           || vec_has_finite(sleqp_problem_var_ub(problem))
+           || vec_has_finite(sleqp_problem_cons_lb(problem))
+           || vec_has_finite(sleqp_problem_cons_ub(problem)));
 }
 
-static SLEQP_RETCODE problem_free(SleqpProblem** star)
+static SLEQP_RETCODE
+problem_free(SleqpProblem** star)
 {
   SleqpProblem* problem = *star;
 
-  if(!problem)
+  if (!problem)
   {
     return SLEQP_OKAY;
   }
@@ -720,7 +725,6 @@ static SLEQP_RETCODE problem_free(SleqpProblem** star)
   sleqp_free(&problem->dense_cache);
 
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->primal));
-
 
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->linear_ub));
   SLEQP_CALL(sleqp_sparse_vector_free(&problem->linear_lb));
@@ -745,28 +749,30 @@ static SLEQP_RETCODE problem_free(SleqpProblem** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_capture(SleqpProblem* problem)
+SLEQP_RETCODE
+sleqp_problem_capture(SleqpProblem* problem)
 {
   ++problem->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_release(SleqpProblem** star)
+SLEQP_RETCODE
+sleqp_problem_release(SleqpProblem** star)
 {
   SleqpProblem* problem = *star;
 
-  if(!problem)
+  if (!problem)
   {
     return SLEQP_OKAY;
   }
 
-  if(--problem->refcount == 0)
+  if (--problem->refcount == 0)
   {
     SLEQP_CALL(problem_free(star));
   }
 
   *star = NULL;
-  
+
   return SLEQP_OKAY;
 }

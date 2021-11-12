@@ -22,7 +22,8 @@ struct SleqpTimer
   double last_elapsed;
 };
 
-SLEQP_RETCODE sleqp_timer_create(SleqpTimer** star)
+SLEQP_RETCODE
+sleqp_timer_create(SleqpTimer** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -33,41 +34,44 @@ SLEQP_RETCODE sleqp_timer_create(SleqpTimer** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_timer_start(SleqpTimer* timer)
+SLEQP_RETCODE
+sleqp_timer_start(SleqpTimer* timer)
 {
   assert(!timer->running);
 
   timer->running = true;
-  timer->start = clock();
+  timer->start   = clock();
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_timer_reset(SleqpTimer* timer)
+SLEQP_RETCODE
+sleqp_timer_reset(SleqpTimer* timer)
 {
   *timer = (SleqpTimer){0};
 
   return SLEQP_OKAY;
 }
 
-static
-double current_elapsed(SleqpTimer* timer)
+static double
+current_elapsed(SleqpTimer* timer)
 {
-  if(!timer->running)
+  if (!timer->running)
   {
     return 0.;
   }
 
   clock_t end = clock();
 
-  double elapsed = ((double) (end - timer->start)) / CLOCKS_PER_SEC;
+  double elapsed = ((double)(end - timer->start)) / CLOCKS_PER_SEC;
 
   assert(elapsed >= 0.);
 
   return elapsed;
 }
 
-SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
+SLEQP_RETCODE
+sleqp_timer_stop(SleqpTimer* timer)
 {
   assert(timer->running);
 
@@ -78,7 +82,7 @@ SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
   timer->last_elapsed = elapsed;
 
   timer->total_elapsed += elapsed;
-  timer->total_elapsed_squared += elapsed*elapsed;
+  timer->total_elapsed_squared += elapsed * elapsed;
 
   timer->running = false;
 
@@ -88,36 +92,39 @@ SLEQP_RETCODE sleqp_timer_stop(SleqpTimer* timer)
 static double
 currently_elapsed(SleqpTimer* timer)
 {
-  if(!timer->running)
+  if (!timer->running)
   {
     return 0.;
   }
 
   clock_t end = clock();
 
-  return ((double) (end - timer->start)) / CLOCKS_PER_SEC;
+  return ((double)(end - timer->start)) / CLOCKS_PER_SEC;
 }
 
-SLEQP_RETCODE sleqp_timer_add(SleqpTimer* timer, double value)
+SLEQP_RETCODE
+sleqp_timer_add(SleqpTimer* timer, double value)
 {
   timer->last_elapsed += value;
 
   timer->total_elapsed += value;
-  timer->total_elapsed_squared += value*value;
+  timer->total_elapsed_squared += value * value;
 
   return SLEQP_OKAY;
 }
 
-double sleqp_timer_elapsed(SleqpTimer* timer)
+double
+sleqp_timer_elapsed(SleqpTimer* timer)
 {
   return timer->last_elapsed + currently_elapsed(timer);
 }
 
-double sleqp_timer_get_avg(SleqpTimer* timer)
+double
+sleqp_timer_get_avg(SleqpTimer* timer)
 {
   assert(!timer->running);
 
-  if(timer->num_runs == 0)
+  if (timer->num_runs == 0)
   {
     return 0.;
   }
@@ -125,40 +132,44 @@ double sleqp_timer_get_avg(SleqpTimer* timer)
   return timer->total_elapsed / timer->num_runs;
 }
 
-double sleqp_timer_get_ttl(SleqpTimer* timer)
+double
+sleqp_timer_get_ttl(SleqpTimer* timer)
 {
   return timer->total_elapsed + currently_elapsed(timer);
 }
 
-double sleqp_timer_get_std(SleqpTimer* timer)
+double
+sleqp_timer_get_std(SleqpTimer* timer)
 {
-  if(timer->num_runs == 0)
+  if (timer->num_runs == 0)
   {
     return 0.;
   }
 
   double avg = sleqp_timer_get_avg(timer);
 
-  double var = timer->total_elapsed_squared / timer->num_runs - avg*avg;
+  double var = timer->total_elapsed_squared / timer->num_runs - avg * avg;
 
   return sqrt(var);
 }
 
-int sleqp_timer_get_num_runs(SleqpTimer* timer)
+int
+sleqp_timer_get_num_runs(SleqpTimer* timer)
 {
   return timer->num_runs;
 }
 
-SLEQP_RETCODE sleqp_timer_display(SleqpTimer* timer,
-                                  const char* description,
-                                  double total_elapsed)
+SLEQP_RETCODE
+sleqp_timer_display(SleqpTimer* timer,
+                    const char* description,
+                    double total_elapsed)
 {
   char buffer[BUF_SIZE];
 
-  const int num_runs = sleqp_timer_get_num_runs(timer);
-  const double avg_time = sleqp_timer_get_avg(timer);
+  const int num_runs      = sleqp_timer_get_num_runs(timer);
+  const double avg_time   = sleqp_timer_get_avg(timer);
   const double total_time = sleqp_timer_get_ttl(timer);
-  const double percent = (total_time / total_elapsed) * 100.;
+  const double percent    = (total_time / total_elapsed) * 100.;
 
   snprintf(buffer,
            BUF_SIZE,
@@ -174,10 +185,10 @@ SLEQP_RETCODE sleqp_timer_display(SleqpTimer* timer,
   return SLEQP_OKAY;
 }
 
-double sleqp_timer_remaining_time(SleqpTimer* timer,
-                                  double time_limit)
+double
+sleqp_timer_remaining_time(SleqpTimer* timer, double time_limit)
 {
-  if(time_limit != SLEQP_NONE)
+  if (time_limit != SLEQP_NONE)
   {
     double remaining_time = time_limit - sleqp_timer_get_ttl(timer);
 
@@ -187,10 +198,10 @@ double sleqp_timer_remaining_time(SleqpTimer* timer,
   return SLEQP_NONE;
 }
 
-bool sleqp_timer_exhausted_time_limit(SleqpTimer* timer,
-                                      double time_limit)
+bool
+sleqp_timer_exhausted_time_limit(SleqpTimer* timer, double time_limit)
 {
-  if(time_limit == SLEQP_NONE)
+  if (time_limit == SLEQP_NONE)
   {
     return false;
   }
@@ -198,7 +209,8 @@ bool sleqp_timer_exhausted_time_limit(SleqpTimer* timer,
   return sleqp_timer_remaining_time(timer, time_limit) <= 0.;
 }
 
-SLEQP_RETCODE sleqp_timer_free(SleqpTimer** star)
+SLEQP_RETCODE
+sleqp_timer_free(SleqpTimer** star)
 {
   sleqp_free(star);
 

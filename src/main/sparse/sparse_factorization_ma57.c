@@ -15,9 +15,10 @@ static const bool ma57_verbose = false;
 
 static const double ma57_size_factor = 1.2;
 
-static SLEQP_RETCODE ma57_get_error_string(int value, const char** message)
+static SLEQP_RETCODE
+ma57_get_error_string(int value, const char** message)
 {
-  switch(value)
+  switch (value)
   {
   case MA57_ERROR_INSUFFICIENT_INTEGER_SPACE:
     *message = "Insufficient integer space";
@@ -108,51 +109,50 @@ static SLEQP_RETCODE ma57_get_error_string(int value, const char** message)
   return SLEQP_OKAY;
 }
 
-#define MA57_CHECK_ERROR(x)                                             \
-  do                                                                    \
-  {                                                                     \
-    int ma57_status = (x);                                              \
-                                                                        \
-    if(ma57_status < 0)                                                 \
-    {                                                                   \
-      const char* ma57_error_string;                                    \
-      SLEQP_CALL(ma57_get_error_string(ma57_status,                     \
-                                       &ma57_error_string));            \
-                                                                        \
-      sleqp_log_error("Caught hsl_ma57 error <%d> (%s) in function %s", \
-                      ma57_status,                                      \
-                      ma57_error_string,                                \
-                      __func__);                                        \
-                                                                        \
-      if (ma57_status == MA57_N_OUT_OF_RANGE                            \
-          || ma57_status == MA57_NE_OUT_OF_RANGE                        \
-          || ma57_status == MA57_LRHS_OUT_OF_RANGE                      \
-          || ma57_status == MA57_JOB_OUT_OF_RANGE                       \
-          || ma57_status == MA57_LKEEP_OUT_OF_RANGE                     \
-          || ma57_status == MA57_NRHS_OUT_OF_RANGE                      \
-          || ma57_status == MA57_LWORK_OUT_OF_RANGE)                    \
-      {                                                                 \
-        return SLEQP_ILLEGAL_ARGUMENT;                                  \
-      }                                                                 \
-      if (ma57_status == MA57_TINY_PIVOT                                \
-          || ma57_status == MA57_PIVOT_SIGN_CHANGE)                     \
-      {                                                                 \
-        return SLEQP_MATH_ERROR;                                        \
-      }                                                                 \
-      if (ma57_status == MA57_INSUFFICIENT_REAL_SPACE                   \
-          || ma57_status == MA57_INSUFFICIENT_INTEGER_SPACE)            \
-        return SLEQP_INTERNAL_ERROR;                                    \
-    }                                                                   \
-  } while(0)
-
+#define MA57_CHECK_ERROR(x)                                                    \
+  do                                                                           \
+  {                                                                            \
+    int ma57_status = (x);                                                     \
+                                                                               \
+    if (ma57_status < 0)                                                       \
+    {                                                                          \
+      const char* ma57_error_string;                                           \
+      SLEQP_CALL(ma57_get_error_string(ma57_status, &ma57_error_string));      \
+                                                                               \
+      sleqp_log_error("Caught hsl_ma57 error <%d> (%s) in function %s",        \
+                      ma57_status,                                             \
+                      ma57_error_string,                                       \
+                      __func__);                                               \
+                                                                               \
+      if (ma57_status == MA57_N_OUT_OF_RANGE                                   \
+          || ma57_status == MA57_NE_OUT_OF_RANGE                               \
+          || ma57_status == MA57_LRHS_OUT_OF_RANGE                             \
+          || ma57_status == MA57_JOB_OUT_OF_RANGE                              \
+          || ma57_status == MA57_LKEEP_OUT_OF_RANGE                            \
+          || ma57_status == MA57_NRHS_OUT_OF_RANGE                             \
+          || ma57_status == MA57_LWORK_OUT_OF_RANGE)                           \
+      {                                                                        \
+        return SLEQP_ILLEGAL_ARGUMENT;                                         \
+      }                                                                        \
+      if (ma57_status == MA57_TINY_PIVOT                                       \
+          || ma57_status == MA57_PIVOT_SIGN_CHANGE)                            \
+      {                                                                        \
+        return SLEQP_MATH_ERROR;                                               \
+      }                                                                        \
+      if (ma57_status == MA57_INSUFFICIENT_REAL_SPACE                          \
+          || ma57_status == MA57_INSUFFICIENT_INTEGER_SPACE)                   \
+        return SLEQP_INTERNAL_ERROR;                                           \
+    }                                                                          \
+  } while (0)
 
 /** @brief MA57 integer control structure
  */
-typedef struct MA57IControl {
+typedef struct MA57IControl
+{
   int32_t error_message_stream;
   int32_t warning_message_stream;
   int32_t monitor_message_stream;
-  int32_t stats_message_stream;   /* not operative? */
+  int32_t stats_message_stream; /* not operative? */
   int32_t print_level;
   int32_t pivot_order;
   int32_t numerical_pivoting;
@@ -170,7 +170,8 @@ typedef struct MA57IControl {
 
 /** @brief MA57 real control structure
  */
-typedef struct MA57RControl {
+typedef struct MA57RControl
+{
   double pivoting_threshold;
   double zero_threshold;
   double refinement_contraction;
@@ -180,8 +181,9 @@ typedef struct MA57RControl {
 
 /** @brief MA57 integer information structure
  */
-typedef struct MA57IInfo {
-  int32_t error;  //< Success, error, or warning code
+typedef struct MA57IInfo
+{
+  int32_t error; //< Success, error, or warning code
   int32_t error2;
   // ma57_symbolic
   int32_t n_out_of_range;
@@ -227,7 +229,8 @@ typedef struct MA57IInfo {
 
 /** @brief MA57 real information structure
  */
-typedef struct MA57RInfo {
+typedef struct MA57RInfo
+{
   // ma57_symbolic
   double n_forecast_assembly_fpadds;
   double n_forecast_elimination_flops;
@@ -256,20 +259,25 @@ typedef struct MA57RInfo {
 
 /** @brief MA57 solver control and information structure
  */
-typedef struct MA57ControlInfo {
-  union {
+typedef struct MA57ControlInfo
+{
+  union
+  {
     double cntl_[5];
     MA57RControl cntl;
   };
-  union {
+  union
+  {
     int32_t icntl_[20];
     MA57IControl icntl;
   };
-  union {
+  union
+  {
     double rinfo_[20];
     MA57RInfo rinfo;
   };
-  union {
+  union
+  {
     int32_t info_[40];
     MA57IInfo info;
   };
@@ -313,11 +321,12 @@ typedef struct MA57Data
 
 } MA57Data;
 
-static SLEQP_RETCODE ma57_symbolic(MA57Data* ma57_data)
+static SLEQP_RETCODE
+ma57_symbolic(MA57Data* ma57_data)
 {
   MA57ControlInfo* control_info = &(ma57_data->control_info);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
-  HSLMatrix* hsl_matrix = &(ma57_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
   const int32_t dim = hsl_matrix->dim;
   const int32_t nnz = hsl_matrix->nnz;
@@ -326,11 +335,16 @@ static SLEQP_RETCODE ma57_symbolic(MA57Data* ma57_data)
   const int32_t* cols = hsl_matrix->cols;
 
   const int32_t keep_size = ma57_workspace->keep_size;
-  int32_t* keep = ma57_workspace->keep;
-  int32_t* iwork = ma57_workspace->iwork;
+  int32_t* keep           = ma57_workspace->keep;
+  int32_t* iwork          = ma57_workspace->iwork;
 
-  ma57ad_(&dim, &nnz, rows, cols,
-          &keep_size, keep, iwork,
+  ma57ad_(&dim,
+          &nnz,
+          rows,
+          cols,
+          &keep_size,
+          keep,
+          iwork,
           control_info->icntl_,
           control_info->info_,
           control_info->rinfo_);
@@ -340,23 +354,24 @@ static SLEQP_RETCODE ma57_symbolic(MA57Data* ma57_data)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma57_increase_factor_size(MA57Data* ma57_data)
+static SLEQP_RETCODE
+ma57_increase_factor_size(MA57Data* ma57_data)
 {
   MA57ControlInfo* control_info = &(ma57_data->control_info);
-  MA57Factor* ma57_factor = &(ma57_data->factor);
+  MA57Factor* ma57_factor       = &(ma57_data->factor);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
-  HSLMatrix* hsl_matrix = &(ma57_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
   const int32_t dim = hsl_matrix->dim;
-  int32_t* keep = ma57_workspace->keep;
+  int32_t* keep     = ma57_workspace->keep;
 
   const int32_t ic = 0; // copy real array
 
-  double* factor = ma57_factor->factor;
+  double* factor            = ma57_factor->factor;
   const int32_t factor_size = ma57_factor->factor_size;
 
   double* new_factor;
-  const int32_t new_factor_size = ma57_size_factor*factor_size;
+  const int32_t new_factor_size = ma57_size_factor * factor_size;
 
   assert(new_factor_size > factor_size);
 
@@ -379,7 +394,7 @@ static SLEQP_RETCODE ma57_increase_factor_size(MA57Data* ma57_data)
 
   sleqp_free(&factor);
 
-  ma57_factor->factor = new_factor;
+  ma57_factor->factor      = new_factor;
   ma57_factor->factor_size = new_factor_size;
 
   MA57_CHECK_ERROR(control_info->info.error);
@@ -387,30 +402,31 @@ static SLEQP_RETCODE ma57_increase_factor_size(MA57Data* ma57_data)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma57_increase_ifactor_size(MA57Data* ma57_data)
+static SLEQP_RETCODE
+ma57_increase_ifactor_size(MA57Data* ma57_data)
 {
   MA57ControlInfo* control_info = &(ma57_data->control_info);
-  MA57Factor* ma57_factor = &(ma57_data->factor);
+  MA57Factor* ma57_factor       = &(ma57_data->factor);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
-  HSLMatrix* hsl_matrix = &(ma57_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
   const int32_t dim = hsl_matrix->dim;
-  int32_t* keep = ma57_workspace->keep;
+  int32_t* keep     = ma57_workspace->keep;
 
   const int32_t ic = 1; // copy integer array
 
-  int32_t* ifactor = ma57_factor->ifactor;
+  int32_t* ifactor           = ma57_factor->ifactor;
   const int32_t ifactor_size = ma57_factor->ifactor_size;
 
   int32_t* new_ifactor;
-  const int32_t new_ifactor_size = ma57_size_factor*ifactor_size;
+  const int32_t new_ifactor_size = ma57_size_factor * ifactor_size;
 
   assert(new_ifactor_size > ifactor_size);
 
   SLEQP_CALL(sleqp_alloc_array(&new_ifactor, new_ifactor_size));
 
   int32_t empty_int = 0;
-  double  empty_dbl = 0;
+  double empty_dbl  = 0;
 
   ma57ed_(&dim,
           &ic,
@@ -427,7 +443,7 @@ static SLEQP_RETCODE ma57_increase_ifactor_size(MA57Data* ma57_data)
 
   sleqp_free(&ifactor);
 
-  ma57_factor->ifactor = new_ifactor;
+  ma57_factor->ifactor      = new_ifactor;
   ma57_factor->ifactor_size = new_ifactor_size;
 
   MA57_CHECK_ERROR(control_info->info.error);
@@ -435,12 +451,13 @@ static SLEQP_RETCODE ma57_increase_ifactor_size(MA57Data* ma57_data)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma57_numeric(MA57Data* ma57_data)
+static SLEQP_RETCODE
+ma57_numeric(MA57Data* ma57_data)
 {
   MA57ControlInfo* control_info = &(ma57_data->control_info);
-  MA57Factor* ma57_factor = &(ma57_data->factor);
+  MA57Factor* ma57_factor       = &(ma57_data->factor);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
-  HSLMatrix* hsl_matrix = &(ma57_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
   const int32_t dim = hsl_matrix->dim;
   const int32_t nnz = hsl_matrix->nnz;
@@ -448,58 +465,66 @@ static SLEQP_RETCODE ma57_numeric(MA57Data* ma57_data)
   const double* data = hsl_matrix->data;
 
   const int32_t keep_size = ma57_workspace->keep_size;
-  int32_t* keep = ma57_workspace->keep;
-  int32_t* iwork = ma57_workspace->iwork;
+  int32_t* keep           = ma57_workspace->keep;
+  int32_t* iwork          = ma57_workspace->iwork;
 
   bool insufficient_size = false;
 
   do
   {
-    double* factor = ma57_factor->factor;
+    double* factor            = ma57_factor->factor;
     const int32_t factor_size = ma57_factor->factor_size;
 
-    int32_t* ifactor = ma57_factor->ifactor;
+    int32_t* ifactor           = ma57_factor->ifactor;
     const int32_t ifactor_size = ma57_factor->ifactor_size;
 
     insufficient_size = false;
 
-    ma57bd_(&dim, &nnz, data, factor,
-            &factor_size, ifactor, &ifactor_size,
-            &keep_size, keep, iwork,
-            control_info->icntl_, control_info->cntl_,
-            control_info->info_, control_info->rinfo_);
+    ma57bd_(&dim,
+            &nnz,
+            data,
+            factor,
+            &factor_size,
+            ifactor,
+            &ifactor_size,
+            &keep_size,
+            keep,
+            iwork,
+            control_info->icntl_,
+            control_info->cntl_,
+            control_info->info_,
+            control_info->rinfo_);
 
-    if(control_info->info.error == MA57_INSUFFICIENT_REAL_SPACE)
+    if (control_info->info.error == MA57_INSUFFICIENT_REAL_SPACE)
     {
       insufficient_size = true;
 
       SLEQP_CALL(ma57_increase_factor_size(ma57_data));
     }
 
-    if(control_info->info.error == MA57_INSUFFICIENT_INTEGER_SPACE)
+    if (control_info->info.error == MA57_INSUFFICIENT_INTEGER_SPACE)
     {
       insufficient_size = true;
 
       SLEQP_CALL(ma57_increase_ifactor_size(ma57_data));
     }
 
-  }
-  while(insufficient_size);
+  } while (insufficient_size);
 
   MA57_CHECK_ERROR(control_info->info.error);
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma57_set_matrix(void* factorization_data,
-                                     SleqpSparseMatrix* matrix)
+static SLEQP_RETCODE
+ma57_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 {
-  MA57Data* ma57_data = (MA57Data*) factorization_data;
+  MA57Data* ma57_data = (MA57Data*)factorization_data;
 
   MA57ControlInfo* control_info = &(ma57_data->control_info);
-  MA57Factor* ma57_factor = &(ma57_data->factor);
+  MA57Factor* ma57_factor       = &(ma57_data->factor);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
-  HSLMatrix* hsl_matrix = &(ma57_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
   const int num_rows = sleqp_sparse_matrix_get_num_cols(matrix);
   const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
@@ -508,13 +533,13 @@ static SLEQP_RETCODE ma57_set_matrix(void* factorization_data,
   const int dim = num_cols;
 
   {
-    if(ma57_workspace->rhs_sol_size < dim)
+    if (ma57_workspace->rhs_sol_size < dim)
     {
       SLEQP_CALL(sleqp_realloc(&(ma57_workspace->rhs_sol), dim));
       ma57_workspace->rhs_sol_size = dim;
     }
 
-    if(ma57_workspace->work_size < dim)
+    if (ma57_workspace->work_size < dim)
     {
       SLEQP_CALL(sleqp_realloc(&(ma57_workspace->work), dim));
       ma57_workspace->work_size = dim;
@@ -530,9 +555,9 @@ static SLEQP_RETCODE ma57_set_matrix(void* factorization_data,
   {
     const int32_t nnz = hsl_matrix->nnz;
 
-    const int32_t keep_size = 5*dim + nnz + SLEQP_MAX(dim, nnz) + 42;
+    const int32_t keep_size = 5 * dim + nnz + SLEQP_MAX(dim, nnz) + 42;
 
-    if(ma57_workspace->keep_size < keep_size)
+    if (ma57_workspace->keep_size < keep_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma57_workspace->keep), keep_size));
 
@@ -541,38 +566,38 @@ static SLEQP_RETCODE ma57_set_matrix(void* factorization_data,
       ma57_workspace->keep_size = keep_size;
     }
 
-    const int32_t iwork_size = 5*dim;
+    const int32_t iwork_size = 5 * dim;
 
-    if(ma57_workspace->iwork_size < iwork_size)
+    if (ma57_workspace->iwork_size < iwork_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma57_workspace->iwork), iwork_size));
 
       ma57_workspace->iwork_size = iwork_size;
     }
-
   }
 
   SLEQP_CALL(ma57_symbolic(ma57_data));
 
   {
-    const int32_t factor_size = SLEQP_MAX(control_info->info.forecast_lfact_compress,
-                                          control_info->info.forecast_lfact_no_compress);
+    const int32_t factor_size
+      = SLEQP_MAX(control_info->info.forecast_lfact_compress,
+                  control_info->info.forecast_lfact_no_compress);
 
-    if(ma57_factor->factor_size < factor_size)
+    if (ma57_factor->factor_size < factor_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma57_factor->factor), factor_size));
       ma57_factor->factor_size = factor_size;
     }
 
-    const int32_t ifactor_size = SLEQP_MAX(control_info->info.forecast_lifact_compress,
-                                           control_info->info.forecast_lifact_no_compress);
+    const int32_t ifactor_size
+      = SLEQP_MAX(control_info->info.forecast_lifact_compress,
+                  control_info->info.forecast_lifact_no_compress);
 
-    if(ma57_factor->ifactor_size < ifactor_size)
+    if (ma57_factor->ifactor_size < ifactor_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma57_factor->ifactor), ifactor_size));
       ma57_factor->ifactor_size = ifactor_size;
     }
-
   }
 
   SLEQP_CALL(ma57_numeric(ma57_data));
@@ -580,18 +605,18 @@ static SLEQP_RETCODE ma57_set_matrix(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma57_solve(void* factorization_data,
-                                SleqpSparseVec* rhs)
+static SLEQP_RETCODE
+ma57_solve(void* factorization_data, SleqpSparseVec* rhs)
 {
-  MA57Data* ma57_data = (MA57Data*) factorization_data;
+  MA57Data* ma57_data = (MA57Data*)factorization_data;
 
   MA57ControlInfo* control_info = &(ma57_data->control_info);
-  MA57Factor* ma57_factor = &(ma57_data->factor);
+  MA57Factor* ma57_factor       = &(ma57_data->factor);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
-  HSLMatrix* hsl_matrix = &(ma57_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
-  const int32_t job = 1; // Solve Ax=b
-  const int32_t dim = hsl_matrix->dim;
+  const int32_t job  = 1; // Solve Ax=b
+  const int32_t dim  = hsl_matrix->dim;
   const int32_t nrhs = 1;
 
   assert(dim == rhs->dim);
@@ -600,34 +625,43 @@ static SLEQP_RETCODE ma57_solve(void* factorization_data,
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(rhs, rhs_sol));
 
-  double* factor = ma57_factor->factor;
+  double* factor            = ma57_factor->factor;
   const int32_t factor_size = ma57_factor->factor_size;
 
-  int32_t* ifactor = ma57_factor->ifactor;
+  int32_t* ifactor           = ma57_factor->ifactor;
   const int32_t ifactor_size = ma57_factor->ifactor_size;
 
-  double* work = ma57_workspace->work;
+  double* work            = ma57_workspace->work;
   const int32_t work_size = ma57_workspace->work_size;
 
   int32_t* iwork = ma57_workspace->iwork;
 
-  ma57cd_(&job, &dim, factor, &factor_size,
-          ifactor, &ifactor_size, &nrhs,
-          rhs_sol, &dim, work,
-          &work_size, iwork,
+  ma57cd_(&job,
+          &dim,
+          factor,
+          &factor_size,
+          ifactor,
+          &ifactor_size,
+          &nrhs,
+          rhs_sol,
+          &dim,
+          work,
+          &work_size,
+          iwork,
           control_info->icntl_,
           control_info->info_);
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma57_get_sol(void* factorization_data,
-                                  SleqpSparseVec* sol,
-                                  int begin,
-                                  int end,
-                                  double zero_eps)
+static SLEQP_RETCODE
+ma57_get_sol(void* factorization_data,
+             SleqpSparseVec* sol,
+             int begin,
+             int end,
+             double zero_eps)
 {
-  MA57Data* ma57_data = (MA57Data*) factorization_data;
+  MA57Data* ma57_data = (MA57Data*)factorization_data;
 
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
 
@@ -636,12 +670,11 @@ static SLEQP_RETCODE ma57_get_sol(void* factorization_data,
                                           end - begin,
                                           zero_eps));
 
-
   return SLEQP_OKAY;
 }
 
-
-static SLEQP_RETCODE ma57_data_create(MA57Data** star)
+static SLEQP_RETCODE
+ma57_data_create(MA57Data** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -653,7 +686,7 @@ static SLEQP_RETCODE ma57_data_create(MA57Data** star)
 
   ma57id_(control_info->cntl_, control_info->icntl_);
 
-  if(ma57_verbose)
+  if (ma57_verbose)
   {
     // Print limited number of stats
     control_info->icntl.print_level = 3;
@@ -673,8 +706,9 @@ static SLEQP_RETCODE ma57_data_create(MA57Data** star)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma57_get_condition_estimate(void* factorization_data,
-                                                 double* condition_estimate)
+static SLEQP_RETCODE
+ma57_get_condition_estimate(void* factorization_data,
+                            double* condition_estimate)
 {
   // MA57Data* ma57_data = (MA57Data*) factorization_data;
 
@@ -683,13 +717,14 @@ static SLEQP_RETCODE ma57_get_condition_estimate(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma57_free(void** star)
+static SLEQP_RETCODE
+ma57_free(void** star)
 {
-  MA57Data* ma57_data = (MA57Data*) (*star);
+  MA57Data* ma57_data = (MA57Data*)(*star);
 
-  MA57Factor* ma57_factor = &(ma57_data->factor);
+  MA57Factor* ma57_factor       = &(ma57_data->factor);
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
-  HSLMatrix* hsl_matrix = &(ma57_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
   SLEQP_CALL(hsl_matrix_clear(hsl_matrix));
 
@@ -708,16 +743,16 @@ static SLEQP_RETCODE ma57_free(void** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_ma57_create(SleqpSparseFactorization** star,
-                                                     SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_ma57_create(SleqpSparseFactorization** star,
+                                       SleqpParams* params)
 {
-  SleqpSparseFactorizationCallbacks callbacks = {
-    .set_matrix = ma57_set_matrix,
-    .solve = ma57_solve,
-    .get_sol = ma57_get_sol,
-    .get_condition_estimate = ma57_get_condition_estimate,
-    .free = ma57_free
-  };
+  SleqpSparseFactorizationCallbacks callbacks
+    = {.set_matrix             = ma57_set_matrix,
+       .solve                  = ma57_solve,
+       .get_sol                = ma57_get_sol,
+       .get_condition_estimate = ma57_get_condition_estimate,
+       .free                   = ma57_free};
 
   MA57Data* ma57_data;
 
@@ -728,13 +763,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma57_create(SleqpSparseFactorization** 
                                                SLEQP_FACT_MA57_VERSION,
                                                params,
                                                &callbacks,
-                                               (void*) ma57_data));
+                                               (void*)ma57_data));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
-                                                        SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                          SleqpParams* params)
 {
   SLEQP_CALL(sleqp_sparse_factorization_ma57_create(star, params));
 

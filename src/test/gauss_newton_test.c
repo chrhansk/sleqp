@@ -1,11 +1,11 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "gauss_newton.h"
 #include "problem.h"
-#include "working_step.h"
 #include "util.h"
+#include "working_step.h"
 
 #include "aug_jac/unconstrained_aug_jac.h"
 
@@ -32,7 +32,8 @@ SleqpFunc* zero_func;
 
 SleqpSparseVec* zero_vec;
 
-void unconstrained_setup()
+void
+unconstrained_setup()
 {
   linear_lsq_setup();
 
@@ -44,9 +45,8 @@ void unconstrained_setup()
                                           linear_lsq_cons_lb,
                                           linear_lsq_cons_ub));
 
-  ASSERT_CALL(sleqp_working_step_create(&working_step,
-                                        problem,
-                                        linear_lsq_params));
+  ASSERT_CALL(
+    sleqp_working_step_create(&working_step, problem, linear_lsq_params));
 
   ASSERT_CALL(sleqp_gauss_newton_solver_create(&gauss_newton_solver,
                                                problem,
@@ -55,17 +55,20 @@ void unconstrained_setup()
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linear_lsq_initial));
 
-  ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac,
-                                                 problem));
+  ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac, problem));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&direction, linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_empty(&direction, linear_lsq_num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&point, linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_empty(&point, linear_lsq_num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&initial, linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_full(&initial, linear_lsq_num_variables));
 }
 
-void unconstrained_teardown()
+void
+unconstrained_teardown()
 {
   ASSERT_CALL(sleqp_sparse_vector_free(&initial));
 
@@ -86,23 +89,22 @@ void unconstrained_teardown()
   linear_lsq_teardown();
 }
 
-void compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
+void
+compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
 {
   const double penalty_parameter = 1.;
-  const double trust_radius = 1e6;
+  const double trust_radius      = 1e6;
 
-  const double zero_eps = sleqp_params_get(linear_lsq_params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
-  ASSERT_CALL(sleqp_sparse_vector_copy(initial,
-                                       sleqp_iterate_get_primal(iterate)));
+  ASSERT_CALL(
+    sleqp_sparse_vector_copy(initial, sleqp_iterate_get_primal(iterate)));
 
   bool reject;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_NONE,
-                                     &reject));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, &reject));
 
   assert(!reject);
 
@@ -112,21 +114,16 @@ void compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
                                            trust_radius,
                                            penalty_parameter));
 
-  ASSERT_CALL(sleqp_eqp_solver_compute_step(gauss_newton_solver,
-                                            NULL,
-                                            direction));
+  ASSERT_CALL(
+    sleqp_eqp_solver_compute_step(gauss_newton_solver, NULL, direction));
 
-  ASSERT_CALL(sleqp_sparse_vector_add(initial,
-                                      direction,
-                                      zero_eps,
-                                      point));
+  ASSERT_CALL(sleqp_sparse_vector_add(initial, direction, zero_eps, point));
 }
 
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_solve)
 {
-  const double eps = sleqp_params_get(linear_lsq_params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
 
   compute_point(linear_lsq_initial, point);
 
@@ -137,8 +134,7 @@ END_TEST
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_start_high)
 {
-  const double eps = sleqp_params_get(linear_lsq_params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
 
   {
     double values[] = {20., 20.};
@@ -158,8 +154,7 @@ END_TEST
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_start_low)
 {
-  const double eps = sleqp_params_get(linear_lsq_params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
 
   {
     double values[] = {-10., -10.};
@@ -180,10 +175,9 @@ END_TEST
 START_TEST(test_unconstrained_small)
 {
   const double penalty_parameter = 1.;
-  const double trust_radius = 1.;
+  const double trust_radius      = 1.;
 
-  const double eps = sleqp_params_get(linear_lsq_params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_eqp_solver_set_iterate(gauss_newton_solver,
                                            iterate,
@@ -191,22 +185,21 @@ START_TEST(test_unconstrained_small)
                                            trust_radius,
                                            penalty_parameter));
 
-  ASSERT_CALL(sleqp_eqp_solver_compute_step(gauss_newton_solver,
-                                            NULL,
-                                            direction));
+  ASSERT_CALL(
+    sleqp_eqp_solver_compute_step(gauss_newton_solver, NULL, direction));
 
-  ck_assert(sleqp_is_eq(sleqp_sparse_vector_norm(direction),
-                        trust_radius,
-                        eps));
+  ck_assert(
+    sleqp_is_eq(sleqp_sparse_vector_norm(direction), trust_radius, eps));
 }
 END_TEST
 
-void constrained_setup()
+void
+constrained_setup()
 {
   linear_lsq_setup();
 
   int num_constraints = 0;
-  int num_residuals = 0;
+  int num_residuals   = 0;
 
   ASSERT_CALL(zero_lsq_func_create(&zero_func,
                                    linear_lsq_params,
@@ -227,9 +220,8 @@ void constrained_setup()
                                    linear_lsq_rhs,
                                    linear_lsq_rhs));
 
-  ASSERT_CALL(sleqp_working_step_create(&working_step,
-                                        problem,
-                                        linear_lsq_params));
+  ASSERT_CALL(
+    sleqp_working_step_create(&working_step, problem, linear_lsq_params));
 
   ASSERT_CALL(sleqp_gauss_newton_solver_create(&gauss_newton_solver,
                                                problem,
@@ -238,17 +230,20 @@ void constrained_setup()
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linear_lsq_initial));
 
-  ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac,
-                                                 problem));
+  ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac, problem));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&direction, linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_empty(&direction, linear_lsq_num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&point, linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_empty(&point, linear_lsq_num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&initial, linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_full(&initial, linear_lsq_num_variables));
 }
 
-void constrained_teardown()
+void
+constrained_teardown()
 {
   ASSERT_CALL(sleqp_sparse_vector_free(&initial));
 
@@ -275,8 +270,7 @@ void constrained_teardown()
 
 START_TEST(test_constrained_start_high)
 {
-  const double eps = sleqp_params_get(linear_lsq_params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
 
   {
     double values[] = {20., 20.};
@@ -295,8 +289,7 @@ END_TEST
 
 START_TEST(test_constrained_start_low)
 {
-  const double eps = sleqp_params_get(linear_lsq_params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
 
   {
     double values[] = {-10., -10.};
@@ -313,12 +306,12 @@ START_TEST(test_constrained_start_low)
 }
 END_TEST
 
-
-Suite* gauss_newton_test_suite()
+Suite*
+gauss_newton_test_suite()
 {
-  Suite *suite;
-  TCase *tc_solve_uncons;
-  TCase *tc_solve_cons;
+  Suite* suite;
+  TCase* tc_solve_uncons;
+  TCase* tc_solve_cons;
 
   suite = suite_create("Gauss-Newton tests");
 

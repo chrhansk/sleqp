@@ -6,11 +6,10 @@
  * @brief Definition of merit functions.
  **/
 
-#include "working_set.h"
 #include "func.h"
 #include "iterate.h"
 #include "params.h"
-
+#include "working_set.h"
 
 typedef struct SleqpMeritData SleqpMerit;
 
@@ -48,9 +47,10 @@ sleqp_merit_func(SleqpMerit* merit,
  *
  * \f[
  * \ell_v(\overline{x}, d) := f(x) + \langle \nabla f(\overline{x}), d \rangle
- * + v \left( \sum_{i=1}^{m} \max((c_i{\overline{x}} + \langle \nabla c_i(\overline{x}) , d \rangle) - u_i, 0) \right)
- * + v  \left(\sum_{i=1}^{m} \max(l_i - (c_i{\overline{x}} + \langle \nabla c_i(\overline{x}) , d \rangle), 0) \right)
- * \f]
+ * + v \left( \sum_{i=1}^{m} \max((c_i{\overline{x}} + \langle \nabla
+ *c_i(\overline{x}) , d \rangle) - u_i, 0) \right)
+ * + v  \left(\sum_{i=1}^{m} \max(l_i - (c_i{\overline{x}} + \langle \nabla
+ *c_i(\overline{x}) , d \rangle), 0) \right) \f]
  *
  *
  * @param[in]  merit             Merit data
@@ -73,10 +73,11 @@ sleqp_merit_linear(SleqpMerit* merit,
  * a direction \f$ d \f$ is given by
  *
  * \f[
- * q_v(\overline{x}, d, \mu) := \ell_v(\overline{x}, d) + 1/2 \langle d, H(\overline{x}, \mu) d \rangle
- * \f]
+ * q_v(\overline{x}, d, \mu) := \ell_v(\overline{x}, d) + 1/2 \langle d,
+ *H(\overline{x}, \mu) d \rangle \f]
  *
- * The computation involves the computation of one Hessian product of the underlying function
+ * The computation involves the computation of one Hessian product of the
+ *underlying function
  *
  * @param[in]  merit             Merit data
  * @param[in]  iterate           The current iterate \f$ overline{x} \f$
@@ -99,6 +100,5 @@ sleqp_merit_capture(SleqpMerit* merit);
 
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_merit_release(SleqpMerit** star);
-
 
 #endif /* SLEQP_MERIT_H */

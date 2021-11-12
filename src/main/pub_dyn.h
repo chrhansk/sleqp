@@ -23,23 +23,26 @@ typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_VAL)(SleqpFunc* func,
  * @param[in]     accuracy        The desired accuracy \f$  \epsilon \f$
  * @param[in]     cons_indices    The indices of the constraint function
  *                                to be evaluated
- * @param[out]    cons_val        The value of the constraint function \f$ c(x, \epsilon) \f$
+ * @param[out]    cons_val        The value of the constraint function \f$ c(x,
+ *\epsilon) \f$
  * @param[in,out] func_data       The function data
  **/
-typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_CONS_VAL)(SleqpFunc* func,
-                                                 double accuracy,
-                                                 const SleqpSparseVec* cons_indices,
-                                                 SleqpSparseVec* cons_val,
-                                                 void* func_data);
+typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_CONS_VAL)(
+  SleqpFunc* func,
+  double accuracy,
+  const SleqpSparseVec* cons_indices,
+  SleqpSparseVec* cons_val,
+  void* func_data);
 
-typedef struct {
-        SLEQP_FUNC_SET set_value;
-        SLEQP_DYN_FUNC_VAL func_val;
-        SLEQP_FUNC_GRAD func_grad;
-        SLEQP_DYN_FUNC_CONS_VAL cons_val;
-        SLEQP_FUNC_CONS_JAC cons_jac;
-        SLEQP_HESS_PROD hess_prod;
-        SLEQP_FUNC_FREE func_free;
+typedef struct
+{
+  SLEQP_FUNC_SET set_value;
+  SLEQP_DYN_FUNC_VAL func_val;
+  SLEQP_FUNC_GRAD func_grad;
+  SLEQP_DYN_FUNC_CONS_VAL cons_val;
+  SLEQP_FUNC_CONS_JAC cons_jac;
+  SLEQP_HESS_PROD hess_prod;
+  SLEQP_FUNC_FREE func_free;
 } SleqpDynFuncCallbacks;
 
 /**
@@ -51,11 +54,11 @@ typedef struct {
  * @param[in]  num_constraints  The number of constraints
  * @param[in]  func_data        The function data
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_dyn_func_create(SleqpFunc** fstar,
-                                    SleqpDynFuncCallbacks* callbacks,
-                                    int num_variables,
-                                    int num_constraints,
-                                    void* func_data);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_func_create(SleqpFunc** fstar,
+                      SleqpDynFuncCallbacks* callbacks,
+                      int num_variables,
+                      int num_constraints,
+                      void* func_data);
 
 #endif /* SLEQP_PUB_DYN_H */

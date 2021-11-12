@@ -32,7 +32,6 @@
 #define SLEQP_FORMAT_BOLD ""
 #define SLEQP_FORMAT_NO_BOLD ""
 
-
 #endif
 
 #endif /* SLEQP_LOG_H */

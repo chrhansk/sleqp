@@ -18,143 +18,162 @@
 
 typedef struct
 {
-        int refcount;
-        SleqpProblem *problem;
+  int refcount;
+  SleqpProblem* problem;
 
-        SleqpParams* params;
-        SleqpOptions* options;
+  SleqpParams* params;
+  SleqpOptions* options;
 
-        SleqpSparseVec* cauchy_direction;
+  SleqpSparseVec* cauchy_direction;
 
-        SleqpSparseVec* cauchy_step;
-        SleqpSparseVec* cauchy_hessian_step;
+  SleqpSparseVec* cauchy_step;
+  SleqpSparseVec* cauchy_hessian_step;
 
-        SleqpSparseVec* estimation_residuals;
+  SleqpSparseVec* estimation_residuals;
 
-        SleqpSparseVec* newton_step;
-        SleqpSparseVec* newton_hessian_step;
+  SleqpSparseVec* newton_step;
+  SleqpSparseVec* newton_hessian_step;
 
-        SleqpSparseVec* soc_step;
+  SleqpSparseVec* soc_step;
 
-        SleqpSparseVec* trial_step;
+  SleqpSparseVec* trial_step;
 
-        SleqpSparseVec* multipliers;
+  SleqpSparseVec* multipliers;
 
-        SleqpSparseVec* initial_trial_point;
+  SleqpSparseVec* initial_trial_point;
 
-        SleqpMerit* merit;
+  SleqpMerit* merit;
 
-        SleqpIterate* iterate;
+  SleqpIterate* iterate;
 
-        SleqpLPi* lp_interface;
+  SleqpLPi* lp_interface;
 
-        SleqpCauchy* cauchy_data;
+  SleqpCauchy* cauchy_data;
 
-        SleqpDualEstimation* estimation_data;
+  SleqpDualEstimation* estimation_data;
 
-        SleqpSparseFactorization* factorization;
+  SleqpSparseFactorization* factorization;
 
-        SleqpAugJac* aug_jac;
+  SleqpAugJac* aug_jac;
 
-        SleqpLineSearchData* linesearch;
+  SleqpLineSearchData* linesearch;
 
-        SleqpWorkingStep* working_step;
+  SleqpWorkingStep* working_step;
 
-        SleqpEQPSolver* eqp_solver;
+  SleqpEQPSolver* eqp_solver;
 
-        SleqpSOC* soc_data;
+  SleqpSOC* soc_data;
 
-        SleqpParametricSolver* parametric_solver;
-        SleqpWorkingSet* parametric_original_working_set;
+  SleqpParametricSolver* parametric_solver;
+  SleqpWorkingSet* parametric_original_working_set;
 
-        double* dense_cache;
+  double* dense_cache;
 
-        SleqpTimer* elapsed_timer;
+  SleqpTimer* elapsed_timer;
 
-        double penalty_parameter;
+  double penalty_parameter;
 
-        double lp_trust_radius;
-        double trust_radius;
+  double lp_trust_radius;
+  double trust_radius;
 
-        bool locally_infeasible;
+  bool locally_infeasible;
 
-        double current_merit_value;
+  double current_merit_value;
 
-        double time_limit;
+  double time_limit;
 
 } SleqpTrialPointSolver;
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
-                                              SleqpProblem* problem,
-                                              SleqpParams* params,
-                                              SleqpOptions* options);
+SLEQP_RETCODE
+sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
+                                SleqpProblem* problem,
+                                SleqpParams* params,
+                                SleqpOptions* options);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_set_iterate(SleqpTrialPointSolver* solver,
-                                                   SleqpIterate* iterate);
+SLEQP_RETCODE
+sleqp_trial_point_solver_set_iterate(SleqpTrialPointSolver* solver,
+                                     SleqpIterate* iterate);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_set_time_limit(SleqpTrialPointSolver* solver,
-                                                      double time_limit);
+SLEQP_RETCODE
+sleqp_trial_point_solver_set_time_limit(SleqpTrialPointSolver* solver,
+                                        double time_limit);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_set_trust_radius(SleqpTrialPointSolver* solver,
-                                                        double trust_radius);
+SLEQP_RETCODE
+sleqp_trial_point_solver_set_trust_radius(SleqpTrialPointSolver* solver,
+                                          double trust_radius);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_set_lp_trust_radius(SleqpTrialPointSolver* solver,
-                                                           double lp_trust_radius);
+SLEQP_RETCODE
+sleqp_trial_point_solver_set_lp_trust_radius(SleqpTrialPointSolver* solver,
+                                             double lp_trust_radius);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_set_penalty(SleqpTrialPointSolver* solver,
-                                                   double penalty_parameter);
+SLEQP_RETCODE
+sleqp_trial_point_solver_set_penalty(SleqpTrialPointSolver* solver,
+                                     double penalty_parameter);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_get_penalty(SleqpTrialPointSolver* solver,
-                                                   double* penalty_parameter);
+SLEQP_RETCODE
+sleqp_trial_point_solver_get_penalty(SleqpTrialPointSolver* solver,
+                                     double* penalty_parameter);
 
-bool sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver);
+bool
+sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver);
 
-SleqpSparseVec* sleqp_trial_point_solver_get_multipliers(SleqpTrialPointSolver* solver);
+SleqpSparseVec*
+sleqp_trial_point_solver_get_multipliers(SleqpTrialPointSolver* solver);
 
-SleqpSparseVec* sleqp_trial_point_solver_get_cauchy_step(SleqpTrialPointSolver* solver);
+SleqpSparseVec*
+sleqp_trial_point_solver_get_cauchy_step(SleqpTrialPointSolver* solver);
 
-SleqpSparseVec* sleqp_trial_point_solver_get_trial_step(SleqpTrialPointSolver* solver);
+SleqpSparseVec*
+sleqp_trial_point_solver_get_trial_step(SleqpTrialPointSolver* solver);
 
-SleqpSparseVec* sleqp_trial_point_solver_get_soc_step(SleqpTrialPointSolver* solver);
-
-SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_get_rayleigh(SleqpTrialPointSolver* solver,
-                                                    double* min_rayleigh,
-                                                    double* max_rayleigh);
-
-SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_print_stats(SleqpTrialPointSolver* solver,
-                                                   double elapsed_seconds);
+SleqpSparseVec*
+sleqp_trial_point_solver_get_soc_step(SleqpTrialPointSolver* solver);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_compute_cauchy_step(SleqpTrialPointSolver* solver,
-                                                           double* cauchy_merit_value,
-                                                           bool quadratic_model,
-                                                           bool* full_step);
+SLEQP_RETCODE
+sleqp_trial_point_solver_get_rayleigh(SleqpTrialPointSolver* solver,
+                                      double* min_rayleigh,
+                                      double* max_rayleigh);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
-                                                           SleqpIterate* trial_iterate,
-                                                           double* trial_merit_value,
-                                                           bool* full_step,
-                                                           bool* reject);
+SLEQP_RETCODE
+sleqp_trial_point_solver_print_stats(SleqpTrialPointSolver* solver,
+                                     double elapsed_seconds);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_compute_trial_point_soc(SleqpTrialPointSolver* solver,
-                                                               SleqpIterate* trial_iterate,
-                                                               bool* reject);
+SLEQP_RETCODE
+sleqp_trial_point_solver_compute_cauchy_step(SleqpTrialPointSolver* solver,
+                                             double* cauchy_merit_value,
+                                             bool quadratic_model,
+                                             bool* full_step);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_capture(SleqpTrialPointSolver* solver);
+SLEQP_RETCODE
+sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
+                                             SleqpIterate* trial_iterate,
+                                             double* trial_merit_value,
+                                             bool* full_step,
+                                             bool* reject);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_trial_point_solver_release(SleqpTrialPointSolver** star);
+SLEQP_RETCODE
+sleqp_trial_point_solver_compute_trial_point_soc(SleqpTrialPointSolver* solver,
+                                                 SleqpIterate* trial_iterate,
+                                                 bool* reject);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_trial_point_solver_capture(SleqpTrialPointSolver* solver);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_trial_point_solver_release(SleqpTrialPointSolver** star);
 
 #endif /* SLEQP_TRIAL_POINT_H */

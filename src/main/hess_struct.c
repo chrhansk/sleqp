@@ -11,15 +11,16 @@ struct SleqpHessianStruct
   int dimension;
 };
 
-SLEQP_RETCODE sleqp_hessian_struct_create(SleqpHessianStruct** star,
-                                          int dimension,
-                                          bool empty)
+SLEQP_RETCODE
+sleqp_hessian_struct_create(SleqpHessianStruct** star,
+                            int dimension,
+                            bool empty)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpHessianStruct* hessian_struct = *star;
 
-  *hessian_struct = (SleqpHessianStruct) {0};
+  *hessian_struct = (SleqpHessianStruct){0};
 
   hessian_struct->refcount = 1;
 
@@ -27,36 +28,36 @@ SLEQP_RETCODE sleqp_hessian_struct_create(SleqpHessianStruct** star,
 
   hessian_struct->dimension = dimension;
 
-  if(!empty && dimension > 0)
+  if (!empty && dimension > 0)
   {
-    SLEQP_CALL(sleqp_hessian_struct_push_block(hessian_struct,
-                                               dimension));
+    SLEQP_CALL(sleqp_hessian_struct_push_block(hessian_struct, dimension));
   }
 
   return SLEQP_OKAY;
 }
 
-int sleqp_hessian_struct_get_num_blocks(const SleqpHessianStruct* hessian_struct)
+int
+sleqp_hessian_struct_get_num_blocks(const SleqpHessianStruct* hessian_struct)
 {
   return hessian_struct->num_blocks;
 }
 
-SLEQP_RETCODE sleqp_hessian_struct_push_block(SleqpHessianStruct* hessian_struct,
-                                              int end)
+SLEQP_RETCODE
+sleqp_hessian_struct_push_block(SleqpHessianStruct* hessian_struct, int end)
 {
-  if(end > hessian_struct->dimension)
+  if (end > hessian_struct->dimension)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
 
   const int num_blocks = sleqp_hessian_struct_get_num_blocks(hessian_struct);
 
-  if(num_blocks >= hessian_struct->dimension)
+  if (num_blocks >= hessian_struct->dimension)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
 
-  if(num_blocks > 0 && end <= hessian_struct->block_ends[num_blocks - 1])
+  if (num_blocks > 0 && end <= hessian_struct->block_ends[num_blocks - 1])
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -67,19 +68,21 @@ SLEQP_RETCODE sleqp_hessian_struct_push_block(SleqpHessianStruct* hessian_struct
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_hessian_struct_clear(SleqpHessianStruct* hessian_struct)
+SLEQP_RETCODE
+sleqp_hessian_struct_clear(SleqpHessianStruct* hessian_struct)
 {
   hessian_struct->num_blocks = 0;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_hessian_struct_get_block_range(const SleqpHessianStruct* hessian_struct,
-                                                   int block,
-                                                   int* begin,
-                                                   int* end)
+SLEQP_RETCODE
+sleqp_hessian_struct_get_block_range(const SleqpHessianStruct* hessian_struct,
+                                     int block,
+                                     int* begin,
+                                     int* end)
 {
-  if(block > hessian_struct->num_blocks)
+  if (block > hessian_struct->num_blocks)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -91,9 +94,10 @@ SLEQP_RETCODE sleqp_hessian_struct_get_block_range(const SleqpHessianStruct* hes
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_hessian_struct_get_linear_range(const SleqpHessianStruct* hessian_struct,
-                                                    int* begin,
-                                                    int* end)
+SLEQP_RETCODE
+sleqp_hessian_struct_get_linear_range(const SleqpHessianStruct* hessian_struct,
+                                      int* begin,
+                                      int* end)
 {
   const int num_blocks = sleqp_hessian_struct_get_num_blocks(hessian_struct);
 
@@ -104,8 +108,8 @@ SLEQP_RETCODE sleqp_hessian_struct_get_linear_range(const SleqpHessianStruct* he
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
-                                           FILE* output)
+SLEQP_RETCODE
+sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct, FILE* output)
 {
   fprintf(output,
           "Hessian structure, dimension: %d, nonlinear blocks: %d\n",
@@ -116,7 +120,7 @@ SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
 
   const int num_blocks = sleqp_hessian_struct_get_num_blocks(hessian_struct);
 
-  for(int block = 0; block < num_blocks; ++block)
+  for (int block = 0; block < num_blocks; ++block)
   {
 
     SLEQP_CALL(sleqp_hessian_struct_get_block_range(hessian_struct,
@@ -124,34 +128,26 @@ SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
                                                     &begin,
                                                     &end));
 
-    fprintf(output,
-            "Block %d: [%d, %d)\n",
-            block,
-            begin,
-            end);
+    fprintf(output, "Block %d: [%d, %d)\n", block, begin, end);
   }
 
-  SLEQP_CALL(sleqp_hessian_struct_get_linear_range(hessian_struct,
-                                                   &begin,
-                                                   &end));
+  SLEQP_CALL(
+    sleqp_hessian_struct_get_linear_range(hessian_struct, &begin, &end));
 
-  if(begin < end)
+  if (begin < end)
   {
-    fprintf(output,
-            "Linear range: [%d, %d)\n",
-            begin,
-            end);
+    fprintf(output, "Linear range: [%d, %d)\n", begin, end);
   }
-
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE hessian_struct_free(SleqpHessianStruct** star)
+static SLEQP_RETCODE
+hessian_struct_free(SleqpHessianStruct** star)
 {
   SleqpHessianStruct* hessian_struct = *star;
 
-  if(!hessian_struct)
+  if (!hessian_struct)
   {
     return SLEQP_OKAY;
   }
@@ -163,8 +159,9 @@ static SLEQP_RETCODE hessian_struct_free(SleqpHessianStruct** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_hessian_struct_copy(const SleqpHessianStruct* source,
-                                        SleqpHessianStruct* target)
+SLEQP_RETCODE
+sleqp_hessian_struct_copy(const SleqpHessianStruct* source,
+                          SleqpHessianStruct* target)
 {
   target->dimension = source->dimension;
 
@@ -172,15 +169,13 @@ SLEQP_RETCODE sleqp_hessian_struct_copy(const SleqpHessianStruct* source,
 
   const int num_blocks = sleqp_hessian_struct_get_num_blocks(source);
 
-  for(int block = 0; block < num_blocks; ++block)
+  for (int block = 0; block < num_blocks; ++block)
   {
     int begin;
     int end;
 
-    SLEQP_CALL(sleqp_hessian_struct_get_block_range(source,
-                                                    block,
-                                                    &begin,
-                                                    &end));
+    SLEQP_CALL(
+      sleqp_hessian_struct_get_block_range(source, block, &begin, &end));
 
     SLEQP_CALL(sleqp_hessian_struct_push_block(target, end));
   }
@@ -188,23 +183,25 @@ SLEQP_RETCODE sleqp_hessian_struct_copy(const SleqpHessianStruct* source,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_hessian_struct_capture(SleqpHessianStruct* hessian_struct)
+SLEQP_RETCODE
+sleqp_hessian_struct_capture(SleqpHessianStruct* hessian_struct)
 {
   ++hessian_struct->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_hessian_struct_release(SleqpHessianStruct** star)
+SLEQP_RETCODE
+sleqp_hessian_struct_release(SleqpHessianStruct** star)
 {
   SleqpHessianStruct* hessian_struct = *star;
 
-  if(!hessian_struct)
+  if (!hessian_struct)
   {
     return SLEQP_OKAY;
   }
 
-  if(--hessian_struct->refcount == 0)
+  if (--hessian_struct->refcount == 0)
   {
     SLEQP_CALL(hessian_struct_free(star));
   }

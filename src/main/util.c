@@ -5,14 +5,15 @@
 #include "cmp.h"
 #include "log.h"
 
-SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
-                                     SleqpIterate* iterate,
-                                     SLEQP_VALUE_REASON reason,
-                                     bool* reject)
+SLEQP_RETCODE
+sleqp_set_and_evaluate(SleqpProblem* problem,
+                       SleqpIterate* iterate,
+                       SLEQP_VALUE_REASON reason,
+                       bool* reject)
 {
   int func_grad_nnz = 0;
-  int cons_val_nnz = 0;
-  int cons_jac_nnz = 0;
+  int cons_val_nnz  = 0;
+  int cons_jac_nnz  = 0;
 
   bool manual_reject = false;
 
@@ -24,27 +25,24 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
                                      &cons_val_nnz,
                                      &cons_jac_nnz));
 
-  if(reject)
+  if (reject)
   {
     *reject = manual_reject;
   }
-  else if(manual_reject)
+  else if (manual_reject)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
 
-  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
+  SleqpSparseVec* func_grad   = sleqp_iterate_get_func_grad(iterate);
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-  SleqpSparseVec* cons_val = sleqp_iterate_get_cons_val(iterate);
+  SleqpSparseVec* cons_val    = sleqp_iterate_get_cons_val(iterate);
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(func_grad,
-                                         func_grad_nnz));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(func_grad, func_grad_nnz));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(cons_val,
-                                         cons_val_nnz));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(cons_val, cons_val_nnz));
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac,
-                                         cons_jac_nnz));
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac_nnz));
 
   double func_val;
 
@@ -60,20 +58,19 @@ SLEQP_RETCODE sleqp_set_and_evaluate(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
-                                             const SleqpIterate* iterate,
-                                             const SleqpSparseVec* direction,
-                                             double* cache,
-                                             double eps,
-                                             bool* in_working_set)
+SLEQP_RETCODE
+sleqp_direction_in_working_set(SleqpProblem* problem,
+                               const SleqpIterate* iterate,
+                               const SleqpSparseVec* direction,
+                               double* cache,
+                               double eps,
+                               bool* in_working_set)
 {
   (*in_working_set) = true;
 
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(cons_jac,
-                                                direction,
-                                                cache));
+  SLEQP_CALL(sleqp_sparse_matrix_vector_product(cons_jac, direction, cache));
 
   const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
@@ -86,64 +83,63 @@ SLEQP_RETCODE sleqp_direction_in_working_set(SleqpProblem* problem,
 
   int k_lb = 0, k_c = 0, k_ub = 0;
 
-  while(k_lb < lb->nnz || k_c < c->nnz || k_ub < ub->nnz)
+  while (k_lb < lb->nnz || k_c < c->nnz || k_ub < ub->nnz)
   {
     double lb_val = 0., c_val = 0, ub_val = 0.;
 
     bool valid_lb = (k_lb < lb->nnz);
-    bool valid_c = (k_c < c->nnz);
+    bool valid_c  = (k_c < c->nnz);
     bool valid_ub = (k_ub < ub->nnz);
 
     int idx = valid_c ? c->indices[k_c] : dim + 1;
-    idx = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
-    idx = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
+    idx     = SLEQP_MIN(idx, valid_lb ? lb->indices[k_lb] : dim + 1);
+    idx     = SLEQP_MIN(idx, valid_ub ? ub->indices[k_ub] : dim + 1);
 
-    if(valid_lb && idx == lb->indices[k_lb])
+    if (valid_lb && idx == lb->indices[k_lb])
     {
       lb_val = lb->data[k_lb++];
     }
 
-    if(valid_c && idx == c->indices[k_c])
+    if (valid_c && idx == c->indices[k_c])
     {
       c_val = c->data[k_c++];
     }
 
-    if(valid_ub && idx == ub->indices[k_ub])
+    if (valid_ub && idx == ub->indices[k_ub])
     {
       ub_val = ub->data[k_ub++];
     }
 
-    const SLEQP_ACTIVE_STATE state = sleqp_working_set_get_constraint_state(working_set,
-                                                                            idx);
+    const SLEQP_ACTIVE_STATE state
+      = sleqp_working_set_get_constraint_state(working_set, idx);
 
     const double prod_val = c_val + cache[idx];
 
-    if(state == SLEQP_INACTIVE)
+    if (state == SLEQP_INACTIVE)
     {
       continue;
     }
-    else if(state == SLEQP_ACTIVE_UPPER && !sleqp_is_eq(prod_val, ub_val, eps))
+    else if (state == SLEQP_ACTIVE_UPPER && !sleqp_is_eq(prod_val, ub_val, eps))
     {
       (*in_working_set) = false;
       return SLEQP_OKAY;
     }
-    else if(state == SLEQP_ACTIVE_LOWER && !sleqp_is_eq(prod_val, lb_val, eps))
+    else if (state == SLEQP_ACTIVE_LOWER && !sleqp_is_eq(prod_val, lb_val, eps))
     {
       (*in_working_set) = false;
       return SLEQP_OKAY;
     }
-
   }
 
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_max_step_length(const SleqpSparseVec* x,
-                                    const SleqpSparseVec* d,
-                                    const SleqpSparseVec* l,
-                                    const SleqpSparseVec* u,
-                                    double* max_step_length)
+SLEQP_RETCODE
+sleqp_max_step_length(const SleqpSparseVec* x,
+                      const SleqpSparseVec* d,
+                      const SleqpSparseVec* l,
+                      const SleqpSparseVec* u,
+                      double* max_step_length)
 {
   const int dim = x->dim;
 
@@ -158,7 +154,7 @@ SLEQP_RETCODE sleqp_max_step_length(const SleqpSparseVec* x,
   {
     int k_x = 0, k_d = 0, k_u = 0;
 
-    while(k_x < x->nnz || k_d < d->nnz || k_u < u->nnz)
+    while (k_x < x->nnz || k_d < d->nnz || k_u < u->nnz)
     {
       bool valid_x = (k_x < x->nnz);
       bool valid_d = (k_d < d->nnz);
@@ -178,25 +174,24 @@ SLEQP_RETCODE sleqp_max_step_length(const SleqpSparseVec* x,
 
       double diff = u_value - x_value;
 
-      if((d_value > 0. && diff > 0.) ||
-         (d_value < 0. && diff < 0.))
+      if ((d_value > 0. && diff > 0.) || (d_value < 0. && diff < 0.))
       {
         double current_bound = diff / d_value;
 
         (*max_step_length) = SLEQP_MIN(*max_step_length, current_bound);
       }
 
-      if(valid_x)
+      if (valid_x)
       {
         ++k_x;
       }
 
-      if(valid_d)
+      if (valid_d)
       {
         ++k_d;
       }
 
-      if(valid_u)
+      if (valid_u)
       {
         ++k_u;
       }
@@ -208,7 +203,7 @@ SLEQP_RETCODE sleqp_max_step_length(const SleqpSparseVec* x,
   {
     int k_x = 0, k_d = 0, k_l = 0;
 
-    while(k_x < x->nnz || k_d < d->nnz || k_l < l->nnz)
+    while (k_x < x->nnz || k_d < d->nnz || k_l < l->nnz)
     {
       bool valid_x = (k_x < x->nnz);
       bool valid_d = (k_d < d->nnz);
@@ -228,25 +223,24 @@ SLEQP_RETCODE sleqp_max_step_length(const SleqpSparseVec* x,
 
       double diff = l_value - x_value;
 
-      if((d_value < 0. && diff < 0.) ||
-         (d_value > 0. && diff > 0.))
+      if ((d_value < 0. && diff < 0.) || (d_value > 0. && diff > 0.))
       {
         double current_bound = diff / d_value;
 
         (*max_step_length) = SLEQP_MIN(*max_step_length, current_bound);
       }
 
-      if(valid_x)
+      if (valid_x)
       {
         ++k_x;
       }
 
-      if(valid_d)
+      if (valid_d)
       {
         ++k_d;
       }
 
-      if(valid_l)
+      if (valid_l)
       {
         ++k_l;
       }

@@ -1,12 +1,12 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "dual_estimation.h"
 #include "mem.h"
 #include "newton.h"
-#include "working_step.h"
 #include "util.h"
+#include "working_step.h"
 
 #include "aug_jac/standard_aug_jac.h"
 #include "cauchy/standard_cauchy.h"
@@ -26,7 +26,8 @@ SleqpCauchy* cauchy_data;
 
 const double tolerance = 1e-8;
 
-void newton_setup()
+void
+newton_setup()
 {
   quadfunc_setup();
 
@@ -42,17 +43,15 @@ void newton_setup()
                                           quadfunc_cons_lb,
                                           quadfunc_cons_ub));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  ASSERT_CALL(sleqp_iterate_create(&iterate,
-                                   problem,
-                                   quadfunc_x));
+  ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadfunc_x));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
   ASSERT_CALL(sleqp_working_set_reset(working_set));
 
-  int num_lp_variables = num_variables + 2*num_constraints;
+  int num_lp_variables   = num_variables + 2 * num_constraints;
   int num_lp_constraints = num_constraints;
 
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
@@ -61,10 +60,8 @@ void newton_setup()
                                                  params,
                                                  options));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_INIT,
-                                     NULL));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_INIT, NULL));
 
   ASSERT_CALL(sleqp_standard_cauchy_create(&cauchy_data,
                                            problem,
@@ -73,7 +70,8 @@ void newton_setup()
                                            lp_interface));
 }
 
-void newton_teardown()
+void
+newton_teardown()
 {
   ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 
@@ -111,16 +109,14 @@ START_TEST(newton_wide_step)
   ASSERT_CALL(sleqp_sparse_vector_create(&actual_step, num_variables, 0));
 
   double penalty_parameter = 1.;
-  double trust_radius = 10.;
+  double trust_radius      = 10.;
 
-  ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
-                                                        params));
+  ASSERT_CALL(
+    sleqp_sparse_factorization_create_default(&factorization, params));
 
   // create with empty active set
-  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian,
-                                            problem,
-                                            params,
-                                            factorization));
+  ASSERT_CALL(
+    sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
@@ -141,9 +137,10 @@ START_TEST(newton_wide_step)
   // we use the default (empty) active set for the Newton step,
   // trust region size should be large to ensure that
   // the solution is that of the unrestricted step
-  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
-                                            sleqp_iterate_get_cons_dual(iterate),
-                                            actual_step));
+  ASSERT_CALL(
+    sleqp_eqp_solver_compute_step(newton_solver,
+                                  sleqp_iterate_get_cons_dual(iterate),
+                                  actual_step));
 
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
@@ -182,16 +179,14 @@ START_TEST(newton_small_step)
   ASSERT_CALL(sleqp_sparse_vector_create(&actual_step, num_variables, 0));
 
   double penalty_parameter = 1.;
-  double trust_radius = 1.;
+  double trust_radius      = 1.;
 
-  ASSERT_CALL(sleqp_sparse_factorization_create_default(&factorization,
-                                                        params));
+  ASSERT_CALL(
+    sleqp_sparse_factorization_create_default(&factorization, params));
 
   // create with empty active set
-  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian,
-                                            problem,
-                                            params,
-                                            factorization));
+  ASSERT_CALL(
+    sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
@@ -212,9 +207,10 @@ START_TEST(newton_small_step)
   // we use the default (empty) active set for the Newton step,
   // trust region size should be so small that
   // the solution is on the boundary of the feasible set
-  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
-                                            sleqp_iterate_get_cons_dual(iterate),
-                                            actual_step));
+  ASSERT_CALL(
+    sleqp_eqp_solver_compute_step(newton_solver,
+                                  sleqp_iterate_get_cons_dual(iterate),
+                                  actual_step));
 
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
@@ -232,18 +228,17 @@ START_TEST(newton_small_step)
 }
 END_TEST
 
-Suite* newton_test_suite()
+Suite*
+newton_test_suite()
 {
-  Suite *suite;
-  TCase *tc_cons;
+  Suite* suite;
+  TCase* tc_cons;
 
   suite = suite_create("Unconstrained newton step tests");
 
   tc_cons = tcase_create("Newton step");
 
-  tcase_add_checked_fixture(tc_cons,
-                            newton_setup,
-                            newton_teardown);
+  tcase_add_checked_fixture(tc_cons, newton_setup, newton_teardown);
 
   tcase_add_test(tc_cons, newton_wide_step);
 

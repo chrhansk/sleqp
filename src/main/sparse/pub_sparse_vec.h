@@ -15,12 +15,12 @@
  **/
 typedef struct SleqpSparseVec
 {
-        double* data;
-        int* indices;
+  double* data;
+  int* indices;
 
-        int dim;
-        int nnz;
-        int nnz_max;
+  int dim;
+  int nnz;
+  int nnz_max;
 
 } SleqpSparseVec;
 
@@ -33,10 +33,8 @@ typedef struct SleqpSparseVec
  * @param[in]  nnz_max The desired amount of nonzeros of the vector
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,
-                                         int dim,
-                                         int nnz_max);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_create(SleqpSparseVec** vec, int dim, int nnz_max);
 
 /**
  * Creates a new sparse vector without allocating memory
@@ -46,9 +44,8 @@ SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,
  * @param[in]  dim     The desired dimension of the vector
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_create_empty(SleqpSparseVec** vec,
-                                               int dim);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_create_empty(SleqpSparseVec** vec, int dim);
 
 /**
  * Creates a new sparse vector, allocating memory sufficient
@@ -58,9 +55,8 @@ SLEQP_RETCODE sleqp_sparse_vector_create_empty(SleqpSparseVec** vec,
  * @param[in]  dim     The desired dimension of the vector
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_create_full(SleqpSparseVec** vec,
-                                              int dim);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_create_full(SleqpSparseVec** vec, int dim);
 
 /**
  * Pushes a new entry on top of a sparse vector. The new
@@ -70,10 +66,8 @@ SLEQP_RETCODE sleqp_sparse_vector_create_full(SleqpSparseVec** vec,
  * @param[in]     idx    The index of the new entry
  * @param[in]     value  The value of the new entry
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
-                                       int idx,
-                                       double value);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_push(SleqpSparseVec* vec, int idx, double value);
 
 /**
  * Creates the entries of a sparse vector from a dense
@@ -86,11 +80,11 @@ SLEQP_RETCODE sleqp_sparse_vector_push(SleqpSparseVec* vec,
  * @param[in]     dim         The dimension of the values input
  * @param[in]     zero_eps    The numerical tolerance
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
-                                           double* values,
-                                           int dim,
-                                           double zero_eps);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
+                             double* values,
+                             int dim,
+                             double zero_eps);
 
 /**
  * Writes the content of this vector into an array. The
@@ -101,9 +95,8 @@ SLEQP_RETCODE sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
  * @param[in] values  A pointer to the output array
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec,
-                                         double* values);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec, double* values);
 
 /**
  * Copies one vector to another
@@ -111,9 +104,8 @@ SLEQP_RETCODE sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec,
  * @param[in] source     A pointer to the copy source
  * @param[out] target    A pointer to the copy target
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_copy(const SleqpSparseVec* source,
-                                       SleqpSparseVec* target);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_copy(const SleqpSparseVec* source, SleqpSparseVec* target);
 
 /**
  * Clears the given vector, discarding all entries while
@@ -121,8 +113,8 @@ SLEQP_RETCODE sleqp_sparse_vector_copy(const SleqpSparseVec* source,
  *
  * @param[in,out] vec     A pointer to the vector
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_clear(SleqpSparseVec* vec);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_clear(SleqpSparseVec* vec);
 
 /**
  * Reserves space for additional nonzeros
@@ -130,9 +122,8 @@ SLEQP_RETCODE sleqp_sparse_vector_clear(SleqpSparseVec* vec);
  * @param[in,out] vec     A pointer to the vector
  * @param[in]     nnz_max The number of nonzeros
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
-                                          int nnz);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_reserve(SleqpSparseVec* vec, int nnz);
 
 /**
  * Resizes the vector to the given dimension, discarding
@@ -141,14 +132,13 @@ SLEQP_RETCODE sleqp_sparse_vector_reserve(SleqpSparseVec* vec,
  * @param[in,out] vec     A pointer to the vector
  * @param[in]     dim     The new dimension
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_resize(SleqpSparseVec* vec,
-                                         int dim);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_resize(SleqpSparseVec* vec, int dim);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_concat(const SleqpSparseVec* first,
-                                         const SleqpSparseVec* second,
-                                         SleqpSparseVec* result);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_concat(const SleqpSparseVec* first,
+                           const SleqpSparseVec* second,
+                           SleqpSparseVec* result);
 
 /**
  * Returns whether all entries of the given vector are equal
@@ -160,9 +150,10 @@ SLEQP_RETCODE sleqp_sparse_vector_concat(const SleqpSparseVec* first,
  *
  * @sa sleqp_is_eq(double x, double y, double eps)
  **/
-SLEQP_EXPORT bool sleqp_sparse_vector_eq(const SleqpSparseVec* first,
-                                         const SleqpSparseVec* second,
-                                         double eps);
+SLEQP_EXPORT bool
+sleqp_sparse_vector_eq(const SleqpSparseVec* first,
+                       const SleqpSparseVec* second,
+                       double eps);
 
 /**
  * Computes the dot product of two sparse vectors
@@ -171,10 +162,10 @@ SLEQP_EXPORT bool sleqp_sparse_vector_eq(const SleqpSparseVec* first,
  * @param[in]  second    A pointer to the second vector
  * @param[out] product   A pointer to the result
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_dot(const SleqpSparseVec* first,
-                                      const SleqpSparseVec* second,
-                                      double* product);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_dot(const SleqpSparseVec* first,
+                        const SleqpSparseVec* second,
+                        double* product);
 
 /**
  * Scales the sparse vector by a factor
@@ -182,9 +173,8 @@ SLEQP_RETCODE sleqp_sparse_vector_dot(const SleqpSparseVec* first,
  * @param[in,out] vector   A pointer to the vector
  * @param[in]     factor   The factor
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
-                                        const double factor);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_scale(SleqpSparseVec* vector, const double factor);
 
 /**
  * Computes the sum of two sparse vectors
@@ -193,11 +183,11 @@ SLEQP_RETCODE sleqp_sparse_vector_scale(SleqpSparseVec* vector,
  * @param[in]  second        A pointer to the second vector
  * @param[out] result        A pointer to the result
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_add(const SleqpSparseVec* first,
-                                      const SleqpSparseVec* second,
-                                      const double eps,
-                                      SleqpSparseVec* result);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_add(const SleqpSparseVec* first,
+                        const SleqpSparseVec* second,
+                        const double eps,
+                        SleqpSparseVec* result);
 
 /**
  * Computes the weighted sum of two sparse vectors
@@ -208,41 +198,45 @@ SLEQP_RETCODE sleqp_sparse_vector_add(const SleqpSparseVec* first,
  * @param[in]  second_factor A factor for the second vector
  * @param[out] result        A pointer to the result
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
-                                             const SleqpSparseVec* second,
-                                             const double first_factor,
-                                             const double second_factor,
-                                             const double eps,
-                                             SleqpSparseVec* result);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
+                               const SleqpSparseVec* second,
+                               const double first_factor,
+                               const double second_factor,
+                               const double eps,
+                               SleqpSparseVec* result);
 
 /**
  * Returns the 2-norm of the given vector
  *
  * @param[in] vector   A pointer to the vector
  **/
-SLEQP_EXPORT double sleqp_sparse_vector_norm(const SleqpSparseVec* vec);
+SLEQP_EXPORT double
+sleqp_sparse_vector_norm(const SleqpSparseVec* vec);
 
 /**
  * Returns the 1-norm of the given vector
  *
  * @param[in] vector   A pointer to the vector
  **/
-SLEQP_EXPORT double sleqp_sparse_vector_one_norm(const SleqpSparseVec* vec);
+SLEQP_EXPORT double
+sleqp_sparse_vector_one_norm(const SleqpSparseVec* vec);
 
 /**
  * Returns the squared 2-norm of the given vector
  *
  * @param[in] vector   A pointer to the vector
  **/
-SLEQP_EXPORT double sleqp_sparse_vector_norm_sq(const SleqpSparseVec* vec);
+SLEQP_EXPORT double
+sleqp_sparse_vector_norm_sq(const SleqpSparseVec* vec);
 
 /**
  * Returns the oo-norm of the given vector
  *
  * @param[in] vector   A pointer to the vector
  **/
-SLEQP_EXPORT double sleqp_sparse_vector_inf_norm(const SleqpSparseVec* vec);
+SLEQP_EXPORT double
+sleqp_sparse_vector_inf_norm(const SleqpSparseVec* vec);
 
 /**
  * Returns a pointer to the entry of the given vector at
@@ -251,8 +245,8 @@ SLEQP_EXPORT double sleqp_sparse_vector_inf_norm(const SleqpSparseVec* vec);
  * @param[in] vector   A pointer to the vector
  * @param[in] index    The desired index
  **/
-SLEQP_EXPORT double* sleqp_sparse_vector_at(const SleqpSparseVec* vec,
-                                            int index);
+SLEQP_EXPORT double*
+sleqp_sparse_vector_at(const SleqpSparseVec* vec, int index);
 
 /**
  * Returns the value of the given vector at the given index
@@ -260,8 +254,8 @@ SLEQP_EXPORT double* sleqp_sparse_vector_at(const SleqpSparseVec* vec,
  * @param[in] vector   A pointer to the vector
  * @param[in] index    The desired index
  **/
-SLEQP_EXPORT double sleqp_sparse_vector_value_at(const SleqpSparseVec* vec,
-                                                 int index);
+SLEQP_EXPORT double
+sleqp_sparse_vector_value_at(const SleqpSparseVec* vec, int index);
 
 /**
  * Returns whether this vector is boxed, i.e., \f$ lb \leq x \leq ub \f$
@@ -273,9 +267,10 @@ SLEQP_EXPORT double sleqp_sparse_vector_value_at(const SleqpSparseVec* vec,
  *
  SLEQP_EXPORT * @sa sleqp_sparse_vector_clip
 **/
-SLEQP_EXPORT bool sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
-                                               const SleqpSparseVec* lb,
-                                               const SleqpSparseVec* ub);
+SLEQP_EXPORT bool
+sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
+                             const SleqpSparseVec* lb,
+                             const SleqpSparseVec* ub);
 
 /**
  * Clips this vector to the specified lower and upper bounds, storing
@@ -289,12 +284,12 @@ SLEQP_EXPORT bool sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
  *
  SLEQP_EXPORT * @sa sleqp_sparse_vector_is_boxed
 **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_clip(const SleqpSparseVec* x,
-                                       const SleqpSparseVec* lb,
-                                       const SleqpSparseVec* ub,
-                                       const double eps,
-                                       SleqpSparseVec* xclip);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_clip(const SleqpSparseVec* x,
+                         const SleqpSparseVec* lb,
+                         const SleqpSparseVec* ub,
+                         const double eps,
+                         SleqpSparseVec* xclip);
 
 /**
  * Prints this vector to the given file
@@ -302,9 +297,8 @@ SLEQP_RETCODE sleqp_sparse_vector_clip(const SleqpSparseVec* x,
  * @param[in]  vec     A pointer to the vector
  * @param[in]  output  A pointer to an output `FILE*`
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
-                                          FILE* output);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec, FILE* output);
 
 /**
  * Returns whether the given vector is *valid*, i.e., whether
@@ -313,15 +307,17 @@ SLEQP_RETCODE sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec,
  * - the entries are ordered according to their indices
  *
  **/
-SLEQP_EXPORT bool sleqp_sparse_vector_is_valid(const SleqpSparseVec* vec);
+SLEQP_EXPORT bool
+sleqp_sparse_vector_is_valid(const SleqpSparseVec* vec);
 
 /**
  * Returns whether the entries of the given vector are finite with respect to
  *  \ref sleqp_is_finite(double)
  **/
-SLEQP_EXPORT bool sleqp_sparse_vector_is_finite(const SleqpSparseVec* vec);
+SLEQP_EXPORT bool
+sleqp_sparse_vector_is_finite(const SleqpSparseVec* vec);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_sparse_vector_free(SleqpSparseVec** vec);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_free(SleqpSparseVec** vec);
 
 #endif /* SLEQP_PUB_SPARSE_VEC_H */

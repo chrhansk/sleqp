@@ -3,8 +3,8 @@
 #include <math.h>
 #include <trlib.h>
 
-#include "fail.h"
 #include "cmp.h"
+#include "fail.h"
 #include "feas.h"
 #include "iterate.h"
 #include "log.h"
@@ -15,9 +15,9 @@
 
 #include "sparse/sparse_matrix.h"
 
+#include "tr/steihaug_solver.h"
 #include "tr/tr_solver.h"
 #include "tr/trlib_solver.h"
-#include "tr/steihaug_solver.h"
 
 typedef struct
 {
@@ -57,12 +57,12 @@ newton_solver_create(NewtonSolver** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
   NewtonSolver* solver = *star;
 
-  *solver = (NewtonSolver) {0};
+  *solver = (NewtonSolver){0};
 
   solver->refcount = 1;
 
@@ -78,20 +78,19 @@ newton_solver_create(NewtonSolver** star,
   SLEQP_CALL(sleqp_options_capture(options));
   solver->options = options;
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->gradient,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&solver->gradient, num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->initial_hessian_product,
                                               num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->jacobian_product,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&solver->jacobian_product, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->sparse_cache,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&solver->sparse_cache, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->tr_step,
-                                              num_variables));
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->tr_step, num_variables));
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->tr_hessian_product,
                                               num_variables));
@@ -99,13 +98,14 @@ newton_solver_create(NewtonSolver** star,
   SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
                                SLEQP_MAX(num_variables, num_constraints)));
 
-  SLEQP_TR_SOLVER tr_solver = sleqp_options_get_int(options, SLEQP_OPTION_INT_TR_SOLVER);
+  SLEQP_TR_SOLVER tr_solver
+    = sleqp_options_get_int(options, SLEQP_OPTION_INT_TR_SOLVER);
 
-  if(tr_solver == SLEQP_TR_SOLVER_AUTO)
+  if (tr_solver == SLEQP_TR_SOLVER_AUTO)
   {
     SleqpFunc* func = sleqp_problem_func(problem);
 
-    if(sleqp_func_hess_psd(func))
+    if (sleqp_func_hess_psd(func))
     {
       tr_solver = SLEQP_TR_SOLVER_CG;
     }
@@ -115,7 +115,7 @@ newton_solver_create(NewtonSolver** star,
     }
   }
 
-  if(tr_solver == SLEQP_TR_SOLVER_CG)
+  if (tr_solver == SLEQP_TR_SOLVER_CG)
   {
     SLEQP_CALL(sleqp_steihaug_solver_create(&solver->tr_solver,
                                             problem,
@@ -126,10 +126,8 @@ newton_solver_create(NewtonSolver** star,
   {
     // assert(tr_solver == SLEQP_TR_SOLVER_TRLIB);
 
-    SLEQP_CALL(sleqp_trlib_solver_create(&solver->tr_solver,
-                                         problem,
-                                         params,
-                                         options));
+    SLEQP_CALL(
+      sleqp_trlib_solver_create(&solver->tr_solver, problem, params, options));
   }
 
   SLEQP_CALL(sleqp_timer_create(&(solver->timer)));
@@ -142,7 +140,7 @@ newton_solver_current_rayleigh(double* min_rayleigh,
                                double* max_rayleigh,
                                void* data)
 {
-  NewtonSolver* solver = (NewtonSolver*) data;
+  NewtonSolver* solver = (NewtonSolver*)data;
 
   SLEQP_CALL(sleqp_tr_solver_current_rayleigh(solver->tr_solver,
                                               min_rayleigh,
@@ -152,16 +150,15 @@ newton_solver_current_rayleigh(double* min_rayleigh,
 }
 
 static SLEQP_RETCODE
-newton_solver_set_time_limit(double time_limit,
-                             void* data)
+newton_solver_set_time_limit(double time_limit, void* data)
 {
-  NewtonSolver* solver = (NewtonSolver*) data;
+  NewtonSolver* solver = (NewtonSolver*)data;
 
-  return sleqp_tr_solver_set_time_limit(solver->tr_solver,
-                                        time_limit);
+  return sleqp_tr_solver_set_time_limit(solver->tr_solver, time_limit);
 }
 
-SleqpTimer* sleqp_newton_get_timer(NewtonSolver* solver)
+SleqpTimer*
+sleqp_newton_get_timer(NewtonSolver* solver)
 {
   return solver->timer;
 }
@@ -173,7 +170,7 @@ newton_solver_set_iterate(SleqpIterate* iterate,
                           double penalty_parameter,
                           void* data)
 {
-  NewtonSolver* solver = (NewtonSolver*) data;
+  NewtonSolver* solver = (NewtonSolver*)data;
 
   solver->penalty_parameter = penalty_parameter;
 
@@ -202,19 +199,19 @@ newton_solver_set_iterate(SleqpIterate* iterate,
 }
 
 static SLEQP_RETCODE
-newton_solver_add_violated_multipliers(SleqpSparseVec* multipliers,
-                                       void* data)
+newton_solver_add_violated_multipliers(SleqpSparseVec* multipliers, void* data)
 {
-  NewtonSolver* solver = (NewtonSolver*) data;
+  NewtonSolver* solver = (NewtonSolver*)data;
 
   assert(solver->iterate);
 
   SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(solver->iterate);
 
-  SleqpSparseVec* violated_cons_mult = sleqp_working_step_get_violated_cons_multipliers(solver->working_step);
+  SleqpSparseVec* violated_cons_mult
+    = sleqp_working_step_get_violated_cons_multipliers(solver->working_step);
 
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(cons_dual,
                                             violated_cons_mult,
@@ -226,23 +223,20 @@ newton_solver_add_violated_multipliers(SleqpSparseVec* multipliers,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE projection_residuum(NewtonSolver* solver,
-                                  SleqpSparseVec* tr_step,
-                                  double* residuum)
+static SLEQP_RETCODE
+projection_residuum(NewtonSolver* solver,
+                    SleqpSparseVec* tr_step,
+                    double* residuum)
 {
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpAugJac* jacobian = solver->aug_jac;
 
   SleqpSparseVec* sparse_cache = solver->sparse_cache;
-  SleqpSparseVec* residuals = solver->tr_hessian_product;
+  SleqpSparseVec* residuals    = solver->tr_hessian_product;
 
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
-                                      tr_step,
-                                      sparse_cache,
-                                      NULL));
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, tr_step, sparse_cache, NULL));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sparse_cache,
                                             tr_step,
@@ -266,25 +260,20 @@ stationarity_residuum(NewtonSolver* solver,
 {
   SleqpProblem* problem = solver->problem;
 
-  SleqpAugJac* jacobian = solver->aug_jac;
+  SleqpAugJac* jacobian        = solver->aug_jac;
   SleqpSparseVec* sparse_cache = solver->sparse_cache;
-  SleqpSparseVec* tr_prod = solver->tr_hessian_product;
+  SleqpSparseVec* tr_prod      = solver->tr_hessian_product;
 
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   double one = 1.;
 
-  SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                     &one,
-                                     tr_step,
-                                     multipliers,
-                                     tr_prod));
+  SLEQP_CALL(
+    sleqp_problem_hess_prod(problem, &one, tr_step, multipliers, tr_prod));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(tr_prod,
-                                     gradient,
-                                     zero_eps,
-                                     sparse_cache));
+  SLEQP_CALL(
+    sleqp_sparse_vector_add(tr_prod, gradient, zero_eps, sparse_cache));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(sparse_cache,
                                             tr_step,
@@ -293,10 +282,7 @@ stationarity_residuum(NewtonSolver* solver,
                                             zero_eps,
                                             tr_prod));
 
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian,
-                                      tr_prod,
-                                      sparse_cache,
-                                      NULL));
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, tr_prod, sparse_cache, NULL));
 
   (*residuum) = sleqp_sparse_vector_inf_norm(sparse_cache);
 
@@ -311,7 +297,7 @@ print_residuals(NewtonSolver* solver,
                 double trust_radius,
                 double tr_dual)
 {
-  const double step_norm = sleqp_sparse_vector_norm(tr_step);
+  const double step_norm  = sleqp_sparse_vector_norm(tr_step);
   const double radius_res = SLEQP_MAX(step_norm - trust_radius, 0.);
 
   double proj_res = 0.;
@@ -327,16 +313,18 @@ print_residuals(NewtonSolver* solver,
                                    tr_dual,
                                    &stat_res));
 
-  sleqp_log_debug("Trust region feasibility residuum: %.14e, stationarity residuum: %.14e",
-                  SLEQP_MAX(radius_res, proj_res),
-                  stat_res);
+  sleqp_log_debug(
+    "Trust region feasibility residuum: %.14e, stationarity residuum: %.14e",
+    SLEQP_MAX(radius_res, proj_res),
+    stat_res);
 
-  const double stat_tol = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_STATIONARITY_TOL);
+  const double stat_tol
+    = sleqp_params_get(solver->params, SLEQP_PARAM_STATIONARITY_TOL);
 
-  if(stat_res >= stat_tol)
+  if (stat_res >= stat_tol)
   {
-    sleqp_log_warn("Newton stationarity residuum of %e exceeds desired stationarity tolerance of %e",
+    sleqp_log_warn("Newton stationarity residuum of %e exceeds desired "
+                   "stationarity tolerance of %e",
                    stat_res,
                    stat_tol);
   }
@@ -350,24 +338,24 @@ check_spectrum(NewtonSolver* solver)
   SleqpParams* params = solver->params;
 
   SleqpProblem* problem = solver->problem;
-  SleqpFunc* func = sleqp_problem_func(problem);
+  SleqpFunc* func       = sleqp_problem_func(problem);
 
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
 
   double min_rayleigh = 0., max_rayleigh = 0.;
 
-  SLEQP_CALL(newton_solver_current_rayleigh(&min_rayleigh,
-                                            &max_rayleigh,
-                                            solver));
+  SLEQP_CALL(
+    newton_solver_current_rayleigh(&min_rayleigh, &max_rayleigh, solver));
 
   assert(min_rayleigh <= max_rayleigh);
 
   sleqp_log_debug("Spectrum: %.14e, %.14e", min_rayleigh, max_rayleigh);
 
-  if(sleqp_func_hess_psd(func) && sleqp_is_neg(min_rayleigh, eps))
+  if (sleqp_func_hess_psd(func) && sleqp_is_neg(min_rayleigh, eps))
   {
-    sleqp_log_warn("Encountered negative Rayleigh quotient (%.14e) on PSD Hessian",
-                   min_rayleigh);
+    sleqp_log_warn(
+      "Encountered negative Rayleigh quotient (%.14e) on PSD Hessian",
+      min_rayleigh);
   }
 
   return SLEQP_OKAY;
@@ -377,27 +365,28 @@ check_spectrum(NewtonSolver* solver)
 // EQP Hessian with the initial solution, the objective
 // function gradient and the violated multipliers
 static SLEQP_RETCODE
-compute_gradient(NewtonSolver* solver,
-                 const SleqpSparseVec* multipliers)
+compute_gradient(NewtonSolver* solver, const SleqpSparseVec* multipliers)
 {
   assert(solver->iterate);
 
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   const double penalty_parameter = solver->penalty_parameter;
 
   SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-  SleqpSparseVec* func_grad = sleqp_iterate_get_func_grad(iterate);
+  SleqpSparseVec* func_grad   = sleqp_iterate_get_func_grad(iterate);
 
   double one = 1.;
 
-  SleqpSparseVec* initial_step = sleqp_working_step_get_step(solver->working_step);
+  SleqpSparseVec* initial_step
+    = sleqp_working_step_get_step(solver->working_step);
 
-  SleqpSparseVec* violated_cons_mult = sleqp_working_step_get_violated_cons_multipliers(solver->working_step);
+  SleqpSparseVec* violated_cons_mult
+    = sleqp_working_step_get_violated_cons_multipliers(solver->working_step);
 
   SLEQP_CALL(sleqp_problem_hess_prod(problem,
                                      &one,
@@ -410,10 +399,11 @@ compute_gradient(NewtonSolver* solver,
                                      zero_eps,
                                      solver->sparse_cache));
 
-  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(cons_jac,
-                                                      violated_cons_mult,
-                                                      zero_eps,
-                                                      solver->jacobian_product));
+  SLEQP_CALL(
+    sleqp_sparse_matrix_trans_vector_product(cons_jac,
+                                             violated_cons_mult,
+                                             zero_eps,
+                                             solver->jacobian_product));
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->sparse_cache,
                                             solver->jacobian_product,
@@ -436,7 +426,7 @@ newton_objective(NewtonSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double one = 1.;
+  const double one        = 1.;
   double bilinear_product = 0.;
 
   SLEQP_CALL(sleqp_problem_hess_bilinear(problem,
@@ -457,10 +447,12 @@ newton_objective(NewtonSolver* solver,
                                      solver->jacobian_product,
                                      &cons_inner_prod));
 
-  const double offset = sleqp_working_step_get_objective_offset(solver->working_step,
-                                                                solver->penalty_parameter);
+  const double offset
+    = sleqp_working_step_get_objective_offset(solver->working_step,
+                                              solver->penalty_parameter);
 
-  *objective = offset + obj_inner_prod + cons_inner_prod + .5*bilinear_product;
+  *objective
+    = offset + obj_inner_prod + cons_inner_prod + .5 * bilinear_product;
 
   return SLEQP_OKAY;
 }
@@ -472,10 +464,7 @@ print_objective(NewtonSolver* solver,
 {
   double objective;
 
-  SLEQP_CALL(newton_objective(solver,
-                              multipliers,
-                              newton_step,
-                              &objective));
+  SLEQP_CALL(newton_objective(solver, multipliers, newton_step, &objective));
 
   sleqp_log_debug("Newton objective: %g", objective);
 
@@ -487,7 +476,7 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
                            SleqpSparseVec* newton_step,
                            void* data)
 {
-  NewtonSolver* solver = (NewtonSolver*) data;
+  NewtonSolver* solver = (NewtonSolver*)data;
   assert(solver->iterate);
 
   SleqpProblem* problem = solver->problem;
@@ -496,20 +485,21 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
   SleqpSparseVec* tr_step = solver->tr_step;
 
   SleqpAugJac* jacobian = solver->aug_jac;
-  double tr_dual = 0.;
+  double tr_dual        = 0.;
 
-  const double eps = sleqp_params_get(solver->params,
-                                      SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
 
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  const double reduced_trust_radius = sleqp_working_step_get_reduced_trust_radius(solver->working_step);
+  const double reduced_trust_radius
+    = sleqp_working_step_get_reduced_trust_radius(solver->working_step);
 
-  SleqpSparseVec* initial_step = sleqp_working_step_get_step(solver->working_step);
+  SleqpSparseVec* initial_step
+    = sleqp_working_step_get_step(solver->working_step);
 
   // in this case the only feasible solution is the zero vector
-  if(sleqp_is_zero(reduced_trust_radius, zero_eps))
+  if (sleqp_is_zero(reduced_trust_radius, zero_eps))
   {
     SLEQP_CALL(sleqp_sparse_vector_copy(initial_step, newton_step));
 
@@ -522,7 +512,7 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
 
   SleqpTimer* solve_timer = sleqp_aug_jac_solution_timer(solver->aug_jac);
 
-  const double hess_before = sleqp_timer_elapsed(hess_timer);
+  const double hess_before  = sleqp_timer_elapsed(hess_timer);
   const double solve_before = sleqp_timer_elapsed(solve_timer);
 
   SLEQP_CALL(sleqp_timer_start(solver->timer));
@@ -539,10 +529,8 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
 
   SLEQP_CALL(check_spectrum(solver));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(tr_step,
-                                     initial_step,
-                                     zero_eps,
-                                     newton_step));
+  SLEQP_CALL(
+    sleqp_sparse_vector_add(tr_step, initial_step, zero_eps, newton_step));
 
   SLEQP_CALL(print_objective(solver, multipliers, newton_step));
 
@@ -560,15 +548,12 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
   {
     double direction_dot;
 
-    SLEQP_CALL(sleqp_sparse_vector_dot(tr_step,
-                                       initial_step,
-                                       &direction_dot));
+    SLEQP_CALL(sleqp_sparse_vector_dot(tr_step, initial_step, &direction_dot));
 
     sleqp_assert_is_zero(direction_dot, eps);
   }
 
-
-  if(sleqp_working_step_in_working_set(solver->working_step))
+  if (sleqp_working_step_in_working_set(solver->working_step))
   {
     // Direction must be in working set
     bool in_working_set = false;
@@ -587,7 +572,7 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
 
   SLEQP_CALL(sleqp_timer_stop(solver->timer));
 
-  const double hess_elapsed = sleqp_timer_elapsed(hess_timer) - hess_before;
+  const double hess_elapsed  = sleqp_timer_elapsed(hess_timer) - hess_before;
   const double solve_elapsed = sleqp_timer_elapsed(solve_timer) - solve_before;
 
   SLEQP_CALL(sleqp_timer_add(solver->timer, -(hess_elapsed + solve_elapsed)));
@@ -598,9 +583,9 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
 static SLEQP_RETCODE
 newton_solver_free(void* data)
 {
-  NewtonSolver* solver = (NewtonSolver*) data;
+  NewtonSolver* solver = (NewtonSolver*)data;
 
-  if(!solver)
+  if (!solver)
   {
     return SLEQP_OKAY;
   }
@@ -635,32 +620,26 @@ newton_solver_free(void* data)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_newton_solver_create(SleqpEQPSolver** star,
-                                         SleqpProblem* problem,
-                                         SleqpParams* params,
-                                         SleqpOptions* options,
-                                         SleqpWorkingStep* step)
+SLEQP_RETCODE
+sleqp_newton_solver_create(SleqpEQPSolver** star,
+                           SleqpProblem* problem,
+                           SleqpParams* params,
+                           SleqpOptions* options,
+                           SleqpWorkingStep* step)
 {
-  SleqpEQPCallbacks callbacks = {
-    .set_iterate              = newton_solver_set_iterate,
-    .set_time_limit           = newton_solver_set_time_limit,
-    .add_violated_multipliers = newton_solver_add_violated_multipliers,
-    .compute_step             = newton_solver_compute_step,
-    .current_rayleigh         = newton_solver_current_rayleigh,
-    .free                     = newton_solver_free
-  };
+  SleqpEQPCallbacks callbacks
+    = {.set_iterate              = newton_solver_set_iterate,
+       .set_time_limit           = newton_solver_set_time_limit,
+       .add_violated_multipliers = newton_solver_add_violated_multipliers,
+       .compute_step             = newton_solver_compute_step,
+       .current_rayleigh         = newton_solver_current_rayleigh,
+       .free                     = newton_solver_free};
 
   NewtonSolver* solver;
 
-  SLEQP_CALL(newton_solver_create(&solver,
-                                  problem,
-                                  step,
-                                  params,
-                                  options));
+  SLEQP_CALL(newton_solver_create(&solver, problem, step, params, options));
 
-  SLEQP_CALL(sleqp_eqp_solver_create(star,
-                                     &callbacks,
-                                     (void*) solver));
+  SLEQP_CALL(sleqp_eqp_solver_create(star, &callbacks, (void*)solver));
 
   return SLEQP_OKAY;
 }

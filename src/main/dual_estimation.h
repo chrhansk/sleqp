@@ -8,7 +8,8 @@
  * We follow the following convention:
  *
  * The Lagrangian is defined as
- * \f$ L(x, \lambda, \mu) = f(x) + \langle \lambda, c \rangle + \langle x, \mu \rangle \f$.
+ * \f$ L(x, \lambda, \mu) = f(x) + \langle \lambda, c \rangle + \langle x, \mu
+ \rangle \f$.
  *
  * As a result, the signs of active dual variables are
  * non-negative for constraints / variables at their upper bounds and
@@ -18,16 +19,16 @@
 
  **/
 
-#include "working_set.h"
 #include "iterate.h"
+#include "working_set.h"
 
 #include "aug_jac/aug_jac.h"
 
 typedef struct SleqpDualEstimation SleqpDualEstimation;
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_dual_estimation_create(SleqpDualEstimation** star,
-                                           SleqpProblem* problem);
+SLEQP_RETCODE
+sleqp_dual_estimation_create(SleqpDualEstimation** star, SleqpProblem* problem);
 
 /**
  * Computes the estimation of the dual variables for the given iterate
@@ -40,12 +41,14 @@ SLEQP_RETCODE sleqp_dual_estimation_create(SleqpDualEstimation** star,
  *
  **/
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
-                                            SleqpIterate* iterate,
-                                            SleqpSparseVec* residuum,
-                                            SleqpAugJac* aug_jacobian);
+SLEQP_RETCODE
+sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
+                              SleqpIterate* iterate,
+                              SleqpSparseVec* residuum,
+                              SleqpAugJac* aug_jacobian);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_dual_estimation_free(SleqpDualEstimation** star);
+SLEQP_RETCODE
+sleqp_dual_estimation_free(SleqpDualEstimation** star);
 
 #endif /* SLEQP_DUAL_ESTIMATION_H */

@@ -15,10 +15,8 @@
  * \end{aligned}
  * \f]
  *
- * is given in terms of the residuum \f$ r : \mathbb{R}^{m + n} \to \mathbb{R}^{m} \f$
- * \f[
- * r(x, s) := c(x) - s
- * \f]
+ * is given in terms of the residuum \f$ r : \mathbb{R}^{m + n} \to
+ *\mathbb{R}^{m} \f$ \f[ r(x, s) := c(x) - s \f]
  *
  * as the problem
  *
@@ -36,22 +34,22 @@
 #include "problem.h"
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_restoration_problem_create(SleqpProblem** star,
-                                               SleqpParams* params,
-                                               SleqpProblem* problem);
+SLEQP_RETCODE
+sleqp_restoration_problem_create(SleqpProblem** star,
+                                 SleqpParams* params,
+                                 SleqpProblem* problem);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_restoration_problem_transform(SleqpProblem* problem,
-                                                  const SleqpSparseVec* primal,
-                                                  const SleqpSparseVec* cons_val,
-                                                  SleqpSparseVec* result);
+SLEQP_RETCODE
+sleqp_restoration_problem_transform(SleqpProblem* problem,
+                                    const SleqpSparseVec* primal,
+                                    const SleqpSparseVec* cons_val,
+                                    SleqpSparseVec* result);
 
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_restoration_problem_restore(SleqpProblem* problem,
-                                                const SleqpSparseVec* input,
-                                                SleqpSparseVec* result);
-
-
-
+SLEQP_RETCODE
+sleqp_restoration_problem_restore(SleqpProblem* problem,
+                                  const SleqpSparseVec* input,
+                                  SleqpSparseVec* result);
 
 #endif /* RESTORATION_H */

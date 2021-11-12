@@ -10,9 +10,10 @@
  *
  * See "Trust-region methods", pp. 355
  **/
-SLEQP_RETCODE sleqp_step_rule_window_create(SleqpStepRule** star,
-                                            SleqpProblem* problem,
-                                            SleqpParams* params,
-                                            int window_size);
+SLEQP_RETCODE
+sleqp_step_rule_window_create(SleqpStepRule** star,
+                              SleqpProblem* problem,
+                              SleqpParams* params,
+                              int window_size);
 
 #endif /* SLEQP_STEP_RULE_WINDOW_H */

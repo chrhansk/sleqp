@@ -24,8 +24,10 @@ extern SleqpSparseVec* linear_lsq_cons_ub;
 extern SleqpSparseVec* linear_lsq_initial;
 extern SleqpSparseVec* linear_lsq_optimal;
 
-void linear_lsq_setup();
+void
+linear_lsq_setup();
 
-void linear_lsq_teardown();
+void
+linear_lsq_teardown();
 
 #endif /* LINEAR_LSQ_H */

@@ -1,7 +1,7 @@
 #include "sparse_factorization_umfpack.h"
 
-#include <assert.h>
 #include "fail.h"
+#include <assert.h>
 
 #include <umfpack.h>
 
@@ -26,10 +26,10 @@ typedef struct UmfpackData
 
 } UmfpackData;
 
-static SLEQP_RETCODE umfpack_get_error_string(int value,
-                                              const char** message)
+static SLEQP_RETCODE
+umfpack_get_error_string(int value, const char** message)
 {
-  switch(value)
+  switch (value)
   {
   case UMFPACK_ERROR_different_pattern:
     (*message) = "UMFPACK_ERROR_different_pattern";
@@ -63,46 +63,45 @@ static SLEQP_RETCODE umfpack_get_error_string(int value,
   return SLEQP_OKAY;
 }
 
+#define UMFPACK_CALL(x)                                                        \
+  do                                                                           \
+  {                                                                            \
+    int umfpack_status = (x);                                                  \
+                                                                               \
+    if (umfpack_status != UMFPACK_OK)                                          \
+    {                                                                          \
+      const char* umfpack_error_string;                                        \
+      SLEQP_CALL(                                                              \
+        umfpack_get_error_string(umfpack_status, &umfpack_error_string));      \
+                                                                               \
+      sleqp_log_error("Caught Umfpack error <%d> (%s)",                        \
+                      umfpack_status,                                          \
+                      umfpack_error_string);                                   \
+                                                                               \
+      switch (umfpack_status)                                                  \
+      {                                                                        \
+      case UMFPACK_ERROR_invalid_matrix:                                       \
+      case UMFPACK_ERROR_argument_missing:                                     \
+        return SLEQP_ILLEGAL_ARGUMENT;                                         \
+      case UMFPACK_ERROR_out_of_memory:                                        \
+        return SLEQP_NOMEM;                                                    \
+      default:                                                                 \
+        return SLEQP_INTERNAL_ERROR;                                           \
+      }                                                                        \
+    }                                                                          \
+  } while (0)
 
-#define UMFPACK_CALL(x)                                                 \
-  do                                                                    \
-  {                                                                     \
-    int umfpack_status = (x);                                           \
-                                                                        \
-    if(umfpack_status != UMFPACK_OK)                                    \
-    {                                                                   \
-      const char* umfpack_error_string;                                 \
-      SLEQP_CALL(umfpack_get_error_string(umfpack_status,               \
-                                          &umfpack_error_string));      \
-                                                                        \
-      sleqp_log_error("Caught Umfpack error <%d> (%s)",                 \
-                      umfpack_status,                                   \
-                      umfpack_error_string);                            \
-                                                                        \
-      switch(umfpack_status)                                            \
-      {                                                                 \
-      case UMFPACK_ERROR_invalid_matrix:                                \
-      case UMFPACK_ERROR_argument_missing:                              \
-        return SLEQP_ILLEGAL_ARGUMENT;                                  \
-      case UMFPACK_ERROR_out_of_memory:                                 \
-        return SLEQP_NOMEM;                                             \
-      default:                                                          \
-        return SLEQP_INTERNAL_ERROR;                                    \
-      }                                                                 \
-    }                                                                   \
-  } while(0)
-
-
-static SLEQP_RETCODE umfpack_sparse_factorization_free_factorizations(UmfpackData* umfpack)
+static SLEQP_RETCODE
+umfpack_sparse_factorization_free_factorizations(UmfpackData* umfpack)
 {
-  if(umfpack->numeric_factorization)
+  if (umfpack->numeric_factorization)
   {
     umfpack_di_free_numeric(&umfpack->numeric_factorization);
 
     umfpack->numeric_factorization = NULL;
   }
 
-  if(umfpack->symbolic_factorization)
+  if (umfpack->symbolic_factorization)
   {
     umfpack_di_free_symbolic(&umfpack->symbolic_factorization);
 
@@ -112,17 +111,18 @@ static SLEQP_RETCODE umfpack_sparse_factorization_free_factorizations(UmfpackDat
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE umfpack_sparse_factorization_set_matrix(void* factorization_data,
-                                                             SleqpSparseMatrix* matrix)
+static SLEQP_RETCODE
+umfpack_sparse_factorization_set_matrix(void* factorization_data,
+                                        SleqpSparseMatrix* matrix)
 {
-  UmfpackData* umfpack = (UmfpackData*) factorization_data;
+  UmfpackData* umfpack = (UmfpackData*)factorization_data;
 
   const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
 
   assert(num_cols == num_rows);
 
-  if(umfpack->current_size < num_rows)
+  if (umfpack->current_size < num_rows)
   {
     SLEQP_CALL(sleqp_realloc(&umfpack->rhs, num_rows));
     SLEQP_CALL(sleqp_realloc(&umfpack->solution, num_rows));
@@ -160,16 +160,16 @@ static SLEQP_RETCODE umfpack_sparse_factorization_set_matrix(void* factorization
                                   umfpack->control,
                                   umfpack->info));
 
-  if(umfpack->symbolic_factorization)
+  if (umfpack->symbolic_factorization)
   {
     umfpack_di_free_symbolic(&umfpack->symbolic_factorization);
   }
 
   umfpack->symbolic_factorization = NULL;
 
-  for(int i = 0; i < num_rows; ++i)
+  for (int i = 0; i < num_rows; ++i)
   {
-    umfpack->rhs[i]  = 0.;
+    umfpack->rhs[i] = 0.;
   }
 
   /*
@@ -183,10 +183,10 @@ static SLEQP_RETCODE umfpack_sparse_factorization_set_matrix(void* factorization
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE set_cache(double* cache,
-                               SleqpSparseVec* vec)
+static SLEQP_RETCODE
+set_cache(double* cache, SleqpSparseVec* vec)
 {
-  for(int k = 0; k < vec->nnz; ++k)
+  for (int k = 0; k < vec->nnz; ++k)
   {
     cache[vec->indices[k]] = vec->data[k];
   }
@@ -194,10 +194,10 @@ static SLEQP_RETCODE set_cache(double* cache,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE reset_cache(double* cache,
-                                 SleqpSparseVec* vec)
+static SLEQP_RETCODE
+reset_cache(double* cache, SleqpSparseVec* vec)
 {
-  for(int k = 0; k < vec->nnz; ++k)
+  for (int k = 0; k < vec->nnz; ++k)
   {
     cache[vec->indices[k]] = 0.;
   }
@@ -205,10 +205,11 @@ static SLEQP_RETCODE reset_cache(double* cache,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE umfpack_sparse_factorization_solve(void* factorization_data,
-                                                        SleqpSparseVec* rhs)
+static SLEQP_RETCODE
+umfpack_sparse_factorization_solve(void* factorization_data,
+                                   SleqpSparseVec* rhs)
 {
-  UmfpackData* umfpack = (UmfpackData*) factorization_data;
+  UmfpackData* umfpack = (UmfpackData*)factorization_data;
 
   SleqpSparseMatrix* matrix = umfpack->matrix;
 
@@ -231,23 +232,25 @@ static SLEQP_RETCODE umfpack_sparse_factorization_solve(void* factorization_data
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE umfpack_sparse_factorization_get_condition_estimate(void* factorization_data,
-                                                                         double* condition_estimate)
+static SLEQP_RETCODE
+umfpack_sparse_factorization_get_condition_estimate(void* factorization_data,
+                                                    double* condition_estimate)
 {
-  UmfpackData* umfpack = (UmfpackData*) factorization_data;
+  UmfpackData* umfpack = (UmfpackData*)factorization_data;
 
   *(condition_estimate) = 1. / (umfpack->info[UMFPACK_RCOND]);
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE umfpack_sparse_factorization_get_sol(void* factorization_data,
-                                                          SleqpSparseVec* sol,
-                                                          int begin,
-                                                          int end,
-                                                          double zero_eps)
+static SLEQP_RETCODE
+umfpack_sparse_factorization_get_sol(void* factorization_data,
+                                     SleqpSparseVec* sol,
+                                     int begin,
+                                     int end,
+                                     double zero_eps)
 {
-  UmfpackData* umfpack = (UmfpackData*) factorization_data;
+  UmfpackData* umfpack = (UmfpackData*)factorization_data;
 
   assert(begin <= end);
 
@@ -259,11 +262,12 @@ static SLEQP_RETCODE umfpack_sparse_factorization_get_sol(void* factorization_da
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE umfpack_sparse_factorization_free(void** star)
+static SLEQP_RETCODE
+umfpack_sparse_factorization_free(void** star)
 {
-  UmfpackData* umfpack = (UmfpackData*) (*star);
+  UmfpackData* umfpack = (UmfpackData*)(*star);
 
-  if(!umfpack)
+  if (!umfpack)
   {
     return SLEQP_OKAY;
   }
@@ -280,7 +284,8 @@ static SLEQP_RETCODE umfpack_sparse_factorization_free(void** star)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE umfpack_data_create(UmfpackData** star)
+static SLEQP_RETCODE
+umfpack_data_create(UmfpackData** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -293,17 +298,18 @@ static SLEQP_RETCODE umfpack_data_create(UmfpackData** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization** star,
-                                                        SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization** star,
+                                          SleqpParams* params)
 {
 
-  SleqpSparseFactorizationCallbacks callbacks = {
-    .set_matrix = umfpack_sparse_factorization_set_matrix,
-    .solve = umfpack_sparse_factorization_solve,
-    .get_sol = umfpack_sparse_factorization_get_sol,
-    .get_condition_estimate = umfpack_sparse_factorization_get_condition_estimate,
-    .free = umfpack_sparse_factorization_free
-  };
+  SleqpSparseFactorizationCallbacks callbacks
+    = {.set_matrix = umfpack_sparse_factorization_set_matrix,
+       .solve      = umfpack_sparse_factorization_solve,
+       .get_sol    = umfpack_sparse_factorization_get_sol,
+       .get_condition_estimate
+       = umfpack_sparse_factorization_get_condition_estimate,
+       .free = umfpack_sparse_factorization_free};
 
   UmfpackData* umfpack_data;
 
@@ -314,13 +320,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_umfpack_create(SleqpSparseFactorization
                                                SLEQP_FACT_UMFPACK_VERSION,
                                                params,
                                                &callbacks,
-                                               (void*) umfpack_data));
+                                               (void*)umfpack_data));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
-                                                        SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                          SleqpParams* params)
 {
   SLEQP_CALL(sleqp_sparse_factorization_umfpack_create(star, params));
 

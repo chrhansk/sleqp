@@ -1,9 +1,9 @@
-#include <stdlib.h>
 #include <check.h>
 #include <fenv.h>
+#include <stdlib.h>
 
-#include "problem_scaling.h"
 #include "deriv_check.h"
+#include "problem_scaling.h"
 #include "util.h"
 
 #include "lp/lpi.h"
@@ -22,7 +22,8 @@ SleqpProblem* scaled_problem;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 
-void problem_scaling_setup()
+void
+problem_scaling_setup()
 {
   quadconsfunc_setup();
 
@@ -44,8 +45,7 @@ void problem_scaling_setup()
                                    sleqp_problem_num_variables(problem),
                                    num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling,
-                                            2));
+  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -1));
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, -6));
@@ -63,14 +63,10 @@ void problem_scaling_setup()
 
   scaled_problem = sleqp_problem_scaling_get_problem(problem_scaling);
 
-  ASSERT_CALL(sleqp_iterate_create(&iterate,
-                                   problem,
-                                   quadconsfunc_x));
+  ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadconsfunc_x));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_INIT,
-                                     NULL));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_INIT, NULL));
 }
 
 START_TEST(test_overflow)
@@ -172,21 +168,19 @@ START_TEST(test_first_order_deriv)
 
   SleqpDerivCheckData* deriv_check_data;
 
-  ASSERT_CALL(sleqp_iterate_create(&scaled_iterate,
-                                   scaled_problem,
-                                   quadconsfunc_x));
+  ASSERT_CALL(
+    sleqp_iterate_create(&scaled_iterate, scaled_problem, quadconsfunc_x));
 
-  ASSERT_CALL(sleqp_scale_point(scaling,
-                                sleqp_iterate_get_primal(scaled_iterate)));
+  ASSERT_CALL(
+    sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
 
   ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
                                      scaled_iterate,
                                      SLEQP_VALUE_REASON_NONE,
                                      NULL));
 
-  ASSERT_CALL(sleqp_deriv_checker_create(&deriv_check_data,
-                                         scaled_problem,
-                                         params));
+  ASSERT_CALL(
+    sleqp_deriv_checker_create(&deriv_check_data, scaled_problem, params));
 
   ASSERT_CALL(sleqp_deriv_check_perform(deriv_check_data,
                                         scaled_iterate,
@@ -204,21 +198,19 @@ START_TEST(test_second_order_deriv)
 
   SleqpDerivCheckData* deriv_check_data;
 
-  ASSERT_CALL(sleqp_iterate_create(&scaled_iterate,
-                                   scaled_problem,
-                                   quadconsfunc_x));
+  ASSERT_CALL(
+    sleqp_iterate_create(&scaled_iterate, scaled_problem, quadconsfunc_x));
 
-  ASSERT_CALL(sleqp_scale_point(scaling,
-                                sleqp_iterate_get_primal(scaled_iterate)));
+  ASSERT_CALL(
+    sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
 
   ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
                                      scaled_iterate,
                                      SLEQP_VALUE_REASON_NONE,
                                      NULL));
 
-  ASSERT_CALL(sleqp_deriv_checker_create(&deriv_check_data,
-                                         scaled_problem,
-                                         params));
+  ASSERT_CALL(
+    sleqp_deriv_checker_create(&deriv_check_data, scaled_problem, params));
 
   ASSERT_CALL(sleqp_deriv_check_perform(deriv_check_data,
                                         scaled_iterate,
@@ -230,7 +222,8 @@ START_TEST(test_second_order_deriv)
 }
 END_TEST
 
-void problem_scaling_teardown()
+void
+problem_scaling_teardown()
 {
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
@@ -247,10 +240,11 @@ void problem_scaling_teardown()
   quadconsfunc_teardown();
 }
 
-Suite* problem_scaling_test_suite()
+Suite*
+problem_scaling_test_suite()
 {
-  Suite *suite;
-  TCase *tc_scale_invalid;
+  Suite* suite;
+  TCase* tc_scale_invalid;
   TCase* tc_scale_deriv;
 
   suite = suite_create("Problem scaling tests");

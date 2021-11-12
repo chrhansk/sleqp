@@ -9,6 +9,7 @@
 #include "sleqp/export.h"
 #include "sleqp/pub_types.h"
 
-SLEQP_EXPORT double sleqp_infinity();
+SLEQP_EXPORT double
+sleqp_infinity();
 
 #endif /* SLEQP_PUB_CMP_H */

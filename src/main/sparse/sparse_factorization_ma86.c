@@ -11,7 +11,8 @@
 
 static const bool ma86_verbose = false;
 
-typedef enum {
+typedef enum
+{
 
   MA86_ERROR_ALLOCATION                = -1,
   MA86_ERROR_INVALID_ELIMINATION_ORDER = -2,
@@ -23,25 +24,28 @@ typedef enum {
   MA86_ERROR_INVALID_MATRIX_TYPE       = -8,
   MA86_ERROR_INVALID_SCALE             = -9,
 
-  MA86_SUCCESS                         = 0,
+  MA86_SUCCESS = 0,
 
-  MA86_WARNING_INSUFFICIENT_POOL_SIZE  = 1,
-  MA86_WARNING_SINGULAR_MATRIX         = 2,
+  MA86_WARNING_INSUFFICIENT_POOL_SIZE = 1,
+  MA86_WARNING_SINGULAR_MATRIX        = 2,
 
-  MA86_WARNING = MA86_WARNING_INSUFFICIENT_POOL_SIZE | MA86_WARNING_SINGULAR_MATRIX
+  MA86_WARNING
+    = MA86_WARNING_INSUFFICIENT_POOL_SIZE | MA86_WARNING_SINGULAR_MATRIX
 } MA866_STATUS;
 
-typedef enum {
+typedef enum
+{
   MC68_ORDER_APX_MINDEG = 1,
   MC68_ORDER_MINDEG     = 2,
   MC68_ORDER_METIS      = 3,
   MC68_ORDER_MA47       = 4,
 } MC68_ORDER;
 
-static SLEQP_RETCODE ma86_get_error_string(int value, const char** message)
+static SLEQP_RETCODE
+ma86_get_error_string(int value, const char** message)
 {
 
-  switch(value)
+  switch (value)
   {
   case MA86_ERROR_ALLOCATION:
     *message = "Allocation error";
@@ -89,44 +93,42 @@ static SLEQP_RETCODE ma86_get_error_string(int value, const char** message)
 
 #define MA86_IS_ERROR(value) (value < 0)
 
-#define MA86_CHECK_ERROR(x)                                              \
-  do                                                                     \
-  {                                                                      \
-    int ma86_status = (x);                                               \
-                                                                         \
-    if(ma86_status == MA86_SUCCESS)                                      \
-    {                                                                    \
-      break;                                                             \
-    }                                                                    \
-                                                                         \
-    const char* ma86_error_string;                                       \
-    SLEQP_CALL(ma86_get_error_string(ma86_status,                        \
-                                     &ma86_error_string));               \
-                                                                         \
-    if(MA86_IS_ERROR(ma86_status))                                       \
-    {                                                                    \
-                                                                         \
-      sleqp_log_error("Caught hsl_ma86 error <%d> (%s) in function %s",  \
-                      ma86_status,                                       \
-                      ma86_error_string,                                 \
-                      __func__);                                         \
-                                                                         \
-      if(ma86_status == MA86_ERROR_ALLOCATION)                           \
-      {                                                                  \
-        return SLEQP_NOMEM;                                              \
-      }                                                                  \
-                                                                         \
-      return SLEQP_INTERNAL_ERROR;                                       \
-    }                                                                    \
-    else                                                                 \
-    {                                                                    \
-      sleqp_log_warn("Caught hsl_ma86 warning <%d> (%s) in function %s", \
-                     ma86_status,                                        \
-                      ma86_error_string,                                 \
-                     __func__);                                          \
-                                                                         \
-    }                                                                    \
-  } while(0)
+#define MA86_CHECK_ERROR(x)                                                    \
+  do                                                                           \
+  {                                                                            \
+    int ma86_status = (x);                                                     \
+                                                                               \
+    if (ma86_status == MA86_SUCCESS)                                           \
+    {                                                                          \
+      break;                                                                   \
+    }                                                                          \
+                                                                               \
+    const char* ma86_error_string;                                             \
+    SLEQP_CALL(ma86_get_error_string(ma86_status, &ma86_error_string));        \
+                                                                               \
+    if (MA86_IS_ERROR(ma86_status))                                            \
+    {                                                                          \
+                                                                               \
+      sleqp_log_error("Caught hsl_ma86 error <%d> (%s) in function %s",        \
+                      ma86_status,                                             \
+                      ma86_error_string,                                       \
+                      __func__);                                               \
+                                                                               \
+      if (ma86_status == MA86_ERROR_ALLOCATION)                                \
+      {                                                                        \
+        return SLEQP_NOMEM;                                                    \
+      }                                                                        \
+                                                                               \
+      return SLEQP_INTERNAL_ERROR;                                             \
+    }                                                                          \
+    else                                                                       \
+    {                                                                          \
+      sleqp_log_warn("Caught hsl_ma86 warning <%d> (%s) in function %s",       \
+                     ma86_status,                                              \
+                     ma86_error_string,                                        \
+                     __func__);                                                \
+    }                                                                          \
+  } while (0)
 
 typedef struct MA86Data
 {
@@ -146,9 +148,8 @@ typedef struct MA86Data
 
 } MA86Data;
 
-
-
-static SLEQP_RETCODE ma86_data_create(MA86Data** star)
+static SLEQP_RETCODE
+ma86_data_create(MA86Data** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -162,7 +163,7 @@ static SLEQP_RETCODE ma86_data_create(MA86Data** star)
   // error out otherwise
   ma86_data->control.action = 0;
 
-  if(ma86_verbose)
+  if (ma86_verbose)
   {
     ma86_data->control.diagnostics_level = 2;
   }
@@ -178,10 +179,10 @@ static SLEQP_RETCODE ma86_data_create(MA86Data** star)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma86_data_set_matrix(void* factorization_data,
-                                          SleqpSparseMatrix* matrix)
+static SLEQP_RETCODE
+ma86_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 {
-  MA86Data* ma86_data = (MA86Data*) factorization_data;
+  MA86Data* ma86_data = (MA86Data*)factorization_data;
 
   const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
@@ -194,7 +195,7 @@ static SLEQP_RETCODE ma86_data_set_matrix(void* factorization_data,
 
   const int dim = num_cols;
 
-  if(ma86_data->max_dim < dim)
+  if (ma86_data->max_dim < dim)
   {
     SLEQP_CALL(sleqp_realloc(&(ma86_data->order), dim));
 
@@ -205,8 +206,8 @@ static SLEQP_RETCODE ma86_data_set_matrix(void* factorization_data,
 
   ma86_data->dim = dim;
 
-  int* cols = sleqp_sparse_matrix_get_cols(ma86_data->matrix);
-  int* rows = sleqp_sparse_matrix_get_rows(ma86_data->matrix);
+  int* cols    = sleqp_sparse_matrix_get_cols(ma86_data->matrix);
+  int* rows    = sleqp_sparse_matrix_get_rows(ma86_data->matrix);
   double* data = sleqp_sparse_matrix_get_data(ma86_data->matrix);
 
   mc68_order(MC68_ORDER_APX_MINDEG,
@@ -246,15 +247,15 @@ static SLEQP_RETCODE ma86_data_set_matrix(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma86_data_solve(void* factorization_data,
-                                     SleqpSparseVec* rhs)
+static SLEQP_RETCODE
+ma86_data_solve(void* factorization_data, SleqpSparseVec* rhs)
 {
-  MA86Data* ma86_data = (MA86Data*) factorization_data;
+  MA86Data* ma86_data = (MA86Data*)factorization_data;
 
-  const int job = 0;
+  const int job  = 0;
   const int nrhs = 1;
-  const int dim = ma86_data->dim;
-  const int ldx = ma86_data->dim;
+  const int dim  = ma86_data->dim;
+  const int ldx  = ma86_data->dim;
 
   assert(rhs->dim == dim);
 
@@ -275,13 +276,14 @@ static SLEQP_RETCODE ma86_data_solve(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma86_data_get_sol(void* factorization_data,
-                                       SleqpSparseVec* sol,
-                                       int begin,
-                                       int end,
-                                       double zero_eps)
+static SLEQP_RETCODE
+ma86_data_get_sol(void* factorization_data,
+                  SleqpSparseVec* sol,
+                  int begin,
+                  int end,
+                  double zero_eps)
 {
-  MA86Data* ma86_data = (MA86Data*) factorization_data;
+  MA86Data* ma86_data = (MA86Data*)factorization_data;
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
                                           ma86_data->rhs_sol + begin,
@@ -291,8 +293,9 @@ static SLEQP_RETCODE ma86_data_get_sol(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma86_data_get_condition_estimate(void* factorization_data,
-                                                      double* condition_estimate)
+static SLEQP_RETCODE
+ma86_data_get_condition_estimate(void* factorization_data,
+                                 double* condition_estimate)
 {
   // MA86Data* ma86_data = (MA86Data*) factorization_data;
 
@@ -301,11 +304,12 @@ static SLEQP_RETCODE ma86_data_get_condition_estimate(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma86_data_free(void **star)
+static SLEQP_RETCODE
+ma86_data_free(void** star)
 {
-  MA86Data* ma86_data = (MA86Data*) (*star);
+  MA86Data* ma86_data = (MA86Data*)(*star);
 
-  if(ma86_data->keep)
+  if (ma86_data->keep)
   {
     ma86_finalise(&(ma86_data->keep), &(ma86_data->control));
   }
@@ -322,16 +326,16 @@ static SLEQP_RETCODE ma86_data_free(void **star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_ma86_create(SleqpSparseFactorization** star,
-                                                     SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_ma86_create(SleqpSparseFactorization** star,
+                                       SleqpParams* params)
 {
-  SleqpSparseFactorizationCallbacks callbacks = {
-    .set_matrix = ma86_data_set_matrix,
-    .solve = ma86_data_solve,
-    .get_sol = ma86_data_get_sol,
-    .get_condition_estimate = ma86_data_get_condition_estimate,
-    .free = ma86_data_free
-  };
+  SleqpSparseFactorizationCallbacks callbacks
+    = {.set_matrix             = ma86_data_set_matrix,
+       .solve                  = ma86_data_solve,
+       .get_sol                = ma86_data_get_sol,
+       .get_condition_estimate = ma86_data_get_condition_estimate,
+       .free                   = ma86_data_free};
 
   MA86Data* ma86_data;
 
@@ -342,13 +346,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma86_create(SleqpSparseFactorization** 
                                                SLEQP_FACT_MA86_VERSION,
                                                params,
                                                &callbacks,
-                                               (void*) ma86_data));
+                                               (void*)ma86_data));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
-                                                        SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                          SleqpParams* params)
 {
   SLEQP_CALL(sleqp_sparse_factorization_ma86_create(star, params));
 

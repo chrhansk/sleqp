@@ -41,15 +41,16 @@ struct SleqpWorkingStep
   double diff_offset;
 };
 
-SLEQP_RETCODE sleqp_working_step_create(SleqpWorkingStep** star,
-                                        SleqpProblem* problem,
-                                        SleqpParams* params)
+SLEQP_RETCODE
+sleqp_working_step_create(SleqpWorkingStep** star,
+                          SleqpProblem* problem,
+                          SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpWorkingStep* step = *star;
 
-  *step = (SleqpWorkingStep) {0};
+  *step = (SleqpWorkingStep){0};
 
   step->refcount = 1;
 
@@ -59,35 +60,36 @@ SLEQP_RETCODE sleqp_working_step_create(SleqpWorkingStep** star,
   step->params = params;
   SLEQP_CALL(sleqp_params_capture(step->params));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->lower_diff,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->lower_diff, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->upper_diff,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->upper_diff, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->initial_rhs,
-                                              num_constraints));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->initial_rhs, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->initial_direction,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->initial_direction, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->initial_step,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->initial_step, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->initial_point,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->initial_point, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->initial_cons_val,
-                                              num_constraints));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->initial_cons_val, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->violated_constraint_multipliers,
-                                              num_constraints));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->violated_constraint_multipliers,
+                                     num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&step->sparse_cache,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&step->sparse_cache, num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&step->dense_cache,
                                SLEQP_MAX(num_variables, num_constraints)));
@@ -95,8 +97,8 @@ SLEQP_RETCODE sleqp_working_step_create(SleqpWorkingStep** star,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_offset(SleqpWorkingStep* step,
-                                    SleqpIterate* iterate)
+static SLEQP_RETCODE
+compute_offset(SleqpWorkingStep* step, SleqpIterate* iterate)
 {
   SleqpProblem* problem = step->problem;
 
@@ -112,14 +114,14 @@ static SLEQP_RETCODE compute_offset(SleqpWorkingStep* step,
 
   const SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
-  for(int k = 0; k < upper_diff->nnz; ++k)
+  for (int k = 0; k < upper_diff->nnz; ++k)
   {
     int i = upper_diff->indices[k];
 
-    const SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set,
-                                                                                 i);
+    const SLEQP_ACTIVE_STATE cons_state
+      = sleqp_working_set_get_constraint_state(working_set, i);
 
-    if(cons_state != SLEQP_INACTIVE)
+    if (cons_state != SLEQP_INACTIVE)
     {
       continue;
     }
@@ -127,14 +129,14 @@ static SLEQP_RETCODE compute_offset(SleqpWorkingStep* step,
     offset += upper_diff->data[k];
   }
 
-  for(int k = 0; k < lower_diff->nnz; ++k)
+  for (int k = 0; k < lower_diff->nnz; ++k)
   {
     int i = lower_diff->indices[k];
 
-    const SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set,
-                                                                                 i);
+    const SLEQP_ACTIVE_STATE cons_state
+      = sleqp_working_set_get_constraint_state(working_set, i);
 
-    if(cons_state != SLEQP_INACTIVE)
+    if (cons_state != SLEQP_INACTIVE)
     {
       continue;
     }
@@ -149,19 +151,21 @@ static SLEQP_RETCODE compute_offset(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
-double sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
-                                               double penalty_parameter)
+double
+sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
+                                        double penalty_parameter)
 {
-  return step->obj_offset + penalty_parameter*step->diff_offset;
+  return step->obj_offset + penalty_parameter * step->diff_offset;
 }
 
-static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
-                                         SleqpIterate* iterate,
-                                         SleqpAugJac* jacobian)
+static SLEQP_RETCODE
+compute_initial_rhs(SleqpWorkingStep* step,
+                    SleqpIterate* iterate,
+                    SleqpAugJac* jacobian)
 {
   SleqpProblem* problem = step->problem;
 
-  SleqpSparseVec* initial_rhs = step->initial_rhs;
+  SleqpSparseVec* initial_rhs        = step->initial_rhs;
   const SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   SleqpSparseVec* lower_diff = step->lower_diff;
@@ -207,13 +211,15 @@ static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
 
     int k_lower = 0, k_upper = 0;
 
-    while(k_lower < lower_diff->nnz || k_upper < upper_diff->nnz)
+    while (k_lower < lower_diff->nnz || k_upper < upper_diff->nnz)
     {
       bool valid_lower = (k_lower < lower_diff->nnz);
       bool valid_upper = (k_upper < upper_diff->nnz);
 
-      const int i_lower = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
-      const int i_upper = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
+      const int i_lower
+        = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
+      const int i_upper
+        = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
 
       const int i_combined = SLEQP_MIN(i_lower, i_upper);
 
@@ -223,66 +229,72 @@ static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
       const double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       const double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      const int i_set = sleqp_working_set_get_variable_index(working_set, i_combined);
+      const int i_set
+        = sleqp_working_set_get_variable_index(working_set, i_combined);
 
-      const SLEQP_ACTIVE_STATE var_state = sleqp_working_set_get_variable_state(working_set,
-                                                                                i_combined);
+      const SLEQP_ACTIVE_STATE var_state
+        = sleqp_working_set_get_variable_state(working_set, i_combined);
 
       assert(var_state == SLEQP_INACTIVE || i_set != SLEQP_NONE);
 
-      if(var_state == SLEQP_ACTIVE_UPPER)
+      if (var_state == SLEQP_ACTIVE_UPPER)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
-                                            i_set,
-                                            upper_value));
+        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, upper_value));
       }
-      else if(var_state == SLEQP_ACTIVE_LOWER)
+      else if (var_state == SLEQP_ACTIVE_LOWER)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
-                                            i_set,
-                                            lower_value));
+        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, lower_value));
       }
-      else if(var_state == SLEQP_ACTIVE_BOTH)
+      else if (var_state == SLEQP_ACTIVE_BOTH)
       {
         sleqp_assert_is_eq(lower_value, upper_value, eps);
 
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
-                                            i_set,
-                                            lower_value));
+        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, lower_value));
       }
 
-      if(i_lower == i_combined)
+      if (i_lower == i_combined)
       {
         ++k_lower;
       }
 
-      if(i_upper == i_combined)
+      if (i_upper == i_combined)
       {
         ++k_upper;
       }
-
     }
   }
 
   // constraints
   {
-    SleqpSparseVec* values = sleqp_iterate_get_cons_val(iterate);
+    SleqpSparseVec* values  = sleqp_iterate_get_cons_val(iterate);
     SleqpSparseVec* cons_lb = sleqp_problem_cons_lb(problem);
     SleqpSparseVec* cons_ub = sleqp_problem_cons_ub(problem);
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_ub, -1., 1., zero_eps, upper_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values,
+                                              cons_ub,
+                                              -1.,
+                                              1.,
+                                              zero_eps,
+                                              upper_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values, cons_lb, -1., 1., zero_eps, lower_diff));
+    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values,
+                                              cons_lb,
+                                              -1.,
+                                              1.,
+                                              zero_eps,
+                                              lower_diff));
 
     int k_lower = 0, k_upper = 0;
 
-    while(k_lower < lower_diff->nnz || k_upper < upper_diff->nnz)
+    while (k_lower < lower_diff->nnz || k_upper < upper_diff->nnz)
     {
       bool valid_lower = (k_lower < lower_diff->nnz);
       bool valid_upper = (k_upper < upper_diff->nnz);
 
-      const int i_lower = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
-      const int i_upper = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
+      const int i_lower
+        = valid_lower ? lower_diff->indices[k_lower] : lower_diff->dim + 1;
+      const int i_upper
+        = valid_upper ? upper_diff->indices[k_upper] : upper_diff->dim + 1;
 
       const int i_combined = SLEQP_MIN(i_lower, i_upper);
 
@@ -292,40 +304,35 @@ static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
       const double lower_value = valid_lower ? lower_diff->data[k_lower] : 0.;
       const double upper_value = valid_upper ? upper_diff->data[k_upper] : 0.;
 
-      const int i_set = sleqp_working_set_get_constraint_index(working_set, i_combined);
+      const int i_set
+        = sleqp_working_set_get_constraint_index(working_set, i_combined);
 
-      const SLEQP_ACTIVE_STATE cons_state = sleqp_working_set_get_constraint_state(working_set,
-                                                                                   i_combined);
+      const SLEQP_ACTIVE_STATE cons_state
+        = sleqp_working_set_get_constraint_state(working_set, i_combined);
 
       assert(cons_state == SLEQP_INACTIVE || i_set != SLEQP_NONE);
 
-      if(cons_state == SLEQP_ACTIVE_UPPER)
+      if (cons_state == SLEQP_ACTIVE_UPPER)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
-                                            i_set,
-                                            upper_value));
+        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, upper_value));
       }
-      else if(cons_state == SLEQP_ACTIVE_LOWER)
+      else if (cons_state == SLEQP_ACTIVE_LOWER)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
-                                            i_set,
-                                            lower_value));
+        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, lower_value));
       }
-      else if(cons_state == SLEQP_ACTIVE_BOTH)
+      else if (cons_state == SLEQP_ACTIVE_BOTH)
       {
         sleqp_assert_is_eq(lower_value, upper_value, eps);
 
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs,
-                                            i_set,
-                                            lower_value));
+        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, lower_value));
       }
 
-      if(valid_lower)
+      if (valid_lower)
       {
         ++k_lower;
       }
 
-      if(valid_upper)
+      if (valid_upper)
       {
         ++k_upper;
       }
@@ -337,10 +344,10 @@ static SLEQP_RETCODE compute_initial_rhs(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_initial_direction(SleqpWorkingStep* step,
-                                        SleqpIterate* iterate,
-                                        SleqpAugJac* jacobian)
+static SLEQP_RETCODE
+compute_initial_direction(SleqpWorkingStep* step,
+                          SleqpIterate* iterate,
+                          SleqpAugJac* jacobian)
 {
   SLEQP_CALL(compute_initial_rhs(step, iterate, jacobian));
 
@@ -352,11 +359,10 @@ SLEQP_RETCODE compute_initial_direction(SleqpWorkingStep* step,
 
   // Initial direction must be in working set
   {
-    bool in_working_set = false;
+    bool in_working_set   = false;
     SleqpProblem* problem = step->problem;
 
-    const double eps = sleqp_params_get(step->params,
-                                        SLEQP_PARAM_EPS);
+    const double eps = sleqp_params_get(step->params, SLEQP_PARAM_EPS);
 
     SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -375,11 +381,11 @@ SLEQP_RETCODE compute_initial_direction(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_initial_step(SleqpWorkingStep* step,
-                                   double trust_radius)
+static SLEQP_RETCODE
+compute_initial_step(SleqpWorkingStep* step, double trust_radius)
 {
-  SLEQP_CALL(sleqp_sparse_vector_copy(step->initial_direction, step->initial_step));
+  SLEQP_CALL(
+    sleqp_sparse_vector_copy(step->initial_direction, step->initial_step));
 
   const double eps = sleqp_params_get(step->params, SLEQP_PARAM_EPS);
 
@@ -389,7 +395,7 @@ SLEQP_RETCODE compute_initial_step(SleqpWorkingStep* step,
 
   step->initial_step_in_working_set = true;
 
-  if(initial_norm != 0.)
+  if (initial_norm != 0.)
   {
     assert(initial_norm > 0.);
 
@@ -397,7 +403,7 @@ SLEQP_RETCODE compute_initial_step(SleqpWorkingStep* step,
 
     alpha = SLEQP_MIN(alpha, 1.);
 
-    if(sleqp_is_eq(alpha, 1., eps))
+    if (sleqp_is_eq(alpha, 1., eps))
     {
       // no scaling required...
 
@@ -405,7 +411,7 @@ SLEQP_RETCODE compute_initial_step(SleqpWorkingStep* step,
 
       const double trust_radius_sq = trust_radius * trust_radius;
 
-      //sleqp_assert_is_lt(initial_norm_sq, trust_radius_sq, eps);
+      // sleqp_assert_is_lt(initial_norm_sq, trust_radius_sq, eps);
 
       step->reduced_trust_radius = sqrt(trust_radius_sq - initial_norm_sq);
     }
@@ -417,7 +423,8 @@ SLEQP_RETCODE compute_initial_step(SleqpWorkingStep* step,
 
       // we know that the scaled initial solution
       // has norm equal to norm_ratio * trust_radius
-      step->reduced_trust_radius = trust_radius * sqrt(1. - (norm_ratio * norm_ratio));
+      step->reduced_trust_radius
+        = trust_radius * sqrt(1. - (norm_ratio * norm_ratio));
     }
   }
   else
@@ -428,12 +435,10 @@ SLEQP_RETCODE compute_initial_step(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_initial_point(SleqpWorkingStep* step,
-                                    SleqpIterate* iterate)
+static SLEQP_RETCODE
+compute_initial_point(SleqpWorkingStep* step, SleqpIterate* iterate)
 {
-  const double zero_eps = sleqp_params_get(step->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_get(step->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_primal(iterate),
                                      step->initial_step,
@@ -443,15 +448,13 @@ SLEQP_RETCODE compute_initial_point(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE compute_violated_multipliers(SleqpWorkingStep* step,
-                                           SleqpIterate* iterate)
+static SLEQP_RETCODE
+compute_violated_multipliers(SleqpWorkingStep* step, SleqpIterate* iterate)
 {
   const SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set      = sleqp_iterate_get_working_set(iterate);
 
-  const double zero_eps = sleqp_params_get(step->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_get(step->params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpProblem* problem = step->problem;
 
@@ -476,10 +479,11 @@ SLEQP_RETCODE compute_violated_multipliers(SleqpWorkingStep* step,
 
   // Compute violated multipliers
   {
-    SLEQP_CALL(sleqp_violated_constraint_multipliers(problem,
-                                                     step->initial_cons_val,
-                                                     step->violated_constraint_multipliers,
-                                                     working_set));
+    SLEQP_CALL(sleqp_violated_constraint_multipliers(
+      problem,
+      step->initial_cons_val,
+      step->violated_constraint_multipliers,
+      working_set));
 
     sleqp_log_debug("Violated constraints at initial Newton step: %d",
                     step->violated_constraint_multipliers->nnz);
@@ -488,10 +492,11 @@ SLEQP_RETCODE compute_violated_multipliers(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_working_step_set_iterate(SleqpWorkingStep* step,
-                                             SleqpIterate* iterate,
-                                             SleqpAugJac* jacobian,
-                                             double trust_radius)
+SLEQP_RETCODE
+sleqp_working_step_set_iterate(SleqpWorkingStep* step,
+                               SleqpIterate* iterate,
+                               SleqpAugJac* jacobian,
+                               double trust_radius)
 {
   SLEQP_CALL(compute_initial_direction(step, iterate, jacobian));
 
@@ -504,37 +509,42 @@ SLEQP_RETCODE sleqp_working_step_set_iterate(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
-SleqpSparseVec* sleqp_working_step_get_direction(SleqpWorkingStep* step)
+SleqpSparseVec*
+sleqp_working_step_get_direction(SleqpWorkingStep* step)
 {
   return step->initial_direction;
 }
 
-SleqpSparseVec* sleqp_working_step_get_step(SleqpWorkingStep* step)
+SleqpSparseVec*
+sleqp_working_step_get_step(SleqpWorkingStep* step)
 {
   return step->initial_step;
 }
 
-double sleqp_working_step_get_reduced_trust_radius(SleqpWorkingStep* step)
+double
+sleqp_working_step_get_reduced_trust_radius(SleqpWorkingStep* step)
 {
   return step->reduced_trust_radius;
 }
 
-bool sleqp_working_step_in_working_set(SleqpWorkingStep* step)
+bool
+sleqp_working_step_in_working_set(SleqpWorkingStep* step)
 {
   return step->initial_step_in_working_set;
 }
 
-SleqpSparseVec* sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step)
+SleqpSparseVec*
+sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step)
 {
   return step->violated_constraint_multipliers;
 }
 
-static
-SLEQP_RETCODE working_step_free(SleqpWorkingStep** star)
+static SLEQP_RETCODE
+working_step_free(SleqpWorkingStep** star)
 {
   SleqpWorkingStep* step = *star;
 
-  if(!step)
+  if (!step)
   {
     return SLEQP_OKAY;
   }
@@ -564,24 +574,25 @@ SLEQP_RETCODE working_step_free(SleqpWorkingStep** star)
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_working_step_capture(SleqpWorkingStep* step)
+SLEQP_RETCODE
+sleqp_working_step_capture(SleqpWorkingStep* step)
 {
   ++step->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_working_step_release(SleqpWorkingStep** star)
+SLEQP_RETCODE
+sleqp_working_step_release(SleqpWorkingStep** star)
 {
   SleqpWorkingStep* step = *star;
 
-  if(!step)
+  if (!step)
   {
     return SLEQP_OKAY;
   }
 
-  if(--step->refcount == 0)
+  if (--step->refcount == 0)
   {
     SLEQP_CALL(working_step_free(star));
   }

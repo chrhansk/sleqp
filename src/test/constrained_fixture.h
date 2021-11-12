@@ -18,9 +18,10 @@ extern SleqpSparseVec* constrained_optimal;
 
 extern SleqpFunc* constrained_func;
 
-void constrained_setup();
+void
+constrained_setup();
 
-void constrained_teardown();
-
+void
+constrained_teardown();
 
 #endif /* CONSTRAINED_FIXTURE_H */

@@ -7,8 +7,8 @@
  **/
 
 #include "sleqp/export.h"
-#include "sleqp/pub_problem.h"
 #include "sleqp/pub_iterate.h"
+#include "sleqp/pub_problem.h"
 
 /**
  * @defgroup scaling NLP scaling
@@ -70,78 +70,78 @@
 
 typedef struct SleqpScaling SleqpScaling;
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_create(SleqpScaling** scaling,
-                                   int num_variables,
-                                   int num_constraints);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_create(SleqpScaling** scaling,
+                     int num_variables,
+                     int num_constraints);
 
-SLEQP_RETCODE sleqp_scaling_reset(SleqpScaling* scaling);
+SLEQP_RETCODE
+sleqp_scaling_reset(SleqpScaling* scaling);
 
-SLEQP_EXPORT int sleqp_scaling_get_num_variables(SleqpScaling* scaling);
-SLEQP_EXPORT int sleqp_scaling_get_num_constraints(SleqpScaling* scaling);
+SLEQP_EXPORT int
+sleqp_scaling_get_num_variables(SleqpScaling* scaling);
+SLEQP_EXPORT int
+sleqp_scaling_get_num_constraints(SleqpScaling* scaling);
 
-SLEQP_EXPORT int sleqp_scaling_get_func_weight(SleqpScaling* scaling);
+SLEQP_EXPORT int
+sleqp_scaling_get_func_weight(SleqpScaling* scaling);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScaling* scaling,
-                                            int weight);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_set_func_weight(SleqpScaling* scaling, int weight);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScaling* scaling,
-                                                         double nominal_value);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_set_func_weight_from_nominal(SleqpScaling* scaling,
+                                           double nominal_value);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScaling* scaling,
-                                           int index,
-                                           int weight);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_set_var_weight(SleqpScaling* scaling, int index, int weight);
 
 /**
  * Sets variable scaling weights in order for the scaling of the primal values
  * to map all of the given nominal values to [.5, 1.)
  **/
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScaling* scaling,
-                                                         double* nominal_values);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_set_var_weights_from_nominal(SleqpScaling* scaling,
+                                           double* nominal_values);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScaling* scaling,
-                                                        int index,
-                                                        double nominal_value);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_set_var_weight_from_nominal(SleqpScaling* scaling,
+                                          int index,
+                                          double nominal_value);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScaling* scaling,
-                                            int index,
-                                            int weight);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_set_cons_weight(SleqpScaling* scaling, int index, int weight);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScaling* scaling,
-                                                          double* nominal_values);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_set_cons_weights_from_nominal(SleqpScaling* scaling,
+                                            double* nominal_values);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScaling* scaling,
-                                                         int index,
-                                                         double nominal_value);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_set_cons_weight_from_nominal(SleqpScaling* scaling,
+                                           int index,
+                                           double nominal_value);
 
-SLEQP_EXPORT int* sleqp_scaling_get_var_weights(SleqpScaling* scaling);
+SLEQP_EXPORT int*
+sleqp_scaling_get_var_weights(SleqpScaling* scaling);
 
-SLEQP_EXPORT int* sleqp_scaling_get_cons_weights(SleqpScaling* scaling);
+SLEQP_EXPORT int*
+sleqp_scaling_get_cons_weights(SleqpScaling* scaling);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
-                                               SleqpSparseVec* gradient,
-                                               double eps);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
+                                 SleqpSparseVec* gradient,
+                                 double eps);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
-                                          SleqpSparseMatrix* cons_jac,
-                                          double eps);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
+                            SleqpSparseMatrix* cons_jac,
+                            double eps);
 
-  
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_capture(SleqpScaling* scaling);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_capture(SleqpScaling* scaling);
 
-SLEQP_EXPORT SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_scaling_release(SleqpScaling** star);
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_scaling_release(SleqpScaling** star);
 
 /**
  * @}

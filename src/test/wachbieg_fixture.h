@@ -17,8 +17,10 @@ extern SleqpSparseVec* wachbieg_optimal;
 
 extern SleqpFunc* wachbieg_func;
 
-void wachbieg_setup();
+void
+wachbieg_setup();
 
-void wachbieg_teardown();
+void
+wachbieg_teardown();
 
 #endif /* WACHBIEG_FIXTURE_H */

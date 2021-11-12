@@ -3,38 +3,39 @@
 #include "feas.h"
 #include "log.h"
 
-#define HEADER_FORMAT "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | %18s"
+#define HEADER_FORMAT                                                          \
+  "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | "  \
+  "%18s"
 
-#define LINE_FORMAT SLEQP_FORMAT_BOLD "%10s " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14e | %18s"
+#define LINE_FORMAT                                                            \
+  SLEQP_FORMAT_BOLD                                                            \
+  "%10s " SLEQP_FORMAT_RESET                                                   \
+  "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14e | %18s"
 
-#define INITIAL_LINE_FORMAT SLEQP_FORMAT_BOLD "%10s " SLEQP_FORMAT_RESET "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s | %18s"
+#define INITIAL_LINE_FORMAT                                                    \
+  SLEQP_FORMAT_BOLD                                                            \
+  "%10s " SLEQP_FORMAT_RESET                                                   \
+  "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s | %18s"
 
 #define DEFAULT_BUF_SIZE 1024
 
 static SLEQP_RETCODE
-print_iteration(SleqpProblemSolver* solver,
-                char* buf,
-                int buf_size)
+print_iteration(SleqpProblemSolver* solver, char* buf, int buf_size)
 {
-  if(solver->solver_phase == SLEQP_SOLVER_PHASE_OPTIMIZATION)
+  if (solver->solver_phase == SLEQP_SOLVER_PHASE_OPTIMIZATION)
   {
-    snprintf(buf,
-             buf_size,
-             "%d",
-             solver->iteration);
+    snprintf(buf, buf_size, "%d", solver->iteration);
   }
   else
   {
-    snprintf(buf,
-             buf_size,
-             "R %d",
-             solver->iteration);
+    snprintf(buf, buf_size, "R %d", solver->iteration);
   }
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
+SLEQP_RETCODE
+sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
 {
   sleqp_log_info(HEADER_FORMAT,
                  "Iteration",
@@ -58,13 +59,12 @@ SLEQP_RETCODE sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_solver_print_initial_line(SleqpProblemSolver* solver)
+SLEQP_RETCODE
+sleqp_problem_solver_print_initial_line(SleqpProblemSolver* solver)
 {
   char iteration_buf[DEFAULT_BUF_SIZE];
 
-  SLEQP_CALL(print_iteration(solver,
-                             iteration_buf,
-                             DEFAULT_BUF_SIZE));
+  SLEQP_CALL(print_iteration(solver, iteration_buf, DEFAULT_BUF_SIZE));
 
   sleqp_log_info(INITIAL_LINE_FORMAT,
                  iteration_buf,
@@ -119,7 +119,8 @@ static SLEQP_RETCODE print_cond(char cond_buffer[DEFAULT_BUF_SIZE],
 }
 */
 
-SLEQP_RETCODE sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
+SLEQP_RETCODE
+sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
 {
   /*
   bool exact = false;
@@ -145,31 +146,27 @@ SLEQP_RETCODE sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
                         basis_condition));
   */
 
-  const char* steptype_descriptions[] = {
-    [SLEQP_STEPTYPE_NONE] = "",
-    [SLEQP_STEPTYPE_ACCEPTED] = "Accepted",
-    [SLEQP_STEPTYPE_ACCEPTED_FULL] = "Accepted (full)",
-    [SLEQP_STEPTYPE_ACCEPTED_SOC] = "Accepted SOC",
-    [SLEQP_STEPTYPE_REJECTED] = "Rejected"
-  };
+  const char* steptype_descriptions[]
+    = {[SLEQP_STEPTYPE_NONE]          = "",
+       [SLEQP_STEPTYPE_ACCEPTED]      = "Accepted",
+       [SLEQP_STEPTYPE_ACCEPTED_FULL] = "Accepted (full)",
+       [SLEQP_STEPTYPE_ACCEPTED_SOC]  = "Accepted SOC",
+       [SLEQP_STEPTYPE_REJECTED]      = "Rejected"};
 
   char working_set_buf[DEFAULT_BUF_SIZE];
 
   char iteration_buf[DEFAULT_BUF_SIZE];
 
-  SLEQP_CALL(print_iteration(solver,
-                             iteration_buf,
-                             DEFAULT_BUF_SIZE));
+  SLEQP_CALL(print_iteration(solver, iteration_buf, DEFAULT_BUF_SIZE));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(solver->iterate);
 
-  SleqpWorkingSet* trial_working_set = sleqp_iterate_get_working_set(solver->trial_iterate);
+  SleqpWorkingSet* trial_working_set
+    = sleqp_iterate_get_working_set(solver->trial_iterate);
 
-  if(sleqp_working_set_eq(working_set, trial_working_set))
+  if (sleqp_working_set_eq(working_set, trial_working_set))
   {
-    snprintf(working_set_buf,
-             DEFAULT_BUF_SIZE,
-             "--");
+    snprintf(working_set_buf, DEFAULT_BUF_SIZE, "--");
   }
   else
   {
@@ -202,14 +199,15 @@ SLEQP_RETCODE sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_solver_print_stats(const SleqpProblemSolver* solver)
+SLEQP_RETCODE
+sleqp_problem_solver_print_stats(const SleqpProblemSolver* solver)
 {
   SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
   const double elapsed_seconds = sleqp_timer_get_ttl(solver->elapsed_timer);
 
-  SLEQP_CALL(sleqp_trial_point_solver_print_stats(trial_point_solver,
-                                                  elapsed_seconds));
+  SLEQP_CALL(
+    sleqp_trial_point_solver_print_stats(trial_point_solver, elapsed_seconds));
 
   return SLEQP_OKAY;
 }

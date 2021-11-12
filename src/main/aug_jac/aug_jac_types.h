@@ -17,17 +17,17 @@ typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_PROJECTION)(SleqpSparseVec* rhs,
 
 typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_CONDITION)(bool* exact,
                                                  double* condition,
-                                                 void *aug_jac);
+                                                 void* aug_jac);
 
 typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_FREE)(void* aug_jac);
 
-typedef struct {
-        SLEQP_AUG_JAC_SET_ITERATE       set_iterate;
-        SLEQP_AUG_JAC_MIN_NORM_SOLUTION min_norm_solution;
-        SLEQP_AUG_JAC_PROJECTION        projection;
-        SLEQP_AUG_JAC_CONDITION         condition;
-        SLEQP_AUG_JAC_FREE              free;
+typedef struct
+{
+  SLEQP_AUG_JAC_SET_ITERATE set_iterate;
+  SLEQP_AUG_JAC_MIN_NORM_SOLUTION min_norm_solution;
+  SLEQP_AUG_JAC_PROJECTION projection;
+  SLEQP_AUG_JAC_CONDITION condition;
+  SLEQP_AUG_JAC_FREE free;
 } SleqpAugJacCallbacks;
-
 
 #endif /* SLEQP_AUG_JAC_TYPES_H */

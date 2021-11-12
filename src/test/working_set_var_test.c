@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "dual_estimation.h"
@@ -21,7 +21,8 @@ SleqpIterate* iterate;
 SleqpLPi* lp_interface;
 SleqpCauchy* cauchy_data;
 
-void working_set_var_setup()
+void
+working_set_var_setup()
 {
   quadfunc_setup();
 
@@ -36,14 +37,12 @@ void working_set_var_setup()
                                           quadfunc_cons_lb,
                                           quadfunc_cons_ub));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_variables(problem);
   const int num_constraints = sleqp_problem_num_constraints(problem);
 
-  ASSERT_CALL(sleqp_iterate_create(&iterate,
-                                   problem,
-                                   quadfunc_x));
+  ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadfunc_x));
 
-  int num_lp_variables = num_variables + 2*num_constraints;
+  int num_lp_variables   = num_variables + 2 * num_constraints;
   int num_lp_constraints = num_constraints;
 
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
@@ -52,10 +51,8 @@ void working_set_var_setup()
                                                  params,
                                                  options));
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_NONE,
-                                     NULL));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
   ASSERT_CALL(sleqp_standard_cauchy_create(&cauchy_data,
                                            problem,
@@ -71,29 +68,26 @@ START_TEST(test_inactive)
   primal->data[0] = 1.5;
   primal->data[1] = 2.5;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_NONE,
-                                     NULL));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   double trust_radius = 0.25, penalty_parameter = 1.;
 
-  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
-                                       iterate,
-                                       trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
                                  sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
-                                           iterate));
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
 
-  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0), SLEQP_INACTIVE);
-  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1), SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0),
+                   SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1),
+                   SLEQP_INACTIVE);
 }
 END_TEST
 
@@ -104,29 +98,26 @@ START_TEST(test_active)
   primal->data[0] = 1.5;
   primal->data[1] = 2.5;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_NONE,
-                                     NULL));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   double trust_radius = 1., penalty_parameter = 1.;
 
-  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
-                                       iterate,
-                                       trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
                                  sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
-                                           iterate));
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
 
-  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0), SLEQP_ACTIVE_LOWER);
-  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1), SLEQP_ACTIVE_LOWER);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0),
+                   SLEQP_ACTIVE_LOWER);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1),
+                   SLEQP_ACTIVE_LOWER);
 }
 END_TEST
 
@@ -137,33 +128,31 @@ START_TEST(test_first_active)
   primal->data[0] = 1.;
   primal->data[1] = 2.5;
 
-  ASSERT_CALL(sleqp_set_and_evaluate(problem,
-                                     iterate,
-                                     SLEQP_VALUE_REASON_NONE,
-                                     NULL));
+  ASSERT_CALL(
+    sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
   SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
 
   double trust_radius = 0.25, penalty_parameter = 1.;
 
-  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data,
-                                       iterate,
-                                       trust_radius));
+  ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
                                  sleqp_iterate_get_func_grad(iterate),
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data,
-                                           iterate));
+  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
 
-  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0), SLEQP_ACTIVE_LOWER);
-  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1), SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0),
+                   SLEQP_ACTIVE_LOWER);
+  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1),
+                   SLEQP_INACTIVE);
 }
 END_TEST
 
-void working_set_var_teardown()
+void
+working_set_var_teardown()
 {
   ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 
@@ -180,10 +169,11 @@ void working_set_var_teardown()
   quadfunc_teardown();
 }
 
-Suite* working_set_var_test_suite()
+Suite*
+working_set_var_test_suite()
 {
-  Suite *suite;
-  TCase *tc_working_set_var;
+  Suite* suite;
+  TCase* tc_working_set_var;
 
   suite = suite_create("Dual estimation tests");
 

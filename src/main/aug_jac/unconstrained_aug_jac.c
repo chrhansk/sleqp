@@ -3,8 +3,7 @@
 #include <assert.h>
 
 static SLEQP_RETCODE
-aug_jac_set_iterate(SleqpIterate* iterate,
-                    void* aug_jac)
+aug_jac_set_iterate(SleqpIterate* iterate, void* aug_jac)
 {
 
 #ifndef DEBUG
@@ -39,7 +38,7 @@ aug_jac_projection(SleqpSparseVec* rhs,
 
 #ifndef DEBUG
 
-  if(dual_sol)
+  if (dual_sol)
   {
     assert(dual_sol->dim == 0);
   }
@@ -52,31 +51,25 @@ aug_jac_projection(SleqpSparseVec* rhs,
 }
 
 static SLEQP_RETCODE
-aug_jac_condition(bool* exact,
-                  double* condition,
-                  void *aug_jac)
+aug_jac_condition(bool* exact, double* condition, void* aug_jac)
 {
-  *exact = true;
+  *exact     = true;
   *condition = 1.;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unconstrained_aug_jac_create(SleqpAugJac** star,
-                                                 SleqpProblem* problem)
+SLEQP_RETCODE
+sleqp_unconstrained_aug_jac_create(SleqpAugJac** star, SleqpProblem* problem)
 {
-  SleqpAugJacCallbacks callbacks = {
-    .set_iterate       = aug_jac_set_iterate,
-    .min_norm_solution = aug_jac_min_norm_solution,
-    .projection        = aug_jac_projection,
-    .condition         = aug_jac_condition,
-    .free              = NULL
-  };
+  SleqpAugJacCallbacks callbacks
+    = {.set_iterate       = aug_jac_set_iterate,
+       .min_norm_solution = aug_jac_min_norm_solution,
+       .projection        = aug_jac_projection,
+       .condition         = aug_jac_condition,
+       .free              = NULL};
 
-  SLEQP_CALL(sleqp_aug_jac_create(star,
-                                  problem,
-                                  &callbacks,
-                                  NULL));
+  SLEQP_CALL(sleqp_aug_jac_create(star, problem, &callbacks, NULL));
 
   return SLEQP_OKAY;
 }

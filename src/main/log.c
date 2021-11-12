@@ -1,8 +1,8 @@
 #include "log.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
 #include <string.h>
 
 #define TIME_BUF_SIZE 128
@@ -15,14 +15,12 @@ struct LevelInfo
   const char* color;
 };
 
-static struct LevelInfo const level_infos[SLEQP_NUM_LOG_LEVELS] =
-{
-  {"silent", SLEQP_FORMAT_RED},
-  {"error", SLEQP_FORMAT_RED},
-  {"warn", SLEQP_FORMAT_YELLOW},
-  {"info", SLEQP_FORMAT_GREEN},
-  {"debug", SLEQP_FORMAT_BLUE}
-};
+static struct LevelInfo const level_infos[SLEQP_NUM_LOG_LEVELS]
+  = {{"silent", SLEQP_FORMAT_RED},
+     {"error", SLEQP_FORMAT_RED},
+     {"warn", SLEQP_FORMAT_YELLOW},
+     {"info", SLEQP_FORMAT_GREEN},
+     {"debug", SLEQP_FORMAT_BLUE}};
 
 #ifdef NDEBUG
 static SLEQP_LOG_LEVEL level = SLEQP_LOG_INFO;
@@ -30,23 +28,24 @@ static SLEQP_LOG_LEVEL level = SLEQP_LOG_INFO;
 static SLEQP_LOG_LEVEL level = SLEQP_LOG_DEBUG;
 #endif
 
-SLEQP_LOG_LEVEL sleqp_log_level()
+SLEQP_LOG_LEVEL
+sleqp_log_level()
 {
   return level;
 }
 
-void sleqp_log_set_level(SLEQP_LOG_LEVEL value)
+void
+sleqp_log_set_level(SLEQP_LOG_LEVEL value)
 {
   level = value;
 }
 
-static void builtin_handler(SLEQP_LOG_LEVEL level,
-                            time_t time,
-                            const char* message)
+static void
+builtin_handler(SLEQP_LOG_LEVEL level, time_t time, const char* message)
 {
   char buf[TIME_BUF_SIZE];
 
-  struct tm *lt = localtime(&time);
+  struct tm* lt = localtime(&time);
 
   buf[strftime(buf, TIME_BUF_SIZE - 1, "%H:%M:%S", lt)] = '\0';
 
@@ -60,7 +59,8 @@ static void builtin_handler(SLEQP_LOG_LEVEL level,
 
 static SLEQP_LOG_HANDLER handler = builtin_handler;
 
-void sleqp_log_msg_level(int level, const char *fmt, ...)
+void
+sleqp_log_msg_level(int level, const char* fmt, ...)
 {
   char message_buf[TOTAL_BUF_SIZE];
 
@@ -75,12 +75,18 @@ void sleqp_log_msg_level(int level, const char *fmt, ...)
   handler(level, t, message_buf);
 }
 
-void sleqp_log_set_handler(SLEQP_LOG_HANDLER value)
+void
+sleqp_log_set_handler(SLEQP_LOG_HANDLER value)
 {
   handler = value;
 }
 
-void sleqp_log_trace_level(int level, const char *file, int line, const char *fmt, ...)
+void
+sleqp_log_trace_level(int level,
+                      const char* file,
+                      int line,
+                      const char* fmt,
+                      ...)
 {
   char message_buf[TOTAL_BUF_SIZE];
   char total_buf[EXTENDED_BUF_SIZE];

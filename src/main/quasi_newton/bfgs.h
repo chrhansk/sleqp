@@ -26,10 +26,10 @@
  *
  **/
 SLEQP_NODISCARD
-SLEQP_RETCODE sleqp_bfgs_create(SleqpQuasiNewton** star,
-                                SleqpFunc* func,
-                                SleqpParams* params,
-                                SleqpOptions* options);
-
+SLEQP_RETCODE
+sleqp_bfgs_create(SleqpQuasiNewton** star,
+                  SleqpFunc* func,
+                  SleqpParams* params,
+                  SleqpOptions* options);
 
 #endif /* SLEQP_BFGS_H */

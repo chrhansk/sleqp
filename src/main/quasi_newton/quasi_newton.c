@@ -26,7 +26,7 @@ quasi_newton_func_set_value(SleqpFunc* func,
                             int* cons_jac_nnz,
                             void* func_data)
 {
-  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*) func_data;
+  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
   SLEQP_CALL(sleqp_func_set_value(quasi_newton->func,
                                   x,
@@ -40,14 +40,11 @@ quasi_newton_func_set_value(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-quasi_newton_func_val(SleqpFunc* func,
-                      double* func_val,
-                      void* func_data)
+quasi_newton_func_val(SleqpFunc* func, double* func_val, void* func_data)
 {
-  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*) func_data;
+  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_val(quasi_newton->func,
-                            func_val));
+  SLEQP_CALL(sleqp_func_val(quasi_newton->func, func_val));
 
   return SLEQP_OKAY;
 }
@@ -57,10 +54,9 @@ quasi_newton_func_grad(SleqpFunc* func,
                        SleqpSparseVec* func_grad,
                        void* func_data)
 {
-  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*) func_data;
+  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_grad(quasi_newton->func,
-                             func_grad));
+  SLEQP_CALL(sleqp_func_grad(quasi_newton->func, func_grad));
 
   return SLEQP_OKAY;
 }
@@ -71,11 +67,9 @@ quasi_newton_func_cons_val(SleqpFunc* func,
                            SleqpSparseVec* cons_val,
                            void* func_data)
 {
-  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*) func_data;
+  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_cons_val(quasi_newton->func,
-                                 cons_indices,
-                                 cons_val));
+  SLEQP_CALL(sleqp_func_cons_val(quasi_newton->func, cons_indices, cons_val));
 
   return SLEQP_OKAY;
 }
@@ -86,11 +80,9 @@ quasi_newton_func_cons_jac(SleqpFunc* func,
                            SleqpSparseMatrix* cons_jac,
                            void* func_data)
 {
-  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*) func_data;
+  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_cons_jac(quasi_newton->func,
-                                 cons_indices,
-                                 cons_jac));
+  SLEQP_CALL(sleqp_func_cons_jac(quasi_newton->func, cons_indices, cons_jac));
 
   return SLEQP_OKAY;
 }
@@ -103,11 +95,9 @@ quasi_newton_func_hess_prod(SleqpFunc* func,
                             SleqpSparseVec* product,
                             void* func_data)
 {
-  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*) func_data;
+  SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_quasi_newton_hess_prod(quasi_newton,
-                                          direction,
-                                          product));
+  SLEQP_CALL(sleqp_quasi_newton_hess_prod(quasi_newton, direction, product));
 
   return SLEQP_OKAY;
 }
@@ -117,18 +107,16 @@ quasi_newton_func_create(SleqpQuasiNewton* quasi_newton)
 {
   SleqpFunc* func = quasi_newton->func;
 
-  const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_variables   = sleqp_func_get_num_variables(func);
   const int num_constraints = sleqp_func_get_num_constraints(func);
 
-  SleqpFuncCallbacks callbacks = {
-    .set_value = quasi_newton_func_set_value,
-    .func_val  = quasi_newton_func_val,
-    .func_grad = quasi_newton_func_grad,
-    .cons_val  = quasi_newton_func_cons_val,
-    .cons_jac  = quasi_newton_func_cons_jac,
-    .hess_prod = quasi_newton_func_hess_prod,
-    .func_free = NULL
-  };
+  SleqpFuncCallbacks callbacks = {.set_value = quasi_newton_func_set_value,
+                                  .func_val  = quasi_newton_func_val,
+                                  .func_grad = quasi_newton_func_grad,
+                                  .cons_val  = quasi_newton_func_cons_val,
+                                  .cons_jac  = quasi_newton_func_cons_jac,
+                                  .hess_prod = quasi_newton_func_hess_prod,
+                                  .func_free = NULL};
 
   SLEQP_CALL(sleqp_func_create(&quasi_newton->quasi_newton_func,
                                &callbacks,
@@ -139,16 +127,17 @@ quasi_newton_func_create(SleqpQuasiNewton* quasi_newton)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_quasi_newton_create(SleqpQuasiNewton** star,
-                                        SleqpFunc* func,
-                                        SleqpQuasiNewtonCallbacks* callbacks,
-                                        void* quasi_newton_data)
+SLEQP_RETCODE
+sleqp_quasi_newton_create(SleqpQuasiNewton** star,
+                          SleqpFunc* func,
+                          SleqpQuasiNewtonCallbacks* callbacks,
+                          void* quasi_newton_data)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpQuasiNewton* quasi_newton = *star;
 
-  *quasi_newton = (SleqpQuasiNewton) {0};
+  *quasi_newton = (SleqpQuasiNewton){0};
 
   quasi_newton->refcount = 1;
 
@@ -159,17 +148,17 @@ SLEQP_RETCODE sleqp_quasi_newton_create(SleqpQuasiNewton** star,
 
   SLEQP_CALL(quasi_newton_func_create(quasi_newton));
 
-  quasi_newton->callbacks = *callbacks;
+  quasi_newton->callbacks         = *callbacks;
   quasi_newton->quasi_newton_data = quasi_newton_data;
 
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_quasi_newton_push(SleqpQuasiNewton* quasi_newton,
-                                      const SleqpIterate* old_iterate,
-                                      const SleqpIterate* new_iterate,
-                                      const SleqpSparseVec* multipliers)
+SLEQP_RETCODE
+sleqp_quasi_newton_push(SleqpQuasiNewton* quasi_newton,
+                        const SleqpIterate* old_iterate,
+                        const SleqpIterate* new_iterate,
+                        const SleqpSparseVec* multipliers)
 {
   SLEQP_CALL(sleqp_timer_start(quasi_newton->update_timer));
 
@@ -183,37 +172,39 @@ SLEQP_RETCODE sleqp_quasi_newton_push(SleqpQuasiNewton* quasi_newton,
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_quasi_newton_reset(SleqpQuasiNewton* quasi_newton)
+SLEQP_RETCODE
+sleqp_quasi_newton_reset(SleqpQuasiNewton* quasi_newton)
 {
   SLEQP_CALL(quasi_newton->callbacks.reset(quasi_newton->quasi_newton_data));
 
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_quasi_newton_hess_prod(SleqpQuasiNewton* quasi_newton,
-                                           const SleqpSparseVec* direction,
-                                           SleqpSparseVec* product)
+SLEQP_RETCODE
+sleqp_quasi_newton_hess_prod(SleqpQuasiNewton* quasi_newton,
+                             const SleqpSparseVec* direction,
+                             SleqpSparseVec* product)
 {
-  SLEQP_CALL(quasi_newton->callbacks.hess_prod(direction,
-                                               product,
-                                               quasi_newton->quasi_newton_data));
+  SLEQP_CALL(quasi_newton->callbacks
+               .hess_prod(direction, product, quasi_newton->quasi_newton_data));
 
   return SLEQP_OKAY;
 }
 
-SleqpTimer* sleqp_quasi_newton_update_timer(SleqpQuasiNewton* quasi_newton)
+SleqpTimer*
+sleqp_quasi_newton_update_timer(SleqpQuasiNewton* quasi_newton)
 {
   return quasi_newton->update_timer;
 }
 
-SleqpFunc* sleqp_quasi_newton_get_func(SleqpQuasiNewton* quasi_newton)
+SleqpFunc*
+sleqp_quasi_newton_get_func(SleqpQuasiNewton* quasi_newton)
 {
   return quasi_newton->quasi_newton_func;
 }
 
-SLEQP_RETCODE sleqp_quasi_newton_capture(SleqpQuasiNewton* quasi_newton)
+SLEQP_RETCODE
+sleqp_quasi_newton_capture(SleqpQuasiNewton* quasi_newton)
 {
   ++quasi_newton->refcount;
 
@@ -238,16 +229,17 @@ quasi_newton_free(SleqpQuasiNewton** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_quasi_newton_release(SleqpQuasiNewton** star)
+SLEQP_RETCODE
+sleqp_quasi_newton_release(SleqpQuasiNewton** star)
 {
   SleqpQuasiNewton* quasi_newton = *star;
 
-  if(!quasi_newton)
+  if (!quasi_newton)
   {
     return SLEQP_OKAY;
   }
 
-  if(--(quasi_newton->refcount) == 0)
+  if (--(quasi_newton->refcount) == 0)
   {
     SLEQP_CALL(quasi_newton_free(star));
   }
@@ -257,28 +249,23 @@ SLEQP_RETCODE sleqp_quasi_newton_release(SleqpQuasiNewton** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_quasi_newton_create_default(SleqpQuasiNewton** star,
-                                                SleqpFunc* func,
-                                                SleqpParams* params,
-                                                SleqpOptions* options)
+SLEQP_RETCODE
+sleqp_quasi_newton_create_default(SleqpQuasiNewton** star,
+                                  SleqpFunc* func,
+                                  SleqpParams* params,
+                                  SleqpOptions* options)
 {
-  const SLEQP_HESSIAN_EVAL hessian_eval = sleqp_options_get_int(options,
-                                                                SLEQP_OPTION_INT_HESSIAN_EVAL);
+  const SLEQP_HESSIAN_EVAL hessian_eval
+    = sleqp_options_get_int(options, SLEQP_OPTION_INT_HESSIAN_EVAL);
 
-  if(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS ||
-     hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
+  if (hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS
+      || hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
   {
-    SLEQP_CALL(sleqp_bfgs_create(star,
-                                 func,
-                                 params,
-                                 options));
+    SLEQP_CALL(sleqp_bfgs_create(star, func, params, options));
   }
-  else if(hessian_eval == SLEQP_HESSIAN_EVAL_SR1)
+  else if (hessian_eval == SLEQP_HESSIAN_EVAL_SR1)
   {
-    SLEQP_CALL(sleqp_sr1_create(star,
-                                func,
-                                params,
-                                options));
+    SLEQP_CALL(sleqp_sr1_create(star, func, params, options));
   }
   else
   {

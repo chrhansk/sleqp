@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "mem.h"
@@ -40,16 +40,13 @@ START_TEST(test_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver,
-                                        &solution_iterate));
+  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
-  ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   rosenbrock_optimal,
-                                   1e-6));
+  ck_assert(sleqp_sparse_vector_eq(actual_solution, rosenbrock_optimal, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -61,10 +58,11 @@ START_TEST(test_solve)
 }
 END_TEST
 
-Suite* dyn_test_suite()
+Suite*
+dyn_test_suite()
 {
-  Suite *suite;
-  TCase *tc_dyn;
+  Suite* suite;
+  TCase* tc_dyn;
 
   suite = suite_create("Unconstrained tests");
 
