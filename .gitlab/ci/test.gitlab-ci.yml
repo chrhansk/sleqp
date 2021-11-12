@@ -54,6 +54,18 @@ test_memcheck:
     paths:
       - build/Testing/Temporary/MemoryChecker.*.log
 
+test_sanitizers:
+  extends: .test
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS -DUSE_SANITIZER=$SANITIZER
+    - make build_tests test
+  parallel:
+    matrix:
+      - SANITIZER:
+        - 'Address;Undefined;Leak'
+        - Thread
+
 test_python:
   extends: .test
   script:

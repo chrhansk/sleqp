@@ -15,12 +15,15 @@ to C++, C, and python. It uses an active set method based on a
 combination of successive linear programming and equality constrained
 quadratic programming.")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
 include(CMakePackageConfigHelpers)
 include(FindPackageHandleStandardArgs)
 include(GenerateExportHeader)
 include(CheckCCompilerFlag)
+include(CTest)
 
-include (CTest)
+include(Sanitizers)
 
 # Get the current working branch
 execute_process(
@@ -41,8 +44,6 @@ execute_process(
 set(PROJECT_NAMESPACE "${PROJECT_NAME}::")
 
 string(TOUPPER "${PROJECT_NAME}" PROJECT_PREFIX)
-
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 # Options / user variables
 
