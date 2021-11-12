@@ -7,18 +7,10 @@
 #include "params.h"
 #include "sparse/sparse_factorization.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_standard_aug_jac_create(SleqpAugJac** star,
-                                              SleqpProblem* problem,
-                                              SleqpParams* params,
-                                              SleqpSparseFactorization* sparse_factorization);
-
-#ifdef __cplusplus
-}
-#endif
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_standard_aug_jac_create(SleqpAugJac** star,
+                                            SleqpProblem* problem,
+                                            SleqpParams* params,
+                                            SleqpSparseFactorization* sparse_factorization);
 
 #endif /* SLEQP_STANDARD_AUG_JAC_H */

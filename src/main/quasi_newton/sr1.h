@@ -14,18 +14,10 @@
 
 #include "quasi_newton_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_sr1_create(SleqpQuasiNewton** star,
-                                 SleqpFunc* func,
-                                 SleqpParams* params,
-                                 SleqpOptions* options);
-
-#ifdef __cplusplus
-}
-#endif
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_sr1_create(SleqpQuasiNewton** star,
+                               SleqpFunc* func,
+                               SleqpParams* params,
+                               SleqpOptions* options);
 
 #endif /* SLEQP_SR1_H */

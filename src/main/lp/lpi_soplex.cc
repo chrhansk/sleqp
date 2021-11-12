@@ -1,14 +1,18 @@
-#include "lpi_soplex.h"
-
 #include <iostream>
 #include <vector>
 
 #include <soplex.h>
 
+extern "C"
+{
+#include "lpi_soplex.h"
+
 #include "cmp.h"
 #include "defs.h"
 #include "log.h"
 #include "mem.h"
+}
+
 
 static const double tolerance_factor = 1e-1;
 

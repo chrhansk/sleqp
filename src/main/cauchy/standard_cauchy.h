@@ -13,19 +13,11 @@
 
 #include "lp/lpi.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_standard_cauchy_create(SleqpCauchy** star,
-                                             SleqpProblem* problem,
-                                             SleqpParams* params,
-                                             SleqpOptions* options,
-                                             SleqpLPi* lp_interface);
-
-#ifdef __cplusplus
-}
-#endif
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_standard_cauchy_create(SleqpCauchy** star,
+                                           SleqpProblem* problem,
+                                           SleqpParams* params,
+                                           SleqpOptions* options,
+                                           SleqpLPi* lp_interface);
 
 #endif /* SLEQP_STANDARD_CAUCHY_H */

@@ -16,19 +16,11 @@
 
 #include "aug_jac/aug_jac.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_newton_solver_create(SleqpEQPSolver** star,
-                                           SleqpProblem* problem,
-                                           SleqpParams* params,
-                                           SleqpOptions* options,
-                                           SleqpWorkingStep* step);
-
-#ifdef __cplusplus
-}
-#endif
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_newton_solver_create(SleqpEQPSolver** star,
+                                         SleqpProblem* problem,
+                                         SleqpParams* params,
+                                         SleqpOptions* options,
+                                         SleqpWorkingStep* step);
 
 #endif /* SLEQP_NEWTON_H */

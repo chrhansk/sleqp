@@ -5,17 +5,9 @@
 #include "problem.h"
 #include "params.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_unconstrained_cauchy_create(SleqpCauchy** star,
-                                                  SleqpProblem* problem,
-                                                  SleqpParams* params);
-
-#ifdef __cplusplus
-}
-#endif
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_unconstrained_cauchy_create(SleqpCauchy** star,
+                                                SleqpProblem* problem,
+                                                SleqpParams* params);
 
 #endif /* SLEQP_UNCONSTRAINED_CAUCHY_H */

@@ -23,37 +23,29 @@
 
 #include "aug_jac/aug_jac.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+typedef struct SleqpDualEstimation SleqpDualEstimation;
 
-  typedef struct SleqpDualEstimation SleqpDualEstimation;
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_dual_estimation_create(SleqpDualEstimation** star,
+                                           SleqpProblem* problem);
 
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_dual_estimation_create(SleqpDualEstimation** star,
-                                             SleqpProblem* problem);
+/**
+ * Computes the estimation of the dual variables for the given iterate
+ * and stores the estimated valeus in the corresponding fields.
+ *
+ * @param[in]     estimation_data  The required estimation data
+ * @param[in,out] iterate          The given iterate
+ * @param[out]    residuum         The (optional) residuum of the estimation
+ * @param[in]     aug_jacobian     The augmented Jacobian
+ *
+ **/
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
+                                            SleqpIterate* iterate,
+                                            SleqpSparseVec* residuum,
+                                            SleqpAugJac* aug_jacobian);
 
-  /**
-   * Computes the estimation of the dual variables for the given iterate
-   * and stores the estimated valeus in the corresponding fields.
-   *
-   * @param[in]     estimation_data  The required estimation data
-   * @param[in,out] iterate          The given iterate
-   * @param[out]    residuum         The (optional) residuum of the estimation
-   * @param[in]     aug_jacobian     The augmented Jacobian
-   *
-   **/
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
-                                              SleqpIterate* iterate,
-                                              SleqpSparseVec* residuum,
-                                              SleqpAugJac* aug_jacobian);
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_dual_estimation_free(SleqpDualEstimation** star);
-
-#ifdef __cplusplus
-}
-#endif
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_dual_estimation_free(SleqpDualEstimation** star);
 
 #endif /* SLEQP_DUAL_ESTIMATION_H */

@@ -35,31 +35,23 @@
 #include "iterate.h"
 #include "problem.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_restoration_problem_create(SleqpProblem** star,
+                                               SleqpParams* params,
+                                               SleqpProblem* problem);
 
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_restoration_problem_create(SleqpProblem** star,
-                                                 SleqpParams* params,
-                                                 SleqpProblem* problem);
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_restoration_problem_transform(SleqpProblem* problem,
-                                                    const SleqpSparseVec* primal,
-                                                    const SleqpSparseVec* cons_val,
-                                                    SleqpSparseVec* result);
-
-  SLEQP_NODISCARD
-  SLEQP_RETCODE sleqp_restoration_problem_restore(SleqpProblem* problem,
-                                                  const SleqpSparseVec* input,
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_restoration_problem_transform(SleqpProblem* problem,
+                                                  const SleqpSparseVec* primal,
+                                                  const SleqpSparseVec* cons_val,
                                                   SleqpSparseVec* result);
 
+SLEQP_NODISCARD
+SLEQP_RETCODE sleqp_restoration_problem_restore(SleqpProblem* problem,
+                                                const SleqpSparseVec* input,
+                                                SleqpSparseVec* result);
 
 
 
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* RESTORATION_H */

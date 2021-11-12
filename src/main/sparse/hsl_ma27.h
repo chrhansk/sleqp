@@ -11,19 +11,19 @@
 
 typedef enum
 {
-  MA27_NSTEPS_OUT_OF_RANGE = -7,
-  MA27_PIVOT_SIGN_CHANGE   = -6,
-  MA27_SINGULAR_MATRIX     = -5,
-  MA27_A_MEM_TOO_SMALL     = -4,
-  MA27_IW_MEM_TOO_SMALL    = -3,
-  MA27_NZ_OUT_OF_RANGE     = -2,
-  MA27_N_OUT_OF_RANGE      = -1,
+        MA27_NSTEPS_OUT_OF_RANGE = -7,
+        MA27_PIVOT_SIGN_CHANGE   = -6,
+        MA27_SINGULAR_MATRIX     = -5,
+        MA27_A_MEM_TOO_SMALL     = -4,
+        MA27_IW_MEM_TOO_SMALL    = -3,
+        MA27_NZ_OUT_OF_RANGE     = -2,
+        MA27_N_OUT_OF_RANGE      = -1,
 
-  MA27_SUCCESS = 0,
+        MA27_SUCCESS = 0,
 
-  MA27_WARN_IRN_ICN_OUT_OF_RANGE = +1,
-  MA27_WARN_INDEFINITE           = +2,
-  MA27_WARN_RANK_DEFICIENT       = +3
+        MA27_WARN_IRN_ICN_OUT_OF_RANGE = +1,
+        MA27_WARN_INDEFINITE           = +2,
+        MA27_WARN_RANK_DEFICIENT       = +3
 } MA27_ERROR;
 
 //

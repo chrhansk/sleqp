@@ -6,9 +6,17 @@
  * @brief SLEQP callable library.
  **/
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "sleqp/defs.h"
 #include "sleqp/export.h"
 
 @PUB_HEADER_INCLUDES@
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SLEQP_H */
