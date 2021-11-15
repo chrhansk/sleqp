@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <limits.h>
+#include <stdlib.h>
 
 #include <check.h>
 
@@ -23,7 +23,7 @@ END_TEST
 
 START_TEST(test_calloc)
 {
-  int* ptr = (int*) 1;
+  int* ptr = (int*)1;
 
   ASSERT_CALL(sleqp_alloc_array(&ptr, 100));
 
@@ -37,7 +37,7 @@ END_TEST
 
 START_TEST(test_calloc_zero)
 {
-  int* ptr = (int*) 1;
+  int* ptr = (int*)1;
 
   ASSERT_CALL(sleqp_alloc_array(&ptr, 0));
 
@@ -61,7 +61,7 @@ END_TEST
 
 START_TEST(test_realloc)
 {
-  int* ptr = (int*) 1;
+  int* ptr = (int*)1;
 
   ASSERT_CALL(sleqp_alloc_array(&ptr, 100));
 
@@ -107,11 +107,12 @@ END_TEST
   END_TEST
 */
 
-Suite* mem_test_suite()
+Suite*
+mem_test_suite()
 {
-  Suite *suite;
-  TCase *tc_alloc;
-  TCase *tc_realloc;
+  Suite* suite;
+  TCase* tc_alloc;
+  TCase* tc_realloc;
 
   suite = suite_create("Memory tests");
 

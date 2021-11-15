@@ -16,8 +16,10 @@ extern SleqpSparseVec* quadfunc_cons_lb;
 extern SleqpSparseVec* quadfunc_cons_ub;
 extern SleqpSparseVec* quadfunc_x;
 
-void quadfunc_setup();
+void
+quadfunc_setup();
 
-void quadfunc_teardown();
+void
+quadfunc_teardown();
 
 #endif /* QUADFUNC_FIXTURE_H */

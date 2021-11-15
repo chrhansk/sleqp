@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "mem.h"
@@ -14,7 +14,8 @@ SleqpOptions* options;
 SleqpProblem* problem;
 SleqpSolver* solver;
 
-void callback_setup()
+void
+callback_setup()
 {
   rosenbrock_setup();
 
@@ -38,7 +39,8 @@ void callback_setup()
                                   NULL));
 }
 
-void callback_teardown()
+void
+callback_teardown()
 {
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -57,11 +59,10 @@ typedef struct CallbackData
   bool accepted_optimal_sol;
 } CallbackData;
 
-SLEQP_RETCODE accepted_iterate(SleqpSolver* solver,
-                               SleqpIterate* iterate,
-                               void* data)
+SLEQP_RETCODE
+accepted_iterate(SleqpSolver* solver, SleqpIterate* iterate, void* data)
 {
-  CallbackData* callback_data = (CallbackData*) data;
+  CallbackData* callback_data = (CallbackData*)data;
 
   callback_data->called = true;
 
@@ -69,7 +70,7 @@ SLEQP_RETCODE accepted_iterate(SleqpSolver* solver,
 
   assert(solution->dim == 2);
 
-  if(sleqp_sparse_vector_eq(solution, rosenbrock_optimal, 1e-6))
+  if (sleqp_sparse_vector_eq(solution, rosenbrock_optimal, 1e-6))
   {
     callback_data->accepted_optimal_sol = true;
   }
@@ -81,10 +82,7 @@ START_TEST(test_add_invalid_number)
 {
   sleqp_log_set_level(SLEQP_LOG_SILENT);
 
-  ck_assert_int_eq(sleqp_solver_add_callback(solver,
-                                             -1,
-                                             NULL,
-                                             NULL),
+  ck_assert_int_eq(sleqp_solver_add_callback(solver, -1, NULL, NULL),
                    SLEQP_ILLEGAL_ARGUMENT);
 }
 END_TEST
@@ -93,10 +91,7 @@ START_TEST(test_remove_invalid_number)
 {
   sleqp_log_set_level(SLEQP_LOG_SILENT);
 
-  ck_assert_int_eq(sleqp_solver_remove_callback(solver,
-                                                -1,
-                                                NULL,
-                                                NULL),
+  ck_assert_int_eq(sleqp_solver_remove_callback(solver, -1, NULL, NULL),
                    SLEQP_ILLEGAL_ARGUMENT);
 }
 END_TEST
@@ -105,12 +100,12 @@ START_TEST(test_simple_callback)
 {
   CallbackData callback_data;
 
-  callback_data.called = false;
+  callback_data.called               = false;
   callback_data.accepted_optimal_sol = false;
 
   ASSERT_CALL(sleqp_solver_add_callback(solver,
                                         SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
-                                        (void*) accepted_iterate,
+                                        (void*)accepted_iterate,
                                         &callback_data));
 
   // 100 iterations should be plenty...
@@ -125,7 +120,7 @@ START_TEST(test_remove_callback)
 {
   CallbackData callback_data;
 
-  callback_data.called = false;
+  callback_data.called               = false;
   callback_data.accepted_optimal_sol = false;
 
   ASSERT_CALL(sleqp_solver_add_callback(solver,
@@ -146,18 +141,17 @@ START_TEST(test_remove_callback)
 }
 END_TEST
 
-Suite* callback_test_suite()
+Suite*
+callback_test_suite()
 {
-  Suite *suite;
-  TCase *tc_callback;
+  Suite* suite;
+  TCase* tc_callback;
 
   suite = suite_create("Callback tests");
 
   tc_callback = tcase_create("Callback test");
 
-  tcase_add_checked_fixture(tc_callback,
-                            callback_setup,
-                            callback_teardown);
+  tcase_add_checked_fixture(tc_callback, callback_setup, callback_teardown);
 
   tcase_add_test(tc_callback, test_simple_callback);
   tcase_add_test(tc_callback, test_remove_callback);

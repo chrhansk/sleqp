@@ -1,7 +1,7 @@
 #include <check.h>
 
-#include "test_common.h"
 #include "constrained_fixture.h"
+#include "test_common.h"
 
 #include "solver.h"
 
@@ -10,7 +10,8 @@ SleqpOptions* options;
 SleqpProblem* problem;
 SleqpSolver* solver;
 
-void solver_state_setup()
+void
+solver_state_setup()
 {
   constrained_setup();
 
@@ -34,7 +35,8 @@ void solver_state_setup()
                                   NULL));
 }
 
-void solver_state_teardown()
+void
+solver_state_teardown()
 {
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -56,11 +58,13 @@ START_TEST(test_stationarity_residuals)
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
-  ASSERT_CALL(sleqp_solver_get_vec_state(solver,
-                                         SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
-                                         stationarity_residuals));
+  ASSERT_CALL(
+    sleqp_solver_get_vec_state(solver,
+                               SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
+                               stationarity_residuals));
 
-  const double stat_eps = sleqp_params_get(params, SLEQP_PARAM_STATIONARITY_TOL);
+  const double stat_eps
+    = sleqp_params_get(params, SLEQP_PARAM_STATIONARITY_TOL);
 
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
 
@@ -81,9 +85,10 @@ START_TEST(test_feasibility_residuals)
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
-  ASSERT_CALL(sleqp_solver_get_vec_state(solver,
-                                         SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
-                                         feasibility_residuals));
+  ASSERT_CALL(
+    sleqp_solver_get_vec_state(solver,
+                               SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
+                               feasibility_residuals));
 
   const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
@@ -106,9 +111,10 @@ START_TEST(test_slackness_residuals)
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
-  ASSERT_CALL(sleqp_solver_get_vec_state(solver,
-                                         SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
-                                         slackness_residuals));
+  ASSERT_CALL(sleqp_solver_get_vec_state(
+    solver,
+    SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
+    slackness_residuals));
 
   const double slack_eps = sleqp_params_get(params, SLEQP_PARAM_SLACKNESS_TOL);
 
@@ -135,9 +141,10 @@ START_TEST(test_trust_radii)
 
   ck_assert(trust_radius > 0.);
 
-  ASSERT_CALL(sleqp_solver_get_real_state(solver,
-                                          SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS,
-                                          &lp_trust_radius));
+  ASSERT_CALL(
+    sleqp_solver_get_real_state(solver,
+                                SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS,
+                                &lp_trust_radius));
 
   ck_assert(lp_trust_radius > 0.);
 }
@@ -149,27 +156,31 @@ START_TEST(test_residuals)
 
   const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
 
-  const double stat_eps = sleqp_params_get(params, SLEQP_PARAM_STATIONARITY_TOL);
+  const double stat_eps
+    = sleqp_params_get(params, SLEQP_PARAM_STATIONARITY_TOL);
   const double slack_eps = sleqp_params_get(params, SLEQP_PARAM_SLACKNESS_TOL);
   const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   double stat_res, slack_res, feas_res;
 
-  ASSERT_CALL(sleqp_solver_get_real_state(solver,
-                                          SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
-                                          &stat_res));
+  ASSERT_CALL(
+    sleqp_solver_get_real_state(solver,
+                                SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
+                                &stat_res));
 
   ck_assert(sleqp_is_leq(stat_res, stat_eps, eps));
 
-  ASSERT_CALL(sleqp_solver_get_real_state(solver,
-                                          SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
-                                          &feas_res));
+  ASSERT_CALL(
+    sleqp_solver_get_real_state(solver,
+                                SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
+                                &feas_res));
 
   ck_assert(sleqp_is_leq(feas_res, feas_eps, eps));
 
-  ASSERT_CALL(sleqp_solver_get_real_state(solver,
-                                          SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES,
-                                          &slack_res));
+  ASSERT_CALL(
+    sleqp_solver_get_real_state(solver,
+                                SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES,
+                                &slack_res));
 
   ck_assert(sleqp_is_leq(slack_res, slack_eps, eps));
 }
@@ -203,10 +214,11 @@ START_TEST(test_step_type)
 }
 END_TEST
 
-Suite* solver_state_test_suite()
+Suite*
+solver_state_test_suite()
 {
-  Suite *suite;
-  TCase *tc_state;
+  Suite* suite;
+  TCase* tc_state;
 
   suite = suite_create("Solver state tests");
 

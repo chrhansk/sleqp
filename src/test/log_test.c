@@ -9,28 +9,29 @@ bool handler_called = false;
 char* handler_message = NULL;
 
 const char* error_message = "error";
-const char* info_message = "info";
+const char* info_message  = "info";
 
-void log_handler(SLEQP_LOG_LEVEL level,
-                 time_t time,
-                 const char* message)
+void
+log_handler(SLEQP_LOG_LEVEL level, time_t time, const char* message)
 {
   free(handler_message);
   handler_message = NULL;
 
   handler_message = strdup(message);
-  handler_called = true;
+  handler_called  = true;
 }
 
-void log_setup()
+void
+log_setup()
 {
-  handler_called = false;
+  handler_called  = false;
   handler_message = NULL;
 
   sleqp_log_set_handler(log_handler);
 }
 
-void log_teardown()
+void
+log_teardown()
 {
   free(handler_message);
   handler_message = NULL;
@@ -74,18 +75,17 @@ START_TEST(test_silent)
 }
 END_TEST
 
-Suite* log_test_suite()
+Suite*
+log_test_suite()
 {
-  Suite *suite;
-  TCase *tc_log;
+  Suite* suite;
+  TCase* tc_log;
 
   suite = suite_create("Logging tests");
 
   tc_log = tcase_create("Logging test");
 
-  tcase_add_checked_fixture(tc_log,
-                            log_setup,
-                            log_teardown);
+  tcase_add_checked_fixture(tc_log, log_setup, log_teardown);
 
   tcase_add_test(tc_log, test_silent);
 

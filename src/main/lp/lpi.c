@@ -25,31 +25,32 @@ struct SleqpLPi
   SleqpLPiCallbacks callbacks;
 };
 
-SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
-                                         const char* name,
-                                         const char* version,
-                                         int num_variables,
-                                         int num_constraints,
-                                         SleqpParams* params,
-                                         SleqpOptions* options,
-                                         SleqpLPiCallbacks* callbacks)
+SLEQP_RETCODE
+sleqp_lpi_create_interface(SleqpLPi** lp_star,
+                           const char* name,
+                           const char* version,
+                           int num_variables,
+                           int num_constraints,
+                           SleqpParams* params,
+                           SleqpOptions* options,
+                           SleqpLPiCallbacks* callbacks)
 {
   SLEQP_CALL(sleqp_malloc(lp_star));
 
   SleqpLPi* lp_interface = *lp_star;
 
-  *lp_interface = (SleqpLPi) {0};
+  *lp_interface = (SleqpLPi){0};
 
   lp_interface->refcount = 1;
 
-  lp_interface->name = strdup(name);
+  lp_interface->name    = strdup(name);
   lp_interface->version = strdup(version);
 
   SLEQP_CALL(sleqp_timer_create(&lp_interface->timer));
 
   lp_interface->callbacks = *callbacks;
 
-  lp_interface->num_variables = num_variables;
+  lp_interface->num_variables   = num_variables;
   lp_interface->num_constraints = num_constraints;
 
   lp_interface->time_limit = SLEQP_NONE;
@@ -63,50 +64,58 @@ SLEQP_RETCODE sleqp_lpi_create_interface(SleqpLPi** lp_star,
   return SLEQP_OKAY;
 }
 
-const char* sleqp_lpi_get_name(SleqpLPi* lp_interface)
+const char*
+sleqp_lpi_get_name(SleqpLPi* lp_interface)
 {
   return lp_interface->name;
 }
 
-const char* sleqp_lpi_get_version(SleqpLPi* lp_interface)
+const char*
+sleqp_lpi_get_version(SleqpLPi* lp_interface)
 {
   return lp_interface->version;
 }
 
-int sleqp_lpi_get_num_variables(SleqpLPi* lp_interface)
+int
+sleqp_lpi_get_num_variables(SleqpLPi* lp_interface)
 {
   return lp_interface->num_variables;
 }
 
-int sleqp_lpi_get_num_constraints(SleqpLPi* lp_interface)
+int
+sleqp_lpi_get_num_constraints(SleqpLPi* lp_interface)
 {
   return lp_interface->num_constraints;
 }
 
-SLEQP_RETCODE sleqp_lpi_solve(SleqpLPi* lp_interface)
+SLEQP_RETCODE
+sleqp_lpi_solve(SleqpLPi* lp_interface)
 {
   SLEQP_CALL(sleqp_timer_start(lp_interface->timer));
 
-  SLEQP_RETCODE retcode = lp_interface->callbacks.solve(lp_interface->lp_data,
-                                                        lp_interface->num_variables,
-                                                        lp_interface->num_constraints,
-                                                        lp_interface->time_limit);
+  SLEQP_RETCODE retcode
+    = lp_interface->callbacks.solve(lp_interface->lp_data,
+                                    lp_interface->num_variables,
+                                    lp_interface->num_constraints,
+                                    lp_interface->time_limit);
 
   SLEQP_CALL(sleqp_timer_stop(lp_interface->timer));
 
   return retcode;
 }
 
-SLEQP_LPI_STATUS sleqp_get_status(SleqpLPi* lp_interface)
+SLEQP_LPI_STATUS
+sleqp_get_status(SleqpLPi* lp_interface)
 {
   return lp_interface->callbacks.get_status(lp_interface->lp_data);
 }
 
-SLEQP_RETCODE sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
-                                   double* cons_lb,
-                                   double* cons_ub,
-                                   double* vars_lb,
-                                   double* vars_ub)
+SLEQP_RETCODE
+sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
+                     double* cons_lb,
+                     double* cons_ub,
+                     double* vars_lb,
+                     double* vars_ub)
 {
   return lp_interface->callbacks.set_bounds(lp_interface->lp_data,
                                             lp_interface->num_variables,
@@ -117,8 +126,9 @@ SLEQP_RETCODE sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
                                             vars_ub);
 }
 
-SLEQP_RETCODE sleqp_lpi_set_coefficients(SleqpLPi* lp_interface,
-                                         SleqpSparseMatrix* coeff_matrix)
+SLEQP_RETCODE
+sleqp_lpi_set_coefficients(SleqpLPi* lp_interface,
+                           SleqpSparseMatrix* coeff_matrix)
 {
   return lp_interface->callbacks.set_coefficients(lp_interface->lp_data,
                                                   lp_interface->num_variables,
@@ -126,8 +136,8 @@ SLEQP_RETCODE sleqp_lpi_set_coefficients(SleqpLPi* lp_interface,
                                                   coeff_matrix);
 }
 
-SLEQP_RETCODE sleqp_lpi_set_objective(SleqpLPi* lp_interface,
-                                      double* objective)
+SLEQP_RETCODE
+sleqp_lpi_set_objective(SleqpLPi* lp_interface, double* objective)
 {
   return lp_interface->callbacks.set_objective(lp_interface->lp_data,
                                                lp_interface->num_variables,
@@ -135,31 +145,30 @@ SLEQP_RETCODE sleqp_lpi_set_objective(SleqpLPi* lp_interface,
                                                objective);
 }
 
-SLEQP_RETCODE sleqp_lpi_set_time_limit(SleqpLPi* lp_interface,
-                                       double time_limit)
+SLEQP_RETCODE
+sleqp_lpi_set_time_limit(SleqpLPi* lp_interface, double time_limit)
 {
   lp_interface->time_limit = time_limit;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lpi_save_basis(SleqpLPi* lp_interface,
-                                   int index)
+SLEQP_RETCODE
+sleqp_lpi_save_basis(SleqpLPi* lp_interface, int index)
 {
-  return lp_interface->callbacks.save_basis(lp_interface->lp_data,
-                                            index);
+  return lp_interface->callbacks.save_basis(lp_interface->lp_data, index);
 }
 
-SLEQP_RETCODE sleqp_lpi_restore_basis(SleqpLPi* lp_interface,
-                                      int index)
+SLEQP_RETCODE
+sleqp_lpi_restore_basis(SleqpLPi* lp_interface, int index)
 {
-  return lp_interface->callbacks.restore_basis(lp_interface->lp_data,
-                                               index);
+  return lp_interface->callbacks.restore_basis(lp_interface->lp_data, index);
 }
 
-SLEQP_RETCODE sleqp_lpi_get_primal_sol(SleqpLPi* lp_interface,
-                                       double* objective_value,
-                                       double* solution_values)
+SLEQP_RETCODE
+sleqp_lpi_get_primal_sol(SleqpLPi* lp_interface,
+                         double* objective_value,
+                         double* solution_values)
 {
   return lp_interface->callbacks.get_primal_sol(lp_interface->lp_data,
                                                 lp_interface->num_variables,
@@ -168,9 +177,10 @@ SLEQP_RETCODE sleqp_lpi_get_primal_sol(SleqpLPi* lp_interface,
                                                 solution_values);
 }
 
-SLEQP_RETCODE sleqp_lpi_get_dual_sol(SleqpLPi* lp_interface,
-                                     double* vars_dual,
-                                     double* cons_dual)
+SLEQP_RETCODE
+sleqp_lpi_get_dual_sol(SleqpLPi* lp_interface,
+                       double* vars_dual,
+                       double* cons_dual)
 {
   return lp_interface->callbacks.get_dual_sol(lp_interface->lp_data,
                                               lp_interface->num_variables,
@@ -179,8 +189,8 @@ SLEQP_RETCODE sleqp_lpi_get_dual_sol(SleqpLPi* lp_interface,
                                               cons_dual);
 }
 
-SLEQP_RETCODE sleqp_lpi_get_varstats(SleqpLPi* lp_interface,
-                                     SLEQP_BASESTAT* variable_stats)
+SLEQP_RETCODE
+sleqp_lpi_get_varstats(SleqpLPi* lp_interface, SLEQP_BASESTAT* variable_stats)
 {
   return lp_interface->callbacks.get_varstats(lp_interface->lp_data,
                                               lp_interface->num_variables,
@@ -188,8 +198,9 @@ SLEQP_RETCODE sleqp_lpi_get_varstats(SleqpLPi* lp_interface,
                                               variable_stats);
 }
 
-SLEQP_RETCODE sleqp_lpi_get_consstats(SleqpLPi* lp_interface,
-                                      SLEQP_BASESTAT* constraint_stats)
+SLEQP_RETCODE
+sleqp_lpi_get_consstats(SleqpLPi* lp_interface,
+                        SLEQP_BASESTAT* constraint_stats)
 {
   return lp_interface->callbacks.get_consstats(lp_interface->lp_data,
                                                lp_interface->num_variables,
@@ -197,14 +208,16 @@ SLEQP_RETCODE sleqp_lpi_get_consstats(SleqpLPi* lp_interface,
                                                constraint_stats);
 }
 
-SleqpTimer* sleqp_lpi_get_solve_timer(SleqpLPi* lp_interface)
+SleqpTimer*
+sleqp_lpi_get_solve_timer(SleqpLPi* lp_interface)
 {
   return lp_interface->timer;
 }
 
-SLEQP_RETCODE sleqp_lpi_get_basis_condition(SleqpLPi* lp_interface,
-                                            bool* exact,
-                                            double* condition)
+SLEQP_RETCODE
+sleqp_lpi_get_basis_condition(SleqpLPi* lp_interface,
+                              bool* exact,
+                              double* condition)
 {
   return lp_interface->callbacks.get_basis_condition(lp_interface->lp_data,
                                                      exact,
@@ -228,23 +241,25 @@ lpi_free(SleqpLPi** lp_star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lpi_capture(SleqpLPi* lp_interface)
+SLEQP_RETCODE
+sleqp_lpi_capture(SleqpLPi* lp_interface)
 {
   ++lp_interface->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_lpi_release(SleqpLPi** star)
+SLEQP_RETCODE
+sleqp_lpi_release(SleqpLPi** star)
 {
   SleqpLPi* lp_interface = *star;
 
-  if(!lp_interface)
+  if (!lp_interface)
   {
     return SLEQP_OKAY;
   }
 
-  if(--lp_interface->refcount == 0)
+  if (--lp_interface->refcount == 0)
   {
     SLEQP_CALL(lpi_free(star));
   }

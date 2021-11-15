@@ -1,6 +1,6 @@
+#include <check.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <check.h>
 
 #include "test_common.h"
 #include "zero_func.h"
@@ -9,27 +9,29 @@
 #include "problem.h"
 #include "solver.h"
 
-const int num_variables = 1;
+const int num_variables   = 1;
 const int num_constraints = 1;
 
 const double delay_time = 1e-4;
 
 double value;
 
-void delay()
+void
+delay()
 {
   clock_t start = clock();
 
   // spin until time limit reached
-  while(true)
+  while (true)
   {
-    for(volatile int i = 0; i < 10000; ++i);
+    for (volatile int i = 0; i < 10000; ++i)
+      ;
 
     clock_t current = clock();
 
-    double elapsed = ((double) (current - start)) / CLOCKS_PER_SEC;
+    double elapsed = ((double)(current - start)) / CLOCKS_PER_SEC;
 
-    if(elapsed >= delay_time)
+    if (elapsed >= delay_time)
     {
       break;
     }
@@ -47,8 +49,8 @@ delay_func_set(SleqpFunc* func,
                void* func_data)
 {
   *func_grad_nnz = 1;
-  *cons_val_nnz = 0;
-  *cons_jac_nnz = 0;
+  *cons_val_nnz  = 0;
+  *cons_jac_nnz  = 0;
 
   sleqp_sparse_vector_value_at(x, value);
 
@@ -58,9 +60,7 @@ delay_func_set(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-delay_func_val(SleqpFunc* func,
-               double* func_val,
-               void* func_data)
+delay_func_val(SleqpFunc* func, double* func_val, void* func_data)
 {
   *func_val = value;
 
@@ -70,13 +70,9 @@ delay_func_val(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-delay_func_grad(SleqpFunc* func,
-                SleqpSparseVec* func_grad,
-                void* func_data)
+delay_func_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                      0,
-                                      1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 1.));
 
   delay();
 
@@ -112,7 +108,6 @@ delay_func_hess_prod(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-
 SleqpFunc* func;
 
 SleqpParams* params;
@@ -128,23 +123,19 @@ SleqpProblem* problem;
 
 SleqpSparseVec* primal;
 
-void time_limit_setup()
+void
+time_limit_setup()
 {
-  SleqpFuncCallbacks callbacks = {
-    .set_value = delay_func_set,
-    .func_val  = delay_func_val,
-    .func_grad = delay_func_grad,
-    .cons_val  = delay_func_cons_val,
-    .cons_jac  = delay_func_cons_jac,
-    .hess_prod = delay_func_hess_prod,
-    .func_free = NULL
-  };
+  SleqpFuncCallbacks callbacks = {.set_value = delay_func_set,
+                                  .func_val  = delay_func_val,
+                                  .func_grad = delay_func_grad,
+                                  .cons_val  = delay_func_cons_val,
+                                  .cons_jac  = delay_func_cons_jac,
+                                  .hess_prod = delay_func_hess_prod,
+                                  .func_free = NULL};
 
-  ASSERT_CALL(sleqp_func_create(&func,
-                                &callbacks,
-                                num_variables,
-                                num_constraints,
-                                NULL));
+  ASSERT_CALL(
+    sleqp_func_create(&func, &callbacks, num_variables, num_constraints, NULL));
 
   ASSERT_CALL(sleqp_params_create(&params));
 
@@ -167,7 +158,8 @@ void time_limit_setup()
   ASSERT_CALL(sleqp_sparse_vector_create_empty(&primal, num_variables));
 }
 
-void time_limit_teardown()
+void
+time_limit_teardown()
 {
   ASSERT_CALL(sleqp_sparse_vector_free(&primal));
 
@@ -192,36 +184,28 @@ START_TEST(test_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_solver_create(&solver,
-                                  problem,
-                                  params,
-                                  options,
-                                  primal,
-                                  NULL));
+  ASSERT_CALL(
+    sleqp_solver_create(&solver, problem, params, options, primal, NULL));
 
-  ASSERT_CALL(sleqp_solver_solve(solver,
-                                 SLEQP_NONE,
-                                 time_limit));
+  ASSERT_CALL(sleqp_solver_solve(solver, SLEQP_NONE, time_limit));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver),
-                   SLEQP_STATUS_ABORT_TIME);
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_ABORT_TIME);
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 }
 END_TEST
 
-Suite* time_limit_test_suite()
+Suite*
+time_limit_test_suite()
 {
-  Suite *suite;
-  TCase *tc_solve;
+  Suite* suite;
+  TCase* tc_solve;
 
   suite = suite_create("Time limit tests");
 
   tc_solve = tcase_create("Solution test");
 
-  tcase_add_checked_fixture(tc_solve,
-                            time_limit_setup,
-                            time_limit_teardown);
+  tcase_add_checked_fixture(tc_solve, time_limit_setup, time_limit_teardown);
 
   tcase_add_test(tc_solve, test_solve);
 

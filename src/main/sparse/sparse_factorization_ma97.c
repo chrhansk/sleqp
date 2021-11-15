@@ -13,17 +13,18 @@ static const bool ma97_verbose = true;
 
 static const bool ma97_check_matrix = false;
 
-typedef enum {
+typedef enum
+{
 
-  MA97_ERROR_WRONG_CALL_SEQUENCE           =  -1,
-  MA97_ERROR_NEGATIVE_N                    =  -2,
-  MA97_ERROR_INVALID_PTR                   =  -3,
-  MA97_ERROR_COLUMN_OUT_OF_RANGE           =  -4,
-  MA97_ERROR_MATRIX_TYPE_OUT_OF_RANGE      =  -5,
-  MA97_ERROR_MATRIX_NOT_HERMITIAN          =  -6,
-  MA97_ERROR_MATRIX_SINGULAR               =  -7,
-  MA97_ERROR_MATRIX_NOT_POS_DEF            =  -8,
-  MA97_ERROR_MATRIX_INVALID_DATA           =  -9,
+  MA97_ERROR_WRONG_CALL_SEQUENCE           = -1,
+  MA97_ERROR_NEGATIVE_N                    = -2,
+  MA97_ERROR_INVALID_PTR                   = -3,
+  MA97_ERROR_COLUMN_OUT_OF_RANGE           = -4,
+  MA97_ERROR_MATRIX_TYPE_OUT_OF_RANGE      = -5,
+  MA97_ERROR_MATRIX_NOT_HERMITIAN          = -6,
+  MA97_ERROR_MATRIX_SINGULAR               = -7,
+  MA97_ERROR_MATRIX_NOT_POS_DEF            = -8,
+  MA97_ERROR_MATRIX_INVALID_DATA           = -9,
   MA97_ERROR_MATRIX_MISSING_PTRS           = -10,
   MA97_ERROR_MATRIX_INVALID_ORDERING       = -11,
   MA97_ERROR_MATRIX_INVALID_ARRAY_SIZE     = -12,
@@ -48,9 +49,10 @@ typedef enum {
   MA97_WARN_MISSING_SCALING                              = 8,
 } MA97_STATUS;
 
-static SLEQP_RETCODE ma97_get_error_string(int value, const char** message)
+static SLEQP_RETCODE
+ma97_get_error_string(int value, const char** message)
 {
-  switch(value)
+  switch (value)
   {
   case MA97_ERROR_WRONG_CALL_SEQUENCE:
     *message = "Wrong calling sequence";
@@ -149,49 +151,47 @@ static SLEQP_RETCODE ma97_get_error_string(int value, const char** message)
   return SLEQP_OKAY;
 }
 
-
 #define MA97_IS_ERROR(value) (value < 0)
 
-#define MA97_CHECK_ERROR(x)                                                \
-  do                                                                       \
-  {                                                                        \
-    int ma97_status = (x);                                                 \
-                                                                           \
-    if(ma97_status == MA97_SUCCESS)                                        \
-    {                                                                      \
-      break;                                                               \
-    }                                                                      \
-                                                                           \
-    const char* ma97_error_string;                                         \
-    SLEQP_CALL(ma97_get_error_string(ma97_status,                          \
-                                     &ma97_error_string));                 \
-                                                                           \
-    if(MA97_IS_ERROR(ma97_status))                                         \
-    {                                                                      \
-                                                                           \
-      sleqp_log_error("Caught hsl_ma97 error <%d> (%s) in function %s",    \
-                      ma97_status,                                         \
-                      ma97_error_string,                                   \
-                      __func__);                                           \
-                                                                           \
-      if(ma97_status == MA97_ERROR_ALLOCATION)                             \
-      {                                                                    \
-        return SLEQP_NOMEM;                                                \
-      }                                                                    \
-                                                                           \
-      return SLEQP_INTERNAL_ERROR;                                         \
-    }                                                                      \
-    else                                                                   \
-    {                                                                      \
-      sleqp_log_warn("Caught hsl_ma97 warning <%d> (%s) in function %s",   \
-                     ma97_status,                                          \
-                     ma97_error_string,                                    \
-                     __func__);                                            \
-                                                                           \
-    }                                                                      \
-  } while(0)
+#define MA97_CHECK_ERROR(x)                                                    \
+  do                                                                           \
+  {                                                                            \
+    int ma97_status = (x);                                                     \
+                                                                               \
+    if (ma97_status == MA97_SUCCESS)                                           \
+    {                                                                          \
+      break;                                                                   \
+    }                                                                          \
+                                                                               \
+    const char* ma97_error_string;                                             \
+    SLEQP_CALL(ma97_get_error_string(ma97_status, &ma97_error_string));        \
+                                                                               \
+    if (MA97_IS_ERROR(ma97_status))                                            \
+    {                                                                          \
+                                                                               \
+      sleqp_log_error("Caught hsl_ma97 error <%d> (%s) in function %s",        \
+                      ma97_status,                                             \
+                      ma97_error_string,                                       \
+                      __func__);                                               \
+                                                                               \
+      if (ma97_status == MA97_ERROR_ALLOCATION)                                \
+      {                                                                        \
+        return SLEQP_NOMEM;                                                    \
+      }                                                                        \
+                                                                               \
+      return SLEQP_INTERNAL_ERROR;                                             \
+    }                                                                          \
+    else                                                                       \
+    {                                                                          \
+      sleqp_log_warn("Caught hsl_ma97 warning <%d> (%s) in function %s",       \
+                     ma97_status,                                              \
+                     ma97_error_string,                                        \
+                     __func__);                                                \
+    }                                                                          \
+  } while (0)
 
-typedef enum {
+typedef enum
+{
   MC68_ORDER_USER_SUPPLIED = 0,
   MC68_ORDER_APX_MINDEG    = 1,
   MC68_ORDER_MINDEG        = 2,
@@ -199,9 +199,10 @@ typedef enum {
   MC68_ORDER_MA47          = 4,
 } MC68_ORDER;
 
-typedef enum {
-  MA97_REAL_POS_DEF =  3,
-  MA97_REAL_INDEF   =  4,
+typedef enum
+{
+  MA97_REAL_POS_DEF = 3,
+  MA97_REAL_INDEF   = 4,
   MA97_HERM_POS_DEF = -3,
   MA97_HERM_INDEF   = -4,
 
@@ -227,7 +228,8 @@ typedef struct MA97Data
 
 } MA97Data;
 
-static SLEQP_RETCODE ma97_data_create(MA97Data** star)
+static SLEQP_RETCODE
+ma97_data_create(MA97Data** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -243,7 +245,7 @@ static SLEQP_RETCODE ma97_data_create(MA97Data** star)
 
   ma97_data->control.ordering = MC68_ORDER_USER_SUPPLIED;
 
-  if(ma97_verbose)
+  if (ma97_verbose)
   {
     ma97_data->control.print_level = 2;
   }
@@ -259,10 +261,10 @@ static SLEQP_RETCODE ma97_data_create(MA97Data** star)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma97_data_set_matrix(void* factorization_data,
-                                          SleqpSparseMatrix* matrix)
+static SLEQP_RETCODE
+ma97_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 {
-  MA97Data* ma97_data = (MA97Data*) factorization_data;
+  MA97Data* ma97_data = (MA97Data*)factorization_data;
 
   const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
@@ -275,7 +277,7 @@ static SLEQP_RETCODE ma97_data_set_matrix(void* factorization_data,
 
   const int dim = num_cols;
 
-  if(ma97_data->max_dim < dim)
+  if (ma97_data->max_dim < dim)
   {
     SLEQP_CALL(sleqp_realloc(&(ma97_data->order), dim));
 
@@ -286,8 +288,8 @@ static SLEQP_RETCODE ma97_data_set_matrix(void* factorization_data,
 
   ma97_data->dim = dim;
 
-  int* cols = sleqp_sparse_matrix_get_cols(ma97_data->matrix);
-  int* rows = sleqp_sparse_matrix_get_rows(ma97_data->matrix);
+  int* cols    = sleqp_sparse_matrix_get_cols(ma97_data->matrix);
+  int* rows    = sleqp_sparse_matrix_get_rows(ma97_data->matrix);
   double* data = sleqp_sparse_matrix_get_data(ma97_data->matrix);
 
   mc68_order(MC68_ORDER_APX_MINDEG,
@@ -333,13 +335,13 @@ static SLEQP_RETCODE ma97_data_set_matrix(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma97_data_solve(void* factorization_data,
-                                     SleqpSparseVec* rhs)
+static SLEQP_RETCODE
+ma97_data_solve(void* factorization_data, SleqpSparseVec* rhs)
 {
-  MA97Data* ma97_data = (MA97Data*) factorization_data;
+  MA97Data* ma97_data = (MA97Data*)factorization_data;
 
   const int nrhs = 1;
-  const int dim = ma97_data->dim;
+  const int dim  = ma97_data->dim;
 
   assert(rhs->dim == dim);
 
@@ -359,13 +361,14 @@ static SLEQP_RETCODE ma97_data_solve(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma97_data_get_sol(void* factorization_data,
-                                       SleqpSparseVec* sol,
-                                       int begin,
-                                       int end,
-                                       double zero_eps)
+static SLEQP_RETCODE
+ma97_data_get_sol(void* factorization_data,
+                  SleqpSparseVec* sol,
+                  int begin,
+                  int end,
+                  double zero_eps)
 {
-  MA97Data* ma97_data = (MA97Data*) factorization_data;
+  MA97Data* ma97_data = (MA97Data*)factorization_data;
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
                                           ma97_data->rhs_sol + begin,
@@ -375,8 +378,9 @@ static SLEQP_RETCODE ma97_data_get_sol(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma97_data_get_condition_estimate(void* factorization_data,
-                                                      double* condition_estimate)
+static SLEQP_RETCODE
+ma97_data_get_condition_estimate(void* factorization_data,
+                                 double* condition_estimate)
 {
   // MA97Data* ma97_data = (MA97Data*) factorization_data;
 
@@ -385,11 +389,12 @@ static SLEQP_RETCODE ma97_data_get_condition_estimate(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma97_data_free(void **star)
+static SLEQP_RETCODE
+ma97_data_free(void** star)
 {
-  MA97Data* ma97_data = (MA97Data*) (*star);
+  MA97Data* ma97_data = (MA97Data*)(*star);
 
-  //ma97_finalise(&(ma97_data->keep), &(ma97_data->control));
+  // ma97_finalise(&(ma97_data->keep), &(ma97_data->control));
 
   sleqp_free(&(ma97_data->rhs_sol));
   sleqp_free(&(ma97_data->order));
@@ -403,16 +408,16 @@ static SLEQP_RETCODE ma97_data_free(void **star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_ma97_create(SleqpSparseFactorization** star,
-                                                     SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_ma97_create(SleqpSparseFactorization** star,
+                                       SleqpParams* params)
 {
-  SleqpSparseFactorizationCallbacks callbacks = {
-    .set_matrix = ma97_data_set_matrix,
-    .solve = ma97_data_solve,
-    .get_sol = ma97_data_get_sol,
-    .get_condition_estimate = ma97_data_get_condition_estimate,
-    .free = ma97_data_free
-  };
+  SleqpSparseFactorizationCallbacks callbacks
+    = {.set_matrix             = ma97_data_set_matrix,
+       .solve                  = ma97_data_solve,
+       .get_sol                = ma97_data_get_sol,
+       .get_condition_estimate = ma97_data_get_condition_estimate,
+       .free                   = ma97_data_free};
 
   MA97Data* ma97_data;
 
@@ -423,13 +428,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma97_create(SleqpSparseFactorization** 
                                                SLEQP_FACT_MA97_VERSION,
                                                params,
                                                &callbacks,
-                                               (void*) ma97_data));
+                                               (void*)ma97_data));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
-                                                        SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                          SleqpParams* params)
 {
   SLEQP_CALL(sleqp_sparse_factorization_ma97_create(star, params));
 

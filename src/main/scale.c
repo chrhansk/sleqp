@@ -1,8 +1,8 @@
 #include "scale.h"
 
 #include <assert.h>
-#include <math.h>
 #include <fenv.h>
+#include <math.h>
 
 #include "cmp.h"
 #include "log.h"
@@ -13,8 +13,7 @@
 const int max_weight = MAX_WEIGHT;
 const int min_weight = -(MAX_WEIGHT);
 
-#define CLIP_WEIGHT(w)                                    \
-  (w) = SLEQP_MIN(SLEQP_MAX((w), min_weight), max_weight)
+#define CLIP_WEIGHT(w) (w) = SLEQP_MIN(SLEQP_MAX((w), min_weight), max_weight)
 
 struct SleqpScaling
 {
@@ -31,10 +30,10 @@ struct SleqpScaling
   double* max_cache;
 };
 
-static SLEQP_RETCODE apply_const_scaling(SleqpSparseVec* vec,
-                                         int value)
+static SLEQP_RETCODE
+apply_const_scaling(SleqpSparseVec* vec, int value)
 {
-  for(int k = 0; k < vec->nnz; ++k)
+  for (int k = 0; k < vec->nnz; ++k)
   {
     vec->data[k] = ldexp(vec->data[k], value);
   }
@@ -42,19 +41,18 @@ static SLEQP_RETCODE apply_const_scaling(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE apply_const_unscaling(SleqpSparseVec* vec,
-                                           int value)
+static SLEQP_RETCODE
+apply_const_unscaling(SleqpSparseVec* vec, int value)
 {
-  SLEQP_CALL(apply_const_scaling(vec, (-1)*value));
+  SLEQP_CALL(apply_const_scaling(vec, (-1) * value));
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE apply_unscaling(SleqpSparseVec* vec,
-                                     int* scales,
-                                     int offset)
+static SLEQP_RETCODE
+apply_unscaling(SleqpSparseVec* vec, int* scales, int offset)
 {
-  for(int k = 0; k < vec->nnz; ++k)
+  for (int k = 0; k < vec->nnz; ++k)
   {
     vec->data[k] = ldexp(vec->data[k], scales[vec->indices[k]] + offset);
   }
@@ -62,27 +60,26 @@ static SLEQP_RETCODE apply_unscaling(SleqpSparseVec* vec,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE apply_scaling(SleqpSparseVec* vec,
-                                   int* scales,
-                                   int offset)
+static SLEQP_RETCODE
+apply_scaling(SleqpSparseVec* vec, int* scales, int offset)
 {
-  for(int k = 0; k < vec->nnz; ++k)
+  for (int k = 0; k < vec->nnz; ++k)
   {
-    vec->data[k] = ldexp(vec->data[k], -1*scales[vec->indices[k]] + offset);
+    vec->data[k] = ldexp(vec->data[k], -1 * scales[vec->indices[k]] + offset);
   }
 
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_scaling_reset(SleqpScaling* scaling)
+SLEQP_RETCODE
+sleqp_scaling_reset(SleqpScaling* scaling)
 {
-  for(int j = 0; j < scaling->num_variables; ++j)
+  for (int j = 0; j < scaling->num_variables; ++j)
   {
     scaling->var_weights[j] = 0;
   }
 
-  for(int i = 0; i < scaling->num_constraints; ++i)
+  for (int i = 0; i < scaling->num_constraints; ++i)
   {
     scaling->cons_weights[i] = 0;
   }
@@ -92,23 +89,24 @@ SLEQP_RETCODE sleqp_scaling_reset(SleqpScaling* scaling)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_create(SleqpScaling** star,
-                                   int num_variables,
-                                   int num_constraints)
+SLEQP_RETCODE
+sleqp_scaling_create(SleqpScaling** star,
+                     int num_variables,
+                     int num_constraints)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpScaling* scaling = *star;
 
-  *scaling = (SleqpScaling) {0};
+  *scaling = (SleqpScaling){0};
 
-  if(num_variables < 0)
+  if (num_variables < 0)
   {
     sleqp_log_error("Negative number of variables provided to scaling");
     return SLEQP_ILLEGAL_ARGUMENT;
   }
 
-  if(num_constraints < 0)
+  if (num_constraints < 0)
   {
     sleqp_log_error("Negative number of constraints provided to scaling");
     return SLEQP_ILLEGAL_ARGUMENT;
@@ -116,14 +114,14 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScaling** star,
 
   scaling->refcount = 1;
 
-  scaling->num_variables = num_variables;
+  scaling->num_variables   = num_variables;
   scaling->num_constraints = num_constraints;
 
-  SLEQP_CALL(sleqp_alloc_array(&(scaling->var_weights),
-                               scaling->num_variables));
+  SLEQP_CALL(
+    sleqp_alloc_array(&(scaling->var_weights), scaling->num_variables));
 
-  SLEQP_CALL(sleqp_alloc_array(&(scaling->cons_weights),
-                               scaling->num_constraints));
+  SLEQP_CALL(
+    sleqp_alloc_array(&(scaling->cons_weights), scaling->num_constraints));
 
   scaling->func_weight = 0;
 
@@ -132,41 +130,44 @@ SLEQP_RETCODE sleqp_scaling_create(SleqpScaling** star,
   return SLEQP_OKAY;
 }
 
-int sleqp_scaling_get_num_variables(SleqpScaling* scaling)
+int
+sleqp_scaling_get_num_variables(SleqpScaling* scaling)
 {
   return scaling->num_variables;
 }
 
-int sleqp_scaling_get_num_constraints(SleqpScaling* scaling)
+int
+sleqp_scaling_get_num_constraints(SleqpScaling* scaling)
 {
   return scaling->num_constraints;
 }
 
-int sleqp_scaling_get_func_weight(SleqpScaling* scaling)
+int
+sleqp_scaling_get_func_weight(SleqpScaling* scaling)
 {
   return scaling->func_weight;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScaling* scaling,
-                                            int weight)
+SLEQP_RETCODE
+sleqp_scaling_set_func_weight(SleqpScaling* scaling, int weight)
 {
   scaling->func_weight = weight;
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScaling* scaling,
-                                                         double nominal_value)
+SLEQP_RETCODE
+sleqp_scaling_set_func_weight_from_nominal(SleqpScaling* scaling,
+                                           double nominal_value)
 {
   frexp(nominal_value, &(scaling->func_weight));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScaling* scaling,
-                                           int index,
-                                           int weight)
+SLEQP_RETCODE
+sleqp_scaling_set_var_weight(SleqpScaling* scaling, int index, int weight)
 {
-  if(index < 0 || index >= scaling->num_variables)
+  if (index < 0 || index >= scaling->num_variables)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -176,10 +177,11 @@ SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScaling* scaling,
-                                                         double* nominal_values)
+SLEQP_RETCODE
+sleqp_scaling_set_var_weights_from_nominal(SleqpScaling* scaling,
+                                           double* nominal_values)
 {
-  for(int j = 0; j < scaling->num_variables; ++j)
+  for (int j = 0; j < scaling->num_variables; ++j)
   {
     frexp(nominal_values[j], scaling->var_weights + j);
   }
@@ -187,11 +189,12 @@ SLEQP_RETCODE sleqp_scaling_set_var_weights_from_nominal(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScaling* scaling,
-                                                        int index,
-                                                        double nominal_value)
+SLEQP_RETCODE
+sleqp_scaling_set_var_weight_from_nominal(SleqpScaling* scaling,
+                                          int index,
+                                          double nominal_value)
 {
-  if(index < 0 || index >= scaling->num_variables)
+  if (index < 0 || index >= scaling->num_variables)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -201,11 +204,10 @@ SLEQP_RETCODE sleqp_scaling_set_var_weight_from_nominal(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScaling* scaling,
-                                            int index,
-                                            int weight)
+SLEQP_RETCODE
+sleqp_scaling_set_cons_weight(SleqpScaling* scaling, int index, int weight)
 {
-  if(index < 0 || index >= scaling->num_constraints)
+  if (index < 0 || index >= scaling->num_constraints)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -215,10 +217,11 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weight(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScaling* scaling,
-                                                          double* nominal_values)
+SLEQP_RETCODE
+sleqp_scaling_set_cons_weights_from_nominal(SleqpScaling* scaling,
+                                            double* nominal_values)
 {
-  for(int i = 0; i < scaling->num_constraints; ++i)
+  for (int i = 0; i < scaling->num_constraints; ++i)
   {
     frexp(nominal_values[i], scaling->cons_weights + i);
   }
@@ -226,11 +229,12 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScaling* scaling,
-                                                         int index,
-                                                         double nominal_value)
+SLEQP_RETCODE
+sleqp_scaling_set_cons_weight_from_nominal(SleqpScaling* scaling,
+                                           int index,
+                                           double nominal_value)
 {
-  if(index < 0 || index >= scaling->num_constraints)
+  if (index < 0 || index >= scaling->num_constraints)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -240,56 +244,60 @@ SLEQP_RETCODE sleqp_scaling_set_cons_weight_from_nominal(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-int* sleqp_scaling_get_var_weights(SleqpScaling* scaling)
+int*
+sleqp_scaling_get_var_weights(SleqpScaling* scaling)
 {
   return scaling->var_weights;
 }
 
-int* sleqp_scaling_get_cons_weights(SleqpScaling* scaling)
+int*
+sleqp_scaling_get_cons_weights(SleqpScaling* scaling)
 {
   return scaling->cons_weights;
 }
 
-double sleqp_scale_func_val(SleqpScaling* scaling,
-                            double func_val)
+double
+sleqp_scale_func_val(SleqpScaling* scaling, double func_val)
 {
   return ldexp(func_val, (-1) * scaling->func_weight);
 }
 
-double sleqp_scale_lsq_func_val(SleqpScaling* scaling,
-                                double func_val)
+double
+sleqp_scale_lsq_func_val(SleqpScaling* scaling, double func_val)
 {
   return ldexp(func_val, (-1) * 2 * scaling->func_weight);
 }
 
-SLEQP_RETCODE sleqp_scale_lsq_residuals(SleqpScaling* scaling,
-                                        SleqpSparseVec* lsq_residuals)
+SLEQP_RETCODE
+sleqp_scale_lsq_residuals(SleqpScaling* scaling, SleqpSparseVec* lsq_residuals)
 {
   return apply_const_unscaling(lsq_residuals, scaling->func_weight);
 }
 
-SLEQP_RETCODE sleqp_scale_lsq_forward_direction(SleqpScaling* scaling,
-                                                SleqpSparseVec* forward_direction)
+SLEQP_RETCODE
+sleqp_scale_lsq_forward_direction(SleqpScaling* scaling,
+                                  SleqpSparseVec* forward_direction)
 {
   return apply_unscaling(forward_direction, scaling->var_weights, 0);
 }
 
-SLEQP_RETCODE sleqp_scale_lsq_adjoint_direction(SleqpScaling* scaling,
-                                                SleqpSparseVec* adjoint_direction)
+SLEQP_RETCODE
+sleqp_scale_lsq_adjoint_direction(SleqpScaling* scaling,
+                                  SleqpSparseVec* adjoint_direction)
 {
-    return apply_const_unscaling(adjoint_direction, scaling->func_weight);
+  return apply_const_unscaling(adjoint_direction, scaling->func_weight);
 }
 
-SLEQP_RETCODE sleqp_scale_point(SleqpScaling* scaling,
-                                SleqpSparseVec* point)
+SLEQP_RETCODE
+sleqp_scale_point(SleqpScaling* scaling, SleqpSparseVec* point)
 {
   SLEQP_CALL(apply_scaling(point, scaling->var_weights, 0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_func_grad(SleqpScaling* scaling,
-                                    SleqpSparseVec* func_grad)
+SLEQP_RETCODE
+sleqp_scale_func_grad(SleqpScaling* scaling, SleqpSparseVec* func_grad)
 {
   SLEQP_CALL(apply_unscaling(func_grad,
                              scaling->var_weights,
@@ -298,70 +306,65 @@ SLEQP_RETCODE sleqp_scale_func_grad(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_val(SleqpScaling* scaling,
-                                   SleqpSparseVec* cons_val)
+SLEQP_RETCODE
+sleqp_scale_cons_val(SleqpScaling* scaling, SleqpSparseVec* cons_val)
 {
-  SLEQP_CALL(apply_scaling(cons_val,
-                           scaling->cons_weights,
-                           0));
+  SLEQP_CALL(apply_scaling(cons_val, scaling->cons_weights, 0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_general(SleqpScaling* scaling,
-                                       SleqpSparseVec* general_val)
+SLEQP_RETCODE
+sleqp_scale_cons_general(SleqpScaling* scaling, SleqpSparseVec* general_val)
 {
-  SLEQP_CALL(apply_scaling(general_val,
-                           scaling->cons_weights,
-                           0));
+  SLEQP_CALL(apply_scaling(general_val, scaling->cons_weights, 0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_linear(SleqpScaling* scaling,
-                                      SleqpSparseVec* linear_val)
+SLEQP_RETCODE
+sleqp_scale_cons_linear(SleqpScaling* scaling, SleqpSparseVec* linear_val)
 {
-  const int num_linear = linear_val->dim;
-  const int num_cons = scaling->num_constraints;
+  const int num_linear  = linear_val->dim;
+  const int num_cons    = scaling->num_constraints;
   const int num_general = num_cons - num_linear;
 
-  SLEQP_CALL(apply_scaling(linear_val,
-                           scaling->cons_weights + num_general,
-                           0));
+  SLEQP_CALL(apply_scaling(linear_val, scaling->cons_weights + num_general, 0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_jac(SleqpScaling* scaling,
-                                   SleqpSparseMatrix* cons_jac)
+SLEQP_RETCODE
+sleqp_scale_cons_jac(SleqpScaling* scaling, SleqpSparseMatrix* cons_jac)
 {
   int col = 0;
 
   const int* cons_jac_cols = sleqp_sparse_matrix_get_cols(cons_jac);
   const int* cons_jac_rows = sleqp_sparse_matrix_get_rows(cons_jac);
-  double* cons_jac_data = sleqp_sparse_matrix_get_data(cons_jac);
+  double* cons_jac_data    = sleqp_sparse_matrix_get_data(cons_jac);
 
   int cons_jac_nnz = sleqp_sparse_matrix_get_nnz(cons_jac);
 
-  for(int index = 0; index < cons_jac_nnz; ++index)
+  for (int index = 0; index < cons_jac_nnz; ++index)
   {
-    while(index >= cons_jac_cols[col + 1])
+    while (index >= cons_jac_cols[col + 1])
     {
       ++col;
     }
 
     const int row = cons_jac_rows[index];
 
-    cons_jac_data[index] = ldexp(cons_jac_data[index],
-                                 (-1) * scaling->cons_weights[row] +
-                                 scaling->var_weights[col]);
+    cons_jac_data[index]
+      = ldexp(cons_jac_data[index],
+              (-1) * scaling->cons_weights[row] + scaling->var_weights[col]);
   }
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_linear_coeffs(SleqpScaling* scaling,
-                                        SleqpSparseMatrix* linear_coeffs)
+SLEQP_RETCODE
+sleqp_scale_linear_coeffs(SleqpScaling* scaling,
+                          SleqpSparseMatrix* linear_coeffs)
 {
   int col = 0;
 
@@ -371,49 +374,48 @@ SLEQP_RETCODE sleqp_scale_linear_coeffs(SleqpScaling* scaling,
 
   const int* linear_coeffs_cols = sleqp_sparse_matrix_get_cols(linear_coeffs);
   const int* linear_coeffs_rows = sleqp_sparse_matrix_get_rows(linear_coeffs);
-  double* linear_coeffs_data = sleqp_sparse_matrix_get_data(linear_coeffs);
+  double* linear_coeffs_data    = sleqp_sparse_matrix_get_data(linear_coeffs);
 
   int linear_coeffs_nnz = sleqp_sparse_matrix_get_nnz(linear_coeffs);
 
-  for(int index = 0; index < linear_coeffs_nnz; ++index)
+  for (int index = 0; index < linear_coeffs_nnz; ++index)
   {
-    while(index >= linear_coeffs_cols[col + 1])
+    while (index >= linear_coeffs_cols[col + 1])
     {
       ++col;
     }
 
     const int row = linear_coeffs_rows[index];
 
-    linear_coeffs_data[index] = ldexp(linear_coeffs_data[index],
-                                 (-1) * scaling->cons_weights[num_linear + row] +
-                                 scaling->var_weights[col]);
+    linear_coeffs_data[index]
+      = ldexp(linear_coeffs_data[index],
+              (-1) * scaling->cons_weights[num_linear + row]
+                + scaling->var_weights[col]);
   }
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_cons_duals(SleqpScaling* scaling,
-                                     SleqpSparseVec* cons_duals)
+SLEQP_RETCODE
+sleqp_scale_cons_duals(SleqpScaling* scaling, SleqpSparseVec* cons_duals)
 {
-  SLEQP_CALL(apply_unscaling(cons_duals,
-                             scaling->cons_weights,
-                             scaling->func_weight));
+  SLEQP_CALL(
+    apply_unscaling(cons_duals, scaling->cons_weights, scaling->func_weight));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_var_duals(SleqpScaling* scaling,
-                                    SleqpSparseVec* var_duals)
+SLEQP_RETCODE
+sleqp_scale_var_duals(SleqpScaling* scaling, SleqpSparseVec* var_duals)
 {
-  SLEQP_CALL(apply_unscaling(var_duals,
-                             scaling->var_weights,
-                             scaling->func_weight));
+  SLEQP_CALL(
+    apply_unscaling(var_duals, scaling->var_weights, scaling->func_weight));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScaling* scaling,
-                                          SleqpSparseVec* product)
+SLEQP_RETCODE
+sleqp_scale_hessian_product(SleqpScaling* scaling, SleqpSparseVec* product)
 {
   SLEQP_CALL(apply_unscaling(product,
                              scaling->var_weights,
@@ -422,71 +424,72 @@ SLEQP_RETCODE sleqp_scale_hessian_product(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scale_iterate(SleqpScaling* scaling,
-                                  SleqpIterate* scaled_iterate,
-                                  bool lsq)
+SLEQP_RETCODE
+sleqp_scale_iterate(SleqpScaling* scaling,
+                    SleqpIterate* scaled_iterate,
+                    bool lsq)
 {
-  SLEQP_CALL(sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
 
   const double func_val = sleqp_iterate_get_func_val(scaled_iterate);
 
-  if(lsq)
+  if (lsq)
   {
-    const double scaled_func_val = sleqp_scale_lsq_func_val(scaling,
-                                                            func_val);
+    const double scaled_func_val = sleqp_scale_lsq_func_val(scaling, func_val);
 
     SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, scaled_func_val));
   }
   else
   {
-    const double scaled_func_val = sleqp_scale_func_val(scaling,
-                                                        func_val);
+    const double scaled_func_val = sleqp_scale_func_val(scaling, func_val);
 
-    SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate,
-                                          scaled_func_val));
+    SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, scaled_func_val));
   }
 
-  SLEQP_CALL(sleqp_scale_func_grad(scaling,
-                                   sleqp_iterate_get_func_grad(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_scale_func_grad(scaling,
+                          sleqp_iterate_get_func_grad(scaled_iterate)));
 
-  SLEQP_CALL(sleqp_scale_cons_val(scaling,
-                                  sleqp_iterate_get_cons_val(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_scale_cons_val(scaling, sleqp_iterate_get_cons_val(scaled_iterate)));
 
-  SLEQP_CALL(sleqp_scale_cons_jac(scaling,
-                                  sleqp_iterate_get_cons_jac(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_scale_cons_jac(scaling, sleqp_iterate_get_cons_jac(scaled_iterate)));
 
-  SLEQP_CALL(sleqp_scale_cons_duals(scaling,
-                                    sleqp_iterate_get_cons_dual(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_scale_cons_duals(scaling,
+                           sleqp_iterate_get_cons_dual(scaled_iterate)));
 
-  SLEQP_CALL(sleqp_scale_var_duals(scaling,
-                                   sleqp_iterate_get_vars_dual(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_scale_var_duals(scaling,
+                          sleqp_iterate_get_vars_dual(scaled_iterate)));
 
   return SLEQP_OKAY;
 }
 
-
-double sleqp_unscale_func_val(SleqpScaling* scaling,
-                              double scaled_func_val)
+double
+sleqp_unscale_func_val(SleqpScaling* scaling, double scaled_func_val)
 {
   return ldexp(scaled_func_val, scaling->func_weight);
 }
 
-double sleqp_unscale_lsq_func_val(SleqpScaling* scaling,
-                                  double scaled_func_val)
+double
+sleqp_unscale_lsq_func_val(SleqpScaling* scaling, double scaled_func_val)
 {
   return ldexp(scaled_func_val, 2 * scaling->func_weight);
 }
 
-SLEQP_RETCODE sleqp_unscale_point(SleqpScaling* scaling,
-                                  SleqpSparseVec* scaled_point)
+SLEQP_RETCODE
+sleqp_unscale_point(SleqpScaling* scaling, SleqpSparseVec* scaled_point)
 {
   SLEQP_CALL(apply_unscaling(scaled_point, scaling->var_weights, 0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_func_grad(SleqpScaling* scaling,
-                                      SleqpSparseVec* scaled_func_grad)
+SLEQP_RETCODE
+sleqp_unscale_func_grad(SleqpScaling* scaling, SleqpSparseVec* scaled_func_grad)
 {
   SLEQP_CALL(apply_scaling(scaled_func_grad,
                            scaling->var_weights,
@@ -495,44 +498,46 @@ SLEQP_RETCODE sleqp_unscale_func_grad(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_cons_val(SleqpScaling* scaling,
-                                     SleqpSparseVec* scaled_cons_val)
+SLEQP_RETCODE
+sleqp_unscale_cons_val(SleqpScaling* scaling, SleqpSparseVec* scaled_cons_val)
 {
   SLEQP_CALL(apply_unscaling(scaled_cons_val, scaling->cons_weights, 0));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_cons_jac(SleqpScaling* scaling,
-                                     SleqpSparseMatrix* scaled_cons_jac)
+SLEQP_RETCODE
+sleqp_unscale_cons_jac(SleqpScaling* scaling,
+                       SleqpSparseMatrix* scaled_cons_jac)
 {
   int col = 0;
 
   const int* cons_jac_cols = sleqp_sparse_matrix_get_cols(scaled_cons_jac);
   const int* cons_jac_rows = sleqp_sparse_matrix_get_rows(scaled_cons_jac);
-  double* cons_jac_data = sleqp_sparse_matrix_get_data(scaled_cons_jac);
+  double* cons_jac_data    = sleqp_sparse_matrix_get_data(scaled_cons_jac);
 
   int cons_jac_nnz = sleqp_sparse_matrix_get_nnz(scaled_cons_jac);
 
-  for(int index = 0; index < cons_jac_nnz; ++index)
+  for (int index = 0; index < cons_jac_nnz; ++index)
   {
-    while(index >= cons_jac_cols[col + 1])
+    while (index >= cons_jac_cols[col + 1])
     {
       ++col;
     }
 
     const int row = cons_jac_rows[index];
 
-    cons_jac_data[index] = ldexp(cons_jac_data[index],
-                                 (-1)*(scaling->var_weights[col]) +
-                                 scaling->cons_weights[row]);
+    cons_jac_data[index]
+      = ldexp(cons_jac_data[index],
+              (-1) * (scaling->var_weights[col]) + scaling->cons_weights[row]);
   }
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_cons_duals(SleqpScaling* scaling,
-                                       SleqpSparseVec* scaled_cons_duals)
+SLEQP_RETCODE
+sleqp_unscale_cons_duals(SleqpScaling* scaling,
+                         SleqpSparseVec* scaled_cons_duals)
 {
   SLEQP_CALL(apply_scaling(scaled_cons_duals,
                            scaling->cons_weights,
@@ -541,8 +546,8 @@ SLEQP_RETCODE sleqp_unscale_cons_duals(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScaling* scaling,
-                                      SleqpSparseVec* scaled_var_duals)
+SLEQP_RETCODE
+sleqp_unscale_var_duals(SleqpScaling* scaling, SleqpSparseVec* scaled_var_duals)
 {
   SLEQP_CALL(apply_scaling(scaled_var_duals,
                            scaling->var_weights,
@@ -551,34 +556,33 @@ SLEQP_RETCODE sleqp_unscale_var_duals(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_unscale_hessian_direction(SleqpScaling* scaling,
-                                              SleqpSparseVec* direction,
-                                              SleqpSparseVec* cons_duals)
+SLEQP_RETCODE
+sleqp_unscale_hessian_direction(SleqpScaling* scaling,
+                                SleqpSparseVec* direction,
+                                SleqpSparseVec* cons_duals)
 {
-  SLEQP_CALL(apply_unscaling(direction,
-                             scaling->var_weights,
-                             0));
+  SLEQP_CALL(apply_unscaling(direction, scaling->var_weights, 0));
 
-  SLEQP_CALL(apply_scaling(cons_duals,
-                           scaling->cons_weights,
-                           scaling->func_weight));
+  SLEQP_CALL(
+    apply_scaling(cons_duals, scaling->cons_weights, scaling->func_weight));
 
   return SLEQP_OKAY;
 }
 
-
-SLEQP_RETCODE sleqp_unscale_iterate(SleqpScaling* scaling,
-                                    SleqpIterate* scaled_iterate,
-                                    bool lsq)
+SLEQP_RETCODE
+sleqp_unscale_iterate(SleqpScaling* scaling,
+                      SleqpIterate* scaled_iterate,
+                      bool lsq)
 {
-  SLEQP_CALL(sleqp_unscale_point(scaling,
-                                 sleqp_iterate_get_primal(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_unscale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
 
   const double func_val = sleqp_iterate_get_func_val(scaled_iterate);
 
-  if(lsq)
+  if (lsq)
   {
-    const double unscaled_func_val = sleqp_unscale_lsq_func_val(scaling, func_val);
+    const double unscaled_func_val
+      = sleqp_unscale_lsq_func_val(scaling, func_val);
 
     SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, unscaled_func_val));
   }
@@ -589,27 +593,33 @@ SLEQP_RETCODE sleqp_unscale_iterate(SleqpScaling* scaling,
     SLEQP_CALL(sleqp_iterate_set_func_val(scaled_iterate, unscaled_func_val));
   }
 
-  SLEQP_CALL(sleqp_unscale_func_grad(scaling,
-                                     sleqp_iterate_get_func_grad(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_unscale_func_grad(scaling,
+                            sleqp_iterate_get_func_grad(scaled_iterate)));
 
-  SLEQP_CALL(sleqp_unscale_cons_val(scaling,
-                                    sleqp_iterate_get_cons_val(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_unscale_cons_val(scaling,
+                           sleqp_iterate_get_cons_val(scaled_iterate)));
 
-  SLEQP_CALL(sleqp_unscale_cons_jac(scaling,
-                                    sleqp_iterate_get_cons_jac(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_unscale_cons_jac(scaling,
+                           sleqp_iterate_get_cons_jac(scaled_iterate)));
 
-  SLEQP_CALL(sleqp_unscale_cons_duals(scaling,
-                                      sleqp_iterate_get_cons_dual(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_unscale_cons_duals(scaling,
+                             sleqp_iterate_get_cons_dual(scaled_iterate)));
 
-  SLEQP_CALL(sleqp_unscale_var_duals(scaling,
-                                     sleqp_iterate_get_vars_dual(scaled_iterate)));
+  SLEQP_CALL(
+    sleqp_unscale_var_duals(scaling,
+                            sleqp_iterate_get_vars_dual(scaled_iterate)));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
-                                               SleqpSparseVec* gradient,
-                                               double eps)
+SLEQP_RETCODE
+sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
+                                 SleqpSparseVec* gradient,
+                                 double eps)
 {
   double max_val = 0.;
 
@@ -617,11 +627,11 @@ SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
 
   *scaling_factor = 0;
 
-  for(int k = 0; k < gradient->nnz; ++k)
+  for (int k = 0; k < gradient->nnz; ++k)
   {
     double cur_val = SLEQP_ABS(gradient->data[k]);
 
-    if(sleqp_is_zero(cur_val, eps))
+    if (sleqp_is_zero(cur_val, eps))
     {
       continue;
     }
@@ -629,7 +639,7 @@ SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
     max_val = SLEQP_MAX(max_val, cur_val);
   }
 
-  if(max_val != 0.)
+  if (max_val != 0.)
   {
     assert(max_val > 0.);
 
@@ -646,12 +656,13 @@ SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE compute_scale_factors(SleqpScaling* scaling,
-                                           SleqpSparseMatrix* matrix,
-                                           bool column,
-                                           int* scaling_factors,
-                                           int* prescaling,
-                                           double eps)
+static SLEQP_RETCODE
+compute_scale_factors(SleqpScaling* scaling,
+                      SleqpSparseMatrix* matrix,
+                      bool column,
+                      int* scaling_factors,
+                      int* prescaling,
+                      double eps)
 {
   double* max_vals = scaling->max_cache;
 
@@ -660,7 +671,7 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScaling* scaling,
 
   int size = (column) ? num_cols : num_rows;
 
-  for(int i = 0; i < size; ++i)
+  for (int i = 0; i < size; ++i)
   {
     max_vals[i] = 0.;
 
@@ -671,27 +682,27 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScaling* scaling,
 
   const int* matrix_cols = sleqp_sparse_matrix_get_cols(matrix);
   const int* matrix_rows = sleqp_sparse_matrix_get_rows(matrix);
-  double* matrix_data = sleqp_sparse_matrix_get_data(matrix);
+  double* matrix_data    = sleqp_sparse_matrix_get_data(matrix);
 
   int matrix_nnz = sleqp_sparse_matrix_get_nnz(matrix);
 
-  for(int index = 0; index < matrix_nnz; ++index)
+  for (int index = 0; index < matrix_nnz; ++index)
   {
-    while(index >= matrix_cols[col + 1])
+    while (index >= matrix_cols[col + 1])
     {
       ++col;
     }
 
     int row = matrix_rows[index];
 
-    int cur_entry = (column) ? col : row;
+    int cur_entry   = (column) ? col : row;
     int other_entry = (column) ? row : col;
 
     double cur_val = ldexp(matrix_data[index], prescaling[other_entry]);
 
     cur_val = SLEQP_ABS(cur_val);
 
-    if(sleqp_is_zero(cur_val, eps))
+    if (sleqp_is_zero(cur_val, eps))
     {
       continue;
     }
@@ -699,9 +710,9 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScaling* scaling,
     max_vals[cur_entry] = SLEQP_MAX(max_vals[cur_entry], cur_val);
   }
 
-  for(int i = 0; i < size; ++i)
+  for (int i = 0; i < size; ++i)
   {
-    if(max_vals[i] == 0.)
+    if (max_vals[i] == 0.)
     {
       scaling_factors[i] = 0;
       continue;
@@ -722,10 +733,11 @@ static SLEQP_RETCODE compute_scale_factors(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-static double max_matrix_ratio(SleqpScaling* scaling,
-                               SleqpSparseMatrix* matrix,
-                               bool column,
-                               double eps)
+static double
+max_matrix_ratio(SleqpScaling* scaling,
+                 SleqpSparseMatrix* matrix,
+                 bool column,
+                 double eps)
 {
   double* min_vals = scaling->min_cache;
   double* max_vals = scaling->max_cache;
@@ -735,13 +747,13 @@ static double max_matrix_ratio(SleqpScaling* scaling,
 
   const int* matrix_cols = sleqp_sparse_matrix_get_cols(matrix);
   const int* matrix_rows = sleqp_sparse_matrix_get_rows(matrix);
-  double* matrix_data = sleqp_sparse_matrix_get_data(matrix);
+  double* matrix_data    = sleqp_sparse_matrix_get_data(matrix);
 
   const int matrix_nnz = sleqp_sparse_matrix_get_nnz(matrix);
 
   int size = (column) ? num_cols : num_rows;
 
-  for(int i = 0; i < size; ++i)
+  for (int i = 0; i < size; ++i)
   {
     min_vals[i] = sleqp_infinity();
     max_vals[i] = 0.;
@@ -749,17 +761,17 @@ static double max_matrix_ratio(SleqpScaling* scaling,
 
   int col = 0;
 
-  for(int index = 0; index < matrix_nnz; ++index)
+  for (int index = 0; index < matrix_nnz; ++index)
   {
-    while(index >= matrix_cols[col + 1])
+    while (index >= matrix_cols[col + 1])
     {
       ++col;
     }
 
-    int row = matrix_rows[index];
+    int row        = matrix_rows[index];
     double cur_val = SLEQP_ABS(matrix_data[index]);
 
-    if(sleqp_is_zero(cur_val, eps))
+    if (sleqp_is_zero(cur_val, eps))
     {
       continue;
     }
@@ -773,9 +785,9 @@ static double max_matrix_ratio(SleqpScaling* scaling,
 
   double max_ratio = 0.;
 
-  for(int i = 0; i < size; ++i)
+  for (int i = 0; i < size; ++i)
   {
-    if(max_vals[i] == 0.)
+    if (max_vals[i] == 0.)
     {
       continue;
     }
@@ -789,27 +801,28 @@ static double max_matrix_ratio(SleqpScaling* scaling,
   return max_ratio;
 }
 
-SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
-                                          SleqpSparseMatrix* cons_jac,
-                                          double eps)
+SLEQP_RETCODE
+sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
+                            SleqpSparseMatrix* cons_jac,
+                            double eps)
 {
   SLEQP_CALL(sleqp_scaling_reset(scaling));
 
-  if(!(scaling->min_cache))
+  if (!(scaling->min_cache))
   {
-    const int size = SLEQP_MAX(scaling->num_constraints,
-                               scaling->num_variables);
+    const int size
+      = SLEQP_MAX(scaling->num_constraints, scaling->num_variables);
 
     SLEQP_CALL(sleqp_alloc_array(&scaling->min_cache, size));
     SLEQP_CALL(sleqp_alloc_array(&scaling->max_cache, size));
   }
 
-  const double var_ratio = max_matrix_ratio(scaling, cons_jac, true, eps);
+  const double var_ratio  = max_matrix_ratio(scaling, cons_jac, true, eps);
   const double cons_ratio = max_matrix_ratio(scaling, cons_jac, false, eps);
 
   const bool vars_first = var_ratio < cons_ratio;
 
-  if(vars_first)
+  if (vars_first)
   {
     SLEQP_CALL(compute_scale_factors(scaling,
                                      cons_jac,
@@ -845,11 +858,12 @@ SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE scaling_free(SleqpScaling** star)
+static SLEQP_RETCODE
+scaling_free(SleqpScaling** star)
 {
   SleqpScaling* scaling = *star;
 
-  if(!scaling)
+  if (!scaling)
   {
     return SLEQP_OKAY;
   }
@@ -869,23 +883,25 @@ static SLEQP_RETCODE scaling_free(SleqpScaling** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_capture(SleqpScaling* scaling)
+SLEQP_RETCODE
+sleqp_scaling_capture(SleqpScaling* scaling)
 {
   ++scaling->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_scaling_release(SleqpScaling** star)
+SLEQP_RETCODE
+sleqp_scaling_release(SleqpScaling** star)
 {
   SleqpScaling* scaling = *star;
 
-  if(!scaling)
+  if (!scaling)
   {
     return SLEQP_OKAY;
   }
 
-  if(--scaling->refcount == 0)
+  if (--scaling->refcount == 0)
   {
     SLEQP_CALL(scaling_free(star));
   }

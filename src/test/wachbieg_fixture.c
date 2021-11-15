@@ -7,7 +7,7 @@
 
 #include "sparse/sparse_matrix.h"
 
-const int wachbieg_num_variables = 3;
+const int wachbieg_num_variables   = 3;
 const int wachbieg_num_constraints = 2;
 
 const double a = -1.;
@@ -24,13 +24,15 @@ SleqpSparseVec* wachbieg_optimal;
 
 SleqpFunc* wachbieg_func;
 
-typedef struct {
+typedef struct
+{
   double x[3];
 } WachBiegData;
 
-static inline double sq(double v)
+static inline double
+sq(double v)
 {
-  return v*v;
+  return v * v;
 }
 
 WachBiegData wachbieg_data;
@@ -48,8 +50,8 @@ wachbieg_set(SleqpFunc* func,
              void* func_data)
 {
   *func_grad_nnz = wachbieg_num_variables;
-  *cons_val_nnz = wachbieg_num_constraints;
-  *cons_jac_nnz = wachbieg_jac_nnz;
+  *cons_val_nnz  = wachbieg_num_constraints;
+  *cons_jac_nnz  = wachbieg_jac_nnz;
 
   wachbieg_data.x[0] = 0;
   wachbieg_data.x[1] = 0;
@@ -57,7 +59,7 @@ wachbieg_set(SleqpFunc* func,
 
   int k_x = 0;
 
-  while(k_x < x->nnz)
+  while (k_x < x->nnz)
   {
     wachbieg_data.x[x->indices[k_x]] = x->data[k_x];
 
@@ -68,9 +70,7 @@ wachbieg_set(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-wachbieg_val(SleqpFunc* func,
-             double* func_val,
-             void* func_data)
+wachbieg_val(SleqpFunc* func, double* func_val, void* func_data)
 {
   const double x0 = wachbieg_data.x[0];
 
@@ -80,13 +80,9 @@ wachbieg_val(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-wachbieg_grad(SleqpFunc* func,
-              SleqpSparseVec* func_grad,
-              void* func_data)
+wachbieg_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad,
-                                      0,
-                                      1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 1.));
 
   return SLEQP_OKAY;
 }
@@ -101,52 +97,34 @@ wachbieg_cons_val(SleqpFunc* func,
   const double x1 = wachbieg_data.x[1];
   const double x2 = wachbieg_data.x[2];
 
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                      0,
-                                      sq(x0) - x1 + a));
+  SLEQP_CALL(sleqp_sparse_vector_push(cons_val, 0, sq(x0) - x1 + a));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                      1,
-                                      x0 - x2 - b));
-
+  SLEQP_CALL(sleqp_sparse_vector_push(cons_val, 1, x0 - x2 - b));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE wachbieg_cons_jac(SleqpFunc* func,
-                                const SleqpSparseVec* cons_indices,
-                                SleqpSparseMatrix* cons_jac,
-                                void* func_data)
+SLEQP_RETCODE
+wachbieg_cons_jac(SleqpFunc* func,
+                  const SleqpSparseVec* cons_indices,
+                  SleqpSparseMatrix* cons_jac,
+                  void* func_data)
 {
   const double x0 = wachbieg_data.x[0];
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      0,
-                                      0,
-                                      2 * x0));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 0, 2 * x0));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      1,
-                                      0,
-                                      1.));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 0, 1.));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
-                                             1));
+  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      0,
-                                      1,
-                                      -1.));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, -1.));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac,
-                                             2));
+  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 2));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac,
-                                      1,
-                                      2,
-                                      -1.));
+  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 2, -1.));
 
   return SLEQP_OKAY;
 }
@@ -160,30 +138,27 @@ wachbieg_hess_prod(SleqpFunc* func,
                    void* func_data)
 {
   const double d0 = sleqp_sparse_vector_value_at(direction, 0);
-  const double m = sleqp_sparse_vector_value_at(cons_duals, 0);
+  const double m  = sleqp_sparse_vector_value_at(cons_duals, 0);
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(product, 1));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(product,
-                                      0,
-                                      2. * d0 * m));
+  SLEQP_CALL(sleqp_sparse_vector_push(product, 0, 2. * d0 * m));
 
   return SLEQP_OKAY;
 }
 
-void wachbieg_setup()
+void
+wachbieg_setup()
 {
   const double inf = sleqp_infinity();
 
-  SleqpFuncCallbacks callbacks = {
-    .set_value = wachbieg_set,
-    .func_val  = wachbieg_val,
-    .func_grad = wachbieg_grad,
-    .cons_val  = wachbieg_cons_val,
-    .cons_jac  = wachbieg_cons_jac,
-    .hess_prod = wachbieg_hess_prod,
-    .func_free = NULL
-  };
+  SleqpFuncCallbacks callbacks = {.set_value = wachbieg_set,
+                                  .func_val  = wachbieg_val,
+                                  .func_grad = wachbieg_grad,
+                                  .cons_val  = wachbieg_cons_val,
+                                  .cons_jac  = wachbieg_cons_jac,
+                                  .hess_prod = wachbieg_hess_prod,
+                                  .func_free = NULL};
 
   ASSERT_CALL(sleqp_func_create(&wachbieg_func,
                                 &callbacks,
@@ -191,8 +166,8 @@ void wachbieg_setup()
                                 wachbieg_num_constraints,
                                 NULL));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&wachbieg_var_lb,
-                                              wachbieg_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_full(&wachbieg_var_lb, wachbieg_num_variables));
 
   {
     double values[3] = {-inf, 0., 0.};
@@ -201,11 +176,10 @@ void wachbieg_setup()
                                              values,
                                              wachbieg_num_variables,
                                              0.));
-
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&wachbieg_var_ub,
-                                              wachbieg_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_full(&wachbieg_var_ub, wachbieg_num_variables));
 
   {
     double values[3] = {inf, inf, inf};
@@ -222,8 +196,8 @@ void wachbieg_setup()
   ASSERT_CALL(sleqp_sparse_vector_create_empty(&wachbieg_cons_ub,
                                                wachbieg_num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&wachbieg_initial,
-                                              wachbieg_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_full(&wachbieg_initial, wachbieg_num_variables));
 
   {
     double values[3] = {-2., 1., 1.};
@@ -232,11 +206,10 @@ void wachbieg_setup()
                                              values,
                                              wachbieg_num_variables,
                                              0.));
-
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&wachbieg_optimal,
-                                              wachbieg_num_variables));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_full(&wachbieg_optimal, wachbieg_num_variables));
 
   // Note: This is not unique...
   // General solutions: [x1, x2, x3] with
@@ -248,12 +221,11 @@ void wachbieg_setup()
                                              values,
                                              wachbieg_num_variables,
                                              0.));
-
   }
-
 }
 
-void wachbieg_teardown()
+void
+wachbieg_teardown()
 {
   ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_optimal));
   ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_initial));
@@ -265,5 +237,4 @@ void wachbieg_teardown()
   ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_var_lb));
 
   ASSERT_CALL(sleqp_func_release(&wachbieg_func));
-
 }

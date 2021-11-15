@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 #include "mem.h"
@@ -8,7 +8,6 @@
 #include "test_common.h"
 
 #include "rosenbrock_fixture.h"
-
 
 START_TEST(test_unconstrained_solve)
 {
@@ -41,16 +40,13 @@ START_TEST(test_unconstrained_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver,
-                                        &solution_iterate));
+  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
 
   ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
-  ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   rosenbrock_optimal,
-                                   1e-6));
+  ck_assert(sleqp_sparse_vector_eq(actual_solution, rosenbrock_optimal, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -62,18 +58,17 @@ START_TEST(test_unconstrained_solve)
 }
 END_TEST
 
-Suite* unconstrained_test_suite()
+Suite*
+unconstrained_test_suite()
 {
-  Suite *suite;
-  TCase *tc_uncons;
+  Suite* suite;
+  TCase* tc_uncons;
 
   suite = suite_create("Unconstrained tests");
 
   tc_uncons = tcase_create("Unconstrained solution test");
 
-  tcase_add_checked_fixture(tc_uncons,
-                            rosenbrock_setup,
-                            rosenbrock_teardown);
+  tcase_add_checked_fixture(tc_uncons, rosenbrock_setup, rosenbrock_teardown);
 
   tcase_add_test(tc_uncons, test_unconstrained_solve);
   suite_add_tcase(suite, tc_uncons);

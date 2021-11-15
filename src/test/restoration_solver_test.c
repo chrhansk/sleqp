@@ -1,9 +1,9 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
-#include "mem.h"
 #include "feas.h"
+#include "mem.h"
 #include "solver.h"
 #include "util.h"
 
@@ -16,7 +16,8 @@ SleqpOptions* options;
 
 SleqpProblem* problem;
 
-void restoration_solver_setup()
+void
+restoration_solver_setup()
 {
   wachbieg_setup();
 
@@ -36,7 +37,8 @@ void restoration_solver_setup()
                                           wachbieg_cons_ub));
 }
 
-void restoration_solver_teardown()
+void
+restoration_solver_teardown()
 {
   ASSERT_CALL(sleqp_problem_release(&problem));
 
@@ -57,33 +59,27 @@ START_TEST(test_solve)
                                   wachbieg_initial,
                                   NULL));
 
-  ASSERT_CALL(sleqp_solver_solve(solver,
-                                 SLEQP_NONE,
-                                 SLEQP_NONE));
+  ASSERT_CALL(sleqp_solver_solve(solver, SLEQP_NONE, SLEQP_NONE));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver),
-                   SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver,
-                                        &solution_iterate));
+  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
 
   SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
 
-  ck_assert(sleqp_sparse_vector_eq(actual_solution,
-                                   wachbieg_optimal,
-                                   1e-6));
+  ck_assert(sleqp_sparse_vector_eq(actual_solution, wachbieg_optimal, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
-
 }
 END_TEST
 
-Suite* restoration_solver_test_suite()
+Suite*
+restoration_solver_test_suite()
 {
-  Suite *suite;
-  TCase *tc_restoration;
+  Suite* suite;
+  TCase* tc_restoration;
 
   suite = suite_create("Restoration solver tests");
 

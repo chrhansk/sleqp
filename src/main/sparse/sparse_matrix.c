@@ -23,10 +23,11 @@ typedef struct SleqpSparseMatrix
 
 } SleqpSparseMatrix;
 
-SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
-                                         int num_rows,
-                                         int num_cols,
-                                         int nnz_max)
+SLEQP_RETCODE
+sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
+                           int num_rows,
+                           int num_cols,
+                           int nnz_max)
 {
   SLEQP_CALL(sleqp_malloc(mstar));
 
@@ -36,7 +37,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
 
   matrix->refcount = 1;
 
-  matrix->nnz = 0;
+  matrix->nnz     = 0;
   matrix->nnz_max = nnz_max;
 
   matrix->num_cols = num_cols;
@@ -46,7 +47,7 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
   SLEQP_CALL(sleqp_alloc_array(&matrix->cols, num_cols + 1));
   SLEQP_CALL(sleqp_alloc_array(&matrix->rows, nnz_max));
 
-  for(int i = 0; i < num_cols + 1; ++i)
+  for (int i = 0; i < num_cols + 1; ++i)
   {
     matrix->cols[i] = 0;
   }
@@ -54,10 +55,10 @@ SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
-                                          int nnz)
+SLEQP_RETCODE
+sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix, int nnz)
 {
-  if(matrix->nnz_max >= nnz)
+  if (matrix->nnz_max >= nnz)
   {
     return SLEQP_OKAY;
   }
@@ -70,25 +71,26 @@ SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
-                                         int num_rows,
-                                         int num_cols)
+SLEQP_RETCODE
+sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
+                           int num_rows,
+                           int num_cols)
 {
-  if(matrix->num_cols < num_cols)
+  if (matrix->num_cols < num_cols)
   {
     SLEQP_CALL(sleqp_realloc(&matrix->cols, num_cols + 1));
 
-    if(matrix->num_cols == 0)
+    if (matrix->num_cols == 0)
     {
       matrix->cols[0] = 0;
     }
 
-    for(int index = matrix->num_cols + 1; index < num_cols + 1; ++index)
+    for (int index = matrix->num_cols + 1; index < num_cols + 1; ++index)
     {
       matrix->cols[index] = matrix->cols[index - 1];
     }
   }
-  else if(matrix->num_cols > num_cols)
+  else if (matrix->num_cols > num_cols)
   {
     matrix->nnz = matrix->cols[num_cols];
   }
@@ -99,17 +101,17 @@ SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_scale(SleqpSparseMatrix* matrix,
-                                        double scale)
+SLEQP_RETCODE
+sleqp_sparse_matrix_scale(SleqpSparseMatrix* matrix, double scale)
 {
-  if(scale == 0.)
+  if (scale == 0.)
   {
     SLEQP_CALL(sleqp_sparse_matrix_clear(matrix));
 
     return SLEQP_OKAY;
   }
 
-  for(int index = 0; index < matrix->nnz; ++index)
+  for (int index = 0; index < matrix->nnz; ++index)
   {
     matrix->data[index] *= scale;
   }
@@ -117,57 +119,66 @@ SLEQP_RETCODE sleqp_sparse_matrix_scale(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-int sleqp_sparse_matrix_get_num_cols(const SleqpSparseMatrix* matrix)
+int
+sleqp_sparse_matrix_get_num_cols(const SleqpSparseMatrix* matrix)
 {
   return matrix->num_cols;
 }
 
-int sleqp_sparse_matrix_get_num_rows(const SleqpSparseMatrix* matrix)
+int
+sleqp_sparse_matrix_get_num_rows(const SleqpSparseMatrix* matrix)
 {
   return matrix->num_rows;
 }
 
-int sleqp_sparse_matrix_get_nnz(const SleqpSparseMatrix* matrix)
+int
+sleqp_sparse_matrix_get_nnz(const SleqpSparseMatrix* matrix)
 {
   return matrix->nnz;
 }
 
-int sleqp_sparse_matrix_get_nnz_max(const SleqpSparseMatrix* matrix)
+int
+sleqp_sparse_matrix_get_nnz_max(const SleqpSparseMatrix* matrix)
 {
   return matrix->nnz_max;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_set_nnz(SleqpSparseMatrix* matrix,
-                                          int nnz)
+SLEQP_RETCODE
+sleqp_sparse_matrix_set_nnz(SleqpSparseMatrix* matrix, int nnz)
 {
   matrix->nnz = nnz;
   return SLEQP_OKAY;
 }
 
-bool sleqp_sparse_matrix_is_quadratic(const SleqpSparseMatrix* matrix)
+bool
+sleqp_sparse_matrix_is_quadratic(const SleqpSparseMatrix* matrix)
 {
   return matrix->num_rows == matrix->num_cols;
 }
 
-double* sleqp_sparse_matrix_get_data(const SleqpSparseMatrix* matrix)
+double*
+sleqp_sparse_matrix_get_data(const SleqpSparseMatrix* matrix)
 {
   return matrix->data;
 }
 
-int* sleqp_sparse_matrix_get_cols(const SleqpSparseMatrix* matrix)
+int*
+sleqp_sparse_matrix_get_cols(const SleqpSparseMatrix* matrix)
 {
   return matrix->cols;
 }
 
-int* sleqp_sparse_matrix_get_rows(const SleqpSparseMatrix* matrix)
+int*
+sleqp_sparse_matrix_get_rows(const SleqpSparseMatrix* matrix)
 {
   return matrix->rows;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
-                                       int row,
-                                       int col,
-                                       double value)
+SLEQP_RETCODE
+sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
+                         int row,
+                         int col,
+                         double value)
 {
   assert(matrix->nnz < matrix->nnz_max);
   assert(row < matrix->num_rows);
@@ -181,21 +192,22 @@ SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_push_vec(SleqpSparseMatrix* matrix,
-                                           int col,
-                                           SleqpSparseVec* vec)
+SLEQP_RETCODE
+sleqp_sparse_matrix_push_vec(SleqpSparseMatrix* matrix,
+                             int col,
+                             SleqpSparseVec* vec)
 {
   assert(matrix->cols[col] == matrix->cols[col + 1]);
   assert(vec->dim == matrix->num_rows);
 
   assert((matrix->nnz_max - matrix->nnz) >= vec->nnz);
 
-  for(int i = 0; i < vec->nnz; ++i)
+  for (int i = 0; i < vec->nnz; ++i)
   {
     matrix->data[matrix->nnz + i] = vec->data[i];
   }
 
-  for(int i = 0; i < vec->nnz; ++i)
+  for (int i = 0; i < vec->nnz; ++i)
   {
     matrix->rows[matrix->nnz + i] = vec->indices[i];
   }
@@ -206,8 +218,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_push_vec(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,
-                                              int col)
+SLEQP_RETCODE
+sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix, int col)
 {
   assert(col < matrix->num_cols);
 
@@ -216,8 +228,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix,
-                                             int col)
+SLEQP_RETCODE
+sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix, int col)
 {
   assert(col < matrix->num_cols);
 
@@ -229,29 +241,29 @@ SLEQP_RETCODE sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_vstack(const SleqpSparseMatrix* first,
-                                         const SleqpSparseMatrix* second,
-                                         SleqpSparseMatrix* result)
+SLEQP_RETCODE
+sleqp_sparse_matrix_vstack(const SleqpSparseMatrix* first,
+                           const SleqpSparseMatrix* second,
+                           SleqpSparseMatrix* result)
 {
-  result ->nnz = 0;
+  result->nnz = 0;
 
   assert(first->num_cols == second->num_cols);
 
   const int result_num_rows = first->num_rows + second->num_rows;
   const int result_num_cols = first->num_cols;
 
-  SLEQP_CALL(sleqp_sparse_matrix_resize(result,
-                                        result_num_rows,
-                                        result_num_cols));
+  SLEQP_CALL(
+    sleqp_sparse_matrix_resize(result, result_num_rows, result_num_cols));
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(result,
-                                         first->nnz + second->nnz));
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(result, first->nnz + second->nnz));
 
-  for(int col = 0; col < first->num_cols; ++col)
+  for (int col = 0; col < first->num_cols; ++col)
   {
     SLEQP_CALL(sleqp_sparse_matrix_push_column(result, col));
 
-    for(int k_first = first->cols[col]; k_first < first->cols[col + 1]; ++k_first)
+    for (int k_first = first->cols[col]; k_first < first->cols[col + 1];
+         ++k_first)
     {
       SLEQP_CALL(sleqp_sparse_matrix_push(result,
                                           first->rows[k_first],
@@ -259,37 +271,40 @@ SLEQP_RETCODE sleqp_sparse_matrix_vstack(const SleqpSparseMatrix* first,
                                           first->data[k_first]));
     }
 
-    for(int k_second = second->cols[col]; k_second < second->cols[col + 1]; ++k_second)
+    for (int k_second = second->cols[col]; k_second < second->cols[col + 1];
+         ++k_second)
     {
-      SLEQP_CALL(sleqp_sparse_matrix_push(result,
-                                          first->num_rows + second->rows[k_second],
-                                          col,
-                                          second->data[k_second]));
+      SLEQP_CALL(
+        sleqp_sparse_matrix_push(result,
+                                 first->num_rows + second->rows[k_second],
+                                 col,
+                                 second->data[k_second]));
     }
   }
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
-                                                 const SleqpSparseVec* vector,
-                                                 double* result)
+SLEQP_RETCODE
+sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
+                                   const SleqpSparseVec* vector,
+                                   double* result)
 {
   assert(matrix->num_cols == vector->dim);
 
-  for(int index = 0; index < matrix->num_rows; ++index)
+  for (int index = 0; index < matrix->num_rows; ++index)
   {
     result[index] = 0.;
   }
 
   int k_vec = 0;
 
-  while(k_vec < vector->nnz)
+  while (k_vec < vector->nnz)
   {
-    int col = vector->indices[k_vec];
+    int col       = vector->indices[k_vec];
     double factor = vector->data[k_vec];
 
-    for(int entry = matrix->cols[col]; entry < matrix->cols[col + 1]; ++entry)
+    for (int entry = matrix->cols[col]; entry < matrix->cols[col + 1]; ++entry)
     {
       result[matrix->rows[entry]] += factor * matrix->data[entry];
     }
@@ -300,17 +315,18 @@ SLEQP_RETCODE sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* matrix,
-                                                       const SleqpSparseVec* vector,
-                                                       double eps,
-                                                       SleqpSparseVec* result)
+SLEQP_RETCODE
+sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* matrix,
+                                         const SleqpSparseVec* vector,
+                                         double eps,
+                                         SleqpSparseVec* result)
 {
   assert(matrix->num_rows == vector->dim);
   assert(matrix->num_cols == result->dim);
 
   int col_size = 0;
 
-  for(int col = 0; col < matrix->num_cols; ++col)
+  for (int col = 0; col < matrix->num_cols; ++col)
   {
     col_size += (matrix->cols[col + 1] - matrix->cols[col]) > 0;
   }
@@ -318,22 +334,22 @@ SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* 
   SLEQP_CALL(sleqp_sparse_vector_clear(result));
   SLEQP_CALL(sleqp_sparse_vector_reserve(result, col_size));
 
-  for(int col = 0; col < matrix->num_cols; ++col)
+  for (int col = 0; col < matrix->num_cols; ++col)
   {
     int k_vec = 0, k_mat = matrix->cols[col];
 
     double sum = 0.;
 
-    while(k_vec < vector->nnz && k_mat < matrix->cols[col + 1])
+    while (k_vec < vector->nnz && k_mat < matrix->cols[col + 1])
     {
       int vec_idx = vector->indices[k_vec];
       int row_idx = matrix->rows[k_mat];
 
-      if(vec_idx < row_idx)
+      if (vec_idx < row_idx)
       {
         ++k_vec;
       }
-      else if(vec_idx > row_idx)
+      else if (vec_idx > row_idx)
       {
         ++k_mat;
       }
@@ -343,26 +359,24 @@ SLEQP_RETCODE sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* 
       }
     }
 
-    if(!sleqp_is_zero(sum, eps))
+    if (!sleqp_is_zero(sum, eps))
     {
       SLEQP_CALL(sleqp_sparse_vector_push(result, col, sum));
     }
-
   }
 
   return SLEQP_OKAY;
 }
 
-double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
-                               int row,
-                               int col)
+double*
+sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix, int row, int col)
 {
   assert(row < matrix->num_rows);
   assert(col < matrix->num_cols);
 
-  for(int index = matrix->cols[col]; index < matrix->cols[col + 1]; ++index)
+  for (int index = matrix->cols[col]; index < matrix->cols[col + 1]; ++index)
   {
-    if(matrix->rows[index] == row)
+    if (matrix->rows[index] == row)
     {
       return matrix->data + index;
     }
@@ -371,18 +385,18 @@ double* sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix,
   return NULL;
 }
 
-double sleqp_sparse_matrix_value_at(SleqpSparseMatrix* matrix,
-                                    int row,
-                                    int col)
+double
+sleqp_sparse_matrix_value_at(SleqpSparseMatrix* matrix, int row, int col)
 {
   double* ptr = sleqp_sparse_matrix_at(matrix, row, col);
 
   return ptr ? *ptr : 0.;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_get_col(const SleqpSparseMatrix* matrix,
-                                          int col,
-                                          SleqpSparseVec* vec)
+SLEQP_RETCODE
+sleqp_sparse_matrix_get_col(const SleqpSparseMatrix* matrix,
+                            int col,
+                            SleqpSparseVec* vec)
 {
   assert(matrix->num_rows == vec->dim);
   assert(col >= 0);
@@ -393,18 +407,17 @@ SLEQP_RETCODE sleqp_sparse_matrix_get_col(const SleqpSparseMatrix* matrix,
   SLEQP_CALL(sleqp_sparse_vector_reserve(vec, nnz));
   SLEQP_CALL(sleqp_sparse_vector_clear(vec));
 
-  for(int i = matrix->cols[col]; i < matrix->cols[col + 1]; ++i)
+  for (int i = matrix->cols[col]; i < matrix->cols[col + 1]; ++i)
   {
-    SLEQP_CALL(sleqp_sparse_vector_push(vec,
-                                        matrix->rows[i],
-                                        matrix->data[i]));
+    SLEQP_CALL(sleqp_sparse_vector_push(vec, matrix->rows[i], matrix->data[i]));
   }
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
-                                            SleqpSparseMatrix* target)
+SLEQP_RETCODE
+sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
+                              SleqpSparseMatrix* target)
 {
   assert(source->num_rows == target->num_rows);
   assert(source->num_cols == target->num_cols);
@@ -414,38 +427,35 @@ SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
   SLEQP_CALL(sleqp_sparse_matrix_reserve(target, source->nnz));
 
   int target_col = 0;
-  int col = 0;
+  int col        = 0;
 
-  for(int index = 0; index < source->nnz; ++index)
+  for (int index = 0; index < source->nnz; ++index)
   {
-    while(index >= source->cols[col + 1])
+    while (index >= source->cols[col + 1])
     {
       ++col;
     }
 
-    const int row = source->rows[index];
+    const int row      = source->rows[index];
     const double value = source->data[index];
 
-    if(row < col)
+    if (row < col)
     {
       continue;
     }
 
-    while(target_col < col)
+    while (target_col < col)
     {
       ++target_col;
       SLEQP_CALL(sleqp_sparse_matrix_push_column(target, target_col));
     }
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(target,
-                                        row,
-                                        col,
-                                        value));
+    SLEQP_CALL(sleqp_sparse_matrix_push(target, row, col, value));
   }
 
   ++target_col;
 
-  while(target_col < target->num_cols)
+  while (target_col < target->num_cols)
   {
     SLEQP_CALL(sleqp_sparse_matrix_push_column(target, target_col));
     ++target_col;
@@ -456,37 +466,38 @@ SLEQP_RETCODE sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
   return SLEQP_OKAY;
 }
 
-bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
-                            const SleqpSparseMatrix* second,
-                            double eps)
+bool
+sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
+                       const SleqpSparseMatrix* second,
+                       double eps)
 {
   assert(first->num_rows == second->num_rows);
   assert(first->num_cols == second->num_cols);
 
-  for(int col = 0; col < first->num_cols; ++col)
+  for (int col = 0; col < first->num_cols; ++col)
   {
-    int first_index = first->cols[col];
+    int first_index  = first->cols[col];
     int second_index = second->cols[col];
 
-    bool first_valid = true;
+    bool first_valid  = true;
     bool second_valid = true;
 
     do
     {
-      first_valid = first_index < first->cols[col + 1];
+      first_valid  = first_index < first->cols[col + 1];
       second_valid = second_index < second->cols[col + 1];
 
       bool both_valid = first_valid && second_valid;
 
-      int first_row = first_valid ? first->rows[first_index] : -1;
+      int first_row  = first_valid ? first->rows[first_index] : -1;
       int second_row = second_valid ? second->rows[second_index] : -1;
 
-      double first_entry = first_valid ? first->data[first_index] : -1;
+      double first_entry  = first_valid ? first->data[first_index] : -1;
       double second_entry = second_valid ? second->data[second_index] : -1;
 
-      if(both_valid && (first_row == second_row))
+      if (both_valid && (first_row == second_row))
       {
-        if(!sleqp_is_eq(first_entry, second_entry, eps))
+        if (!sleqp_is_eq(first_entry, second_entry, eps))
         {
           return false;
         }
@@ -494,73 +505,71 @@ bool sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
         ++first_index;
         ++second_index;
       }
-      else if(first_valid || (both_valid && (first_row < second_row)))
+      else if (first_valid || (both_valid && (first_row < second_row)))
       {
-        if(!sleqp_is_zero(first_entry, eps))
+        if (!sleqp_is_zero(first_entry, eps))
         {
           return false;
         }
 
         ++first_index;
       }
-      else if(second_valid || (both_valid && (second_row < first_row)))
+      else if (second_valid || (both_valid && (second_row < first_row)))
       {
-        if(!sleqp_is_zero(second_entry, eps))
+        if (!sleqp_is_zero(second_entry, eps))
         {
           return false;
         }
 
         ++second_index;
       }
-    }
-    while(first_valid || second_valid);
-
+    } while (first_valid || second_valid);
   }
 
   return true;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_remove_rows(const SleqpSparseMatrix* source,
-                                              SleqpSparseMatrix* target,
-                                              const int* row_indices,
-                                              int num_row_entries)
+SLEQP_RETCODE
+sleqp_sparse_matrix_remove_rows(const SleqpSparseMatrix* source,
+                                SleqpSparseMatrix* target,
+                                const int* row_indices,
+                                int num_row_entries)
 {
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
-                                         sleqp_sparse_matrix_get_nnz(source)));
+  SLEQP_CALL(
+    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_get_nnz(source)));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
-  assert(sleqp_sparse_matrix_get_num_cols(source) ==
-         sleqp_sparse_matrix_get_num_cols(target));
+  assert(sleqp_sparse_matrix_get_num_cols(source)
+         == sleqp_sparse_matrix_get_num_cols(target));
 
-  assert(sleqp_sparse_matrix_get_num_rows(source) ==
-         sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
+  assert(sleqp_sparse_matrix_get_num_rows(source)
+         == sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
 
   assert(row_indices || (num_row_entries == 0));
 
   const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
 
   double* source_data = sleqp_sparse_matrix_get_data(source);
-  int* source_rows = sleqp_sparse_matrix_get_rows(source);
-  int* source_cols = sleqp_sparse_matrix_get_cols(source);
+  int* source_rows    = sleqp_sparse_matrix_get_rows(source);
+  int* source_cols    = sleqp_sparse_matrix_get_cols(source);
 
-  for(int col = 0; col < num_cols; ++col)
+  for (int col = 0; col < num_cols; ++col)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(target,
-                                               col));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(target, col));
 
     int row_offset = 0;
 
-    for(int k = source_cols[col]; k < source_cols[col + 1]; ++k)
+    for (int k = source_cols[col]; k < source_cols[col + 1]; ++k)
     {
       const int row = source_rows[k];
 
-      while(row_offset < num_row_entries && row_indices[row_offset] < row)
+      while (row_offset < num_row_entries && row_indices[row_offset] < row)
       {
         ++row_offset;
       }
 
-      if(row_offset < num_row_entries && row_indices[row_offset] == row)
+      if (row_offset < num_row_entries && row_indices[row_offset] == row)
       {
         continue;
       }
@@ -575,23 +584,24 @@ SLEQP_RETCODE sleqp_sparse_matrix_remove_rows(const SleqpSparseMatrix* source,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source,
-                                                 SleqpSparseMatrix* target,
-                                                 const int* col_indices,
-                                                 int num_col_entries,
-                                                 const int* row_indices,
-                                                 int num_row_entries)
+SLEQP_RETCODE
+sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source,
+                                   SleqpSparseMatrix* target,
+                                   const int* col_indices,
+                                   int num_col_entries,
+                                   const int* row_indices,
+                                   int num_row_entries)
 {
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
-                                         sleqp_sparse_matrix_get_nnz(source)));
+  SLEQP_CALL(
+    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_get_nnz(source)));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
-  assert(sleqp_sparse_matrix_get_num_cols(source) ==
-         sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
+  assert(sleqp_sparse_matrix_get_num_cols(source)
+         == sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
 
-  assert(sleqp_sparse_matrix_get_num_rows(source) ==
-         sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
+  assert(sleqp_sparse_matrix_get_num_rows(source)
+         == sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
 
   assert(row_indices || (num_row_entries == 0));
   assert(col_indices || (num_col_entries == 0));
@@ -599,34 +609,33 @@ SLEQP_RETCODE sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source
   const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
 
   double* source_data = sleqp_sparse_matrix_get_data(source);
-  int* source_rows = sleqp_sparse_matrix_get_rows(source);
-  int* source_cols = sleqp_sparse_matrix_get_cols(source);
+  int* source_rows    = sleqp_sparse_matrix_get_rows(source);
+  int* source_cols    = sleqp_sparse_matrix_get_cols(source);
 
   int col_offset = 0;
 
-  for(int col = 0; col < num_cols; ++col)
+  for (int col = 0; col < num_cols; ++col)
   {
-    if(col_offset < num_col_entries && col_indices[col_offset] <= col)
+    if (col_offset < num_col_entries && col_indices[col_offset] <= col)
     {
       ++col_offset;
       continue;
     }
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(target,
-                                               col - col_offset));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(target, col - col_offset));
 
     int row_offset = 0;
 
-    for(int k = source_cols[col]; k < source_cols[col + 1]; ++k)
+    for (int k = source_cols[col]; k < source_cols[col + 1]; ++k)
     {
       const int row = source_rows[k];
 
-      while(row_offset < num_row_entries && row_indices[row_offset] < row)
+      while (row_offset < num_row_entries && row_indices[row_offset] < row)
       {
         ++row_offset;
       }
 
-      if(row_offset < num_row_entries && row_indices[row_offset] == row)
+      if (row_offset < num_row_entries && row_indices[row_offset] == row)
       {
         continue;
       }
@@ -641,45 +650,44 @@ SLEQP_RETCODE sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_remove_cols(const SleqpSparseMatrix* source,
-                                              SleqpSparseMatrix* target,
-                                              const int* col_indices,
-                                              int num_col_entries)
+SLEQP_RETCODE
+sleqp_sparse_matrix_remove_cols(const SleqpSparseMatrix* source,
+                                SleqpSparseMatrix* target,
+                                const int* col_indices,
+                                int num_col_entries)
 {
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
-                                         sleqp_sparse_matrix_get_nnz(source)));
+  SLEQP_CALL(
+    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_get_nnz(source)));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
-  assert(sleqp_sparse_matrix_get_num_cols(source) ==
-         sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
+  assert(sleqp_sparse_matrix_get_num_cols(source)
+         == sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
 
-  assert(sleqp_sparse_matrix_get_num_rows(source) ==
-         sleqp_sparse_matrix_get_num_rows(target));
+  assert(sleqp_sparse_matrix_get_num_rows(source)
+         == sleqp_sparse_matrix_get_num_rows(target));
 
   assert(col_indices || (num_col_entries == 0));
-
 
   const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
 
   double* source_data = sleqp_sparse_matrix_get_data(source);
-  int* source_rows = sleqp_sparse_matrix_get_rows(source);
-  int* source_cols = sleqp_sparse_matrix_get_cols(source);
+  int* source_rows    = sleqp_sparse_matrix_get_rows(source);
+  int* source_cols    = sleqp_sparse_matrix_get_cols(source);
 
   int col_offset = 0;
 
-  for(int col = 0; col < num_cols; ++col)
+  for (int col = 0; col < num_cols; ++col)
   {
-    if(col_offset < num_col_entries && col_indices[col_offset] <= col)
+    if (col_offset < num_col_entries && col_indices[col_offset] <= col)
     {
       ++col_offset;
       continue;
     }
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(target,
-                                               col - col_offset));
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(target, col - col_offset));
 
-    for(int k = source_cols[col]; k < source_cols[col + 1]; ++k)
+    for (int k = source_cols[col]; k < source_cols[col + 1]; ++k)
     {
       const int row = source_rows[k];
 
@@ -693,11 +701,12 @@ SLEQP_RETCODE sleqp_sparse_matrix_remove_cols(const SleqpSparseMatrix* source,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix)
+SLEQP_RETCODE
+sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix)
 {
   matrix->nnz = 0;
 
-  for(int col = 0; col <= matrix->num_cols; ++col)
+  for (int col = 0; col <= matrix->num_cols; ++col)
   {
     matrix->cols[col] = 0;
   }
@@ -705,8 +714,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix,
-                                          FILE* output)
+SLEQP_RETCODE
+sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix, FILE* output)
 {
   fprintf(output,
           "Sparse matrix, dimension: %d x %d, entries: %d\n",
@@ -716,9 +725,9 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix,
 
   int col = 0;
 
-  for(int index = 0; index < matrix->nnz; ++index)
+  for (int index = 0; index < matrix->nnz; ++index)
   {
-    while(index >= matrix->cols[col + 1])
+    while (index >= matrix->cols[col + 1])
     {
       ++col;
     }
@@ -726,7 +735,8 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix,
     assert(matrix->cols[col] <= index);
     assert(index < matrix->cols[col + 1]);
 
-    fprintf(output, "(%d, %d) = %e\n",
+    fprintf(output,
+            "(%d, %d) = %e\n",
             matrix->rows[index],
             col,
             matrix->data[index]);
@@ -735,22 +745,27 @@ SLEQP_RETCODE sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix,
-                                       FILE* output)
+SLEQP_RETCODE
+sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix, FILE* output)
 {
   fprintf(output, "%%%%MatrixMarket matrix coordinate real general\n");
-  fprintf(output, "%d %d %d\n", matrix->num_rows, matrix->num_cols, matrix->nnz);
+  fprintf(output,
+          "%d %d %d\n",
+          matrix->num_rows,
+          matrix->num_cols,
+          matrix->nnz);
 
   int col = 0;
 
-  for(int index = 0; index < matrix->nnz; ++index)
+  for (int index = 0; index < matrix->nnz; ++index)
   {
-    while(index >= matrix->cols[col + 1])
+    while (index >= matrix->cols[col + 1])
     {
       ++col;
     }
 
-    fprintf(output, "%d %d %f\n",
+    fprintf(output,
+            "%d %d %f\n",
             matrix->rows[index] + 1,
             col + 1,
             matrix->data[index]);
@@ -759,12 +774,13 @@ SLEQP_RETCODE sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
-                                               const char* name)
+SLEQP_RETCODE
+sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
+                                 const char* name)
 {
   FILE* output = fopen(name, "w");
 
-  if(!output)
+  if (!output)
   {
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -776,8 +792,9 @@ SLEQP_RETCODE sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
-                                       SleqpSparseMatrix* target)
+SLEQP_RETCODE
+sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
+                         SleqpSparseMatrix* target)
 {
   assert(source->num_cols == target->num_cols);
   assert(source->num_rows == target->num_rows);
@@ -785,16 +802,15 @@ SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(target,
-                                         source->nnz));
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(target, source->nnz));
 
-  for(int i = 0; i < source->nnz;++i)
+  for (int i = 0; i < source->nnz; ++i)
   {
     target->data[i] = source->data[i];
     target->rows[i] = source->rows[i];
   }
 
-  for(int i = 0; i <= target->num_cols; ++i)
+  for (int i = 0; i <= target->num_cols; ++i)
   {
     target->cols[i] = source->cols[i];
   }
@@ -806,49 +822,50 @@ SLEQP_RETCODE sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
   return SLEQP_OKAY;
 }
 
-bool sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix)
+bool
+sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix)
 {
-  if(matrix->nnz > matrix->nnz_max)
+  if (matrix->nnz > matrix->nnz_max)
   {
     return false;
   }
 
-  if(matrix->num_cols < 0 || matrix->num_rows < 0)
+  if (matrix->num_cols < 0 || matrix->num_rows < 0)
   {
     return false;
   }
 
-  if(matrix->nnz == 0)
+  if (matrix->nnz == 0)
   {
     return true;
   }
 
-  for(int col = 0; col < matrix->num_cols; ++col)
+  for (int col = 0; col < matrix->num_cols; ++col)
   {
-    if(matrix->cols[col] > matrix->cols[col + 1])
+    if (matrix->cols[col] > matrix->cols[col + 1])
     {
       return false;
     }
 
-    for(int index = matrix->cols[col]; index < matrix->cols[col + 1] - 1; ++index)
+    for (int index = matrix->cols[col]; index < matrix->cols[col + 1] - 1;
+         ++index)
     {
-      if(matrix->rows[index] >= matrix->rows[index + 1])
+      if (matrix->rows[index] >= matrix->rows[index + 1])
       {
         return false;
       }
     }
 
-    for(int index = matrix->cols[col]; index < matrix->cols[col + 1]; ++index)
+    for (int index = matrix->cols[col]; index < matrix->cols[col + 1]; ++index)
     {
-      if(matrix->rows[index] < 0 ||
-         matrix->rows[index] >= matrix->num_rows)
+      if (matrix->rows[index] < 0 || matrix->rows[index] >= matrix->num_rows)
       {
         return false;
       }
     }
   }
 
-  if(matrix->cols[matrix->num_cols] != matrix->nnz)
+  if (matrix->cols[matrix->num_cols] != matrix->nnz)
   {
     return false;
   }
@@ -856,11 +873,12 @@ bool sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix)
   return true;
 }
 
-bool sleqp_sparse_matrix_is_finite(const SleqpSparseMatrix* matrix)
+bool
+sleqp_sparse_matrix_is_finite(const SleqpSparseMatrix* matrix)
 {
-  for(int index = 0; index < matrix->nnz; ++index)
+  for (int index = 0; index < matrix->nnz; ++index)
   {
-    if(!sleqp_is_finite(matrix->data[index]))
+    if (!sleqp_is_finite(matrix->data[index]))
     {
       return false;
     }
@@ -869,11 +887,12 @@ bool sleqp_sparse_matrix_is_finite(const SleqpSparseMatrix* matrix)
   return true;
 }
 
-static SLEQP_RETCODE sparse_matrix_free(SleqpSparseMatrix** mstar)
+static SLEQP_RETCODE
+sparse_matrix_free(SleqpSparseMatrix** mstar)
 {
   SleqpSparseMatrix* matrix = *mstar;
 
-  if(!matrix)
+  if (!matrix)
   {
     return SLEQP_OKAY;
   }
@@ -889,23 +908,25 @@ static SLEQP_RETCODE sparse_matrix_free(SleqpSparseMatrix** mstar)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix)
+SLEQP_RETCODE
+sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix)
 {
   ++matrix->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_matrix_release(SleqpSparseMatrix** star)
+SLEQP_RETCODE
+sleqp_sparse_matrix_release(SleqpSparseMatrix** star)
 {
   SleqpSparseMatrix* matrix = *star;
 
-  if(!matrix)
+  if (!matrix)
   {
     return SLEQP_OKAY;
   }
 
-  if(--matrix->refcount == 0)
+  if (--matrix->refcount == 0)
   {
     SLEQP_CALL(sparse_matrix_free(star));
   }

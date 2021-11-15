@@ -8,20 +8,14 @@
 
 #include "test_common.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+extern const int rosenbrock_num_residuals;
 
-  extern const int rosenbrock_num_residuals;
+extern SleqpFunc* rosenbrock_lsq_func;
 
-  extern SleqpFunc* rosenbrock_lsq_func;
+void
+rosenbrock_lsq_setup();
 
-  void rosenbrock_lsq_setup();
-
-  void rosenbrock_lsq_teardown();
-
-#ifdef __cplusplus
-}
-#endif
+void
+rosenbrock_lsq_teardown();
 
 #endif /* ROSENBROCK_LSQ_FIXTURE_H */

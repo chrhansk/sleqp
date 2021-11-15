@@ -17,10 +17,10 @@ static const double ma27_fratio = 0.5;
 
 static const bool ma27_verbose = false;
 
-
-static SLEQP_RETCODE ma27_get_error_string(int value, const char** message)
+static SLEQP_RETCODE
+ma27_get_error_string(int value, const char** message)
 {
-  switch(value)
+  switch (value)
   {
   case MA27_NSTEPS_OUT_OF_RANGE:
     *message = "NSTEPS out of range";
@@ -63,49 +63,47 @@ static SLEQP_RETCODE ma27_get_error_string(int value, const char** message)
   return SLEQP_OKAY;
 }
 
-#define MA27_CHECK_ERROR(x)                                   \
-  do                                                          \
-  {                                                           \
-    int ma27_status = (x);                                    \
-                                                              \
-    if (ma27_status != MA27_SUCCESS)                          \
-    {                                                         \
-      const char* ma27_error_string;                          \
-      SLEQP_CALL(ma27_get_error_string(ma27_status,           \
-                                       &ma27_error_string));  \
-                                                              \
-      sleqp_log_error("Caught hsl_ma27 error <%d> (%s)",      \
-                      ma27_status,                            \
-                      ma27_error_string);                     \
-                                                              \
-      switch(ma27_status)                                     \
-      {                                                       \
-      case MA27_NSTEPS_OUT_OF_RANGE:                          \
-      case MA27_NZ_OUT_OF_RANGE:                              \
-      case MA27_N_OUT_OF_RANGE:                               \
-      case MA27_WARN_IRN_ICN_OUT_OF_RANGE:                    \
-        return SLEQP_ILLEGAL_ARGUMENT;                        \
-      case MA27_A_MEM_TOO_SMALL:                              \
-      case MA27_IW_MEM_TOO_SMALL:                             \
-        return SLEQP_NOMEM;                                   \
-      case MA27_PIVOT_SIGN_CHANGE:                            \
-      case MA27_SINGULAR_MATRIX:                              \
-      case MA27_WARN_INDEFINITE:                              \
-      case MA27_WARN_RANK_DEFICIENT:                          \
-        return SLEQP_MATH_ERROR;                              \
-      default:                                                \
-        return SLEQP_INTERNAL_ERROR;                          \
-      }                                                       \
-    }                                                         \
-  } while(0)
-
+#define MA27_CHECK_ERROR(x)                                                    \
+  do                                                                           \
+  {                                                                            \
+    int ma27_status = (x);                                                     \
+                                                                               \
+    if (ma27_status != MA27_SUCCESS)                                           \
+    {                                                                          \
+      const char* ma27_error_string;                                           \
+      SLEQP_CALL(ma27_get_error_string(ma27_status, &ma27_error_string));      \
+                                                                               \
+      sleqp_log_error("Caught hsl_ma27 error <%d> (%s)",                       \
+                      ma27_status,                                             \
+                      ma27_error_string);                                      \
+                                                                               \
+      switch (ma27_status)                                                     \
+      {                                                                        \
+      case MA27_NSTEPS_OUT_OF_RANGE:                                           \
+      case MA27_NZ_OUT_OF_RANGE:                                               \
+      case MA27_N_OUT_OF_RANGE:                                                \
+      case MA27_WARN_IRN_ICN_OUT_OF_RANGE:                                     \
+        return SLEQP_ILLEGAL_ARGUMENT;                                         \
+      case MA27_A_MEM_TOO_SMALL:                                               \
+      case MA27_IW_MEM_TOO_SMALL:                                              \
+        return SLEQP_NOMEM;                                                    \
+      case MA27_PIVOT_SIGN_CHANGE:                                             \
+      case MA27_SINGULAR_MATRIX:                                               \
+      case MA27_WARN_INDEFINITE:                                               \
+      case MA27_WARN_RANK_DEFICIENT:                                           \
+        return SLEQP_MATH_ERROR;                                               \
+      default:                                                                 \
+        return SLEQP_INTERNAL_ERROR;                                           \
+      }                                                                        \
+    }                                                                          \
+  } while (0)
 
 typedef struct MA27IControl
 {
   int32_t error_message_stream;
   int32_t diag_message_stream;
   int32_t print_level;
-  int32_t not_of_interest[22];  /* as per MA27 documentation */
+  int32_t not_of_interest[22]; /* as per MA27 documentation */
   int32_t unused[5];
 } MA27IControl;
 
@@ -139,15 +137,18 @@ typedef struct MA27IInfo
 
 typedef struct MA27ControlInfo
 {
-  union {
+  union
+  {
     double cntl_[5];
     MA27RControl cntl;
   };
-  union {
+  union
+  {
     int32_t icntl_[30];
     MA27IControl icntl;
   };
-  union {
+  union
+  {
     int32_t info_[20];
     MA27IInfo info;
   };
@@ -202,15 +203,16 @@ typedef struct MA27Data
 
 } MA27Data;
 
-static SLEQP_RETCODE ma27_symbolic(MA27Data* ma27_data)
+static SLEQP_RETCODE
+ma27_symbolic(MA27Data* ma27_data)
 {
   MA27ControlInfo* control_info = &(ma27_data->control_info);
 
-  HSLMatrix* hsl_matrix = &(ma27_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma27_data->matrix);
   MA27Workspace* ma27_workspace = &(ma27_data->workspace);
-  MA27State* ma27_state = &(ma27_data->state);
+  MA27State* ma27_state         = &(ma27_data->state);
 
-  const int32_t dim = hsl_matrix->dim;
+  const int32_t dim       = hsl_matrix->dim;
   const int32_t total_nnz = hsl_matrix->nnz;
 
   const int32_t* rows = hsl_matrix->rows;
@@ -218,18 +220,30 @@ static SLEQP_RETCODE ma27_symbolic(MA27Data* ma27_data)
 
   int32_t iflag = 0;
 
-  ma27ad_(&dim, &total_nnz, rows, cols, ma27_workspace->iw, &(ma27_workspace->iw_size),
-          ma27_workspace->ikeep, ma27_workspace->iw1, &(ma27_state->nsteps), &iflag, control_info->icntl_, control_info->cntl_,
-          control_info->info_, &ma27_data->ops);
+  ma27ad_(&dim,
+          &total_nnz,
+          rows,
+          cols,
+          ma27_workspace->iw,
+          &(ma27_workspace->iw_size),
+          ma27_workspace->ikeep,
+          ma27_workspace->iw1,
+          &(ma27_state->nsteps),
+          &iflag,
+          control_info->icntl_,
+          control_info->cntl_,
+          control_info->info_,
+          &ma27_data->ops);
 
   MA27_CHECK_ERROR(control_info->info.iflag);
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma27_factor_reserve(MA27Factor* ma27_factor, int32_t factor_size)
+static SLEQP_RETCODE
+ma27_factor_reserve(MA27Factor* ma27_factor, int32_t factor_size)
 {
-  if(ma27_factor->factor_size < factor_size)
+  if (ma27_factor->factor_size < factor_size)
   {
     SLEQP_CALL(sleqp_realloc(&ma27_factor->factor, factor_size));
     ma27_factor->factor_size = factor_size;
@@ -238,18 +252,21 @@ static SLEQP_RETCODE ma27_factor_reserve(MA27Factor* ma27_factor, int32_t factor
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma27_numeric(MA27Data* ma27_data)
+static SLEQP_RETCODE
+ma27_numeric(MA27Data* ma27_data)
 {
   MA27ControlInfo* control_info = &(ma27_data->control_info);
 
-  HSLMatrix* hsl_matrix = &(ma27_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma27_data->matrix);
   MA27Workspace* ma27_workspace = &(ma27_data->workspace);
-  MA27State* ma27_state = &(ma27_data->state);
-  MA27Factor* ma27_factor = &(ma27_data->factor);
+  MA27State* ma27_state         = &(ma27_data->state);
+  MA27Factor* ma27_factor       = &(ma27_data->factor);
 
   // reserve sufficient number of doubles
   {
-    int32_t factor_size = ma27_alloc_factor*SLEQP_MAX(control_info->info.nrlnec, control_info->info.nrltot);
+    int32_t factor_size
+      = ma27_alloc_factor
+        * SLEQP_MAX(control_info->info.nrlnec, control_info->info.nrltot);
 
     factor_size = SLEQP_MAX(factor_size, hsl_matrix->nnz);
 
@@ -258,9 +275,10 @@ static SLEQP_RETCODE ma27_numeric(MA27Data* ma27_data)
 
   // reserve sufficient number of integers
   {
-    const int32_t iw_size = SLEQP_MAX(control_info->info.nirnec, control_info->info.nirtot);
+    const int32_t iw_size
+      = SLEQP_MAX(control_info->info.nirnec, control_info->info.nirtot);
 
-    if(ma27_workspace->iw_size < iw_size)
+    if (ma27_workspace->iw_size < iw_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma27_workspace->iw), iw_size));
       ma27_workspace->iw_size = iw_size;
@@ -275,47 +293,57 @@ static SLEQP_RETCODE ma27_numeric(MA27Data* ma27_data)
   {
     insufficient_size = false;
 
-    const int32_t total_nnz = hsl_matrix->nnz;
+    const int32_t total_nnz   = hsl_matrix->nnz;
     const int32_t factor_size = ma27_factor->factor_size;
-    const int32_t* rows = hsl_matrix->rows;
-    const int32_t* cols = hsl_matrix->cols;
+    const int32_t* rows       = hsl_matrix->rows;
+    const int32_t* cols       = hsl_matrix->cols;
     const double* matrix_data = hsl_matrix->data;
-    double* factor_data = ma27_factor->factor;
+    double* factor_data       = ma27_factor->factor;
 
-
-    for(int32_t i = 0; i < total_nnz; ++i)
+    for (int32_t i = 0; i < total_nnz; ++i)
     {
       factor_data[i] = matrix_data[i];
     }
 
-    ma27bd_(&dim, &total_nnz, rows, cols, factor_data,
-            &factor_size, ma27_workspace->iw, &(ma27_workspace->iw_size), ma27_workspace->ikeep, &(ma27_state->nsteps),
-            &(ma27_state->maxfrt), ma27_workspace->iw1, control_info->icntl_, control_info->cntl_, control_info->info_);
+    ma27bd_(&dim,
+            &total_nnz,
+            rows,
+            cols,
+            factor_data,
+            &factor_size,
+            ma27_workspace->iw,
+            &(ma27_workspace->iw_size),
+            ma27_workspace->ikeep,
+            &(ma27_state->nsteps),
+            &(ma27_state->maxfrt),
+            ma27_workspace->iw1,
+            control_info->icntl_,
+            control_info->cntl_,
+            control_info->info_);
 
-    if(control_info->info.iflag == MA27_A_MEM_TOO_SMALL)
+    if (control_info->info.iflag == MA27_A_MEM_TOO_SMALL)
     {
       insufficient_size = true;
 
       int32_t required_size = control_info->info.ierror;
 
-      required_size = SLEQP_MAX(required_size, 1.2*ma27_factor->factor_size);
+      required_size = SLEQP_MAX(required_size, 1.2 * ma27_factor->factor_size);
 
       ma27_factor_reserve(ma27_factor, required_size);
     }
-  }
-  while(insufficient_size);
+  } while (insufficient_size);
 
   MA27_CHECK_ERROR(control_info->info.iflag);
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma27_set_matrix(void* factorization_data,
-                                     SleqpSparseMatrix* matrix)
+static SLEQP_RETCODE
+ma27_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 {
-  MA27Data* ma27_data = (MA27Data*) factorization_data;
+  MA27Data* ma27_data = (MA27Data*)factorization_data;
 
-  HSLMatrix* hsl_matrix = &(ma27_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma27_data->matrix);
   MA27Workspace* ma27_workspace = &(ma27_data->workspace);
 
   const int32_t num_rows = sleqp_sparse_matrix_get_num_cols(matrix);
@@ -325,11 +353,11 @@ static SLEQP_RETCODE ma27_set_matrix(void* factorization_data,
   const int32_t dim = num_cols;
 
   const int32_t matrix_nnz = sleqp_sparse_matrix_get_nnz(matrix);
-  const int32_t total_nnz = dim + matrix_nnz;
+  const int32_t total_nnz  = dim + matrix_nnz;
 
   // prepare rhs / sol
   {
-    if(hsl_matrix->dim < dim)
+    if (hsl_matrix->dim < dim)
     {
       SLEQP_CALL(sleqp_realloc(&ma27_data->rhs_sol, dim));
     }
@@ -346,25 +374,27 @@ static SLEQP_RETCODE ma27_set_matrix(void* factorization_data,
   {
     const int32_t upper_nnz = total_nnz - dim;
 
-    const int32_t iw_size = ma27_alloc_factor * SLEQP_MAX(2*upper_nnz + 3*dim + 1, upper_nnz + 3*dim + 1);
+    const int32_t iw_size
+      = ma27_alloc_factor
+        * SLEQP_MAX(2 * upper_nnz + 3 * dim + 1, upper_nnz + 3 * dim + 1);
 
-    if(ma27_workspace->iw_size < iw_size)
+    if (ma27_workspace->iw_size < iw_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma27_workspace->iw), iw_size));
       ma27_workspace->iw_size = iw_size;
     }
 
-    const int32_t ikeep_size = 3*dim;
+    const int32_t ikeep_size = 3 * dim;
 
-    if(ma27_workspace->ikeep_size < ikeep_size)
+    if (ma27_workspace->ikeep_size < ikeep_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma27_workspace->ikeep), ikeep_size));
       ma27_workspace->ikeep_size = ikeep_size;
     }
 
-    const int32_t iw1_size = 2*dim;
+    const int32_t iw1_size = 2 * dim;
 
-    if(ma27_workspace->iw1_size < iw1_size)
+    if (ma27_workspace->iw1_size < iw1_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma27_workspace->iw1), iw1_size));
       ma27_workspace->iw1_size = iw1_size;
@@ -378,20 +408,20 @@ static SLEQP_RETCODE ma27_set_matrix(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-
-static MA27_ERROR ma27_solve(MA27Data* ma27_data)
+static MA27_ERROR
+ma27_solve(MA27Data* ma27_data)
 {
-  HSLMatrix* hsl_matrix = &(ma27_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma27_data->matrix);
   MA27Workspace* ma27_workspace = &(ma27_data->workspace);
-  MA27State* ma27_state = &(ma27_data->state);
-  MA27Factor* ma27_factor = &(ma27_data->factor);
+  MA27State* ma27_state         = &(ma27_data->state);
+  MA27Factor* ma27_factor       = &(ma27_data->factor);
 
   MA27ControlInfo* control_info = &(ma27_data->control_info);
 
-  const int32_t dim = hsl_matrix->dim;
-  const int32_t total_nnz = hsl_matrix->nnz;
+  const int32_t dim         = hsl_matrix->dim;
+  const int32_t total_nnz   = hsl_matrix->nnz;
   const int32_t factor_size = ma27_factor->factor_size;
-  const int32_t nsteps = ma27_state->nsteps;
+  const int32_t nsteps      = ma27_state->nsteps;
 
   const double* factor_data = ma27_factor->factor;
 
@@ -400,7 +430,7 @@ static MA27_ERROR ma27_solve(MA27Data* ma27_data)
   {
     const int32_t w_size = ma27_state->maxfrt;
 
-    if(ma27_workspace->w_size < w_size)
+    if (ma27_workspace->w_size < w_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma27_workspace->w), w_size));
 
@@ -411,7 +441,7 @@ static MA27_ERROR ma27_solve(MA27Data* ma27_data)
   {
     const int32_t iw1_size = nsteps;
 
-    if(ma27_workspace->iw1_size < iw1_size)
+    if (ma27_workspace->iw1_size < iw1_size)
     {
       SLEQP_CALL(sleqp_realloc(&(ma27_workspace->iw1), iw1_size));
 
@@ -419,20 +449,28 @@ static MA27_ERROR ma27_solve(MA27Data* ma27_data)
     }
   }
 
-
-
-  ma27cd_(&dim, factor_data, &factor_size, ma27_workspace->iw, &(ma27_workspace->iw_size), ma27_workspace->w,
-          &ma27_state->maxfrt, rhs_sol, ma27_workspace->iw1, &nsteps, control_info->icntl_, control_info->info_);
+  ma27cd_(&dim,
+          factor_data,
+          &factor_size,
+          ma27_workspace->iw,
+          &(ma27_workspace->iw_size),
+          ma27_workspace->w,
+          &ma27_state->maxfrt,
+          rhs_sol,
+          ma27_workspace->iw1,
+          &nsteps,
+          control_info->icntl_,
+          control_info->info_);
 
   MA27_CHECK_ERROR(control_info->info.iflag);
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma27_data_solve(void* factorization_data,
-                                     SleqpSparseVec* rhs)
+static SLEQP_RETCODE
+ma27_data_solve(void* factorization_data, SleqpSparseVec* rhs)
 {
-  MA27Data* ma27_data = (MA27Data*) factorization_data;
+  MA27Data* ma27_data   = (MA27Data*)factorization_data;
   HSLMatrix* hsl_matrix = &(ma27_data->matrix);
 
   assert(rhs->dim == hsl_matrix->dim);
@@ -444,40 +482,42 @@ static SLEQP_RETCODE ma27_data_solve(void* factorization_data,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma27_data_get_sol(void* factorization_data,
-                                       SleqpSparseVec* sol,
-                                       int begin,
-                                       int end,
-                                       double zero_eps)
+static SLEQP_RETCODE
+ma27_data_get_sol(void* factorization_data,
+                  SleqpSparseVec* sol,
+                  int begin,
+                  int end,
+                  double zero_eps)
 {
-  MA27Data* ma27_data = (MA27Data*) factorization_data;
+  MA27Data* ma27_data = (MA27Data*)factorization_data;
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
                                           ma27_data->rhs_sol + begin,
                                           end - begin,
                                           zero_eps));
 
-
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma27_data_get_condition_estimate(void* factorization_data,
-                                                      double* condition_estimate)
+static SLEQP_RETCODE
+ma27_data_get_condition_estimate(void* factorization_data,
+                                 double* condition_estimate)
 {
-  MA27Data* ma27_data = (MA27Data*) factorization_data;
+  MA27Data* ma27_data = (MA27Data*)factorization_data;
 
   (*condition_estimate) = SLEQP_NONE;
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma27_data_free(void** star)
+static SLEQP_RETCODE
+ma27_data_free(void** star)
 {
-  MA27Data* ma27_data = (MA27Data*) (*star);
+  MA27Data* ma27_data = (MA27Data*)(*star);
 
-  HSLMatrix* hsl_matrix = &(ma27_data->matrix);
+  HSLMatrix* hsl_matrix         = &(ma27_data->matrix);
   MA27Workspace* ma27_workspace = &(ma27_data->workspace);
-  MA27Factor* ma27_factor = &(ma27_data->factor);
+  MA27Factor* ma27_factor       = &(ma27_data->factor);
 
   SLEQP_CALL(hsl_matrix_clear(hsl_matrix));
 
@@ -497,7 +537,8 @@ static SLEQP_RETCODE ma27_data_free(void** star)
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ma27_data_create(MA27Data** star)
+static SLEQP_RETCODE
+ma27_data_create(MA27Data** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -511,7 +552,7 @@ static SLEQP_RETCODE ma27_data_create(MA27Data** star)
 
   control_info->cntl.fratio = ma27_fratio;
 
-  if(ma27_verbose)
+  if (ma27_verbose)
   {
     control_info->icntl.print_level = 2;
   }
@@ -521,16 +562,16 @@ static SLEQP_RETCODE ma27_data_create(MA27Data** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_ma27_create(SleqpSparseFactorization** star,
-                                                     SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_ma27_create(SleqpSparseFactorization** star,
+                                       SleqpParams* params)
 {
-  SleqpSparseFactorizationCallbacks callbacks = {
-    .set_matrix = ma27_set_matrix,
-    .solve = ma27_data_solve,
-    .get_sol = ma27_data_get_sol,
-    .get_condition_estimate = ma27_data_get_condition_estimate,
-    .free = ma27_data_free
-  };
+  SleqpSparseFactorizationCallbacks callbacks
+    = {.set_matrix             = ma27_set_matrix,
+       .solve                  = ma27_data_solve,
+       .get_sol                = ma27_data_get_sol,
+       .get_condition_estimate = ma27_data_get_condition_estimate,
+       .free                   = ma27_data_free};
 
   MA27Data* ma27_data;
 
@@ -541,13 +582,14 @@ SLEQP_RETCODE sleqp_sparse_factorization_ma27_create(SleqpSparseFactorization** 
                                                SLEQP_FACT_MA27_VERSION,
                                                params,
                                                &callbacks,
-                                               (void*) ma27_data));
+                                               (void*)ma27_data));
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
-                                                        SleqpParams* params)
+SLEQP_RETCODE
+sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
+                                          SleqpParams* params)
 {
   SLEQP_CALL(sleqp_sparse_factorization_ma27_create(star, params));
 

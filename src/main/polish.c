@@ -16,15 +16,16 @@ struct SleqpPolishing
   SleqpWorkingSet* working_set;
 };
 
-SLEQP_RETCODE sleqp_polishing_create(SleqpPolishing** star,
-                                     SleqpProblem* problem,
-                                     SleqpParams* params)
+SLEQP_RETCODE
+sleqp_polishing_create(SleqpPolishing** star,
+                       SleqpProblem* problem,
+                       SleqpParams* params)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   SleqpPolishing* polishing = *star;
 
-  *polishing = (SleqpPolishing) {0};
+  *polishing = (SleqpPolishing){0};
 
   polishing->refcount = 1;
 
@@ -34,21 +35,20 @@ SLEQP_RETCODE sleqp_polishing_create(SleqpPolishing** star,
   SLEQP_CALL(sleqp_params_capture(params));
   polishing->params = params;
 
-  SLEQP_CALL(sleqp_working_set_create(&polishing->working_set,
-                                      problem));
+  SLEQP_CALL(sleqp_working_set_create(&polishing->working_set, problem));
 
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE polish_inactive_range(SleqpPolishing* polishing,
-                                    const SleqpWorkingSet* source_set,
-                                    const SleqpSparseVec* lb,
-                                    const SleqpSparseVec* primal,
-                                    const SleqpSparseVec* ub,
-                                    const SleqpSparseVec* dual,
-                                    bool constraints,
-                                    int* num_removed)
+static SLEQP_RETCODE
+polish_inactive_range(SleqpPolishing* polishing,
+                      const SleqpWorkingSet* source_set,
+                      const SleqpSparseVec* lb,
+                      const SleqpSparseVec* primal,
+                      const SleqpSparseVec* ub,
+                      const SleqpSparseVec* dual,
+                      bool constraints,
+                      int* num_removed)
 {
   SleqpParams* params = polishing->params;
 
@@ -56,51 +56,45 @@ SLEQP_RETCODE polish_inactive_range(SleqpPolishing* polishing,
 
   (*num_removed) = 0;
 
-  const double feas_eps = sleqp_params_get(params,
-                                           SLEQP_PARAM_FEASIBILITY_TOL);
+  const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   const int size = dual->dim;
-  int k_d = 0;
+  int k_d        = 0;
   int k_lb = 0, k_ub = 0, k_p = 0;
 
-
-  for(int j = 0; j < size; ++j)
+  for (int j = 0; j < size; ++j)
   {
-    SLEQP_ACTIVE_STATE state = sleqp_working_set_get_state(source_set,
-                                                           constraints,
-                                                           j);
+    SLEQP_ACTIVE_STATE state
+      = sleqp_working_set_get_state(source_set, constraints, j);
 
-    if(state == SLEQP_INACTIVE)
+    if (state == SLEQP_INACTIVE)
     {
       continue;
     }
 
-    while(k_d < dual->nnz && dual->indices[k_d] < j)
+    while (k_d < dual->nnz && dual->indices[k_d] < j)
     {
       ++k_d;
     }
 
-    if(k_d < dual->nnz && dual->indices[k_d] == j)
+    if (k_d < dual->nnz && dual->indices[k_d] == j)
     {
-      SLEQP_CALL(sleqp_working_set_add(target_set,
-                                       j,
-                                       constraints,
-                                       state));
+      SLEQP_CALL(sleqp_working_set_add(target_set, j, constraints, state));
 
       continue;
     }
 
-    while(k_lb < lb->nnz && lb->indices[k_lb] < j)
+    while (k_lb < lb->nnz && lb->indices[k_lb] < j)
     {
       ++k_lb;
     }
 
-    while(k_ub < ub->nnz && ub->indices[k_ub] < j)
+    while (k_ub < ub->nnz && ub->indices[k_ub] < j)
     {
       ++k_ub;
     }
 
-    while(k_p < primal->nnz && primal->indices[k_p] < j)
+    while (k_p < primal->nnz && primal->indices[k_p] < j)
     {
       ++k_p;
     }
@@ -119,28 +113,25 @@ SLEQP_RETCODE polish_inactive_range(SleqpPolishing* polishing,
 
     bool inactive = !(active_lower || active_upper);
 
-    if(inactive)
+    if (inactive)
     {
       ++(*num_removed);
     }
     else
     {
-      SLEQP_CALL(sleqp_working_set_add(target_set,
-                                       j,
-                                       constraints,
-                                       state));
+      SLEQP_CALL(sleqp_working_set_add(target_set, j, constraints, state));
     }
   }
 
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE polish_zero_dual_range(SleqpPolishing* polishing,
-                                     const SleqpWorkingSet* source_set,
-                                     const SleqpSparseVec* dual,
-                                     bool constraints,
-                                     int* num_removed)
+static SLEQP_RETCODE
+polish_zero_dual_range(SleqpPolishing* polishing,
+                       const SleqpWorkingSet* source_set,
+                       const SleqpSparseVec* dual,
+                       bool constraints,
+                       int* num_removed)
 {
   SleqpWorkingSet* target_set = polishing->working_set;
 
@@ -150,28 +141,24 @@ SLEQP_RETCODE polish_zero_dual_range(SleqpPolishing* polishing,
 
   int k = 0;
 
-  for(int i = 0; i < size; ++i)
+  for (int i = 0; i < size; ++i)
   {
-    SLEQP_ACTIVE_STATE state = sleqp_working_set_get_state(source_set,
-                                                           constraints,
-                                                           i);
+    SLEQP_ACTIVE_STATE state
+      = sleqp_working_set_get_state(source_set, constraints, i);
 
-    if(state == SLEQP_INACTIVE)
+    if (state == SLEQP_INACTIVE)
     {
       continue;
     }
 
-    while(k < dual->nnz && dual->indices[k] < i)
+    while (k < dual->nnz && dual->indices[k] < i)
     {
       ++k;
     }
 
-    if(k < dual->nnz && dual->indices[k] == i)
+    if (k < dual->nnz && dual->indices[k] == i)
     {
-      SLEQP_CALL(sleqp_working_set_add(target_set,
-                                       i,
-                                       constraints,
-                                       state));
+      SLEQP_CALL(sleqp_working_set_add(target_set, i, constraints, state));
     }
     else
     {
@@ -182,9 +169,8 @@ SLEQP_RETCODE polish_zero_dual_range(SleqpPolishing* polishing,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE polish_inactive(SleqpPolishing* polishing,
-                              SleqpIterate* iterate)
+static SLEQP_RETCODE
+polish_inactive(SleqpPolishing* polishing, SleqpIterate* iterate)
 {
   SleqpProblem* problem = polishing->problem;
 
@@ -222,9 +208,8 @@ SLEQP_RETCODE polish_inactive(SleqpPolishing* polishing,
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE polish_zero_dual(SleqpPolishing* polishing,
-                               SleqpIterate* iterate)
+static SLEQP_RETCODE
+polish_zero_dual(SleqpPolishing* polishing, SleqpIterate* iterate)
 {
   int num_removed_vars = 0, num_removed_cons = 0;
 
@@ -254,15 +239,16 @@ SLEQP_RETCODE polish_zero_dual(SleqpPolishing* polishing,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_polishing_polish(SleqpPolishing* polishing,
-                                     SleqpIterate* iterate,
-                                     SLEQP_POLISHING_TYPE polishing_type)
+SLEQP_RETCODE
+sleqp_polishing_polish(SleqpPolishing* polishing,
+                       SleqpIterate* iterate,
+                       SLEQP_POLISHING_TYPE polishing_type)
 {
-  if(polishing_type == SLEQP_POLISHING_NONE)
+  if (polishing_type == SLEQP_POLISHING_NONE)
   {
     return SLEQP_OKAY;
   }
-  else if(polishing_type == SLEQP_POLISHING_ZERO_DUAL)
+  else if (polishing_type == SLEQP_POLISHING_ZERO_DUAL)
   {
     SLEQP_CALL(polish_zero_dual(polishing, iterate));
   }
@@ -276,15 +262,16 @@ SLEQP_RETCODE sleqp_polishing_polish(SleqpPolishing* polishing,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_polishing_capture(SleqpPolishing* polishing)
+SLEQP_RETCODE
+sleqp_polishing_capture(SleqpPolishing* polishing)
 {
   ++polishing->refcount;
 
   return SLEQP_OKAY;
 }
 
-static
-SLEQP_RETCODE polishing_free(SleqpPolishing** star)
+static SLEQP_RETCODE
+polishing_free(SleqpPolishing** star)
 {
   SleqpPolishing* polishing = *star;
 
@@ -299,16 +286,17 @@ SLEQP_RETCODE polishing_free(SleqpPolishing** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_polishing_release(SleqpPolishing** star)
+SLEQP_RETCODE
+sleqp_polishing_release(SleqpPolishing** star)
 {
   SleqpPolishing* polishing = *star;
 
-  if(!polishing)
+  if (!polishing)
   {
     return SLEQP_OKAY;
   }
 
-  if(--polishing->refcount == 0)
+  if (--polishing->refcount == 0)
   {
     SLEQP_CALL(polishing_free(star));
   }

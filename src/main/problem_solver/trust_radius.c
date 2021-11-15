@@ -11,7 +11,7 @@ sleqp_problem_solver_update_lp_trust_radius(SleqpProblemSolver* solver,
                                             double eps,
                                             double* lp_trust_radius)
 {
-  if(trial_step_accepted)
+  if (trial_step_accepted)
   {
     double norm_increase_factor = 1.2;
 
@@ -20,22 +20,20 @@ sleqp_problem_solver_update_lp_trust_radius(SleqpProblemSolver* solver,
 
     double scaled_trust_radius = .1 * (*lp_trust_radius);
 
-    double update_lhs = SLEQP_MAX(trial_step_infnorm,
-                                  cauchy_step_infnorm);
+    double update_lhs = SLEQP_MAX(trial_step_infnorm, cauchy_step_infnorm);
 
     update_lhs = SLEQP_MAX(update_lhs, scaled_trust_radius);
 
-    if(full_cauchy_step)
+    if (full_cauchy_step)
     {
       (*lp_trust_radius) *= 7.;
     }
 
     *lp_trust_radius = SLEQP_MIN(update_lhs, *lp_trust_radius);
-
   }
   else
   {
-    double half_norm = .5 * trial_step_infnorm;
+    double half_norm    = .5 * trial_step_infnorm;
     double small_radius = .1 * (*lp_trust_radius);
 
     double reduced_radius = SLEQP_MAX(half_norm, small_radius);
@@ -56,31 +54,28 @@ sleqp_problem_solver_update_trust_radius(SleqpProblemSolver* solver,
 
   double* trust_radius = &(solver->trust_radius);
 
-  if(reduction_ratio >= 0.9)
+  if (reduction_ratio >= 0.9)
   {
-    *trust_radius = SLEQP_MAX(*trust_radius,
-                              7*direction_norm);
+    *trust_radius = SLEQP_MAX(*trust_radius, 7 * direction_norm);
   }
-  else if(reduction_ratio >= 0.3)
+  else if (reduction_ratio >= 0.3)
   {
-    *trust_radius = SLEQP_MAX(*trust_radius,
-                              2*direction_norm);
+    *trust_radius = SLEQP_MAX(*trust_radius, 2 * direction_norm);
   }
-  else if(trial_step_accepted)
+  else if (trial_step_accepted)
   {
     // stays the same
   }
   else
   {
     // filter out very small steps
-    if(sleqp_is_zero(direction_norm, eps))
+    if (sleqp_is_zero(direction_norm, eps))
     {
       *trust_radius *= .5;
     }
     else
     {
-      *trust_radius = SLEQP_MIN(.5 * (*trust_radius),
-                                .5 * direction_norm);
+      *trust_radius = SLEQP_MIN(.5 * (*trust_radius), .5 * direction_norm);
     }
   }
 

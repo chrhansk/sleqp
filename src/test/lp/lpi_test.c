@@ -1,5 +1,5 @@
-#include <stdlib.h>
 #include <check.h>
+#include <stdlib.h>
 
 #include "cmp.h"
 
@@ -21,7 +21,7 @@ START_TEST(test_simplex_solve)
   ASSERT_CALL(sleqp_params_create(&params));
   ASSERT_CALL(sleqp_options_create(&options));
 
-  int num_variables = 2;
+  int num_variables   = 2;
   int num_constraints = 1;
 
   ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
@@ -31,16 +31,16 @@ START_TEST(test_simplex_solve)
                                                  options));
 
   double objective[] = {-1, 0};
-  double vars_lb[] = {0, 0};
-  double vars_ub[] = {inf, inf};
-  double cons_lb[] = {-inf};
-  double cons_ub[] = {1};
+  double vars_lb[]   = {0, 0};
+  double vars_ub[]   = {inf, inf};
+  double cons_lb[]   = {-inf};
+  double cons_ub[]   = {1};
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&cons_matrix, 1, 2, 2));
 
   double* cons_data = sleqp_sparse_matrix_get_data(cons_matrix);
-  int* cons_rows = sleqp_sparse_matrix_get_rows(cons_matrix);
-  int* cons_cols = sleqp_sparse_matrix_get_cols(cons_matrix);
+  int* cons_rows    = sleqp_sparse_matrix_get_rows(cons_matrix);
+  int* cons_cols    = sleqp_sparse_matrix_get_cols(cons_matrix);
 
   cons_data[0] = 1;
   cons_data[1] = 1;
@@ -54,26 +54,20 @@ START_TEST(test_simplex_solve)
 
   ASSERT_CALL(sleqp_sparse_matrix_set_nnz(cons_matrix, 2));
 
-  ASSERT_CALL(sleqp_lpi_set_bounds(lp_interface,
-                                   cons_lb,
-                                   cons_ub,
-                                   vars_lb,
-                                   vars_ub));
+  ASSERT_CALL(
+    sleqp_lpi_set_bounds(lp_interface, cons_lb, cons_ub, vars_lb, vars_ub));
 
-  ASSERT_CALL(sleqp_lpi_set_coefficients(lp_interface,
-                                         cons_matrix));
+  ASSERT_CALL(sleqp_lpi_set_coefficients(lp_interface, cons_matrix));
 
-  ASSERT_CALL(sleqp_lpi_set_objective(lp_interface,
-                                      objective));
+  ASSERT_CALL(sleqp_lpi_set_objective(lp_interface, objective));
 
   ASSERT_CALL(sleqp_lpi_solve(lp_interface));
 
-  double solution[] = {-1, -1};
+  double solution[]      = {-1, -1};
   double objective_value = 0;
 
-  ASSERT_CALL(sleqp_lpi_get_primal_sol(lp_interface,
-                                       &objective_value,
-                                       solution));
+  ASSERT_CALL(
+    sleqp_lpi_get_primal_sol(lp_interface, &objective_value, solution));
 
   double tolerance = 1e-8;
 
@@ -84,18 +78,15 @@ START_TEST(test_simplex_solve)
 
   SLEQP_BASESTAT variable_stats[] = {0, 0};
 
-  ASSERT_CALL(sleqp_lpi_get_varstats(lp_interface,
-                                     variable_stats));
+  ASSERT_CALL(sleqp_lpi_get_varstats(lp_interface, variable_stats));
 
   ck_assert(variable_stats[0] == SLEQP_BASESTAT_BASIC);
   ck_assert(variable_stats[1] == SLEQP_BASESTAT_LOWER);
 
-  double cons_dual = inf;
+  double cons_dual   = inf;
   double vars_dual[] = {inf, inf};
 
-  ASSERT_CALL(sleqp_lpi_get_dual_sol(lp_interface,
-                                     vars_dual,
-                                     &cons_dual));
+  ASSERT_CALL(sleqp_lpi_get_dual_sol(lp_interface, vars_dual, &cons_dual));
 
   ck_assert(sleqp_is_eq(cons_dual, -1., tolerance));
 
@@ -111,10 +102,11 @@ START_TEST(test_simplex_solve)
 }
 END_TEST
 
-Suite* lpi_suite()
+Suite*
+lpi_suite()
 {
-  Suite *suite;
-  TCase *tc_simplex;
+  Suite* suite;
+  TCase* tc_simplex;
 
   suite = suite_create("LPI");
 

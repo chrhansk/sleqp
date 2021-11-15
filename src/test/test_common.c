@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-int run_suite(int argc, char *argv[], Suite* suite)
+int
+run_suite(int argc, char* argv[], Suite* suite)
 {
   char outfile[256];
 
@@ -17,7 +18,7 @@ int run_suite(int argc, char *argv[], Suite* suite)
 
   srunner = srunner_create(suite);
 
-  if(getenv("TEST_EXPORT_XML"))
+  if (getenv("TEST_EXPORT_XML"))
   {
     srunner_set_xml(srunner, outfile);
   }

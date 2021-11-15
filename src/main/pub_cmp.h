@@ -9,14 +9,7 @@
 #include "sleqp/export.h"
 #include "sleqp/pub_types.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-  SLEQP_EXPORT double sleqp_infinity();
-
-#ifdef __cplusplus
-}
-#endif
+SLEQP_EXPORT double
+sleqp_infinity();
 
 #endif /* SLEQP_PUB_CMP_H */

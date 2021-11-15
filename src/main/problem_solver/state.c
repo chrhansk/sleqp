@@ -1,7 +1,7 @@
 #include "problem_solver.h"
 
-#include "solver.h"
 #include "feas.h"
+#include "solver.h"
 
 SLEQP_RETCODE
 sleqp_problem_solver_get_real_state(const SleqpProblemSolver* solver,
@@ -16,7 +16,7 @@ sleqp_problem_solver_get_real_state(const SleqpProblemSolver* solver,
                                                    &min_rayleigh,
                                                    &max_rayleigh));
 
-  switch(state)
+  switch (state)
   {
   case SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS:
     (*value) = solver->trust_radius;
@@ -61,7 +61,7 @@ sleqp_problem_solver_get_int_state(const SleqpProblemSolver* solver,
                                    SLEQP_SOLVER_STATE_INT state,
                                    int* value)
 {
-  switch(state)
+  switch (state)
   {
   case SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY:
     (*value) = solver->boundary_step;
@@ -80,16 +80,17 @@ sleqp_problem_solver_get_int_state(const SleqpProblemSolver* solver,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solver,
-                                                 SLEQP_SOLVER_STATE_VEC value,
-                                                 SleqpSparseVec* result)
+SLEQP_RETCODE
+sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solver,
+                                   SLEQP_SOLVER_STATE_VEC value,
+                                   SleqpSparseVec* result)
 {
-  const double zero_eps = sleqp_params_get(solver->params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpSparseVec* cons_val = sleqp_iterate_get_cons_val(solver->iterate);
 
-  switch(value)
+  switch (value)
   {
   case SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS:
     SLEQP_CALL(sleqp_iterate_stationarity_residuals(solver->problem,
@@ -99,9 +100,7 @@ SLEQP_RETCODE sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solve
                                                     zero_eps));
     break;
   case SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS:
-    SLEQP_CALL(sleqp_violation_values(solver->problem,
-                                      cons_val,
-                                      result));
+    SLEQP_CALL(sleqp_violation_values(solver->problem, cons_val, result));
     break;
   case SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS:
     SLEQP_CALL(sleqp_iterate_cons_slackness_residuals(solver->problem,

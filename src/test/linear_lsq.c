@@ -7,9 +7,9 @@
 #define LINEAR_LSQ_NUM_VARIABLES 2
 #define LINEAR_LSQ_NUM_RESIDUALS 3
 
-const int linear_lsq_num_variables = LINEAR_LSQ_NUM_VARIABLES;
+const int linear_lsq_num_variables   = LINEAR_LSQ_NUM_VARIABLES;
 const int linear_lsq_num_constraints = 0;
-const int linear_lsq_num_residuals = LINEAR_LSQ_NUM_RESIDUALS;
+const int linear_lsq_num_residuals   = LINEAR_LSQ_NUM_RESIDUALS;
 
 SleqpSparseMatrix* linear_lsq_matrix;
 SleqpSparseVec* linear_lsq_rhs;
@@ -47,12 +47,10 @@ func_set(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-lsq_residuals(SleqpFunc* func,
-              SleqpSparseVec* residual,
-              void* func_data)
+lsq_residuals(SleqpFunc* func, SleqpSparseVec* residual, void* func_data)
 {
-  const double zero_eps = sleqp_params_get(linear_lsq_params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_lsq_matrix,
                                                 linear_lsq_current,
@@ -79,8 +77,8 @@ lsq_jac_forward(SleqpFunc* func,
                 SleqpSparseVec* product,
                 void* func_data)
 {
-  const double zero_eps = sleqp_params_get(linear_lsq_params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_lsq_matrix,
                                                 forward_direction,
@@ -100,8 +98,8 @@ lsq_jac_adjoint(SleqpFunc* func,
                 SleqpSparseVec* product,
                 void* func_data)
 {
-  const double zero_eps = sleqp_params_get(linear_lsq_params,
-                                           SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(linear_lsq_matrix,
                                                       adjoint_direction,
@@ -111,14 +109,16 @@ lsq_jac_adjoint(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-void linear_lsq_setup()
+void
+linear_lsq_setup()
 {
   const double inf = sleqp_infinity();
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&linear_lsq_matrix,
                                          linear_lsq_num_residuals,
                                          linear_lsq_num_variables,
-                                         linear_lsq_num_residuals * linear_lsq_num_variables));
+                                         linear_lsq_num_residuals
+                                           * linear_lsq_num_variables));
 
   {
     ASSERT_CALL(sleqp_sparse_matrix_clear(linear_lsq_matrix));
@@ -127,15 +127,14 @@ void linear_lsq_setup()
     ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 1, 0, 1.));
     ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 2, 0, 1.));
 
-    ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_lsq_matrix,
-                                                1));
+    ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_lsq_matrix, 1));
 
     ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 1, 1, 1.));
     ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 2, 1, 2.));
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&linear_lsq_rhs,
-                                              linear_lsq_num_residuals));
+  ASSERT_CALL(
+    sleqp_sparse_vector_create_full(&linear_lsq_rhs, linear_lsq_num_residuals));
 
   {
     double values[] = {6., 0., 0.};
@@ -199,15 +198,13 @@ void linear_lsq_setup()
 
   ASSERT_CALL(sleqp_params_create(&linear_lsq_params));
 
-  SleqpLSQCallbacks callbacks = {
-    .set_value = func_set,
-    .lsq_residuals = lsq_residuals,
-    .lsq_jac_forward = lsq_jac_forward,
-    .lsq_jac_adjoint = lsq_jac_adjoint,
-    .cons_val = NULL,
-    .cons_jac = NULL,
-    .func_free = NULL
-  };
+  SleqpLSQCallbacks callbacks = {.set_value       = func_set,
+                                 .lsq_residuals   = lsq_residuals,
+                                 .lsq_jac_forward = lsq_jac_forward,
+                                 .lsq_jac_adjoint = lsq_jac_adjoint,
+                                 .cons_val        = NULL,
+                                 .cons_jac        = NULL,
+                                 .func_free       = NULL};
 
   ASSERT_CALL(sleqp_lsq_func_create(&linear_lsq_func,
                                     &callbacks,
@@ -217,10 +214,10 @@ void linear_lsq_setup()
                                     0.,
                                     linear_lsq_params,
                                     NULL));
-
 }
 
-void linear_lsq_teardown()
+void
+linear_lsq_teardown()
 {
   ASSERT_CALL(sleqp_func_release(&linear_lsq_func));
 

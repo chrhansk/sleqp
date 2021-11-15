@@ -10,7 +10,6 @@ struct SleqpParams
   int refcount;
 
   double values[SLEQP_NUM_PARAMS];
-
 };
 
 #define ZERO_EPS_DEFAULT 1e-20
@@ -35,7 +34,8 @@ struct SleqpParams
 
 #define DEADPOINT_BOUND_DEFAULT 1e-10
 
-SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
+SLEQP_RETCODE
+sleqp_params_create(SleqpParams** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -45,27 +45,27 @@ SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
   params->refcount = 1;
 
-  params->values[SLEQP_PARAM_ZERO_EPS] = ZERO_EPS_DEFAULT;
-  params->values[SLEQP_PARAM_EPS] = EPS_DEFAULT;
-  params->values[SLEQP_PARAM_OBJ_LOWER] = OBJ_LOWER_DEFAULT;
+  params->values[SLEQP_PARAM_ZERO_EPS]           = ZERO_EPS_DEFAULT;
+  params->values[SLEQP_PARAM_EPS]                = EPS_DEFAULT;
+  params->values[SLEQP_PARAM_OBJ_LOWER]          = OBJ_LOWER_DEFAULT;
   params->values[SLEQP_PARAM_DERIV_PERTURBATION] = DERIV_PERTURBATION_DEFAULT;
-  params->values[SLEQP_PARAM_DERIV_TOL] = DERIV_TOL_DEFAULT;
-  params->values[SLEQP_PARAM_CAUCHY_TAU] = CAUCHY_TAU_DEFAULT;
-  params->values[SLEQP_PARAM_CAUCHY_ETA] = CAUCHY_ETA_DEFAULT;
-  params->values[SLEQP_PARAM_LINESEARCH_TAU] = LINESEARCH_TAU_DEFAULT;
-  params->values[SLEQP_PARAM_LINESEARCH_ETA] = LINESEARCH_ETA_DEFAULT;
-  params->values[SLEQP_PARAM_LINESEARCH_CUTOFF] = LINESEARCH_CUTOFF_DEFAULT;
-  params->values[SLEQP_PARAM_FEASIBILITY_TOL] = FEASIBILITY_TOL_DEFAULT;
-  params->values[SLEQP_PARAM_SLACKNESS_TOL] = SLACKNESS_TOL_DEFAULT;
-  params->values[SLEQP_PARAM_STATIONARITY_TOL] = STATIONARITY_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_DERIV_TOL]          = DERIV_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_CAUCHY_TAU]         = CAUCHY_TAU_DEFAULT;
+  params->values[SLEQP_PARAM_CAUCHY_ETA]         = CAUCHY_ETA_DEFAULT;
+  params->values[SLEQP_PARAM_LINESEARCH_TAU]     = LINESEARCH_TAU_DEFAULT;
+  params->values[SLEQP_PARAM_LINESEARCH_ETA]     = LINESEARCH_ETA_DEFAULT;
+  params->values[SLEQP_PARAM_LINESEARCH_CUTOFF]  = LINESEARCH_CUTOFF_DEFAULT;
+  params->values[SLEQP_PARAM_FEASIBILITY_TOL]    = FEASIBILITY_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_SLACKNESS_TOL]      = SLACKNESS_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_STATIONARITY_TOL]   = STATIONARITY_TOL_DEFAULT;
   params->values[SLEQP_PARAM_ACCEPTED_REDUCTION] = ACCEPTED_REDUCTION_DEFAULT;
-  params->values[SLEQP_PARAM_DEADPOINT_BOUND] = DEADPOINT_BOUND_DEFAULT;
+  params->values[SLEQP_PARAM_DEADPOINT_BOUND]    = DEADPOINT_BOUND_DEFAULT;
 
   return SLEQP_OKAY;
 }
 
-double sleqp_params_get(const SleqpParams* params,
-                        SLEQP_PARAM param)
+double
+sleqp_params_get(const SleqpParams* params, SLEQP_PARAM param)
 {
   assert(param >= 0);
   assert(param < SLEQP_NUM_PARAMS);
@@ -73,18 +73,15 @@ double sleqp_params_get(const SleqpParams* params,
   return params->values[param];
 }
 
-SLEQP_RETCODE sleqp_params_set(SleqpParams* params,
-                               SLEQP_PARAM param,
-                               double value)
+SLEQP_RETCODE
+sleqp_params_set(SleqpParams* params, SLEQP_PARAM param, double value)
 {
   assert(param >= 0);
   assert(param < SLEQP_NUM_PARAMS);
 
-  if(param <= 0.)
+  if (param <= 0.)
   {
-    sleqp_log_error("Wrong value ofr parameter %d: %f",
-                    param,
-                    value);
+    sleqp_log_error("Wrong value ofr parameter %d: %f", param, value);
 
     return SLEQP_ILLEGAL_ARGUMENT;
   }
@@ -92,14 +89,14 @@ SLEQP_RETCODE sleqp_params_set(SleqpParams* params,
   params->values[param] = value;
 
   return SLEQP_OKAY;
-
 }
 
-static SLEQP_RETCODE params_free(SleqpParams** star)
+static SLEQP_RETCODE
+params_free(SleqpParams** star)
 {
   SleqpParams* params = *star;
 
-  if(!params)
+  if (!params)
   {
     return SLEQP_OKAY;
   }
@@ -109,23 +106,25 @@ static SLEQP_RETCODE params_free(SleqpParams** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_params_capture(SleqpParams* params)
+SLEQP_RETCODE
+sleqp_params_capture(SleqpParams* params)
 {
   ++params->refcount;
 
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_params_release(SleqpParams** star)
+SLEQP_RETCODE
+sleqp_params_release(SleqpParams** star)
 {
   SleqpParams* params = *star;
 
-  if(!params)
+  if (!params)
   {
     return SLEQP_OKAY;
   }
 
-  if(--params->refcount == 0)
+  if (--params->refcount == 0)
   {
     SLEQP_CALL(params_free(star));
   }
