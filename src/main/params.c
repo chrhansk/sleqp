@@ -32,7 +32,7 @@ struct SleqpParams
 
 #define ACCEPTED_REDUCTION_DEFAULT 1e-8
 
-#define DEADPOINT_BOUND_DEFAULT 1e-10
+#define DEADPOINT_BOUND_DEFAULT 1e-12
 
 SLEQP_RETCODE
 sleqp_params_create(SleqpParams** star)
