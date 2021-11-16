@@ -34,14 +34,14 @@ func_set(SleqpFunc* func,
          SleqpSparseVec* value,
          SLEQP_VALUE_REASON reason,
          bool* reject,
-         int* func_grad_nnz,
+         int* obj_grad_nnz,
          int* cons_val_nnz,
          int* cons_jac_nnz,
          void* func_data)
 {
   SLEQP_CALL(sleqp_sparse_vector_copy(value, linear_lsq_current));
 
-  *func_grad_nnz = linear_lsq_num_variables;
+  *obj_grad_nnz = linear_lsq_num_variables;
 
   return SLEQP_OKAY;
 }
@@ -50,7 +50,7 @@ static SLEQP_RETCODE
 lsq_residuals(SleqpFunc* func, SleqpSparseVec* residual, void* func_data)
 {
   const double zero_eps
-    = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_lsq_matrix,
                                                 linear_lsq_current,
@@ -78,7 +78,7 @@ lsq_jac_forward(SleqpFunc* func,
                 void* func_data)
 {
   const double zero_eps
-    = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_lsq_matrix,
                                                 forward_direction,
@@ -99,7 +99,7 @@ lsq_jac_adjoint(SleqpFunc* func,
                 void* func_data)
 {
   const double zero_eps
-    = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(linear_lsq_matrix,
                                                       adjoint_direction,

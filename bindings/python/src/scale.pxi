@@ -42,11 +42,11 @@ cdef class Scaling:
 
   @property
   def num_variables(self):
-    return csleqp.sleqp_scaling_get_num_variables(self.scaling)
+    return csleqp.sleqp_scaling_num_vars(self.scaling)
 
   @property
   def num_constraints(self):
-    return csleqp.sleqp_scaling_get_num_constraints(self.scaling)
+    return csleqp.sleqp_scaling_num_cons(self.scaling)
 
   def __dealloc__(self):
     csleqp_call(csleqp.sleqp_sparse_matrix_release(&self.cons_jac))
@@ -83,7 +83,7 @@ cdef class Scaling:
 
   @property
   def func_weight(self):
-    return csleqp.sleqp_scaling_get_func_weight(self.scaling)
+    return csleqp.sleqp_scaling_func_weight(self.scaling)
 
   @func_weight.setter
   def func_weight(self, value):
@@ -93,7 +93,7 @@ cdef class Scaling:
   @property
   def variable_weights(self):
     length = self.num_variables
-    cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_get_var_weights(self.scaling)
+    cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_var_weights(self.scaling)
 
     array = np.asarray(values)
     array.flags.writeable = False
@@ -111,7 +111,7 @@ cdef class Scaling:
   @property
   def constraint_weights(self):
     length = self.num_constraints
-    cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_get_cons_weights(self.scaling)
+    cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_cons_weights(self.scaling)
 
     array = np.asarray(values)
     array.flags.writeable = False

@@ -37,157 +37,157 @@ cdef class Params:
 
   @property
   def zero_eps(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_ZERO_EPS)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_ZERO_EPS)
 
   @property
   def eps(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_EPS)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_EPS)
 
   @property
   def deriv_perturbation(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_DERIV_PERTURBATION)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_DERIV_PERTURBATION)
 
   @property
   def deriv_tolerance(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_DERIV_TOL)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_DERIV_TOL)
 
   @property
   def cauchy_tau(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_CAUCHY_TAU)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_CAUCHY_TAU)
 
   @property
   def cauchy_eta(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_CAUCHY_ETA)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_CAUCHY_ETA)
 
   @property
   def linesearch_tau(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_LINESEARCH_TAU)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_LINESEARCH_TAU)
 
   @property
   def linesearch_eta(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_LINESEARCH_ETA)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_LINESEARCH_ETA)
 
   @property
   def linesearch_cutoff(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_LINESEARCH_CUTOFF)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_LINESEARCH_CUTOFF)
 
   @property
   def feasibility_tolerance(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_FEASIBILITY_TOL)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_FEASIBILITY_TOL)
 
   @property
   def slackness_tolerance(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_SLACKNESS_TOL)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_SLACKNESS_TOL)
 
   @property
   def stationarity_tolerance(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_STATIONARITY_TOL)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_STATIONARITY_TOL)
 
   @property
   def accepted_reduction(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_ACCEPTED_REDUCTION)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_ACCEPTED_REDUCTION)
 
   @property
   def deadpoint_bound(self) -> float:
-    return csleqp.sleqp_params_get(self.params,
-                                   csleqp.SLEQP_PARAM_DEADPOINT_BOUND)
+    return csleqp.sleqp_params_value(self.params,
+                                     csleqp.SLEQP_PARAM_DEADPOINT_BOUND)
 
   @zero_eps.setter
   def zero_eps(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_ZERO_EPS,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_ZERO_EPS,
+                                              value))
 
   @eps.setter
   def eps(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_EPS,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_EPS,
+                                              value))
 
   @deriv_perturbation.setter
   def deriv_perturbation(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_DERIV_PERTURBATION,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_DERIV_PERTURBATION,
+                                              value))
 
   @deriv_tolerance.setter
   def deriv_tolerance(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_DERIV_TOL,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_DERIV_TOL,
+                                              value))
 
   @cauchy_tau.setter
   def cauchy_tau(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_CAUCHY_TAU,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_CAUCHY_TAU,
+                                              value))
 
   @cauchy_eta.setter
   def cauchy_eta(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_CAUCHY_ETA,
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_CAUCHY_ETA,
                                         value))
 
   @linesearch_tau.setter
   def linesearch_tau(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_LINESEARCH_TAU,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_LINESEARCH_TAU,
+                                              value))
 
   @linesearch_eta.setter
   def linesearch_eta(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_LINESEARCH_ETA,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_LINESEARCH_ETA,
+                                              value))
 
   @linesearch_cutoff.setter
   def linesearch_cutoff(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_LINESEARCH_CUTOFF,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_LINESEARCH_CUTOFF,
+                                              value))
 
   @feasibility_tolerance.setter
   def feasibility_tolerance(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_FEASIBILITY_TOL,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_FEASIBILITY_TOL,
+                                              value))
 
   @slackness_tolerance.setter
   def slackness_tolerance(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_SLACKNESS_TOL,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_SLACKNESS_TOL,
+                                              value))
 
   @stationarity_tolerance.setter
   def stationarity_tolerance(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_STATIONARITY_TOL,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_STATIONARITY_TOL,
+                                              value))
 
   @accepted_reduction.setter
   def accepted_reduction(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_ACCEPTED_REDUCTION,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_ACCEPTED_REDUCTION,
+                                              value))
 
   @deadpoint_bound.setter
   def deadpoint_bound(self, value: float) -> None:
-    csleqp_call(csleqp.sleqp_params_set(self.params,
-                                        csleqp.SLEQP_PARAM_DEADPOINT_BOUND,
-                                        value))
+    csleqp_call(csleqp.sleqp_params_set_value(self.params,
+                                              csleqp.SLEQP_PARAM_DEADPOINT_BOUND,
+                                              value))
 
   def values(self) -> set:
     return {key: getattr(self, key) for key in self.props}

@@ -1,4 +1,4 @@
-#include "sparse_factorization_ma57.h"
+#include "factorization_ma57.h"
 
 #include <assert.h>
 #include <string.h>
@@ -526,8 +526,8 @@ ma57_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
   HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
-  const int num_rows = sleqp_sparse_matrix_get_num_cols(matrix);
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
+  const int num_rows = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   assert(num_rows == num_cols);
 
   const int dim = num_cols;
@@ -655,11 +655,11 @@ ma57_solve(void* factorization_data, SleqpSparseVec* rhs)
 }
 
 static SLEQP_RETCODE
-ma57_get_sol(void* factorization_data,
-             SleqpSparseVec* sol,
-             int begin,
-             int end,
-             double zero_eps)
+ma57_solution(void* factorization_data,
+              SleqpSparseVec* sol,
+              int begin,
+              int end,
+              double zero_eps)
 {
   MA57Data* ma57_data = (MA57Data*)factorization_data;
 
@@ -707,8 +707,7 @@ ma57_data_create(MA57Data** star)
 }
 
 static SLEQP_RETCODE
-ma57_get_condition_estimate(void* factorization_data,
-                            double* condition_estimate)
+ma57_condition_estimate(void* factorization_data, double* condition_estimate)
 {
   // MA57Data* ma57_data = (MA57Data*) factorization_data;
 
@@ -744,35 +743,34 @@ ma57_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_factorization_ma57_create(SleqpSparseFactorization** star,
-                                       SleqpParams* params)
+sleqp_factorization_ma57_create(SleqpFactorization** star, SleqpParams* params)
 {
-  SleqpSparseFactorizationCallbacks callbacks
-    = {.set_matrix             = ma57_set_matrix,
-       .solve                  = ma57_solve,
-       .get_sol                = ma57_get_sol,
-       .get_condition_estimate = ma57_get_condition_estimate,
-       .free                   = ma57_free};
+  SleqpFactorizationCallbacks callbacks
+    = {.set_matrix         = ma57_set_matrix,
+       .solve              = ma57_solve,
+       .solution           = ma57_solution,
+       .condition_estimate = ma57_condition_estimate,
+       .free               = ma57_free};
 
   MA57Data* ma57_data;
 
   SLEQP_CALL(ma57_data_create(&ma57_data));
 
-  SLEQP_CALL(sleqp_sparse_factorization_create(star,
-                                               SLEQP_FACT_MA57_NAME,
-                                               SLEQP_FACT_MA57_VERSION,
-                                               params,
-                                               &callbacks,
-                                               (void*)ma57_data));
+  SLEQP_CALL(sleqp_factorization_create(star,
+                                        SLEQP_FACT_MA57_NAME,
+                                        SLEQP_FACT_MA57_VERSION,
+                                        params,
+                                        &callbacks,
+                                        (void*)ma57_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
-                                          SleqpParams* params)
+sleqp_factorization_create_default(SleqpFactorization** star,
+                                   SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_sparse_factorization_ma57_create(star, params));
+  SLEQP_CALL(sleqp_factorization_ma57_create(star, params));
 
   return SLEQP_OKAY;
 }

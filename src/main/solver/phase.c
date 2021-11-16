@@ -10,8 +10,8 @@ create_restoration_primal(SleqpSolver* solver)
 
   SLEQP_CALL(
     sleqp_restoration_problem_transform(solver->problem,
-                                        sleqp_iterate_get_primal(iterate),
-                                        sleqp_iterate_get_cons_val(iterate),
+                                        sleqp_iterate_primal(iterate),
+                                        sleqp_iterate_cons_val(iterate),
                                         solver->restoration_primal));
 
   return SLEQP_OKAY;
@@ -23,10 +23,10 @@ create_primal(SleqpSolver* solver)
   SleqpIterate* restoration_iterate
     = sleqp_problem_solver_get_iterate(solver->restoration_problem_solver);
 
-  SLEQP_CALL(sleqp_restoration_problem_restore(
-    solver->problem,
-    sleqp_iterate_get_primal(restoration_iterate),
-    solver->primal));
+  SLEQP_CALL(
+    sleqp_restoration_problem_restore(solver->problem,
+                                      sleqp_iterate_primal(restoration_iterate),
+                                      solver->primal));
 
   return SLEQP_OKAY;
 }
@@ -43,8 +43,7 @@ create_restoration_solver(SleqpSolver* solver)
                                               solver->params,
                                               solver->problem));
 
-  const int num_variables
-    = sleqp_problem_num_variables(solver->restoration_problem);
+  const int num_variables = sleqp_problem_num_vars(solver->restoration_problem);
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->restoration_primal,
                                               num_variables));

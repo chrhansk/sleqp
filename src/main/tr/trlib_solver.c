@@ -99,12 +99,12 @@ matrix_push_column(SleqpSparseMatrix* matrix,
                    SleqpSparseVec* vector,
                    double scale)
 {
-  const int nnz = sleqp_sparse_matrix_get_nnz(matrix);
+  const int nnz = sleqp_sparse_matrix_nnz(matrix);
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(matrix, nnz + vector->nnz));
 
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
-  const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
+  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
 
   const int column = num_cols;
 
@@ -194,10 +194,11 @@ check_optimality(SolverData* data,
   SleqpProblem* problem = data->problem;
 
   const double eps
-    = sleqp_params_get(data->params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(data->params, SLEQP_PARAM_STATIONARITY_TOL);
 
-  const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
-  const double one      = 1.;
+  const double zero_eps
+    = sleqp_params_value(data->params, SLEQP_PARAM_ZERO_EPS);
+  const double one = 1.;
 
   (*is_optimal) = true;
 
@@ -254,14 +255,15 @@ trlib_loop(SolverData* data,
 {
   SleqpProblem* problem = data->problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   const double inf = sleqp_infinity();
 
-  const double zero_eps = sleqp_params_get(data->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_value(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const double stat_eps
-    = sleqp_params_get(data->params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(data->params, SLEQP_PARAM_STATIONARITY_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
 
@@ -386,12 +388,12 @@ trlib_loop(SolverData* data,
 
       SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
 
-      const int num_rows = sleqp_sparse_matrix_get_num_rows(data->Q);
+      const int num_rows = sleqp_sparse_matrix_num_rows(data->Q);
 
       SLEQP_CALL(sleqp_sparse_matrix_resize(data->Q, num_rows, 0));
       SLEQP_CALL(sleqp_sparse_matrix_clear(data->Q));
 
-      assert(sleqp_sparse_matrix_get_num_cols(data->Q) == 0);
+      assert(sleqp_sparse_matrix_num_cols(data->Q) == 0);
 
       // assert(v_dot_g > 0);
 
@@ -417,7 +419,7 @@ trlib_loop(SolverData* data,
 
       SLEQP_CALL(
         sleqp_sparse_vector_resize(data->h,
-                                   sleqp_sparse_matrix_get_num_cols(data->Q)));
+                                   sleqp_sparse_matrix_num_cols(data->Q)));
 
       SLEQP_CALL(sleqp_sparse_matrix_vector_product(data->Q,
                                                     data->h,
@@ -449,17 +451,17 @@ trlib_loop(SolverData* data,
     {
       if (ityp == TRLIB_CLT_CG)
       {
-        if (iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q))
+        if (iter + 1 == sleqp_sparse_matrix_num_cols(data->Q))
         {
-          const int num_rows = sleqp_sparse_matrix_get_num_rows(data->Q);
+          const int num_rows = sleqp_sparse_matrix_num_rows(data->Q);
           SLEQP_CALL(sleqp_sparse_matrix_resize(data->Q, num_rows, iter));
         }
 
-        assert(iter == sleqp_sparse_matrix_get_num_cols(data->Q));
+        assert(iter == sleqp_sparse_matrix_num_cols(data->Q));
 
         SLEQP_CALL(matrix_push_column(data->Q, data->v, flt2));
 
-        assert(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q));
+        assert(iter + 1 == sleqp_sparse_matrix_num_cols(data->Q));
         assert(sleqp_sparse_matrix_is_valid(data->Q));
 
         SLEQP_CALL(sleqp_sparse_vector_copy(data->g, data->gm));
@@ -576,16 +578,16 @@ trlib_loop(SolverData* data,
       {
         assert(flt2 == 0.);
 
-        const int num_cols = sleqp_sparse_matrix_get_num_cols(data->Q);
+        const int num_cols = sleqp_sparse_matrix_num_cols(data->Q);
 
         if (iter + 1 == num_cols)
         {
-          const int num_rows = sleqp_sparse_matrix_get_num_rows(data->Q);
+          const int num_rows = sleqp_sparse_matrix_num_rows(data->Q);
           SLEQP_CALL(sleqp_sparse_matrix_resize(data->Q, num_rows, iter));
           assert(sleqp_sparse_matrix_is_valid(data->Q));
         }
 
-        assert(iter == sleqp_sparse_matrix_get_num_cols(data->Q));
+        assert(iter == sleqp_sparse_matrix_num_cols(data->Q));
 
         SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->v,
                                                   data->p,
@@ -606,7 +608,7 @@ trlib_loop(SolverData* data,
 
         SLEQP_CALL(matrix_push_column(data->Q, data->p, 1.));
 
-        assert(iter + 1 == sleqp_sparse_matrix_get_num_cols(data->Q));
+        assert(iter + 1 == sleqp_sparse_matrix_num_cols(data->Q));
 
         assert(sleqp_sparse_matrix_is_valid(data->Q));
       }
@@ -763,8 +765,8 @@ sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
 {
   SolverData* data = NULL;
 
-  const int num_constraints = sleqp_problem_num_constraints(problem);
-  const int num_variables   = sleqp_problem_num_variables(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
 
   SLEQP_CALL(sleqp_malloc(&data));
 
@@ -777,7 +779,7 @@ sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   data->params = params;
 
   const int max_newton_iter
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
 
   data->trlib_maxiter = num_variables;
 

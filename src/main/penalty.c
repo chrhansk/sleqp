@@ -14,7 +14,7 @@ sleqp_update_penalty(SleqpProblem* problem,
                      double* penalty_parameter,
                      bool* locally_infeasible)
 {
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   (*locally_infeasible) = false;
 
@@ -81,7 +81,7 @@ sleqp_update_penalty(SleqpProblem* problem,
                       (*penalty_parameter));
 
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
-                                    sleqp_iterate_get_func_grad(iterate),
+                                    sleqp_iterate_obj_grad(iterate),
                                     (*penalty_parameter),
                                     SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED));
 
@@ -130,7 +130,7 @@ sleqp_update_penalty(SleqpProblem* problem,
                       (*penalty_parameter));
 
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
-                                    sleqp_iterate_get_func_grad(iterate),
+                                    sleqp_iterate_obj_grad(iterate),
                                     (*penalty_parameter),
                                     SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED));
 

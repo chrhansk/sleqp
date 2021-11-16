@@ -32,14 +32,14 @@ quadconsfunc_set(SleqpFunc* func,
                  SleqpSparseVec* x,
                  SLEQP_VALUE_REASON reason,
                  bool* reject,
-                 int* func_grad_nnz,
+                 int* obj_grad_nnz,
                  int* cons_val_nnz,
                  int* cons_jac_nnz,
                  void* func_data)
 {
-  *func_grad_nnz = 2;
-  *cons_val_nnz  = 2;
-  *cons_jac_nnz  = 4;
+  *obj_grad_nnz = 2;
+  *cons_val_nnz = 2;
+  *cons_jac_nnz = 4;
 
   SquareFuncData* data = (SquareFuncData*)func_data;
 
@@ -59,28 +59,30 @@ quadconsfunc_set(SleqpFunc* func,
 }
 
 SLEQP_RETCODE
-quadconsfunc_val(SleqpFunc* func, double* func_val, void* func_data)
+quadconsfunc_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*)func_data;
 
-  *func_val = square(data->x[0]) + square(data->x[1]);
+  *obj_val = square(data->x[0]) + square(data->x[1]);
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-quadconsfunc_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+quadconsfunc_obj_grad(SleqpFunc* func,
+                      SleqpSparseVec* obj_grad,
+                      void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*)func_data;
 
-  assert(func_grad->dim == 2);
-  assert(func_grad->nnz_max >= 2);
+  assert(obj_grad->dim == 2);
+  assert(obj_grad->nnz_max >= 2);
 
-  func_grad->nnz = 0;
+  obj_grad->nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 2. * data->x[0]));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 2. * data->x[0]));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 1, 2. * data->x[1]));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, 2. * data->x[1]));
 
   return SLEQP_OKAY;
 }
@@ -118,9 +120,9 @@ quadconsfunc_cons_jac(SleqpFunc* func,
 {
   SquareFuncData* data = (SquareFuncData*)func_data;
 
-  assert(sleqp_sparse_matrix_get_num_rows(cons_jac) == 2);
-  assert(sleqp_sparse_matrix_get_num_cols(cons_jac) == 2);
-  assert(sleqp_sparse_matrix_get_nnz_max(cons_jac) >= 4);
+  assert(sleqp_sparse_matrix_num_rows(cons_jac) == 2);
+  assert(sleqp_sparse_matrix_num_cols(cons_jac) == 2);
+  assert(sleqp_sparse_matrix_nnz_max(cons_jac) >= 4);
 
   SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 0));
 
@@ -137,7 +139,7 @@ quadconsfunc_cons_jac(SleqpFunc* func,
 
 SLEQP_RETCODE
 quadconsfunc_hess_prod(SleqpFunc* func,
-                       const double* func_dual,
+                       const double* obj_dual,
                        const SleqpSparseVec* direction,
                        const SleqpSparseVec* cons_duals,
                        SleqpSparseVec* result,
@@ -145,9 +147,9 @@ quadconsfunc_hess_prod(SleqpFunc* func,
 {
   double total_value = 0.;
 
-  if (func_dual)
+  if (obj_dual)
   {
-    total_value += *func_dual;
+    total_value += *obj_dual;
   }
 
   for (int k = 0; k < cons_duals->nnz; ++k)
@@ -174,8 +176,8 @@ quadconsfunc_setup()
   ASSERT_CALL(sleqp_alloc_array(&func_data->x, 2));
 
   SleqpFuncCallbacks callbacks = {.set_value = quadconsfunc_set,
-                                  .func_val  = quadconsfunc_val,
-                                  .func_grad = quadconsfunc_grad,
+                                  .obj_val   = quadconsfunc_obj_val,
+                                  .obj_grad  = quadconsfunc_obj_grad,
                                   .cons_val  = quadconsfunc_cons_val,
                                   .cons_jac  = quadconsfunc_cons_jac,
                                   .hess_prod = quadconsfunc_hess_prod,

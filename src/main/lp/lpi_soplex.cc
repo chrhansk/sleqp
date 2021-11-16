@@ -45,7 +45,7 @@ struct SleqpLpiSoplex
   int num_cols;
   int num_rows;
 
-  SLEQP_LPI_STATUS status;
+  SLEQP_LP_STATUS status;
 };
 
 static SLEQP_RETCODE
@@ -63,10 +63,11 @@ soplex_create_problem(void** lp_data,
   assert(
     soplex.setRealParam(soplex::SoPlexBase<double>::INFTY, sleqp_infinity()));
 
-  const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
+  const double feas_eps = sleqp_params_value(params,
+                                             SLEQP_PARAM_FEASIBILITY_TOL);
 
   const double stat_eps
-    = sleqp_params_get(params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(params, SLEQP_PARAM_STATIONARITY_TOL);
 
   assert(soplex.setRealParam(soplex::SoPlexBase<double>::FEASTOL,
                              feas_eps * tolerance_factor));
@@ -85,7 +86,7 @@ soplex_create_problem(void** lp_data,
 
   soplex.spxout = spxout;
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   soplex.setRealParam(soplex::SoPlex::EPSILON_ZERO, zero_eps);
 
@@ -112,7 +113,7 @@ soplex_create_problem(void** lp_data,
 
   spx->num_cols = num_cols;
   spx->num_rows = num_rows;
-  spx->status   = SLEQP_LPI_STATUS_UNKNOWN;
+  spx->status   = SLEQP_LP_STATUS_UNKNOWN;
 
   soplex.setIntParam(soplex::SoPlex::OBJSENSE,
                      soplex::SoPlex::OBJSENSE_MINIMIZE);
@@ -184,24 +185,24 @@ soplex_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
   switch (status)
   {
   case soplex::SPxSolver::ABORT_TIME:
-    spx->status = SLEQP_LPI_STATUS_UNKNOWN;
+    spx->status = SLEQP_LP_STATUS_UNKNOWN;
     return SLEQP_ABORT_TIME;
     break;
   case soplex::SPxSolver::OPTIMAL:
-    spx->status = SLEQP_LPI_STATUS_OPTIMAL;
+    spx->status = SLEQP_LP_STATUS_OPTIMAL;
     break;
   case soplex::SPxSolver::UNBOUNDED:
-    spx->status = SLEQP_LPI_STATUS_UNBOUNDED;
+    spx->status = SLEQP_LP_STATUS_UNBOUNDED;
     break;
   case soplex::SPxSolver::INFEASIBLE:
-    spx->status = SLEQP_LPI_STATUS_INF;
+    spx->status = SLEQP_LP_STATUS_INF;
     break;
   case soplex::SPxSolver::INForUNBD:
-    spx->status = SLEQP_LPI_STATUS_INF_OR_UNBOUNDED;
+    spx->status = SLEQP_LP_STATUS_INF_OR_UNBOUNDED;
     break;
   default:
     sleqp_log_error("Invalid SoPlex status: %d", status);
-    spx->status = SLEQP_LPI_STATUS_UNKNOWN;
+    spx->status = SLEQP_LP_STATUS_UNKNOWN;
     return SLEQP_INTERNAL_ERROR;
   }
 
@@ -270,8 +271,8 @@ soplex_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
   return SLEQP_OKAY;
 }
 
-static SLEQP_LPI_STATUS
-soplex_get_status(void* lp_data)
+static SLEQP_LP_STATUS
+soplex_status(void* lp_data)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*)lp_data;
 
@@ -314,12 +315,12 @@ soplex_set_coefficients(void* lp_data,
   SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  assert(sleqp_sparse_matrix_get_num_rows(coeff_matrix) == num_rows);
-  assert(sleqp_sparse_matrix_get_num_cols(coeff_matrix) == num_cols);
+  assert(sleqp_sparse_matrix_num_rows(coeff_matrix) == num_rows);
+  assert(sleqp_sparse_matrix_num_cols(coeff_matrix) == num_cols);
 
-  const int* coeff_matrix_cols = sleqp_sparse_matrix_get_cols(coeff_matrix);
-  const int* coeff_matrix_rows = sleqp_sparse_matrix_get_rows(coeff_matrix);
-  double* coeff_matrix_data    = sleqp_sparse_matrix_get_data(coeff_matrix);
+  const int* coeff_matrix_cols = sleqp_sparse_matrix_cols(coeff_matrix);
+  const int* coeff_matrix_rows = sleqp_sparse_matrix_rows(coeff_matrix);
+  double* coeff_matrix_data    = sleqp_sparse_matrix_data(coeff_matrix);
 
   // Note: We save / restore the basis in order to
   //       warm-start the iteration.
@@ -412,11 +413,11 @@ soplex_restore_basis(void* lp_data, int index)
 }
 
 static SLEQP_RETCODE
-soplex_get_primal_sol(void* lp_data,
-                      int num_cols,
-                      int num_rows,
-                      double* objective_value,
-                      double* solution_values)
+soplex_primal_sol(void* lp_data,
+                  int num_cols,
+                  int num_rows,
+                  double* objective_value,
+                  double* solution_values)
 {
   SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
@@ -437,11 +438,11 @@ soplex_get_primal_sol(void* lp_data,
 }
 
 static SLEQP_RETCODE
-soplex_get_dual_sol(void* lp_data,
-                    int num_cols,
-                    int num_rows,
-                    double* vars_dual,
-                    double* cons_dual)
+soplex_dual_sol(void* lp_data,
+                int num_cols,
+                int num_rows,
+                double* vars_dual,
+                double* cons_dual)
 {
   SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
@@ -489,10 +490,10 @@ basestat_for(soplex::SPxSolver::VarStatus status)
 }
 
 static SLEQP_RETCODE
-soplex_get_varstats(void* lp_data,
-                    int num_cols,
-                    int num_rows,
-                    SLEQP_BASESTAT* variable_stats)
+soplex_vars_stats(void* lp_data,
+                  int num_cols,
+                  int num_rows,
+                  SLEQP_BASESTAT* variable_stats)
 {
   SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
@@ -506,10 +507,10 @@ soplex_get_varstats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-soplex_get_consstats(void* lp_data,
-                     int num_cols,
-                     int num_rows,
-                     SLEQP_BASESTAT* constraint_stats)
+soplex_cons_stats(void* lp_data,
+                  int num_cols,
+                  int num_rows,
+                  SLEQP_BASESTAT* constraint_stats)
 {
   SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
@@ -523,7 +524,7 @@ soplex_get_consstats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-soplex_get_basis_condition(void* lp_data, bool* exact, double* condition)
+soplex_basis_condition_estimate(void* lp_data, bool* exact, double* condition)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*)lp_data;
 
@@ -578,33 +579,33 @@ extern "C"
                                     SleqpOptions* options)
   {
     SleqpLPiCallbacks callbacks
-      = {.create_problem      = soplex_create_problem,
-         .solve               = soplex_solve,
-         .get_status          = soplex_get_status,
-         .set_bounds          = soplex_set_bounds,
-         .set_coefficients    = soplex_set_coefficients,
-         .set_objective       = soplex_set_objective,
-         .save_basis          = soplex_save_basis,
-         .restore_basis       = soplex_restore_basis,
-         .get_primal_sol      = soplex_get_primal_sol,
-         .get_dual_sol        = soplex_get_dual_sol,
-         .get_varstats        = soplex_get_varstats,
-         .get_consstats       = soplex_get_consstats,
-         .get_basis_condition = soplex_get_basis_condition,
-         .free_problem        = soplex_free};
+      = {.create_problem           = soplex_create_problem,
+         .solve                    = soplex_solve,
+         .status                   = soplex_status,
+         .set_bounds               = soplex_set_bounds,
+         .set_coefficients         = soplex_set_coefficients,
+         .set_objective            = soplex_set_objective,
+         .save_basis               = soplex_save_basis,
+         .restore_basis            = soplex_restore_basis,
+         .primal_sol               = soplex_primal_sol,
+         .dual_sol                 = soplex_dual_sol,
+         .vars_stats               = soplex_vars_stats,
+         .cons_stats               = soplex_cons_stats,
+         .basis_condition_estimate = soplex_basis_condition_estimate,
+         .free_problem             = soplex_free};
 
-    return sleqp_lpi_create_interface(lp_star,
-                                      SLEQP_LP_SOLVER_SOPLEX_NAME,
-                                      SLEQP_LP_SOLVER_SOPLEX_VERSION,
-                                      num_cols,
-                                      num_rows,
-                                      params,
-                                      options,
-                                      &callbacks);
+    return sleqp_lpi_create(lp_star,
+                            SLEQP_LP_SOLVER_SOPLEX_NAME,
+                            SLEQP_LP_SOLVER_SOPLEX_VERSION,
+                            num_cols,
+                            num_rows,
+                            params,
+                            options,
+                            &callbacks);
   }
 
   SLEQP_RETCODE
-  sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
+  sleqp_lpi_create_default(SleqpLPi** lp_interface,
                                      int num_variables,
                                      int num_constraints,
                                      SleqpParams* params,

@@ -10,7 +10,7 @@
 
 #include "cauchy/standard_cauchy.h"
 
-#include "sparse/sparse_factorization_umfpack.h"
+#include "factorization/factorization.h"
 
 #include "lp/lpi.h"
 
@@ -46,17 +46,17 @@ constrained_setup()
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadconsfunc_x));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   int num_lp_variables   = num_variables + 2 * num_constraints;
   int num_lp_constraints = num_constraints;
 
-  ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
-                                                 num_lp_variables,
-                                                 num_lp_constraints,
-                                                 params,
-                                                 options));
+  ASSERT_CALL(sleqp_lpi_create_default(&lp_interface,
+                                       num_lp_variables,
+                                       num_lp_constraints,
+                                       params,
+                                       options));
 
   ASSERT_CALL(
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
@@ -72,31 +72,31 @@ constrained_setup()
 
 START_TEST(test_working_set)
 {
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   double trust_radius = 0.1, penalty_parameter = 1.;
 
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 sleqp_iterate_get_func_grad(iterate),
+                                 sleqp_iterate_obj_grad(iterate),
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
 
-  ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 0),
+  ck_assert_int_eq(sleqp_working_set_cons_state(working_set, 0),
                    SLEQP_INACTIVE);
-  ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 1),
+  ck_assert_int_eq(sleqp_working_set_cons_state(working_set, 1),
                    SLEQP_ACTIVE_UPPER);
 }
 END_TEST
 
 START_TEST(test_dual_variable)
 {
-  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
+  SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
 
-  SleqpSparseFactorization* factorization;
+  SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
   SleqpDualEstimation* estimation_data;
 
@@ -105,7 +105,7 @@ START_TEST(test_dual_variable)
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 sleqp_iterate_get_func_grad(iterate),
+                                 sleqp_iterate_obj_grad(iterate),
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
@@ -113,8 +113,7 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, cauchy_direction));
 
-  ASSERT_CALL(
-    sleqp_sparse_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
 
   ASSERT_CALL(
     sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
@@ -137,7 +136,7 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_factorization_release(&factorization));
 }
 END_TEST
 

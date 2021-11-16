@@ -12,10 +12,10 @@ SLEQP_RETCODE
 sleqp_scale_point(SleqpScaling* scaling, SleqpSparseVec* point);
 
 double
-sleqp_scale_func_val(SleqpScaling* scaling, double func_val);
+sleqp_scale_obj_val(SleqpScaling* scaling, double obj_val);
 
 double
-sleqp_scale_lsq_func_val(SleqpScaling* scaling, double func_val);
+sleqp_scale_lsq_obj_val(SleqpScaling* scaling, double obj_val);
 
 SLEQP_RETCODE
 sleqp_scale_lsq_residuals(SleqpScaling* scaling, SleqpSparseVec* lsq_residuals);
@@ -30,7 +30,7 @@ sleqp_scale_lsq_adjoint_direction(SleqpScaling* scaling,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_func_grad(SleqpScaling* scaling, SleqpSparseVec* func_grad);
+sleqp_scale_obj_grad(SleqpScaling* scaling, SleqpSparseVec* obj_grad);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -74,15 +74,14 @@ SLEQP_RETCODE
 sleqp_unscale_point(SleqpScaling* scaling, SleqpSparseVec* scaled_point);
 
 double
-sleqp_unscale_func_val(SleqpScaling* scaling, double unscaled_func_val);
+sleqp_unscale_obj_val(SleqpScaling* scaling, double unscaled_obj_val);
 
 double
-sleqp_unscale_lsq_func_val(SleqpScaling* scaling, double func_val);
+sleqp_unscale_lsq_obj_val(SleqpScaling* scaling, double obj_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_unscale_func_grad(SleqpScaling* scaling,
-                        SleqpSparseVec* scaled_func_grad);
+sleqp_unscale_obj_grad(SleqpScaling* scaling, SleqpSparseVec* scaled_obj_grad);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

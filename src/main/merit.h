@@ -89,7 +89,7 @@ sleqp_merit_linear(SleqpMerit* merit,
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_merit_quadratic(SleqpMerit* merit,
                       SleqpIterate* iterate,
-                      const double* func_dual,
+                      const double* obj_dual,
                       const SleqpSparseVec* direction,
                       const SleqpSparseVec* cons_duals,
                       double penalty_parameter,

@@ -27,7 +27,7 @@ macro(add_factorization)
   set("${RESULT_SOURCE_NAME}" "")
 
   foreach(SOURCE ${ARGS_SOURCES})
-    list(APPEND "${RESULT_SOURCE_NAME}" "sparse/${SOURCE}")
+    list(APPEND "${RESULT_SOURCE_NAME}" "factorization/${SOURCE}")
   endforeach()
 
   list(APPEND FACTORIZATIONS ${ARGS_NAME})
@@ -35,35 +35,35 @@ endmacro()
 
 add_factorization(
   NAME "Umfpack"
-  SOURCES sparse_factorization_umfpack.c
+  SOURCES factorization_umfpack.c
   DEPS_DEBIAN "libumfpack5 (>= 5.2)")
 
 add_factorization(
   NAME "MUMPS"
-  SOURCES sparse_factorization_mumps.c
+  SOURCES factorization_mumps.c
   DEPS_DEBIAN "libmumps-5.1.2")
 
 add_factorization(
   NAME "MA27"
   SOURCES
-  sparse_factorization_ma27.c
+  factorization_ma27.c
   hsl_matrix.c)
 
 add_factorization(
   NAME "MA57"
   SOURCES
-  sparse_factorization_ma57.c
+  factorization_ma57.c
   hsl_matrix.c)
 
 add_factorization(
   NAME "MA86"
   SOURCES
-  sparse_factorization_ma86.c)
+  factorization_ma86.c)
 
 add_factorization(
   NAME "MA97"
   SOURCES
-  sparse_factorization_ma97.c)
+  factorization_ma97.c)
 
 set(_SLEQP_FACTORIZATION_VALUES "")
 

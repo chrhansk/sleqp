@@ -43,10 +43,10 @@ class HessianEval(_DocEnum):
   """
   The evaluation method used for Hessian products
   """
-  Exact      = csleqp.SLEQP_HESSIAN_EVAL_EXACT, "Exact evaluation"
-  SR1        = csleqp.SLEQP_HESSIAN_EVAL_SR1, "The SR1 quasi-Newton method"
-  SimpleBFGS = csleqp.SLEQP_HESSIAN_EVAL_SIMPLE_BFGS, "The BFGS method for convex functions"
-  DampedBFGS = csleqp.SLEQP_HESSIAN_EVAL_DAMPED_BFGS, "A damped BFGS method "
+  Exact      = csleqp.SLEQP_HESS_EVAL_EXACT, "Exact evaluation"
+  SR1        = csleqp.SLEQP_HESS_EVAL_SR1, "The SR1 quasi-Newton method"
+  SimpleBFGS = csleqp.SLEQP_HESS_EVAL_SIMPLE_BFGS, "The BFGS method for convex functions"
+  DampedBFGS = csleqp.SLEQP_HESS_EVAL_DAMPED_BFGS, "A damped BFGS method "
 
 
 class Sizing(Enum):

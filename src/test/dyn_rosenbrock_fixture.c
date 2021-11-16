@@ -9,14 +9,14 @@
 SleqpFunc* dyn_rosenbrock_func;
 
 SLEQP_RETCODE
-dyn_rosenbrock_func_val(SleqpFunc* func,
+dyn_rosenbrock_obj_val(SleqpFunc* func,
                         double accuracy,
-                        double* func_val,
+                        double* obj_val,
                         void* func_data)
 {
-  double actual_func_val;
+  double orig_obj_val;
 
-  SLEQP_CALL(rosenbrock_val(rosenbrock_func, &actual_func_val, func_data));
+  SLEQP_CALL(rosenbrock_obj_val(rosenbrock_func, &orig_obj_val, func_data));
 
   int r = rand();
 
@@ -25,7 +25,7 @@ dyn_rosenbrock_func_val(SleqpFunc* func,
   // uniform in [-1, -1]
   noise = 2. * noise - 1;
 
-  *func_val = (actual_func_val + accuracy * noise);
+  *obj_val = (orig_obj_val + accuracy * noise);
 
   return SLEQP_OKAY;
 }
@@ -38,8 +38,8 @@ dyn_rosenbrock_setup()
   rosenbrock_setup();
 
   SleqpDynFuncCallbacks callbacks = {.set_value = rosenbrock_set,
-                                     .func_val  = dyn_rosenbrock_func_val,
-                                     .func_grad = rosenbrock_grad,
+                                     .obj_val   = dyn_rosenbrock_obj_val,
+                                     .obj_grad  = rosenbrock_obj_grad,
                                      .cons_val  = NULL,
                                      .cons_jac  = NULL,
                                      .hess_prod = rosenbrock_hess_prod,

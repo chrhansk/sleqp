@@ -51,11 +51,11 @@ cdef extern from "sleqp.h":
     SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE,
     SLEQP_DERIV_CHECK_SECOND_SIMPLE
 
-  ctypedef enum SLEQP_HESSIAN_EVAL:
-    SLEQP_HESSIAN_EVAL_EXACT,
-    SLEQP_HESSIAN_EVAL_SR1,
-    SLEQP_HESSIAN_EVAL_SIMPLE_BFGS,
-    SLEQP_HESSIAN_EVAL_DAMPED_BFGS
+  ctypedef enum SLEQP_HESS_EVAL:
+    SLEQP_HESS_EVAL_EXACT,
+    SLEQP_HESS_EVAL_SR1,
+    SLEQP_HESS_EVAL_SIMPLE_BFGS,
+    SLEQP_HESS_EVAL_DAMPED_BFGS
 
   ctypedef enum SLEQP_BFGS_SIZING:
     SLEQP_BFGS_SIZING_NONE,
@@ -117,7 +117,7 @@ cdef extern from "sleqp.h":
 
   ctypedef enum SLEQP_OPTION_INT:
     SLEQP_OPTION_INT_DERIV_CHECK,
-    SLEQP_OPTION_INT_HESSIAN_EVAL,
+    SLEQP_OPTION_INT_HESS_EVAL,
     SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE,
     SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES,
     SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS,
@@ -140,7 +140,7 @@ cdef extern from "sleqp.h":
   ctypedef enum SLEQP_SOLVER_STATE_REAL:
     SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
     SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS,
-    SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL,
+    SLEQP_SOLVER_STATE_REAL_SCALED_OBJ_VAL,
     SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL,
     SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
     SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
@@ -207,7 +207,7 @@ cdef extern from "sleqp.h":
   cdef struct SleqpFunc:
     pass
 
-  cdef struct SleqpHessianStruct:
+  cdef struct SleqpHessStruct:
     pass
 
 
@@ -257,19 +257,19 @@ cdef extern from "sleqp.h":
                                            int num_rows,
                                            int num_cols)
 
-  int sleqp_sparse_matrix_get_num_cols(SleqpSparseMatrix* matrix)
+  int sleqp_sparse_matrix_num_cols(SleqpSparseMatrix* matrix)
 
-  int sleqp_sparse_matrix_get_num_rows(SleqpSparseMatrix* matrix)
+  int sleqp_sparse_matrix_num_rows(SleqpSparseMatrix* matrix)
 
-  int sleqp_sparse_matrix_get_nnz(SleqpSparseMatrix* matrix)
+  int sleqp_sparse_matrix_nnz(SleqpSparseMatrix* matrix)
 
-  int sleqp_sparse_matrix_get_nnz_max(SleqpSparseMatrix* matrix)
+  int sleqp_sparse_matrix_nnz_max(SleqpSparseMatrix* matrix)
 
-  double* sleqp_sparse_matrix_get_data(SleqpSparseMatrix* matrix)
+  double* sleqp_sparse_matrix_data(SleqpSparseMatrix* matrix)
 
-  int* sleqp_sparse_matrix_get_cols(SleqpSparseMatrix* matrix)
+  int* sleqp_sparse_matrix_cols(SleqpSparseMatrix* matrix)
 
-  int* sleqp_sparse_matrix_get_rows(SleqpSparseMatrix* matrix)
+  int* sleqp_sparse_matrix_rows(SleqpSparseMatrix* matrix)
 
   SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
                                          int row,
@@ -288,18 +288,18 @@ cdef extern from "sleqp.h":
                                            SleqpSparseVec* x,
                                            SLEQP_VALUE_REASON reason,
                                            bool* reject,
-                                           int* func_grad_nnz,
+                                           int* obj_grad_nnz,
                                            int* cons_val_nnz,
                                            int* cons_jac_nnz,
                                            void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_VAL)(SleqpFunc* func,
-                                           double* func_val,
-                                           void* func_data)
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_VAL)(SleqpFunc* func,
+                                               double* func_val,
+                                               void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_GRAD)(SleqpFunc* func,
-                                            SleqpSparseVec* func_grad,
-                                            void* func_data)
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_GRAD)(SleqpFunc* func,
+                                                SleqpSparseVec* func_grad,
+                                                void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
                                                 const SleqpSparseVec* cons_indices,
@@ -311,23 +311,23 @@ cdef extern from "sleqp.h":
                                                 SleqpSparseMatrix* cons_jac,
                                                 void* func_data)
 
-  ctypedef SLEQP_RETCODE (*SLEQP_HESS_PROD)(SleqpFunc* func,
-                                            const double* func_dual,
-                                            const SleqpSparseVec* direction,
-                                            const SleqpSparseVec* cons_duals,
-                                            SleqpSparseVec* product,
-                                            void* func_data)
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_HESS_PROD)(SleqpFunc* func,
+                                                 const double* obj_dual,
+                                                 const SleqpSparseVec* direction,
+                                                 const SleqpSparseVec* cons_duals,
+                                                 SleqpSparseVec* product,
+                                                 void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_FREE)(void* func_data)
 
   ctypedef struct SleqpFuncCallbacks:
-    SLEQP_FUNC_SET set_value
-    SLEQP_FUNC_VAL func_val
-    SLEQP_FUNC_GRAD func_grad
-    SLEQP_FUNC_CONS_VAL cons_val
-    SLEQP_FUNC_CONS_JAC cons_jac
-    SLEQP_HESS_PROD hess_prod
-    SLEQP_FUNC_FREE func_free
+    SLEQP_FUNC_SET       set_value
+    SLEQP_FUNC_OBJ_VAL   obj_val
+    SLEQP_FUNC_OBJ_GRAD  obj_grad
+    SLEQP_FUNC_CONS_VAL  cons_val
+    SLEQP_FUNC_CONS_JAC  cons_jac
+    SLEQP_FUNC_HESS_PROD hess_prod
+    SLEQP_FUNC_FREE      func_free
 
   SLEQP_RETCODE sleqp_func_create(SleqpFunc** fstar,
                                   SleqpFuncCallbacks* callbacks,
@@ -338,63 +338,63 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_func_set_callbacks(SleqpFunc* func,
                                          SleqpFuncCallbacks* callbacks)
 
-  int sleqp_func_get_num_variables(SleqpFunc* func)
+  int sleqp_func_num_vars(SleqpFunc* func)
 
-  int sleqp_func_get_num_constraints(SleqpFunc* func)
+  int sleqp_func_num_cons(SleqpFunc* func)
 
   SLEQP_RETCODE sleqp_func_capture(SleqpFunc* func)
 
   SLEQP_RETCODE sleqp_func_release(SleqpFunc** fstar)
 
-  SleqpHessianStruct* sleqp_func_get_hess_struct(SleqpFunc* func)
+  SleqpHessStruct* sleqp_func_hess_struct(SleqpFunc* func)
 
   # Hessian struct
 
-  int sleqp_hessian_struct_get_num_blocks(SleqpHessianStruct* hessian_struct)
+  int sleqp_hess_struct_num_blocks(SleqpHessStruct* hess_struct)
 
-  SLEQP_RETCODE sleqp_hessian_struct_get_block_range(SleqpHessianStruct* hessian_struct,
-                                                     int block,
-                                                     int* begin,
-                                                     int* end)
+  SLEQP_RETCODE sleqp_hess_struct_block_range(SleqpHessStruct* hess_struct,
+                                              int block,
+                                              int* begin,
+                                              int* end)
 
-  SLEQP_RETCODE sleqp_hessian_struct_push_block(SleqpHessianStruct* hessian_struct,
-                                                int end)
+  SLEQP_RETCODE sleqp_hess_struct_push_block(SleqpHessStruct* hess_struct,
+                                             int end)
 
-  SLEQP_RETCODE sleqp_hessian_struct_clear(SleqpHessianStruct* hessian_struct)
+  SLEQP_RETCODE sleqp_hess_struct_clear(SleqpHessStruct* hess_struct)
 
-  SLEQP_RETCODE sleqp_hessian_struct_get_linear_range(SleqpHessianStruct* hessian_struct,
-                                                      int* begin,
-                                                      int* end)
+  SLEQP_RETCODE sleqp_hess_struct_lin_range(SleqpHessStruct* hess_struct,
+                                            int* begin,
+                                            int* end)
 
-  SLEQP_RETCODE sleqp_hessian_struct_fprintf(SleqpHessianStruct* hessian_struct,
-                                             libc.stdio.FILE* output)
+  SLEQP_RETCODE sleqp_hess_struct_fprintf(SleqpHessStruct* hess_struct,
+                                          libc.stdio.FILE* output)
 
-  SLEQP_RETCODE sleqp_hessian_struct_capture(SleqpHessianStruct* hessian_struct)
+  SLEQP_RETCODE sleqp_hess_struct_capture(SleqpHessStruct* hess_struct)
 
-  SLEQP_RETCODE sleqp_hessian_struct_release(SleqpHessianStruct** star)
+  SLEQP_RETCODE sleqp_hess_struct_release(SleqpHessStruct** star)
 
   # Iterate
 
   SLEQP_RETCODE sleqp_iterate_capture(SleqpIterate* iterate)
 
-  SleqpSparseVec* sleqp_iterate_get_primal(SleqpIterate* iterate)
+  SleqpSparseVec* sleqp_iterate_primal(SleqpIterate* iterate)
 
-  double sleqp_iterate_get_func_val(SleqpIterate* iterate)
+  double sleqp_iterate_obj_val(SleqpIterate* iterate)
 
-  SLEQP_RETCODE sleqp_iterate_set_func_val(SleqpIterate* iterate,
-                                           double value)
+  SLEQP_RETCODE sleqp_iterate_set_obj_val(SleqpIterate* iterate,
+                                          double value)
 
-  SleqpSparseVec* sleqp_iterate_get_func_grad(SleqpIterate* iterate)
+  SleqpSparseVec* sleqp_iterate_obj_grad(SleqpIterate* iterate)
 
-  SleqpSparseVec* sleqp_iterate_get_cons_val(SleqpIterate* iterate)
+  SleqpSparseVec* sleqp_iterate_cons_val(SleqpIterate* iterate)
 
-  SleqpSparseMatrix* sleqp_iterate_get_cons_jac(SleqpIterate* iterate)
+  SleqpSparseMatrix* sleqp_iterate_cons_jac(SleqpIterate* iterate)
 
-  SleqpWorkingSet* sleqp_iterate_get_working_set(SleqpIterate* iterate)
+  SleqpWorkingSet* sleqp_iterate_working_set(SleqpIterate* iterate)
 
-  SleqpSparseVec* sleqp_iterate_get_cons_dual(SleqpIterate* iterate)
+  SleqpSparseVec* sleqp_iterate_cons_dual(SleqpIterate* iterate)
 
-  SleqpSparseVec* sleqp_iterate_get_vars_dual(SleqpIterate* iterate)
+  SleqpSparseVec* sleqp_iterate_vars_dual(SleqpIterate* iterate)
 
   SLEQP_RETCODE sleqp_iterate_release(SleqpIterate** star)
 
@@ -408,13 +408,13 @@ cdef extern from "sleqp.h":
 
   int sleqp_working_set_size(const SleqpWorkingSet* working_set)
 
-  SleqpProblem* sleqp_working_set_get_problem(const SleqpWorkingSet* working_set)
+  SleqpProblem* sleqp_working_set_problem(const SleqpWorkingSet* working_set)
 
-  SLEQP_ACTIVE_STATE sleqp_working_set_get_variable_state(const SleqpWorkingSet* working_set,
-                                                          int index)
+  SLEQP_ACTIVE_STATE sleqp_working_set_var_state(const SleqpWorkingSet* working_set,
+                                                 int index)
 
-  SLEQP_ACTIVE_STATE sleqp_working_set_get_constraint_state(const SleqpWorkingSet* working_set,
-                                                            int index)
+  SLEQP_ACTIVE_STATE sleqp_working_set_cons_state(const SleqpWorkingSet* working_set,
+                                                  int index)
 
   SLEQP_RETCODE sleqp_working_set_release(SleqpWorkingSet** star)
 
@@ -462,10 +462,10 @@ cdef extern from "sleqp.h":
                                      int num_variables,
                                      int num_constraints)
 
-  int sleqp_scaling_get_num_variables(SleqpScaling* scaling)
-  int sleqp_scaling_get_num_constraints(SleqpScaling* scaling)
+  int sleqp_scaling_num_vars(SleqpScaling* scaling)
+  int sleqp_scaling_num_cons(SleqpScaling* scaling)
 
-  int sleqp_scaling_get_func_weight(SleqpScaling* scaling)
+  int sleqp_scaling_func_weight(SleqpScaling* scaling)
 
   SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScaling* scaling,
                                               int weight)
@@ -488,9 +488,9 @@ cdef extern from "sleqp.h":
                                               int index,
                                               int weight)
 
-  int* sleqp_scaling_get_var_weights(SleqpScaling* scaling)
+  int* sleqp_scaling_var_weights(SleqpScaling* scaling)
 
-  int* sleqp_scaling_get_cons_weights(SleqpScaling* scaling)
+  int* sleqp_scaling_cons_weights(SleqpScaling* scaling)
 
   SLEQP_RETCODE sleqp_scaling_set_cons_weights_from_nominal(SleqpScaling* scaling,
                                                             double* nominal_values)
@@ -524,25 +524,25 @@ cdef extern from "sleqp.h":
                                    int max_num_iterations,
                                    double time_limit) nogil
 
-  SLEQP_RETCODE sleqp_solver_get_real_state(const SleqpSolver* solver,
-                                            SLEQP_SOLVER_STATE_REAL state,
-                                            double* value)
+  SLEQP_RETCODE sleqp_solver_real_state(const SleqpSolver* solver,
+                                        SLEQP_SOLVER_STATE_REAL state,
+                                        double* value)
 
-  SLEQP_RETCODE sleqp_solver_get_int_state(const SleqpSolver* solver,
-                                           SLEQP_SOLVER_STATE_INT state,
-                                           int* value)
+  SLEQP_RETCODE sleqp_solver_int_state(const SleqpSolver* solver,
+                                       SLEQP_SOLVER_STATE_INT state,
+                                       int* value)
 
-  SLEQP_RETCODE sleqp_solver_get_vec_state(const SleqpSolver* solver,
-                                           SLEQP_SOLVER_STATE_VEC value,
-                                           SleqpSparseVec* result)
+  SLEQP_RETCODE sleqp_solver_vec_state(const SleqpSolver* solver,
+                                       SLEQP_SOLVER_STATE_VEC value,
+                                       SleqpSparseVec* result)
 
-  SLEQP_STATUS sleqp_solver_get_status(SleqpSolver* solver)
+  SLEQP_STATUS sleqp_solver_status(SleqpSolver* solver)
 
   SLEQP_RETCODE sleqp_solver_abort(SleqpSolver* solver)
 
-  int sleqp_solver_get_iterations(SleqpSolver* solver)
+  int sleqp_solver_iterations(SleqpSolver* solver)
 
-  double sleqp_solver_get_elapsed_seconds(SleqpSolver* solver)
+  double sleqp_solver_elapsed_seconds(SleqpSolver* solver)
 
   SLEQP_RETCODE sleqp_solver_add_callback(SleqpSolver* solver,
                                           SLEQP_SOLVER_EVENT solver_event,
@@ -554,13 +554,13 @@ cdef extern from "sleqp.h":
                                              void* callback_func,
                                              void* callback_data)
 
-  SLEQP_RETCODE sleqp_solver_get_solution(SleqpSolver* solver,
-                                          SleqpIterate** iterate)
+  SLEQP_RETCODE sleqp_solver_solution(SleqpSolver* solver,
+                                      SleqpIterate** iterate)
 
-  SLEQP_RETCODE sleqp_solver_get_violated_constraints(SleqpSolver* solver,
-                                                      SleqpIterate* iterate,
-                                                      int* violated_constraints,
-                                                      int* num_violated_constraints)
+  SLEQP_RETCODE sleqp_solver_violated_constraints(SleqpSolver* solver,
+                                                  SleqpIterate* iterate,
+                                                  int* violated_constraints,
+                                                  int* num_violated_constraints)
 
   SLEQP_RETCODE sleqp_solver_release(SleqpSolver** star)
 
@@ -585,13 +585,13 @@ cdef extern from "sleqp.h":
                                      const SleqpSparseVec* linear_lb,
                                      const SleqpSparseVec* linear_ub)
 
-  int sleqp_problem_num_constraints(SleqpProblem* problem)
+  int sleqp_problem_num_cons(SleqpProblem* problem)
 
-  int sleqp_problem_num_variables(SleqpProblem* problem)
+  int sleqp_problem_num_vars(SleqpProblem* problem)
 
-  SleqpSparseVec* sleqp_problem_var_lb(SleqpProblem* problem)
+  SleqpSparseVec* sleqp_problem_vars_lb(SleqpProblem* problem)
 
-  SleqpSparseVec* sleqp_problem_var_ub(SleqpProblem* problem)
+  SleqpSparseVec* sleqp_problem_vars_ub(SleqpProblem* problem)
 
   SleqpSparseVec* sleqp_problem_cons_lb(SleqpProblem* problem)
 
@@ -603,12 +603,12 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
 
-  double sleqp_params_get(const SleqpParams* params,
-                          SLEQP_PARAM param)
+  double sleqp_params_value(const SleqpParams* params,
+                            SLEQP_PARAM param)
 
-  SLEQP_RETCODE sleqp_params_set(SleqpParams* params,
-                                 SLEQP_PARAM param,
-                                 double value)
+  SLEQP_RETCODE sleqp_params_set_value(SleqpParams* params,
+                                       SLEQP_PARAM param,
+                                       double value)
 
   SLEQP_RETCODE sleqp_params_release(SleqpParams** star)
 
@@ -616,20 +616,20 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
 
-  int sleqp_options_get_int(const SleqpOptions* options,
-                            SLEQP_OPTION_INT option)
+  int sleqp_options_int_value(const SleqpOptions* options,
+                              SLEQP_OPTION_INT option)
 
-  SLEQP_RETCODE sleqp_options_set_int(SleqpOptions* options,
-                                      SLEQP_OPTION_INT option,
-                                      int value)
+  SLEQP_RETCODE sleqp_options_set_int_value(SleqpOptions* options,
+                                            SLEQP_OPTION_INT option,
+                                            int value)
 
 
-  bool sleqp_options_get_bool(const SleqpOptions* options,
-                              SLEQP_OPTION_BOOL option)
+  bool sleqp_options_bool_value(const SleqpOptions* options,
+                                SLEQP_OPTION_BOOL option)
 
-  SLEQP_RETCODE sleqp_options_set_bool(SleqpOptions* options,
-                                       SLEQP_OPTION_BOOL option,
-                                       bool value)
+  SLEQP_RETCODE sleqp_options_set_bool_value(SleqpOptions* options,
+                                             SLEQP_OPTION_BOOL option,
+                                             bool value)
 
   SLEQP_RETCODE sleqp_options_release(SleqpOptions** star)
 

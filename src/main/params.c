@@ -65,7 +65,7 @@ sleqp_params_create(SleqpParams** star)
 }
 
 double
-sleqp_params_get(const SleqpParams* params, SLEQP_PARAM param)
+sleqp_params_value(const SleqpParams* params, SLEQP_PARAM param)
 {
   assert(param >= 0);
   assert(param < SLEQP_NUM_PARAMS);
@@ -74,7 +74,7 @@ sleqp_params_get(const SleqpParams* params, SLEQP_PARAM param)
 }
 
 SLEQP_RETCODE
-sleqp_params_set(SleqpParams* params, SLEQP_PARAM param, double value)
+sleqp_params_set_value(SleqpParams* params, SLEQP_PARAM param, double value)
 {
   assert(param >= 0);
   assert(param < SLEQP_NUM_PARAMS);

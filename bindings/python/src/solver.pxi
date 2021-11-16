@@ -116,7 +116,7 @@ cdef class Solver:
 
   @property
   def status(self) -> Status:
-    return Status(csleqp.sleqp_solver_get_status(self.solver))
+    return Status(csleqp.sleqp_solver_status(self.solver))
 
   def abort(self):
     """
@@ -127,11 +127,11 @@ cdef class Solver:
 
   @property
   def iterations(self) -> int:
-    return csleqp.sleqp_solver_get_iterations(self.solver)
+    return csleqp.sleqp_solver_iterations(self.solver)
 
   @property
   def elapsed_seconds(self) -> float:
-    return csleqp.sleqp_solver_get_elapsed_seconds(self.solver)
+    return csleqp.sleqp_solver_elapsed_seconds(self.solver)
 
   @property
   def violated_cons(self) -> set:
@@ -142,12 +142,12 @@ cdef class Solver:
     cdef csleqp.SleqpIterate* iterate
 
     try:
-      csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &iterate))
+      csleqp_call(csleqp.sleqp_solver_solution(self.solver, &iterate))
 
-      csleqp_call(csleqp.sleqp_solver_get_violated_constraints(self.solver,
-                                                               iterate,
-                                                               violated_cons,
-                                                               &num_violated_cons))
+      csleqp_call(csleqp.sleqp_solver_violated_constraints(self.solver,
+                                                           iterate,
+                                                           violated_cons,
+                                                           &num_violated_cons))
 
       violated = set()
 
@@ -164,7 +164,7 @@ cdef class Solver:
     cdef csleqp.SleqpIterate* _iterate
     cdef Iterate iterate = Iterate(_create=True)
 
-    csleqp_call(csleqp.sleqp_solver_get_solution(self.solver, &_iterate))
+    csleqp_call(csleqp.sleqp_solver_solution(self.solver, &_iterate))
 
     iterate._set_iterate(_iterate)
 
@@ -222,22 +222,30 @@ cdef class Solver:
 
     stat_residuals = None
 
-    csleqp_call(csleqp.sleqp_solver_get_vec_state(self.solver, csleqp.SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS, self.residuals))
+    csleqp_call(csleqp.sleqp_solver_vec_state(self.solver,
+                                              csleqp.SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
+                                              self.residuals))
     stat_residuals = sleqp_sparse_vec_to_array(self.residuals)
 
-    csleqp_call(csleqp.sleqp_solver_get_vec_state(self.solver, csleqp.SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS, self.residuals))
+    csleqp_call(csleqp.sleqp_solver_vec_state(self.solver,
+                                              csleqp.SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
+                                              self.residuals))
     feas_residuals = sleqp_sparse_vec_to_array(self.residuals)
 
-    csleqp_call(csleqp.sleqp_solver_get_vec_state(self.solver, csleqp.SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS, self.residuals))
+    csleqp_call(csleqp.sleqp_solver_vec_state(self.solver,
+                                              csleqp.SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
+                                              self.residuals))
     cons_slack_residuals = sleqp_sparse_vec_to_array(self.residuals)
 
-    csleqp_call(csleqp.sleqp_solver_get_vec_state(self.solver, csleqp.SLEQP_SOLVER_STATE_VEC_SCALED_VAR_SLACK_RESIDUALS, self.residuals))
+    csleqp_call(csleqp.sleqp_solver_vec_state(self.solver,
+                                              csleqp.SLEQP_SOLVER_STATE_VEC_SCALED_VAR_SLACK_RESIDUALS,
+                                              self.residuals))
     vars_slack_residuals = sleqp_sparse_vec_to_array(self.residuals)
 
     return {
       SolverState.TrustRadius:              self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS),
       SolverState.LPTrustRadius:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS),
-      SolverState.ScaledFuncVal:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL),
+      SolverState.ScaledFuncVal:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_OBJ_VAL),
       SolverState.ScaledMeritVal:           self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL),
       SolverState.ScaledFeasRes:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES),
       SolverState.ScaledStatRes:            self._get_solver_real_state(csleqp.SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES),
@@ -256,16 +264,16 @@ cdef class Solver:
 
   cpdef double _get_solver_real_state(self, int state):
     cdef double value = 0.
-    csleqp_call(csleqp.sleqp_solver_get_real_state(self.solver,
-                                                   <csleqp.SLEQP_SOLVER_STATE_REAL> state,
-                                                   &value))
+    csleqp_call(csleqp.sleqp_solver_real_state(self.solver,
+                                               <csleqp.SLEQP_SOLVER_STATE_REAL> state,
+                                               &value))
     return value
 
   cpdef int _get_solver_int_state(self, int state):
     cdef int value = 0
-    csleqp_call(csleqp.sleqp_solver_get_int_state(self.solver,
-                                                  <csleqp.SLEQP_SOLVER_STATE_INT> state,
-                                                  &value))
+    csleqp_call(csleqp.sleqp_solver_int_state(self.solver,
+                                              <csleqp.SLEQP_SOLVER_STATE_INT> state,
+                                              &value))
     return value
 
 

@@ -26,17 +26,17 @@ cdef object sleqp_sparse_matrix_to_scipy(csleqp.SleqpSparseMatrix* _matrix):
 
   matrix_ref._set_matrix(_matrix)
 
-  num_cols = csleqp.sleqp_sparse_matrix_get_num_cols(_matrix)
+  num_cols = csleqp.sleqp_sparse_matrix_num_cols(_matrix)
 
-  num_rows = csleqp.sleqp_sparse_matrix_get_num_rows(_matrix)
+  num_rows = csleqp.sleqp_sparse_matrix_num_rows(_matrix)
 
-  nnz = csleqp.sleqp_sparse_matrix_get_nnz(_matrix)
+  nnz = csleqp.sleqp_sparse_matrix_nnz(_matrix)
 
-  data = np.asarray(<double[:nnz]> csleqp.sleqp_sparse_matrix_get_data(_matrix))
+  data = np.asarray(<double[:nnz]> csleqp.sleqp_sparse_matrix_data(_matrix))
 
-  indices = np.asarray(<int[:nnz]> csleqp.sleqp_sparse_matrix_get_rows(_matrix))
+  indices = np.asarray(<int[:nnz]> csleqp.sleqp_sparse_matrix_rows(_matrix))
 
-  indptr = np.asarray(<int[:num_cols + 1]> csleqp.sleqp_sparse_matrix_get_cols(_matrix))
+  indptr = np.asarray(<int[:num_cols + 1]> csleqp.sleqp_sparse_matrix_cols(_matrix))
 
   matrix = csc_matrix((data, indices, indptr), shape=(num_rows, num_cols))
 

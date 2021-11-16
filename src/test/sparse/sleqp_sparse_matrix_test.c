@@ -65,8 +65,8 @@ START_TEST(test_sparse_reserve)
 
   ASSERT_CALL(sleqp_sparse_matrix_reserve(matrix, 10));
 
-  ck_assert(sleqp_sparse_matrix_get_nnz_max(matrix) >= 10);
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(matrix), 0);
+  ck_assert(sleqp_sparse_matrix_nnz_max(matrix) >= 10);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz(matrix), 0);
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&matrix));
 }
@@ -86,18 +86,18 @@ START_TEST(test_sparse_increase_size)
 
   ASSERT_CALL(sleqp_sparse_matrix_resize(matrix, size, size));
 
-  ck_assert_int_eq(sleqp_sparse_matrix_get_num_rows(matrix), size);
-  ck_assert_int_eq(sleqp_sparse_matrix_get_num_cols(matrix), size);
+  ck_assert_int_eq(sleqp_sparse_matrix_num_rows(matrix), size);
+  ck_assert_int_eq(sleqp_sparse_matrix_num_cols(matrix), size);
 
-  const int* matrix_cols = sleqp_sparse_matrix_get_cols(matrix);
+  const int* matrix_cols = sleqp_sparse_matrix_cols(matrix);
 
   for (int col = 0; col < size; ++col)
   {
     ck_assert_int_eq(matrix_cols[col], 0);
   }
 
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(matrix), 0);
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz_max(matrix), num_nnz);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz(matrix), 0);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz_max(matrix), num_nnz);
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&matrix));
 }
@@ -118,7 +118,7 @@ START_TEST(test_sparse_pop_column)
     ASSERT_CALL(sleqp_sparse_matrix_push(matrix, current, current, 1.));
   }
 
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(matrix), size);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz(matrix), size);
 
   int removed = 0;
 
@@ -128,7 +128,7 @@ START_TEST(test_sparse_pop_column)
 
     ++removed;
 
-    ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(matrix), size - removed);
+    ck_assert_int_eq(sleqp_sparse_matrix_nnz(matrix), size - removed);
   }
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&matrix));
@@ -143,10 +143,10 @@ START_TEST(test_sparse_construction)
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&identity, size, size, size));
 
-  ck_assert_int_eq(sleqp_sparse_matrix_get_num_cols(identity), size);
-  ck_assert_int_eq(sleqp_sparse_matrix_get_num_rows(identity), size);
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz_max(identity), size);
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(identity), 0);
+  ck_assert_int_eq(sleqp_sparse_matrix_num_cols(identity), size);
+  ck_assert_int_eq(sleqp_sparse_matrix_num_rows(identity), size);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz_max(identity), size);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz(identity), 0);
 
   for (int current = 0; current < size; ++current)
   {
@@ -154,7 +154,7 @@ START_TEST(test_sparse_construction)
 
     ASSERT_CALL(sleqp_sparse_matrix_push(identity, current, current, 1.));
 
-    ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(identity), current + 1);
+    ck_assert_int_eq(sleqp_sparse_matrix_nnz(identity), current + 1);
   }
 
   for (int row = 0; row < size; ++row)
@@ -194,11 +194,11 @@ START_TEST(test_sparse_decrease_size)
     ASSERT_CALL(sleqp_sparse_matrix_push(identity, current, current, 1.));
   }
 
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(identity), size);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz(identity), size);
 
   ASSERT_CALL(sleqp_sparse_matrix_resize(identity, reduced_size, reduced_size));
 
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(identity), reduced_size);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz(identity), reduced_size);
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&identity));
 }

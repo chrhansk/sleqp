@@ -29,14 +29,14 @@ quadfunc_set(SleqpFunc* func,
              SleqpSparseVec* x,
              SLEQP_VALUE_REASON reason,
              bool* reject,
-             int* func_grad_nnz,
+             int* obj_grad_nnz,
              int* cons_val_nnz,
              int* cons_jac_nnz,
              void* func_data)
 {
-  *func_grad_nnz = 2;
-  *cons_val_nnz  = 0;
-  *cons_jac_nnz  = 0;
+  *obj_grad_nnz = 2;
+  *cons_val_nnz = 0;
+  *cons_jac_nnz = 0;
 
   SquareFuncData* data = (SquareFuncData*)func_data;
 
@@ -56,43 +56,43 @@ quadfunc_set(SleqpFunc* func,
 }
 
 SLEQP_RETCODE
-quadfunc_val(SleqpFunc* func, double* func_val, void* func_data)
+quadfunc_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*)func_data;
 
-  *func_val = square(data->x[0]) + square(data->x[1]);
+  *obj_val = square(data->x[0]) + square(data->x[1]);
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-quadfunc_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+quadfunc_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*)func_data;
 
-  assert(func_grad->dim == 2);
-  assert(func_grad->nnz_max >= 2);
+  assert(obj_grad->dim == 2);
+  assert(obj_grad->nnz_max >= 2);
 
-  func_grad->nnz = 0;
+  obj_grad->nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 2. * data->x[0]));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 2. * data->x[0]));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 1, 2. * data->x[1]));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, 2. * data->x[1]));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
 quadfunc_hess_prod(SleqpFunc* func,
-                   const double* func_dual,
+                   const double* obj_dual,
                    const SleqpSparseVec* direction,
                    const SleqpSparseVec* cons_duals,
                    SleqpSparseVec* result,
                    void* func_data)
 {
-  if (func_dual)
+  if (obj_dual)
   {
-    double total_value = 2. * (*func_dual);
+    double total_value = 2. * (*obj_dual);
 
     SLEQP_CALL(sleqp_sparse_vector_copy(direction, result));
 
@@ -110,8 +110,8 @@ quadfunc_setup()
   ASSERT_CALL(sleqp_alloc_array(&func_data->x, 2));
 
   SleqpFuncCallbacks callbacks = {.set_value = quadfunc_set,
-                                  .func_val  = quadfunc_val,
-                                  .func_grad = quadfunc_grad,
+                                  .obj_val   = quadfunc_obj_val,
+                                  .obj_grad  = quadfunc_obj_grad,
                                   .cons_val  = NULL,
                                   .cons_jac  = NULL,
                                   .hess_prod = quadfunc_hess_prod,

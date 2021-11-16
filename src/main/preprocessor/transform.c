@@ -70,17 +70,17 @@ sleqp_transformation_create(SleqpTransformation** star,
   SLEQP_CALL(
     sleqp_preprocessing_state_capture(transformation->preprocessing_state));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const int num_linear = sleqp_problem_num_linear_constraints(problem);
+  const int num_linear = sleqp_problem_num_lin_cons(problem);
 
   const int num_fixed_vars
     = sleqp_preprocessing_state_num_fixed_variables(preprocessing_state);
 
   transformation->num_transformed_vars = num_variables - num_fixed_vars;
 
-  const int num_linear_cons = sleqp_problem_num_linear_constraints(problem);
+  const int num_linear_cons = sleqp_problem_num_lin_cons(problem);
 
   const int num_removed_cons
     = sleqp_preprocessing_state_num_removed_linear_constraints(
@@ -216,8 +216,8 @@ create_transformed_func(SleqpTransformation* transformation, SleqpFunc** star)
     }
   }
 
-  assert(sleqp_func_get_num_variables(*star)
-         == sleqp_problem_num_variables(problem) - num_fixed_vars);
+  assert(sleqp_func_num_vars(*star)
+         == sleqp_problem_num_vars(problem) - num_fixed_vars);
 
   return SLEQP_OKAY;
 }
@@ -302,10 +302,10 @@ create_transformed_var_lb(SleqpTransformation* transformation)
 {
   SleqpProblem* problem = transformation->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   const double zero_eps
-    = sleqp_params_get(transformation->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(transformation->params, SLEQP_PARAM_ZERO_EPS);
 
   const double inf = sleqp_infinity();
 
@@ -332,7 +332,7 @@ create_transformed_var_lb(SleqpTransformation* transformation)
   SLEQP_CALL(replace_redundant_bound(transformation,
                                      num_removed_bounds,
                                      var_requirements,
-                                     sleqp_problem_var_lb(problem),
+                                     sleqp_problem_vars_lb(problem),
                                      transformation->trans_cache,
                                      SLEQP_BOUND_REDUNDANT_LOWER,
                                      -inf));
@@ -374,10 +374,10 @@ create_transformed_var_ub(SleqpTransformation* transformation)
 {
   SleqpProblem* problem = transformation->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   const double zero_eps
-    = sleqp_params_get(transformation->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(transformation->params, SLEQP_PARAM_ZERO_EPS);
 
   const double inf = sleqp_infinity();
 
@@ -404,7 +404,7 @@ create_transformed_var_ub(SleqpTransformation* transformation)
   SLEQP_CALL(replace_redundant_bound(transformation,
                                      num_removed_bounds,
                                      var_requirements,
-                                     sleqp_problem_var_ub(problem),
+                                     sleqp_problem_vars_ub(problem),
                                      transformation->trans_cache,
                                      SLEQP_BOUND_REDUNDANT_UPPER,
                                      inf));
@@ -450,10 +450,10 @@ transform_linear_constraints(SleqpTransformation* transformation)
   int* fixed_var_indices;
   double* fixed_var_values;
 
-  const int num_linear = sleqp_problem_num_linear_constraints(problem);
+  const int num_linear = sleqp_problem_num_lin_cons(problem);
 
   const double zero_eps
-    = sleqp_params_get(transformation->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(transformation->params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpPreprocessingState* preprocessing_state
     = transformation->preprocessing_state;
@@ -615,13 +615,13 @@ sleqp_transformation_create_transformed_problem(
   {
     SleqpProblem* transformed_problem = *star;
 
-    const int num_variables   = sleqp_problem_num_variables(problem);
-    const int num_constraints = sleqp_problem_num_constraints(problem);
+    const int num_variables   = sleqp_problem_num_vars(problem);
+    const int num_constraints = sleqp_problem_num_cons(problem);
 
     const int num_transformed_variables
-      = sleqp_problem_num_variables(transformed_problem);
+      = sleqp_problem_num_vars(transformed_problem);
     const int num_transformed_constraints
-      = sleqp_problem_num_constraints(transformed_problem);
+      = sleqp_problem_num_cons(transformed_problem);
 
     sleqp_assert(num_transformed_variables + num_fixed_vars == num_variables);
     sleqp_assert(num_transformed_constraints + num_removed_cons

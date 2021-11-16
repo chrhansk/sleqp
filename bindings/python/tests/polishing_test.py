@@ -11,18 +11,18 @@ class PolishingFunc:
   def set_value(self, v, reason):
     self.v = np.copy(v)
 
-  def func_val(self):
+  def obj_val(self):
     [x, y] = self.v
 
     return 0.5 * (x - 1.)**2 + (y - 2.5)**2
 
-  def func_grad(self):
+  def obj_grad(self):
     [x, y] = self.v
 
     return np.array([x - 1, y - 2.5])
 
-  def hess_prod(self, func_dual, direction, _):
-    return func_dual * direction
+  def hess_prod(self, obj_dual, direction, _):
+    return obj_dual * direction
 
 # The first linear constraint is active,
 # the second is not. Correspondingly, its

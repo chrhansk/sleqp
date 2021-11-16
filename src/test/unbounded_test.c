@@ -26,7 +26,7 @@ unbounded_set(SleqpFunc* func,
               SleqpSparseVec* x,
               SLEQP_VALUE_REASON reason,
               bool* reject,
-              int* func_grad_nnz,
+              int* obj_grad_nnz,
               int* cons_val_nnz,
               int* cons_jac_nnz,
               void* func_data)
@@ -34,32 +34,32 @@ unbounded_set(SleqpFunc* func,
   assert(x->dim == 1);
   SLEQP_CALL(sleqp_sparse_vector_to_raw(x, &v));
 
-  (*func_grad_nnz) = 1;
-  (*cons_val_nnz)  = 1;
-  (*cons_jac_nnz)  = 1;
+  (*obj_grad_nnz) = 1;
+  (*cons_val_nnz) = 1;
+  (*cons_jac_nnz) = 1;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-unbounded_val(SleqpFunc* func, double* func_val, void* func_data)
+unbounded_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
-  (*func_val) = v;
+  (*obj_val) = v;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-unbounded_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+unbounded_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 1.));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 unbounded_hess_prod(SleqpFunc* func,
-                    const double* func_dual,
+                    const double* obj_dual,
                     const SleqpSparseVec* direction,
                     const SleqpSparseVec* cons_duals,
                     SleqpSparseVec* product,
@@ -76,8 +76,8 @@ unbounded_setup()
   const double inf = sleqp_infinity();
 
   SleqpFuncCallbacks callbacks = {.set_value = unbounded_set,
-                                  .func_val  = unbounded_val,
-                                  .func_grad = unbounded_grad,
+                                  .obj_val   = unbounded_obj_val,
+                                  .obj_grad  = unbounded_obj_grad,
                                   .cons_val  = NULL,
                                   .cons_jac  = NULL,
                                   .hess_prod = unbounded_hess_prod,
@@ -150,9 +150,9 @@ START_TEST(test_unbounded_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_UNBOUNDED);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_UNBOUNDED);
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 

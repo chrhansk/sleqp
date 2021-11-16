@@ -36,7 +36,7 @@ log_rosenbrock_set(SleqpFunc* func,
                    SleqpSparseVec* v,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
-                   int* func_grad_nnz,
+                   int* obj_grad_nnz,
                    int* cons_val_nnz,
                    int* cons_jac_nnz,
                    void* func_data)
@@ -45,36 +45,38 @@ log_rosenbrock_set(SleqpFunc* func,
   y     = sleqp_sparse_vector_value_at(v, 1);
   inner = eval();
 
-  *func_grad_nnz = 2;
+  *obj_grad_nnz = 2;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-log_rosenbrock_val(SleqpFunc* func, double* func_val, void* func_data)
+log_rosenbrock_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
-  *func_val = log(inner);
+  *obj_val = log(inner);
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-log_rosenbrock_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+log_rosenbrock_obj_grad(SleqpFunc* func,
+                        SleqpSparseVec* obj_grad,
+                        void* func_data)
 {
   const double dx = 2. * (20000. * (x * sq(x) - x * y) + x - 1) / inner;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, dx));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, dx));
 
   const double dy = 20000. * (y - sq(x)) / inner;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 1, dy));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, dy));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 log_rosenbrock_hess_prod(SleqpFunc* func,
-                         const double* func_dual,
+                         const double* obj_dual,
                          const SleqpSparseVec* direction,
                          const SleqpSparseVec* cons_duals,
                          SleqpSparseVec* product,
@@ -97,13 +99,13 @@ log_rosenbrock_hess_prod(SleqpFunc* func,
 
   const double hyy = 20000. / inner + sq(20000.) * sq(y - sq(x)) / sq(inner);
 
-  if (func_dual)
+  if (obj_dual)
   {
     SLEQP_CALL(
-      sleqp_sparse_vector_push(product, 0, (*func_dual) * hxx * dx + hxy * dy));
+      sleqp_sparse_vector_push(product, 0, (*obj_dual) * hxx * dx + hxy * dy));
 
     SLEQP_CALL(
-      sleqp_sparse_vector_push(product, 1, (*func_dual) * hxy * dx + hyy * dy));
+      sleqp_sparse_vector_push(product, 1, (*obj_dual) * hxy * dx + hyy * dy));
   }
 
   return SLEQP_OKAY;
@@ -115,8 +117,8 @@ log_rosenbrock_setup()
   const double inf = sleqp_infinity();
 
   SleqpFuncCallbacks callbacks = {.set_value = log_rosenbrock_set,
-                                  .func_val  = log_rosenbrock_val,
-                                  .func_grad = log_rosenbrock_grad,
+                                  .obj_val   = log_rosenbrock_obj_val,
+                                  .obj_grad  = log_rosenbrock_obj_grad,
                                   .cons_val  = NULL,
                                   .cons_jac  = NULL,
                                   .hess_prod = log_rosenbrock_hess_prod,

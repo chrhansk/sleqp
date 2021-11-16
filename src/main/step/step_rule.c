@@ -139,7 +139,7 @@ sleqp_step_rule_create_default(SleqpStepRule** star,
                                const SleqpOptions* options)
 {
   SLEQP_STEP_RULE step_rule
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_STEP_RULE);
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_STEP_RULE);
 
   if (step_rule == SLEQP_STEP_RULE_DIRECT)
   {

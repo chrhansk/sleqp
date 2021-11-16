@@ -122,7 +122,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
   const double one = 1.;
 
   const double stat_eps
-    = sleqp_params_get(solver->params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_STATIONARITY_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
 
@@ -131,8 +131,8 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 
   *tr_dual = SLEQP_NONE;
 
-  const double eps      = sleqp_params_get(params, SLEQP_PARAM_EPS);
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double eps      = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -357,7 +357,7 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
 {
   SleqpSteihaugSolver* solver = NULL;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   SLEQP_CALL(sleqp_malloc(&solver));
 
@@ -370,7 +370,7 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
   solver->params = params;
 
   solver->max_iter
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d, num_variables));
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->Bd, num_variables));

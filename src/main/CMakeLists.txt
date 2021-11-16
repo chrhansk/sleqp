@@ -14,6 +14,7 @@ set(COMMON_SRC
   dual_estimation.c
   dyn.c
   eqp.c
+  factorization/factorization.c
   feas.c
   func.c
   gauss_newton.c
@@ -58,7 +59,6 @@ set(COMMON_SRC
   solver/print.c
   solver/solve.c
   solver/state.c
-  sparse/sparse_factorization.c
   sparse/sparse_matrix.c
   sparse/sparse_vec.c
   step/step_rule.c

@@ -11,7 +11,7 @@
 #include "aug_jac/standard_aug_jac.h"
 #include "cauchy/standard_cauchy.h"
 
-#include "sparse/sparse_factorization_umfpack.h"
+#include "factorization/factorization.h"
 
 #include "test_common.h"
 
@@ -43,22 +43,22 @@ newton_setup()
                                           quadfunc_cons_lb,
                                           quadfunc_cons_ub));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadfunc_x));
 
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
   ASSERT_CALL(sleqp_working_set_reset(working_set));
 
   int num_lp_variables   = num_variables + 2 * num_constraints;
   int num_lp_constraints = num_constraints;
 
-  ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
-                                                 num_lp_variables,
-                                                 num_lp_constraints,
-                                                 params,
-                                                 options));
+  ASSERT_CALL(sleqp_lpi_create_default(&lp_interface,
+                                       num_lp_variables,
+                                       num_lp_constraints,
+                                       params,
+                                       options));
 
   ASSERT_CALL(
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_INIT, NULL));
@@ -96,10 +96,10 @@ START_TEST(newton_wide_step)
   SleqpSparseVec* expected_step;
   SleqpSparseVec* actual_step;
 
-  SleqpSparseFactorization* factorization;
+  SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 2));
 
@@ -111,8 +111,7 @@ START_TEST(newton_wide_step)
   double penalty_parameter = 1.;
   double trust_radius      = 10.;
 
-  ASSERT_CALL(
-    sleqp_sparse_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
 
   // create with empty active set
   ASSERT_CALL(
@@ -137,10 +136,9 @@ START_TEST(newton_wide_step)
   // we use the default (empty) active set for the Newton step,
   // trust region size should be large to ensure that
   // the solution is that of the unrestricted step
-  ASSERT_CALL(
-    sleqp_eqp_solver_compute_step(newton_solver,
-                                  sleqp_iterate_get_cons_dual(iterate),
-                                  actual_step));
+  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
+                                            sleqp_iterate_cons_dual(iterate),
+                                            actual_step));
 
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
@@ -150,7 +148,7 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_factorization_release(&factorization));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&actual_step));
 
@@ -166,10 +164,10 @@ START_TEST(newton_small_step)
   SleqpSparseVec* expected_step;
   SleqpSparseVec* actual_step;
 
-  SleqpSparseFactorization* factorization;
+  SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 2));
 
@@ -181,8 +179,7 @@ START_TEST(newton_small_step)
   double penalty_parameter = 1.;
   double trust_radius      = 1.;
 
-  ASSERT_CALL(
-    sleqp_sparse_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
 
   // create with empty active set
   ASSERT_CALL(
@@ -207,10 +204,9 @@ START_TEST(newton_small_step)
   // we use the default (empty) active set for the Newton step,
   // trust region size should be so small that
   // the solution is on the boundary of the feasible set
-  ASSERT_CALL(
-    sleqp_eqp_solver_compute_step(newton_solver,
-                                  sleqp_iterate_get_cons_dual(iterate),
-                                  actual_step));
+  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
+                                            sleqp_iterate_cons_dual(iterate),
+                                            actual_step));
 
   ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
 
@@ -220,7 +216,7 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_factorization_release(&factorization));
 
   ASSERT_CALL(sleqp_sparse_vector_free(&actual_step));
 

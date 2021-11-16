@@ -14,14 +14,14 @@ class Func:
     def set_value(self, v, reason):
       self.v = v
 
-    def func_val(self):
+    def obj_val(self):
       n = np.linalg.norm(self.v)
       return .5 * n*n
 
-    def func_grad(self):
+    def obj_grad(self):
       return self.v
 
-    def hess_prod(self, func_dual, direction, cons_dual):
+    def hess_prod(self, obj_dual, direction, cons_dual):
       return direction
 
 

@@ -30,8 +30,8 @@ solver_convert_primal(SleqpSolver* solver,
                       const SleqpSparseVec* source,
                       SleqpSparseVec* target)
 {
-  assert(source->dim == sleqp_problem_num_variables(solver->original_problem));
-  assert(target->dim == sleqp_problem_num_variables(solver->problem));
+  assert(source->dim == sleqp_problem_num_vars(solver->original_problem));
+  assert(target->dim == sleqp_problem_num_vars(solver->problem));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(source, solver->scaled_primal));
 
@@ -138,8 +138,8 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
   SLEQP_CALL(sleqp_problem_create(&solver->scaled_problem,
                                   func,
                                   params,
-                                  sleqp_problem_var_lb(scaled_problem),
-                                  sleqp_problem_var_ub(scaled_problem),
+                                  sleqp_problem_vars_lb(scaled_problem),
+                                  sleqp_problem_vars_ub(scaled_problem),
                                   sleqp_problem_general_lb(scaled_problem),
                                   sleqp_problem_general_ub(scaled_problem),
                                   sleqp_problem_linear_coeffs(scaled_problem),
@@ -147,8 +147,8 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
                                   sleqp_problem_linear_ub(scaled_problem)));
 
   const bool enable_preprocesor
-    = sleqp_options_get_bool(solver->options,
-                             SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR);
+    = sleqp_options_bool_value(solver->options,
+                               SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR);
 
   if (enable_preprocesor)
   {
@@ -190,8 +190,8 @@ solver_create_iterates(SleqpSolver* solver, SleqpSparseVec* primal)
   SleqpProblem* original_problem = solver->original_problem;
 
   {
-    SleqpSparseVec* var_lb = sleqp_problem_var_lb(original_problem);
-    SleqpSparseVec* var_ub = sleqp_problem_var_ub(original_problem);
+    SleqpSparseVec* var_lb = sleqp_problem_vars_lb(original_problem);
+    SleqpSparseVec* var_ub = sleqp_problem_vars_ub(original_problem);
 
     if (!sleqp_sparse_vector_is_boxed(primal, var_lb, var_ub))
     {
@@ -236,7 +236,7 @@ on_problem_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
 
   if (solver->quasi_newton)
   {
-    SleqpSparseVec* multipliers = sleqp_iterate_get_cons_dual(iterate);
+    SleqpSparseVec* multipliers = sleqp_iterate_cons_dual(iterate);
 
     SLEQP_CALL(sleqp_quasi_newton_push(solver->quasi_newton,
                                        iterate,
@@ -282,7 +282,7 @@ sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_options_capture(options));
   solver->options = options;
 
-  const int num_original_variables = sleqp_problem_num_variables(problem);
+  const int num_original_variables = sleqp_problem_num_vars(problem);
 
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
@@ -294,7 +294,7 @@ sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(solver_create_problem(solver, problem));
 
-  const int num_variables = sleqp_problem_num_variables(solver->problem);
+  const int num_variables = sleqp_problem_num_vars(solver->problem);
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->scaled_primal,
                                               num_original_variables));
@@ -385,8 +385,8 @@ sleqp_solver_info(const SleqpSolver* solver)
   {
     print_solver(fact_info,
                  INFO_BUF_SIZE,
-                 sleqp_sparse_factorization_get_name(solver->factorization),
-                 sleqp_sparse_factorization_get_version(solver->factorization));
+                 sleqp_factorization_get_name(solver->factorization),
+                 sleqp_factorization_get_version(solver->factorization));
   }
   else
   {
@@ -410,7 +410,7 @@ sleqp_solver_info(const SleqpSolver* solver)
 }
 
 SLEQP_RETCODE
-sleqp_solver_get_solution(SleqpSolver* solver, SleqpIterate** iterate)
+sleqp_solver_solution(SleqpSolver* solver, SleqpIterate** iterate)
 {
   SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
 
@@ -420,13 +420,13 @@ sleqp_solver_get_solution(SleqpSolver* solver, SleqpIterate** iterate)
 }
 
 SLEQP_RETCODE
-sleqp_solver_get_violated_constraints(SleqpSolver* solver,
-                                      SleqpIterate* iterate,
-                                      int* violated_constraints,
-                                      int* num_violated_constraints)
+sleqp_solver_violated_constraints(SleqpSolver* solver,
+                                  SleqpIterate* iterate,
+                                  int* violated_constraints,
+                                  int* num_violated_constraints)
 {
   const double feas_eps
-    = sleqp_params_get(solver->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   SLEQP_CALL(sleqp_iterate_get_violated_constraints(solver->original_problem,
                                                     iterate,
@@ -438,7 +438,7 @@ sleqp_solver_get_violated_constraints(SleqpSolver* solver,
 }
 
 SLEQP_STATUS
-sleqp_solver_get_status(const SleqpSolver* solver)
+sleqp_solver_status(const SleqpSolver* solver)
 {
   return solver->status;
 }
@@ -467,13 +467,13 @@ sleqp_solver_abort(SleqpSolver* solver)
 }
 
 int
-sleqp_solver_get_iterations(const SleqpSolver* solver)
+sleqp_solver_iterations(const SleqpSolver* solver)
 {
   return solver->iterations;
 }
 
 double
-sleqp_solver_get_elapsed_seconds(const SleqpSolver* solver)
+sleqp_solver_elapsed_seconds(const SleqpSolver* solver)
 {
   return sleqp_timer_get_ttl(solver->elapsed_timer);
 }

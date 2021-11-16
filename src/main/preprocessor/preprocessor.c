@@ -69,19 +69,17 @@ compute_cons_counts(SleqpPreprocessor* preprocessor)
 {
   SleqpProblem* problem = preprocessor->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear_constraints
-    = sleqp_problem_num_linear_constraints(problem);
+  const int num_variables          = sleqp_problem_num_vars(problem);
+  const int num_linear_constraints = sleqp_problem_num_lin_cons(problem);
 
   const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs)
-         == num_linear_constraints);
-  assert(sleqp_sparse_matrix_get_num_cols(linear_coeffs) == num_variables);
+  assert(sleqp_sparse_matrix_num_rows(linear_coeffs) == num_linear_constraints);
+  assert(sleqp_sparse_matrix_num_cols(linear_coeffs) == num_variables);
 
-  double* linear_data = sleqp_sparse_matrix_get_data(linear_coeffs);
-  int* linear_rows    = sleqp_sparse_matrix_get_rows(linear_coeffs);
-  int* linear_cols    = sleqp_sparse_matrix_get_cols(linear_coeffs);
+  double* linear_data = sleqp_sparse_matrix_data(linear_coeffs);
+  int* linear_rows    = sleqp_sparse_matrix_rows(linear_coeffs);
+  int* linear_cols    = sleqp_sparse_matrix_cols(linear_coeffs);
 
   for (int i = 0; i < num_linear_constraints; ++i)
   {
@@ -177,8 +175,8 @@ compute_variable_bounds(SleqpPreprocessor* preprocessor)
 {
   SleqpProblem* problem = preprocessor->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear    = sleqp_problem_num_linear_constraints(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
+  const int num_linear    = sleqp_problem_num_lin_cons(problem);
 
   for (int j = 0; j < num_variables; ++j)
   {
@@ -188,12 +186,12 @@ compute_variable_bounds(SleqpPreprocessor* preprocessor)
 
   const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs) == num_linear);
-  assert(sleqp_sparse_matrix_get_num_cols(linear_coeffs) == num_variables);
+  assert(sleqp_sparse_matrix_num_rows(linear_coeffs) == num_linear);
+  assert(sleqp_sparse_matrix_num_cols(linear_coeffs) == num_variables);
 
-  double* linear_data = sleqp_sparse_matrix_get_data(linear_coeffs);
-  int* linear_rows    = sleqp_sparse_matrix_get_rows(linear_coeffs);
-  int* linear_cols    = sleqp_sparse_matrix_get_cols(linear_coeffs);
+  double* linear_data = sleqp_sparse_matrix_data(linear_coeffs);
+  int* linear_rows    = sleqp_sparse_matrix_rows(linear_coeffs);
+  int* linear_cols    = sleqp_sparse_matrix_cols(linear_coeffs);
 
   for (int col = 0; col < num_variables; ++col)
   {
@@ -262,17 +260,17 @@ compute_linear_bounds(SleqpPreprocessor* preprocessor)
 {
   SleqpProblem* problem = preprocessor->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear    = sleqp_problem_num_linear_constraints(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
+  const int num_linear    = sleqp_problem_num_lin_cons(problem);
 
   const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  assert(sleqp_sparse_matrix_get_num_rows(linear_coeffs) == num_linear);
-  assert(sleqp_sparse_matrix_get_num_cols(linear_coeffs) == num_variables);
+  assert(sleqp_sparse_matrix_num_rows(linear_coeffs) == num_linear);
+  assert(sleqp_sparse_matrix_num_cols(linear_coeffs) == num_variables);
 
-  double* linear_data = sleqp_sparse_matrix_get_data(linear_coeffs);
-  int* linear_rows    = sleqp_sparse_matrix_get_rows(linear_coeffs);
-  int* linear_cols    = sleqp_sparse_matrix_get_cols(linear_coeffs);
+  double* linear_data = sleqp_sparse_matrix_data(linear_coeffs);
+  int* linear_rows    = sleqp_sparse_matrix_rows(linear_coeffs);
+  int* linear_cols    = sleqp_sparse_matrix_cols(linear_coeffs);
 
   const double inf = sleqp_infinity();
 
@@ -376,15 +374,14 @@ check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor)
   SleqpProblem* problem = preprocessor->original_problem;
 
   const double feas_eps
-    = sleqp_params_get(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
   SleqpConstraintState* linear_cons_states
     = sleqp_preprocessing_state_linear_constraint_states(state);
 
-  const int num_linear_constraints
-    = sleqp_problem_num_linear_constraints(problem);
+  const int num_linear_constraints = sleqp_problem_num_lin_cons(problem);
 
   for (int i = 0; i < num_linear_constraints; ++i)
   {
@@ -476,9 +473,9 @@ check_for_variable_infeasibility(SleqpPreprocessor* preprocessor)
     = sleqp_preprocessing_state_variable_states(state);
 
   const double feas_eps
-    = sleqp_params_get(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   for (int j = 0; j < num_variables; ++j)
   {
@@ -524,7 +521,7 @@ fix_variables_by_bounds(SleqpPreprocessor* preprocessor)
 
   SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   for (int j = 0; j < num_variables; ++j)
   {
@@ -548,7 +545,7 @@ remove_redundant_constraints(SleqpPreprocessor* preprocessor)
   SleqpProblem* problem = preprocessor->original_problem;
 
   const double feas_eps
-    = sleqp_params_get(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_linear_lb(problem),
                                         preprocessor->linear_lb));
@@ -561,8 +558,7 @@ remove_redundant_constraints(SleqpPreprocessor* preprocessor)
   SleqpConstraintState* linear_cons_states
     = sleqp_preprocessing_state_linear_constraint_states(state);
 
-  const int num_linear_constraints
-    = sleqp_problem_num_linear_constraints(problem);
+  const int num_linear_constraints = sleqp_problem_num_lin_cons(problem);
 
   for (int i = 0; i < num_linear_constraints; ++i)
   {
@@ -652,10 +648,9 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   preprocessor->original_problem = problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear_constraints
-    = sleqp_problem_num_linear_constraints(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables          = sleqp_problem_num_vars(problem);
+  const int num_linear_constraints = sleqp_problem_num_lin_cons(problem);
+  const int num_constraints        = sleqp_problem_num_cons(problem);
 
   SLEQP_CALL(sleqp_problem_capture(preprocessor->original_problem));
 
@@ -693,10 +688,10 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
   SLEQP_CALL(
     sleqp_sparse_vector_create_empty(&preprocessor->cache, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_var_lb(problem),
+  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_vars_lb(problem),
                                         preprocessor->var_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_var_ub(problem),
+  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_vars_ub(problem),
                                         preprocessor->var_ub));
 
   SLEQP_CALL(fix_variables_by_bounds(preprocessor));

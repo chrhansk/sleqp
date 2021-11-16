@@ -60,19 +60,19 @@ sleqp_solver_solve(SleqpSolver* solver,
                    double time_limit);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_solver_get_real_state(const SleqpSolver* solver,
-                            SLEQP_SOLVER_STATE_REAL state,
-                            double* value);
+sleqp_solver_real_state(const SleqpSolver* solver,
+                        SLEQP_SOLVER_STATE_REAL state,
+                        double* value);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_solver_get_int_state(const SleqpSolver* solver,
-                           SLEQP_SOLVER_STATE_INT state,
-                           int* value);
+sleqp_solver_int_state(const SleqpSolver* solver,
+                       SLEQP_SOLVER_STATE_INT state,
+                       int* value);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_solver_get_vec_state(const SleqpSolver* solver,
-                           SLEQP_SOLVER_STATE_VEC value,
-                           SleqpSparseVec* result);
+sleqp_solver_vec_state(const SleqpSolver* solver,
+                       SLEQP_SOLVER_STATE_VEC value,
+                       SleqpSparseVec* result);
 
 SLEQP_EXPORT
 const char*
@@ -85,7 +85,7 @@ sleqp_solver_info(const SleqpSolver* solver);
  *
  **/
 SLEQP_EXPORT SLEQP_STATUS
-sleqp_solver_get_status(const SleqpSolver* solver);
+sleqp_solver_status(const SleqpSolver* solver);
 
 /**
  * Resets the solvers internal state
@@ -108,13 +108,13 @@ sleqp_solver_abort(SleqpSolver* solver);
  *
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_solver_get_solution(SleqpSolver* solver, SleqpIterate** iterate);
+sleqp_solver_solution(SleqpSolver* solver, SleqpIterate** iterate);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_solver_get_violated_constraints(SleqpSolver* solver,
-                                      SleqpIterate* iterate,
-                                      int* violated_constraints,
-                                      int* num_violated_constraints);
+sleqp_solver_violated_constraints(SleqpSolver* solver,
+                                  SleqpIterate* iterate,
+                                  int* violated_constraints,
+                                  int* num_violated_constraints);
 
 /**
  * Returns the number of iterations performed during the last call to @ref
@@ -125,7 +125,7 @@ sleqp_solver_get_violated_constraints(SleqpSolver* solver,
  **/
 SLEQP_EXPORT
 int
-sleqp_solver_get_iterations(const SleqpSolver* solver);
+sleqp_solver_iterations(const SleqpSolver* solver);
 
 /**
  * Returns the number of seconds elapsed during the last call to @ref
@@ -136,7 +136,7 @@ sleqp_solver_get_iterations(const SleqpSolver* solver);
  **/
 SLEQP_EXPORT
 double
-sleqp_solver_get_elapsed_seconds(const SleqpSolver* solver);
+sleqp_solver_elapsed_seconds(const SleqpSolver* solver);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_solver_add_callback(SleqpSolver* solver,

@@ -44,14 +44,14 @@ wachbieg_set(SleqpFunc* func,
              SleqpSparseVec* x,
              SLEQP_VALUE_REASON reason,
              bool* reject,
-             int* func_grad_nnz,
+             int* obj_grad_nnz,
              int* cons_val_nnz,
              int* cons_jac_nnz,
              void* func_data)
 {
-  *func_grad_nnz = wachbieg_num_variables;
-  *cons_val_nnz  = wachbieg_num_constraints;
-  *cons_jac_nnz  = wachbieg_jac_nnz;
+  *obj_grad_nnz = wachbieg_num_variables;
+  *cons_val_nnz = wachbieg_num_constraints;
+  *cons_jac_nnz = wachbieg_jac_nnz;
 
   wachbieg_data.x[0] = 0;
   wachbieg_data.x[1] = 0;
@@ -70,19 +70,19 @@ wachbieg_set(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-wachbieg_val(SleqpFunc* func, double* func_val, void* func_data)
+wachbieg_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   const double x0 = wachbieg_data.x[0];
 
-  *func_val = x0;
+  *obj_val = x0;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-wachbieg_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+wachbieg_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 1.));
 
   return SLEQP_OKAY;
 }
@@ -131,7 +131,7 @@ wachbieg_cons_jac(SleqpFunc* func,
 
 static SLEQP_RETCODE
 wachbieg_hess_prod(SleqpFunc* func,
-                   const double* func_dual,
+                   const double* obj_dual,
                    const SleqpSparseVec* direction,
                    const SleqpSparseVec* cons_duals,
                    SleqpSparseVec* product,
@@ -153,8 +153,8 @@ wachbieg_setup()
   const double inf = sleqp_infinity();
 
   SleqpFuncCallbacks callbacks = {.set_value = wachbieg_set,
-                                  .func_val  = wachbieg_val,
-                                  .func_grad = wachbieg_grad,
+                                  .obj_val   = wachbieg_obj_val,
+                                  .obj_grad  = wachbieg_obj_grad,
                                   .cons_val  = wachbieg_cons_val,
                                   .cons_jac  = wachbieg_cons_jac,
                                   .hess_prod = wachbieg_hess_prod,

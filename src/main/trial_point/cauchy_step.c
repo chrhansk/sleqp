@@ -10,7 +10,7 @@ estimate_dual_values(SleqpTrialPointSolver* solver, SleqpIterate* iterate)
   SleqpOptions* options = solver->options;
 
   SLEQP_DUAL_ESTIMATION_TYPE estimation_type
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE);
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE);
 
   if (estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LSQ)
   {
@@ -30,7 +30,7 @@ estimate_dual_values(SleqpTrialPointSolver* solver, SleqpIterate* iterate)
                                                    solver->dense_cache,
                                                    &residuum));
 
-    const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+    const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
     SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -58,15 +58,15 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
   SleqpIterate* iterate = solver->iterate;
 
   const bool enable_restoration
-    = sleqp_options_get_bool(solver->options,
-                             SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE);
+    = sleqp_options_bool_value(solver->options,
+                               SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE);
 
   SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
                                       iterate,
                                       solver->lp_trust_radius));
 
   SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
-                                sleqp_iterate_get_func_grad(iterate),
+                                sleqp_iterate_obj_grad(iterate),
                                 solver->penalty_parameter,
                                 SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
@@ -114,7 +114,7 @@ compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
 {
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -146,14 +146,14 @@ compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
                                              cauchy_merit_value));
   }
 
-  SLEQP_CALL(sleqp_working_set_copy(sleqp_iterate_get_working_set(iterate),
+  SLEQP_CALL(sleqp_working_set_copy(sleqp_iterate_working_set(iterate),
                                     solver->parametric_original_working_set));
 
   SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data, iterate));
 
   // Reconstruct the augmented Jacobian if required
   if (!sleqp_working_set_eq(solver->parametric_original_working_set,
-                            sleqp_iterate_get_working_set(iterate)))
+                            sleqp_iterate_working_set(iterate)))
   {
     SLEQP_CALL(sleqp_aug_jac_set_iterate(solver->aug_jac, iterate));
   }
@@ -174,11 +174,11 @@ compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
   {
     double actual_quadratic_merit_value;
 
-    double func_dual = 1.;
+    double obj_dual = 1.;
 
     SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                      iterate,
-                                     &func_dual,
+                                     &obj_dual,
                                      solver->cauchy_step,
                                      solver->multipliers,
                                      solver->penalty_parameter,
@@ -203,7 +203,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -311,8 +311,8 @@ sleqp_trial_point_solver_compute_cauchy_step(SleqpTrialPointSolver* solver,
                                              bool* full_step)
 {
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
-    = sleqp_options_get_int(solver->options,
-                            SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+    = sleqp_options_int_value(solver->options,
+                              SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
 
   SleqpTimer* timer = solver->elapsed_timer;
   double time_limit = solver->time_limit;

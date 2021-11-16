@@ -31,13 +31,13 @@ typedef enum
 } SLEQP_FUNC_TYPE;
 
 /**
- * Sets the current input vector
+ * Sets the current primal point
  *
  * @param[in]     func            The function
  * @param[in]     value           The value
  * @param[in]     reason          The reason for setting \f$ x \f$
  * @param[out]    reject          Whether to manually reject the step
- * @param[out]    func_grad_nnz   The number of nonzeros of the function
+ * @param[out]    obj_grad_nnz    The number of nonzeros of the objective
  *gradient \f$ \nabla f(x) \f$
  * @param[out]    cons_val_nnz    The number of nonzeros of the constraint
  *function \f$ c(x) \f$
@@ -49,49 +49,35 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
                                         SleqpSparseVec* value,
                                         SLEQP_VALUE_REASON reason,
                                         bool* reject,
-                                        int* func_grad_nnz,
+                                        int* obj_grad_nnz,
                                         int* cons_val_nnz,
                                         int* cons_jac_nnz,
                                         void* func_data);
 
 /**
- * Evaluates the function and its gradient at the current input vector
+ * Evaluates the objective at the current primal point
  *
  * @param[in]     func            The function
- * @param[in]     cons_indices    The indices of the constraint function
- *                                to be evaluated
- * @param[out]    func_val        The function value \f$ f(x) \f$
- * @param[out]    func_grad       The function gradient \f$ \nabla f(x) \f$
- * @param[out]    cons_val        The value of the constraint function \f$ c(x)
- *\f$
- * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
+ * @param[out]    obj_val         The objective value \f$ f(x) \f$
  * @param[in,out] func_data       The function data
  **/
+typedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_VAL)(SleqpFunc* func,
+                                            double* obj_val,
+                                            void* func_data);
 
 /**
- * Evaluates the function at the current input vector
+ * Evaluates the objective gradient at the current primal point
  *
  * @param[in]     func            The function
- * @param[out]    func_val        The function value \f$ f(x) \f$
+ * @param[out]    obj_grad        The objective gradient \f$ \nabla f(x) \f$
  * @param[in,out] func_data       The function data
  **/
-typedef SLEQP_RETCODE (*SLEQP_FUNC_VAL)(SleqpFunc* func,
-                                        double* func_val,
-                                        void* func_data);
+typedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_GRAD)(SleqpFunc* func,
+                                             SleqpSparseVec* obj_grad,
+                                             void* func_data);
 
 /**
- * Evaluates the function gradient at the current input vector
- *
- * @param[in]     func            The function
- * @param[out]    func_grad       The function gradient \f$ \nabla f(x) \f$
- * @param[in,out] func_data       The function data
- **/
-typedef SLEQP_RETCODE (*SLEQP_FUNC_GRAD)(SleqpFunc* func,
-                                         SleqpSparseVec* func_grad,
-                                         void* func_data);
-
-/**
- * Evaluates the constraints at the current input vector
+ * Evaluates the constraints at the current primal point
  *
  * @param[in]     func            The function
  * @param[in]     cons_indices    The indices of the constraint function
@@ -106,7 +92,7 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
                                              void* func_data);
 
 /**
- * Evaluates the constraing Jacobian at the current input vector
+ * Evaluates the constraing Jacobian at the current primal point
  *
  * @param[in]     func            The function
  * @param[in]     cons_indices    The indices of the constraint function
@@ -135,19 +121,19 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
  * \f]
  *
  * @param[in]     func              The function
- * @param[in]     func_dual         The value \f$ \lambda_0 \f$
+ * @param[in]     obj_dual          The value \f$ \lambda_0 \f$
  * @param[in]     direction         The direction \f$ d \f$
  * @param[in]     cons_duals        The values \f$ \lambda \f$
  * @param[out]    product           The resulting product
  * @param[in,out] func_data         The function data
  *
  **/
-typedef SLEQP_RETCODE (*SLEQP_HESS_PROD)(SleqpFunc* func,
-                                         const double* func_dual,
-                                         const SleqpSparseVec* direction,
-                                         const SleqpSparseVec* cons_duals,
-                                         SleqpSparseVec* product,
-                                         void* func_data);
+typedef SLEQP_RETCODE (*SLEQP_FUNC_HESS_PROD)(SleqpFunc* func,
+                                              const double* obj_dual,
+                                              const SleqpSparseVec* direction,
+                                              const SleqpSparseVec* cons_duals,
+                                              SleqpSparseVec* product,
+                                              void* func_data);
 
 /**
  * Cleans up any allocated memory stored in the function data.
@@ -160,11 +146,11 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_FREE)(void* func_data);
 typedef struct
 {
   SLEQP_FUNC_SET set_value;
-  SLEQP_FUNC_VAL func_val;
-  SLEQP_FUNC_GRAD func_grad;
+  SLEQP_FUNC_OBJ_VAL obj_val;
+  SLEQP_FUNC_OBJ_GRAD obj_grad;
   SLEQP_FUNC_CONS_VAL cons_val;
   SLEQP_FUNC_CONS_JAC cons_jac;
-  SLEQP_HESS_PROD hess_prod;
+  SLEQP_FUNC_HESS_PROD hess_prod;
   SLEQP_FUNC_FREE func_free;
 } SleqpFuncCallbacks;
 
@@ -188,13 +174,13 @@ sleqp_func_create(SleqpFunc** fstar,
  * Returns the number of variables \f$ n \f$.
  **/
 SLEQP_EXPORT int
-sleqp_func_get_num_variables(const SleqpFunc* func);
+sleqp_func_num_vars(const SleqpFunc* func);
 
 /**
  * Returns the number of constraints \f$ m \f$.
  **/
 SLEQP_EXPORT int
-sleqp_func_get_num_constraints(const SleqpFunc* func);
+sleqp_func_num_cons(const SleqpFunc* func);
 
 /**
  * Sets the callbacks of this function to the specified ones
@@ -209,8 +195,8 @@ sleqp_func_set_callbacks(SleqpFunc* func, SleqpFuncCallbacks* callbacks);
  *
  **/
 SLEQP_EXPORT
-SleqpHessianStruct*
-sleqp_func_get_hess_struct(SleqpFunc* func);
+SleqpHessStruct*
+sleqp_func_hess_struct(SleqpFunc* func);
 
 /**
  * Returns the function data associated with the given function.

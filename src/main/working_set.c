@@ -38,8 +38,8 @@ sleqp_working_set_create(SleqpWorkingSet** star, SleqpProblem* problem)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SleqpWorkingSet* working_set = *star;
 
@@ -116,20 +116,19 @@ sleqp_working_set_eq(SleqpWorkingSet* first, SleqpWorkingSet* second)
 }
 
 SLEQP_RETCODE
-sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
-                               int index,
-                               SLEQP_ACTIVE_STATE state)
+sleqp_working_set_add_var(SleqpWorkingSet* working_set,
+                          int index,
+                          SLEQP_ACTIVE_STATE state)
 {
   SleqpProblem* problem = working_set->problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   assert(index >= 0);
   assert(index < num_variables);
   assert(working_set->num_active_constraints == 0);
 
-  assert(sleqp_working_set_get_variable_state(working_set, index)
-         == SLEQP_INACTIVE);
+  assert(sleqp_working_set_var_state(working_set, index) == SLEQP_INACTIVE);
   assert(state != SLEQP_INACTIVE);
 
   if (sleqp_working_set_num_active_cons(working_set) != 0)
@@ -152,19 +151,18 @@ sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
 }
 
 SLEQP_RETCODE
-sleqp_working_set_add_constraint(SleqpWorkingSet* working_set,
-                                 int index,
-                                 SLEQP_ACTIVE_STATE state)
+sleqp_working_set_add_cons(SleqpWorkingSet* working_set,
+                           int index,
+                           SLEQP_ACTIVE_STATE state)
 {
   SleqpProblem* problem = working_set->problem;
 
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   assert(index >= 0);
   assert(index < num_constraints);
 
-  assert(sleqp_working_set_get_constraint_state(working_set, index)
-         == SLEQP_INACTIVE);
+  assert(sleqp_working_set_cons_state(working_set, index) == SLEQP_INACTIVE);
   assert(state != SLEQP_INACTIVE);
 
   const int size = sleqp_working_set_size(working_set);
@@ -189,17 +187,16 @@ sleqp_working_set_add(SleqpWorkingSet* working_set,
 {
   if (constraint)
   {
-    return sleqp_working_set_add_constraint(working_set, index, state);
+    return sleqp_working_set_add_cons(working_set, index, state);
   }
   else
   {
-    return sleqp_working_set_add_variable(working_set, index, state);
+    return sleqp_working_set_add_var(working_set, index, state);
   }
 }
 
 int
-sleqp_working_set_get_constraint_index(const SleqpWorkingSet* working_set,
-                                       int index)
+sleqp_working_set_cons_index(const SleqpWorkingSet* working_set, int index)
 {
   assert(index < working_set->num_constraints);
 
@@ -207,8 +204,7 @@ sleqp_working_set_get_constraint_index(const SleqpWorkingSet* working_set,
 }
 
 int
-sleqp_working_set_get_variable_index(const SleqpWorkingSet* working_set,
-                                     int index)
+sleqp_working_set_var_index(const SleqpWorkingSet* working_set, int index)
 {
   assert(index < working_set->num_variables);
 
@@ -216,7 +212,7 @@ sleqp_working_set_get_variable_index(const SleqpWorkingSet* working_set,
 }
 
 int
-sleqp_working_set_get_content(const SleqpWorkingSet* working_set, int index)
+sleqp_working_set_content(const SleqpWorkingSet* working_set, int index)
 {
   return working_set->content_indices[index];
 }
@@ -234,37 +230,36 @@ sleqp_working_set_constraint_states(const SleqpWorkingSet* working_set)
 }
 
 SLEQP_ACTIVE_STATE
-sleqp_working_set_get_variable_state(const SleqpWorkingSet* working_set, int j)
+sleqp_working_set_var_state(const SleqpWorkingSet* working_set, int j)
 {
   assert(j < working_set->num_variables);
   return working_set->variable_states[j];
 }
 
 SLEQP_ACTIVE_STATE
-sleqp_working_set_get_constraint_state(const SleqpWorkingSet* working_set,
-                                       int i)
+sleqp_working_set_cons_state(const SleqpWorkingSet* working_set, int i)
 {
   assert(i < working_set->num_constraints);
   return working_set->constraint_states[i];
 }
 
 SLEQP_ACTIVE_STATE
-sleqp_working_set_get_state(const SleqpWorkingSet* working_set,
-                            bool constraint,
-                            int index)
+sleqp_working_set_state(const SleqpWorkingSet* working_set,
+                        bool constraint,
+                        int index)
 {
   if (constraint)
   {
-    return sleqp_working_set_get_constraint_state(working_set, index);
+    return sleqp_working_set_cons_state(working_set, index);
   }
   else
   {
-    return sleqp_working_set_get_variable_state(working_set, index);
+    return sleqp_working_set_var_state(working_set, index);
   }
 }
 
 SleqpProblem*
-sleqp_working_set_get_problem(const SleqpWorkingSet* working_set)
+sleqp_working_set_problem(const SleqpWorkingSet* working_set)
 {
   return working_set->problem;
 }
@@ -293,8 +288,8 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 {
   SleqpProblem* problem = working_set->problem;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   const int working_set_size = sleqp_working_set_size(working_set);
 
@@ -314,8 +309,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 
     for (int j = 0; j < num_variables; ++j)
     {
-      if (sleqp_working_set_get_variable_state(working_set, j)
-          != SLEQP_INACTIVE)
+      if (sleqp_working_set_var_state(working_set, j) != SLEQP_INACTIVE)
       {
         ++num_active_vars;
       }
@@ -323,8 +317,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 
     for (int i = 0; i < num_constraints; ++i)
     {
-      if (sleqp_working_set_get_constraint_state(working_set, i)
-          != SLEQP_INACTIVE)
+      if (sleqp_working_set_cons_state(working_set, i) != SLEQP_INACTIVE)
       {
         ++num_active_cons;
       }
@@ -342,7 +335,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 
     for (int j = 0; j < num_variables; ++j)
     {
-      int j_idx = sleqp_working_set_get_variable_index(working_set, j);
+      int j_idx = sleqp_working_set_var_index(working_set, j);
 
       if (j_idx == SLEQP_NONE)
       {
@@ -359,7 +352,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 
       for (int k = 0; k < num_variables; ++k)
       {
-        int k_idx = sleqp_working_set_get_variable_index(working_set, k);
+        int k_idx = sleqp_working_set_var_index(working_set, k);
 
         // ensure indices are unique
         if ((j == k) != (j_idx == k_idx))
@@ -380,7 +373,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 
     for (int i = 0; i < num_constraints; ++i)
     {
-      int i_idx = sleqp_working_set_get_constraint_index(working_set, i);
+      int i_idx = sleqp_working_set_cons_index(working_set, i);
 
       if (i_idx == SLEQP_NONE)
       {
@@ -396,7 +389,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 
       for (int k = 0; k < num_constraints; ++k)
       {
-        int k_idx = sleqp_working_set_get_constraint_index(working_set, k);
+        int k_idx = sleqp_working_set_cons_index(working_set, k);
 
         // ensure indices are unique
         if ((i == k) != (i_idx == k_idx))
@@ -414,7 +407,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 
   for (int k = 0; k < working_set_size; ++k)
   {
-    int k_idx = sleqp_working_set_get_content(working_set, k);
+    int k_idx = sleqp_working_set_content(working_set, k);
 
     if (k_idx < 0 || k_idx >= (num_variables + num_constraints))
     {
@@ -425,8 +418,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
     {
       const int j = k_idx;
 
-      if (sleqp_working_set_get_variable_state(working_set, j)
-          == SLEQP_INACTIVE)
+      if (sleqp_working_set_var_state(working_set, j) == SLEQP_INACTIVE)
       {
         return false;
       }
@@ -435,8 +427,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
     {
       const int i = k_idx - num_variables;
 
-      if (sleqp_working_set_get_constraint_state(working_set, i)
-          == SLEQP_INACTIVE)
+      if (sleqp_working_set_cons_state(working_set, i) == SLEQP_INACTIVE)
       {
         return false;
       }
@@ -444,7 +435,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 
     for (int l = 0; l < working_set_size; ++l)
     {
-      int l_idx = sleqp_working_set_get_content(working_set, l);
+      int l_idx = sleqp_working_set_content(working_set, l);
 
       // ensure indices are unique
       if ((l == k) != (l_idx == k_idx))
@@ -507,7 +498,7 @@ sleqp_working_set_supports_cons_dual(const SleqpWorkingSet* working_set,
 {
   SleqpProblem* problem = working_set->problem;
 
-  sleqp_assert(cons_dual->dim == sleqp_problem_num_constraints(problem));
+  sleqp_assert(cons_dual->dim == sleqp_problem_num_cons(problem));
 
   SLEQP_CALL(
     supports_range(cons_dual, working_set->constraint_states, supports));
@@ -522,7 +513,7 @@ sleqp_working_set_supports_vars_dual(const SleqpWorkingSet* working_set,
 {
   SleqpProblem* problem = working_set->problem;
 
-  sleqp_assert(vars_dual->dim == sleqp_problem_num_variables(problem));
+  sleqp_assert(vars_dual->dim == sleqp_problem_num_vars(problem));
 
   SLEQP_CALL(supports_range(vars_dual, working_set->variable_states, supports));
 
@@ -534,8 +525,8 @@ sleqp_working_set_fprintf(const SleqpWorkingSet* working_set, FILE* output)
 {
   SleqpProblem* problem = working_set->problem;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   fprintf(output,
           "Active set, variables: %d, constraints: %d\n",
@@ -549,16 +540,14 @@ sleqp_working_set_fprintf(const SleqpWorkingSet* working_set, FILE* output)
 
   for (int j = 0; j < num_variables; ++j)
   {
-    SLEQP_ACTIVE_STATE state
-      = sleqp_working_set_get_variable_state(working_set, j);
+    SLEQP_ACTIVE_STATE state = sleqp_working_set_var_state(working_set, j);
 
     fprintf(output, "State of variable %d: %s\n", j, state_names[state]);
   }
 
   for (int i = 0; i < num_constraints; ++i)
   {
-    SLEQP_ACTIVE_STATE state
-      = sleqp_working_set_get_constraint_state(working_set, i);
+    SLEQP_ACTIVE_STATE state = sleqp_working_set_cons_state(working_set, i);
 
     fprintf(output, "State of constraint %d: %s\n", i, state_names[state]);
   }
@@ -572,13 +561,13 @@ sleqp_working_set_copy(const SleqpWorkingSet* source, SleqpWorkingSet* target)
   SleqpProblem* source_problem = source->problem;
   SleqpProblem* target_problem = target->problem;
 
-  const int num_variables   = sleqp_problem_num_variables(source_problem);
-  const int num_constraints = sleqp_problem_num_constraints(source_problem);
+  const int num_variables   = sleqp_problem_num_vars(source_problem);
+  const int num_constraints = sleqp_problem_num_cons(source_problem);
 
   const int max_set_size = source->max_set_size;
 
-  assert(num_variables == sleqp_problem_num_variables(target_problem));
-  assert(num_constraints == sleqp_problem_num_constraints(target_problem));
+  assert(num_variables == sleqp_problem_num_vars(target_problem));
+  assert(num_constraints == sleqp_problem_num_cons(target_problem));
   assert(max_set_size == target->max_set_size);
 
   for (int j = 0; j < num_variables; ++j)

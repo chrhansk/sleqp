@@ -151,39 +151,39 @@ START_TEST(test_func_eval)
 {
   bool reject;
 
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  double fixed_func_val;
+  double fixed_obj_val;
 
-  ASSERT_CALL(sleqp_func_val(fixed_var_func, &fixed_func_val));
+  ASSERT_CALL(sleqp_func_obj_val(fixed_var_func, &fixed_obj_val));
 
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  double func_val;
+  double obj_val;
 
-  ASSERT_CALL(sleqp_func_val(quadconsfunc, &func_val));
+  ASSERT_CALL(sleqp_func_obj_val(quadconsfunc, &obj_val));
 
-  ck_assert(fixed_func_val == func_val);
+  ck_assert(fixed_obj_val == obj_val);
 }
 END_TEST
 
-START_TEST(test_func_grad)
+START_TEST(test_obj_grad)
 {
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   bool reject;
 
@@ -191,21 +191,21 @@ START_TEST(test_func_grad)
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  ASSERT_CALL(sleqp_func_grad(fixed_var_func, fixed_grad));
+  ASSERT_CALL(sleqp_func_obj_grad(fixed_var_func, fixed_grad));
 
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  ASSERT_CALL(sleqp_func_grad(quadconsfunc, grad));
+  ASSERT_CALL(sleqp_func_obj_grad(quadconsfunc, grad));
 
   ck_assert(sleqp_sparse_vector_value_at(fixed_grad, 0)
             == sleqp_sparse_vector_value_at(grad, 1));
@@ -214,7 +214,7 @@ END_TEST
 
 START_TEST(test_cons_val)
 {
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   bool reject;
 
@@ -222,7 +222,7 @@ START_TEST(test_cons_val)
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
@@ -232,7 +232,7 @@ START_TEST(test_cons_val)
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
@@ -248,7 +248,7 @@ END_TEST
 
 START_TEST(test_cons_jac)
 {
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obl_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   bool reject;
 
@@ -256,7 +256,7 @@ START_TEST(test_cons_jac)
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obl_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
@@ -268,7 +268,7 @@ START_TEST(test_cons_jac)
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obl_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
@@ -286,7 +286,7 @@ END_TEST
 
 START_TEST(test_hess_prod)
 {
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   bool reject;
 
@@ -294,7 +294,7 @@ START_TEST(test_hess_prod)
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
@@ -310,7 +310,7 @@ START_TEST(test_hess_prod)
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
@@ -336,7 +336,7 @@ fixed_var_test_suite()
 
   tcase_add_test(tc_eval, test_func_eval);
 
-  tcase_add_test(tc_eval, test_func_grad);
+  tcase_add_test(tc_eval, test_obj_grad);
 
   tcase_add_test(tc_eval, test_cons_val);
 

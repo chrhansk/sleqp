@@ -49,7 +49,7 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_sparse_vector_create_full(&var_ub, num_variables));
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   ASSERT_CALL(sleqp_sparse_vector_from_raw(var_lb,
                                            neg_inf_vals,
@@ -89,10 +89,9 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, primal));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_copy(grad, sleqp_iterate_get_func_grad(iterate)));
+  ASSERT_CALL(sleqp_sparse_vector_copy(grad, sleqp_iterate_obj_grad(iterate)));
 
-  ASSERT_CALL(sleqp_iterate_set_func_val(iterate, objective));
+  ASSERT_CALL(sleqp_iterate_set_obj_val(iterate, objective));
 
   ASSERT_CALL(sleqp_sparse_vector_create_empty(&direction, num_variables));
 
@@ -135,13 +134,11 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy, iterate));
 
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0),
-                   SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_var_state(working_set, 0), SLEQP_INACTIVE);
 
-  ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1),
-                   SLEQP_INACTIVE);
+  ck_assert_int_eq(sleqp_working_set_var_state(working_set, 1), SLEQP_INACTIVE);
 
   ASSERT_CALL(sleqp_cauchy_get_direction(cauchy, direction));
 
@@ -149,7 +146,7 @@ START_TEST(test_solve)
 
   ck_assert_int_eq(sleqp_sparse_vector_value_at(direction, 1), trust_radius);
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   double actual_objective;
 
@@ -160,13 +157,13 @@ START_TEST(test_solve)
   ASSERT_CALL(sleqp_sparse_vector_dot(direction, grad, &inner_product));
 
   const double expected_objective
-    = sleqp_iterate_get_func_val(iterate) + inner_product;
+    = sleqp_iterate_obj_val(iterate) + inner_product;
 
   ck_assert(sleqp_is_eq(actual_objective, expected_objective, eps));
 
   ASSERT_CALL(sleqp_cauchy_get_dual_estimation(cauchy, iterate));
 
-  SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
+  SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
   ck_assert(vars_dual->nnz == 0);
 }

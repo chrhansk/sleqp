@@ -13,7 +13,7 @@ sleqp_violated_constraint_multipliers(SleqpProblem* problem,
   const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
   const SleqpSparseVec* v  = cons_vals;
 
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(multipliers));
 
@@ -55,8 +55,7 @@ sleqp_violated_constraint_multipliers(SleqpProblem* problem,
     }
 
     if (working_set
-        && sleqp_working_set_get_constraint_state(working_set, idx)
-             != SLEQP_INACTIVE)
+        && sleqp_working_set_cons_state(working_set, idx) != SLEQP_INACTIVE)
     {
       continue;
     }
@@ -150,7 +149,7 @@ sleqp_violation_values(SleqpProblem* problem,
                        const SleqpSparseVec* cons_val,
                        SleqpSparseVec* violation)
 {
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
@@ -223,7 +222,7 @@ feasibility_residuals(SleqpProblem* problem,
                       SleqpWorkingSet* working_set,
                       bool signed_residuals)
 {
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
@@ -274,8 +273,7 @@ feasibility_residuals(SleqpProblem* problem,
     }
 
     if (working_set
-        && sleqp_working_set_get_constraint_state(working_set, idx)
-             != SLEQP_INACTIVE)
+        && sleqp_working_set_cons_state(working_set, idx) != SLEQP_INACTIVE)
     {
       continue;
     }
@@ -332,7 +330,7 @@ sleqp_violation_inf_norm(SleqpProblem* problem,
                          SleqpSparseVec* cons_val,
                          double* max_violation)
 {
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
@@ -396,7 +394,7 @@ sleqp_violation_one_norm(SleqpProblem* problem,
                          SleqpSparseVec* cons_val,
                          double* total_violation)
 {
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);

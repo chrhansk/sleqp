@@ -20,7 +20,7 @@ typedef struct CUTestConsFuncData
 
   double* x;
   double* cons_vals;
-  double* func_grad;
+  double* obj_grad;
 
   double* direction;
   double* multipliers;
@@ -100,7 +100,7 @@ cutest_cons_data_create(CUTestConsFuncData** star,
   SLEQP_CALL(sleqp_alloc_array(&data->x, num_variables));
   SLEQP_CALL(sleqp_alloc_array(&data->cons_vals, num_constraints));
 
-  SLEQP_CALL(sleqp_alloc_array(&data->func_grad, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->obj_grad, num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&data->direction, num_variables));
   SLEQP_CALL(sleqp_alloc_array(&data->multipliers, data->num_constraints));
@@ -137,7 +137,7 @@ cutest_cons_data_free(void* func_data)
   sleqp_free(&data->multipliers);
   sleqp_free(&data->direction);
 
-  sleqp_free(&data->func_grad);
+  sleqp_free(&data->obj_grad);
 
   sleqp_free(&data->cons_vals);
   sleqp_free(&data->x);
@@ -152,7 +152,7 @@ cutest_cons_func_set(SleqpFunc* func,
                      SleqpSparseVec* x,
                      SLEQP_VALUE_REASON reason,
                      bool* reject,
-                     int* func_grad_nnz,
+                     int* obj_grad_nnz,
                      int* cons_val_nnz,
                      int* cons_jac_nnz,
                      void* func_data)
@@ -163,7 +163,7 @@ cutest_cons_func_set(SleqpFunc* func,
 
   data->goth = cutest_false;
 
-  *func_grad_nnz = data->num_variables;
+  *obj_grad_nnz = data->num_variables;
 
   *cons_val_nnz = data->num_constraints;
 
@@ -189,7 +189,7 @@ cutest_cons_func_set_raw(SleqpFunc* func, const double* x)
 }
 
 static SLEQP_RETCODE
-cutest_cons_func_val(SleqpFunc* func, double* func_val, void* func_data)
+cutest_cons_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
   int status;
@@ -198,7 +198,7 @@ cutest_cons_func_val(SleqpFunc* func, double* func_val, void* func_data)
              &data->num_variables,
              &data->num_constraints,
              data->x,
-             func_val,
+             obj_val,
              data->cons_vals);
 
   SLEQP_CUTEST_CHECK_STATUS(status);
@@ -207,9 +207,9 @@ cutest_cons_func_val(SleqpFunc* func, double* func_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-cutest_cons_func_grad(SleqpFunc* func,
-                      SleqpSparseVec* func_grad,
-                      void* func_data)
+cutest_cons_func_obj_grad(SleqpFunc* func,
+                          SleqpSparseVec* obj_grad,
+                          void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
   int status;
@@ -230,7 +230,7 @@ cutest_cons_func_grad(SleqpFunc* func,
 
   for (int j = 0; j < data->num_variables; ++j)
   {
-    data->func_grad[j] = 0.;
+    data->obj_grad[j] = 0.;
   }
 
   for (int i = 0; i < data->jac_nnz; ++i)
@@ -248,11 +248,11 @@ cutest_cons_func_grad(SleqpFunc* func,
       continue;
     }
 
-    data->func_grad[col] = val;
+    data->obj_grad[col] = val;
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(func_grad,
-                                          data->func_grad,
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(obj_grad,
+                                          data->obj_grad,
                                           data->num_variables,
                                           data->zero_eps));
 
@@ -322,7 +322,7 @@ cutest_cons_cons_jac(SleqpFunc* func,
 
   qsort(data->jac_indices, data->jac_nnz, sizeof(int), &jac_compare);
 
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  const int num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
   int last_col       = 0;
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, data->jac_nnz));
@@ -410,8 +410,8 @@ sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpSparseMatrix* coeffs)
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
   int status;
 
-  assert(sleqp_sparse_matrix_get_num_cols(coeffs) == data->num_variables);
-  assert(sleqp_sparse_matrix_get_num_rows(coeffs) == data->num_linear);
+  assert(sleqp_sparse_matrix_num_cols(coeffs) == data->num_variables);
+  assert(sleqp_sparse_matrix_num_rows(coeffs) == data->num_linear);
 
   CUTEST_csgr(&status,                // status flag
               &data->num_variables,   // number of variables
@@ -437,7 +437,7 @@ sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpSparseMatrix* coeffs)
 
   qsort(data->jac_indices, data->jac_nnz, sizeof(int), &jac_compare);
 
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(coeffs);
+  const int num_cols = sleqp_sparse_matrix_num_cols(coeffs);
   int last_col       = 0;
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(coeffs, data->jac_nnz));
@@ -494,7 +494,7 @@ sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpSparseMatrix* coeffs)
 
 static SLEQP_RETCODE
 cutest_cons_func_hess_product(SleqpFunc* func,
-                              const double* func_dual,
+                              const double* obj_dual,
                               const SleqpSparseVec* direction,
                               const SleqpSparseVec* cons_duals,
                               SleqpSparseVec* product,
@@ -503,8 +503,8 @@ cutest_cons_func_hess_product(SleqpFunc* func,
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
   int status;
 
-  assert(func_dual);
-  assert(*func_dual == 1.);
+  assert(obj_dual);
+  assert(*obj_dual == 1.);
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, data->direction));
 
@@ -582,8 +582,8 @@ sleqp_cutest_cons_func_create(SleqpFunc** star,
                                      params));
 
   SleqpFuncCallbacks callbacks = {.set_value = cutest_cons_func_set,
-                                  .func_val  = cutest_cons_func_val,
-                                  .func_grad = cutest_cons_func_grad,
+                                  .obj_val   = cutest_cons_func_obj_val,
+                                  .obj_grad  = cutest_cons_func_obj_grad,
                                   .cons_val  = cutest_cons_cons_val,
                                   .cons_jac  = cutest_cons_cons_jac,
                                   .hess_prod = cutest_cons_func_hess_product,

@@ -10,22 +10,25 @@ num_constraints = 0
 
 inner = Exception("Error in set_value")
 
+
 class ErrorFunc:
   def set_value(self, v, reason):
     raise inner
+
 
 class TypeErrorFunc:
   def set_value(self, v):
     pass
 
-  def func_val(self):
+  def obj_val(self):
     return 0
 
-  def func_grad(self):
+  def obj_grad(self):
     return "wrong"
 
-  def hess_prod(self, func_dual, direction, cons_dual):
+  def hess_prod(self, obj_dual, direction, cons_dual):
     return "wrong"
+
 
 class MatrixErrorFunc:
   def set_value(self, v, reason):
@@ -34,16 +37,16 @@ class MatrixErrorFunc:
   def set_matrix_value(self, m):
     self.m = m
 
-  def func_val(self):
+  def obj_val(self):
     return 0
 
-  def func_grad_nnz(self):
+  def obj_grad_nnz(self):
     return 1
 
   def cons_jac_nnz(self):
     return 1
 
-  def func_grad(self):
+  def obj_grad(self):
     return np.array([0])
 
   def hess_prod(self, func_dual, direction, cons_dual):
@@ -51,7 +54,6 @@ class MatrixErrorFunc:
 
   def cons_jac(self):
     return self.m
-
 
 
 class FuncErrorTest(unittest.TestCase):

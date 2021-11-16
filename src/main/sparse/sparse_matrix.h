@@ -68,9 +68,9 @@ sleqp_sparse_matrix_value_at(SleqpSparseMatrix* matrix, int row, int col);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_get_col(const SleqpSparseMatrix* matrix,
-                            int col,
-                            SleqpSparseVec* vec);
+sleqp_sparse_matrix_col(const SleqpSparseMatrix* matrix,
+                        int col,
+                        SleqpSparseVec* vec);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

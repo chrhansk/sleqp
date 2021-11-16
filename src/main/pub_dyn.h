@@ -8,13 +8,13 @@
  *
  * @param[in]     func            The function
  * @param[in]     accuracy        The desired accuracy \f$  \epsilon \f$
- * @param[out]    func_val        The function value \f$ f(x, \epsilon) \f$
+ * @param[out]    obj_val         The function value \f$ f(x, \epsilon) \f$
  * @param[in,out] func_data       The function data
  **/
-typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_VAL)(SleqpFunc* func,
-                                            double accuracy,
-                                            double* func_val,
-                                            void* func_data);
+typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_OBJ_VAL)(SleqpFunc* func,
+                                                double accuracy,
+                                                double* obj_val,
+                                                void* func_data);
 
 /**
  * Evaluates the dynamic constraints at the current input vector
@@ -37,11 +37,11 @@ typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_CONS_VAL)(
 typedef struct
 {
   SLEQP_FUNC_SET set_value;
-  SLEQP_DYN_FUNC_VAL func_val;
-  SLEQP_FUNC_GRAD func_grad;
+  SLEQP_DYN_FUNC_OBJ_VAL obj_val;
+  SLEQP_FUNC_OBJ_GRAD obj_grad;
   SLEQP_DYN_FUNC_CONS_VAL cons_val;
   SLEQP_FUNC_CONS_JAC cons_jac;
-  SLEQP_HESS_PROD hess_prod;
+  SLEQP_FUNC_HESS_PROD hess_prod;
   SLEQP_FUNC_FREE func_free;
 } SleqpDynFuncCallbacks;
 

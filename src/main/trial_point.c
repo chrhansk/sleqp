@@ -21,7 +21,7 @@ create_aug_jac(SleqpTrialPointSolver* solver)
   SleqpProblem* problem = solver->problem;
   SleqpParams* params   = solver->params;
 
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   if (sleqp_problem_is_unconstrained(problem))
   {
@@ -35,8 +35,8 @@ create_aug_jac(SleqpTrialPointSolver* solver)
   {
     // create sparse factorization
 
-    SLEQP_CALL(sleqp_sparse_factorization_create_default(&solver->factorization,
-                                                         params));
+    SLEQP_CALL(
+      sleqp_factorization_create_default(&solver->factorization, params));
 
     SLEQP_CALL(sleqp_standard_aug_jac_create(&solver->aug_jac,
                                              problem,
@@ -54,7 +54,7 @@ create_cauchy_solver(SleqpTrialPointSolver* solver)
   SleqpParams* params   = solver->params;
   SleqpOptions* options = solver->options;
 
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   if (sleqp_problem_is_unconstrained(problem))
   {
@@ -69,15 +69,15 @@ create_cauchy_solver(SleqpTrialPointSolver* solver)
   }
   else
   {
-    const int num_variables      = sleqp_problem_num_variables(problem);
+    const int num_variables      = sleqp_problem_num_vars(problem);
     const int num_lp_variables   = num_variables + 2 * num_constraints;
     const int num_lp_constraints = num_constraints;
 
-    SLEQP_CALL(sleqp_lpi_create_default_interface(&solver->lp_interface,
-                                                  num_lp_variables,
-                                                  num_lp_constraints,
-                                                  params,
-                                                  options));
+    SLEQP_CALL(sleqp_lpi_create_default(&solver->lp_interface,
+                                        num_lp_variables,
+                                        num_lp_constraints,
+                                        params,
+                                        options));
 
     SLEQP_CALL(sleqp_standard_cauchy_create(&solver->cauchy_data,
                                             problem,
@@ -97,7 +97,7 @@ create_eqp_solver(SleqpTrialPointSolver* solver)
   SleqpOptions* options = solver->options;
 
   SLEQP_TR_SOLVER tr_solver
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_TR_SOLVER);
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_TR_SOLVER);
 
   if (tr_solver == SLEQP_TR_SOLVER_LSQR)
   {
@@ -130,8 +130,8 @@ static SLEQP_RETCODE
 create_parametric_solver(SleqpTrialPointSolver* solver)
 {
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
-    = sleqp_options_get_int(solver->options,
-                            SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+    = sleqp_options_int_value(solver->options,
+                              SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
 
   if (parametric_cauchy == SLEQP_PARAMETRIC_CAUCHY_DISABLED)
   {
@@ -174,8 +174,8 @@ sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
   SLEQP_CALL(sleqp_options_capture(options));
   solver->options = options;
 
-  const int num_variables   = sleqp_problem_num_variables(solver->problem);
-  const int num_constraints = sleqp_problem_num_constraints(solver->problem);
+  const int num_variables   = sleqp_problem_num_vars(solver->problem);
+  const int num_constraints = sleqp_problem_num_cons(solver->problem);
 
   SLEQP_CALL(
     sleqp_sparse_vector_create_empty(&solver->cauchy_direction, num_variables));
@@ -350,18 +350,18 @@ compute_trial_iterate_from_direction(SleqpTrialPointSolver* solver,
   SleqpIterate* iterate = solver->iterate;
 
   const double zero_eps
-    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_primal(iterate),
+  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_primal(iterate),
                                      direction,
                                      zero_eps,
                                      solver->initial_trial_point));
 
   SLEQP_CALL(sleqp_sparse_vector_clip(solver->initial_trial_point,
-                                      sleqp_problem_var_lb(problem),
-                                      sleqp_problem_var_ub(problem),
+                                      sleqp_problem_vars_lb(problem),
+                                      sleqp_problem_vars_ub(problem),
                                       zero_eps,
-                                      sleqp_iterate_get_primal(trial_iterate)));
+                                      sleqp_iterate_primal(trial_iterate)));
 
   return SLEQP_OKAY;
 }
@@ -375,7 +375,7 @@ compute_trial_point_simple(SleqpTrialPointSolver* solver,
 {
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -410,11 +410,11 @@ compute_trial_point_simple(SleqpTrialPointSolver* solver,
     {
       double actual_quadratic_merit_value;
 
-      double func_dual = 1.;
+      double obj_dual = 1.;
 
       SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                        iterate,
-                                       &func_dual,
+                                       &obj_dual,
                                        solver->cauchy_step,
                                        solver->multipliers,
                                        solver->penalty_parameter,
@@ -446,7 +446,7 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
   SleqpTimer* timer = solver->elapsed_timer;
   double time_limit = solver->time_limit;
@@ -479,7 +479,7 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
 
   {
     SLEQP_LINESEARCH lineserach
-      = sleqp_options_get_int(solver->options, SLEQP_OPTION_INT_LINESEARCH);
+      = sleqp_options_int_value(solver->options, SLEQP_OPTION_INT_LINESEARCH);
 
     double step_length;
 
@@ -518,11 +518,11 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
   {
     double actual_quadratic_merit_value;
 
-    double func_dual = 1.;
+    double obj_dual = 1.;
 
     SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                      iterate,
-                                     &func_dual,
+                                     &obj_dual,
                                      solver->trial_step,
                                      solver->multipliers,
                                      solver->penalty_parameter,
@@ -549,11 +549,12 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
   const SleqpOptions* options = solver->options;
 
   const bool quadratic_model
-    = sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
+    = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
 
   const bool perform_newton_step
     = quadratic_model
-      && sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
+      && sleqp_options_bool_value(options,
+                                  SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
 
   if (perform_newton_step)
   {
@@ -578,7 +579,7 @@ static double
 compute_required_accuracy(SleqpTrialPointSolver* solver, double model_reduction)
 {
   const double accepted_reduction
-    = sleqp_params_get(solver->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
 
   // TODO: Make this adjustable
   // must be > 0, < .5 *accepted_reduction
@@ -592,20 +593,16 @@ evaluate_iterate(SleqpTrialPointSolver* solver,
                  SleqpProblem* problem,
                  SleqpIterate* iterate)
 {
-  double func_val;
+  double obj_val;
 
-  SleqpSparseVec* func_grad   = sleqp_iterate_get_func_grad(iterate);
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-  SleqpSparseVec* cons_val    = sleqp_iterate_get_cons_val(iterate);
+  SleqpSparseVec* obj_grad    = sleqp_iterate_obj_grad(iterate);
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpSparseVec* cons_val    = sleqp_iterate_cons_val(iterate);
 
-  SLEQP_CALL(sleqp_problem_eval(problem,
-                                NULL,
-                                &func_val,
-                                func_grad,
-                                cons_val,
-                                cons_jac));
+  SLEQP_CALL(
+    sleqp_problem_eval(problem, NULL, &obj_val, obj_grad, cons_val, cons_jac));
 
-  SLEQP_CALL(sleqp_iterate_set_func_val(iterate, func_val));
+  SLEQP_CALL(sleqp_iterate_set_obj_val(iterate, obj_val));
 
   return SLEQP_OKAY;
 }
@@ -626,11 +623,12 @@ solver_refine_step(SleqpTrialPointSolver* solver,
   assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
 
   const bool quadratic_model
-    = sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
+    = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
 
   const bool perform_newton_step
     = quadratic_model
-      && sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
+      && sleqp_options_bool_value(options,
+                                  SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
 
   while (true)
   {
@@ -783,7 +781,7 @@ compute_trial_point_soc_dynamic(SleqpTrialPointSolver* solver,
   SleqpOptions* options = solver->options;
 
   const bool quadratic_model
-    = sleqp_options_get_bool(options, SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
+    = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
 
   SLEQP_CALL(sleqp_soc_compute_step(solver->soc_data,
                                     solver->aug_jac,
@@ -878,7 +876,7 @@ trial_point_solver_free(SleqpTrialPointSolver** star)
 
   SLEQP_CALL(sleqp_aug_jac_release(&solver->aug_jac));
 
-  SLEQP_CALL(sleqp_sparse_factorization_release(&solver->factorization));
+  SLEQP_CALL(sleqp_factorization_release(&solver->factorization));
 
   SLEQP_CALL(sleqp_dual_estimation_free(&solver->estimation_data));
 

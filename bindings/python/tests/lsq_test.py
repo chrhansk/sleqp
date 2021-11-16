@@ -22,7 +22,7 @@ class Func:
   def set_value(self, values, reason):
     self.values[:] = values
 
-  def func_val(self):
+  def ob_val(self):
     # No additional function value beside lsq residuals
     return 0.
 
@@ -56,7 +56,7 @@ class Func:
     return np.array([-1.*d0 - 2*math.sqrt(self.b)*x0*d1,
                      math.sqrt(self.b)*(d1)])
 
-  def func_grad(self):
+  def obj_grad(self):
     return np.zeros((num_variables,))
 
 
@@ -68,7 +68,7 @@ class Func:
     return np.zeros((num_constraints, num_variables))
 
 
-  def hess_prod(self, func_dual, direction, cons_dual):
+  def hess_prod(self, obj_dual, direction, cons_dual):
     return np.zeros((num_variables,))
 
 

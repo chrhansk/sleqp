@@ -26,17 +26,17 @@ class RejectFunc:
 
     return self.func.set_value(v, reason)
 
-  def func_val(self):
+  def obj_val(self):
     assert not self.rejected
-    return self.func.func_val()
+    return self.func.obj_val()
 
-  def func_grad_nnz(self):
+  def obj_grad_nnz(self):
     assert not self.rejected
-    return self.func.func_grad_nnz()
+    return self.func.obj_grad_nnz()
 
-  def func_grad(self):
+  def obj_grad(self):
     assert not self.rejected
-    return self.func.func_grad()
+    return self.func.obj_grad()
 
   def cons_vals(self):
     assert not self.rejected

@@ -56,7 +56,8 @@ polish_inactive_range(SleqpPolishing* polishing,
 
   (*num_removed) = 0;
 
-  const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
+  const double feas_eps
+    = sleqp_params_value(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   const int size = dual->dim;
   int k_d        = 0;
@@ -65,7 +66,7 @@ polish_inactive_range(SleqpPolishing* polishing,
   for (int j = 0; j < size; ++j)
   {
     SLEQP_ACTIVE_STATE state
-      = sleqp_working_set_get_state(source_set, constraints, j);
+      = sleqp_working_set_state(source_set, constraints, j);
 
     if (state == SLEQP_INACTIVE)
     {
@@ -144,7 +145,7 @@ polish_zero_dual_range(SleqpPolishing* polishing,
   for (int i = 0; i < size; ++i)
   {
     SLEQP_ACTIVE_STATE state
-      = sleqp_working_set_get_state(source_set, constraints, i);
+      = sleqp_working_set_state(source_set, constraints, i);
 
     if (state == SLEQP_INACTIVE)
     {
@@ -176,26 +177,26 @@ polish_inactive(SleqpPolishing* polishing, SleqpIterate* iterate)
 
   int num_removed_vars = 0, num_removed_cons = 0;
 
-  SleqpWorkingSet* source_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* source_set = sleqp_iterate_working_set(iterate);
   SleqpWorkingSet* target_set = polishing->working_set;
 
   SLEQP_CALL(sleqp_working_set_reset(target_set));
 
   SLEQP_CALL(polish_inactive_range(polishing,
                                    source_set,
-                                   sleqp_problem_var_lb(problem),
-                                   sleqp_iterate_get_primal(iterate),
-                                   sleqp_problem_var_ub(problem),
-                                   sleqp_iterate_get_vars_dual(iterate),
+                                   sleqp_problem_vars_lb(problem),
+                                   sleqp_iterate_primal(iterate),
+                                   sleqp_problem_vars_ub(problem),
+                                   sleqp_iterate_vars_dual(iterate),
                                    false,
                                    &num_removed_vars));
 
   SLEQP_CALL(polish_inactive_range(polishing,
                                    source_set,
                                    sleqp_problem_cons_lb(problem),
-                                   sleqp_iterate_get_cons_val(iterate),
+                                   sleqp_iterate_cons_val(iterate),
                                    sleqp_problem_cons_ub(problem),
-                                   sleqp_iterate_get_cons_dual(iterate),
+                                   sleqp_iterate_cons_dual(iterate),
                                    true,
                                    &num_removed_cons));
 
@@ -213,20 +214,20 @@ polish_zero_dual(SleqpPolishing* polishing, SleqpIterate* iterate)
 {
   int num_removed_vars = 0, num_removed_cons = 0;
 
-  SleqpWorkingSet* source_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* source_set = sleqp_iterate_working_set(iterate);
   SleqpWorkingSet* target_set = polishing->working_set;
 
   SLEQP_CALL(sleqp_working_set_reset(target_set));
 
   SLEQP_CALL(polish_zero_dual_range(polishing,
                                     source_set,
-                                    sleqp_iterate_get_vars_dual(iterate),
+                                    sleqp_iterate_vars_dual(iterate),
                                     false,
                                     &num_removed_vars));
 
   SLEQP_CALL(polish_zero_dual_range(polishing,
                                     source_set,
-                                    sleqp_iterate_get_cons_dual(iterate),
+                                    sleqp_iterate_cons_dual(iterate),
                                     true,
                                     &num_removed_cons));
 

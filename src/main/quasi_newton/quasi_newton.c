@@ -21,7 +21,7 @@ quasi_newton_func_set_value(SleqpFunc* func,
                             SleqpSparseVec* x,
                             SLEQP_VALUE_REASON reason,
                             bool* reject,
-                            int* func_grad_nnz,
+                            int* obj_grad_nnz,
                             int* cons_val_nnz,
                             int* cons_jac_nnz,
                             void* func_data)
@@ -32,7 +32,7 @@ quasi_newton_func_set_value(SleqpFunc* func,
                                   x,
                                   reason,
                                   reject,
-                                  func_grad_nnz,
+                                  obj_grad_nnz,
                                   cons_val_nnz,
                                   cons_jac_nnz));
 
@@ -40,23 +40,23 @@ quasi_newton_func_set_value(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-quasi_newton_func_val(SleqpFunc* func, double* func_val, void* func_data)
+quasi_newton_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_val(quasi_newton->func, func_val));
+  SLEQP_CALL(sleqp_func_obj_val(quasi_newton->func, obj_val));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-quasi_newton_func_grad(SleqpFunc* func,
-                       SleqpSparseVec* func_grad,
-                       void* func_data)
+quasi_newton_func_obj_grad(SleqpFunc* func,
+                           SleqpSparseVec* obj_grad,
+                           void* func_data)
 {
   SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_grad(quasi_newton->func, func_grad));
+  SLEQP_CALL(sleqp_func_obj_grad(quasi_newton->func, obj_grad));
 
   return SLEQP_OKAY;
 }
@@ -89,7 +89,7 @@ quasi_newton_func_cons_jac(SleqpFunc* func,
 
 static SLEQP_RETCODE
 quasi_newton_func_hess_prod(SleqpFunc* func,
-                            const double* func_dual,
+                            const double* obj_dual,
                             const SleqpSparseVec* direction,
                             const SleqpSparseVec* cons_duals,
                             SleqpSparseVec* product,
@@ -107,12 +107,12 @@ quasi_newton_func_create(SleqpQuasiNewton* quasi_newton)
 {
   SleqpFunc* func = quasi_newton->func;
 
-  const int num_variables   = sleqp_func_get_num_variables(func);
-  const int num_constraints = sleqp_func_get_num_constraints(func);
+  const int num_variables   = sleqp_func_num_vars(func);
+  const int num_constraints = sleqp_func_num_cons(func);
 
   SleqpFuncCallbacks callbacks = {.set_value = quasi_newton_func_set_value,
-                                  .func_val  = quasi_newton_func_val,
-                                  .func_grad = quasi_newton_func_grad,
+                                  .obj_val   = quasi_newton_func_obj_val,
+                                  .obj_grad  = quasi_newton_func_obj_grad,
                                   .cons_val  = quasi_newton_func_cons_val,
                                   .cons_jac  = quasi_newton_func_cons_jac,
                                   .hess_prod = quasi_newton_func_hess_prod,
@@ -255,15 +255,15 @@ sleqp_quasi_newton_create_default(SleqpQuasiNewton** star,
                                   SleqpParams* params,
                                   SleqpOptions* options)
 {
-  const SLEQP_HESSIAN_EVAL hessian_eval
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_HESSIAN_EVAL);
+  const SLEQP_HESS_EVAL hessian_eval
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_HESS_EVAL);
 
-  if (hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS
-      || hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS)
+  if (hessian_eval == SLEQP_HESS_EVAL_SIMPLE_BFGS
+      || hessian_eval == SLEQP_HESS_EVAL_DAMPED_BFGS)
   {
     SLEQP_CALL(sleqp_bfgs_create(star, func, params, options));
   }
-  else if (hessian_eval == SLEQP_HESSIAN_EVAL_SR1)
+  else if (hessian_eval == SLEQP_HESS_EVAL_SR1)
   {
     SLEQP_CALL(sleqp_sr1_create(star, func, params, options));
   }

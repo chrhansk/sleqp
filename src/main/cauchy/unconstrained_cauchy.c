@@ -59,11 +59,11 @@ unconstrained_cauchy_solve(SleqpSparseVec* gradient,
 
   double* objective = &(cauchy_data->objective);
 
-  (*objective) = sleqp_iterate_get_func_val(iterate);
+  (*objective) = sleqp_iterate_obj_val(iterate);
 
-  const SleqpSparseVec* grad = sleqp_iterate_get_func_grad(iterate);
+  const SleqpSparseVec* grad = sleqp_iterate_obj_grad(iterate);
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
   const double trust_radius = cauchy_data->trust_radius;
 
   SLEQP_CALL(sleqp_sparse_vector_clear(direction));
@@ -111,7 +111,7 @@ unconstrained_cauchy_get_objective_value(double* objective_value, void* data)
 static SLEQP_RETCODE
 unconstrained_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 {
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   SLEQP_CALL(sleqp_working_set_reset(working_set));
 
@@ -139,8 +139,8 @@ unconstrained_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
 static SLEQP_RETCODE
 unconstrained_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
 {
-  SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
-  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
+  SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
+  SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(vars_dual));
   SLEQP_CALL(sleqp_sparse_vector_clear(cons_dual));
@@ -204,7 +204,7 @@ cauchy_data_create(CauchyData** star,
 
   cauchy_data->params = params;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   SLEQP_CALL(
     sleqp_sparse_vector_create_full(&cauchy_data->direction, num_variables));

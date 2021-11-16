@@ -71,7 +71,7 @@ restoration_func_set(SleqpFunc* func,
                      SleqpSparseVec* value,
                      SLEQP_VALUE_REASON reason,
                      bool* reject,
-                     int* func_grad_nnz,
+                     int* obj_grad_nnz,
                      int* cons_val_nnz,
                      int* cons_jac_nnz,
                      void* data)
@@ -86,7 +86,7 @@ restoration_func_set(SleqpFunc* func,
   func_data->has_cons_val = false;
   func_data->has_cons_jac = false;
 
-  int restoration_func_grad_nnz;
+  int restoration_obj_grad_nnz;
   int restoration_cons_val_nnz;
   int restoration_cons_jac_nnz;
 
@@ -94,7 +94,7 @@ restoration_func_set(SleqpFunc* func,
                                      func_data->var_primal,
                                      reason,
                                      reject,
-                                     &restoration_func_grad_nnz,
+                                     &restoration_obj_grad_nnz,
                                      &restoration_cons_val_nnz,
                                      &restoration_cons_jac_nnz));
 
@@ -104,9 +104,9 @@ restoration_func_set(SleqpFunc* func,
   SLEQP_CALL(
     sleqp_sparse_matrix_reserve(func_data->cons_jac, restoration_cons_jac_nnz));
 
-  *func_grad_nnz = sleqp_func_get_num_variables(func);
-  *cons_val_nnz  = 0;
-  *cons_jac_nnz  = 0;
+  *obj_grad_nnz = sleqp_func_num_vars(func);
+  *cons_val_nnz = 0;
+  *cons_jac_nnz = 0;
 
   return SLEQP_OKAY;
 }
@@ -132,7 +132,7 @@ restoration_lsq_residuals(SleqpFunc* func, SleqpSparseVec* residual, void* data)
   SLEQP_CALL(compute_cons_val(func_data));
 
   const double zero_eps
-    = sleqp_params_get(func_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(func_data->cons_val,
                                             func_data->cons_primal,
@@ -167,9 +167,9 @@ restoration_lsq_jac_forward(SleqpFunc* func,
   FuncData* func_data = (FuncData*)data;
 
   const double zero_eps
-    = sleqp_params_get(func_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
 
-  const int num_constraints = sleqp_problem_num_constraints(func_data->problem);
+  const int num_constraints = sleqp_problem_num_cons(func_data->problem);
 
   SLEQP_CALL(compute_cons_jac(func_data));
 
@@ -239,7 +239,7 @@ restoration_lsq_jac_adjoint(SleqpFunc* func,
   SLEQP_CALL(compute_cons_jac(func_data));
 
   const double zero_eps
-    = sleqp_params_get(func_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(
     sleqp_sparse_matrix_trans_vector_product(func_data->cons_jac,
@@ -292,8 +292,8 @@ func_data_create(FuncData** star, SleqpProblem* problem, SleqpParams* params)
 
   FuncData* func_data = *star;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SLEQP_CALL(
     sleqp_sparse_vector_create_empty(&func_data->cons_val, num_constraints));
@@ -345,8 +345,8 @@ restoration_func_create(SleqpFunc** star,
                                  .cons_jac        = NULL,
                                  .func_free       = restoration_func_free};
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   const int restoration_num_variables   = num_variables + num_constraints;
   const int restoration_num_constraints = 0;
@@ -373,8 +373,8 @@ sleqp_restoration_problem_create(SleqpProblem** star,
                                  SleqpParams* params,
                                  SleqpProblem* problem)
 {
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SleqpFunc* restoration_func;
 
@@ -390,11 +390,11 @@ sleqp_restoration_problem_create(SleqpProblem** star,
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&restoration_var_ub,
                                               restoration_num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_concat(sleqp_problem_var_lb(problem),
+  SLEQP_CALL(sleqp_sparse_vector_concat(sleqp_problem_vars_lb(problem),
                                         sleqp_problem_cons_lb(problem),
                                         restoration_var_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_concat(sleqp_problem_var_ub(problem),
+  SLEQP_CALL(sleqp_sparse_vector_concat(sleqp_problem_vars_ub(problem),
                                         sleqp_problem_cons_ub(problem),
                                         restoration_var_ub));
 
@@ -426,8 +426,8 @@ sleqp_restoration_problem_transform(SleqpProblem* problem,
                                     const SleqpSparseVec* cons_val,
                                     SleqpSparseVec* result)
 {
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   assert(primal->dim == num_variables);
   assert(cons_val->dim == num_constraints);
@@ -505,8 +505,8 @@ sleqp_restoration_problem_restore(SleqpProblem* problem,
                                   const SleqpSparseVec* input,
                                   SleqpSparseVec* result)
 {
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   assert(input->dim == (num_variables + num_constraints));
   assert(result->dim == num_variables);

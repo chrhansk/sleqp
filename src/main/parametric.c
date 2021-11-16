@@ -14,7 +14,7 @@ struct SleqpParametricSolver
   SleqpProblem* problem;
   SleqpParams* params;
   SleqpMerit* merit;
-  SleqpLineSearchData* linesearch;
+  SleqpLineSearch* linesearch;
 
   double exact_violation;
 
@@ -36,7 +36,7 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                SleqpParams* params,
                                SleqpOptions* options,
                                SleqpMerit* merit,
-                               SleqpLineSearchData* linesearch)
+                               SleqpLineSearch* linesearch)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -56,8 +56,8 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
   solver->linesearch = linesearch;
   SLEQP_CALL(sleqp_linesearch_capture(solver->linesearch));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SLEQP_CALL(sleqp_alloc_array(&solver->cache, num_constraints));
 
@@ -71,7 +71,7 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                               num_variables));
 
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
 
   if (parametric_cauchy == SLEQP_PARAMETRIC_CAUCHY_COARSE)
   {
@@ -111,34 +111,33 @@ has_sufficient_decrease(SleqpParametricSolver* solver,
   double objective_dot, linear_violation, hessian_product;
 
   const double one = 1.;
-  const double eta = sleqp_params_get(solver->params, SLEQP_PARAM_CAUCHY_ETA);
+  const double eta = sleqp_params_value(solver->params, SLEQP_PARAM_CAUCHY_ETA);
 
   SleqpProblem* problem = solver->problem;
 
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   const double zero_eps
-    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   const double exact_violation = solver->exact_violation;
 
   const double penalty_parameter = solver->penalty_parameter;
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(sleqp_iterate_get_func_grad(iterate),
+  SLEQP_CALL(sleqp_sparse_vector_dot(sleqp_iterate_obj_grad(iterate),
                                      direction,
                                      &objective_dot));
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_vector_product(sleqp_iterate_get_cons_jac(iterate),
-                                       direction,
-                                       solver->cache));
+  SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
+                                                direction,
+                                                solver->cache));
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(solver->jacobian_product,
                                           solver->cache,
                                           num_constraints,
                                           zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_get_cons_val(iterate),
+  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_cons_val(iterate),
                                      solver->jacobian_product,
                                      zero_eps,
                                      solver->combined_cons_val));
@@ -162,7 +161,7 @@ has_sufficient_decrease(SleqpParametricSolver* solver,
          * (1. - eta)
        >= (0.5 * hessian_product));
 
-  *quadratic_merit = sleqp_iterate_get_func_val(iterate) + objective_dot
+  *quadratic_merit = sleqp_iterate_obj_val(iterate) + objective_dot
                      + (penalty_parameter * linear_violation)
                      + .5 * hessian_product;
 
@@ -181,7 +180,7 @@ search_forward(SleqpParametricSolver* solver,
 {
   SleqpProblem* problem = solver->problem;
 
-  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
   const double penalty_parameter = solver->penalty_parameter;
 
@@ -199,7 +198,7 @@ search_forward(SleqpParametricSolver* solver,
     SLEQP_CALL(sleqp_cauchy_set_trust_radius(cauchy_data, (*trust_radius)));
 
     SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
-                                  sleqp_iterate_get_func_grad(iterate),
+                                  sleqp_iterate_obj_grad(iterate),
                                   penalty_parameter,
                                   SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
@@ -248,7 +247,7 @@ search_forward(SleqpParametricSolver* solver,
       SLEQP_CALL(sleqp_cauchy_set_trust_radius(cauchy_data, (*trust_radius)));
 
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
-                                    sleqp_iterate_get_func_grad(iterate),
+                                    sleqp_iterate_obj_grad(iterate),
                                     penalty_parameter,
                                     SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
@@ -290,7 +289,7 @@ search_backtracking(SleqpParametricSolver* solver,
     SLEQP_CALL(sleqp_cauchy_set_trust_radius(cauchy_data, (*trust_radius)));
 
     SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
-                                  sleqp_iterate_get_func_grad(iterate),
+                                  sleqp_iterate_obj_grad(iterate),
                                   penalty_parameter,
                                   SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
@@ -298,7 +297,7 @@ search_backtracking(SleqpParametricSolver* solver,
 
 #ifndef NDEBUG
     {
-      const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+      const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
       const double step_norm = sleqp_sparse_vector_inf_norm(cauchy_direction);
 
@@ -359,7 +358,7 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
                               double* quadratic_merit_value)
 {
   SLEQP_CALL(sleqp_violation_one_norm(solver->problem,
-                                      sleqp_iterate_get_cons_val(iterate),
+                                      sleqp_iterate_cons_val(iterate),
                                       &solver->exact_violation));
 
   bool sufficient_decrease;
@@ -412,7 +411,7 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
 
 #ifndef NDEBUG
   {
-    const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+    const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
     const double step_norm = sleqp_sparse_vector_inf_norm(cauchy_direction);
 

@@ -152,19 +152,19 @@ cdef class _Problem:
 
   @property
   def num_variables(self) -> int:
-    return csleqp.sleqp_problem_num_variables(self.cproblem)
+    return csleqp.sleqp_problem_num_vars(self.cproblem)
 
   @property
   def num_constraints(self) -> int:
-    return csleqp.sleqp_problem_num_constraints(self.cproblem)
+    return csleqp.sleqp_problem_num_cons(self.cproblem)
 
   @property
   def var_lb(self) -> np.array:
-    return sleqp_sparse_vec_to_array(csleqp.sleqp_problem_var_lb(self.cproblem))
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_problem_vars_lb(self.cproblem))
 
   @property
   def var_ub(self) -> np.array:
-    return sleqp_sparse_vec_to_array(csleqp.sleqp_problem_var_ub(self.cproblem))
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_problem_vars_ub(self.cproblem))
 
   @property
   def cons_lb(self) -> np.array:

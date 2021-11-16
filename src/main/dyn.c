@@ -10,12 +10,12 @@ typedef struct
   void* func_data;
 } DynFuncData;
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 dyn_func_set_value(SleqpFunc* func,
                    SleqpSparseVec* value,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
-                   int* func_grad_nnz,
+                   int* obj_grad_nnz,
                    int* cons_val_nnz,
                    int* cons_jac_nnz,
                    void* func_data)
@@ -26,32 +26,32 @@ dyn_func_set_value(SleqpFunc* func,
                                    value,
                                    reason,
                                    reject,
-                                   func_grad_nnz,
+                                   obj_grad_nnz,
                                    cons_val_nnz,
                                    cons_jac_nnz,
                                    data->func_data);
 }
 
-SLEQP_RETCODE
-dyn_func_val(SleqpFunc* func, double* func_val, void* func_data)
+static SLEQP_RETCODE
+dyn_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
 
-  return data->callbacks.func_val(func,
-                                  data->accuracy,
-                                  func_val,
-                                  data->func_data);
+  return data->callbacks.obj_val(func,
+                                 data->accuracy,
+                                 obj_val,
+                                 data->func_data);
 }
 
-SLEQP_RETCODE
-dyn_func_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+static SLEQP_RETCODE
+dyn_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
 
-  return data->callbacks.func_grad(func, func_grad, data->func_data);
+  return data->callbacks.obj_grad(func, obj_grad, data->func_data);
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 dyn_func_cons_val(SleqpFunc* func,
                   const SleqpSparseVec* cons_indices,
                   SleqpSparseVec* cons_val,
@@ -66,7 +66,7 @@ dyn_func_cons_val(SleqpFunc* func,
                                   data->func_data);
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 dyn_func_cons_jac(SleqpFunc* func,
                   const SleqpSparseVec* cons_indices,
                   SleqpSparseMatrix* cons_jac,
@@ -80,9 +80,9 @@ dyn_func_cons_jac(SleqpFunc* func,
                                   data->func_data);
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 dyn_func_hess_product(SleqpFunc* func,
-                      const double* func_dual,
+                      const double* obj_dual,
                       const SleqpSparseVec* direction,
                       const SleqpSparseVec* cons_duals,
                       SleqpSparseVec* product,
@@ -90,15 +90,11 @@ dyn_func_hess_product(SleqpFunc* func,
 {
   DynFuncData* data = (DynFuncData*)func_data;
 
-  return data->callbacks.hess_prod(func,
-                                   func_dual,
-                                   direction,
-                                   cons_duals,
-                                   product,
-                                   data->func_data);
+  return data->callbacks
+    .hess_prod(func, obj_dual, direction, cons_duals, product, data->func_data);
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 dyn_func_free(void* func_data)
 {
   if (!func_data)
@@ -136,8 +132,8 @@ sleqp_dyn_func_create(SleqpFunc** fstar,
   data->func_data = func_data;
 
   SleqpFuncCallbacks func_callbacks = {.set_value = dyn_func_set_value,
-                                       .func_val  = dyn_func_val,
-                                       .func_grad = dyn_func_grad,
+                                       .obj_val   = dyn_func_obj_val,
+                                       .obj_grad  = dyn_func_obj_grad,
                                        .cons_val  = dyn_func_cons_val,
                                        .cons_jac  = dyn_func_cons_jac,
                                        .hess_prod = dyn_func_hess_product,
@@ -185,7 +181,7 @@ sleqp_dyn_func_get_accuracy(SleqpFunc* func, double* accuracy)
 }
 
 SLEQP_RETCODE
-sleqp_dyn_func_val(SleqpFunc* func, double accuracy, double* func_val)
+sleqp_dyn_func_obj_val(SleqpFunc* func, double accuracy, double* obj_val)
 {
   assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
 
@@ -193,8 +189,7 @@ sleqp_dyn_func_val(SleqpFunc* func, double accuracy, double* func_val)
 
   DynFuncData* data = (DynFuncData*)func_data;
 
-  SLEQP_CALL(
-    data->callbacks.func_val(func, accuracy, func_val, data->func_data));
+  SLEQP_CALL(data->callbacks.obj_val(func, accuracy, obj_val, data->func_data));
 
   return SLEQP_OKAY;
 }

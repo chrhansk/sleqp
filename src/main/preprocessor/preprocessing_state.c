@@ -48,8 +48,8 @@ sleqp_preprocessing_state_create(SleqpPreprocessingState** star,
   state->original_problem = problem;
   SLEQP_CALL(sleqp_problem_capture(state->original_problem));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear    = sleqp_problem_num_linear_constraints(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
+  const int num_linear    = sleqp_problem_num_lin_cons(problem);
 
   SLEQP_CALL(sleqp_alloc_array(&state->var_states, num_variables));
   SLEQP_CALL(sleqp_alloc_array(&state->cons_states, num_linear));
@@ -76,8 +76,8 @@ sleqp_preprocessing_state_reset(SleqpPreprocessingState* state)
 {
   SleqpProblem* problem = state->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear    = sleqp_problem_num_linear_constraints(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
+  const int num_linear    = sleqp_problem_num_lin_cons(problem);
 
   for (int j = 0; j < num_variables; ++j)
   {
@@ -117,8 +117,8 @@ sleqp_preprocessing_state_convert_linear_constraint_to_bound(
 {
   SleqpProblem* problem = state->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear    = sleqp_problem_num_linear_constraints(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
+  const int num_linear    = sleqp_problem_num_lin_cons(problem);
 
   assert(constraint >= 0);
   assert(constraint < num_linear);
@@ -155,8 +155,8 @@ sleqp_preprocessing_state_add_forcing_constraint(SleqpPreprocessingState* state,
 {
   SleqpProblem* problem = state->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear    = sleqp_problem_num_linear_constraints(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
+  const int num_linear    = sleqp_problem_num_lin_cons(problem);
 
   assert(constraint >= 0);
   assert(constraint < num_linear);
@@ -170,9 +170,9 @@ sleqp_preprocessing_state_add_forcing_constraint(SleqpPreprocessingState* state,
 
   const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  double* linear_data = sleqp_sparse_matrix_get_data(linear_coeffs);
-  int* linear_rows    = sleqp_sparse_matrix_get_rows(linear_coeffs);
-  int* linear_cols    = sleqp_sparse_matrix_get_cols(linear_coeffs);
+  double* linear_data = sleqp_sparse_matrix_data(linear_coeffs);
+  int* linear_rows    = sleqp_sparse_matrix_rows(linear_coeffs);
+  int* linear_cols    = sleqp_sparse_matrix_cols(linear_coeffs);
 
   int num_coeffs = 0;
 
@@ -286,7 +286,7 @@ sleqp_preprocessing_state_remove_linear_constraint(
 {
   SleqpProblem* problem = state->original_problem;
 
-  const int num_linear = sleqp_problem_num_linear_constraints(problem);
+  const int num_linear = sleqp_problem_num_lin_cons(problem);
 
   assert(constraint >= 0);
   assert(constraint < num_linear);
@@ -308,7 +308,7 @@ sleqp_preprocessing_state_fix_variable_to_bounds(SleqpPreprocessingState* state,
 {
   SleqpProblem* problem = state->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   assert(variable >= 0);
   assert(variable < num_variables);
@@ -439,7 +439,7 @@ create_fixed_variables(SleqpPreprocessingState* state)
 {
   SleqpProblem* problem = state->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   sleqp_free(&state->fixed_var_indices);
   sleqp_free(&state->fixed_var_values);
@@ -478,7 +478,7 @@ create_removed_linear_constraints(SleqpPreprocessingState* state)
 {
   SleqpProblem* problem = state->original_problem;
 
-  const int num_linear_cons = sleqp_problem_num_linear_constraints(problem);
+  const int num_linear_cons = sleqp_problem_num_lin_cons(problem);
 
   state->num_removed_cons
     = sleqp_preprocessing_state_num_removed_linear_constraints(state);

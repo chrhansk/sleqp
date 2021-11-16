@@ -13,9 +13,9 @@ sleqp_tr_compute_bdry_sol(const SleqpSparseVec* previous,
                           double radius,
                           SleqpSparseVec* result)
 {
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 

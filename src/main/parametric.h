@@ -30,7 +30,7 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                SleqpParams* params,
                                SleqpOptions* options,
                                SleqpMerit* merit,
-                               SleqpLineSearchData* linesearch);
+                               SleqpLineSearch* linesearch);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

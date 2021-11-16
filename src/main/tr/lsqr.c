@@ -151,7 +151,7 @@ compute_objective(SleqpLSQRSolver* solver,
                   double* opt_res)
 {
   const double zero_eps
-    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(forward_product(solver, sol, solver->p));
 
@@ -186,10 +186,10 @@ sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
   assert(rhs->dim == solver->adjoint_dim);
   assert(sol->dim == solver->forward_dim);
 
-  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
   const double zero_eps
-    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   sleqp_log_debug("Solving a least-squares subproblem with %d rows, %d columns",
                   solver->adjoint_dim,

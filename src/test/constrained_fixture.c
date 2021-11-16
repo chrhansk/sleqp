@@ -35,7 +35,7 @@ func_set(SleqpFunc* func,
          SleqpSparseVec* x,
          SLEQP_VALUE_REASON reason,
          bool* reject,
-         int* func_grad_nnz,
+         int* obj_grad_nnz,
          int* cons_val_nnz,
          int* cons_jac_nnz,
          void* func_data)
@@ -44,41 +44,41 @@ func_set(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->values));
 
-  *func_grad_nnz = constrained_num_variables;
-  *cons_val_nnz  = constrained_num_constraints;
-  *cons_jac_nnz  = constrained_num_constraints * constrained_num_variables;
+  *obj_grad_nnz = constrained_num_variables;
+  *cons_val_nnz = constrained_num_constraints;
+  *cons_jac_nnz = constrained_num_constraints * constrained_num_variables;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-func_val(SleqpFunc* func, double* func_val, void* func_data)
+obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   FuncData* data = (FuncData*)func_data;
   double* x      = data->values;
 
-  (*func_val) = x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2];
+  (*obj_val) = x[0] * x[3] * (x[0] + x[1] + x[2]) + x[2];
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-func_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
   FuncData* data = (FuncData*)func_data;
   double* x      = data->values;
 
   SLEQP_CALL(
-    sleqp_sparse_vector_push(func_grad,
+    sleqp_sparse_vector_push(obj_grad,
                              0,
                              (x[0] + x[1] + x[2]) * x[3] + x[0] * x[3]));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 1, x[0] * x[3]));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, x[0] * x[3]));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 2, x[0] * x[3] + 1));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 2, x[0] * x[3] + 1));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_push(func_grad, 3, (x[0] + x[1] + x[2]) * x[0]));
+    sleqp_sparse_vector_push(obj_grad, 3, (x[0] + x[1] + x[2]) * x[0]));
 
   return SLEQP_OKAY;
 }
@@ -138,7 +138,7 @@ cons_jac(SleqpFunc* func,
 
 static SLEQP_RETCODE
 func_hess_prod(SleqpFunc* func,
-               const double* func_dual,
+               const double* obj_dual,
                const SleqpSparseVec* direction,
                const SleqpSparseVec* cons_duals,
                SleqpSparseVec* product,
@@ -155,17 +155,17 @@ func_hess_prod(SleqpFunc* func,
   double* duals = data->duals;
   double* dir   = data->direction;
 
-  double f_dual = func_dual ? *func_dual : 0.;
+  double o_dual = obj_dual ? *obj_dual : 0.;
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(product, constrained_num_variables));
 
   {
     double v = 0.;
 
-    v += (2 * x[3] * f_dual + 2 * duals[1]) * dir[0];
-    v += (x[3] * f_dual + x[2] * x[3] * duals[0]) * dir[1];
-    v += (x[3] * f_dual + x[1] * x[3] * duals[0]) * dir[2];
-    v += ((2 * x[0] + x[1] + x[2]) * f_dual + x[1] * x[2] * duals[0]) * dir[3];
+    v += (2 * x[3] * o_dual + 2 * duals[1]) * dir[0];
+    v += (x[3] * o_dual + x[2] * x[3] * duals[0]) * dir[1];
+    v += (x[3] * o_dual + x[1] * x[3] * duals[0]) * dir[2];
+    v += ((2 * x[0] + x[1] + x[2]) * o_dual + x[1] * x[2] * duals[0]) * dir[3];
 
     SLEQP_CALL(sleqp_sparse_vector_push(product, 0, v));
   }
@@ -173,10 +173,10 @@ func_hess_prod(SleqpFunc* func,
   {
     double v = 0.;
 
-    v += (x[3] * f_dual + x[2] * x[3] * duals[0]) * dir[0];
+    v += (x[3] * o_dual + x[2] * x[3] * duals[0]) * dir[0];
     v += (2 * duals[1]) * dir[1];
     v += (x[0] * x[3] * duals[0]) * dir[2];
-    v += (x[0] * f_dual + (x[0] * x[2]) * duals[0]) * dir[3];
+    v += (x[0] * o_dual + (x[0] * x[2]) * duals[0]) * dir[3];
 
     SLEQP_CALL(sleqp_sparse_vector_push(product, 1, v));
   }
@@ -184,10 +184,10 @@ func_hess_prod(SleqpFunc* func,
   {
     double v = 0.;
 
-    v += (x[3] * f_dual + x[1] * x[3] * duals[0]) * dir[0];
+    v += (x[3] * o_dual + x[1] * x[3] * duals[0]) * dir[0];
     v += (x[0] * x[3] * duals[0]) * dir[1];
     v += (2 * duals[1]) * dir[2];
-    v += (x[0] * f_dual + x[0] * x[1] * duals[0]) * dir[3];
+    v += (x[0] * o_dual + x[0] * x[1] * duals[0]) * dir[3];
 
     SLEQP_CALL(sleqp_sparse_vector_push(product, 2, v));
   }
@@ -195,9 +195,9 @@ func_hess_prod(SleqpFunc* func,
   {
     double v = 0.;
 
-    v += ((2 * x[0] + x[1] + x[2]) * f_dual + x[1] * x[2] * duals[0]) * dir[0];
-    v += (x[0] * f_dual + x[0] * x[2] * duals[0]) * dir[1];
-    v += (x[0] * f_dual + x[0] * x[1] * duals[0]) * dir[2];
+    v += ((2 * x[0] + x[1] + x[2]) * o_dual + x[1] * x[2] * duals[0]) * dir[0];
+    v += (x[0] * o_dual + x[0] * x[2] * duals[0]) * dir[1];
+    v += (x[0] * o_dual + x[0] * x[1] * duals[0]) * dir[2];
     v += (2 * duals[1]) * dir[3];
 
     SLEQP_CALL(sleqp_sparse_vector_push(product, 3, v));
@@ -272,8 +272,8 @@ constrained_setup()
     sleqp_alloc_array(&func_data->direction, constrained_num_variables));
 
   SleqpFuncCallbacks callbacks = {.set_value = func_set,
-                                  .func_val  = func_val,
-                                  .func_grad = func_grad,
+                                  .obj_val   = obj_val,
+                                  .obj_grad  = obj_grad,
                                   .cons_val  = cons_val,
                                   .cons_jac  = cons_jac,
                                   .hess_prod = func_hess_prod,

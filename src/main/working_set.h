@@ -71,9 +71,9 @@ sleqp_working_set_eq(SleqpWorkingSet* first, SleqpWorkingSet* second);
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
-                               int index,
-                               SLEQP_ACTIVE_STATE state);
+sleqp_working_set_add_var(SleqpWorkingSet* working_set,
+                          int index,
+                          SLEQP_ACTIVE_STATE state);
 
 /**
  * Adds a constraint to the given working set
@@ -87,9 +87,9 @@ sleqp_working_set_add_variable(SleqpWorkingSet* working_set,
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_working_set_add_constraint(SleqpWorkingSet* working_set,
-                                 int index,
-                                 SLEQP_ACTIVE_STATE state);
+sleqp_working_set_add_cons(SleqpWorkingSet* working_set,
+                           int index,
+                           SLEQP_ACTIVE_STATE state);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -107,8 +107,7 @@ sleqp_working_set_add(SleqpWorkingSet* working_set,
  * @param[in]  index                 The constraint index
  **/
 int
-sleqp_working_set_get_constraint_index(const SleqpWorkingSet* working_set,
-                                       int index);
+sleqp_working_set_cons_index(const SleqpWorkingSet* working_set, int index);
 
 /**
  * Returns the index of the given variable with respect to the given
@@ -119,8 +118,7 @@ sleqp_working_set_get_constraint_index(const SleqpWorkingSet* working_set,
  * @param[in]  index                 The variable index
  **/
 int
-sleqp_working_set_get_variable_index(const SleqpWorkingSet* working_set,
-                                     int index);
+sleqp_working_set_var_index(const SleqpWorkingSet* working_set, int index);
 
 /**
  * Returns the content of the working set at the given working set index,
@@ -130,6 +128,6 @@ sleqp_working_set_get_variable_index(const SleqpWorkingSet* working_set,
  * @param[in]  index                 The working set index
  **/
 int
-sleqp_working_set_get_content(const SleqpWorkingSet* working_set, int index);
+sleqp_working_set_content(const SleqpWorkingSet* working_set, int index);
 
 #endif /* SLEQP_WORKING_SET_H */

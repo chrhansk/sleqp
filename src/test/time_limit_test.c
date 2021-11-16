@@ -43,14 +43,14 @@ delay_func_set(SleqpFunc* func,
                SleqpSparseVec* x,
                SLEQP_VALUE_REASON reason,
                bool* reject,
-               int* func_grad_nnz,
+               int* obj_grad_nnz,
                int* cons_val_nnz,
                int* cons_jac_nnz,
                void* func_data)
 {
-  *func_grad_nnz = 1;
-  *cons_val_nnz  = 0;
-  *cons_jac_nnz  = 0;
+  *obj_grad_nnz = 1;
+  *cons_val_nnz = 0;
+  *cons_jac_nnz = 0;
 
   sleqp_sparse_vector_value_at(x, value);
 
@@ -60,9 +60,9 @@ delay_func_set(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-delay_func_val(SleqpFunc* func, double* func_val, void* func_data)
+delay_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
-  *func_val = value;
+  *obj_val = value;
 
   delay();
 
@@ -70,9 +70,9 @@ delay_func_val(SleqpFunc* func, double* func_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-delay_func_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+delay_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 1.));
 
   delay();
 
@@ -99,7 +99,7 @@ delay_func_cons_jac(SleqpFunc* func,
 
 static SLEQP_RETCODE
 delay_func_hess_prod(SleqpFunc* func,
-                     const double* func_dual,
+                     const double* obj_dual,
                      const SleqpSparseVec* direction,
                      const SleqpSparseVec* cons_duals,
                      SleqpSparseVec* result,
@@ -127,8 +127,8 @@ void
 time_limit_setup()
 {
   SleqpFuncCallbacks callbacks = {.set_value = delay_func_set,
-                                  .func_val  = delay_func_val,
-                                  .func_grad = delay_func_grad,
+                                  .obj_val   = delay_func_obj_val,
+                                  .obj_grad  = delay_func_obj_grad,
                                   .cons_val  = delay_func_cons_val,
                                   .cons_jac  = delay_func_cons_jac,
                                   .hess_prod = delay_func_hess_prod,
@@ -189,7 +189,7 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_solve(solver, SLEQP_NONE, time_limit));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_ABORT_TIME);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_ABORT_TIME);
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 }

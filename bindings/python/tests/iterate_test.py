@@ -36,10 +36,10 @@ class IterateTest(unittest.TestCase):
 
     func.set_value(solution.primal, sleqp.ValueReason.NoReason)
 
-    expected_func_val = func.func_val()
+    expected_obj_val = func.obj_val()
 
-    self.assertTrue(np.allclose(np.array([expected_func_val]),
-                                np.array([solution.func_val])))
+    self.assertTrue(np.allclose(np.array([expected_obj_val]),
+                                np.array([solution.obj_val])))
 
     expected_cons_vals = func.cons_vals()
 

@@ -5,7 +5,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
                                          csleqp.SleqpSparseVec* x,
                                          csleqp.SLEQP_VALUE_REASON reason,
                                          csleqp.bool* reject,
-                                         int* func_grad_nnz,
+                                         int* obj_grad_nnz,
                                          int* cons_val_nnz,
                                          int* cons_jac_nnz,
                                          void* func_data):
@@ -29,7 +29,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
       except AttributeError:
         return 0
 
-    func_grad_nnz[0] = try_call(lambda : func_obj.func_grad_nnz())
+    obj_grad_nnz[0] = try_call(lambda : func_obj.obj_grad_nnz())
     cons_val_nnz[0] = try_call(lambda : func_obj.cons_val_nnz())
     cons_jac_nnz[0] = try_call(lambda : func_obj.cons_jac_nnz())
 
@@ -44,7 +44,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpFunc* func,
                                                csleqp.SleqpSparseVec* x,
                                                csleqp.SLEQP_VALUE_REASON reason,
                                                csleqp.bool* reject,
-                                               int* func_grad_nnz,
+                                               int* obj_grad_nnz,
                                                int* cons_val_nnz,
                                                int* cons_jac_nnz,
                                                void* func_data) nogil:
@@ -53,27 +53,27 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpFunc* func,
                           x,
                           reason,
                           reject,
-                          func_grad_nnz,
+                          obj_grad_nnz,
                           cons_val_nnz,
                           cons_jac_nnz,
                           func_data)
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_val(csleqp.SleqpFunc* func,
-                                         double* func_val,
-                                         void* func_data):
+cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val(csleqp.SleqpFunc* func,
+                                             double* obj_val,
+                                             void* func_data):
   cdef int num_variables
   cdef int num_constraints
   try:
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_get_num_variables(func)
-    num_constraints = csleqp.sleqp_func_get_num_constraints(func)
+    num_variables = csleqp.sleqp_func_num_vars(func)
+    num_constraints = csleqp.sleqp_func_num_cons(func)
 
-    result = func_obj.func_val()
-    assert result is not None, "func_val() returned 'None'"
-    func_val[0] = result
+    result = func_obj.obj_val()
+    assert result is not None, "obj_val() returned 'None'"
+    obj_val[0] = result
 
   except BaseException as exception:
     func_obj.call_exception = exception
@@ -82,34 +82,34 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_val(csleqp.SleqpFunc* func,
   return csleqp.SLEQP_OKAY
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_val_nogil(csleqp.SleqpFunc* func,
-                                                double* func_val,
-                                                void* func_data) nogil:
+cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val_nogil(csleqp.SleqpFunc* func,
+                                                   double* obj_val,
+                                                   void* func_data) nogil:
   with gil:
-    return sleqp_func_val(func,
-                          func_val,
-                          func_data)
+    return sleqp_func_obj_val(func,
+                              obj_val,
+                              func_data)
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_grad(csleqp.SleqpFunc* func,
-                                          csleqp.SleqpSparseVec* func_grad,
-                                          void* func_data):
+cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad(csleqp.SleqpFunc* func,
+                                              csleqp.SleqpSparseVec* obj_grad,
+                                              void* func_data):
   cdef int num_variables
   cdef int num_constraints
   try:
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_get_num_variables(func)
-    num_constraints = csleqp.sleqp_func_get_num_constraints(func)
+    num_variables = csleqp.sleqp_func_num_vars(func)
+    num_constraints = csleqp.sleqp_func_num_cons(func)
 
-    grad_array = func_obj.func_grad()
+    grad_array = func_obj.obj_grad()
 
-    assert grad_array is not None, "func_grad() returned 'None'"
+    assert grad_array is not None, "obj_grad() returned 'None'"
     assert grad_array.ndim == 1, "Gradient must be a vector"
     assert grad_array.size == num_variables, "Gradient has wrong size"
 
-    csleqp_call(array_to_sleqp_sparse_vec(grad_array, func_grad))
+    csleqp_call(array_to_sleqp_sparse_vec(grad_array, obj_grad))
 
   except BaseException as exception:
     func_obj.call_exception = exception
@@ -118,12 +118,12 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_grad(csleqp.SleqpFunc* func,
   return csleqp.SLEQP_OKAY
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_grad_nogil(csleqp.SleqpFunc* func,
-                                                csleqp.SleqpSparseVec* func_grad,
-                                                void* func_data) nogil:
+cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad_nogil(csleqp.SleqpFunc* func,
+                                                    csleqp.SleqpSparseVec* obj_grad,
+                                                    void* func_data) nogil:
   with gil:
-    return sleqp_func_grad(func,
-                           func_grad,
+    return sleqp_func_obj_grad(func,
+                           obj_grad,
                            func_data)
 
 
@@ -137,8 +137,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_get_num_variables(func)
-    num_constraints = csleqp.sleqp_func_get_num_constraints(func)
+    num_variables = csleqp.sleqp_func_num_vars(func)
+    num_constraints = csleqp.sleqp_func_num_cons(func)
 
     cons_array = func_obj.cons_vals()
 
@@ -176,8 +176,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_get_num_variables(func)
-    num_constraints = csleqp.sleqp_func_get_num_constraints(func)
+    num_variables = csleqp.sleqp_func_num_vars(func)
+    num_constraints = csleqp.sleqp_func_num_cons(func)
 
     cons_jac_mat = func_obj.cons_jac()
 
@@ -209,7 +209,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac_nogil(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
-                                                  const double* func_dual,
+                                                  const double* obj_dual,
                                                   const csleqp.SleqpSparseVec* direction,
                                                   const csleqp.SleqpSparseVec* cons_dual,
                                                   csleqp.SleqpSparseVec* product,
@@ -225,13 +225,13 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_get_num_variables(func)
+    num_variables = csleqp.sleqp_func_num_vars(func)
 
-    f_dual = func_dual[0] if func_dual else 0.
+    o_dual = obj_dual[0] if obj_dual else 0.
     direction_array = sleqp_sparse_vec_to_array(direction)
     cons_dual_array = sleqp_sparse_vec_to_array(cons_dual)
 
-    product_array = func_obj.hess_prod(f_dual, direction_array, cons_dual_array)
+    product_array = func_obj.hess_prod(o_dual, direction_array, cons_dual_array)
 
     assert product_array is not None, "hess_prod(...) returned 'None'"
     assert product_array.ndim == 1, "Hessian product must be a vector"
@@ -247,14 +247,14 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product_nogil(csleqp.SleqpFunc* func,
-                                                        const double* func_dual,
+                                                        const double* obj_dual,
                                                         const csleqp.SleqpSparseVec* direction,
                                                         const csleqp.SleqpSparseVec* cons_dual,
                                                         csleqp.SleqpSparseVec* product,
                                                         void* func_data) nogil:
   with gil:
     return sleqp_func_hess_product(func,
-                                   func_dual,
+                                   obj_dual,
                                    direction,
                                    cons_dual,
                                    product,
@@ -271,15 +271,15 @@ cdef object funcs = weakref.WeakSet()
 cdef set_func_callbacks(csleqp.SleqpFuncCallbacks* callbacks):
   if release_gil:
     callbacks[0].set_value = &sleqp_func_set_nogil
-    callbacks[0].func_val  = &sleqp_func_val_nogil
-    callbacks[0].func_grad = &sleqp_func_grad_nogil
+    callbacks[0].obj_val   = &sleqp_func_obj_val_nogil
+    callbacks[0].obj_grad  = &sleqp_func_obj_grad_nogil
     callbacks[0].cons_val  = &sleqp_func_cons_val_nogil
     callbacks[0].cons_jac  = &sleqp_func_cons_jac_nogil
     callbacks[0].hess_prod = &sleqp_func_hess_product_nogil
   else:
     callbacks[0].set_value = &sleqp_func_set
-    callbacks[0].func_val  = &sleqp_func_val
-    callbacks[0].func_grad = &sleqp_func_grad
+    callbacks[0].obj_val   = &sleqp_func_obj_val
+    callbacks[0].obj_grad  = &sleqp_func_obj_grad
     callbacks[0].cons_val  = &sleqp_func_cons_val
     callbacks[0].cons_jac  = &sleqp_func_cons_jac
     callbacks[0].hess_prod = &sleqp_func_hess_product

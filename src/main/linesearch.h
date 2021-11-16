@@ -9,7 +9,7 @@
 #include "merit.h"
 #include "timer.h"
 
-typedef struct SleqpLineSearchData SleqpLineSearchData;
+typedef struct SleqpLineSearch SleqpLineSearch;
 
 /**
  * Creates a new linesearch object.
@@ -21,7 +21,7 @@ typedef struct SleqpLineSearchData SleqpLineSearchData;
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_linesearch_create(SleqpLineSearchData** star,
+sleqp_linesearch_create(SleqpLineSearch** star,
                         SleqpProblem* problem,
                         SleqpParams* params,
                         SleqpMerit* merit);
@@ -40,7 +40,7 @@ sleqp_linesearch_create(SleqpLineSearchData** star,
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_linesearch_set_iterate(SleqpLineSearchData* linesearch,
+sleqp_linesearch_set_iterate(SleqpLineSearch* linesearch,
                              SleqpIterate* iterate,
                              double penalty_parameter,
                              double trust_radius);
@@ -61,7 +61,7 @@ sleqp_linesearch_set_iterate(SleqpLineSearchData* linesearch,
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
+sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
                              SleqpSparseVec* direction,
                              const SleqpSparseVec* multipliers,
                              SleqpSparseVec* hessian_direction,
@@ -92,7 +92,7 @@ sleqp_linesearch_cauchy_step(SleqpLineSearchData* linesearch,
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
+sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
                             const SleqpSparseVec* cauchy_step,
                             const SleqpSparseVec* cauchy_hessian_step,
                             const double cauchy_quadratic_merit_value,
@@ -105,7 +105,7 @@ sleqp_linesearch_trial_step(SleqpLineSearchData* linesearch,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
+sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
                                   const SleqpSparseVec* cauchy_step,
                                   const SleqpSparseVec* cauchy_hessian_step,
                                   const double cauchy_quadratic_merit_value,
@@ -117,14 +117,14 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearchData* linesearch,
                                   double* trial_quadratic_merit_value);
 
 SleqpTimer*
-sleqp_linesearch_get_timer(SleqpLineSearchData* linesearch);
+sleqp_linesearch_get_timer(SleqpLineSearch* linesearch);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_linesearch_capture(SleqpLineSearchData* solver);
+sleqp_linesearch_capture(SleqpLineSearch* solver);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_linesearch_release(SleqpLineSearchData** star);
+sleqp_linesearch_release(SleqpLineSearch** star);
 
 #endif /* SLEQP_LINESEARCH_H */

@@ -35,7 +35,7 @@ func_set(SleqpFunc* func,
          SleqpSparseVec* x,
          SLEQP_VALUE_REASON reason,
          bool* reject,
-         int* func_grad_nnz,
+         int* obj_grad_nnz,
          int* cons_val_nnz,
          int* cons_jac_nnz,
          void* func_data)
@@ -44,15 +44,15 @@ func_set(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->values));
 
-  *func_grad_nnz = num_variables;
-  *cons_val_nnz  = num_constraints;
-  *cons_jac_nnz  = num_constraints * num_variables;
+  *obj_grad_nnz = num_variables;
+  *cons_val_nnz = num_constraints;
+  *cons_jac_nnz = num_constraints * num_variables;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-func_val(SleqpFunc* func, double* func_val, void* func_data)
+func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   FuncData* data = (FuncData*)func_data;
 
@@ -62,22 +62,22 @@ func_val(SleqpFunc* func, double* func_val, void* func_data)
   const double xsq = sq(x);
   const double ysq = sq(y);
 
-  (*func_val) = 2 * (xsq + ysq - 1) - x;
+  (*obj_val) = 2 * (xsq + ysq - 1) - x;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-func_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
   FuncData* data = (FuncData*)func_data;
 
   const double x = data->values[0];
   const double y = data->values[1];
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 4 * x - 1));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 4 * x - 1));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 1, 4 * y));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, 4 * y));
 
   return SLEQP_OKAY;
 }
@@ -123,7 +123,7 @@ func_cons_jac(SleqpFunc* func,
 
 static SLEQP_RETCODE
 func_hess_prod(SleqpFunc* func,
-               const double* func_dual,
+               const double* obj_dual,
                const SleqpSparseVec* direction,
                const SleqpSparseVec* cons_duals,
                SleqpSparseVec* product,
@@ -142,18 +142,18 @@ func_hess_prod(SleqpFunc* func,
 
   double c_dual = duals[0];
 
-  double f_dual = func_dual ? *func_dual : 0.;
+  double o_dual = obj_dual ? *obj_dual : 0.;
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(product, num_variables));
 
   {
-    double v = (4 * f_dual + 2 * c_dual) * d_x;
+    double v = (4 * o_dual + 2 * c_dual) * d_x;
 
     SLEQP_CALL(sleqp_sparse_vector_push(product, 0, v));
   }
 
   {
-    double v = (4 * f_dual + 2 * c_dual) * d_y;
+    double v = (4 * o_dual + 2 * c_dual) * d_y;
 
     SLEQP_CALL(sleqp_sparse_vector_push(product, 1, v));
   }
@@ -205,8 +205,8 @@ second_order_setup()
   ASSERT_CALL(sleqp_alloc_array(&func_data->direction, num_variables));
 
   SleqpFuncCallbacks callbacks = {.set_value = func_set,
-                                  .func_val  = func_val,
-                                  .func_grad = func_grad,
+                                  .obj_val   = func_obj_val,
+                                  .obj_grad  = func_obj_grad,
                                   .cons_val  = func_cons_val,
                                   .cons_jac  = func_cons_jac,
                                   .hess_prod = func_hess_prod,
@@ -273,11 +273,11 @@ START_TEST(test_second_order_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, expected_solution, 1e-6));
 

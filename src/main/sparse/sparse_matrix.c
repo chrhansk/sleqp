@@ -120,25 +120,25 @@ sleqp_sparse_matrix_scale(SleqpSparseMatrix* matrix, double scale)
 }
 
 int
-sleqp_sparse_matrix_get_num_cols(const SleqpSparseMatrix* matrix)
+sleqp_sparse_matrix_num_cols(const SleqpSparseMatrix* matrix)
 {
   return matrix->num_cols;
 }
 
 int
-sleqp_sparse_matrix_get_num_rows(const SleqpSparseMatrix* matrix)
+sleqp_sparse_matrix_num_rows(const SleqpSparseMatrix* matrix)
 {
   return matrix->num_rows;
 }
 
 int
-sleqp_sparse_matrix_get_nnz(const SleqpSparseMatrix* matrix)
+sleqp_sparse_matrix_nnz(const SleqpSparseMatrix* matrix)
 {
   return matrix->nnz;
 }
 
 int
-sleqp_sparse_matrix_get_nnz_max(const SleqpSparseMatrix* matrix)
+sleqp_sparse_matrix_nnz_max(const SleqpSparseMatrix* matrix)
 {
   return matrix->nnz_max;
 }
@@ -157,19 +157,19 @@ sleqp_sparse_matrix_is_quadratic(const SleqpSparseMatrix* matrix)
 }
 
 double*
-sleqp_sparse_matrix_get_data(const SleqpSparseMatrix* matrix)
+sleqp_sparse_matrix_data(const SleqpSparseMatrix* matrix)
 {
   return matrix->data;
 }
 
 int*
-sleqp_sparse_matrix_get_cols(const SleqpSparseMatrix* matrix)
+sleqp_sparse_matrix_cols(const SleqpSparseMatrix* matrix)
 {
   return matrix->cols;
 }
 
 int*
-sleqp_sparse_matrix_get_rows(const SleqpSparseMatrix* matrix)
+sleqp_sparse_matrix_rows(const SleqpSparseMatrix* matrix)
 {
   return matrix->rows;
 }
@@ -394,9 +394,9 @@ sleqp_sparse_matrix_value_at(SleqpSparseMatrix* matrix, int row, int col)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_matrix_get_col(const SleqpSparseMatrix* matrix,
-                            int col,
-                            SleqpSparseVec* vec)
+sleqp_sparse_matrix_col(const SleqpSparseMatrix* matrix,
+                        int col,
+                        SleqpSparseVec* vec)
 {
   assert(matrix->num_rows == vec->dim);
   assert(col >= 0);
@@ -536,23 +536,23 @@ sleqp_sparse_matrix_remove_rows(const SleqpSparseMatrix* source,
                                 int num_row_entries)
 {
   SLEQP_CALL(
-    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_get_nnz(source)));
+    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_nnz(source)));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
-  assert(sleqp_sparse_matrix_get_num_cols(source)
-         == sleqp_sparse_matrix_get_num_cols(target));
+  assert(sleqp_sparse_matrix_num_cols(source)
+         == sleqp_sparse_matrix_num_cols(target));
 
-  assert(sleqp_sparse_matrix_get_num_rows(source)
-         == sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
+  assert(sleqp_sparse_matrix_num_rows(source)
+         == sleqp_sparse_matrix_num_rows(target) + num_row_entries);
 
   assert(row_indices || (num_row_entries == 0));
 
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
+  const int num_cols = sleqp_sparse_matrix_num_cols(source);
 
-  double* source_data = sleqp_sparse_matrix_get_data(source);
-  int* source_rows    = sleqp_sparse_matrix_get_rows(source);
-  int* source_cols    = sleqp_sparse_matrix_get_cols(source);
+  double* source_data = sleqp_sparse_matrix_data(source);
+  int* source_rows    = sleqp_sparse_matrix_rows(source);
+  int* source_cols    = sleqp_sparse_matrix_cols(source);
 
   for (int col = 0; col < num_cols; ++col)
   {
@@ -593,24 +593,24 @@ sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source,
                                    int num_row_entries)
 {
   SLEQP_CALL(
-    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_get_nnz(source)));
+    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_nnz(source)));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
-  assert(sleqp_sparse_matrix_get_num_cols(source)
-         == sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
+  assert(sleqp_sparse_matrix_num_cols(source)
+         == sleqp_sparse_matrix_num_cols(target) + num_col_entries);
 
-  assert(sleqp_sparse_matrix_get_num_rows(source)
-         == sleqp_sparse_matrix_get_num_rows(target) + num_row_entries);
+  assert(sleqp_sparse_matrix_num_rows(source)
+         == sleqp_sparse_matrix_num_rows(target) + num_row_entries);
 
   assert(row_indices || (num_row_entries == 0));
   assert(col_indices || (num_col_entries == 0));
 
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
+  const int num_cols = sleqp_sparse_matrix_num_cols(source);
 
-  double* source_data = sleqp_sparse_matrix_get_data(source);
-  int* source_rows    = sleqp_sparse_matrix_get_rows(source);
-  int* source_cols    = sleqp_sparse_matrix_get_cols(source);
+  double* source_data = sleqp_sparse_matrix_data(source);
+  int* source_rows    = sleqp_sparse_matrix_rows(source);
+  int* source_cols    = sleqp_sparse_matrix_cols(source);
 
   int col_offset = 0;
 
@@ -657,23 +657,23 @@ sleqp_sparse_matrix_remove_cols(const SleqpSparseMatrix* source,
                                 int num_col_entries)
 {
   SLEQP_CALL(
-    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_get_nnz(source)));
+    sleqp_sparse_matrix_reserve(target, sleqp_sparse_matrix_nnz(source)));
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(target));
 
-  assert(sleqp_sparse_matrix_get_num_cols(source)
-         == sleqp_sparse_matrix_get_num_cols(target) + num_col_entries);
+  assert(sleqp_sparse_matrix_num_cols(source)
+         == sleqp_sparse_matrix_num_cols(target) + num_col_entries);
 
-  assert(sleqp_sparse_matrix_get_num_rows(source)
-         == sleqp_sparse_matrix_get_num_rows(target));
+  assert(sleqp_sparse_matrix_num_rows(source)
+         == sleqp_sparse_matrix_num_rows(target));
 
   assert(col_indices || (num_col_entries == 0));
 
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(source);
+  const int num_cols = sleqp_sparse_matrix_num_cols(source);
 
-  double* source_data = sleqp_sparse_matrix_get_data(source);
-  int* source_rows    = sleqp_sparse_matrix_get_rows(source);
-  int* source_cols    = sleqp_sparse_matrix_get_cols(source);
+  double* source_data = sleqp_sparse_matrix_data(source);
+  int* source_rows    = sleqp_sparse_matrix_rows(source);
+  int* source_cols    = sleqp_sparse_matrix_cols(source);
 
   int col_offset = 0;
 

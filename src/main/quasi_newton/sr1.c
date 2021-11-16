@@ -146,16 +146,16 @@ sr1_create(SR1** star,
   data->options = options;
 
   const int num_iter
-    = sleqp_options_get_int(options,
-                            SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
+    = sleqp_options_int_value(options,
+                              SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
 
   assert(num_iter > 0);
 
-  const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_variables = sleqp_func_num_vars(func);
 
-  SleqpHessianStruct* hessian_struct = sleqp_func_get_hess_struct(func);
+  SleqpHessStruct* hessian_struct = sleqp_func_hess_struct(func);
 
-  const int num_blocks = sleqp_hessian_struct_get_num_blocks(hessian_struct);
+  const int num_blocks = sleqp_hess_struct_num_blocks(hessian_struct);
 
   data->num_blocks    = num_blocks;
   data->num_variables = num_variables;
@@ -166,10 +166,8 @@ sr1_create(SR1** star,
   {
     int begin, end;
 
-    SLEQP_CALL(sleqp_hessian_struct_get_block_range(hessian_struct,
-                                                    block,
-                                                    &begin,
-                                                    &end));
+    SLEQP_CALL(
+      sleqp_hess_struct_block_range(hessian_struct, block, &begin, &end));
 
     int block_dimension = end - begin;
 
@@ -258,7 +256,7 @@ sr1_compute_inner_products(SR1* sr1, SR1Block* block)
 
   const int first = block->curr - block->len + 1;
 
-  const double zero_eps = sleqp_params_get(sr1->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(sr1->params, SLEQP_PARAM_ZERO_EPS);
 
   {
     int i = data_index(block, block->curr);
@@ -386,39 +384,37 @@ sr1_push(const SleqpIterate* previous_iterate,
 {
   SR1* sr1 = (SR1*)data;
 
-  const double eps = sleqp_params_get(sr1->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(sr1->params, SLEQP_PARAM_EPS);
 
-  const double zero_eps = sleqp_params_get(sr1->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(sr1->params, SLEQP_PARAM_ZERO_EPS);
 
   const int num_blocks = sr1->num_blocks;
 
   // Compute gradient difference
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(
-      sleqp_iterate_get_cons_jac(previous_iterate),
+      sleqp_iterate_cons_jac(previous_iterate),
       multipliers,
       zero_eps,
       sr1->prod_cache));
 
-    SLEQP_CALL(
-      sleqp_sparse_vector_add(sr1->prod_cache,
-                              sleqp_iterate_get_func_grad(previous_iterate),
-                              zero_eps,
-                              sr1->previous_grad));
+    SLEQP_CALL(sleqp_sparse_vector_add(sr1->prod_cache,
+                                       sleqp_iterate_obj_grad(previous_iterate),
+                                       zero_eps,
+                                       sr1->previous_grad));
   }
 
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(
-      sleqp_iterate_get_cons_jac(current_iterate),
+      sleqp_iterate_cons_jac(current_iterate),
       multipliers,
       zero_eps,
       sr1->prod_cache));
 
-    SLEQP_CALL(
-      sleqp_sparse_vector_add(sr1->prod_cache,
-                              sleqp_iterate_get_func_grad(current_iterate),
-                              zero_eps,
-                              sr1->current_grad));
+    SLEQP_CALL(sleqp_sparse_vector_add(sr1->prod_cache,
+                                       sleqp_iterate_obj_grad(current_iterate),
+                                       zero_eps,
+                                       sr1->current_grad));
   }
 
   {
@@ -432,8 +428,8 @@ sr1_push(const SleqpIterate* previous_iterate,
 
   // Compute primal difference
   SLEQP_CALL(
-    sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(previous_iterate),
-                                   sleqp_iterate_get_primal(current_iterate),
+    sleqp_sparse_vector_add_scaled(sleqp_iterate_primal(previous_iterate),
+                                   sleqp_iterate_primal(current_iterate),
                                    -1.,
                                    1.,
                                    zero_eps,
@@ -528,7 +524,7 @@ sr1_block_hess_prod(SR1* sr1,
     return SLEQP_OKAY;
   }
 
-  const double zero_eps = sleqp_params_get(sr1->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(sr1->params, SLEQP_PARAM_ZERO_EPS);
 
   // Note: We have already computed the required inner products / dots
 
@@ -738,8 +734,8 @@ sleqp_sr1_create(SleqpQuasiNewton** star,
 
   SleqpFunc* sr1_func = sleqp_quasi_newton_get_func(quasi_newton);
 
-  SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(func),
-                                       sleqp_func_get_hess_struct(sr1_func)));
+  SLEQP_CALL(sleqp_hess_struct_copy(sleqp_func_hess_struct(func),
+                                    sleqp_func_hess_struct(sr1_func)));
 
   SLEQP_CALL(sleqp_func_set_hess_flags(sr1_func, SLEQP_HESS_INEXACT));
 

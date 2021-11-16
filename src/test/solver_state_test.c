@@ -59,14 +59,14 @@ START_TEST(test_stationarity_residuals)
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
   ASSERT_CALL(
-    sleqp_solver_get_vec_state(solver,
-                               SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
-                               stationarity_residuals));
+    sleqp_solver_vec_state(solver,
+                           SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
+                           stationarity_residuals));
 
   const double stat_eps
-    = sleqp_params_get(params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(params, SLEQP_PARAM_STATIONARITY_TOL);
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ck_assert(sleqp_is_leq(sleqp_sparse_vector_inf_norm(stationarity_residuals),
                          stat_eps,
@@ -86,13 +86,14 @@ START_TEST(test_feasibility_residuals)
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
   ASSERT_CALL(
-    sleqp_solver_get_vec_state(solver,
-                               SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
-                               feasibility_residuals));
+    sleqp_solver_vec_state(solver,
+                           SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
+                           feasibility_residuals));
 
-  const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
+  const double feas_eps
+    = sleqp_params_value(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ck_assert(sleqp_is_leq(sleqp_sparse_vector_inf_norm(feasibility_residuals),
                          feas_eps,
@@ -111,14 +112,15 @@ START_TEST(test_slackness_residuals)
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
-  ASSERT_CALL(sleqp_solver_get_vec_state(
-    solver,
-    SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
-    slackness_residuals));
+  ASSERT_CALL(
+    sleqp_solver_vec_state(solver,
+                           SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
+                           slackness_residuals));
 
-  const double slack_eps = sleqp_params_get(params, SLEQP_PARAM_SLACKNESS_TOL);
+  const double slack_eps
+    = sleqp_params_value(params, SLEQP_PARAM_SLACKNESS_TOL);
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ck_assert(sleqp_is_leq(sleqp_sparse_vector_inf_norm(slackness_residuals),
                          slack_eps,
@@ -135,16 +137,15 @@ START_TEST(test_trust_radii)
   double trust_radius;
   double lp_trust_radius;
 
-  ASSERT_CALL(sleqp_solver_get_real_state(solver,
-                                          SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
-                                          &trust_radius));
+  ASSERT_CALL(sleqp_solver_real_state(solver,
+                                      SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
+                                      &trust_radius));
 
   ck_assert(trust_radius > 0.);
 
-  ASSERT_CALL(
-    sleqp_solver_get_real_state(solver,
-                                SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS,
-                                &lp_trust_radius));
+  ASSERT_CALL(sleqp_solver_real_state(solver,
+                                      SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS,
+                                      &lp_trust_radius));
 
   ck_assert(lp_trust_radius > 0.);
 }
@@ -154,33 +155,32 @@ START_TEST(test_residuals)
 {
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   const double stat_eps
-    = sleqp_params_get(params, SLEQP_PARAM_STATIONARITY_TOL);
-  const double slack_eps = sleqp_params_get(params, SLEQP_PARAM_SLACKNESS_TOL);
-  const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(params, SLEQP_PARAM_STATIONARITY_TOL);
+  const double slack_eps
+    = sleqp_params_value(params, SLEQP_PARAM_SLACKNESS_TOL);
+  const double feas_eps
+    = sleqp_params_value(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
   double stat_res, slack_res, feas_res;
 
-  ASSERT_CALL(
-    sleqp_solver_get_real_state(solver,
-                                SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
-                                &stat_res));
+  ASSERT_CALL(sleqp_solver_real_state(solver,
+                                      SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES,
+                                      &stat_res));
 
   ck_assert(sleqp_is_leq(stat_res, stat_eps, eps));
 
-  ASSERT_CALL(
-    sleqp_solver_get_real_state(solver,
-                                SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
-                                &feas_res));
+  ASSERT_CALL(sleqp_solver_real_state(solver,
+                                      SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES,
+                                      &feas_res));
 
   ck_assert(sleqp_is_leq(feas_res, feas_eps, eps));
 
-  ASSERT_CALL(
-    sleqp_solver_get_real_state(solver,
-                                SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES,
-                                &slack_res));
+  ASSERT_CALL(sleqp_solver_real_state(solver,
+                                      SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES,
+                                      &slack_res));
 
   ck_assert(sleqp_is_leq(slack_res, slack_eps, eps));
 }
@@ -192,9 +192,9 @@ START_TEST(test_iteration)
 
   int iteration;
 
-  ASSERT_CALL(sleqp_solver_get_int_state(solver,
-                                         SLEQP_SOLVER_STATE_INT_ITERATION,
-                                         &iteration));
+  ASSERT_CALL(sleqp_solver_int_state(solver,
+                                     SLEQP_SOLVER_STATE_INT_ITERATION,
+                                     &iteration));
 
   ck_assert_int_gt(iteration, 0);
 }
@@ -204,9 +204,9 @@ START_TEST(test_step_type)
 {
   int last_step;
 
-  ASSERT_CALL(sleqp_solver_get_int_state(solver,
-                                         SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE,
-                                         &last_step));
+  ASSERT_CALL(sleqp_solver_int_state(solver,
+                                     SLEQP_SOLVER_STATE_INT_LAST_STEP_TYPE,
+                                     &last_step));
 
   ck_assert_int_ge(last_step, SLEQP_STEPTYPE_NONE);
 
