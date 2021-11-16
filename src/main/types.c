@@ -1,6 +1,6 @@
 #include "types.h"
 
-SLEQP_EXPORT const char*
+const char*
 sleqp_retcode_str(SLEQP_RETCODE retcode)
 {
   switch (retcode)
