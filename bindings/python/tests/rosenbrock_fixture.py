@@ -16,7 +16,7 @@ class RosenbrockFunc:
   def set_value(self, v, reason):
     self.v = v
 
-  def func_val(self):
+  def obj_val(self):
     [x, y] = self.v
     (a, b) = (self.a, self.b)
 
@@ -24,10 +24,10 @@ class RosenbrockFunc:
 
     return (a - x)**2 + b*(y - xsq)**2
 
-  def func_grad_nnz(self):
+  def obj_grad_nnz(self):
     return 2
 
-  def func_grad(self):
+  def obj_grad(self):
     [x, y] = self.v
     (a, b) = (self.a, self.b)
 
@@ -44,15 +44,15 @@ class RosenbrockFunc:
   def cons_jac(self):
     return np.zeros((num_constraints, num_variables))
 
-  def hess_prod(self, func_dual, direction, _):
+  def hess_prod(self, obj_dual, direction, _):
     [x, y] = self.v
     (a, b) = (self.a, self.b)
     [dx, dy] = direction
 
     xsq = x**2
 
-    product = np.array([((8.*b*xsq + 4.*b*(xsq - y) + 2.)*dx - (4.*b*x)*dy)*func_dual,
-                        ((-4.*b*x)*dx + (2.*b)*dy)*func_dual])
+    product = np.array([((8.*b*xsq + 4.*b*(xsq - y) + 2.)*dx - (4.*b*x)*dy)*obj_dual,
+                        ((-4.*b*x)*dx + (2.*b)*dy)*obj_dual])
 
     return product
 

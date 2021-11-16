@@ -66,7 +66,7 @@ accepted_iterate(SleqpSolver* solver, SleqpIterate* iterate, void* data)
 
   callback_data->called = true;
 
-  SleqpSparseVec* solution = sleqp_iterate_get_primal(iterate);
+  SleqpSparseVec* solution = sleqp_iterate_primal(iterate);
 
   assert(solution->dim == 2);
 

@@ -68,7 +68,7 @@ sleqp_problem_solver_print_initial_line(SleqpProblemSolver* solver)
 
   sleqp_log_info(INITIAL_LINE_FORMAT,
                  iteration_buf,
-                 sleqp_iterate_get_func_val(solver->iterate),
+                 sleqp_iterate_obj_val(solver->iterate),
                  solver->current_merit_value,
                  solver->feasibility_residuum,
                  "",
@@ -159,10 +159,10 @@ sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
 
   SLEQP_CALL(print_iteration(solver, iteration_buf, DEFAULT_BUF_SIZE));
 
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(solver->iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(solver->iterate);
 
   SleqpWorkingSet* trial_working_set
-    = sleqp_iterate_get_working_set(solver->trial_iterate);
+    = sleqp_iterate_working_set(solver->trial_iterate);
 
   if (sleqp_working_set_eq(working_set, trial_working_set))
   {
@@ -179,7 +179,7 @@ sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
 
   sleqp_log_info(LINE_FORMAT,
                  iteration_buf,
-                 sleqp_iterate_get_func_val(solver->iterate),
+                 sleqp_iterate_obj_val(solver->iterate),
                  solver->current_merit_value,
                  solver->feasibility_residuum,
                  solver->slackness_residuum,

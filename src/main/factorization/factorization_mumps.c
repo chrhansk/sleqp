@@ -1,4 +1,4 @@
-#include "sparse_factorization_mumps.h"
+#include "factorization_mumps.h"
 
 #include <assert.h>
 
@@ -94,10 +94,10 @@ matrix_reserve(SleqpMUMPSData* sleqp_mumps_data, int nnz)
 static SLEQP_RETCODE
 matrix_fill(SleqpMUMPSData* sleqp_mumps_data, SleqpSparseMatrix* matrix)
 {
-  const int nnz = sleqp_sparse_matrix_get_nnz(matrix);
+  const int nnz = sleqp_sparse_matrix_nnz(matrix);
 
-  const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
+  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
+  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
 
   assert(num_rows == num_cols);
 
@@ -112,9 +112,9 @@ matrix_fill(SleqpMUMPSData* sleqp_mumps_data, SleqpSparseMatrix* matrix)
 
   sleqp_mumps_data->dim = dim;
 
-  const double* data = sleqp_sparse_matrix_get_data(matrix);
-  const int* cols    = sleqp_sparse_matrix_get_cols(matrix);
-  const int* rows    = sleqp_sparse_matrix_get_rows(matrix);
+  const double* data = sleqp_sparse_matrix_data(matrix);
+  const int* cols    = sleqp_sparse_matrix_cols(matrix);
+  const int* rows    = sleqp_sparse_matrix_rows(matrix);
 
   int col = 0;
 
@@ -197,11 +197,11 @@ sleqp_mumps_solve(void* factorization_data, SleqpSparseVec* rhs)
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_get_sol(void* factorization_data,
-                    SleqpSparseVec* sol,
-                    int begin,
-                    int end,
-                    double zero_eps)
+sleqp_mumps_solution(void* factorization_data,
+                     SleqpSparseVec* sol,
+                     int begin,
+                     int end,
+                     double zero_eps)
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)factorization_data;
 
@@ -214,8 +214,8 @@ sleqp_mumps_get_sol(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_get_condition_estimate(void* factorization_data,
-                                   double* condition_estimate)
+sleqp_mumps_condition_estimate(void* factorization_data,
+                               double* condition_estimate)
 {
   // SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*) factorization_data;
 
@@ -246,35 +246,34 @@ sleqp_mumps_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_factorization_mumps_create(SleqpSparseFactorization** star,
-                                        SleqpParams* params)
+sleqp_factorization_mumps_create(SleqpFactorization** star, SleqpParams* params)
 {
-  SleqpSparseFactorizationCallbacks callbacks
-    = {.set_matrix             = sleqp_mumps_set_matrix,
-       .solve                  = sleqp_mumps_solve,
-       .get_sol                = sleqp_mumps_get_sol,
-       .get_condition_estimate = sleqp_mumps_get_condition_estimate,
-       .free                   = sleqp_mumps_free};
+  SleqpFactorizationCallbacks callbacks
+    = {.set_matrix         = sleqp_mumps_set_matrix,
+       .solve              = sleqp_mumps_solve,
+       .solution           = sleqp_mumps_solution,
+       .condition_estimate = sleqp_mumps_condition_estimate,
+       .free               = sleqp_mumps_free};
 
   SleqpMUMPSData* sleqp_mumps_data;
 
   SLEQP_CALL(sleqp_mumps_create(&sleqp_mumps_data));
 
-  SLEQP_CALL(sleqp_sparse_factorization_create(star,
-                                               SLEQP_FACT_MUMPS_NAME,
-                                               SLEQP_FACT_MUMPS_VERSION,
-                                               params,
-                                               &callbacks,
-                                               (void*)sleqp_mumps_data));
+  SLEQP_CALL(sleqp_factorization_create(star,
+                                        SLEQP_FACT_MUMPS_NAME,
+                                        SLEQP_FACT_MUMPS_VERSION,
+                                        params,
+                                        &callbacks,
+                                        (void*)sleqp_mumps_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
-                                          SleqpParams* params)
+sleqp_factorization_create_default(SleqpFactorization** star,
+                                   SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_sparse_factorization_mumps_create(star, params));
+  SLEQP_CALL(sleqp_factorization_mumps_create(star, params));
 
   return SLEQP_OKAY;
 }

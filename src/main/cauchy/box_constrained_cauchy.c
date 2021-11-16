@@ -31,10 +31,10 @@ compute_fixed_vars(CauchyData* cauchy_data)
 {
   SleqpProblem* problem = cauchy_data->problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
-  const SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
-  const SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
+  const SleqpSparseVec* var_lb = sleqp_problem_vars_lb(problem);
+  const SleqpSparseVec* var_ub = sleqp_problem_vars_ub(problem);
 
   int k_l = 0, k_u = 0;
 
@@ -76,14 +76,14 @@ compute_diffs(CauchyData* cauchy_data)
   SleqpProblem* problem = cauchy_data->problem;
   SleqpIterate* iterate = cauchy_data->iterate;
 
-  const SleqpSparseVec* var_lb = sleqp_problem_var_lb(problem);
-  const SleqpSparseVec* var_ub = sleqp_problem_var_ub(problem);
-  SleqpSparseVec* primal       = sleqp_iterate_get_primal(iterate);
+  const SleqpSparseVec* var_lb = sleqp_problem_vars_lb(problem);
+  const SleqpSparseVec* var_ub = sleqp_problem_vars_ub(problem);
+  SleqpSparseVec* primal       = sleqp_iterate_primal(iterate);
 
   assert(sleqp_sparse_vector_is_boxed(primal, var_lb, var_ub));
 
   const double zero_eps
-    = sleqp_params_get(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_add_scaled(var_lb,
                                             primal,
@@ -142,7 +142,7 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
   SleqpProblem* problem   = cauchy_data->problem;
   SleqpIterate* iterate   = cauchy_data->iterate;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
   const double trust_radius = cauchy_data->trust_radius;
 
   SLEQP_CALL(sleqp_sparse_vector_clear(cauchy_data->direction));
@@ -150,7 +150,7 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
 
   const SleqpSparseVec* ld   = cauchy_data->lower_diff;
   const SleqpSparseVec* ud   = cauchy_data->upper_diff;
-  const SleqpSparseVec* grad = sleqp_iterate_get_func_grad(iterate);
+  const SleqpSparseVec* grad = sleqp_iterate_obj_grad(iterate);
 
   SleqpSparseVec* direction = cauchy_data->direction;
   SleqpSparseVec* duals     = cauchy_data->duals;
@@ -158,7 +158,7 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
   double* objective = &(cauchy_data->objective);
   bool* fixed_vars  = cauchy_data->fixed_vars;
 
-  (*objective) = sleqp_iterate_get_func_val(iterate);
+  (*objective) = sleqp_iterate_obj_val(iterate);
 
   int k_l = 0, k_u = 0, k_g = 0;
 
@@ -251,11 +251,11 @@ box_constrained_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 {
   CauchyData* cauchy_data      = (CauchyData*)data;
   SleqpProblem* problem        = cauchy_data->problem;
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   SLEQP_CALL(sleqp_working_set_reset(working_set));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   for (int j = 0; j < num_variables; ++j)
   {
@@ -263,7 +263,7 @@ box_constrained_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 
     if (state != SLEQP_INACTIVE)
     {
-      SLEQP_CALL(sleqp_working_set_add_variable(working_set, j, state));
+      SLEQP_CALL(sleqp_working_set_add_var(working_set, j, state));
     }
   }
 
@@ -294,7 +294,7 @@ box_constrained_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
   CauchyData* cauchy_data = (CauchyData*)data;
 
   SLEQP_CALL(sleqp_sparse_vector_copy(cauchy_data->duals,
-                                      sleqp_iterate_get_vars_dual(iterate)));
+                                      sleqp_iterate_vars_dual(iterate)));
 
   return SLEQP_OKAY;
 }
@@ -355,9 +355,9 @@ cauchy_data_create(CauchyData** star,
 
   CauchyData* cauchy_data = *star;
 
-  assert(sleqp_problem_num_constraints(problem) == 0);
+  assert(sleqp_problem_num_cons(problem) == 0);
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   *cauchy_data = (CauchyData){0};
 

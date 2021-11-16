@@ -50,7 +50,7 @@ sleqp_problem_solver_update_trust_radius(SleqpProblemSolver* solver,
                                          bool trial_step_accepted,
                                          double direction_norm)
 {
-  const double eps = sleqp_params_get(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
   double* trust_radius = &(solver->trust_radius);
 

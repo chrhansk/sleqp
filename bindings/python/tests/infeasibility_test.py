@@ -13,10 +13,10 @@ class Func:
   def set_value(self, v, reason):
     [self.x] = v
 
-  def func_val(self):
+  def obj_val(self):
     return 0.
 
-  def func_grad(self):
+  def obj_grad(self):
     return np.array([0.])
 
   def cons_vals(self):
@@ -27,7 +27,7 @@ class Func:
     x = self.x
     return np.array([[2*x]])
 
-  def hess_prod(self, func_dual, direction, cons_duals):
+  def hess_prod(self, obj_dual, direction, cons_duals):
     return 2*cons_duals.item()*direction
 
 

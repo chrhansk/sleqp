@@ -24,8 +24,8 @@ sleqp_problem_solver_get_real_state(const SleqpProblemSolver* solver,
   case SLEQP_SOLVER_STATE_REAL_LP_TRUST_RADIUS:
     (*value) = solver->lp_trust_radius;
     break;
-  case SLEQP_SOLVER_STATE_REAL_SCALED_FUNC_VAL:
-    (*value) = sleqp_iterate_get_func_val(solver->iterate);
+  case SLEQP_SOLVER_STATE_REAL_SCALED_OBJ_VAL:
+    (*value) = sleqp_iterate_obj_val(solver->iterate);
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_MERIT_VAL:
     (*value) = solver->current_merit_value;
@@ -86,9 +86,9 @@ sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solver,
                                    SleqpSparseVec* result)
 {
   const double zero_eps
-    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpSparseVec* cons_val = sleqp_iterate_get_cons_val(solver->iterate);
+  SleqpSparseVec* cons_val = sleqp_iterate_cons_val(solver->iterate);
 
   switch (value)
   {

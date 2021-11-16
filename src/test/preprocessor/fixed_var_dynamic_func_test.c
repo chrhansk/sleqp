@@ -54,23 +54,23 @@ teardown()
   dyn_rosenbrock_teardown();
 }
 
-START_TEST(test_func_val)
+START_TEST(test_obj_val)
 {
   bool reject;
 
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   ASSERT_CALL(sleqp_func_set_value(dyn_rosenbrock_func,
                                    rosenbrock_initial,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  double func_val;
+  double obj_val;
 
-  ASSERT_CALL(sleqp_func_val(dyn_rosenbrock_func, &func_val));
+  ASSERT_CALL(sleqp_func_obj_val(dyn_rosenbrock_func, &obj_val));
 
   assert(!reject);
 
@@ -78,20 +78,15 @@ START_TEST(test_func_val)
                                    fixed_initial,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  double fixed_func_val;
+  double fixed_obj_val;
 
-  ASSERT_CALL(sleqp_func_val(fixed_var_func, &fixed_func_val));
+  ASSERT_CALL(sleqp_func_obj_val(fixed_var_func, &fixed_obj_val));
 
-  ck_assert(sleqp_is_eq(func_val, fixed_func_val, 2. * accuracy));
-}
-END_TEST
-
-START_TEST(test_func_grad)
-{
+  ck_assert(sleqp_is_eq(obj_val, fixed_obj_val, 2. * accuracy));
 }
 END_TEST
 
@@ -107,9 +102,7 @@ fixed_var_dynamic_test_suite()
 
   tcase_add_checked_fixture(tc_eval, setup, teardown);
 
-  tcase_add_test(tc_eval, test_func_val);
-
-  tcase_add_test(tc_eval, test_func_grad);
+  tcase_add_test(tc_eval, test_obj_val);
 
   suite_add_tcase(suite, tc_eval);
 

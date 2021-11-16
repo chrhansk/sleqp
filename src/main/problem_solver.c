@@ -32,8 +32,8 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
 
   solver->solver_phase = solver_phase;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
                                SLEQP_MAX(num_variables, num_constraints)));
@@ -50,18 +50,17 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
   SLEQP_CALL(sleqp_iterate_create(&solver->iterate, solver->problem, primal));
 
   const double zero_eps
-    = sleqp_params_get(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_clip(primal,
-                             sleqp_problem_var_lb(solver->problem),
-                             sleqp_problem_var_ub(solver->problem),
-                             zero_eps,
-                             sleqp_iterate_get_primal(solver->iterate)));
+  SLEQP_CALL(sleqp_sparse_vector_clip(primal,
+                                      sleqp_problem_vars_lb(solver->problem),
+                                      sleqp_problem_vars_ub(solver->problem),
+                                      zero_eps,
+                                      sleqp_iterate_primal(solver->iterate)));
 
   SLEQP_CALL(sleqp_iterate_create(&solver->trial_iterate,
                                   solver->problem,
-                                  sleqp_iterate_get_primal(solver->iterate)));
+                                  sleqp_iterate_primal(solver->iterate)));
 
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
@@ -75,8 +74,9 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
                                             params,
                                             options));
 
-  SLEQP_CALL(
-    sleqp_deriv_checker_create(&solver->deriv_check, solver->problem, params));
+  SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_checker,
+                                        solver->problem,
+                                        params));
 
   SLEQP_CALL(sleqp_merit_create(&solver->merit, solver->problem, params));
 
@@ -94,13 +94,12 @@ SLEQP_RETCODE
 sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
                                 const SleqpSparseVec* primal)
 {
-  const int num_variables = sleqp_problem_num_variables(solver->problem);
+  const int num_variables = sleqp_problem_num_vars(solver->problem);
 
   assert(primal->dim == num_variables);
 
   SLEQP_CALL(
-    sleqp_sparse_vector_copy(primal,
-                             sleqp_iterate_get_primal(solver->iterate)));
+    sleqp_sparse_vector_copy(primal, sleqp_iterate_primal(solver->iterate)));
 
   return SLEQP_OKAY;
 }
@@ -108,7 +107,7 @@ sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
 SLEQP_RETCODE
 sleqp_problem_solver_reset(SleqpProblemSolver* solver)
 {
-  const int num_variables = sleqp_problem_num_variables(solver->problem);
+  const int num_variables = sleqp_problem_num_vars(solver->problem);
 
   // initial trust region radii as suggested,
   // penalty parameter as suggested:
@@ -174,7 +173,7 @@ problem_solver_free(SleqpProblemSolver** star)
 
   SLEQP_CALL(sleqp_merit_release(&solver->merit));
 
-  SLEQP_CALL(sleqp_deriv_checker_free(&solver->deriv_check));
+  SLEQP_CALL(sleqp_deriv_checker_free(&solver->deriv_checker));
 
   SLEQP_CALL(sleqp_step_rule_release(&solver->step_rule));
 

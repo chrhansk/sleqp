@@ -10,22 +10,22 @@
 #include "iterate.h"
 #include "params.h"
 
-typedef struct SleqpDerivCheckData SleqpDerivCheckData;
+typedef struct SleqpDerivChecker SleqpDerivChecker;
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_deriv_checker_create(SleqpDerivCheckData** star,
+sleqp_deriv_checker_create(SleqpDerivChecker** star,
                            SleqpProblem* problem,
                            SleqpParams* params);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_deriv_check_perform(SleqpDerivCheckData* data,
+sleqp_deriv_check_perform(SleqpDerivChecker* deriv_checker,
                           SleqpIterate* iterate,
                           SLEQP_DERIV_CHECK flags);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_deriv_checker_free(SleqpDerivCheckData** star);
+sleqp_deriv_checker_free(SleqpDerivChecker** star);
 
 #endif /* SLEQP_DERIV_CHECK_H */

@@ -107,7 +107,7 @@ step_rule_minstep_apply(double iterate_merit,
     = SLEQP_MAX(current_reduction_ratio, historic_reduction_ratio);
 
   const double accepted_reduction
-    = sleqp_params_get(step_rule->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
+    = sleqp_params_value(step_rule->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
 
   *accept_step = (*reduction_ratio >= accepted_reduction);
 

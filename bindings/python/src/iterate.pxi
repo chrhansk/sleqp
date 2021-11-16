@@ -27,19 +27,19 @@ cdef class Iterate:
   def primal(self) -> np.array:
     assert self.iterate
 
-    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_primal(self.iterate))
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_primal(self.iterate))
 
   @property
   def vars_dual(self) -> np.array:
     assert self.iterate
 
-    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_vars_dual(self.iterate))
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_vars_dual(self.iterate))
 
   @property
   def cons_dual(self) -> np.array:
     assert self.iterate
 
-    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_cons_dual(self.iterate))
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_cons_dual(self.iterate))
 
   @property
   def working_set(self) -> WorkingSet:
@@ -48,7 +48,7 @@ cdef class Iterate:
 
     assert self.iterate
 
-    _working_set = csleqp.sleqp_iterate_get_working_set(self.iterate)
+    _working_set = csleqp.sleqp_iterate_working_set(self.iterate)
 
     working_set._set_working_set(_working_set)
 
@@ -58,22 +58,22 @@ cdef class Iterate:
   def cons_jac(self) -> scipy.sparse.csc_matrix:
     assert self.iterate
 
-    return sleqp_sparse_matrix_to_scipy(csleqp.sleqp_iterate_get_cons_jac(self.iterate))
+    return sleqp_sparse_matrix_to_scipy(csleqp.sleqp_iterate_cons_jac(self.iterate))
 
   @property
-  def func_val(self) -> float:
+  def obj_val(self) -> float:
     assert self.iterate
 
-    return csleqp.sleqp_iterate_get_func_val(self.iterate)
+    return csleqp.sleqp_iterate_obj_val(self.iterate)
 
   @property
-  def func_grad(self) -> np.array:
+  def obj_grad(self) -> np.array:
     assert self.iterate
 
-    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_func_grad(self.iterate))
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_obj_grad(self.iterate))
 
   @property
   def cons_val(self) -> np.array:
     assert self.iterate
 
-    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_get_cons_val(self.iterate))
+    return sleqp_sparse_vec_to_array(csleqp.sleqp_iterate_cons_val(self.iterate))

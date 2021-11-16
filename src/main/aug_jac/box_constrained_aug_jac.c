@@ -29,7 +29,7 @@ aug_jac_min_norm_solution(SleqpSparseVec* rhs, SleqpSparseVec* sol, void* data)
 {
   AugJacData* jacobian         = (AugJacData*)data;
   SleqpIterate* iterate        = jacobian->iterate;
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   SLEQP_CALL(sleqp_sparse_vector_clear(sol));
   SLEQP_CALL(sleqp_sparse_vector_reserve(sol, rhs->nnz));
@@ -38,7 +38,7 @@ aug_jac_min_norm_solution(SleqpSparseVec* rhs, SleqpSparseVec* sol, void* data)
   {
     const int j        = rhs->indices[k];
     const double value = rhs->data[k];
-    const int index    = sleqp_working_set_get_variable_index(working_set, j);
+    const int index    = sleqp_working_set_var_index(working_set, j);
 
     if (index == SLEQP_NONE)
     {
@@ -57,7 +57,7 @@ aug_jac_projection(SleqpSparseVec* rhs,
 {
   AugJacData* jacobian         = (AugJacData*)data;
   SleqpIterate* iterate        = jacobian->iterate;
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   if (primal_sol)
   {
@@ -75,7 +75,7 @@ aug_jac_projection(SleqpSparseVec* rhs,
   {
     const int j        = rhs->indices[k];
     const double value = rhs->data[k];
-    const int index    = sleqp_working_set_get_variable_index(working_set, j);
+    const int index    = sleqp_working_set_var_index(working_set, j);
 
     if (index == SLEQP_NONE)
     {

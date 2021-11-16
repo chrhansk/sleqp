@@ -13,7 +13,7 @@ class Func:
     def set_value(self, values, reason):
         assert((values == initial_sol).all())
 
-    def func_val(self):
+    def obj_val(self):
         return 0.
 
     def cons_vals(self):
@@ -22,7 +22,7 @@ class Func:
     def cons_jac(self):
         return np.zeros((num_constraints, num_variables))
 
-    def hess_prod(self, func_dual, direction, cons_dual):
+    def hess_prod(self, obj_dual, direction, cons_dual):
         return np.zeros((num_variables,))
 
 

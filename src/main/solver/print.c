@@ -48,7 +48,7 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
 
     sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
                    "Scaled objective value",
-                   sleqp_iterate_get_func_val(iterate));
+                   sleqp_iterate_obj_val(iterate));
 
     sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
                    "Scaled violation",
@@ -56,7 +56,7 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
 
     sleqp_log_info("%30s:     %5.10e",
                    "Original objective value",
-                   sleqp_iterate_get_func_val(solver->original_iterate));
+                   sleqp_iterate_obj_val(solver->original_iterate));
 
     sleqp_log_info("%30s:     %5.10e",
                    "Original violation",
@@ -66,16 +66,14 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
   {
     sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
                    "Objective value",
-                   sleqp_iterate_get_func_val(iterate));
+                   sleqp_iterate_obj_val(iterate));
 
     sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
                    "Violation",
                    violation);
   }
 
-  sleqp_log_info("%30s: %5d",
-                 "Iterations",
-                 sleqp_solver_get_iterations(solver));
+  sleqp_log_info("%30s: %5d", "Iterations", sleqp_solver_iterations(solver));
 
   SLEQP_CALL(sleqp_timer_display(sleqp_func_get_set_timer(original_func),
                                  "Setting function values",

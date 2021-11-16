@@ -10,7 +10,7 @@ SLEQP_RETCODE
 sleqp_dyn_func_get_accuracy(SleqpFunc* func, double* accuracy);
 
 SLEQP_RETCODE
-sleqp_dyn_func_val(SleqpFunc* func, double accuracy, double* func_val);
+sleqp_dyn_func_obj_val(SleqpFunc* func, double accuracy, double* obj_val);
 
 SLEQP_RETCODE
 sleqp_dyn_func_cons_val(SleqpFunc* func,

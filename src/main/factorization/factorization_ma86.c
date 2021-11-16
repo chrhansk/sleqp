@@ -1,4 +1,4 @@
-#include "sparse_factorization_ma86.h"
+#include "factorization_ma86.h"
 
 #include <assert.h>
 
@@ -184,8 +184,8 @@ ma86_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 {
   MA86Data* ma86_data = (MA86Data*)factorization_data;
 
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
-  const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
+  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
 
   SLEQP_CALL(sleqp_sparse_matrix_resize(ma86_data->matrix, num_rows, num_cols));
 
@@ -206,9 +206,9 @@ ma86_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 
   ma86_data->dim = dim;
 
-  int* cols    = sleqp_sparse_matrix_get_cols(ma86_data->matrix);
-  int* rows    = sleqp_sparse_matrix_get_rows(ma86_data->matrix);
-  double* data = sleqp_sparse_matrix_get_data(ma86_data->matrix);
+  int* cols    = sleqp_sparse_matrix_cols(ma86_data->matrix);
+  int* rows    = sleqp_sparse_matrix_rows(ma86_data->matrix);
+  double* data = sleqp_sparse_matrix_data(ma86_data->matrix);
 
   mc68_order(MC68_ORDER_APX_MINDEG,
              dim,
@@ -277,11 +277,11 @@ ma86_data_solve(void* factorization_data, SleqpSparseVec* rhs)
 }
 
 static SLEQP_RETCODE
-ma86_data_get_sol(void* factorization_data,
-                  SleqpSparseVec* sol,
-                  int begin,
-                  int end,
-                  double zero_eps)
+ma86_data_solution(void* factorization_data,
+                   SleqpSparseVec* sol,
+                   int begin,
+                   int end,
+                   double zero_eps)
 {
   MA86Data* ma86_data = (MA86Data*)factorization_data;
 
@@ -294,8 +294,8 @@ ma86_data_get_sol(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-ma86_data_get_condition_estimate(void* factorization_data,
-                                 double* condition_estimate)
+ma86_data_condition_estimate(void* factorization_data,
+                             double* condition_estimate)
 {
   // MA86Data* ma86_data = (MA86Data*) factorization_data;
 
@@ -327,35 +327,34 @@ ma86_data_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_factorization_ma86_create(SleqpSparseFactorization** star,
-                                       SleqpParams* params)
+sleqp_factorization_ma86_create(SleqpFactorization** star, SleqpParams* params)
 {
-  SleqpSparseFactorizationCallbacks callbacks
-    = {.set_matrix             = ma86_data_set_matrix,
-       .solve                  = ma86_data_solve,
-       .get_sol                = ma86_data_get_sol,
-       .get_condition_estimate = ma86_data_get_condition_estimate,
-       .free                   = ma86_data_free};
+  SleqpFactorizationCallbacks callbacks
+    = {.set_matrix         = ma86_data_set_matrix,
+       .solve              = ma86_data_solve,
+       .solution           = ma86_data_solution,
+       .condition_estimate = ma86_data_condition_estimate,
+       .free               = ma86_data_free};
 
   MA86Data* ma86_data;
 
   SLEQP_CALL(ma86_data_create(&ma86_data));
 
-  SLEQP_CALL(sleqp_sparse_factorization_create(star,
-                                               SLEQP_FACT_MA86_NAME,
-                                               SLEQP_FACT_MA86_VERSION,
-                                               params,
-                                               &callbacks,
-                                               (void*)ma86_data));
+  SLEQP_CALL(sleqp_factorization_create(star,
+                                        SLEQP_FACT_MA86_NAME,
+                                        SLEQP_FACT_MA86_VERSION,
+                                        params,
+                                        &callbacks,
+                                        (void*)ma86_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_factorization_create_default(SleqpSparseFactorization** star,
-                                          SleqpParams* params)
+sleqp_factorization_create_default(SleqpFactorization** star,
+                                   SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_sparse_factorization_ma86_create(star, params));
+  SLEQP_CALL(sleqp_factorization_ma86_create(star, params));
 
   return SLEQP_OKAY;
 }

@@ -14,7 +14,7 @@
 #include "working_step.h"
 
 #include "aug_jac/standard_aug_jac.h"
-#include "sparse/sparse_factorization.h"
+#include "factorization/factorization.h"
 
 static const int num_variables   = 2;
 static const int num_constraints = 1;
@@ -49,14 +49,14 @@ linquadfunc_set(SleqpFunc* func,
                 SleqpSparseVec* x,
                 SLEQP_VALUE_REASON reason,
                 bool* reject,
-                int* func_grad_nnz,
+                int* obj_grad_nnz,
                 int* cons_val_nnz,
                 int* cons_jac_nnz,
                 void* func_data)
 {
-  *func_grad_nnz = 2;
-  *cons_val_nnz  = 1;
-  *cons_jac_nnz  = 1;
+  *obj_grad_nnz = 2;
+  *cons_val_nnz = 1;
+  *cons_jac_nnz = 1;
 
   LinQuadFuncData* data = (LinQuadFuncData*)func_data;
 
@@ -76,28 +76,28 @@ linquadfunc_set(SleqpFunc* func,
 }
 
 SLEQP_RETCODE
-linquadfunc_val(SleqpFunc* func, double* func_val, void* func_data)
+linquadfunc_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   LinQuadFuncData* data = (LinQuadFuncData*)func_data;
 
-  *func_val = square(data->x[0]) + square(data->x[1]);
+  *obj_val = square(data->x[0]) + square(data->x[1]);
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-linquadfunc_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+linquadfunc_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
   LinQuadFuncData* data = (LinQuadFuncData*)func_data;
 
-  assert(func_grad->dim == 2);
-  assert(func_grad->nnz_max >= 2);
+  assert(obj_grad->dim == 2);
+  assert(obj_grad->nnz_max >= 2);
 
-  func_grad->nnz = 0;
+  obj_grad->nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 2. * data->x[0]));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 2. * data->x[0]));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 1, 2. * data->x[1]));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, 2. * data->x[1]));
 
   return SLEQP_OKAY;
 }
@@ -121,8 +121,8 @@ linquadfunc_cons_jac(SleqpFunc* func,
                      SleqpSparseMatrix* cons_jac,
                      void* func_data)
 {
-  assert(sleqp_sparse_matrix_get_nnz(cons_jac) == 0);
-  assert(sleqp_sparse_matrix_get_nnz_max(cons_jac) >= 1);
+  assert(sleqp_sparse_matrix_nnz(cons_jac) == 0);
+  assert(sleqp_sparse_matrix_nnz_max(cons_jac) >= 1);
 
   SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 1.));
 
@@ -133,15 +133,15 @@ linquadfunc_cons_jac(SleqpFunc* func,
 
 SLEQP_RETCODE
 linquadfunc_hess_prod(SleqpFunc* func,
-                      const double* func_dual,
+                      const double* obj_dual,
                       const SleqpSparseVec* direction,
                       const SleqpSparseVec* cons_duals,
                       SleqpSparseVec* result,
                       void* func_data)
 {
-  if (func_dual)
+  if (obj_dual)
   {
-    double total_value = 2. * (*func_dual);
+    double total_value = 2. * (*obj_dual);
 
     SLEQP_CALL(sleqp_sparse_vector_copy(direction, result));
 
@@ -161,8 +161,8 @@ newton_setup()
   ASSERT_CALL(sleqp_alloc_array(&func_data->x, 2));
 
   SleqpFuncCallbacks callbacks = {.set_value = linquadfunc_set,
-                                  .func_val  = linquadfunc_val,
-                                  .func_grad = linquadfunc_grad,
+                                  .obj_val   = linquadfunc_obj_val,
+                                  .obj_grad  = linquadfunc_obj_grad,
                                   .cons_val  = linquadfunc_cons_val,
                                   .cons_jac  = linquadfunc_cons_jac,
                                   .hess_prod = linquadfunc_hess_prod,
@@ -219,13 +219,12 @@ newton_setup()
   ASSERT_CALL(
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
   ASSERT_CALL(sleqp_working_set_reset(working_set));
 
   // set the cons state manually...
 
-  ASSERT_CALL(
-    sleqp_working_set_add_constraint(working_set, 0, SLEQP_ACTIVE_LOWER));
+  ASSERT_CALL(sleqp_working_set_add_cons(working_set, 0, SLEQP_ACTIVE_LOWER));
 }
 
 START_TEST(newton_constrained_step)
@@ -239,13 +238,13 @@ START_TEST(newton_constrained_step)
   SleqpWorkingStep* working_step;
   SleqpEQPSolver* newton_solver;
 
-  SleqpSparseFactorization* factorization;
+  SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
 
   double penalty_parameter = 1.;
   double trust_radius      = 10.;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   ASSERT_CALL(sleqp_sparse_vector_create(&actual_step, num_variables, 0));
   ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 1));
@@ -256,8 +255,7 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(
-    sleqp_sparse_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
 
   ASSERT_CALL(
     sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
@@ -278,10 +276,9 @@ START_TEST(newton_constrained_step)
                                            trust_radius,
                                            penalty_parameter));
 
-  ASSERT_CALL(
-    sleqp_eqp_solver_compute_step(newton_solver,
-                                  sleqp_iterate_get_cons_dual(iterate),
-                                  actual_step));
+  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
+                                            sleqp_iterate_cons_dual(iterate),
+                                            actual_step));
 
   const double tolerance = 1e-8;
 
@@ -293,7 +290,7 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_sparse_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_factorization_release(&factorization));
 
   ASSERT_CALL(sleqp_options_release(&options));
 

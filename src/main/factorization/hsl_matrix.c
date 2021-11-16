@@ -11,17 +11,17 @@
 SLEQP_RETCODE
 hsl_matrix_set(HSLMatrix* hsl_matrix, SleqpSparseMatrix* matrix)
 {
-  const int num_rows = sleqp_sparse_matrix_get_num_rows(matrix);
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(matrix);
+  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
+  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
 
   assert(num_rows == num_cols);
 
   hsl_matrix->dim = num_rows;
 
-  const double* matrix_data = sleqp_sparse_matrix_get_data(matrix);
-  const int* matrix_cols    = sleqp_sparse_matrix_get_cols(matrix);
-  const int* matrix_rows    = sleqp_sparse_matrix_get_rows(matrix);
-  const int matrix_nnz      = sleqp_sparse_matrix_get_nnz(matrix);
+  const double* matrix_data = sleqp_sparse_matrix_data(matrix);
+  const int* matrix_cols    = sleqp_sparse_matrix_cols(matrix);
+  const int* matrix_rows    = sleqp_sparse_matrix_rows(matrix);
+  const int matrix_nnz      = sleqp_sparse_matrix_nnz(matrix);
 
   if (hsl_matrix->max_nnz < matrix_nnz)
   {

@@ -43,14 +43,14 @@ linfunc_set(SleqpFunc* func,
             SleqpSparseVec* x,
             SLEQP_VALUE_REASON reason,
             bool* reject,
-            int* func_grad_nnz,
+            int* obj_grad_nnz,
             int* cons_val_nnz,
             int* cons_jac_nnz,
             void* func_data)
 {
-  *func_grad_nnz = 2;
-  *cons_val_nnz  = 0;
-  *cons_jac_nnz  = 0;
+  *obj_grad_nnz = 2;
+  *cons_val_nnz = 0;
+  *cons_jac_nnz = 0;
 
   LinFuncData* data = (LinFuncData*)func_data;
 
@@ -70,32 +70,32 @@ linfunc_set(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-linfunc_val(SleqpFunc* func, double* func_val, void* func_data)
+linfunc_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 {
   LinFuncData* data = (LinFuncData*)func_data;
 
-  *func_val = data->x[0] + data->x[1];
+  *obj_val = data->x[0] + data->x[1];
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-linfunc_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+linfunc_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
-  assert(func_grad->dim == 2);
+  assert(obj_grad->dim == 2);
 
-  func_grad->nnz = 0;
+  obj_grad->nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 0, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 1.));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(func_grad, 1, 1.));
+  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, 1.));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 linfunc_hess_prod(SleqpFunc* func,
-                  const double* func_dual,
+                  const double* obj_dual,
                   const SleqpSparseVec* direction,
                   const SleqpSparseVec* cons_duals,
                   SleqpSparseVec* product,
@@ -115,8 +115,8 @@ unconstrained_setup()
   ASSERT_CALL(sleqp_alloc_array(&func_data->x, 2));
 
   SleqpFuncCallbacks callbacks = {.set_value = linfunc_set,
-                                  .func_val  = linfunc_val,
-                                  .func_grad = linfunc_grad,
+                                  .obj_val   = linfunc_obj_val,
+                                  .obj_grad  = linfunc_obj_grad,
                                   .cons_val  = NULL,
                                   .cons_jac  = NULL,
                                   .hess_prod = linfunc_hess_prod,
@@ -194,19 +194,19 @@ START_TEST(test_unconstrained_cauchy_direction)
                                           linfunc_cons_lb,
                                           linfunc_cons_ub));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linfunc_x));
 
   int num_lp_variables   = num_variables + 2 * num_constraints;
   int num_lp_constraints = num_constraints;
 
-  ASSERT_CALL(sleqp_lpi_create_default_interface(&lp_interface,
-                                                 num_lp_variables,
-                                                 num_lp_constraints,
-                                                 params,
-                                                 options));
+  ASSERT_CALL(sleqp_lpi_create_default(&lp_interface,
+                                       num_lp_variables,
+                                       num_lp_constraints,
+                                       params,
+                                       options));
 
   ASSERT_CALL(
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
@@ -222,7 +222,7 @@ START_TEST(test_unconstrained_cauchy_direction)
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
-                                 sleqp_iterate_get_func_grad(iterate),
+                                 sleqp_iterate_obj_grad(iterate),
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 

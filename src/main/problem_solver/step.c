@@ -8,17 +8,17 @@ sleqp_problem_solver_set_func_value(SleqpProblemSolver* solver,
 {
   SleqpProblem* problem = solver->problem;
 
-  int func_grad_nnz = 0;
-  int cons_val_nnz  = 0;
-  int cons_jac_nnz  = 0;
+  int obj_grad_nnz = 0;
+  int cons_val_nnz = 0;
+  int cons_jac_nnz = 0;
 
   bool manual_reject = false;
 
   SLEQP_CALL(sleqp_problem_set_value(problem,
-                                     sleqp_iterate_get_primal(iterate),
+                                     sleqp_iterate_primal(iterate),
                                      reason,
                                      &manual_reject,
-                                     &func_grad_nnz,
+                                     &obj_grad_nnz,
                                      &cons_val_nnz,
                                      &cons_jac_nnz));
 
@@ -39,14 +39,14 @@ sleqp_problem_solver_set_func_value(SleqpProblemSolver* solver,
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(sleqp_iterate_get_func_grad(iterate),
-                                         func_grad_nnz));
+  SLEQP_CALL(
+    sleqp_sparse_vector_reserve(sleqp_iterate_obj_grad(iterate), obj_grad_nnz));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(sleqp_iterate_get_cons_val(iterate),
-                                         cons_val_nnz));
+  SLEQP_CALL(
+    sleqp_sparse_vector_reserve(sleqp_iterate_cons_val(iterate), cons_val_nnz));
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(sleqp_iterate_get_cons_jac(iterate),
-                                         cons_jac_nnz));
+  SLEQP_CALL(
+    sleqp_sparse_matrix_reserve(sleqp_iterate_cons_jac(iterate), cons_jac_nnz));
 
   return SLEQP_OKAY;
 }
@@ -88,9 +88,9 @@ sleqp_problem_solver_accept_step(SleqpProblemSolver* solver)
   SLEQP_CALL(sleqp_problem_eval(problem,
                                 NULL,
                                 NULL,
-                                sleqp_iterate_get_func_grad(trial_iterate),
-                                sleqp_iterate_get_cons_val(trial_iterate),
-                                sleqp_iterate_get_cons_jac(trial_iterate)));
+                                sleqp_iterate_obj_grad(trial_iterate),
+                                sleqp_iterate_cons_val(trial_iterate),
+                                sleqp_iterate_cons_jac(trial_iterate)));
 
   SleqpCallbackHandler* handler
     = solver->callback_handlers[SLEQP_PROBLEM_SOLVER_EVENT_ACCEPTED_ITERATE];

@@ -16,7 +16,7 @@
 
 #define PARAMETRIC_CAUCHY_DEFAULT SLEQP_PARAMETRIC_CAUCHY_DISABLED
 #define DERIV_CHECK_DEFAULT SLEQP_DERIV_CHECK_SKIP
-#define HESSIAN_EVAL_DEFAULT SLEQP_HESSIAN_EVAL_EXACT
+#define HESS_EVAL_DEFAULT SLEQP_HESS_EVAL_EXACT
 #define DUAL_ESTIMATION_TYPE_DEFAULT SLEQP_DUAL_ESTIMATION_TYPE_LSQ
 #define QUASI_NEWTON_SIZE_DEFAULT 5
 #define MAX_NEWTON_ITERATIONS_DEFAULT 100
@@ -61,8 +61,8 @@ sleqp_options_create(SleqpOptions** star)
 
   options->refcount = 1;
 
-  options->int_values[SLEQP_OPTION_INT_DERIV_CHECK]  = DERIV_CHECK_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_HESSIAN_EVAL] = HESSIAN_EVAL_DEFAULT;
+  options->int_values[SLEQP_OPTION_INT_DERIV_CHECK] = DERIV_CHECK_DEFAULT;
+  options->int_values[SLEQP_OPTION_INT_HESS_EVAL]   = HESS_EVAL_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE]
     = DUAL_ESTIMATION_TYPE_DEFAULT;
   options->int_values[SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES]
@@ -98,7 +98,7 @@ sleqp_options_create(SleqpOptions** star)
 }
 
 int
-sleqp_options_get_int(const SleqpOptions* options, SLEQP_OPTION_INT option)
+sleqp_options_int_value(const SleqpOptions* options, SLEQP_OPTION_INT option)
 {
   assert(option >= 0);
   assert(option < SLEQP_NUM_INT_OPTIONS);
@@ -107,7 +107,9 @@ sleqp_options_get_int(const SleqpOptions* options, SLEQP_OPTION_INT option)
 }
 
 SLEQP_RETCODE
-sleqp_options_set_int(SleqpOptions* options, SLEQP_OPTION_INT option, int value)
+sleqp_options_set_int_value(SleqpOptions* options,
+                            SLEQP_OPTION_INT option,
+                            int value)
 {
   assert(option >= 0);
   assert(option < SLEQP_NUM_INT_OPTIONS);
@@ -118,7 +120,7 @@ sleqp_options_set_int(SleqpOptions* options, SLEQP_OPTION_INT option, int value)
 }
 
 bool
-sleqp_options_get_bool(const SleqpOptions* options, SLEQP_OPTION_BOOL option)
+sleqp_options_bool_value(const SleqpOptions* options, SLEQP_OPTION_BOOL option)
 {
   assert(option >= 0);
   assert(option < SLEQP_NUM_BOOL_OPTIONS);
@@ -127,9 +129,9 @@ sleqp_options_get_bool(const SleqpOptions* options, SLEQP_OPTION_BOOL option)
 }
 
 SLEQP_RETCODE
-sleqp_options_set_bool(SleqpOptions* options,
-                       SLEQP_OPTION_BOOL option,
-                       bool value)
+sleqp_options_set_bool_value(SleqpOptions* options,
+                             SLEQP_OPTION_BOOL option,
+                             bool value)
 {
   assert(option >= 0);
   assert(option < SLEQP_NUM_BOOL_OPTIONS);

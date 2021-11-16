@@ -17,10 +17,10 @@ class MatrixErrorFunc:
   def set_matrix_value(self, m):
     self.m = m
 
-  def func_val(self):
+  def obj_val(self):
     return 0
 
-  def func_grad_nnz(self):
+  def obj_grad_nnz(self):
     return 1
 
   def cons_jac_nnz(self):
@@ -32,10 +32,10 @@ class MatrixErrorFunc:
   def cons_jac(self):
     return np.zeros((num_constraints, num_variables))
 
-  def func_grad(self):
+  def obj_grad(self):
     return np.array([0]*num_variables)
 
-  def hess_prod(self, func_dual, direction, cons_dual):
+  def hess_prod(self, obj_dual, direction, cons_dual):
     return np.array([0]*num_variables)
 
   def cons_jac(self):

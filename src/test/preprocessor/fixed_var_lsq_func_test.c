@@ -80,13 +80,13 @@ setup()
 
   bool reject;
 
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   ASSERT_CALL(sleqp_func_set_value(rosenbrock_lsq_func,
                                    rosenbrock_initial,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
@@ -96,7 +96,7 @@ setup()
                                    fixed_initial,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject,
-                                   &func_grad_nnz,
+                                   &obj_grad_nnz,
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
@@ -128,7 +128,7 @@ teardown()
 
 START_TEST(test_residuals)
 {
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   ASSERT_CALL(sleqp_lsq_func_residuals(rosenbrock_lsq_func, residuals));
 
@@ -140,7 +140,7 @@ END_TEST
 
 START_TEST(test_jac_forward)
 {
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   ASSERT_CALL(sleqp_sparse_vector_push(forward, 1, 1.));
 

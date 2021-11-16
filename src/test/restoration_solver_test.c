@@ -24,9 +24,10 @@ restoration_solver_setup()
   ASSERT_CALL(sleqp_params_create(&params));
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_options_set_bool(options,
-                                     SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE,
-                                     true));
+  ASSERT_CALL(
+    sleqp_options_set_bool_value(options,
+                                 SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE,
+                                 true));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           wachbieg_func,
@@ -61,13 +62,13 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_solve(solver, SLEQP_NONE, SLEQP_NONE));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, wachbieg_optimal, 1e-6));
 

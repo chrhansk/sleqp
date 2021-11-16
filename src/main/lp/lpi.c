@@ -26,14 +26,14 @@ struct SleqpLPi
 };
 
 SLEQP_RETCODE
-sleqp_lpi_create_interface(SleqpLPi** lp_star,
-                           const char* name,
-                           const char* version,
-                           int num_variables,
-                           int num_constraints,
-                           SleqpParams* params,
-                           SleqpOptions* options,
-                           SleqpLPiCallbacks* callbacks)
+sleqp_lpi_create(SleqpLPi** lp_star,
+                 const char* name,
+                 const char* version,
+                 int num_variables,
+                 int num_constraints,
+                 SleqpParams* params,
+                 SleqpOptions* options,
+                 SleqpLPiCallbacks* callbacks)
 {
   SLEQP_CALL(sleqp_malloc(lp_star));
 
@@ -65,25 +65,25 @@ sleqp_lpi_create_interface(SleqpLPi** lp_star,
 }
 
 const char*
-sleqp_lpi_get_name(SleqpLPi* lp_interface)
+sleqp_lpi_name(SleqpLPi* lp_interface)
 {
   return lp_interface->name;
 }
 
 const char*
-sleqp_lpi_get_version(SleqpLPi* lp_interface)
+sleqp_lpi_version(SleqpLPi* lp_interface)
 {
   return lp_interface->version;
 }
 
 int
-sleqp_lpi_get_num_variables(SleqpLPi* lp_interface)
+sleqp_lpi_num_vars(SleqpLPi* lp_interface)
 {
   return lp_interface->num_variables;
 }
 
 int
-sleqp_lpi_get_num_constraints(SleqpLPi* lp_interface)
+sleqp_lpi_num_cons(SleqpLPi* lp_interface)
 {
   return lp_interface->num_constraints;
 }
@@ -104,10 +104,10 @@ sleqp_lpi_solve(SleqpLPi* lp_interface)
   return retcode;
 }
 
-SLEQP_LPI_STATUS
-sleqp_get_status(SleqpLPi* lp_interface)
+SLEQP_LP_STATUS
+sleqp_lpi_status(SleqpLPi* lp_interface)
 {
-  return lp_interface->callbacks.get_status(lp_interface->lp_data);
+  return lp_interface->callbacks.status(lp_interface->lp_data);
 }
 
 SLEQP_RETCODE
@@ -127,8 +127,7 @@ sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
 }
 
 SLEQP_RETCODE
-sleqp_lpi_set_coefficients(SleqpLPi* lp_interface,
-                           SleqpSparseMatrix* coeff_matrix)
+sleqp_lpi_set_coeffs(SleqpLPi* lp_interface, SleqpSparseMatrix* coeff_matrix)
 {
   return lp_interface->callbacks.set_coefficients(lp_interface->lp_data,
                                                   lp_interface->num_variables,
@@ -166,62 +165,59 @@ sleqp_lpi_restore_basis(SleqpLPi* lp_interface, int index)
 }
 
 SLEQP_RETCODE
-sleqp_lpi_get_primal_sol(SleqpLPi* lp_interface,
-                         double* objective_value,
-                         double* solution_values)
+sleqp_lpi_primal_sol(SleqpLPi* lp_interface,
+                     double* objective_value,
+                     double* solution_values)
 {
-  return lp_interface->callbacks.get_primal_sol(lp_interface->lp_data,
-                                                lp_interface->num_variables,
-                                                lp_interface->num_constraints,
-                                                objective_value,
-                                                solution_values);
+  return lp_interface->callbacks.primal_sol(lp_interface->lp_data,
+                                            lp_interface->num_variables,
+                                            lp_interface->num_constraints,
+                                            objective_value,
+                                            solution_values);
 }
 
 SLEQP_RETCODE
-sleqp_lpi_get_dual_sol(SleqpLPi* lp_interface,
-                       double* vars_dual,
-                       double* cons_dual)
+sleqp_lpi_dual_sol(SleqpLPi* lp_interface, double* vars_dual, double* cons_dual)
 {
-  return lp_interface->callbacks.get_dual_sol(lp_interface->lp_data,
-                                              lp_interface->num_variables,
-                                              lp_interface->num_constraints,
-                                              vars_dual,
-                                              cons_dual);
+  return lp_interface->callbacks.dual_sol(lp_interface->lp_data,
+                                          lp_interface->num_variables,
+                                          lp_interface->num_constraints,
+                                          vars_dual,
+                                          cons_dual);
 }
 
 SLEQP_RETCODE
-sleqp_lpi_get_varstats(SleqpLPi* lp_interface, SLEQP_BASESTAT* variable_stats)
+sleqp_lpi_vars_stats(SleqpLPi* lp_interface, SLEQP_BASESTAT* variable_stats)
 {
-  return lp_interface->callbacks.get_varstats(lp_interface->lp_data,
-                                              lp_interface->num_variables,
-                                              lp_interface->num_constraints,
-                                              variable_stats);
+  return lp_interface->callbacks.vars_stats(lp_interface->lp_data,
+                                            lp_interface->num_variables,
+                                            lp_interface->num_constraints,
+                                            variable_stats);
 }
 
 SLEQP_RETCODE
-sleqp_lpi_get_consstats(SleqpLPi* lp_interface,
-                        SLEQP_BASESTAT* constraint_stats)
+sleqp_lpi_cons_stats(SleqpLPi* lp_interface, SLEQP_BASESTAT* constraint_stats)
 {
-  return lp_interface->callbacks.get_consstats(lp_interface->lp_data,
-                                               lp_interface->num_variables,
-                                               lp_interface->num_constraints,
-                                               constraint_stats);
+  return lp_interface->callbacks.cons_stats(lp_interface->lp_data,
+                                            lp_interface->num_variables,
+                                            lp_interface->num_constraints,
+                                            constraint_stats);
 }
 
 SleqpTimer*
-sleqp_lpi_get_solve_timer(SleqpLPi* lp_interface)
+sleqp_lpi_solve_timer(SleqpLPi* lp_interface)
 {
   return lp_interface->timer;
 }
 
 SLEQP_RETCODE
-sleqp_lpi_get_basis_condition(SleqpLPi* lp_interface,
-                              bool* exact,
-                              double* condition)
+sleqp_lpi_basis_condition_estimate(SleqpLPi* lp_interface,
+                                   bool* exact,
+                                   double* condition)
 {
-  return lp_interface->callbacks.get_basis_condition(lp_interface->lp_data,
-                                                     exact,
-                                                     condition);
+  return lp_interface->callbacks.basis_condition_estimate(lp_interface->lp_data,
+                                                          exact,
+                                                          condition);
 }
 
 static SLEQP_RETCODE

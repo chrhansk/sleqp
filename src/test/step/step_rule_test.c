@@ -21,8 +21,9 @@ test_step_rule(SLEQP_STEP_RULE step_rule)
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(
-    sleqp_options_set_int(options, SLEQP_OPTION_INT_STEP_RULE, step_rule));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_STEP_RULE,
+                                          step_rule));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           log_rosenbrock_func,
@@ -43,11 +44,11 @@ test_step_rule(SLEQP_STEP_RULE step_rule)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(
     sleqp_sparse_vector_eq(actual_solution, log_rosenbrock_optimal, 1e-6));

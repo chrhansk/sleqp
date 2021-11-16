@@ -11,17 +11,17 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
                        SLEQP_VALUE_REASON reason,
                        bool* reject)
 {
-  int func_grad_nnz = 0;
-  int cons_val_nnz  = 0;
-  int cons_jac_nnz  = 0;
+  int obj_grad_nnz = 0;
+  int cons_val_nnz = 0;
+  int cons_jac_nnz = 0;
 
   bool manual_reject = false;
 
   SLEQP_CALL(sleqp_problem_set_value(problem,
-                                     sleqp_iterate_get_primal(iterate),
+                                     sleqp_iterate_primal(iterate),
                                      reason,
                                      &manual_reject,
-                                     &func_grad_nnz,
+                                     &obj_grad_nnz,
                                      &cons_val_nnz,
                                      &cons_jac_nnz));
 
@@ -34,26 +34,22 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
     return SLEQP_ILLEGAL_ARGUMENT;
   }
 
-  SleqpSparseVec* func_grad   = sleqp_iterate_get_func_grad(iterate);
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-  SleqpSparseVec* cons_val    = sleqp_iterate_get_cons_val(iterate);
+  SleqpSparseVec* obj_grad    = sleqp_iterate_obj_grad(iterate);
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpSparseVec* cons_val    = sleqp_iterate_cons_val(iterate);
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(func_grad, func_grad_nnz));
+  SLEQP_CALL(sleqp_sparse_vector_reserve(obj_grad, obj_grad_nnz));
 
   SLEQP_CALL(sleqp_sparse_vector_reserve(cons_val, cons_val_nnz));
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac_nnz));
 
-  double func_val;
+  double obj_val;
 
-  SLEQP_CALL(sleqp_problem_eval(problem,
-                                NULL,
-                                &func_val,
-                                func_grad,
-                                cons_val,
-                                cons_jac));
+  SLEQP_CALL(
+    sleqp_problem_eval(problem, NULL, &obj_val, obj_grad, cons_val, cons_jac));
 
-  SLEQP_CALL(sleqp_iterate_set_func_val(iterate, func_val));
+  SLEQP_CALL(sleqp_iterate_set_obj_val(iterate, obj_val));
 
   return SLEQP_OKAY;
 }
@@ -68,16 +64,16 @@ sleqp_direction_in_working_set(SleqpProblem* problem,
 {
   (*in_working_set) = true;
 
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(cons_jac, direction, cache));
 
   const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
 
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  SleqpSparseVec* c = sleqp_iterate_get_cons_val(iterate);
+  SleqpSparseVec* c = sleqp_iterate_cons_val(iterate);
 
   const int dim = lb->dim;
 
@@ -111,7 +107,7 @@ sleqp_direction_in_working_set(SleqpProblem* problem,
     }
 
     const SLEQP_ACTIVE_STATE state
-      = sleqp_working_set_get_constraint_state(working_set, idx);
+      = sleqp_working_set_cons_state(working_set, idx);
 
     const double prod_val = c_val + cache[idx];
 

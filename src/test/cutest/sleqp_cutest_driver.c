@@ -31,47 +31,46 @@ report_result(SleqpSolver* solver,
     [SLEQP_STATUS_ABORT_DEADPOINT] = "abort_dead_point",
   };
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   double* cache;
 
   SLEQP_CALL(
     sleqp_alloc_array(&cache, SLEQP_MAX(num_variables, num_constraints)));
 
-  SLEQP_STATUS status = sleqp_solver_get_status(solver);
+  SLEQP_STATUS status = sleqp_solver_status(solver);
   SleqpIterate* iterate;
 
-  SLEQP_CALL(sleqp_solver_get_solution(solver, &iterate));
+  SLEQP_CALL(sleqp_solver_solution(solver, &iterate));
 
-  const int iterations = sleqp_solver_get_iterations(solver);
+  const int iterations = sleqp_solver_iterations(solver);
 
   int last_step_bdry;
 
-  SLEQP_CALL(
-    sleqp_solver_get_int_state(solver,
-                               SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY,
-                               &last_step_bdry));
+  SLEQP_CALL(sleqp_solver_int_state(solver,
+                                    SLEQP_SOLVER_STATE_INT_LAST_STEP_ON_BDRY,
+                                    &last_step_bdry));
 
   double last_trust_radius;
 
-  SLEQP_CALL(sleqp_solver_get_real_state(solver,
-                                         SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
-                                         &last_trust_radius));
+  SLEQP_CALL(sleqp_solver_real_state(solver,
+                                     SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
+                                     &last_trust_radius));
 
   double min_rayleigh;
 
-  SLEQP_CALL(sleqp_solver_get_real_state(solver,
-                                         SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH,
-                                         &min_rayleigh));
+  SLEQP_CALL(sleqp_solver_real_state(solver,
+                                     SLEQP_SOLVER_STATE_REAL_MIN_RAYLEIGH,
+                                     &min_rayleigh));
 
   double max_rayleigh;
 
-  SLEQP_CALL(sleqp_solver_get_real_state(solver,
-                                         SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH,
-                                         &max_rayleigh));
+  SLEQP_CALL(sleqp_solver_real_state(solver,
+                                     SLEQP_SOLVER_STATE_REAL_MAX_RAYLEIGH,
+                                     &max_rayleigh));
 
-  const double elapsed_seconds = sleqp_solver_get_elapsed_seconds(solver);
+  const double elapsed_seconds = sleqp_solver_elapsed_seconds(solver);
 
   double feas_res;
 
@@ -92,7 +91,7 @@ report_result(SleqpSolver* solver,
           num_variables,
           num_constraints,
           descriptions[status],
-          sleqp_iterate_get_func_val(iterate),
+          sleqp_iterate_obj_val(iterate),
           feas_res,
           slack_res,
           stat_res,
@@ -199,7 +198,7 @@ sleqp_cutest_run(const char* filename,
 
   SLEQP_CALL(sleqp_params_create(&params));
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpSparseVec* x;
 

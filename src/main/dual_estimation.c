@@ -20,7 +20,7 @@ sleqp_dual_estimation_create(SleqpDualEstimation** star, SleqpProblem* problem)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   SleqpDualEstimation* data = *star;
 
@@ -41,11 +41,11 @@ sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
                               SleqpAugJac* jacobian)
 {
   SleqpProblem* problem        = estimation_data->problem;
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
-  SleqpSparseVec* grad = sleqp_iterate_get_func_grad(iterate);
+  SleqpSparseVec* grad = sleqp_iterate_obj_grad(iterate);
 
   SleqpSparseVec* dual_sol = estimation_data->solution;
   SleqpSparseVec* neg_grad = estimation_data->neg_grad;
@@ -60,8 +60,8 @@ sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
 
   int num_clipped_vars = 0, num_clipped_cons = 0;
 
-  SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
-  SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
+  SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
+  SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
   {
     SLEQP_CALL(sleqp_sparse_vector_reserve(cons_dual, dual_sol->nnz));
@@ -75,12 +75,12 @@ sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
       int sol_index     = dual_sol->indices[k];
       double dual_value = dual_sol->data[k];
 
-      int index = sleqp_working_set_get_content(working_set, sol_index);
+      int index = sleqp_working_set_content(working_set, sol_index);
 
       if (index < num_variables)
       {
         SLEQP_ACTIVE_STATE var_state
-          = sleqp_working_set_get_variable_state(working_set, index);
+          = sleqp_working_set_var_state(working_set, index);
 
         assert(var_state != SLEQP_INACTIVE);
 
@@ -118,7 +118,7 @@ sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
         index -= num_variables;
 
         SLEQP_ACTIVE_STATE cons_state
-          = sleqp_working_set_get_constraint_state(working_set, index);
+          = sleqp_working_set_cons_state(working_set, index);
 
         assert(cons_state != SLEQP_INACTIVE);
 

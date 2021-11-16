@@ -28,8 +28,7 @@ sleqp_working_set_create(SleqpWorkingSet** star, SleqpProblem* problem);
  * @param[in]  index                 The variable index
  **/
 SLEQP_EXPORT SLEQP_ACTIVE_STATE
-sleqp_working_set_get_variable_state(const SleqpWorkingSet* working_set,
-                                     int index);
+sleqp_working_set_var_state(const SleqpWorkingSet* working_set, int index);
 
 /**
  * Returns the state of the given constraint with respect to the given working
@@ -39,13 +38,12 @@ sleqp_working_set_get_variable_state(const SleqpWorkingSet* working_set,
  * @param[in]  index                 The constraint index
  **/
 SLEQP_EXPORT SLEQP_ACTIVE_STATE
-sleqp_working_set_get_constraint_state(const SleqpWorkingSet* working_set,
-                                       int index);
+sleqp_working_set_cons_state(const SleqpWorkingSet* working_set, int index);
 
 SLEQP_EXPORT SLEQP_ACTIVE_STATE
-sleqp_working_set_get_state(const SleqpWorkingSet* working_set,
-                            bool constraint,
-                            int index);
+sleqp_working_set_state(const SleqpWorkingSet* working_set,
+                        bool constraint,
+                        int index);
 
 /**
  * Returns the problem underling the given working set
@@ -53,7 +51,7 @@ sleqp_working_set_get_state(const SleqpWorkingSet* working_set,
  * @param[in]  working_set           The working set
  **/
 SLEQP_EXPORT SleqpProblem*
-sleqp_working_set_get_problem(const SleqpWorkingSet* working_set);
+sleqp_working_set_problem(const SleqpWorkingSet* working_set);
 
 /**
  * Returns the number of variables contained in the given working set

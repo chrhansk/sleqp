@@ -128,7 +128,7 @@ add_accepted_step(StepRule* step_rule,
     return SLEQP_OKAY;
   }
 
-  const double eps = sleqp_params_get(step_rule->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(step_rule->params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -181,7 +181,7 @@ step_rule_window_apply(double iterate_merit,
     = SLEQP_MAX(current_reduction_ratio, historic_reduction_ratio);
 
   const double accepted_reduction
-    = sleqp_params_get(step_rule->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
+    = sleqp_params_value(step_rule->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
 
   *accept_step = (*reduction_ratio >= accepted_reduction);
 

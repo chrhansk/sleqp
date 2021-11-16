@@ -72,31 +72,31 @@ sleqp_problem_create(SleqpProblem** star,
  *problem.
  **/
 SLEQP_EXPORT int
-sleqp_problem_num_constraints(SleqpProblem* problem);
+sleqp_problem_num_cons(SleqpProblem* problem);
 
 /**
  * Returns the total number of linear constraints of the problem.
  **/
 SLEQP_EXPORT int
-sleqp_problem_num_linear_constraints(SleqpProblem* problem);
+sleqp_problem_num_lin_cons(SleqpProblem* problem);
 
 /**
  * Returns the total number of general constraints of the problem.
  **/
 SLEQP_EXPORT int
-sleqp_problem_num_general_constraints(SleqpProblem* problem);
+sleqp_problem_num_gen_cons(SleqpProblem* problem);
 
 SLEQP_EXPORT SleqpFunc*
 sleqp_problem_func(SleqpProblem* problem);
 
 SLEQP_EXPORT int
-sleqp_problem_num_variables(SleqpProblem* problem);
+sleqp_problem_num_vars(SleqpProblem* problem);
 
 SLEQP_EXPORT SleqpSparseVec*
-sleqp_problem_var_lb(SleqpProblem* problem);
+sleqp_problem_vars_lb(SleqpProblem* problem);
 
 SLEQP_EXPORT SleqpSparseVec*
-sleqp_problem_var_ub(SleqpProblem* problem);
+sleqp_problem_vars_ub(SleqpProblem* problem);
 
 SLEQP_EXPORT SleqpSparseVec*
 sleqp_problem_general_lb(SleqpProblem* problem);

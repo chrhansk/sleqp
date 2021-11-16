@@ -23,20 +23,20 @@ rosenbrock_set(SleqpFunc* func,
                SleqpSparseVec* x,
                SLEQP_VALUE_REASON reason,
                bool* reject,
-               int* func_grad_nnz,
+               int* obj_grad_nnz,
                int* cons_val_nnz,
                int* cons_jac_nnz,
                void* func_data);
 
 SLEQP_RETCODE
-rosenbrock_val(SleqpFunc* func, double* func_val, void* func_data);
+rosenbrock_obj_val(SleqpFunc* func, double* obj_val, void* func_data);
 
 SLEQP_RETCODE
-rosenbrock_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data);
+rosenbrock_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data);
 
 SLEQP_RETCODE
 rosenbrock_hess_prod(SleqpFunc* func,
-                     const double* func_dual,
+                     const double* obj_dual,
                      const SleqpSparseVec* direction,
                      const SleqpSparseVec* cons_duals,
                      SleqpSparseVec* product,

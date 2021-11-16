@@ -13,8 +13,8 @@
 #include "working_step.h"
 
 #include "cauchy/cauchy.h"
+#include "factorization/factorization.h"
 #include "lp/lpi.h"
-#include "sparse/sparse_factorization.h"
 
 typedef struct
 {
@@ -52,11 +52,11 @@ typedef struct
 
   SleqpDualEstimation* estimation_data;
 
-  SleqpSparseFactorization* factorization;
+  SleqpFactorization* factorization;
 
   SleqpAugJac* aug_jac;
 
-  SleqpLineSearchData* linesearch;
+  SleqpLineSearch* linesearch;
 
   SleqpWorkingStep* working_step;
 

@@ -41,8 +41,8 @@ create_maps(SleqpRestoration* restoration)
 
   SleqpProblem* problem = sleqp_preprocessing_state_get_problem(state);
 
-  const int num_variables = sleqp_problem_num_variables(problem);
-  const int num_linear    = sleqp_problem_num_linear_constraints(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
+  const int num_linear    = sleqp_problem_num_lin_cons(problem);
 
   {
     SleqpVariableState* var_states
@@ -114,8 +114,8 @@ sleqp_restoration_create(SleqpRestoration** star,
   restoration->params = params;
   SLEQP_CALL(sleqp_params_capture(restoration->params));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SLEQP_CALL(
     sleqp_alloc_array(&restoration->working_var_states, num_variables));
@@ -135,9 +135,8 @@ sleqp_restoration_create(SleqpRestoration** star,
                                num_variables));
 
   {
-    const int num_variables = sleqp_problem_num_variables(transformed_problem);
-    const int num_linear
-      = sleqp_problem_num_linear_constraints(transformed_problem);
+    const int num_variables = sleqp_problem_num_vars(transformed_problem);
+    const int num_linear    = sleqp_problem_num_lin_cons(transformed_problem);
 
     SLEQP_CALL(sleqp_alloc_array(&restoration->linear_cons_map, num_linear));
     SLEQP_CALL(sleqp_alloc_array(&restoration->var_map, num_variables));
@@ -178,8 +177,8 @@ store_working_set(const SleqpRestoration* restoration,
 {
   SleqpProblem* problem = restoration->original_problem;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SLEQP_CALL(sleqp_working_set_reset(working_set));
 
@@ -189,7 +188,7 @@ store_working_set(const SleqpRestoration* restoration,
 
     if (state != SLEQP_INACTIVE)
     {
-      SLEQP_CALL(sleqp_working_set_add_variable(working_set, j, state));
+      SLEQP_CALL(sleqp_working_set_add_var(working_set, j, state));
     }
   }
 
@@ -199,7 +198,7 @@ store_working_set(const SleqpRestoration* restoration,
 
     if (state != SLEQP_INACTIVE)
     {
-      SLEQP_CALL(sleqp_working_set_add_constraint(working_set, i, state));
+      SLEQP_CALL(sleqp_working_set_add_cons(working_set, i, state));
     }
   }
 
@@ -211,18 +210,18 @@ store_duals(const SleqpRestoration* restoration, SleqpIterate* original)
 {
   SleqpProblem* problem = restoration->original_problem;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   const double zero_eps
-    = sleqp_params_get(restoration->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(restoration->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sleqp_iterate_get_vars_dual(original),
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(sleqp_iterate_vars_dual(original),
                                           restoration->var_dual,
                                           num_variables,
                                           zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sleqp_iterate_get_cons_dual(original),
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(sleqp_iterate_cons_dual(original),
                                           restoration->cons_dual,
                                           num_constraints,
                                           zero_eps));
@@ -235,8 +234,8 @@ reset_working_set_states(SleqpRestoration* restoration)
 {
   SleqpProblem* problem = restoration->original_problem;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   for (int i = 0; i < num_constraints; ++i)
   {
@@ -260,10 +259,10 @@ prepare_working_set(SleqpRestoration* restoration,
     = restoration->preprocessing_state;
   SleqpProblem* problem = restoration->original_problem;
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
-  const int num_general = sleqp_problem_num_general_constraints(problem);
-  const int num_linear  = sleqp_problem_num_linear_constraints(problem);
+  const int num_general = sleqp_problem_num_gen_cons(problem);
+  const int num_linear  = sleqp_problem_num_lin_cons(problem);
 
   SleqpConvertedBound* converted_bounds;
   int num_converted_bounds;
@@ -289,7 +288,7 @@ prepare_working_set(SleqpRestoration* restoration,
       if (var_states[j].state == SLEQP_VAR_UNCHANGED)
       {
         restoration->working_var_states[j]
-          = sleqp_working_set_get_variable_state(transformed, j - offset);
+          = sleqp_working_set_var_state(transformed, j - offset);
       }
       else
       {
@@ -302,7 +301,7 @@ prepare_working_set(SleqpRestoration* restoration,
     for (int i = 0; i < num_general; ++i)
     {
       restoration->working_cons_states[i]
-        = sleqp_working_set_get_constraint_state(transformed, i);
+        = sleqp_working_set_cons_state(transformed, i);
     }
 
     int offset = 0;
@@ -314,8 +313,7 @@ prepare_working_set(SleqpRestoration* restoration,
       if (linear_cons_states[i].state == SLEQP_CONS_UNCHANGED)
       {
         restoration->working_cons_states[i_general]
-          = sleqp_working_set_get_constraint_state(transformed,
-                                                   i_general - offset);
+          = sleqp_working_set_cons_state(transformed, i_general - offset);
       }
       else
       {
@@ -332,8 +330,8 @@ reset_duals(SleqpRestoration* restoration)
 {
   SleqpProblem* problem = restoration->original_problem;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   for (int j = 0; j < num_variables; ++j)
   {
@@ -389,7 +387,7 @@ correct_forcing_constraint(SleqpRestoration* restoration,
 
   double* residuals = restoration->dense_stationarity_residuals;
 
-  const double eps = sleqp_params_get(restoration->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(restoration->params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -506,7 +504,7 @@ correct_converted_bound(SleqpRestoration* restoration,
 {
   SleqpProblem* problem = restoration->original_problem;
 
-  const int num_general = sleqp_problem_num_general_constraints(problem);
+  const int num_general = sleqp_problem_num_gen_cons(problem);
 
   const int i_general = converted_bound->constraint + num_general;
 
@@ -667,12 +665,12 @@ prepare_duals(SleqpRestoration* restoration, const SleqpIterate* transformed)
 {
   SleqpProblem* problem = restoration->original_problem;
 
-  const int num_general = sleqp_problem_num_general_constraints(problem);
+  const int num_general = sleqp_problem_num_gen_cons(problem);
 
   SLEQP_CALL(reset_duals(restoration));
 
   {
-    SleqpSparseVec* var_dual = sleqp_iterate_get_vars_dual(transformed);
+    SleqpSparseVec* var_dual = sleqp_iterate_vars_dual(transformed);
 
     for (int k = 0; k < var_dual->nnz; ++k)
     {
@@ -684,7 +682,7 @@ prepare_duals(SleqpRestoration* restoration, const SleqpIterate* transformed)
   }
 
   {
-    SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(transformed);
+    SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(transformed);
 
     for (int k = 0; k < cons_dual->nnz; ++k)
     {
@@ -713,7 +711,7 @@ compute_stationarity_residuals(SleqpRestoration* restoration,
   SleqpProblem* problem = restoration->original_problem;
 
   const double zero_eps
-    = sleqp_params_get(restoration->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(restoration->params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(store_duals(restoration, original));
 
@@ -740,8 +738,8 @@ sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
   SleqpProblem* problem = restoration->original_problem;
 
   SLEQP_CALL(restore_primal(restoration,
-                            sleqp_iterate_get_primal(transformed),
-                            sleqp_iterate_get_primal(original)));
+                            sleqp_iterate_primal(transformed),
+                            sleqp_iterate_primal(original)));
 
   bool reject = false;
 
@@ -757,8 +755,8 @@ sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
   }
 
   SLEQP_CALL(prepare_working_set(restoration,
-                                 sleqp_iterate_get_working_set(transformed),
-                                 sleqp_iterate_get_working_set(original)));
+                                 sleqp_iterate_working_set(transformed),
+                                 sleqp_iterate_working_set(original)));
 
   SLEQP_CALL(prepare_duals(restoration, transformed));
 
@@ -771,13 +769,13 @@ sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
   SLEQP_CALL(correct_forcing_constraints(restoration));
 
   SLEQP_CALL(
-    store_working_set(restoration, sleqp_iterate_get_working_set(original)));
+    store_working_set(restoration, sleqp_iterate_working_set(original)));
 
   SLEQP_CALL(store_duals(restoration, original));
 
 #ifndef DEBUG
 
-  assert(sleqp_working_set_valid(sleqp_iterate_get_working_set(original)));
+  assert(sleqp_working_set_valid(sleqp_iterate_working_set(original)));
 
   // This is only true if the working set of the transformed iterate is
   // supporting the respective duals as well.

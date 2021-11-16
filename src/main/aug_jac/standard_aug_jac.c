@@ -7,7 +7,7 @@
 #include "problem.h"
 #include "working_set.h"
 
-#include "sparse/sparse_factorization.h"
+#include "factorization/factorization.h"
 
 typedef struct
 {
@@ -20,7 +20,7 @@ typedef struct
   bool has_factorization;
 
   SleqpSparseMatrix* augmented_matrix;
-  SleqpSparseFactorization* factorization;
+  SleqpFactorization* factorization;
 
   SleqpWorkingSet* working_set;
 
@@ -39,13 +39,13 @@ fill_augmented_jacobian(AugJacData* jacobian,
 {
   SleqpProblem* problem = jacobian->problem;
 
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
 
   SleqpSparseMatrix* augmented_matrix = jacobian->augmented_matrix;
 
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  const int num_variables    = sleqp_problem_num_variables(problem);
+  const int num_variables    = sleqp_problem_num_vars(problem);
   const int working_set_size = sleqp_working_set_size(working_set);
 
   int augmented_size = num_variables + working_set_size;
@@ -64,11 +64,10 @@ fill_augmented_jacobian(AugJacData* jacobian,
     {
       // push the jacobian of the variable, if active
 
-      int variable_index
-        = sleqp_working_set_get_variable_index(working_set, column);
+      int variable_index = sleqp_working_set_var_index(working_set, column);
 
       SLEQP_ACTIVE_STATE var_state
-        = sleqp_working_set_get_variable_state(working_set, column);
+        = sleqp_working_set_var_state(working_set, column);
 
       if (variable_index != -1)
       {
@@ -85,20 +84,19 @@ fill_augmented_jacobian(AugJacData* jacobian,
       }
     }
 
-    int* cons_jac_cols    = sleqp_sparse_matrix_get_cols(cons_jac);
-    int* cons_jac_rows    = sleqp_sparse_matrix_get_rows(cons_jac);
-    double* cons_jac_data = sleqp_sparse_matrix_get_data(cons_jac);
+    int* cons_jac_cols    = sleqp_sparse_matrix_cols(cons_jac);
+    int* cons_jac_rows    = sleqp_sparse_matrix_rows(cons_jac);
+    double* cons_jac_data = sleqp_sparse_matrix_data(cons_jac);
 
     for (int index = cons_jac_cols[column]; index < cons_jac_cols[column + 1];
          ++index)
     {
       int jac_row = cons_jac_rows[index];
 
-      int act_cons_index
-        = sleqp_working_set_get_constraint_index(working_set, jac_row);
+      int act_cons_index = sleqp_working_set_cons_index(working_set, jac_row);
 
       SLEQP_ACTIVE_STATE cons_state
-        = sleqp_working_set_get_constraint_state(working_set, jac_row);
+        = sleqp_working_set_cons_state(working_set, jac_row);
 
       if (act_cons_index != -1)
       {
@@ -120,10 +118,10 @@ fill_augmented_jacobian(AugJacData* jacobian,
     }
   }
 
-  int aug_num_cols = sleqp_sparse_matrix_get_num_cols(augmented_matrix);
-  int* aug_cols    = sleqp_sparse_matrix_get_cols(augmented_matrix);
-  int* aug_rows    = sleqp_sparse_matrix_get_rows(augmented_matrix);
-  double* aug_data = sleqp_sparse_matrix_get_data(augmented_matrix);
+  int aug_num_cols = sleqp_sparse_matrix_num_cols(augmented_matrix);
+  int* aug_cols    = sleqp_sparse_matrix_cols(augmented_matrix);
+  int* aug_rows    = sleqp_sparse_matrix_rows(augmented_matrix);
+  double* aug_data = sleqp_sparse_matrix_data(augmented_matrix);
 
   for (int column = num_variables + 1; column < aug_num_cols + 1; ++column)
   {
@@ -151,7 +149,7 @@ fill_augmented_jacobian(AugJacData* jacobian,
     jacobian->col_indices[column] = 0;
   }
 
-  int aug_total_nnz = sleqp_sparse_matrix_get_nnz(augmented_matrix);
+  int aug_total_nnz = sleqp_sparse_matrix_nnz(augmented_matrix);
 
   // insert the entries
   for (int column = 0; column < num_variables; ++column)
@@ -192,7 +190,7 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
   AugJacData* jacobian = (AugJacData*)data;
 
   SleqpProblem* problem        = jacobian->problem;
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   if (jacobian->working_set)
   {
@@ -207,15 +205,14 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
     }
   }
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   jacobian->working_set_size = sleqp_working_set_size(working_set);
 
   jacobian->condition_estimate = SLEQP_NONE;
 
   // we overestimate here...
-  int constraint_nnz
-    = sleqp_sparse_matrix_get_nnz(sleqp_iterate_get_cons_jac(iterate));
+  int constraint_nnz = sleqp_sparse_matrix_nnz(sleqp_iterate_cons_jac(iterate));
 
   int variable_nnz = sleqp_working_set_num_active_vars(working_set);
 
@@ -232,16 +229,16 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 
   SLEQP_CALL(sleqp_timer_start(jacobian->factorization_timer));
 
-  SLEQP_CALL(sleqp_sparse_factorization_set_matrix(jacobian->factorization,
-                                                   jacobian->augmented_matrix));
+  SLEQP_CALL(sleqp_factorization_set_matrix(jacobian->factorization,
+                                            jacobian->augmented_matrix));
 
   jacobian->has_factorization = true;
 
   SLEQP_CALL(sleqp_timer_stop(jacobian->factorization_timer));
 
-  SLEQP_CALL(sleqp_sparse_factorization_get_condition_estimate(
-    jacobian->factorization,
-    &jacobian->condition_estimate));
+  SLEQP_CALL(
+    sleqp_factorization_condition_estimate(jacobian->factorization,
+                                           &jacobian->condition_estimate));
 
   {
     SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
@@ -249,7 +246,7 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
     int total_size = num_variables + jacobian->working_set_size;
 
     assert(sleqp_sparse_matrix_is_quadratic(matrix));
-    assert(sleqp_sparse_matrix_get_num_cols(matrix) == total_size);
+    assert(sleqp_sparse_matrix_num_cols(matrix) == total_size);
   }
 
   return SLEQP_OKAY;
@@ -275,12 +272,12 @@ aug_jac_min_norm_solution(SleqpSparseVec* rhs, SleqpSparseVec* sol, void* data)
 
   SLEQP_CALL(sleqp_timer_start(jacobian->substitution_timer));
 
-  SleqpProblem* problem                   = jacobian->problem;
-  SleqpSparseFactorization* factorization = jacobian->factorization;
+  SleqpProblem* problem             = jacobian->problem;
+  SleqpFactorization* factorization = jacobian->factorization;
 
-  double zero_eps = sleqp_params_get(jacobian->params, SLEQP_PARAM_ZERO_EPS);
+  double zero_eps = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   assert(sol->dim == num_variables);
 
@@ -291,13 +288,13 @@ aug_jac_min_norm_solution(SleqpSparseVec* rhs, SleqpSparseVec* sol, void* data)
     rhs->indices[k] += num_variables;
   }
 
-  SLEQP_CALL(sleqp_sparse_factorization_solve(factorization, rhs));
+  SLEQP_CALL(sleqp_factorization_solve(factorization, rhs));
 
-  SLEQP_CALL(sleqp_sparse_factorization_get_sol(factorization,
-                                                sol,
-                                                0,
-                                                num_variables,
-                                                zero_eps));
+  SLEQP_CALL(sleqp_factorization_solution(factorization,
+                                          sol,
+                                          0,
+                                          num_variables,
+                                          zero_eps));
 
   rhs->dim -= num_variables;
 
@@ -323,12 +320,12 @@ aug_jac_projection(SleqpSparseVec* rhs,
 
   SLEQP_CALL(sleqp_timer_start(jacobian->substitution_timer));
 
-  SleqpProblem* problem                   = jacobian->problem;
-  SleqpSparseFactorization* factorization = jacobian->factorization;
+  SleqpProblem* problem             = jacobian->problem;
+  SleqpFactorization* factorization = jacobian->factorization;
 
-  double zero_eps = sleqp_params_get(jacobian->params, SLEQP_PARAM_ZERO_EPS);
+  double zero_eps = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
-  const int num_variables    = sleqp_problem_num_variables(problem);
+  const int num_variables    = sleqp_problem_num_vars(problem);
   const int working_set_size = jacobian->working_set_size;
   const int total_size       = num_variables + working_set_size;
 
@@ -337,28 +334,28 @@ aug_jac_projection(SleqpSparseVec* rhs,
   // just add some zeros...
   SLEQP_CALL(sleqp_sparse_vector_resize(rhs, total_size));
 
-  SLEQP_CALL(sleqp_sparse_factorization_solve(factorization, rhs));
+  SLEQP_CALL(sleqp_factorization_solve(factorization, rhs));
 
   if (primal_sol)
   {
     assert(primal_sol->dim == num_variables);
 
-    SLEQP_CALL(sleqp_sparse_factorization_get_sol(factorization,
-                                                  primal_sol,
-                                                  0,
-                                                  num_variables,
-                                                  zero_eps));
+    SLEQP_CALL(sleqp_factorization_solution(factorization,
+                                            primal_sol,
+                                            0,
+                                            num_variables,
+                                            zero_eps));
   }
 
   if (dual_sol)
   {
     assert(dual_sol->dim == working_set_size);
 
-    SLEQP_CALL(sleqp_sparse_factorization_get_sol(factorization,
-                                                  dual_sol,
-                                                  num_variables,
-                                                  total_size,
-                                                  zero_eps));
+    SLEQP_CALL(sleqp_factorization_solution(factorization,
+                                            dual_sol,
+                                            num_variables,
+                                            total_size,
+                                            zero_eps));
 
     // SLEQP_CALL(sleqp_sparse_vector_scale(dual_sol, -1.));
   }
@@ -384,7 +381,7 @@ aug_jac_free(void* data)
 
   SLEQP_CALL(sleqp_working_set_release(&jacobian->working_set));
 
-  SLEQP_CALL(sleqp_sparse_factorization_release(&jacobian->factorization));
+  SLEQP_CALL(sleqp_factorization_release(&jacobian->factorization));
 
   SLEQP_CALL(sleqp_sparse_matrix_release(&jacobian->augmented_matrix));
 
@@ -401,12 +398,12 @@ static SLEQP_RETCODE
 aug_jacobian_data_create(AugJacData** star,
                          SleqpProblem* problem,
                          SleqpParams* params,
-                         SleqpSparseFactorization* sparse_factorization)
+                         SleqpFactorization* factorization)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   AugJacData* jacobian = *star;
 
@@ -429,9 +426,9 @@ aug_jacobian_data_create(AugJacData** star,
 
   jacobian->has_factorization = false;
 
-  SLEQP_CALL(sleqp_sparse_factorization_capture(sparse_factorization));
+  SLEQP_CALL(sleqp_factorization_capture(factorization));
 
-  jacobian->factorization = sparse_factorization;
+  jacobian->factorization = factorization;
 
   const bool fixed_jacobian = !(sleqp_problem_has_nonlinear_cons(problem));
 
@@ -453,14 +450,12 @@ SLEQP_RETCODE
 sleqp_standard_aug_jac_create(SleqpAugJac** star,
                               SleqpProblem* problem,
                               SleqpParams* params,
-                              SleqpSparseFactorization* sparse_factorization)
+                              SleqpFactorization* factorization)
 {
   AugJacData* aug_jac_data;
 
-  SLEQP_CALL(aug_jacobian_data_create(&aug_jac_data,
-                                      problem,
-                                      params,
-                                      sparse_factorization));
+  SLEQP_CALL(
+    aug_jacobian_data_create(&aug_jac_data, problem, params, factorization));
 
   SleqpAugJacCallbacks callbacks
     = {.set_iterate       = aug_jac_set_iterate,

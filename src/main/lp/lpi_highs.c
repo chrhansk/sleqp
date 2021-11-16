@@ -37,7 +37,7 @@ typedef struct SleqpLpiHIGHS
 {
   void* highs;
 
-  SLEQP_LPI_STATUS status;
+  SLEQP_LP_STATUS status;
 
   int num_cols;
   int num_rows;
@@ -95,7 +95,7 @@ highs_create_problem(void** star,
 
   lp_interface->num_cols = num_cols;
   lp_interface->num_rows = num_rows;
-  lp_interface->status   = SLEQP_LPI_STATUS_UNKNOWN;
+  lp_interface->status   = SLEQP_LP_STATUS_UNKNOWN;
 
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->col_basis, num_cols));
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->row_basis, num_rows));
@@ -119,7 +119,7 @@ highs_create_problem(void** star,
 
   {
     const int num_threads
-      = sleqp_options_get_int(options, SLEQP_OPTION_INT_NUM_THREADS);
+      = sleqp_options_int_value(options, SLEQP_OPTION_INT_NUM_THREADS);
 
     if (num_threads != SLEQP_NONE)
     {
@@ -237,25 +237,25 @@ highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
     switch (scaled_model_status)
     {
     case HIGHS_OPTIMAL:
-      lp_interface->status = SLEQP_LPI_STATUS_OPTIMAL;
+      lp_interface->status = SLEQP_LP_STATUS_OPTIMAL;
       break;
     case HIGHS_INFEASIBLE:
-      lp_interface->status = SLEQP_LPI_STATUS_INF;
+      lp_interface->status = SLEQP_LP_STATUS_INF;
       break;
     case HIGHS_UNBOUNDED_OR_INFEASIBLE:
-      lp_interface->status = SLEQP_LPI_STATUS_INF_OR_UNBOUNDED;
+      lp_interface->status = SLEQP_LP_STATUS_INF_OR_UNBOUNDED;
       break;
     case HIGHS_UNBOUNDED:
-      lp_interface->status = SLEQP_LPI_STATUS_UNBOUNDED;
+      lp_interface->status = SLEQP_LP_STATUS_UNBOUNDED;
       break;
     case HIGHS_TIME_LIMIT:
-      lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
+      lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
       return SLEQP_ABORT_TIME;
       break;
     default:
       sleqp_log_error("Invalid HiGHS status for scaled model: %d",
                       model_status);
-      lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
+      lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
       return SLEQP_INTERNAL_ERROR;
     }
     break;
@@ -266,36 +266,36 @@ highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
     // case HIGHS_POSTSOLVE_ERROR:
     // case HIGHS_MODEL_ERROR:
   case HIGHS_OPTIMAL:
-    lp_interface->status = SLEQP_LPI_STATUS_OPTIMAL;
+    lp_interface->status = SLEQP_LP_STATUS_OPTIMAL;
     break;
   case HIGHS_INFEASIBLE:
-    lp_interface->status = SLEQP_LPI_STATUS_INF;
+    lp_interface->status = SLEQP_LP_STATUS_INF;
     break;
   case HIGHS_UNBOUNDED_OR_INFEASIBLE:
-    lp_interface->status = SLEQP_LPI_STATUS_INF_OR_UNBOUNDED;
+    lp_interface->status = SLEQP_LP_STATUS_INF_OR_UNBOUNDED;
     break;
   case HIGHS_UNBOUNDED:
-    lp_interface->status = SLEQP_LPI_STATUS_UNBOUNDED;
+    lp_interface->status = SLEQP_LP_STATUS_UNBOUNDED;
     break;
     // case HIGHS_OBJECTIVE_BOUND:
     // case HIGHS_OBJECTIVE_TARGET:
   case HIGHS_TIME_LIMIT:
-    lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
+    lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
     return SLEQP_ABORT_TIME;
     break;
   case HIGHS_ITERATION_LIMIT: // fallthrough
   case HIGHS_UNKNOWN:         // fallthrough
   default:
     sleqp_log_error("Invalid HiGHS status: %d", model_status);
-    lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
+    lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
     return SLEQP_INTERNAL_ERROR;
   }
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_LPI_STATUS
-highs_get_status(void* lp_data)
+static SLEQP_LP_STATUS
+highs_status(void* lp_data)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
 
@@ -348,20 +348,20 @@ highs_set_bounds(void* lp_data,
 }
 
 static SLEQP_RETCODE
-highs_set_coefficients(void* lp_data,
-                       int num_cols,
-                       int num_rows,
-                       SleqpSparseMatrix* coeff_matrix)
+highs_set_coeffs(void* lp_data,
+                 int num_cols,
+                 int num_rows,
+                 SleqpSparseMatrix* coeff_matrix)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
   void* highs                 = lp_interface->highs;
 
-  assert(sleqp_sparse_matrix_get_num_rows(coeff_matrix) == num_rows);
-  assert(sleqp_sparse_matrix_get_num_cols(coeff_matrix) == num_cols);
+  assert(sleqp_sparse_matrix_num_rows(coeff_matrix) == num_rows);
+  assert(sleqp_sparse_matrix_num_cols(coeff_matrix) == num_cols);
 
-  const int* coeff_matrix_cols = sleqp_sparse_matrix_get_cols(coeff_matrix);
-  const int* coeff_matrix_rows = sleqp_sparse_matrix_get_rows(coeff_matrix);
-  double* coeff_matrix_data    = sleqp_sparse_matrix_get_data(coeff_matrix);
+  const int* coeff_matrix_cols = sleqp_sparse_matrix_cols(coeff_matrix);
+  const int* coeff_matrix_rows = sleqp_sparse_matrix_rows(coeff_matrix);
+  double* coeff_matrix_data    = sleqp_sparse_matrix_data(coeff_matrix);
 
   for (int col = 0; col < num_cols; ++col)
   {
@@ -455,11 +455,11 @@ highs_restore_basis(void* lp_data, int index)
 }
 
 static SLEQP_RETCODE
-highs_get_primal_sol(void* lp_data,
-                     int num_cols,
-                     int num_rows,
-                     double* objective_value,
-                     double* solution_values)
+highs_primal_sol(void* lp_data,
+                 int num_cols,
+                 int num_rows,
+                 double* objective_value,
+                 double* solution_values)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
   void* highs                 = lp_interface->highs;
@@ -483,11 +483,11 @@ highs_get_primal_sol(void* lp_data,
 }
 
 static SLEQP_RETCODE
-highs_get_dual_sol(void* lp_data,
-                   int num_cols,
-                   int num_rows,
-                   double* vars_dual,
-                   double* cons_dual)
+highs_dual_sol(void* lp_data,
+               int num_cols,
+               int num_rows,
+               double* vars_dual,
+               double* cons_dual)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
   void* highs                 = lp_interface->highs;
@@ -541,10 +541,10 @@ basestat_for(int status)
 }
 
 static SLEQP_RETCODE
-highs_get_varstats(void* lp_data,
-                   int num_cols,
-                   int num_rows,
-                   SLEQP_BASESTAT* variable_stats)
+highs_vars_stats(void* lp_data,
+                 int num_cols,
+                 int num_rows,
+                 SLEQP_BASESTAT* variable_stats)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
   void* highs                 = lp_interface->highs;
@@ -562,10 +562,10 @@ highs_get_varstats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-highs_get_consstats(void* lp_data,
-                    int num_cols,
-                    int num_rows,
-                    SLEQP_BASESTAT* constraint_stats)
+highs_cons_stats(void* lp_data,
+                 int num_cols,
+                 int num_rows,
+                 SLEQP_BASESTAT* constraint_stats)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
   void* highs                 = lp_interface->highs;
@@ -583,7 +583,7 @@ highs_get_consstats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-highs_get_basis_condition(void* lp_data, bool* exact, double* condition)
+highs_basis_condition_estimate(void* lp_data, bool* exact, double* condition)
 {
   *exact     = false;
   *condition = SLEQP_NONE;
@@ -629,50 +629,50 @@ highs_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_lpi_highs_create_interface(SleqpLPi** lp_star,
-                                 int num_cols,
-                                 int num_rows,
-                                 SleqpParams* params,
-                                 SleqpOptions* options)
+sleqp_lpi_highs_create(SleqpLPi** lp_star,
+                       int num_cols,
+                       int num_rows,
+                       SleqpParams* params,
+                       SleqpOptions* options)
 {
   SleqpLPiCallbacks callbacks
-    = {.create_problem      = highs_create_problem,
-       .solve               = highs_solve,
-       .get_status          = highs_get_status,
-       .set_bounds          = highs_set_bounds,
-       .set_coefficients    = highs_set_coefficients,
-       .set_objective       = highs_set_objective,
-       .save_basis          = highs_save_basis,
-       .restore_basis       = highs_restore_basis,
-       .get_primal_sol      = highs_get_primal_sol,
-       .get_dual_sol        = highs_get_dual_sol,
-       .get_varstats        = highs_get_varstats,
-       .get_consstats       = highs_get_consstats,
-       .get_basis_condition = highs_get_basis_condition,
-       .free_problem        = highs_free};
+    = {.create_problem           = highs_create_problem,
+       .solve                    = highs_solve,
+       .status                   = highs_status,
+       .set_bounds               = highs_set_bounds,
+       .set_coefficients         = highs_set_coeffs,
+       .set_objective            = highs_set_objective,
+       .save_basis               = highs_save_basis,
+       .restore_basis            = highs_restore_basis,
+       .primal_sol               = highs_primal_sol,
+       .dual_sol                 = highs_dual_sol,
+       .vars_stats               = highs_vars_stats,
+       .cons_stats               = highs_cons_stats,
+       .basis_condition_estimate = highs_basis_condition_estimate,
+       .free_problem             = highs_free};
 
-  return sleqp_lpi_create_interface(lp_star,
-                                    SLEQP_LP_SOLVER_HIGHS_NAME,
-                                    SLEQP_LP_SOLVER_HIGHS_VERSION,
-                                    num_cols,
-                                    num_rows,
-                                    params,
-                                    options,
-                                    &callbacks);
+  return sleqp_lpi_create(lp_star,
+                          SLEQP_LP_SOLVER_HIGHS_NAME,
+                          SLEQP_LP_SOLVER_HIGHS_VERSION,
+                          num_cols,
+                          num_rows,
+                          params,
+                          options,
+                          &callbacks);
 }
 
 SLEQP_RETCODE
-sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
-                                   int num_variables,
-                                   int num_constraints,
-                                   SleqpParams* params,
-                                   SleqpOptions* options)
+sleqp_lpi_create_default(SleqpLPi** lp_interface,
+                         int num_variables,
+                         int num_constraints,
+                         SleqpParams* params,
+                         SleqpOptions* options)
 {
-  SLEQP_CALL(sleqp_lpi_highs_create_interface(lp_interface,
-                                              num_variables,
-                                              num_constraints,
-                                              params,
-                                              options));
+  SLEQP_CALL(sleqp_lpi_highs_create(lp_interface,
+                                    num_variables,
+                                    num_constraints,
+                                    params,
+                                    options));
 
   return SLEQP_OKAY;
 }

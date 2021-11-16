@@ -68,25 +68,25 @@ sleqp_sparse_matrix_scale(SleqpSparseMatrix* matrix, double scale);
  * Returns the number of columns of the given matrix
  **/
 SLEQP_EXPORT int
-sleqp_sparse_matrix_get_num_cols(const SleqpSparseMatrix* matrix);
+sleqp_sparse_matrix_num_cols(const SleqpSparseMatrix* matrix);
 
 /**
  * Returns the number of rows of the given matrix
  **/
 SLEQP_EXPORT int
-sleqp_sparse_matrix_get_num_rows(const SleqpSparseMatrix* matrix);
+sleqp_sparse_matrix_num_rows(const SleqpSparseMatrix* matrix);
 
 /**
  * Returns the number of nonzeros of the given matrix
  **/
 SLEQP_EXPORT int
-sleqp_sparse_matrix_get_nnz(const SleqpSparseMatrix* matrix);
+sleqp_sparse_matrix_nnz(const SleqpSparseMatrix* matrix);
 
 /**
  * Returns the maximum number of nonzeros of the given matrix
  **/
 SLEQP_EXPORT int
-sleqp_sparse_matrix_get_nnz_max(const SleqpSparseMatrix* matrix);
+sleqp_sparse_matrix_nnz_max(const SleqpSparseMatrix* matrix);
 
 /**
  * Sets the number of nonzeros of the given matrix
@@ -104,19 +104,19 @@ sleqp_sparse_matrix_is_quadratic(const SleqpSparseMatrix* matrix);
  * Returns a pointer to the values of the matrix
  **/
 SLEQP_EXPORT double*
-sleqp_sparse_matrix_get_data(const SleqpSparseMatrix* matrix);
+sleqp_sparse_matrix_data(const SleqpSparseMatrix* matrix);
 
 /**
  * Returns a pointer to the columns of the given matrix
  **/
 SLEQP_EXPORT int*
-sleqp_sparse_matrix_get_cols(const SleqpSparseMatrix* matrix);
+sleqp_sparse_matrix_cols(const SleqpSparseMatrix* matrix);
 
 /**
  * Returns a pointer to the rows of the given matrix
  **/
 SLEQP_EXPORT int*
-sleqp_sparse_matrix_get_rows(const SleqpSparseMatrix* matrix);
+sleqp_sparse_matrix_rows(const SleqpSparseMatrix* matrix);
 
 /**
  * Pushes a new entry to the matrix. Fails if the matrix is at capacity

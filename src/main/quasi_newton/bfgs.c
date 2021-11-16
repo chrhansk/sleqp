@@ -220,28 +220,28 @@ bfgs_create(BFGS** star,
   SLEQP_CALL(sleqp_options_capture(options));
   data->options = options;
 
-  const SLEQP_HESSIAN_EVAL hessian_eval
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_HESSIAN_EVAL);
+  const SLEQP_HESS_EVAL hessian_eval
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_HESS_EVAL);
 
-  assert(hessian_eval == SLEQP_HESSIAN_EVAL_SIMPLE_BFGS
-         || hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS);
+  assert(hessian_eval == SLEQP_HESS_EVAL_SIMPLE_BFGS
+         || hessian_eval == SLEQP_HESS_EVAL_DAMPED_BFGS);
 
-  const bool damped = (hessian_eval == SLEQP_HESSIAN_EVAL_DAMPED_BFGS);
+  const bool damped = (hessian_eval == SLEQP_HESS_EVAL_DAMPED_BFGS);
 
   const int num
-    = sleqp_options_get_int(options,
-                            SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
+    = sleqp_options_int_value(options,
+                              SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
 
   const SLEQP_BFGS_SIZING sizing
-    = sleqp_options_get_int(options, SLEQP_OPTION_INT_BFGS_SIZING);
+    = sleqp_options_int_value(options, SLEQP_OPTION_INT_BFGS_SIZING);
 
   assert(num > 0);
 
-  const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_variables = sleqp_func_num_vars(func);
 
-  SleqpHessianStruct* hessian_struct = sleqp_func_get_hess_struct(func);
+  SleqpHessStruct* hessian_struct = sleqp_func_hess_struct(func);
 
-  const int num_blocks = sleqp_hessian_struct_get_num_blocks(hessian_struct);
+  const int num_blocks = sleqp_hess_struct_num_blocks(hessian_struct);
 
   data->num_variables = num_variables;
   data->num_blocks    = num_blocks;
@@ -252,10 +252,8 @@ bfgs_create(BFGS** star,
   {
     int begin, end;
 
-    SLEQP_CALL(sleqp_hessian_struct_get_block_range(hessian_struct,
-                                                    block,
-                                                    &begin,
-                                                    &end));
+    SLEQP_CALL(
+      sleqp_hess_struct_block_range(hessian_struct, block, &begin, &end));
 
     int block_dimension = end - begin;
 
@@ -313,7 +311,7 @@ bfgs_hess_prod_range(BFGSBlock* block,
                      SleqpSparseVec* product,
                      int final)
 {
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
   const int begin       = block->curr - block->len + 1;
 
   // Initially apply scaled identity
@@ -452,11 +450,11 @@ bfgs_compute_sizing(BFGSBlock* block, const int val)
 static SLEQP_RETCODE
 bfgs_compute_products(BFGSBlock* block, const SleqpParams* params)
 {
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   assert(block->len > 0);
 
@@ -612,38 +610,37 @@ bfgs_push(const SleqpIterate* previous_iterate,
 {
   BFGS* bfgs = (BFGS*)data;
 
-  const double eps      = sleqp_params_get(bfgs->params, SLEQP_PARAM_EPS);
-  const double zero_eps = sleqp_params_get(bfgs->params, SLEQP_PARAM_ZERO_EPS);
+  const double eps = sleqp_params_value(bfgs->params, SLEQP_PARAM_EPS);
+  const double zero_eps
+    = sleqp_params_value(bfgs->params, SLEQP_PARAM_ZERO_EPS);
 
   const int num_blocks = bfgs->num_blocks;
 
   // Compute gradient difference
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(
-      sleqp_iterate_get_cons_jac(previous_iterate),
+      sleqp_iterate_cons_jac(previous_iterate),
       multipliers,
       zero_eps,
       bfgs->prod_cache));
 
-    SLEQP_CALL(
-      sleqp_sparse_vector_add(bfgs->prod_cache,
-                              sleqp_iterate_get_func_grad(previous_iterate),
-                              zero_eps,
-                              bfgs->previous_grad));
+    SLEQP_CALL(sleqp_sparse_vector_add(bfgs->prod_cache,
+                                       sleqp_iterate_obj_grad(previous_iterate),
+                                       zero_eps,
+                                       bfgs->previous_grad));
   }
 
   {
     SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(
-      sleqp_iterate_get_cons_jac(current_iterate),
+      sleqp_iterate_cons_jac(current_iterate),
       multipliers,
       zero_eps,
       bfgs->prod_cache));
 
-    SLEQP_CALL(
-      sleqp_sparse_vector_add(bfgs->prod_cache,
-                              sleqp_iterate_get_func_grad(current_iterate),
-                              zero_eps,
-                              bfgs->current_grad));
+    SLEQP_CALL(sleqp_sparse_vector_add(bfgs->prod_cache,
+                                       sleqp_iterate_obj_grad(current_iterate),
+                                       zero_eps,
+                                       bfgs->current_grad));
   }
 
   {
@@ -657,8 +654,8 @@ bfgs_push(const SleqpIterate* previous_iterate,
 
   // Compute primal difference
   SLEQP_CALL(
-    sleqp_sparse_vector_add_scaled(sleqp_iterate_get_primal(previous_iterate),
-                                   sleqp_iterate_get_primal(current_iterate),
+    sleqp_sparse_vector_add_scaled(sleqp_iterate_primal(previous_iterate),
+                                   sleqp_iterate_primal(current_iterate),
                                    -1.,
                                    1.,
                                    zero_eps,
@@ -883,8 +880,8 @@ sleqp_bfgs_create(SleqpQuasiNewton** star,
 
   SleqpFunc* bfgs_func = sleqp_quasi_newton_get_func(quasi_newton);
 
-  SLEQP_CALL(sleqp_hessian_struct_copy(sleqp_func_get_hess_struct(func),
-                                       sleqp_func_get_hess_struct(bfgs_func)));
+  SLEQP_CALL(sleqp_hess_struct_copy(sleqp_func_hess_struct(func),
+                                    sleqp_func_hess_struct(bfgs_func)));
 
   SLEQP_CALL(
     sleqp_func_set_hess_flags(func, SLEQP_HESS_PSD | SLEQP_HESS_INEXACT));

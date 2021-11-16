@@ -10,6 +10,7 @@ import sleqp
 num_constraints = 0
 num_variables = 2
 
+
 class LSQFunc:
     """
     Simple LSQ function to solve the Rosenbrock problem.
@@ -29,7 +30,7 @@ class LSQFunc:
 
         self.lsq_jac = self.eval_lsq_jac()
 
-    def func_val(self):
+    def obj_val(self):
         return .5 * np.inner(self.lsq_val, self.lsq_val)
 
     def eval_lsq_func(self):
@@ -51,10 +52,10 @@ class LSQFunc:
         return np.array([[-1., 0.],
                          [-2*sqrt(b)*x0, sqrt(b)]])
 
-    def func_grad_nnz(self):
+    def obj_grad_nnz(self):
         return self.num_variables
 
-    def func_grad(self):
+    def obj_grad(self):
         return np.dot(self.lsq_val, self.lsq_jac)
 
     def cons_vals(self):
@@ -63,15 +64,17 @@ class LSQFunc:
     def cons_jac(self):
         return np.zeros((num_constraints, num_variables))
 
-    def hess_prod(self, func_dual, direction, cons_dual):
+    def hess_prod(self, obj_dual, direction, cons_dual):
 
-        if not func_dual: return np.zeros((self.num_vars,))
+        if not obj_dual:
+          return np.zeros((self.num_vars,))
 
         # use the first-order approximation to the Hessian
-        return func_dual * np.dot(np.transpose(self.lsq_jac),
-                                  np.dot(self.lsq_jac, direction))
+        return obj_dual * np.dot(np.transpose(self.lsq_jac),
+                                 np.dot(self.lsq_jac, direction))
 
-class LSQImplicitFunc():
+
+class LSQImplicitFunc:
     """
     Simple LSQ function to solve the Rosenbrock problem.
     Uses an inexact Hessian based on first-order information.
@@ -92,7 +95,7 @@ class LSQImplicitFunc():
 
         self.lsq_val = self.eval_lsq_func()
 
-    def func_val(self):
+    def obj_val(self):
         return .5 * np.inner(self.lsq_val, self.lsq_val)
 
     def eval_lsq_func(self):
@@ -130,18 +133,19 @@ class LSQImplicitFunc():
     def cons_jac(self):
         return np.zeros((num_constraints, num_variables))
 
-    def func_grad_nnz(self):
+    def obj_grad_nnz(self):
         return self.num_variables
 
-    def func_grad(self):
+    def obj_grad(self):
         return self.eval_lsq_jac_adjoint(self.lsq_val)
 
-    def hess_prod(self, func_dual, direction, cons_dual):
+    def hess_prod(self, obj_dual, direction, cons_dual):
 
-        if not func_dual: return np.zeros((self.num_vars,))
+        if not obj_dual:
+          return np.zeros((self.num_vars,))
 
         # use the first-order approximation to the Hessian
-        return func_dual * self.eval_lsq_jac_adjoint(self.eval_lsq_jac_forward(direction))
+        return obj_dual * self.eval_lsq_jac_adjoint(self.eval_lsq_jac_forward(direction))
 
 
 class LSQTest(unittest.TestCase):

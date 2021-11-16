@@ -21,7 +21,7 @@ print_warning(SleqpProblemSolver* solver)
   SLEQP_FUNC_TYPE func_type = sleqp_func_get_type(func);
 
   const SLEQP_DERIV_CHECK deriv_check
-    = sleqp_options_get_int(solver->options, SLEQP_OPTION_INT_DERIV_CHECK);
+    = sleqp_options_int_value(solver->options, SLEQP_OPTION_INT_DERIV_CHECK);
 
   const int hessian_check_flags
     = (SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE | SLEQP_DERIV_CHECK_SECOND_SIMPLE);
@@ -56,17 +56,17 @@ print_warning(SleqpProblemSolver* solver)
     double total_violation;
 
     SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                        sleqp_iterate_get_cons_val(iterate),
+                                        sleqp_iterate_cons_val(iterate),
                                         &total_violation));
 
-    const double func_val = sleqp_iterate_get_func_val(iterate);
+    const double obj_val = sleqp_iterate_obj_val(iterate);
 
-    if (total_violation > 10. * SLEQP_ABS(func_val))
+    if (total_violation > 10. * SLEQP_ABS(obj_val))
     {
       sleqp_log_warn("Problem is badly scaled, constraint violation %g "
                      "significantly exceeds function value of %g",
                      total_violation,
-                     func_val);
+                     obj_val);
     }
   }
 
@@ -82,8 +82,8 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   solver->abort_on_local_infeasibility = abort_on_local_infeasibility;
   solver->status                       = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
@@ -102,13 +102,13 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   }
 
   {
-    SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
+    SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
 
     sleqp_log_info("Solving a problem with %d variables, %d constraints, %d "
                    "Jacobian nonzeros",
                    num_variables,
                    num_constraints,
-                   sleqp_sparse_matrix_get_nnz(cons_jac));
+                   sleqp_sparse_matrix_nnz(cons_jac));
   }
 
   // Warnings
@@ -127,7 +127,7 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
   const double deadpoint_bound
-    = sleqp_params_get(solver->params, SLEQP_PARAM_DEADPOINT_BOUND);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_DEADPOINT_BOUND);
 
   SLEQP_CALL(sleqp_problem_solver_print_header(solver));
 

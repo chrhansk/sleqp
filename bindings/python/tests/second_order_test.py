@@ -13,12 +13,12 @@ class Func:
   def set_value(self, v, reason):
     self.v = v
 
-  def func_val(self):
+  def obj_val(self):
     [x, y] = self.v
 
     return 2*(x**2 + y**2 - 1) - x
 
-  def func_grad(self):
+  def obj_grad(self):
     [x, y] = self.v
 
     return np.array([4*x - 1, 4*y])
@@ -32,8 +32,8 @@ class Func:
     [x, y] = self.v
     return np.array([[2*x, 2*y]])
 
-  def hess_prod(self, func_dual, direction, cons_duals):
-    return 4*func_dual*direction + 2*cons_duals.item()*direction
+  def hess_prod(self, obj_dual, direction, cons_duals):
+    return 4*obj_dual*direction + 2*cons_duals.item()*direction
 
 
 class SecondOrderTest(unittest.TestCase):

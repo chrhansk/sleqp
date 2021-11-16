@@ -1,34 +1,34 @@
 cdef class HessianStruct:
-  cdef csleqp.SleqpHessianStruct* hess_struct
+  cdef csleqp.SleqpHessStruct* hess_struct
   cdef dict __dict__
   cdef _Func _func
 
   def __cinit__(self, _Func func):
     self._func = func
-    self.hess_struct = csleqp.sleqp_func_get_hess_struct(func.cfunc)
-    csleqp_call(csleqp.sleqp_hessian_struct_capture(self.hess_struct))
+    self.hess_struct = csleqp.sleqp_func_hess_struct(func.cfunc)
+    csleqp_call(csleqp.sleqp_hess_struct_capture(self.hess_struct))
 
   def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_hessian_struct_release(&self.hess_struct))
+    csleqp_call(csleqp.sleqp_hess_struct_release(&self.hess_struct))
 
   def clear(self) -> None:
-    csleqp_call(csleqp.sleqp_hessian_struct_clear(self.hess_struct))
+    csleqp_call(csleqp.sleqp_hess_struct_clear(self.hess_struct))
 
   def push(self, int end) -> None:
-    csleqp_call(csleqp.sleqp_hessian_struct_push_block(self.hess_struct, end))
+    csleqp_call(csleqp.sleqp_hess_struct_push_block(self.hess_struct, end))
 
   @property
   def num_blocks(self) -> int:
-    return csleqp.sleqp_hessian_struct_get_num_blocks(self.hess_struct)
+    return csleqp.sleqp_hess_struct_num_blocks(self.hess_struct)
 
   def block_range(self, int block) -> collections.abc.Iterable[int]:
     cdef int begin = 0
     cdef int end = 0
 
-    csleqp_call(csleqp.sleqp_hessian_struct_get_block_range(self.hess_struct,
-                                                            block,
-                                                            &begin,
-                                                            &end))
+    csleqp_call(csleqp.sleqp_hess_struct_block_range(self.hess_struct,
+                                                     block,
+                                                     &begin,
+                                                     &end))
 
     return range(begin, end)
 
@@ -38,16 +38,16 @@ cdef class HessianStruct:
     num_blocks = self.num_blocks
 
     for block in range(num_blocks):
-        yield self.block_range(block)
+      yield self.block_range(block)
 
   @property
   def linear_range(self) -> collections.abc.Iterable[int]:
     cdef int begin = 0
     cdef int end = 0
 
-    csleqp_call(csleqp.sleqp_hessian_struct_get_linear_range(self.hess_struct,
-                                                             &begin,
-                                                             &end))
+    csleqp_call(csleqp.sleqp_hess_struct_lin_range(self.hess_struct,
+                                                   &begin,
+                                                   &end))
 
     return range(begin, end)
 

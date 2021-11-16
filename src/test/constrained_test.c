@@ -47,10 +47,10 @@ START_TEST(test_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_DERIV_CHECK,
-                                    SLEQP_DERIV_CHECK_FIRST
-                                      | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
+  ASSERT_CALL(sleqp_options_set_int_value(
+    options,
+    SLEQP_OPTION_INT_DERIV_CHECK,
+    SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -64,11 +64,11 @@ START_TEST(test_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -80,9 +80,9 @@ START_TEST(test_exact_linesearch)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_LINESEARCH,
-                                    SLEQP_LINESEARCH_EXACT));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_LINESEARCH,
+                                          SLEQP_LINESEARCH_EXACT));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -96,11 +96,11 @@ START_TEST(test_exact_linesearch)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -112,9 +112,9 @@ START_TEST(test_parametric_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_PARAMETRIC_CAUCHY,
-                                    SLEQP_PARAMETRIC_CAUCHY_COARSE));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_PARAMETRIC_CAUCHY,
+                                          SLEQP_PARAMETRIC_CAUCHY_COARSE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -128,11 +128,11 @@ START_TEST(test_parametric_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -142,13 +142,13 @@ END_TEST
 
 START_TEST(test_sr1_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_DERIV_CHECK,
-                                    SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_DERIV_CHECK,
+                                          SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
-                                    SLEQP_HESSIAN_EVAL_SR1));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_HESS_EVAL,
+                                          SLEQP_HESS_EVAL_SR1));
 
   SleqpSolver* solver;
 
@@ -164,11 +164,11 @@ START_TEST(test_sr1_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -178,17 +178,17 @@ END_TEST
 
 START_TEST(test_bfgs_solve_no_sizing)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_DERIV_CHECK,
-                                    SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_DERIV_CHECK,
+                                          SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_BFGS_SIZING,
-                                    SLEQP_BFGS_SIZING_NONE));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_BFGS_SIZING,
+                                          SLEQP_BFGS_SIZING_NONE));
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
-                                    SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_HESS_EVAL,
+                                          SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   SleqpSolver* solver;
 
@@ -204,11 +204,11 @@ START_TEST(test_bfgs_solve_no_sizing)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -218,13 +218,13 @@ END_TEST
 
 START_TEST(test_bfgs_solve_centered_ol_sizing)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_BFGS_SIZING,
-                                    SLEQP_BFGS_SIZING_CENTERED_OL));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_BFGS_SIZING,
+                                          SLEQP_BFGS_SIZING_CENTERED_OL));
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
-                                    SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_HESS_EVAL,
+                                          SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   SleqpSolver* solver;
 
@@ -240,11 +240,11 @@ START_TEST(test_bfgs_solve_centered_ol_sizing)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -254,9 +254,9 @@ END_TEST
 
 START_TEST(test_unscaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_DERIV_CHECK,
-                                    SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_DERIV_CHECK,
+                                          SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
@@ -278,11 +278,11 @@ START_TEST(test_unscaled_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -294,10 +294,10 @@ END_TEST
 
 START_TEST(test_scaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_DERIV_CHECK,
-                                    SLEQP_DERIV_CHECK_FIRST
-                                      | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
+  ASSERT_CALL(sleqp_options_set_int_value(
+    options,
+    SLEQP_OPTION_INT_DERIV_CHECK,
+    SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   SleqpSolver* solver;
 
@@ -327,11 +327,11 @@ START_TEST(test_scaled_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -343,17 +343,17 @@ END_TEST
 
 START_TEST(test_scaled_sr1_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_DERIV_CHECK,
-                                    SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_DERIV_CHECK,
+                                          SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
   SleqpScaling* scaling;
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
-                                    SLEQP_HESSIAN_EVAL_SR1));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_HESS_EVAL,
+                                          SLEQP_HESS_EVAL_SR1));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    constrained_num_variables,
@@ -379,11 +379,11 @@ START_TEST(test_scaled_sr1_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -395,17 +395,17 @@ END_TEST
 
 START_TEST(test_scaled_bfgs_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_DERIV_CHECK,
-                                    SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_DERIV_CHECK,
+                                          SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
   SleqpScaling* scaling;
 
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_HESSIAN_EVAL,
-                                    SLEQP_HESSIAN_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_HESS_EVAL,
+                                          SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    constrained_num_variables,
@@ -431,11 +431,11 @@ START_TEST(test_scaled_bfgs_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 
@@ -447,9 +447,9 @@ END_TEST
 
 START_TEST(test_auto_scaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_DERIV_CHECK,
-                                    SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_DERIV_CHECK,
+                                          SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
@@ -457,7 +457,7 @@ START_TEST(test_auto_scaled_solve)
 
   SleqpIterate* iterate;
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, constrained_initial));
 
@@ -468,14 +468,12 @@ START_TEST(test_auto_scaled_solve)
                                    constrained_num_variables,
                                    constrained_num_constraints));
 
-  ASSERT_CALL(
-    sleqp_func_scaling_from_gradient(scaling,
-                                     sleqp_iterate_get_func_grad(iterate),
-                                     eps));
+  ASSERT_CALL(sleqp_func_scaling_from_gradient(scaling,
+                                               sleqp_iterate_obj_grad(iterate),
+                                               eps));
 
-  ASSERT_CALL(sleqp_scaling_from_cons_jac(scaling,
-                                          sleqp_iterate_get_cons_jac(iterate),
-                                          eps));
+  ASSERT_CALL(
+    sleqp_scaling_from_cons_jac(scaling, sleqp_iterate_cons_jac(iterate), eps));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -489,11 +487,11 @@ START_TEST(test_auto_scaled_solve)
 
   SleqpIterate* solution_iterate;
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  ck_assert_int_eq(sleqp_solver_get_status(solver), SLEQP_STATUS_OPTIMAL);
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_get_primal(solution_iterate);
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
   ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
 

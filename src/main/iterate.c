@@ -19,12 +19,12 @@ struct SleqpIterate
   /**
    * The current function value
    **/
-  double func_val;
+  double obj_val;
 
   /**
    * The current function gradient. Has dimension = num_variables.
    **/
-  SleqpSparseVec* func_grad;
+  SleqpSparseVec* obj_grad;
 
   /**
    * The current constraint values. Has dimension = num_constraints.
@@ -70,8 +70,8 @@ sleqp_iterate_create(SleqpIterate** star,
 
   iterate->refcount = 1;
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SLEQP_CALL(
     sleqp_sparse_vector_create(&iterate->primal, num_variables, x->nnz));
@@ -79,7 +79,7 @@ sleqp_iterate_create(SleqpIterate** star,
   SLEQP_CALL(sleqp_sparse_vector_copy(x, iterate->primal));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&iterate->func_grad, num_variables));
+    sleqp_sparse_vector_create_empty(&iterate->obj_grad, num_variables));
 
   SLEQP_CALL(
     sleqp_sparse_vector_create_empty(&iterate->cons_val, num_constraints));
@@ -101,56 +101,56 @@ sleqp_iterate_create(SleqpIterate** star,
 }
 
 SleqpSparseVec*
-sleqp_iterate_get_primal(const SleqpIterate* iterate)
+sleqp_iterate_primal(const SleqpIterate* iterate)
 {
   return iterate->primal;
 }
 
 double
-sleqp_iterate_get_func_val(const SleqpIterate* iterate)
+sleqp_iterate_obj_val(const SleqpIterate* iterate)
 {
-  return iterate->func_val;
+  return iterate->obj_val;
 }
 
 SLEQP_RETCODE
-sleqp_iterate_set_func_val(SleqpIterate* iterate, double value)
+sleqp_iterate_set_obj_val(SleqpIterate* iterate, double value)
 {
-  iterate->func_val = value;
+  iterate->obj_val = value;
   return SLEQP_OKAY;
 }
 
 SleqpSparseVec*
-sleqp_iterate_get_func_grad(const SleqpIterate* iterate)
+sleqp_iterate_obj_grad(const SleqpIterate* iterate)
 {
-  return iterate->func_grad;
+  return iterate->obj_grad;
 }
 
 SleqpSparseVec*
-sleqp_iterate_get_cons_val(const SleqpIterate* iterate)
+sleqp_iterate_cons_val(const SleqpIterate* iterate)
 {
   return iterate->cons_val;
 }
 
 SleqpSparseMatrix*
-sleqp_iterate_get_cons_jac(const SleqpIterate* iterate)
+sleqp_iterate_cons_jac(const SleqpIterate* iterate)
 {
   return iterate->cons_jac;
 }
 
 SleqpWorkingSet*
-sleqp_iterate_get_working_set(const SleqpIterate* iterate)
+sleqp_iterate_working_set(const SleqpIterate* iterate)
 {
   return iterate->working_set;
 }
 
 SleqpSparseVec*
-sleqp_iterate_get_cons_dual(const SleqpIterate* iterate)
+sleqp_iterate_cons_dual(const SleqpIterate* iterate)
 {
   return iterate->cons_dual;
 }
 
 SleqpSparseVec*
-sleqp_iterate_get_vars_dual(const SleqpIterate* iterate)
+sleqp_iterate_vars_dual(const SleqpIterate* iterate)
 {
   return iterate->vars_dual;
 }
@@ -251,18 +251,18 @@ sleqp_iterate_slackness_residuum(SleqpProblem* problem,
 
   double current_residuum;
 
-  SLEQP_CALL(slack_residuum(sleqp_iterate_get_cons_val(iterate),
+  SLEQP_CALL(slack_residuum(sleqp_iterate_cons_val(iterate),
                             sleqp_problem_cons_lb(problem),
                             sleqp_problem_cons_ub(problem),
-                            sleqp_iterate_get_cons_dual(iterate),
+                            sleqp_iterate_cons_dual(iterate),
                             &current_residuum));
 
   (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
 
-  SLEQP_CALL(slack_residuum(sleqp_iterate_get_primal(iterate),
-                            sleqp_problem_var_lb(problem),
-                            sleqp_problem_var_ub(problem),
-                            sleqp_iterate_get_vars_dual(iterate),
+  SLEQP_CALL(slack_residuum(sleqp_iterate_primal(iterate),
+                            sleqp_problem_vars_lb(problem),
+                            sleqp_problem_vars_ub(problem),
+                            sleqp_iterate_vars_dual(iterate),
                             &current_residuum));
 
   (*slackness_residuum) = SLEQP_MAX((*slackness_residuum), current_residuum);
@@ -366,10 +366,10 @@ sleqp_iterate_vars_slackness_residuals(SleqpProblem* problem,
                                        SleqpSparseVec* residuals,
                                        double zero_eps)
 {
-  SLEQP_CALL(slack_residuals(sleqp_iterate_get_primal(iterate),
-                             sleqp_problem_var_lb(problem),
-                             sleqp_problem_var_ub(problem),
-                             sleqp_iterate_get_vars_dual(iterate),
+  SLEQP_CALL(slack_residuals(sleqp_iterate_primal(iterate),
+                             sleqp_problem_vars_lb(problem),
+                             sleqp_problem_vars_ub(problem),
+                             sleqp_iterate_vars_dual(iterate),
                              residuals,
                              zero_eps));
 
@@ -382,10 +382,10 @@ sleqp_iterate_cons_slackness_residuals(SleqpProblem* problem,
                                        SleqpSparseVec* residuals,
                                        double zero_eps)
 {
-  SLEQP_CALL(slack_residuals(sleqp_iterate_get_cons_val(iterate),
+  SLEQP_CALL(slack_residuals(sleqp_iterate_cons_val(iterate),
                              sleqp_problem_cons_lb(problem),
                              sleqp_problem_cons_ub(problem),
-                             sleqp_iterate_get_cons_dual(iterate),
+                             sleqp_iterate_cons_dual(iterate),
                              residuals,
                              zero_eps));
 
@@ -423,21 +423,21 @@ write_stationarity_resiudals_to_cache(SleqpIterate* iterate,
                                       SleqpProblem* problem,
                                       double* cache)
 {
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const SleqpSparseMatrix* cons_jac = sleqp_iterate_get_cons_jac(iterate);
-  const SleqpSparseVec* func_grad   = sleqp_iterate_get_func_grad(iterate);
+  const SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+  const SleqpSparseVec* obj_grad    = sleqp_iterate_obj_grad(iterate);
 
-  const SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(iterate);
-  const SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(iterate);
+  const SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
+  const SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
-  const int num_rows = sleqp_sparse_matrix_get_num_rows(cons_jac);
-  const int num_cols = sleqp_sparse_matrix_get_num_cols(cons_jac);
+  const int num_rows = sleqp_sparse_matrix_num_rows(cons_jac);
+  const int num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
 
-  const int* cons_jac_cols    = sleqp_sparse_matrix_get_cols(cons_jac);
-  const int* cons_jac_rows    = sleqp_sparse_matrix_get_rows(cons_jac);
-  const double* cons_jac_data = sleqp_sparse_matrix_get_data(cons_jac);
+  const int* cons_jac_cols    = sleqp_sparse_matrix_cols(cons_jac);
+  const int* cons_jac_rows    = sleqp_sparse_matrix_rows(cons_jac);
+  const double* cons_jac_data = sleqp_sparse_matrix_data(cons_jac);
 
   assert(num_variables == num_cols);
   assert(num_constraints == num_rows);
@@ -476,9 +476,9 @@ write_stationarity_resiudals_to_cache(SleqpIterate* iterate,
     cache[vars_dual->indices[k]] += vars_dual->data[k];
   }
 
-  for (int k = 0; k < func_grad->nnz; ++k)
+  for (int k = 0; k < obj_grad->nnz; ++k)
   {
-    cache[func_grad->indices[k]] += func_grad->data[k];
+    cache[obj_grad->indices[k]] += obj_grad->data[k];
   }
 
   return SLEQP_OKAY;
@@ -491,7 +491,7 @@ sleqp_iterate_stationarity_residuals(SleqpProblem* problem,
                                      SleqpSparseVec* residuals,
                                      double zero_eps)
 {
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   SLEQP_CALL(write_stationarity_resiudals_to_cache(iterate, problem, cache));
 
@@ -507,7 +507,7 @@ sleqp_iterate_stationarity_residuum(SleqpProblem* problem,
                                     double* cache,
                                     double* stationarity_residuum)
 {
-  const int num_variables = sleqp_problem_num_variables(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   SLEQP_CALL(write_stationarity_resiudals_to_cache(iterate, problem, cache));
 
@@ -537,12 +537,14 @@ sleqp_iterate_is_optimal(SleqpIterate* iterate,
                          double slackness_residuum,
                          double stationarity_residuum)
 {
-  const double feas_eps = sleqp_params_get(params, SLEQP_PARAM_FEASIBILITY_TOL);
+  const double feas_eps
+    = sleqp_params_value(params, SLEQP_PARAM_FEASIBILITY_TOL);
 
-  const double slack_eps = sleqp_params_get(params, SLEQP_PARAM_SLACKNESS_TOL);
+  const double slack_eps
+    = sleqp_params_value(params, SLEQP_PARAM_SLACKNESS_TOL);
 
   const double stat_eps
-    = sleqp_params_get(params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(params, SLEQP_PARAM_STATIONARITY_TOL);
 
   if (!sleqp_iterate_is_feasible(iterate, feasibility_residuum, feas_eps))
   {
@@ -575,9 +577,9 @@ sleqp_iterate_copy(const SleqpIterate* source, SleqpIterate* target)
 {
   SLEQP_CALL(sleqp_sparse_vector_copy(source->primal, target->primal));
 
-  target->func_val = source->func_val;
+  target->obj_val = source->obj_val;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(source->func_grad, target->func_grad));
+  SLEQP_CALL(sleqp_sparse_vector_copy(source->obj_grad, target->obj_grad));
 
   SLEQP_CALL(sleqp_sparse_vector_copy(source->cons_val, target->cons_val));
 
@@ -610,7 +612,7 @@ iterate_free(SleqpIterate** star)
   SLEQP_CALL(sleqp_sparse_matrix_release(&iterate->cons_jac));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->cons_val));
-  SLEQP_CALL(sleqp_sparse_vector_free(&iterate->func_grad));
+  SLEQP_CALL(sleqp_sparse_vector_free(&iterate->obj_grad));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&iterate->primal));
 

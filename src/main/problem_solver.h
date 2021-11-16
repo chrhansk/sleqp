@@ -36,7 +36,7 @@ struct SleqpProblemSolver
 
   SleqpStepRule* step_rule;
 
-  SleqpDerivCheckData* deriv_check;
+  SleqpDerivChecker* deriv_checker;
 
   SleqpMerit* merit;
 

@@ -39,10 +39,10 @@ problem_scaling_setup()
                                           quadconsfunc_cons_lb,
                                           quadconsfunc_cons_ub));
 
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   sleqp_problem_num_variables(problem),
+                                   sleqp_problem_num_vars(problem),
                                    num_constraints));
 
   ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
@@ -81,14 +81,14 @@ START_TEST(test_overflow)
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
   bool reject;
 
   SLEQP_RETCODE retcode = sleqp_func_set_value(func,
                                                point,
                                                SLEQP_VALUE_REASON_NONE,
                                                &reject,
-                                               &func_grad_nnz,
+                                               &obj_grad_nnz,
                                                &cons_val_nnz,
                                                &cons_jac_nnz);
 
@@ -110,7 +110,7 @@ START_TEST(test_underflow_warning)
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   bool reject;
 
@@ -118,7 +118,7 @@ START_TEST(test_underflow_warning)
                                                point,
                                                SLEQP_VALUE_REASON_NONE,
                                                &reject,
-                                               &func_grad_nnz,
+                                               &obj_grad_nnz,
                                                &cons_val_nnz,
                                                &cons_jac_nnz);
 
@@ -130,9 +130,9 @@ END_TEST
 
 START_TEST(test_underflow_error)
 {
-  ASSERT_CALL(sleqp_options_set_int(options,
-                                    SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS,
-                                    FE_ALL_EXCEPT));
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS,
+                                          FE_ALL_EXCEPT));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -10000));
 
@@ -144,7 +144,7 @@ START_TEST(test_underflow_error)
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
-  int func_grad_nnz, cons_val_nnz, cons_jac_nnz;
+  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
 
   bool reject;
 
@@ -152,7 +152,7 @@ START_TEST(test_underflow_error)
                                                point,
                                                SLEQP_VALUE_REASON_NONE,
                                                &reject,
-                                               &func_grad_nnz,
+                                               &obj_grad_nnz,
                                                &cons_val_nnz,
                                                &cons_jac_nnz);
 
@@ -166,13 +166,12 @@ START_TEST(test_first_order_deriv)
 {
   SleqpIterate* scaled_iterate;
 
-  SleqpDerivCheckData* deriv_check_data;
+  SleqpDerivChecker* deriv_check_data;
 
   ASSERT_CALL(
     sleqp_iterate_create(&scaled_iterate, scaled_problem, quadconsfunc_x));
 
-  ASSERT_CALL(
-    sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
+  ASSERT_CALL(sleqp_scale_point(scaling, sleqp_iterate_primal(scaled_iterate)));
 
   ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
                                      scaled_iterate,
@@ -196,13 +195,12 @@ START_TEST(test_second_order_deriv)
 {
   SleqpIterate* scaled_iterate;
 
-  SleqpDerivCheckData* deriv_check_data;
+  SleqpDerivChecker* deriv_check_data;
 
   ASSERT_CALL(
     sleqp_iterate_create(&scaled_iterate, scaled_problem, quadconsfunc_x));
 
-  ASSERT_CALL(
-    sleqp_scale_point(scaling, sleqp_iterate_get_primal(scaled_iterate)));
+  ASSERT_CALL(sleqp_scale_point(scaling, sleqp_iterate_primal(scaled_iterate)));
 
   ASSERT_CALL(sleqp_set_and_evaluate(scaled_problem,
                                      scaled_iterate,

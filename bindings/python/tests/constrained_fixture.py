@@ -15,12 +15,12 @@ class ConstrainedFunc:
   def set_value(self, v, reason):
     self.v = v
 
-  def func_val(self):
+  def obj_val(self):
     x = self.v
 
     return x[0]*x[3]*(x[0] + x[1]+ x[2]) + x[2]
 
-  def func_grad(self):
+  def obj_grad(self):
     x = self.v
 
     return np.array([(x[0] + x[1] + x[2])*x[3] + x[0]*x[3],
@@ -28,7 +28,7 @@ class ConstrainedFunc:
                      x[0]*x[3] + 1,
                      (x[0] + x[1] + x[2])*x[0]])
 
-  def func_grad_nnz(self):
+  def obj_grad_nnz(self):
     return num_variables
 
   def cons_val_nnz(self):
@@ -49,43 +49,43 @@ class ConstrainedFunc:
     return np.array([[x[1]*x[2]*x[3], x[0]*x[2]*x[3], x[0]*x[1]*x[3], x[0]*x[1]*x[2]],
                      [2*x[0], 2*x[1], 2*x[2], 2*x[3]]])
 
-  def hess_prod(self, func_dual, direction, cons_dual):
+  def hess_prod(self, obj_dual, direction, cons_dual):
     x = self.v
 
     p = np.array([0]*num_variables, dtype=np.float64)
 
     p0 = 0.
 
-    p0 += (2*x[3]*func_dual + 2*cons_dual[1])*direction[0]
-    p0 += (x[3]*func_dual + x[2]*x[3]*cons_dual[0])*direction[1]
-    p0 += (x[3]*func_dual + x[1]*x[3]*cons_dual[0])*direction[2]
-    p0 += ((2*x[0] + x[1] + x[2])*func_dual + x[1]*x[2]*cons_dual[0])*direction[3]
+    p0 += (2*x[3]*obj_dual + 2*cons_dual[1])*direction[0]
+    p0 += (x[3]*obj_dual + x[2]*x[3]*cons_dual[0])*direction[1]
+    p0 += (x[3]*obj_dual + x[1]*x[3]*cons_dual[0])*direction[2]
+    p0 += ((2*x[0] + x[1] + x[2])*obj_dual + x[1]*x[2]*cons_dual[0])*direction[3]
 
     p[0] = p0
 
     p1 = 0.
 
-    p1 += (x[3]*func_dual + x[2]*x[3]*cons_dual[0])*direction[0]
+    p1 += (x[3]*obj_dual + x[2]*x[3]*cons_dual[0])*direction[0]
     p1 += (2*cons_dual[1])*direction[1]
     p1 += (x[0]*x[3]*cons_dual[0])*direction[2]
-    p1 += (x[0]*func_dual + (x[0]*x[2])*cons_dual[0])*direction[3]
+    p1 += (x[0]*obj_dual + (x[0]*x[2])*cons_dual[0])*direction[3]
 
     p[1] = p1
 
     p2 = 0.
 
-    p2 += (x[3]*func_dual + x[1]*x[3]*cons_dual[0])*direction[0]
+    p2 += (x[3]*obj_dual + x[1]*x[3]*cons_dual[0])*direction[0]
     p2 += (x[0]*x[3]*cons_dual[0])*direction[1]
     p2 += (2*cons_dual[1])*direction[2]
-    p2 += (x[0]*func_dual + x[0]*x[1]*cons_dual[0])*direction[3]
+    p2 += (x[0]*obj_dual + x[0]*x[1]*cons_dual[0])*direction[3]
 
     p[2] = p2
 
     p3 = 0.
 
-    p3 += ((2*x[0] + x[1] + x[2])*func_dual + x[1]*x[2]*cons_dual[0])*direction[0]
-    p3 += (x[0]*func_dual + x[0]*x[2]*cons_dual[0])*direction[1]
-    p3 += (x[0]*func_dual + x[0]*x[1]*cons_dual[0])*direction[2]
+    p3 += ((2*x[0] + x[1] + x[2])*obj_dual + x[1]*x[2]*cons_dual[0])*direction[0]
+    p3 += (x[0]*obj_dual + x[0]*x[2]*cons_dual[0])*direction[1]
+    p3 += (x[0]*obj_dual + x[0]*x[1]*cons_dual[0])*direction[2]
     p3 += (2*cons_dual[1])*direction[3]
 
     p[3] = p3

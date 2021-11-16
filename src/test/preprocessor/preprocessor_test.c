@@ -80,8 +80,7 @@ START_TEST(test_single_empty_row)
   SleqpSparseMatrix* transformed_linear_coeffs
     = sleqp_problem_linear_coeffs(transformed_problem);
 
-  ck_assert_int_eq(sleqp_sparse_matrix_get_num_rows(transformed_linear_coeffs),
-                   0);
+  ck_assert_int_eq(sleqp_sparse_matrix_num_rows(transformed_linear_coeffs), 0);
 
   ck_assert_int_eq(sleqp_problem_linear_lb(transformed_problem)->dim, 0);
 
@@ -108,8 +107,8 @@ START_TEST(test_fixed_var_linear_trans)
 
   const int linear_nnz = 2;
 
-  const double eps      = sleqp_params_get(params, SLEQP_PARAM_EPS);
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double eps      = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   const double inf = sleqp_infinity();
 
@@ -166,9 +165,9 @@ START_TEST(test_fixed_var_linear_trans)
   SleqpSparseMatrix* transformed_linear_coeffs
     = sleqp_problem_linear_coeffs(transformed_problem);
 
-  ck_assert_int_eq(sleqp_problem_num_variables(transformed_problem), 1);
+  ck_assert_int_eq(sleqp_problem_num_vars(transformed_problem), 1);
 
-  ck_assert_int_eq(sleqp_sparse_matrix_get_nnz(transformed_linear_coeffs), 1);
+  ck_assert_int_eq(sleqp_sparse_matrix_nnz(transformed_linear_coeffs), 1);
 
   SleqpSparseVec* transformed_linear_lb
     = sleqp_problem_linear_lb(transformed_problem);
@@ -197,7 +196,7 @@ START_TEST(test_positive_bound_row)
   SleqpPreprocessor* preprocessor;
   SleqpProblem* problem;
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_sparse_vector_push(linear_lb, 0, 1.));
 
@@ -231,13 +230,12 @@ START_TEST(test_positive_bound_row)
   SleqpProblem* transformed_problem
     = sleqp_preprocessor_transformed_problem(preprocessor);
 
-  ck_assert_int_eq(sleqp_problem_num_linear_constraints(transformed_problem),
-                   0);
+  ck_assert_int_eq(sleqp_problem_num_lin_cons(transformed_problem), 0);
 
   SleqpSparseVec* transformed_var_lb
-    = sleqp_problem_var_lb(transformed_problem);
+    = sleqp_problem_vars_lb(transformed_problem);
   SleqpSparseVec* transformed_var_ub
-    = sleqp_problem_var_ub(transformed_problem);
+    = sleqp_problem_vars_ub(transformed_problem);
 
   ck_assert(sleqp_is_eq(sleqp_sparse_vector_value_at(transformed_var_lb, 0),
                         1. / 2.,
@@ -262,7 +260,7 @@ START_TEST(test_negative_bound_row)
 
   const int num_linear = 1;
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_sparse_vector_push(linear_lb, 0, 1.));
 
@@ -296,13 +294,12 @@ START_TEST(test_negative_bound_row)
   SleqpProblem* transformed_problem
     = sleqp_preprocessor_transformed_problem(preprocessor);
 
-  ck_assert_int_eq(sleqp_problem_num_linear_constraints(transformed_problem),
-                   0);
+  ck_assert_int_eq(sleqp_problem_num_lin_cons(transformed_problem), 0);
 
   SleqpSparseVec* transformed_var_lb
-    = sleqp_problem_var_lb(transformed_problem);
+    = sleqp_problem_vars_lb(transformed_problem);
   SleqpSparseVec* transformed_var_ub
-    = sleqp_problem_var_ub(transformed_problem);
+    = sleqp_problem_vars_ub(transformed_problem);
 
   ck_assert(
     sleqp_is_eq(sleqp_sparse_vector_value_at(transformed_var_lb, 0), -2., eps));
@@ -334,7 +331,7 @@ START_TEST(test_forcing_constraint)
   const int num_linear = 1;
 
   const double inf      = sleqp_infinity();
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   double var_lb[] = {-inf, -inf};
 
@@ -384,10 +381,9 @@ START_TEST(test_forcing_constraint)
   SleqpProblem* transformed_problem
     = sleqp_preprocessor_transformed_problem(preprocessor);
 
-  ck_assert_int_eq(sleqp_problem_num_linear_constraints(transformed_problem),
-                   0);
+  ck_assert_int_eq(sleqp_problem_num_lin_cons(transformed_problem), 0);
 
-  ck_assert_int_eq(sleqp_problem_num_variables(transformed_problem), 0);
+  ck_assert_int_eq(sleqp_problem_num_vars(transformed_problem), 0);
 
   ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
 
@@ -403,7 +399,7 @@ START_TEST(test_dominated_row)
   SleqpPreprocessor* preprocessor;
   SleqpProblem* problem;
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   const int num_linear = 1;
 
@@ -450,8 +446,7 @@ START_TEST(test_dominated_row)
   SleqpProblem* transformed_problem
     = sleqp_preprocessor_transformed_problem(preprocessor);
 
-  ck_assert_int_eq(sleqp_problem_num_linear_constraints(transformed_problem),
-                   0);
+  ck_assert_int_eq(sleqp_problem_num_lin_cons(transformed_problem), 0);
 
   ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
 
@@ -482,8 +477,7 @@ START_TEST(test_failure)
   SleqpProblem* transformed_problem
     = sleqp_preprocessor_transformed_problem(preprocessor);
 
-  ck_assert_int_eq(sleqp_problem_num_linear_constraints(transformed_problem),
-                   0);
+  ck_assert_int_eq(sleqp_problem_num_lin_cons(transformed_problem), 0);
 
   ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
 
@@ -557,7 +551,7 @@ START_TEST(test_fixed_var)
   SleqpProblem* transformed_problem
     = sleqp_preprocessor_transformed_problem(preprocessor);
 
-  ck_assert_int_eq(sleqp_problem_num_variables(transformed_problem), 1);
+  ck_assert_int_eq(sleqp_problem_num_vars(transformed_problem), 1);
 
   ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
 
@@ -576,7 +570,7 @@ START_TEST(test_solve)
   SleqpIterate* transformed_solution_iterate;
   SleqpIterate* original_solution_iterate;
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(
     sleqp_sparse_matrix_create(&linear_coeffs, num_linear, num_variables, 0));
@@ -616,7 +610,7 @@ START_TEST(test_solve)
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
-  ASSERT_CALL(sleqp_solver_get_solution(solver, &transformed_solution_iterate));
+  ASSERT_CALL(sleqp_solver_solution(solver, &transformed_solution_iterate));
 
   ASSERT_CALL(sleqp_preprocessor_restore_iterate(preprocessor,
                                                  transformed_solution_iterate,
@@ -625,16 +619,16 @@ START_TEST(test_solve)
   // actual tests
   {
     SleqpSparseVec* cons_dual
-      = sleqp_iterate_get_cons_dual(original_solution_iterate);
+      = sleqp_iterate_cons_dual(original_solution_iterate);
 
     ck_assert_int_eq(cons_dual->dim, num_linear);
 
     ck_assert(sleqp_is_eq(sleqp_sparse_vector_value_at(cons_dual, 0), 0., eps));
 
     SleqpWorkingSet* working_set
-      = sleqp_iterate_get_working_set(original_solution_iterate);
+      = sleqp_iterate_working_set(original_solution_iterate);
 
-    ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 0),
+    ck_assert_int_eq(sleqp_working_set_cons_state(working_set, 0),
                      SLEQP_INACTIVE);
   }
 
@@ -661,7 +655,7 @@ START_TEST(test_restore_positive_bound_row)
   SleqpIterate* original_iterate;
   SleqpIterate* transformed_iterate;
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_sparse_vector_push(linear_lb, 0, 1.));
 
@@ -705,13 +699,11 @@ START_TEST(test_restore_positive_bound_row)
   // Set working set
   {
     SleqpWorkingSet* working_set
-      = sleqp_iterate_get_working_set(transformed_iterate);
+      = sleqp_iterate_working_set(transformed_iterate);
 
-    ASSERT_CALL(
-      sleqp_working_set_add_variable(working_set, 0, SLEQP_ACTIVE_UPPER));
+    ASSERT_CALL(sleqp_working_set_add_var(working_set, 0, SLEQP_ACTIVE_UPPER));
 
-    SleqpSparseVec* vars_dual
-      = sleqp_iterate_get_vars_dual(transformed_iterate);
+    SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(transformed_iterate);
 
     ASSERT_CALL(sleqp_sparse_vector_reserve(vars_dual, 2));
 
@@ -724,23 +716,22 @@ START_TEST(test_restore_positive_bound_row)
 
   // Actual tests
   {
-    SleqpWorkingSet* working_set
-      = sleqp_iterate_get_working_set(original_iterate);
+    SleqpWorkingSet* working_set = sleqp_iterate_working_set(original_iterate);
 
-    ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0),
+    ck_assert_int_eq(sleqp_working_set_var_state(working_set, 0),
                      SLEQP_INACTIVE);
 
-    ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1),
+    ck_assert_int_eq(sleqp_working_set_var_state(working_set, 1),
                      SLEQP_INACTIVE);
 
-    ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 0),
+    ck_assert_int_eq(sleqp_working_set_cons_state(working_set, 0),
                      SLEQP_ACTIVE_UPPER);
 
-    SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(original_iterate);
+    SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(original_iterate);
 
     ck_assert_int_eq(vars_dual->nnz, 0);
 
-    SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(original_iterate);
+    SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(original_iterate);
 
     ck_assert_int_eq(cons_dual->nnz, 1);
 
@@ -768,7 +759,7 @@ START_TEST(test_restore_negative_bound_row)
   SleqpIterate* original_iterate;
   SleqpIterate* transformed_iterate;
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_sparse_vector_push(linear_lb, 0, 1.));
 
@@ -812,13 +803,11 @@ START_TEST(test_restore_negative_bound_row)
   // Set working set
   {
     SleqpWorkingSet* working_set
-      = sleqp_iterate_get_working_set(transformed_iterate);
+      = sleqp_iterate_working_set(transformed_iterate);
 
-    ASSERT_CALL(
-      sleqp_working_set_add_variable(working_set, 0, SLEQP_ACTIVE_UPPER));
+    ASSERT_CALL(sleqp_working_set_add_var(working_set, 0, SLEQP_ACTIVE_UPPER));
 
-    SleqpSparseVec* vars_dual
-      = sleqp_iterate_get_vars_dual(transformed_iterate);
+    SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(transformed_iterate);
 
     ASSERT_CALL(sleqp_sparse_vector_reserve(vars_dual, 2));
 
@@ -831,23 +820,22 @@ START_TEST(test_restore_negative_bound_row)
 
   // Actual tests
   {
-    SleqpWorkingSet* working_set
-      = sleqp_iterate_get_working_set(original_iterate);
+    SleqpWorkingSet* working_set = sleqp_iterate_working_set(original_iterate);
 
-    ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 0),
+    ck_assert_int_eq(sleqp_working_set_var_state(working_set, 0),
                      SLEQP_INACTIVE);
 
-    ck_assert_int_eq(sleqp_working_set_get_variable_state(working_set, 1),
+    ck_assert_int_eq(sleqp_working_set_var_state(working_set, 1),
                      SLEQP_INACTIVE);
 
-    ck_assert_int_eq(sleqp_working_set_get_constraint_state(working_set, 0),
+    ck_assert_int_eq(sleqp_working_set_cons_state(working_set, 0),
                      SLEQP_ACTIVE_LOWER);
 
-    SleqpSparseVec* vars_dual = sleqp_iterate_get_vars_dual(original_iterate);
+    SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(original_iterate);
 
     ck_assert_int_eq(vars_dual->nnz, 0);
 
-    SleqpSparseVec* cons_dual = sleqp_iterate_get_cons_dual(original_iterate);
+    SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(original_iterate);
 
     ck_assert_int_eq(cons_dual->nnz, 1);
 
@@ -877,9 +865,9 @@ START_TEST(test_restore_forcing_constraint)
 
   const double inf = sleqp_infinity();
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   double var_lb[] = {-inf, -inf};
 
@@ -978,7 +966,7 @@ START_TEST(test_restore_fixed_vars)
   SleqpSparseVec* transformed_initial;
   SleqpIterate* transformed_iterate;
 
-  const double eps = sleqp_params_get(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_var_lb));
   ASSERT_CALL(sleqp_sparse_vector_clear(rosenbrock_var_ub));
@@ -1001,7 +989,7 @@ START_TEST(test_restore_fixed_vars)
   SleqpProblem* transformed_problem
     = sleqp_preprocessor_transformed_problem(preprocessor);
 
-  ck_assert_int_eq(sleqp_problem_num_variables(transformed_problem), 0);
+  ck_assert_int_eq(sleqp_problem_num_vars(transformed_problem), 0);
 
   ASSERT_CALL(sleqp_sparse_vector_create_empty(&transformed_initial, 0));
 
@@ -1046,7 +1034,7 @@ START_TEST(test_remove_bounds)
   const int num_linear = 1;
 
   const double inf      = sleqp_infinity();
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   double var_lb[] = {0., 0.};
 
@@ -1097,7 +1085,7 @@ START_TEST(test_remove_bounds)
     = sleqp_preprocessor_transformed_problem(preprocessor);
 
   SleqpSparseVec* transformed_var_ub
-    = sleqp_problem_var_ub(transformed_problem);
+    = sleqp_problem_vars_ub(transformed_problem);
 
   ck_assert(sleqp_sparse_vector_value_at(transformed_var_ub, 0) == inf);
   ck_assert(sleqp_sparse_vector_value_at(transformed_var_ub, 1) == inf);

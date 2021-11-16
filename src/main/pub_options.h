@@ -12,7 +12,7 @@
 typedef enum
 {
   SLEQP_OPTION_INT_DERIV_CHECK = 0,
-  SLEQP_OPTION_INT_HESSIAN_EVAL,
+  SLEQP_OPTION_INT_HESS_EVAL,
   SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE,
   SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES,
   SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS,
@@ -46,21 +46,21 @@ sleqp_options_create(SleqpOptions** star);
 
 SLEQP_EXPORT
 int
-sleqp_options_get_int(const SleqpOptions* options, SLEQP_OPTION_INT option);
+sleqp_options_int_value(const SleqpOptions* options, SLEQP_OPTION_INT option);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_options_set_int(SleqpOptions* options,
-                      SLEQP_OPTION_INT option,
-                      int value);
+sleqp_options_set_int_value(SleqpOptions* options,
+                            SLEQP_OPTION_INT option,
+                            int value);
 
 SLEQP_EXPORT
 bool
-sleqp_options_get_bool(const SleqpOptions* options, SLEQP_OPTION_BOOL option);
+sleqp_options_bool_value(const SleqpOptions* options, SLEQP_OPTION_BOOL option);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_options_set_bool(SleqpOptions* options,
-                       SLEQP_OPTION_BOOL option,
-                       bool value);
+sleqp_options_set_bool_value(SleqpOptions* options,
+                             SLEQP_OPTION_BOOL option,
+                             bool value);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_options_capture(SleqpOptions* options);

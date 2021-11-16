@@ -20,7 +20,7 @@ typedef struct SleqpLpiGRB
   GRBenv* env;
   GRBmodel* model;
 
-  SLEQP_LPI_STATUS status;
+  SLEQP_LP_STATUS status;
 
   int num_cols;
   int num_rows;
@@ -78,7 +78,7 @@ gurobi_create_problem(void** star,
   lp_interface->num_cols    = num_cols;
   lp_interface->num_rows    = num_rows;
   lp_interface->num_lp_cols = num_rows + num_cols;
-  lp_interface->status      = SLEQP_LPI_STATUS_UNKNOWN;
+  lp_interface->status      = SLEQP_LP_STATUS_UNKNOWN;
 
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->col_basis, num_cols));
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->slack_basis, num_rows));
@@ -102,7 +102,7 @@ gurobi_create_problem(void** star,
 
   {
     const int num_threads
-      = sleqp_options_get_int(options, SLEQP_OPTION_INT_NUM_THREADS);
+      = sleqp_options_int_value(options, SLEQP_OPTION_INT_NUM_THREADS);
 
     if (num_threads == SLEQP_NONE)
     {
@@ -187,32 +187,32 @@ gurobi_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
   switch (sol_stat)
   {
   case GRB_OPTIMAL:
-    lp_interface->status = SLEQP_LPI_STATUS_OPTIMAL;
+    lp_interface->status = SLEQP_LP_STATUS_OPTIMAL;
     break;
   case GRB_INFEASIBLE:
-    lp_interface->status = SLEQP_LPI_STATUS_INF;
+    lp_interface->status = SLEQP_LP_STATUS_INF;
     break;
   case GRB_INF_OR_UNBD:
-    lp_interface->status = SLEQP_LPI_STATUS_INF_OR_UNBOUNDED;
+    lp_interface->status = SLEQP_LP_STATUS_INF_OR_UNBOUNDED;
     break;
   case GRB_UNBOUNDED:
-    lp_interface->status = SLEQP_LPI_STATUS_UNBOUNDED;
+    lp_interface->status = SLEQP_LP_STATUS_UNBOUNDED;
     break;
   case GRB_TIME_LIMIT:
-    lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
+    lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
     return SLEQP_ABORT_TIME;
     break;
   default:
     sleqp_log_error("Invalid Gurobi status: %d", sol_stat);
-    lp_interface->status = SLEQP_LPI_STATUS_UNKNOWN;
+    lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
     return SLEQP_INTERNAL_ERROR;
   }
 
   return SLEQP_OKAY;
 }
 
-static SLEQP_LPI_STATUS
-gurobi_get_status(void* lp_data)
+static SLEQP_LP_STATUS
+gurobi_status(void* lp_data)
 {
   SleqpLpiGRB* lp_interface = lp_data;
 
@@ -263,12 +263,12 @@ gurobi_set_coefficients(void* lp_data,
   GRBenv* env     = lp_interface->env;
   GRBmodel* model = lp_interface->model;
 
-  assert(sleqp_sparse_matrix_get_num_rows(coeff_matrix) == num_rows);
-  assert(sleqp_sparse_matrix_get_num_cols(coeff_matrix) == num_cols);
+  assert(sleqp_sparse_matrix_num_rows(coeff_matrix) == num_rows);
+  assert(sleqp_sparse_matrix_num_cols(coeff_matrix) == num_cols);
 
-  const int* coeff_matrix_cols = sleqp_sparse_matrix_get_cols(coeff_matrix);
-  const int* coeff_matrix_rows = sleqp_sparse_matrix_get_rows(coeff_matrix);
-  double* coeff_matrix_data    = sleqp_sparse_matrix_get_data(coeff_matrix);
+  const int* coeff_matrix_cols = sleqp_sparse_matrix_cols(coeff_matrix);
+  const int* coeff_matrix_rows = sleqp_sparse_matrix_rows(coeff_matrix);
+  double* coeff_matrix_data    = sleqp_sparse_matrix_data(coeff_matrix);
 
   for (int col = 0; col < num_cols; ++col)
   {
@@ -384,11 +384,11 @@ gurobi_restore_basis(void* lp_data, int index)
 }
 
 static SLEQP_RETCODE
-gurobi_get_primal_sol(void* lp_data,
-                      int num_cols,
-                      int num_rows,
-                      double* objective_value,
-                      double* solution_values)
+gurobi_primal_sol(void* lp_data,
+                  int num_cols,
+                  int num_rows,
+                  double* objective_value,
+                  double* solution_values)
 {
   SleqpLpiGRB* lp_interface = lp_data;
 
@@ -412,11 +412,11 @@ gurobi_get_primal_sol(void* lp_data,
 }
 
 static SLEQP_RETCODE
-gurobi_get_dual_sol(void* lp_data,
-                    int num_cols,
-                    int num_rows,
-                    double* vars_dual,
-                    double* cons_dual)
+gurobi_dual_sol(void* lp_data,
+                int num_cols,
+                int num_rows,
+                double* vars_dual,
+                double* cons_dual)
 {
   SleqpLpiGRB* lp_interface = lp_data;
 
@@ -443,10 +443,10 @@ gurobi_get_dual_sol(void* lp_data,
 }
 
 static SLEQP_RETCODE
-gurobi_get_varstats(void* lp_data,
-                    int num_cols,
-                    int num_rows,
-                    SLEQP_BASESTAT* variable_stats)
+gurobi_vars_stats(void* lp_data,
+                  int num_cols,
+                  int num_rows,
+                  SLEQP_BASESTAT* variable_stats)
 {
   SleqpLpiGRB* lp_interface = lp_data;
 
@@ -484,10 +484,10 @@ gurobi_get_varstats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-gurobi_get_consstats(void* lp_data,
-                     int num_cols,
-                     int num_rows,
-                     SLEQP_BASESTAT* constraint_stats)
+gurobi_cons_stats(void* lp_data,
+                  int num_cols,
+                  int num_rows,
+                  SLEQP_BASESTAT* constraint_stats)
 {
   SleqpLpiGRB* lp_interface = lp_data;
 
@@ -539,7 +539,7 @@ gurobi_get_consstats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-gurobi_get_basis_condition(void* lp_data, bool* exact, double* condition)
+gurobi_basis_condition_estimate(void* lp_data, bool* exact, double* condition)
 {
   SleqpLpiGRB* lp_interface = lp_data;
 
@@ -599,50 +599,50 @@ gurobi_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_lpi_gurobi_create_interface(SleqpLPi** lp_star,
-                                  int num_cols,
-                                  int num_rows,
-                                  SleqpParams* params,
-                                  SleqpOptions* options)
+sleqp_lpi_gurobi_create(SleqpLPi** lp_star,
+                        int num_cols,
+                        int num_rows,
+                        SleqpParams* params,
+                        SleqpOptions* options)
 {
   SleqpLPiCallbacks callbacks
-    = {.create_problem      = gurobi_create_problem,
-       .solve               = gurobi_solve,
-       .get_status          = gurobi_get_status,
-       .set_bounds          = gurobi_set_bounds,
-       .set_coefficients    = gurobi_set_coefficients,
-       .set_objective       = gurobi_set_objective,
-       .save_basis          = gurobi_save_basis,
-       .restore_basis       = gurobi_restore_basis,
-       .get_primal_sol      = gurobi_get_primal_sol,
-       .get_dual_sol        = gurobi_get_dual_sol,
-       .get_varstats        = gurobi_get_varstats,
-       .get_consstats       = gurobi_get_consstats,
-       .get_basis_condition = gurobi_get_basis_condition,
-       .free_problem        = gurobi_free};
+    = {.create_problem           = gurobi_create_problem,
+       .solve                    = gurobi_solve,
+       .status                   = gurobi_status,
+       .set_bounds               = gurobi_set_bounds,
+       .set_coefficients         = gurobi_set_coefficients,
+       .set_objective            = gurobi_set_objective,
+       .save_basis               = gurobi_save_basis,
+       .restore_basis            = gurobi_restore_basis,
+       .primal_sol               = gurobi_primal_sol,
+       .dual_sol                 = gurobi_dual_sol,
+       .vars_stats               = gurobi_vars_stats,
+       .cons_stats               = gurobi_cons_stats,
+       .basis_condition_estimate = gurobi_basis_condition_estimate,
+       .free_problem             = gurobi_free};
 
-  return sleqp_lpi_create_interface(lp_star,
-                                    SLEQP_LP_SOLVER_GUROBI_NAME,
-                                    SLEQP_LP_SOLVER_GUROBI_VERSION,
-                                    num_cols,
-                                    num_rows,
-                                    params,
-                                    options,
-                                    &callbacks);
+  return sleqp_lpi_create(lp_star,
+                          SLEQP_LP_SOLVER_GUROBI_NAME,
+                          SLEQP_LP_SOLVER_GUROBI_VERSION,
+                          num_cols,
+                          num_rows,
+                          params,
+                          options,
+                          &callbacks);
 }
 
 SLEQP_RETCODE
-sleqp_lpi_create_default_interface(SleqpLPi** lp_interface,
-                                   int num_variables,
-                                   int num_constraints,
-                                   SleqpParams* params,
-                                   SleqpOptions* options)
+sleqp_lpi_create_default(SleqpLPi** lp_interface,
+                         int num_variables,
+                         int num_constraints,
+                         SleqpParams* params,
+                         SleqpOptions* options)
 {
-  SLEQP_CALL(sleqp_lpi_gurobi_create_interface(lp_interface,
-                                               num_variables,
-                                               num_constraints,
-                                               params,
-                                               options));
+  SLEQP_CALL(sleqp_lpi_gurobi_create(lp_interface,
+                                     num_variables,
+                                     num_constraints,
+                                     params,
+                                     options));
 
   return SLEQP_OKAY;
 }

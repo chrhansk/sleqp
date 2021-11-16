@@ -224,8 +224,8 @@ problem_create(SleqpProblem** star,
                const SleqpSparseVec* general_lb,
                const SleqpSparseVec* general_ub)
 {
-  const int num_general   = sleqp_func_get_num_constraints(func);
-  const int num_variables = sleqp_func_get_num_variables(func);
+  const int num_general   = sleqp_func_num_cons(func);
+  const int num_variables = sleqp_func_num_vars(func);
 
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -307,7 +307,7 @@ sleqp_problem_create(SleqpProblem** star,
   const int num_variables = problem->num_variables;
 
   const int num_linear_constraints
-    = sleqp_sparse_matrix_get_num_rows(linear_coeffs);
+    = sleqp_sparse_matrix_num_rows(linear_coeffs);
 
   {
     SLEQP_CALL(sleqp_sparse_matrix_resize(problem->linear_coeffs,
@@ -322,7 +322,7 @@ sleqp_problem_create(SleqpProblem** star,
     sleqp_assert_msg(sleqp_sparse_matrix_is_finite(problem->linear_coeffs),
                      "Linear coefficient matrix is not all-finite");
 
-    sleqp_assert_msg(sleqp_sparse_matrix_get_num_cols(problem->linear_coeffs)
+    sleqp_assert_msg(sleqp_sparse_matrix_num_cols(problem->linear_coeffs)
                        == num_variables,
                      "Linear constraint dimensions are inconsistent");
   }
@@ -370,19 +370,19 @@ sleqp_problem_has_nonlinear_cons(SleqpProblem* problem)
 }
 
 int
-sleqp_problem_num_variables(SleqpProblem* problem)
+sleqp_problem_num_vars(SleqpProblem* problem)
 {
   return problem->num_variables;
 }
 
 SleqpSparseVec*
-sleqp_problem_var_lb(SleqpProblem* problem)
+sleqp_problem_vars_lb(SleqpProblem* problem)
 {
   return problem->var_lb;
 }
 
 SleqpSparseVec*
-sleqp_problem_var_ub(SleqpProblem* problem)
+sleqp_problem_vars_ub(SleqpProblem* problem)
 {
   return problem->var_ub;
 }
@@ -430,19 +430,19 @@ sleqp_problem_cons_ub(SleqpProblem* problem)
 }
 
 int
-sleqp_problem_num_constraints(SleqpProblem* problem)
+sleqp_problem_num_cons(SleqpProblem* problem)
 {
   return problem->num_general_constraints + problem->num_linear_constraints;
 }
 
 int
-sleqp_problem_num_linear_constraints(SleqpProblem* problem)
+sleqp_problem_num_lin_cons(SleqpProblem* problem)
 {
   return problem->num_linear_constraints;
 }
 
 int
-sleqp_problem_num_general_constraints(SleqpProblem* problem)
+sleqp_problem_num_gen_cons(SleqpProblem* problem)
 {
   return problem->num_general_constraints;
 }
@@ -458,7 +458,7 @@ sleqp_problem_set_value(SleqpProblem* problem,
                         SleqpSparseVec* x,
                         SLEQP_VALUE_REASON reason,
                         bool* reject,
-                        int* func_grad_nnz,
+                        int* obj_grad_nnz,
                         int* cons_val_nnz,
                         int* cons_jac_nnz)
 {
@@ -466,7 +466,7 @@ sleqp_problem_set_value(SleqpProblem* problem,
                                   x,
                                   reason,
                                   reject,
-                                  func_grad_nnz,
+                                  obj_grad_nnz,
                                   cons_val_nnz,
                                   cons_jac_nnz));
 
@@ -481,7 +481,7 @@ sleqp_problem_set_value(SleqpProblem* problem,
       sleqp_sparse_matrix_reserve(problem->general_cons_jac, *cons_jac_nnz));
   }
 
-  (*cons_jac_nnz) += sleqp_sparse_matrix_get_nnz(problem->linear_coeffs);
+  (*cons_jac_nnz) += sleqp_sparse_matrix_nnz(problem->linear_coeffs);
 
   (*cons_val_nnz) += problem->num_linear_constraints;
 
@@ -491,19 +491,19 @@ sleqp_problem_set_value(SleqpProblem* problem,
 SLEQP_RETCODE
 sleqp_problem_eval(SleqpProblem* problem,
                    const SleqpSparseVec* cons_indices,
-                   double* func_val,
-                   SleqpSparseVec* func_grad,
+                   double* obj_val,
+                   SleqpSparseVec* obj_grad,
                    SleqpSparseVec* cons_val,
                    SleqpSparseMatrix* cons_jac)
 {
-  if (func_val)
+  if (obj_val)
   {
-    SLEQP_CALL(sleqp_problem_val(problem, func_val));
+    SLEQP_CALL(sleqp_problem_obj_val(problem, obj_val));
   }
 
-  if (func_grad)
+  if (obj_grad)
   {
-    SLEQP_CALL(sleqp_problem_grad(problem, func_grad));
+    SLEQP_CALL(sleqp_problem_obj_grad(problem, obj_grad));
   }
 
   if (cons_val)
@@ -520,15 +520,15 @@ sleqp_problem_eval(SleqpProblem* problem,
 }
 
 SLEQP_RETCODE
-sleqp_problem_val(SleqpProblem* problem, double* func_val)
+sleqp_problem_obj_val(SleqpProblem* problem, double* obj_val)
 {
-  return sleqp_func_val(problem->func, func_val);
+  return sleqp_func_obj_val(problem->func, obj_val);
 }
 
 SLEQP_RETCODE
-sleqp_problem_grad(SleqpProblem* problem, SleqpSparseVec* func_grad)
+sleqp_problem_obj_grad(SleqpProblem* problem, SleqpSparseVec* obj_grad)
 {
-  return sleqp_func_grad(problem->func, func_grad);
+  return sleqp_func_obj_grad(problem->func, obj_grad);
 }
 
 SLEQP_RETCODE
@@ -537,7 +537,7 @@ sleqp_problem_cons_val(SleqpProblem* problem,
                        SleqpSparseVec* cons_val)
 {
   const double zero_eps
-    = sleqp_params_get(problem->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(problem->params, SLEQP_PARAM_ZERO_EPS);
 
   if (problem->num_linear_constraints == 0)
   {
@@ -625,7 +625,7 @@ prepare_cons_duals(SleqpProblem* problem, const SleqpSparseVec* cons_duals)
 
 SLEQP_RETCODE
 sleqp_problem_hess_prod(SleqpProblem* problem,
-                        const double* func_dual,
+                        const double* obj_dual,
                         const SleqpSparseVec* direction,
                         const SleqpSparseVec* cons_duals,
                         SleqpSparseVec* product)
@@ -633,7 +633,7 @@ sleqp_problem_hess_prod(SleqpProblem* problem,
   if (problem->num_linear_constraints == 0)
   {
     return sleqp_func_hess_prod(problem->func,
-                                func_dual,
+                                obj_dual,
                                 direction,
                                 cons_duals,
                                 product);
@@ -642,7 +642,7 @@ sleqp_problem_hess_prod(SleqpProblem* problem,
   SLEQP_CALL(prepare_cons_duals(problem, cons_duals));
 
   return sleqp_func_hess_prod(problem->func,
-                              func_dual,
+                              obj_dual,
                               direction,
                               problem->general_cons_duals,
                               product);
@@ -650,7 +650,7 @@ sleqp_problem_hess_prod(SleqpProblem* problem,
 
 SLEQP_RETCODE
 sleqp_problem_hess_bilinear(SleqpProblem* problem,
-                            const double* func_dual,
+                            const double* obj_dual,
                             const SleqpSparseVec* direction,
                             const SleqpSparseVec* cons_duals,
                             double* bilinear_prod)
@@ -658,7 +658,7 @@ sleqp_problem_hess_bilinear(SleqpProblem* problem,
   if (problem->num_linear_constraints == 0)
   {
     return sleqp_func_hess_bilinear(problem->func,
-                                    func_dual,
+                                    obj_dual,
                                     direction,
                                     cons_duals,
                                     bilinear_prod);
@@ -667,7 +667,7 @@ sleqp_problem_hess_bilinear(SleqpProblem* problem,
   SLEQP_CALL(prepare_cons_duals(problem, cons_duals));
 
   return sleqp_func_hess_bilinear(problem->func,
-                                  func_dual,
+                                  obj_dual,
                                   direction,
                                   problem->general_cons_duals,
                                   bilinear_prod);
@@ -698,8 +698,8 @@ vec_has_finite(const SleqpSparseVec* vec)
 bool
 sleqp_problem_is_unconstrained(SleqpProblem* problem)
 {
-  return !(vec_has_finite(sleqp_problem_var_lb(problem))
-           || vec_has_finite(sleqp_problem_var_ub(problem))
+  return !(vec_has_finite(sleqp_problem_vars_lb(problem))
+           || vec_has_finite(sleqp_problem_vars_ub(problem))
            || vec_has_finite(sleqp_problem_cons_lb(problem))
            || vec_has_finite(sleqp_problem_cons_ub(problem)));
 }

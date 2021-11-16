@@ -18,8 +18,8 @@ class _MinFunc:
     self.args = args
     self.num_variables = num_variables
 
-    self.obj_val = None
-    self.obj_grad = None
+    self._obj_val = None
+    self._obj_grad = None
 
   def set_value(self, v, reason):
     if (self.x == v).all():
@@ -32,8 +32,8 @@ class _MinFunc:
     if self.constraints:
       self.constraints.set_value(self.x)
 
-    self.obj_val = None
-    self.obj_grad = None
+    self._obj_val = None
+    self._obj_grad = None
 
   def cons_vals(self):
     return self.constraints.val(self.args)
@@ -41,34 +41,34 @@ class _MinFunc:
   def cons_jac(self):
     return self.constraints.jac(self.args)
 
-  def func_val(self):
+  def obj_val(self):
     self._eval_obj_val()
-    return self.obj_val
+    return self._obj_val
 
   def _eval_obj_val(self):
-    if self.obj_val is None:
-      self.obj_val = self.objective.val(self.args)
+    if self._obj_val is None:
+      self._obj_val = self.objective.val(self.args)
 
   def _eval_obj_grad(self):
     self._eval_obj_val()
 
-    if self.obj_grad is None:
-      self.obj_grad = self.objective.grad(self.args)
+    if self._obj_grad is None:
+      self._obj_grad = self.objective.grad(self.args)
 
-      if self.obj_grad.ndim == 2:
-        self.obj_grad = self.obj_grad[0,:]
+      if self._obj_grad.ndim == 2:
+        self._obj_grad = self._obj_grad[0,:]
 
-  def func_grad(self):
+  def obj_grad(self):
     self._eval_obj_grad()
-    return self.obj_grad
+    return self._obj_grad
 
-  def hess_prod(self, func_dual, direction, cons_duals):
+  def hess_prod(self, obj_dual, direction, cons_duals):
     self._eval_obj_grad()
 
     prod = self.objective.hess_prod(direction,
                                     self.args)
 
-    prod *= func_dual
+    prod *= obj_dual
 
     if self.constraints:
       cons_prod = self.constraints.hess_prod(direction,
@@ -89,8 +89,8 @@ def _create_result(solver):
   result["status"] = solver.status.value
   result["message"] = solver.status.desc
 
-  result["fun"] = solution.func_val
-  result["jac"] = solution.func_grad
+  result["fun"] = solution.obj_val
+  result["jac"] = solution.obj_grad
   result["nit"] = solver.iterations
 
   result["maxcv"] = solver.states[sleqp.SolverState.ScaledFeasRes]

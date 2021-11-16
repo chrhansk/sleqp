@@ -8,7 +8,7 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* aug_jac)
 
 #ifndef DEBUG
 
-  SleqpWorkingSet* working_set = sleqp_iterate_get_working_set(iterate);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   assert(sleqp_working_set_size(working_set) == 0);
 

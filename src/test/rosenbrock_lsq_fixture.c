@@ -36,14 +36,14 @@ rosenbrock_lsq_set(SleqpFunc* func,
                    SleqpSparseVec* x,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
-                   int* func_grad_nnz,
+                   int* obj_grad_nnz,
                    int* cons_val_nnz,
                    int* cons_jac_nnz,
                    void* func_data)
 {
-  *func_grad_nnz = 2;
-  *cons_val_nnz  = 0;
-  *cons_jac_nnz  = 0;
+  *obj_grad_nnz = 2;
+  *cons_val_nnz = 0;
+  *cons_jac_nnz = 0;
 
   RosenbrockData* data = (RosenbrockData*)func_data;
 

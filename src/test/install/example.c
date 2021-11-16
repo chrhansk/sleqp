@@ -17,35 +17,35 @@ test_set(SleqpFunc* func,
          SleqpSparseVec* x,
          SLEQP_VALUE_REASON reason,
          bool* reject,
-         int* func_grad_nnz,
+         int* obj_grad_nnz,
          int* cons_val_nnz,
          int* cons_jac_nnz,
          void* func_data)
 {
-  *func_grad_nnz = 0;
-  *cons_val_nnz  = 0;
-  *cons_jac_nnz  = 0;
+  *obj_grad_nnz = 0;
+  *cons_val_nnz = 0;
+  *cons_jac_nnz = 0;
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-test_val(SleqpFunc* func, double* func_val, void* func_data)
+test_obj_val(SleqpFunc* func, double* obj, void* func_data)
 {
-  *func_val = 0.;
+  *obj = 0.;
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-test_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
+test_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 {
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
 test_hess_prod(SleqpFunc* func,
-               const double* func_dual,
+               const double* obj_dual,
                const SleqpSparseVec* direction,
                const SleqpSparseVec* cons_duals,
                SleqpSparseVec* product,
@@ -63,8 +63,8 @@ main(int argc, char* argv[])
   const int num_constraints = 0;
 
   SleqpFuncCallbacks callbacks = {.set_value = test_set,
-                                  .func_val  = test_val,
-                                  .func_grad = test_grad,
+                                  .obj_val   = test_obj_val,
+                                  .obj_grad  = test_obj_grad,
                                   .cons_val  = NULL,
                                   .cons_jac  = NULL,
                                   .hess_prod = test_hess_prod,

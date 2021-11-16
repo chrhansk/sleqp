@@ -96,10 +96,9 @@ compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
   const double trust_radius      = 1e6;
 
   const double zero_eps
-    = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_copy(initial, sleqp_iterate_get_primal(iterate)));
+  ASSERT_CALL(sleqp_sparse_vector_copy(initial, sleqp_iterate_primal(iterate)));
 
   bool reject;
 
@@ -123,7 +122,7 @@ compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_solve)
 {
-  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
 
   compute_point(linear_lsq_initial, point);
 
@@ -134,7 +133,7 @@ END_TEST
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_start_high)
 {
-  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
 
   {
     double values[] = {20., 20.};
@@ -154,7 +153,7 @@ END_TEST
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_start_low)
 {
-  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
 
   {
     double values[] = {-10., -10.};
@@ -177,7 +176,7 @@ START_TEST(test_unconstrained_small)
   const double penalty_parameter = 1.;
   const double trust_radius      = 1.;
 
-  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(sleqp_eqp_solver_set_iterate(gauss_newton_solver,
                                            iterate,
@@ -270,7 +269,7 @@ constrained_teardown()
 
 START_TEST(test_constrained_start_high)
 {
-  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
 
   {
     double values[] = {20., 20.};
@@ -289,7 +288,7 @@ END_TEST
 
 START_TEST(test_constrained_start_low)
 {
-  const double eps = sleqp_params_get(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
 
   {
     double values[] = {-10., -10.};

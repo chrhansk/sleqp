@@ -30,8 +30,8 @@ sleqp_merit_create(SleqpMerit** star,
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  const int num_variables   = sleqp_problem_num_variables(problem);
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
   SleqpMerit* merit = *star;
 
@@ -70,12 +70,12 @@ sleqp_merit_func(SleqpMerit* merit,
 {
   SleqpProblem* problem = merit->problem;
 
-  *merit_value = sleqp_iterate_get_func_val(iterate);
+  *merit_value = sleqp_iterate_obj_val(iterate);
 
   double total_violation;
 
   SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      sleqp_iterate_get_cons_val(iterate),
+                                      sleqp_iterate_cons_val(iterate),
                                       &total_violation));
 
   (*merit_value) += penalty_parameter * total_violation;
@@ -92,22 +92,22 @@ sleqp_merit_linear(SleqpMerit* merit,
 {
   SleqpProblem* problem = merit->problem;
 
-  const int num_constraints = sleqp_problem_num_constraints(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const double zero_eps = sleqp_params_get(merit->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps
+    = sleqp_params_value(merit->params, SLEQP_PARAM_ZERO_EPS);
 
   double objective_dot;
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(sleqp_iterate_get_func_grad(iterate),
+  SLEQP_CALL(sleqp_sparse_vector_dot(sleqp_iterate_obj_grad(iterate),
                                      direction,
                                      &objective_dot));
 
-  (*merit_value) = sleqp_iterate_get_func_val(iterate) + objective_dot;
+  (*merit_value) = sleqp_iterate_obj_val(iterate) + objective_dot;
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_vector_product(sleqp_iterate_get_cons_jac(iterate),
-                                       direction,
-                                       merit->dense_cache));
+  SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
+                                                direction,
+                                                merit->dense_cache));
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(merit->jac_dot_sparse,
                                           merit->dense_cache,
@@ -115,7 +115,7 @@ sleqp_merit_linear(SleqpMerit* merit,
                                           zero_eps));
 
   SLEQP_CALL(sleqp_sparse_vector_add(merit->jac_dot_sparse,
-                                     sleqp_iterate_get_cons_val(iterate),
+                                     sleqp_iterate_cons_val(iterate),
                                      zero_eps,
                                      merit->combined_cons_val));
 
@@ -133,7 +133,7 @@ sleqp_merit_linear(SleqpMerit* merit,
 SLEQP_RETCODE
 sleqp_merit_quadratic(SleqpMerit* merit,
                       SleqpIterate* iterate,
-                      const double* func_dual,
+                      const double* obj_dual,
                       const SleqpSparseVec* direction,
                       const SleqpSparseVec* cons_duals,
                       double penalty_parameter,
@@ -152,7 +152,7 @@ sleqp_merit_quadratic(SleqpMerit* merit,
   double bilinear_product;
 
   SLEQP_CALL(sleqp_problem_hess_bilinear(problem,
-                                         func_dual,
+                                         obj_dual,
                                          direction,
                                          cons_duals,
                                          &bilinear_product));
