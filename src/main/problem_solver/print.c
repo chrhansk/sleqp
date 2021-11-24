@@ -204,6 +204,14 @@ sleqp_problem_solver_print_stats(const SleqpProblemSolver* solver)
 {
   SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
+  sleqp_log_info("%30s: %5d", "Accepted steps", solver->num_accepted_steps);
+
+  sleqp_log_info("%30s: %5d",
+                 "SOC Accepted steps",
+                 solver->num_soc_accepted_steps);
+
+  sleqp_log_info("%30s: %5d", "Rejected steps", solver->num_rejected_steps);
+
   const double elapsed_seconds = sleqp_timer_get_ttl(solver->elapsed_timer);
 
   SLEQP_CALL(
