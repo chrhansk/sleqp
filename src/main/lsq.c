@@ -424,3 +424,15 @@ sleqp_lsq_func_set_lm_factor(SleqpFunc* func, double lm_factor)
 
   return SLEQP_OKAY;
 }
+
+void*
+sleqp_lsq_func_get_data(SleqpFunc* func)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
+
+  return lsq_data->func_data;
+}
