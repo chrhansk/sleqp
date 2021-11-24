@@ -135,7 +135,7 @@ cdef class Solver:
 
   @property
   def violated_cons(self) -> set:
-    num_constraints =  self.problem.num_constraints
+    num_constraints =  self.problem.num_cons
 
     cdef int *violated_cons = <int *> malloc(num_constraints * sizeof(double))
     cdef int num_violated_cons
