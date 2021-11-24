@@ -369,6 +369,19 @@ restoration_func_create(SleqpFunc** star,
 }
 
 SLEQP_RETCODE
+sleqp_restoration_func_cons_val(SleqpFunc* restoration_func,
+                                SleqpSparseVec** star)
+{
+  FuncData* func_data = (FuncData*)sleqp_lsq_func_get_data(restoration_func);
+
+  SLEQP_CALL(compute_cons_val(func_data));
+
+  (*star) = func_data->cons_val;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
 sleqp_restoration_problem_create(SleqpProblem** star,
                                  SleqpParams* params,
                                  SleqpProblem* problem)
