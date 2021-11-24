@@ -219,7 +219,7 @@ compute_hessian_products(SleqpDerivChecker* deriv_checker,
   SLEQP_CALL(create_unit_direction(unit_direction, j));
 
   if (flags & SLEQP_DERIV_CHECK_SECOND_CONS
-      || flags & SLEQP_DERIV_CHECK_SECOND_FUNC)
+      || flags & SLEQP_DERIV_CHECK_SECOND_OBJ)
   {
     SLEQP_CALL(sleqp_sparse_vector_clear(deriv_checker->multipliers));
 
@@ -285,7 +285,7 @@ eval_at_check_iterate(SleqpDerivChecker* deriv_checker, SLEQP_DERIV_CHECK flags)
   SleqpSparseVec* obj_grad    = NULL;
   SleqpSparseMatrix* cons_jac = NULL;
 
-  if (flags & SLEQP_DERIV_CHECK_FIRST_FUNC)
+  if (flags & SLEQP_DERIV_CHECK_FIRST_OBJ)
   {
     func_ptr = &obj_val;
   }
@@ -295,7 +295,7 @@ eval_at_check_iterate(SleqpDerivChecker* deriv_checker, SLEQP_DERIV_CHECK flags)
     cons_val = sleqp_iterate_cons_val(check_iterate);
   }
 
-  if ((flags & SLEQP_DERIV_CHECK_SECOND_FUNC)
+  if ((flags & SLEQP_DERIV_CHECK_SECOND_OBJ)
       || (flags & SLEQP_DERIV_CHECK_SECOND_SIMPLE))
   {
     obj_grad = sleqp_iterate_obj_grad(check_iterate);
@@ -635,7 +635,7 @@ check_deriv(SleqpDerivChecker* deriv_checker,
             int j,
             double perturbation)
 {
-  if (flags & SLEQP_DERIV_CHECK_FIRST_FUNC)
+  if (flags & SLEQP_DERIV_CHECK_FIRST_OBJ)
   {
     SLEQP_CALL(
       check_deriv_func_first_order(deriv_checker, iterate, j, perturbation));
@@ -647,7 +647,7 @@ check_deriv(SleqpDerivChecker* deriv_checker,
       check_deriv_cons_first_order(deriv_checker, iterate, j, perturbation));
   }
 
-  if (flags & SLEQP_DERIV_CHECK_SECOND_FUNC)
+  if (flags & SLEQP_DERIV_CHECK_SECOND_OBJ)
   {
     SLEQP_CALL(
       check_deriv_func_second_order(deriv_checker, iterate, j, perturbation));
