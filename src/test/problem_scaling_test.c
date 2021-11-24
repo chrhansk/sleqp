@@ -45,7 +45,7 @@ problem_scaling_setup()
                                    sleqp_problem_num_vars(problem),
                                    num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
+  ASSERT_CALL(sleqp_scaling_set_obj_weight(scaling, 2));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -1));
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, -6));

@@ -36,7 +36,7 @@ scaling_setup()
 
   ASSERT_CALL(sleqp_scaling_create(&scaling, num_variables, num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
+  ASSERT_CALL(sleqp_scaling_set_obj_weight(scaling, 2));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -1));
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, -6));
@@ -137,7 +137,7 @@ START_TEST(test_nominal_scale_obj_val)
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ASSERT_CALL(
-    sleqp_scaling_set_func_weight_from_nominal(scaling, nominal_obj_val));
+    sleqp_scaling_set_obj_weight_from_nominal(scaling, nominal_obj_val));
 
   double scaled_obj_val = sleqp_scale_obj_val(scaling, nominal_obj_val);
 

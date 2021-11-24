@@ -143,21 +143,21 @@ sleqp_scaling_num_cons(SleqpScaling* scaling)
 }
 
 int
-sleqp_scaling_func_weight(SleqpScaling* scaling)
+sleqp_scaling_obj_weight(SleqpScaling* scaling)
 {
   return scaling->obj_weight;
 }
 
 SLEQP_RETCODE
-sleqp_scaling_set_func_weight(SleqpScaling* scaling, int weight)
+sleqp_scaling_set_obj_weight(SleqpScaling* scaling, int weight)
 {
   scaling->obj_weight = weight;
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_scaling_set_func_weight_from_nominal(SleqpScaling* scaling,
-                                           double nominal_value)
+sleqp_scaling_set_obj_weight_from_nominal(SleqpScaling* scaling,
+                                          double nominal_value)
 {
   frexp(nominal_value, &(scaling->obj_weight));
 

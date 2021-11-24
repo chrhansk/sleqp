@@ -43,10 +43,10 @@ cdef extern from "sleqp.h":
 
   ctypedef enum SLEQP_DERIV_CHECK:
     SLEQP_DERIV_CHECK_SKIP,
-    SLEQP_DERIV_CHECK_FIRST_FUNC,
+    SLEQP_DERIV_CHECK_FIRST_OBJ,
     SLEQP_DERIV_CHECK_FIRST_CONS,
     SLEQP_DERIV_CHECK_FIRST,
-    SLEQP_DERIV_CHECK_SECOND_FUNC,
+    SLEQP_DERIV_CHECK_SECOND_OBJ,
     SLEQP_DERIV_CHECK_SECOND_CONS,
     SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE,
     SLEQP_DERIV_CHECK_SECOND_SIMPLE
@@ -465,13 +465,13 @@ cdef extern from "sleqp.h":
   int sleqp_scaling_num_vars(SleqpScaling* scaling)
   int sleqp_scaling_num_cons(SleqpScaling* scaling)
 
-  int sleqp_scaling_func_weight(SleqpScaling* scaling)
+  int sleqp_scaling_obj_weight(SleqpScaling* scaling)
 
-  SLEQP_RETCODE sleqp_scaling_set_func_weight(SleqpScaling* scaling,
-                                              int weight)
+  SLEQP_RETCODE sleqp_scaling_set_obj_weight(SleqpScaling* scaling,
+                                             int weight)
 
-  SLEQP_RETCODE sleqp_scaling_set_func_weight_from_nominal(SleqpScaling* scaling,
-                                                           double nominal_value)
+  SLEQP_RETCODE sleqp_scaling_set_obj_weight_from_nominal(SleqpScaling* scaling,
+                                                          double nominal_value)
 
   SLEQP_RETCODE sleqp_scaling_set_var_weight(SleqpScaling* scaling,
                                              int index,

@@ -29,8 +29,8 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
 
   cdef csleqp.SleqpSparseMatrix* linear_coeffs_mat
 
-  cdef int num_variables = var_lb.shape[0]
-  cdef int num_constraints = general_lb.shape[0]
+  cdef int num_vars = var_lb.shape[0]
+  cdef int num_cons = general_lb.shape[0]
 
   assert cfunc != NULL
 
@@ -42,20 +42,20 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
   try:
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&var_lb_vec,
-                                                        num_variables))
+                                                        num_vars))
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&var_ub_vec,
-                                                        num_variables))
+                                                        num_vars))
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&general_lb_vec,
-                                                        num_constraints))
+                                                        num_cons))
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&general_ub_vec,
-                                                        num_constraints))
+                                                        num_cons))
 
     csleqp_call(csleqp.sleqp_sparse_matrix_create(&linear_coeffs_mat,
                                                   num_linear_constraints,
-                                                  num_variables,
+                                                  num_vars,
                                                   0))
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&linear_lb_vec,
@@ -131,8 +131,8 @@ cdef class _Problem:
 
     cdef _Problem _problem = _Problem()
 
-    cdef int num_variables = var_lb.shape[0]
-    cdef int num_constraints = cons_lb.shape[0]
+    cdef int num_vars = var_lb.shape[0]
+    cdef int num_cons = cons_lb.shape[0]
 
     csleqp_call(create_problem(&_problem.cproblem,
                                cfunc,
@@ -151,11 +151,11 @@ cdef class _Problem:
     return _problem
 
   @property
-  def num_variables(self) -> int:
+  def num_vars(self) -> int:
     return csleqp.sleqp_problem_num_vars(self.cproblem)
 
   @property
-  def num_constraints(self) -> int:
+  def num_cons(self) -> int:
     return csleqp.sleqp_problem_num_cons(self.cproblem)
 
   @property
@@ -199,16 +199,16 @@ cdef class Problem:
                 np.ndarray cons_ub,
                 **properties):
 
-    cdef int num_variables = var_lb.shape[0]
-    cdef int num_constraints = cons_lb.shape[0]
+    cdef int num_vars = var_lb.shape[0]
+    cdef int num_cons = cons_lb.shape[0]
     cdef csleqp.SleqpFunc* cfunc
 
     self.funcref = _Func()
 
     csleqp_call(create_func(&cfunc,
                             func,
-                            num_variables,
-                            num_constraints))
+                            num_vars,
+                            num_cons))
 
     assert cfunc != NULL
 
@@ -241,12 +241,12 @@ cdef class Problem:
       return self._func
 
   @property
-  def num_variables(self) -> int:
-    return self.problem.num_variables
+  def num_vars(self) -> int:
+    return self.problem.num_vars
 
   @property
-  def num_constraints(self) -> int:
-    return self.problem.num_constraints
+  def num_cons(self) -> int:
+    return self.problem.num_cons
 
   @property
   def var_lb(self) -> np.array:
@@ -289,16 +289,16 @@ cdef class LSQProblem:
                 num_residuals,
                 **properties):
 
-    cdef int num_variables = var_lb.shape[0]
-    cdef int num_constraints = cons_lb.shape[0]
+    cdef int num_vars = var_lb.shape[0]
+    cdef int num_cons = cons_lb.shape[0]
     cdef csleqp.SleqpFunc* cfunc
 
     self.funcref = _Func()
 
     csleqp_call(create_lsq_func(&cfunc,
                                 func,
-                                num_variables,
-                                num_constraints,
+                                num_vars,
+                                num_cons,
                                 num_residuals,
                                 properties.get('regularization', 0.),
                                 params.params))
@@ -331,12 +331,12 @@ cdef class LSQProblem:
       return self._func
 
   @property
-  def num_variables(self) -> int:
-    return self.problem.num_variables
+  def num_vars(self) -> int:
+    return self.problem.num_vars
 
   @property
-  def num_constraints(self) -> int:
-    return self.problem.num_constraints
+  def num_cons(self) -> int:
+    return self.problem.num_cons
 
   @property
   def var_lb(self) -> np.array:

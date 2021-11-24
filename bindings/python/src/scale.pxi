@@ -23,29 +23,29 @@ cdef class Scaling:
   cdef csleqp.SleqpSparseMatrix* cons_jac
 
   def __cinit__(self,
-                int num_variables,
-                int num_constraints,
+                int num_vars,
+                int num_cons,
                 *args,
                 **keywords):
 
     csleqp_call(csleqp.sleqp_scaling_create(&self.scaling,
-                                            num_variables,
-                                            num_constraints))
+                                            num_vars,
+                                            num_cons))
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.gradient,
-                                                        num_variables))
+                                                        num_vars))
 
     csleqp_call(csleqp.sleqp_sparse_matrix_create(&self.cons_jac,
-                                                  num_constraints,
-                                                  num_variables,
+                                                  num_cons,
+                                                  num_vars,
                                                   0))
 
   @property
-  def num_variables(self):
+  def num_vars(self):
     return csleqp.sleqp_scaling_num_vars(self.scaling)
 
   @property
-  def num_constraints(self):
+  def num_cons(self):
     return csleqp.sleqp_scaling_num_cons(self.scaling)
 
   def __dealloc__(self):
@@ -54,8 +54,8 @@ cdef class Scaling:
     csleqp_call(csleqp.sleqp_scaling_release(&self.scaling))
 
   def __str__(self):
-    val = "Scaling(num_variables={0}, num_constraints={1})\n".format(self.num_variables,
-                                                                     self.num_constraints)
+    val = "Scaling(num_variables={0}, num_constraints={1})\n".format(self.num_vars,
+                                                                     self.num_cons)
 
     val += "Function weight: {0}\n".format(self.func_weight)
 
@@ -82,17 +82,17 @@ cdef class Scaling:
     return np.ldexp(np.ones(1), np.array([weight])).item()
 
   @property
-  def func_weight(self):
-    return csleqp.sleqp_scaling_func_weight(self.scaling)
+  def obj_weight(self):
+    return csleqp.sleqp_scaling_obj_weight(self.scaling)
 
-  @func_weight.setter
-  def func_weight(self, value):
-    csleqp_call(csleqp.sleqp_scaling_set_func_weight(self.scaling,
-                                                     value))
+  @obj_weight.setter
+  def obj_weight(self, value):
+    csleqp_call(csleqp.sleqp_scaling_set_obj_weight(self.scaling,
+                                                    value))
 
   @property
-  def variable_weights(self):
-    length = self.num_variables
+  def var_weights(self):
+    length = self.num_vars
     cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_var_weights(self.scaling)
 
     array = np.asarray(values)
@@ -100,8 +100,8 @@ cdef class Scaling:
 
     return Array(array, self)
 
-  @variable_weights.setter
-  def variable_weights(self, values):
+  @var_weights.setter
+  def var_weights(self, values):
     assert values.shape == (self.num_variables,)
     assert values.dtype == np.int64
 
@@ -109,7 +109,7 @@ cdef class Scaling:
       self.set_variable_weight(i, values[i])
 
   @property
-  def constraint_weights(self):
+  def cons_weights(self):
     length = self.num_constraints
     cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_cons_weights(self.scaling)
 
@@ -118,46 +118,46 @@ cdef class Scaling:
 
     return Array(array, self)
 
-  @constraint_weights.setter
-  def constraint_weights(self, values):
+  @cons_weights.setter
+  def cons_weights(self, values):
     assert values.shape == (self.num_constraints,)
     assert values.dtype == np.int64
 
     for i in range(self.num_constraints):
       self.set_constraint_weight(i, values[i])
 
-  def set_func_weight_from_nominal(self, nominal_value):
-    csleqp_call(csleqp.sleqp_scaling_set_func_weight_from_nominal(self.scaling,
-                                                                  nominal_value))
+  def set_obj_weight_from_nominal(self, nominal_value):
+    csleqp_call(csleqp.sleqp_scaling_set_obj_weight_from_nominal(self.scaling,
+                                                                 nominal_value))
 
-  def set_variable_weight(self, int index, int weight):
+  def set_var_weight(self, int index, int weight):
     csleqp_call(csleqp.sleqp_scaling_set_var_weight(self.scaling,
                                                     index,
                                                     weight))
 
-  def set_variable_weights_from_nominal(self, nominal_array):
+  def set_var_weights_from_nominal(self, nominal_array):
     assert nominal_array.shape == (self.num_variables,)
     cdef double[:] nominal_values = nominal_array
     csleqp_call(csleqp.sleqp_scaling_set_var_weights_from_nominal(self.scaling,
                                                                   &nominal_values[0]))
 
-  def set_variable_weight_from_nominal(self, int index, float nominal_value):
+  def set_var_weight_from_nominal(self, int index, float nominal_value):
     csleqp_call(csleqp.sleqp_scaling_set_var_weight_from_nominal(self.scaling,
                                                                  index,
                                                                  nominal_value))
 
-  def set_constraint_weight(self, int index, int weight):
+  def set_cons_weight(self, int index, int weight):
     csleqp_call(csleqp.sleqp_scaling_set_cons_weight(self.scaling,
                                                      index,
                                                      weight))
 
-  def set_constraint_weights_from_nominal(self, nominal_array):
+  def set_cons_weights_from_nominal(self, nominal_array):
     assert nominal_array.shape == (self.num_constraints,)
     cdef double[:] nominal_values = nominal_array
     csleqp_call(csleqp.sleqp_scaling_set_cons_weights_from_nominal(self.scaling,
                                                                    &nominal_values[0]))
 
-  def set_constraint_weight_from_nominal(self, int index, float nominal_value):
+  def set_cons_weight_from_nominal(self, int index, float nominal_value):
     csleqp_call(csleqp.sleqp_scaling_set_cons_weight_from_nominal(self.scaling,
                                                                   index,
                                                                   nominal_value))

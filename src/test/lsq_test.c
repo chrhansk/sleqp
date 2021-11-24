@@ -264,7 +264,7 @@ START_TEST(test_scaled_solve)
                                    rosenbrock_num_variables,
                                    rosenbrock_num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, -2));
+  ASSERT_CALL(sleqp_scaling_set_obj_weight(scaling, -2));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -1));
 

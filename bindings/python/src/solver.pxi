@@ -33,7 +33,7 @@ cdef class Solver:
     self.callback_handles = []
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&primal_vec,
-                                                        problem.num_variables))
+                                                        problem.num_vars))
 
     csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.residuals, 0))
 

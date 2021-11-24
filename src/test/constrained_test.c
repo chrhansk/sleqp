@@ -307,7 +307,7 @@ START_TEST(test_scaled_solve)
                                    constrained_num_variables,
                                    constrained_num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
+  ASSERT_CALL(sleqp_scaling_set_obj_weight(scaling, 2));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -5));
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, 5));
@@ -359,7 +359,7 @@ START_TEST(test_scaled_sr1_solve)
                                    constrained_num_variables,
                                    constrained_num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
+  ASSERT_CALL(sleqp_scaling_set_obj_weight(scaling, 2));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -5));
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, 5));
@@ -411,7 +411,7 @@ START_TEST(test_scaled_bfgs_solve)
                                    constrained_num_variables,
                                    constrained_num_constraints));
 
-  ASSERT_CALL(sleqp_scaling_set_func_weight(scaling, 2));
+  ASSERT_CALL(sleqp_scaling_set_obj_weight(scaling, 2));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -5));
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, 5));

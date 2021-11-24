@@ -62,14 +62,9 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpFunc* func,
 cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val(csleqp.SleqpFunc* func,
                                              double* obj_val,
                                              void* func_data):
-  cdef int num_variables
-  cdef int num_constraints
   try:
 
     func_obj = (<object> func_data)
-
-    num_variables = csleqp.sleqp_func_num_vars(func)
-    num_constraints = csleqp.sleqp_func_num_cons(func)
 
     result = func_obj.obj_val()
     assert result is not None, "obj_val() returned 'None'"
@@ -94,20 +89,18 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val_nogil(csleqp.SleqpFunc* func,
 cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad(csleqp.SleqpFunc* func,
                                               csleqp.SleqpSparseVec* obj_grad,
                                               void* func_data):
-  cdef int num_variables
-  cdef int num_constraints
+  cdef int num_vars
   try:
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_num_vars(func)
-    num_constraints = csleqp.sleqp_func_num_cons(func)
+    num_vars = csleqp.sleqp_func_num_vars(func)
 
     grad_array = func_obj.obj_grad()
 
     assert grad_array is not None, "obj_grad() returned 'None'"
     assert grad_array.ndim == 1, "Gradient must be a vector"
-    assert grad_array.size == num_variables, "Gradient has wrong size"
+    assert grad_array.size == num_vars, "Gradient has wrong size"
 
     csleqp_call(array_to_sleqp_sparse_vec(grad_array, obj_grad))
 
@@ -123,28 +116,26 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad_nogil(csleqp.SleqpFunc* func,
                                                     void* func_data) nogil:
   with gil:
     return sleqp_func_obj_grad(func,
-                           obj_grad,
-                           func_data)
+                               obj_grad,
+                               func_data)
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
                                               const csleqp.SleqpSparseVec* cons_indices,
                                               csleqp.SleqpSparseVec* cons_vals,
                                               void* func_data):
-  cdef int num_variables
-  cdef int num_constraints
+  cdef int num_cons
   try:
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_num_vars(func)
-    num_constraints = csleqp.sleqp_func_num_cons(func)
+    num_cons = csleqp.sleqp_func_num_cons(func)
 
     cons_array = func_obj.cons_vals()
 
     assert cons_array is not None, "cons_vals() returned 'None'"
     assert cons_array.ndim == 1, "Constraint values must be a vector"
-    assert cons_array.size == num_constraints, "Constraint values have wrong size"
+    assert cons_array.size == num_cons, "Constraint values have wrong size"
 
     csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
 
@@ -170,18 +161,18 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
                                               const csleqp.SleqpSparseVec* cons_indices,
                                               csleqp.SleqpSparseMatrix* cons_jac,
                                               void* func_data):
-  cdef int num_variables
-  cdef int num_constraints
+  cdef int num_vars
+  cdef int num_cons
   try:
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_num_vars(func)
-    num_constraints = csleqp.sleqp_func_num_cons(func)
+    num_vars = csleqp.sleqp_func_num_vars(func)
+    num_cons = csleqp.sleqp_func_num_cons(func)
 
     cons_jac_mat = func_obj.cons_jac()
 
-    expected_shape = (num_constraints, num_variables)
+    expected_shape = (num_cons, num_vars)
 
     assert cons_jac_mat is not None, "cons_jac() returned 'None'"
     assert cons_jac_mat.ndim == 2, "Constraint Jacobian must be a matrix"
@@ -215,7 +206,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
                                                   csleqp.SleqpSparseVec* product,
                                                   void* func_data):
 
-  cdef int num_variables
+  cdef int num_vars
 
   try:
 
@@ -225,7 +216,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
 
     func_obj = (<object> func_data)
 
-    num_variables = csleqp.sleqp_func_num_vars(func)
+    num_vars = csleqp.sleqp_func_num_vars(func)
 
     o_dual = obj_dual[0] if obj_dual else 0.
     direction_array = sleqp_sparse_vec_to_array(direction)
@@ -235,7 +226,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
 
     assert product_array is not None, "hess_prod(...) returned 'None'"
     assert product_array.ndim == 1, "Hessian product must be a vector"
-    assert product_array.size == num_variables, "Hessian product has wrong size"
+    assert product_array.size == num_vars, "Hessian product has wrong size"
 
     csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
@@ -329,8 +320,8 @@ cdef class _Func:
 
 cdef csleqp.SLEQP_RETCODE create_func(csleqp.SleqpFunc** cfunc,
                                       object func,
-                                      int num_variables,
-                                      int num_constraints):
+                                      int num_vars,
+                                      int num_cons):
   cdef csleqp.SleqpFuncCallbacks callbacks
   cdef _Func ofunc = _Func()
   cdef csleqp.SLEQP_RETCODE retcode
@@ -341,8 +332,8 @@ cdef csleqp.SLEQP_RETCODE create_func(csleqp.SleqpFunc** cfunc,
 
   retcode = csleqp.sleqp_func_create(cfunc,
                                      &callbacks,
-                                     num_variables,
-                                     num_constraints,
+                                     num_vars,
+                                     num_cons,
                                      <void*> func)
 
   if cfunc[0] != NULL:

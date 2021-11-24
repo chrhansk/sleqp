@@ -30,10 +30,10 @@ class Status(_DocEnum):
 
 class DerivCheck(Flag):
   Skip             = csleqp.SLEQP_DERIV_CHECK_SKIP
-  FirstFunc        = csleqp.SLEQP_DERIV_CHECK_FIRST_FUNC
+  FirstFunc        = csleqp.SLEQP_DERIV_CHECK_FIRST_OBJ
   FirstCons        = csleqp.SLEQP_DERIV_CHECK_FIRST_CONS
   First            = csleqp.SLEQP_DERIV_CHECK_FIRST
-  SecondFunc       = csleqp.SLEQP_DERIV_CHECK_SECOND_FUNC
+  SecondFunc       = csleqp.SLEQP_DERIV_CHECK_SECOND_OBJ
   SecondCons       = csleqp.SLEQP_DERIV_CHECK_SECOND_CONS
   SecondExhaustive = csleqp.SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE
   SecondSimple     = csleqp.SLEQP_DERIV_CHECK_SECOND_SIMPLE
