@@ -48,6 +48,11 @@ sleqp_restoration_problem_transform(SleqpProblem* problem,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
+sleqp_restoration_func_cons_val(SleqpFunc* restoration_func,
+                                SleqpSparseVec** star);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
 sleqp_restoration_problem_restore(SleqpProblem* problem,
                                   const SleqpSparseVec* input,
                                   SleqpSparseVec* result);
