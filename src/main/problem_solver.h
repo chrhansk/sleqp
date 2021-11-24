@@ -61,6 +61,9 @@ struct SleqpProblemSolver
   int iteration;
 
   int elapsed_iterations;
+  int num_accepted_steps;
+  int num_soc_accepted_steps;
+  int num_rejected_steps;
 
   double time_limit;
 

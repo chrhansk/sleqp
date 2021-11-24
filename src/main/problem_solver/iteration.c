@@ -370,6 +370,8 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
   {
     sleqp_log_debug("Trial step accepted");
 
+    ++solver->num_accepted_steps;
+
     if (full_cauchy_step)
     {
       solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED_FULL;
@@ -441,12 +443,20 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
         {
           solver->last_step_type = SLEQP_STEPTYPE_ACCEPTED_SOC;
           sleqp_log_debug("Second-order correction accepted");
+
+          ++solver->num_soc_accepted_steps;
         }
         else
         {
           sleqp_log_debug("Second-order correction rejected");
+
+          ++solver->num_rejected_steps;
         }
       }
+    }
+    else
+    {
+      ++solver->num_rejected_steps;
     }
   }
 

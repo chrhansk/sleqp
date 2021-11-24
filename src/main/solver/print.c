@@ -116,11 +116,13 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
 
   if (solver->restoration_problem_solver)
   {
-    sleqp_log_info("%30s:", "Optimization phase");
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s" SLEQP_FORMAT_RESET,
+                   "Optimization phase");
 
     SLEQP_CALL(sleqp_problem_solver_print_stats(solver->problem_solver));
 
-    sleqp_log_info("%30s:", "Restoration phase");
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s" SLEQP_FORMAT_RESET,
+                   "Restoration phase");
 
     SLEQP_CALL(
       sleqp_problem_solver_print_stats(solver->restoration_problem_solver));
