@@ -88,7 +88,7 @@ class PolishingTest(unittest.TestCase):
     working_set = solution.working_set
 
     for i in range(num_cons):
-      state = working_set.constraint_state(i)
+      state = working_set.cons_state(i)
 
       if cons_dual[i] ==  0.:
         self.assertEqual(state, sleqp.ActiveState.Inactive)

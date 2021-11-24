@@ -77,17 +77,17 @@ class LinearConsTest(unittest.TestCase):
 
     self.assertTrue(np.allclose(self.optimal_sol, solution.primal))
 
-    self.assertEqual(solution.working_set.constraint_state(0),
+    self.assertEqual(solution.working_set.cons_state(0),
                      sleqp.ActiveState.ActiveBoth)
 
 
   def test_scaled_solve(self):
     scaling = sleqp.Scaling(num_variables, num_constraints)
 
-    scaling.set_variable_weight(0, -1)
-    scaling.set_variable_weight(1, -2)
+    scaling.set_var_weight(0, -1)
+    scaling.set_var_weight(1, -2)
 
-    scaling.set_constraint_weight(0, 2)
+    scaling.set_cons_weight(0, 2)
 
     solver = sleqp.Solver(self.problem,
                           self.params,
@@ -102,7 +102,7 @@ class LinearConsTest(unittest.TestCase):
 
     self.assertTrue(np.allclose(self.optimal_sol, solution.primal))
 
-    self.assertEqual(solution.working_set.constraint_state(0),
+    self.assertEqual(solution.working_set.cons_state(0),
                      sleqp.ActiveState.ActiveBoth)
 
 

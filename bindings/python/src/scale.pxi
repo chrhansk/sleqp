@@ -102,15 +102,15 @@ cdef class Scaling:
 
   @var_weights.setter
   def var_weights(self, values):
-    assert values.shape == (self.num_variables,)
+    assert values.shape == (self.num_vars,)
     assert values.dtype == np.int64
 
-    for i in range(self.num_variables):
+    for i in range(self.num_vars):
       self.set_variable_weight(i, values[i])
 
   @property
   def cons_weights(self):
-    length = self.num_constraints
+    length = self.num_cons
     cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_cons_weights(self.scaling)
 
     array = np.asarray(values)
@@ -120,10 +120,10 @@ cdef class Scaling:
 
   @cons_weights.setter
   def cons_weights(self, values):
-    assert values.shape == (self.num_constraints,)
+    assert values.shape == (self.num_cons,)
     assert values.dtype == np.int64
 
-    for i in range(self.num_constraints):
+    for i in range(self.num_cons):
       self.set_constraint_weight(i, values[i])
 
   def set_obj_weight_from_nominal(self, nominal_value):
@@ -136,7 +136,7 @@ cdef class Scaling:
                                                     weight))
 
   def set_var_weights_from_nominal(self, nominal_array):
-    assert nominal_array.shape == (self.num_variables,)
+    assert nominal_array.shape == (self.num_vars,)
     cdef double[:] nominal_values = nominal_array
     csleqp_call(csleqp.sleqp_scaling_set_var_weights_from_nominal(self.scaling,
                                                                   &nominal_values[0]))
@@ -152,7 +152,7 @@ cdef class Scaling:
                                                      weight))
 
   def set_cons_weights_from_nominal(self, nominal_array):
-    assert nominal_array.shape == (self.num_constraints,)
+    assert nominal_array.shape == (self.num_cons,)
     cdef double[:] nominal_values = nominal_array
     csleqp_call(csleqp.sleqp_scaling_set_cons_weights_from_nominal(self.scaling,
                                                                    &nominal_values[0]))
