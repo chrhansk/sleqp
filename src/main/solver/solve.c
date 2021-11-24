@@ -123,10 +123,6 @@ run_solving_loop(SleqpSolver* solver, int max_num_iterations, double time_limit)
       solver->status = SLEQP_STATUS_ABORT_TIME;
       continue_loop  = false;
       break;
-    case SLEQP_PROBLEM_SOLVER_STATUS_ABORT_MANUAL:
-      solver->status = SLEQP_STATUS_ABORT_MANUAL;
-      continue_loop  = false;
-      break;
     case SLEQP_PROBLEM_SOLVER_STATUS_ABORT_DEADPOINT:
       solver->status = SLEQP_STATUS_ABORT_DEADPOINT;
       continue_loop  = false;
@@ -135,37 +131,63 @@ run_solving_loop(SleqpSolver* solver, int max_num_iterations, double time_limit)
       break;
     }
 
+    if (!continue_loop)
+    {
+      break;
+    }
+
     if (solver->solver_phase == SLEQP_SOLVER_PHASE_OPTIMIZATION)
     {
-      if (status == SLEQP_PROBLEM_SOLVER_STATUS_OPTIMAL)
+      switch (status)
       {
+      case SLEQP_PROBLEM_SOLVER_STATUS_OPTIMAL:
         solver->status = SLEQP_STATUS_OPTIMAL;
         continue_loop  = false;
-      }
-      else if (status == SLEQP_PROBLEM_SOLVER_STATUS_UNBOUNDED)
-      {
+        break;
+      case SLEQP_PROBLEM_SOLVER_STATUS_ABORT_MANUAL:
+        solver->status = SLEQP_STATUS_ABORT_MANUAL;
+        continue_loop  = false;
+        break;
+      case SLEQP_PROBLEM_SOLVER_STATUS_UNBOUNDED:
         solver->status = SLEQP_STATUS_UNBOUNDED;
         continue_loop  = false;
-      }
-      else if (status == SLEQP_PROBLEM_SOLVER_STATUS_LOCALLY_INFEASIBLE
-               && enable_restoration)
-      {
-        SLEQP_CALL(sleqp_solver_toggle_phase(solver));
+        break;
+      case SLEQP_PROBLEM_SOLVER_STATUS_LOCALLY_INFEASIBLE:
+        if (enable_restoration)
+        {
+          SLEQP_CALL(sleqp_solver_toggle_phase(solver));
+        }
+        break;
+      default:
+        // This should not happen
+        assert(0);
       }
     }
     else
     {
       assert(solver->solver_phase == SLEQP_SOLVER_PHASE_RESTORATION);
 
-      assert(status == SLEQP_PROBLEM_SOLVER_STATUS_OPTIMAL);
-
-      // TODO: Warn if transformed iterate is infeasible
-
       SLEQP_CALL(sleqp_solver_toggle_phase(solver));
 
       bool feasible;
 
-      SLEQP_CALL(check_feasibility(solver, &feasible));
+      // manual abort must have been triggered by
+      // "on_restoration_solver_accepted_iterate"
+      // callback after achieving feasibility
+      if (status == SLEQP_PROBLEM_SOLVER_STATUS_ABORT_MANUAL)
+      {
+        feasible = true;
+#ifndef NDEBUG
+        bool actually_feasible;
+        SLEQP_CALL(check_feasibility(solver, &actually_feasible));
+        assert(actually_feasible);
+#endif
+      }
+      else
+      {
+        assert(status == SLEQP_PROBLEM_SOLVER_STATUS_OPTIMAL);
+        SLEQP_CALL(check_feasibility(solver, &feasible));
+      }
 
       if (!feasible)
       {

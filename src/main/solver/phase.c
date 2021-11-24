@@ -1,6 +1,40 @@
 #include "solver.h"
 
+#include "feas.h"
 #include "restoration.h"
+
+static SLEQP_RETCODE
+on_restoration_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
+                                       SleqpIterate* iterate,
+                                       SleqpIterate* trial_iterate,
+                                       void* callback_data)
+{
+  SleqpSolver* solver = (SleqpSolver*)callback_data;
+
+  assert(problem_solver == solver->restoration_problem_solver);
+
+  SleqpProblem* problem             = solver->problem;
+  SleqpProblem* restoration_problem = solver->restoration_problem;
+  SleqpFunc* restoration_func       = sleqp_problem_func(restoration_problem);
+
+  const double feas_eps
+    = sleqp_params_value(solver->params, SLEQP_PARAM_FEASIBILITY_TOL);
+
+  SleqpSparseVec* cons_val;
+
+  SLEQP_CALL(sleqp_restoration_func_cons_val(restoration_func, &cons_val));
+
+  double feas_res;
+
+  SLEQP_CALL(sleqp_violation_inf_norm(problem, cons_val, &feas_res));
+
+  if (feas_res <= feas_eps)
+  {
+    SLEQP_CALL(sleqp_problem_solver_abort(problem_solver));
+  }
+
+  return SLEQP_OKAY;
+}
 
 static SLEQP_RETCODE
 create_restoration_primal(SleqpSolver* solver)
@@ -56,6 +90,12 @@ create_restoration_solver(SleqpSolver* solver)
                                          solver->params,
                                          solver->options,
                                          solver->restoration_primal));
+
+  SLEQP_CALL(sleqp_problem_solver_add_callback(
+    solver->restoration_problem_solver,
+    SLEQP_PROBLEM_SOLVER_EVENT_ACCEPTED_ITERATE,
+    on_restoration_solver_accepted_iterate,
+    (void*)solver));
 
   return SLEQP_OKAY;
 }
