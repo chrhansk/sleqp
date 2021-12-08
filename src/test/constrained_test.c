@@ -108,6 +108,38 @@ START_TEST(test_exact_linesearch)
 }
 END_TEST
 
+START_TEST(test_initial_tr_wide)
+{
+  SleqpSolver* solver;
+
+  ASSERT_CALL(sleqp_options_set_int_value(options,
+                                          SLEQP_OPTION_INT_INITIAL_TR_CHOICE,
+                                          SLEQP_INITIAL_TR_CHOICE_WIDE));
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  options,
+                                  constrained_initial,
+                                  NULL));
+
+  // 100 iterations should be plenty...
+  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
+
+  SleqpIterate* solution_iterate;
+
+  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
+
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
+
+  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
+
+  ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
+
+  ASSERT_CALL(sleqp_solver_release(&solver));
+}
+END_TEST
+
 START_TEST(test_parametric_solve)
 {
   SleqpSolver* solver;
@@ -520,6 +552,8 @@ constrained_test_suite()
   tcase_add_test(tc_cons, test_solve);
 
   tcase_add_test(tc_cons, test_exact_linesearch);
+
+  tcase_add_test(tc_cons, test_initial_tr_wide);
 
   tcase_add_test(tc_cons, test_parametric_solve);
 

@@ -22,6 +22,7 @@ cdef class Options:
                   'step_rule',
                   'linesearch',
                   'parametric_cauchy',
+                  'initial_tr_choice',
                   'enable_preprocessor']
 
     for key, value in values.items():
@@ -120,6 +121,13 @@ cdef class Options:
                                                                 csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY)
 
     return ParametricCauchy(parametric_cauchy)
+
+  @property
+  def initial_tr_choice(self) -> InitialTRChoice:
+    cdef int initial_tr_choice = csleqp.sleqp_options_int_value(self.options,
+                                                                csleqp.SLEQP_OPTION_INT_INITIAL_TR_CHOICE)
+
+    return InitialTRChoice(initial_tr_choice)
 
   @property
   def num_threads(self):
@@ -222,6 +230,12 @@ cdef class Options:
   def parametric_cauchy(self, value):
     csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
                                                    csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY,
+                                                   value.value))
+
+  @initial_tr_choice.setter
+  def initial_tr_choice(self, value):
+    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
+                                                   csleqp.SLEQP_OPTION_INT_INITIAL_TR_CHOICE,
                                                    value.value))
 
   @num_threads.setter

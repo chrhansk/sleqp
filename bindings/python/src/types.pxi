@@ -99,6 +99,13 @@ class ParametricCauchy(_DocEnum):
   Fine     = csleqp.SLEQP_PARAMETRIC_CAUCHY_FINE, "Fine parametric Cauchy"
 
 
+class InitialTRChoice(_DocEnum):
+  """
+  Choice for initial trust radius
+  """
+  Narrow = csleqp.SLEQP_INITIAL_TR_CHOICE_NARROW, "Narrow"
+  Wide   = csleqp.SLEQP_INITIAL_TR_CHOICE_WIDE, "Wide"
+
 class ValueReason(_DocEnum):
   """
   The reason for setting a new function value
