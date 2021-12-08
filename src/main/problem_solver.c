@@ -5,6 +5,8 @@
 #include "cmp.h"
 #include "mem.h"
 
+const double trust_region_factor = .8;
+
 SLEQP_RETCODE
 sleqp_problem_solver_create(SleqpProblemSolver** star,
                             SLEQP_SOLVER_PHASE solver_phase,
@@ -104,18 +106,42 @@ sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE
+compute_initial_trust_radius(SleqpProblemSolver* solver)
+{
+  const SLEQP_INITIAL_TR_CHOICE initial_tr_choice
+    = sleqp_options_int_value(solver->options,
+                              SLEQP_OPTION_INT_INITIAL_TR_CHOICE);
+
+  const int num_vars         = sleqp_problem_num_vars(solver->problem);
+  const double sqrt_num_vars = sqrt((double)num_vars);
+
+  switch (initial_tr_choice)
+  {
+  case SLEQP_INITIAL_TR_CHOICE_NARROW:
+    // suggested in the original paper
+    solver->trust_radius = 1.;
+    solver->lp_trust_radius
+      = trust_region_factor * solver->trust_radius / sqrt_num_vars;
+    break;
+  case SLEQP_INITIAL_TR_CHOICE_WIDE:
+    // knitro default
+    solver->trust_radius    = sqrt_num_vars;
+    solver->lp_trust_radius = trust_region_factor;
+    break;
+  }
+
+  assert(solver->lp_trust_radius < solver->trust_radius);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE
 sleqp_problem_solver_reset(SleqpProblemSolver* solver)
 {
-  const int num_variables = sleqp_problem_num_vars(solver->problem);
+  SLEQP_CALL(compute_initial_trust_radius(solver));
 
-  // initial trust region radii as suggested,
   // penalty parameter as suggested:
-
-  solver->trust_radius = 1.;
-  solver->lp_trust_radius
-    = .8 * (solver->trust_radius) * sqrt((double)num_variables);
-
   solver->penalty_parameter = 10.;
 
   return SLEQP_OKAY;
