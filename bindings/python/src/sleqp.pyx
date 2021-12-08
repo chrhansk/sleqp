@@ -13,6 +13,9 @@ import scipy.sparse
 
 cimport csleqp
 
+# This has to be the first import
+include "types.pxi"
+
 include "gil.pxi"
 include "call.pxi"
 include "callback.pxi"
@@ -29,6 +32,5 @@ include "params.pxi"
 include "problem.pxi"
 include "scale.pxi"
 include "solver.pxi"
-include "types.pxi"
 include "version.pxi"
 include "working_set.pxi"
