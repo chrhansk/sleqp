@@ -79,9 +79,9 @@ sleqp_params_set_value(SleqpParams* params, SLEQP_PARAM param, double value)
   assert(param >= 0);
   assert(param < SLEQP_NUM_PARAMS);
 
-  if (param <= 0.)
+  if (value <= 0.)
   {
-    sleqp_log_error("Wrong value ofr parameter %d: %f", param, value);
+    sleqp_log_error("Wrong value for parameter %d: %f", param, value);
 
     return SLEQP_ILLEGAL_ARGUMENT;
   }

@@ -1,257 +1,145 @@
 #cython: language_level=3
 
+from enum import Enum
+
+
+class _PropType(Enum):
+  Integer = 0
+  Bool = 1
+
+
+class _NullConverter:
+  def from_py(self, val):
+    return val
+
+  def to_py(self, val):
+    return val
+
+
+class _EnumConverter:
+  def __init__(self, enum_type):
+    self.enum_type = enum_type
+
+  def from_py(self, val):
+    try:
+      return val.value
+    except AttributeError:
+      pass
+
+    try:
+      return self.enum_type[val]
+    except KeyError:
+      raise AttributeError('Invalid attribute value \'{0}\''.format(val))
+
+  def to_py(self, val):
+    return self.enum_type(val)
+
+
+class _Prop:
+  def __init__(self, value, prop_type, converter):
+    self.value = value
+    self.prop_type = prop_type
+    self.converter = converter
+
+  def to_py(self, val):
+    return self.converter.to_py(val)
+
+  def from_py(self, val):
+    return self.converter.from_py(val)
+
+  @staticmethod
+  def boolean(value):
+    return _Prop(value, _PropType.Bool, _NullConverter())
+
+  @staticmethod
+  def integer(value):
+    return _Prop(value, _PropType.Integer, _NullConverter())
+
+  @staticmethod
+  def enumerated(value, enum_type):
+    return _Prop(value, _PropType.Integer, _EnumConverter(enum_type))
+
+
+cdef dict opt_prop_map = {
+  # Boolean properties
+  'perform_newton_step': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP),
+  'perform_soc':         _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_SOC),
+  'use_quadratic_model': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL),
+  'enable_preprocessor': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR),
+
+  # Integer properties
+  'num_quasi_newton_iterates': _Prop.integer(csleqp.SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES),
+  'max_newton_iterations':     _Prop.integer(csleqp.SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS),
+  'num_threads':               _Prop.integer(csleqp.SLEQP_OPTION_INT_NUM_THREADS),
+
+  # SLEQP_OPTION_INT_FLOAT_WARNING_FLAGS,
+  # SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS,
+
+  # Enumerated properties
+  'deriv_check':          _Prop.enumerated(csleqp.SLEQP_OPTION_INT_DERIV_CHECK, DerivCheck),
+  'hessian_eval':         _Prop.enumerated(csleqp.SLEQP_OPTION_INT_HESS_EVAL, HessianEval),
+  'dual_estimation_type': _Prop.enumerated(csleqp.SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE, DualEstimationType),
+  'initial_tr_choice':    _Prop.enumerated(csleqp.SLEQP_OPTION_INT_INITIAL_TR_CHOICE, InitialTRChoice),
+  'bfgs_sizing':          _Prop.enumerated(csleqp.SLEQP_OPTION_INT_BFGS_SIZING, Sizing),
+  'tr_solver':            _Prop.enumerated(csleqp.SLEQP_OPTION_INT_TR_SOLVER, TRSolver),
+  'polishing_type':       _Prop.enumerated(csleqp.SLEQP_OPTION_INT_POLISHING_TYPE, PolishingType),
+  'step_rule':            _Prop.enumerated(csleqp.SLEQP_OPTION_INT_STEP_RULE, StepRule),
+  'linesearch':           _Prop.enumerated(csleqp.SLEQP_OPTION_INT_LINESEARCH, LineSearch),
+  'parametric_cauchy':    _Prop.enumerated(csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY, ParametricCauchy)
+}
+
 cdef class Options:
   cdef csleqp.SleqpOptions* options
-  cdef dict __dict__
 
   def __cinit__(self):
     csleqp_call(csleqp.sleqp_options_create(&self.options))
 
   def __init__(self, **values):
-    self.props = ['perform_newton_step',
-                  'perform_soc',
-                  'use_quadratic_model',
-                  'deriv_check',
-                  'hessian_eval',
-                  'dual_estimation_type',
-                  'quasi_newton_num_iterates',
-                  'max_newton_iterations',
-                  'bfgs_sizing',
-                  'tr_solver',
-                  'polishing_type',
-                  'step_rule',
-                  'linesearch',
-                  'parametric_cauchy',
-                  'initial_tr_choice',
-                  'enable_preprocessor']
-
     for key, value in values.items():
-      self._set_prop(key, value)
+      setattr(self, key, value)
 
-  cdef _set_prop(self, name, value):
-    if not name in self.props:
-      raise AttributeError("Invalid property {0}".format(name))
-
-    setattr(self, name, value)
-
-  def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_options_release(&self.options))
-
-  @property
-  def perform_newton_step(self) -> bool:
-    return csleqp.sleqp_options_bool_value(self.options,
-                                           csleqp.SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP)
-
-  @property
-  def perform_soc(self) -> bool:
-    return csleqp.sleqp_options_bool_value(self.options,
-                                           csleqp.SLEQP_OPTION_BOOL_PERFORM_SOC)
-
-  @property
-  def use_quadratic_model(self) -> bool:
-    return csleqp.sleqp_options_bool_value(self.options,
-                                           csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL)
-
-  @property
-  def enable_preprocessor(self) -> bool:
-    return csleqp.sleqp_options_bool_value(self.options,
-                                           csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR)
-
-  @property
-  def deriv_check(self) -> DerivCheck:
-    return DerivCheck(csleqp.sleqp_options_int_value(self.options,
-                                                     csleqp.SLEQP_OPTION_INT_DERIV_CHECK))
-
-  @property
-  def hessian_eval(self) -> HessianEval:
-    return HessianEval(csleqp.sleqp_options_int_value(self.options,
-                                                      csleqp.SLEQP_OPTION_INT_HESS_EVAL))
-
-  @property
-  def dual_estimation_type(self) -> DualEstimationType:
-    return DualEstimationType(csleqp.sleqp_options_int_value(self.options,
-                                                             csleqp.SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE))
-
-  @property
-  def quasi_newton_num_iterates(self) -> int:
-    return csleqp.sleqp_options_int_value(self.options,
-                                          csleqp.SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES)
-
-  @property
-  def max_newton_iterations(self):
-    cdef int iter = csleqp.sleqp_options_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS)
-
-    return iter if iter != csleqp.SLEQP_NONE else None
-
-  @property
-  def bfgs_sizing(self) -> Sizing:
-    cdef int sizing = csleqp.sleqp_options_int_value(self.options,
-                                                     csleqp.SLEQP_OPTION_INT_BFGS_SIZING)
-    return Sizing(sizing)
-
-  @property
-  def tr_solver(self) -> TRSolver:
-    cdef int tr_solver = csleqp.sleqp_options_int_value(self.options,
-                                                        csleqp.SLEQP_OPTION_INT_TR_SOLVER)
-    return TRSolver(tr_solver)
-
-  @property
-  def polishing_type(self) -> PolishingType:
-    cdef int tr_solver = csleqp.sleqp_options_int_value(self.options,
-                                                        csleqp.SLEQP_OPTION_INT_POLISHING_TYPE)
-    return PolishingType(tr_solver)
-
-  @property
-  def step_rule(self) -> StepRule:
-    cdef int step_rule = csleqp.sleqp_options_int_value(self.options,
-                                                        csleqp.SLEQP_OPTION_INT_STEP_RULE)
-
-    return StepRule(step_rule)
-
-  @property
-  def linesearch(self) -> LineSearch:
-    cdef int linesearch = csleqp.sleqp_options_int_value(self.options,
-                                                         csleqp.SLEQP_OPTION_INT_LINESEARCH)
-    return LineSearch(linesearch)
-
-  @property
-  def parametric_cauchy(self) -> ParametricCauchy:
-    cdef int parametric_cauchy = csleqp.sleqp_options_int_value(self.options,
-                                                                csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY)
-
-    return ParametricCauchy(parametric_cauchy)
-
-  @property
-  def initial_tr_choice(self) -> InitialTRChoice:
-    cdef int initial_tr_choice = csleqp.sleqp_options_int_value(self.options,
-                                                                csleqp.SLEQP_OPTION_INT_INITIAL_TR_CHOICE)
-
-    return InitialTRChoice(initial_tr_choice)
-
-  @property
-  def num_threads(self):
-    cdef int num_threads = csleqp.sleqp_options_int_value(self.options,
-                                                          csleqp.SLEQP_OPTION_INT_NUM_THREADS)
-
-    if num_threads == csleqp.SLEQP_NONE:
-      return None
-
-    return num_threads
-
-  @perform_newton_step.setter
-  def perform_newton_step(self, value: bool) -> None:
-    csleqp_call(csleqp.sleqp_options_set_bool_value(self.options,
-                                                    csleqp.SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP,
-                                                    value))
-
-  @perform_soc.setter
-  def perform_soc(self, value: bool) -> None:
-    csleqp_call(csleqp.sleqp_options_set_bool_value(self.options,
-                                                    csleqp.SLEQP_OPTION_BOOL_PERFORM_SOC,
-                                                    value))
-
-  @use_quadratic_model.setter
-  def use_quadratic_model(self, value: bool) -> None:
-    csleqp_call(csleqp.sleqp_options_set_bool_value(self.options,
-                                                    csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL,
-                                                    value))
-
-  @enable_preprocessor.setter
-  def enable_preprocessor(self, value: bool) -> None:
-    csleqp_call(csleqp.sleqp_options_set_bool_value(self.options,
-                                                    csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR,
-                                                    value))
-
-  @deriv_check.setter
-  def deriv_check(self, value) -> None:
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_DERIV_CHECK,
-                                                   value.value))
-
-  @hessian_eval.setter
-  def hessian_eval(self, value) -> None:
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_HESS_EVAL,
-                                                   value.value))
-
-  @dual_estimation_type.setter
-  def dual_estimation_type(self, value) -> None:
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE,
-                                                   value.value))
-
-  @quasi_newton_num_iterates.setter
-  def quasi_newton_num_iterates(self, value: int) -> None:
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES,
-                                                   value))
-
-  @max_newton_iterations.setter
-  def max_newton_iterations(self, value):
-    if value is None:
-      value = csleqp.SLEQP_NONE
-
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS,
-                                                   value))
-
-  @bfgs_sizing.setter
-  def bfgs_sizing(self, value):
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_BFGS_SIZING,
-                                                   value.value))
-
-  @tr_solver.setter
-  def tr_solver(self, value):
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_TR_SOLVER,
-                                                   value.value))
-
-  @polishing_type.setter
-  def polishing_type(self, value):
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_POLISHING_TYPE,
-                                                   value.value))
-
-  @step_rule.setter
-  def step_rule(self, value):
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_STEP_RULE,
-                                                   value.value))
-
-  @linesearch.setter
-  def linesearch(self, value):
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_LINESEARCH,
-                                                   value.value))
-
-  @parametric_cauchy.setter
-  def parametric_cauchy(self, value):
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY,
-                                                   value.value))
-
-  @initial_tr_choice.setter
-  def initial_tr_choice(self, value):
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_INITIAL_TR_CHOICE,
-                                                   value.value))
-
-  @num_threads.setter
-  def num_threads(self, value):
-    if value is None:
-      value = csleqp.SLEQP_NONE
-
-    csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
-                                                   csleqp.SLEQP_OPTION_INT_NUM_THREADS,
-                                                   value))
-
-  def values(self) -> set:
-    return {key: getattr(self, key) for key in self.props}
+  def props(self) -> dict:
+    return {key: getattr(self, key) for key in opt_prop_map}
 
   def __str__(self) -> str:
-    return 'Options: {0}'.format(self.values())
+    return 'Options: {0}'.format(self.props())
 
   def __repr__(self) -> str:
-    return 'Options({0})'.format(repr(self.values()))
+    return 'Options({0})'.format(repr(self.props()))
+
+  cdef _prop(self, name):
+    prop = opt_prop_map.get(name)
+    if prop is None:
+      raise AttributeError('Options has no attribute \'{0}\''.format(name))
+    return prop
+
+  def __getattr__(self, name):
+    prop = self._prop(name)
+    prop_val = None
+
+    if prop.prop_type == _PropType.Integer:
+      prop_val = csleqp.sleqp_options_int_value(self.options,
+                                                prop.value)
+    else:
+      assert prop.prop_type == _PropType.Bool
+
+      prop_val = csleqp.sleqp_options_bool_value(self.options,
+                                                 prop.value)
+
+    return prop.to_py(prop_val)
+
+  def __setattr__(self, name, value):
+    prop = self._prop(name)
+    prop_val = prop.from_py(value)
+
+    if prop.prop_type == _PropType.Integer:
+      csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
+                                                     prop.value,
+                                                     prop_val))
+
+    else:
+      assert prop.prop_type == _PropType.Bool
+
+      csleqp_call(csleqp.sleqp_options_set_bool_value(self.options,
+                                                      prop.value,
+                                                      prop_val))
