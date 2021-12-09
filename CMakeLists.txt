@@ -61,6 +61,9 @@ option(SLEQP_GENERATE_COVERAGE "Whether or not to generate coverage" OFF)
 
 option(SLEQP_FORMAT_CODES "Whether or not to enable ANSI format codes" ON)
 
+# Required for MUMPS
+set(SLEQP_WITH_MPI OFF)
+
 set(SLEQP_LPS ""
   CACHE STRING "The LP solver used as a backend")
 

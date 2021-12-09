@@ -12,16 +12,18 @@ function(extract_define file name result)
   set(${result} ${replace_result} PARENT_SCOPE)
 endfunction()
 
-find_path(MUMPS_INCLUDE_DIRS
+find_path(MUMPS_INCLUDE_DIR
   NAMES dmumps_c.h
   PATHS $ENV{MUMPSDIR}
   PATH_SUFFIXES mumps mumps-seq-shared)
 
-if(MUMPS_INCLUDE_DIRS)
-  extract_define("${MUMPS_INCLUDE_DIRS}/dmumps_c.h"
+if(MUMPS_INCLUDE_DIR)
+  extract_define("${MUMPS_INCLUDE_DIR}/dmumps_c.h"
     "MUMPS_VERSION"
     MUMPS_VERSION)
 endif()
+
+find_package(MPI)
 
 find_library(MUMPS_COMMON NAMES mumps_common)
 find_library(MUMPS_LIBRARY NAMES dmumps)
@@ -29,12 +31,20 @@ find_library(MUMPS_LIBRARY NAMES dmumps)
 include(FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args(MUMPS
-  REQUIRED_VARS MUMPS_INCLUDE_DIRS MUMPS_LIBRARY MUMPS_COMMON
+  REQUIRED_VARS MUMPS_INCLUDE_DIR MUMPS_LIBRARY MUMPS_COMMON MPI_C_LIBRARIES MPI_C_INCLUDE_DIRS
   VERSION_VAR MUMPS_VERSION)
 
 set(MUMPS_LIBRARIES
   ${MUMPS_LIBRARY}
-  ${MUMPS_COMMON})
+  ${MUMPS_COMMON}
+  ${MPI_C_LIBRARIES})
 
-mark_as_advanced(MUMPS_INCLUDE_DIRS
+set(MUMPS_INCLUDE_DIRS
+  ${MUMPS_INCLUDE_DIR}
+  ${MPI_C_INCLUDE_DIRS})
+
+mark_as_advanced(
+  MUMPS_INCLUDE_DIRS
   MUMPS_LIBRARIES)
+
+set(SLEQP_WITH_MPI ON)
