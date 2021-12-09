@@ -89,8 +89,8 @@ cutest_cons_data_create(CUTestConsFuncData** star,
   CUTestConsFuncData* data = *star;
   int status;
 
-  data->eps      = sleqp_params_get(params, SLEQP_PARAM_EPS);
-  data->zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  data->eps      = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  data->zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   data->num_constraints = num_constraints;
   data->num_variables   = num_variables;
@@ -607,7 +607,7 @@ adjust_for_linear_offset(SleqpParams* params,
   const int num_linear      = data->num_linear;
   const int num_general     = num_constraints - num_linear;
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(sparse_cache,
                                           data->cons_lb + num_general,
@@ -651,7 +651,7 @@ compute_linear_offset(SleqpFunc* func,
   const int num_variables = data->num_variables;
   const int num_linear    = data->num_linear;
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&linear, num_linear));
   SLEQP_CALL(sleqp_sparse_vector_create_empty(&x, num_variables));
@@ -694,7 +694,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
   const int num_linear      = force_nonlinear ? 0 : data->num_linear;
   const int num_general     = num_constraints - num_linear;
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpSparseVec* var_lb;
   SleqpSparseVec* var_ub;

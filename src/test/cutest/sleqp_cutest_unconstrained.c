@@ -163,7 +163,7 @@ sleqp_cutest_uncons_func_create(SleqpFunc** star,
 
   const int num_constraints = 0;
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(cutest_uncons_data_create(&data, num_variables, zero_eps));
 
@@ -191,7 +191,7 @@ sleqp_cutest_uncons_problem_create(SleqpProblem** star,
 
   assert(num_constraints == 0);
 
-  const double zero_eps = sleqp_params_get(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpSparseVec* var_lb;
   SleqpSparseVec* var_ub;
