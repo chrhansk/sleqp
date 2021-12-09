@@ -150,30 +150,6 @@ sleqp_cutest_run(const char* filename,
     return 1;
   }
 
-  double sol[] = {
-    50,        4.5,       2.5,         45,       42.81491, 3.821986, 1.171075,
-    48.28541,  39.32898,  3.128946,    1.011779, 47.72104, 37.36398, 2.447497,
-    1.181532,  50.48804,  36.53398,    1.773221, 1.343498, 54.29004, 36.09598,
-    1.13736,   1.498147,  60.25604,    37.70828, 0.7,      1.633599, 61.8,
-    47.68299,  0.9831678, 1.612115,    61.8,     54.77479, 3.303869, 1.658255,
-    61.8,      56.66531,  5.210569,    1.906071, 61.8,     56.11424, 5.75,
-    2.167983,  61.8,      53.58087,    5.444674, 2.371651, 61.8,     50.00437,
-    4.830089,  2.497145,  45.01108,    3.8,      0.544,    4.78,     3.310454,
-    0.7525539, 0.990076,  0,           3.8,      0.544,    4.78,     0,
-    0.7447653, 0,         0,           3.8,      0.544,    4.78,     0,
-    0.7374489, 0,         0,           3.8,      0.544,    4.78,     0,
-    0.7312769, 0,         0,           3.8,      0.544,    4.78,     0,
-    0.7288604, 0,         0,           3.8,      0.544,    4.78,     0,
-    0.8325,    0,         0,           3.8,      0.544,    4.78,     0,
-    1.014989,  0,         0.007435823, 3.8,      0.544,    4.78,     0.4193633,
-    1.015529,  0,         0,           3.8,      0.544,    4.78,     0.362961,
-    1.01642,   0,         0,           3.8,      0.544,    4.78,     0.4098004,
-    1.017476,  0,         0,           3.8,      0.544,    4.78,     0.4789802,
-    0.9279167, 0,         0,           3.8,      0.544,    4.78,     0.4541999,
-    0.9300894, 0,         16.5554,     0.6,      0.6};
-
-  // sleqp_log_set_level(SLEQP_LOG_INFO);
-
   if (!cutest_options->enable_logging)
   {
     sleqp_log_set_level(SLEQP_LOG_ERROR);
@@ -230,23 +206,24 @@ sleqp_cutest_run(const char* filename,
 
   if (cutest_options->enable_preprocessing)
   {
-    SLEQP_CALL(sleqp_options_set_bool(options,
-                                      SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR,
-                                      true));
+    SLEQP_CALL(
+      sleqp_options_set_bool_value(options,
+                                   SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR,
+                                   true));
   }
 
   if (cutest_options->max_num_threads != SLEQP_NONE)
   {
-    SLEQP_CALL(sleqp_options_set_int(options,
-                                     SLEQP_OPTION_INT_NUM_THREADS,
-                                     cutest_options->max_num_threads));
+    SLEQP_CALL(sleqp_options_set_int_value(options,
+                                           SLEQP_OPTION_INT_NUM_THREADS,
+                                           cutest_options->max_num_threads));
   }
 
   /*
-  SLEQP_CALL(sleqp_options_set_int(options,
-                                   SLEQP_OPTION_INT_DERIV_CHECK,
-                                   SLEQP_DERIV_CHECK_FIRST |
-  SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
+  SLEQP_CALL(sleqp_options_set_int_value(options,
+                                         SLEQP_OPTION_INT_DERIV_CHECK,
+                                         SLEQP_DERIV_CHECK_FIRST |
+                                         SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
   */
 
   SLEQP_CALL(sleqp_solver_create(&solver, problem, params, options, x, NULL));
