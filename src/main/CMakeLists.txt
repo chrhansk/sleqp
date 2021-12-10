@@ -80,11 +80,22 @@ set(COMMON_SRC
   working_set.c
   working_step.c)
 
+set(MPI_SRC
+  mpi_utils.c)
 
-add_library(sleqp_objects OBJECT
+set(SOURCES
   ${COMMON_SRC}
   ${SLEQP_LPS_SOURCES}
   ${SLEQP_FACT_SOURCES})
+
+if(SLEQP_WITH_MPI)
+  set(SOURCES
+    ${SOURCES}
+    ${MPI_SRC})
+endif()
+
+add_library(sleqp_objects OBJECT
+  ${SOURCES})
 
 set_property(TARGET sleqp_objects PROPERTY C_STANDARD 11)
 
@@ -140,8 +151,8 @@ target_link_libraries(sleqp
   ${SLEQP_DEPENDENCIES})
 
 set_target_properties(sleqp
-    PROPERTIES
-    VERSION ${PROJECT_VERSION})
+  PROPERTIES
+  VERSION ${PROJECT_VERSION})
 
 set(SLEQP_EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/sleqp/export.h")
 set(SLEQP_DEFS_FILE_NAME "${CMAKE_BINARY_DIR}/sleqp/defs.h")

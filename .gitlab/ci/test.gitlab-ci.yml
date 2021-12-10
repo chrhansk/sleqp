@@ -1,12 +1,3 @@
-# TODO: Run tests as soon as we can get a MUMPS version without OpenMP
-test_fact_build_MUMPS:
-  extends: .test
-  script:
-    - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=MUMPS -DSLEQP_LPS=$DEFAULT_LPS
-    - make
-
-
 test_fact:
   extends: .test
   script:
@@ -17,6 +8,7 @@ test_fact:
     matrix:
       - FACT:
           - Umfpack
+          - MUMPS
           - MA27
           - MA57
           - MA86
