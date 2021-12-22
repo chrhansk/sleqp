@@ -1,5 +1,6 @@
 set( MEX_SOURCES
-  sleqp.c)
+  mex_func.c
+  mex_sleqp.c)
 
 set(MEX_FILE "${CMAKE_CURRENT_BINARY_DIR}/sleqp.mex")
 set(M_FILE "${CMAKE_CURRENT_BINARY_DIR}/sleqp.m")
@@ -23,6 +24,12 @@ if(SLEQP_ENABLE_OCTAVE_MEX)
     PRIVATE
     ${Octave_INCLUDE_DIR})
 
-  install(FILES ${MEX_FILE} DESTINATION ${Octave_OCTFILEDIR})
-  install(FILES ${M_FILE} DESTINATION ${Octave_OCTFILEDIR})
+  target_include_directories(sleqp_mex
+    PRIVATE
+    ${SLEQP_LOCAL_HEADER_DIR})
+
+  add_dependencies(sleqp_mex sleqp_local_headers)
+
+  # install(FILES ${MEX_FILE} DESTINATION ${Octave_OCTFILEDIR})
+  # install(FILES ${M_FILE} DESTINATION ${Octave_OCTFILEDIR})
 endif()
