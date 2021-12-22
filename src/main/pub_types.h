@@ -51,7 +51,7 @@ typedef enum
   SLEQP_STATUS_ABORT_TIME
 } SLEQP_STATUS;
 
-const char*
+SLEQP_EXPORT const char*
 sleqp_retcode_str(SLEQP_RETCODE retcode);
 
 #define SLEQP_CALL(x)                                                          \

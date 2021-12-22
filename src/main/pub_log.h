@@ -29,7 +29,7 @@ typedef void (*SLEQP_LOG_HANDLER)(SLEQP_LOG_LEVEL level,
 SLEQP_EXPORT void
 sleqp_log_set_handler(SLEQP_LOG_HANDLER handler);
 
-void
+SLEQP_EXPORT void
 sleqp_log_msg_level(int level, const char* fmt, ...);
 
 void

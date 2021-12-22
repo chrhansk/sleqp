@@ -87,6 +87,16 @@ sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
                              double zero_eps);
 
 /**
+ * Fills the given vector with the given value
+ * by setting all of its element to have that precise value
+ *
+ * @param[in,out] vec         A pointer to the vector
+ * @param[in]     value       The given value
+ **/
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_vector_fill(SleqpSparseVec* vec, double value);
+
+/**
  * Writes the content of this vector into an array. The
  * array is assumed to have a size of at least the dimension
  * of the given vector
