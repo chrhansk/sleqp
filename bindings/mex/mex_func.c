@@ -71,6 +71,8 @@ mex_func_obj_val(SleqpFunc* func, double* obj_val, void* data)
 
   MEX_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, "feval"));
 
+  assert(mxIsScalar(lhs));
+  assert(!mxIsComplex(lhs));
   assert(mxIsDouble(lhs));
 
   *obj_val = *mxGetPr(lhs);
@@ -94,6 +96,7 @@ mex_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
   const int num_vars = sleqp_func_num_vars(func);
 
   assert(mxIsDouble(lhs));
+  assert(!mxIsComplex(lhs));
   assert(mxGetNumberOfElements(lhs) == num_vars);
 
   SLEQP_CALL(
@@ -120,6 +123,8 @@ mex_func_cons_val(SleqpFunc* func,
 
   const int num_cons = sleqp_func_num_cons(func);
 
+  assert(mxIsDouble(lhs));
+  assert(!mxIsComplex(lhs));
   assert(mxGetNumberOfElements(lhs) == num_cons);
 
   SLEQP_CALL(
@@ -132,6 +137,8 @@ static SLEQP_RETCODE
 array_to_sparse_matrix(const mxArray* array, SleqpSparseMatrix* matrix)
 {
   assert(mxIsSparse(array));
+  assert(mxIsDouble(array));
+  assert(!mxIsComplex(array));
 
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
@@ -308,6 +315,12 @@ create_func_data(FuncData** star,
   func_data->constraints = mxGetField(mex_callbacks, 0, "constraints");
   func_data->jacobian    = mxGetField(mex_callbacks, 0, "jacobian");
   func_data->hessian     = mxGetField(mex_callbacks, 0, "hessian");
+
+  assert(mxIsFunctionHandle(func_data->objective));
+  assert(mxIsFunctionHandle(func_data->gradient));
+  assert(mxIsFunctionHandle(func_data->constraints));
+  assert(mxIsFunctionHandle(func_data->jacobian));
+  assert(mxIsFunctionHandle(func_data->hessian));
 
   func_data->primal = mxCreateDoubleMatrix(1, num_vars, mxREAL);
 
