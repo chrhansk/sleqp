@@ -9,6 +9,7 @@
                                                                                \
     if (exception)                                                             \
     {                                                                          \
+      sleqp_log_error("Exception in Matlab call");                             \
       return SLEQP_INTERNAL_ERROR;                                             \
     }                                                                          \
                                                                                \
@@ -18,10 +19,10 @@
 // TODO: Perform dimension checks
 // TODO: Better assert
 // TODO: More type checks
-// TODO: Add zero eps
 
 typedef struct
 {
+  SleqpParams* params;
   // Callbacks
   mxArray* objective;
   mxArray* gradient;
@@ -82,6 +83,9 @@ mex_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
 {
   FuncData* func_data = (FuncData*)data;
 
+  const double zero_eps
+    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
+
   mxArray* lhs;
   mxArray* rhs[] = {func_data->gradient, func_data->primal};
 
@@ -93,7 +97,7 @@ mex_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
   assert(mxGetNumberOfElements(lhs) == num_vars);
 
   SLEQP_CALL(
-    sleqp_sparse_vector_from_raw(obj_grad, mxGetPr(lhs), num_vars, 0.));
+    sleqp_sparse_vector_from_raw(obj_grad, mxGetPr(lhs), num_vars, zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -106,6 +110,9 @@ mex_func_cons_val(SleqpFunc* func,
 {
   FuncData* func_data = (FuncData*)data;
 
+  const double zero_eps
+    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
+
   mxArray* lhs;
   mxArray* rhs[] = {func_data->constraints, func_data->primal};
 
@@ -116,7 +123,7 @@ mex_func_cons_val(SleqpFunc* func,
   assert(mxGetNumberOfElements(lhs) == num_cons);
 
   SLEQP_CALL(
-    sleqp_sparse_vector_from_raw(cons_val, mxGetPr(lhs), num_cons, 0.));
+    sleqp_sparse_vector_from_raw(cons_val, mxGetPr(lhs), num_cons, zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -234,6 +241,9 @@ mex_func_hess_prod(SleqpFunc* func,
 {
   FuncData* func_data = (FuncData*)data;
 
+  const double zero_eps
+    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
+
   SLEQP_CALL(
     sleqp_sparse_vector_to_raw(cons_duals, mxGetPr(func_data->cons_dual)));
 
@@ -267,15 +277,18 @@ mex_func_hess_prod(SleqpFunc* func,
 
   SLEQP_CALL(hess_prod(lhs, func_data->direction, func_data->product));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_from_raw(result, func_data->product, num_vars, 0.));
+  SLEQP_CALL(sleqp_sparse_vector_from_raw(result,
+                                          func_data->product,
+                                          num_vars,
+                                          zero_eps));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 create_func_data(FuncData** star,
-                 const mxArray* callbacks,
+                 const mxArray* mex_callbacks,
+                 SleqpParams* params,
                  int num_vars,
                  int num_cons)
 {
@@ -285,13 +298,16 @@ create_func_data(FuncData** star,
 
   *func_data = (FuncData){0};
 
-  assert(mxIsStruct(callbacks));
+  SLEQP_CALL(sleqp_params_capture(params));
+  func_data->params = params;
 
-  func_data->objective   = mxGetField(callbacks, 0, "objective");
-  func_data->gradient    = mxGetField(callbacks, 0, "gradient");
-  func_data->constraints = mxGetField(callbacks, 0, "constraints");
-  func_data->jacobian    = mxGetField(callbacks, 0, "jacobian");
-  func_data->hessian     = mxGetField(callbacks, 0, "hessian");
+  assert(mxIsStruct(mex_callbacks));
+
+  func_data->objective   = mxGetField(mex_callbacks, 0, "objective");
+  func_data->gradient    = mxGetField(mex_callbacks, 0, "gradient");
+  func_data->constraints = mxGetField(mex_callbacks, 0, "constraints");
+  func_data->jacobian    = mxGetField(mex_callbacks, 0, "jacobian");
+  func_data->hessian     = mxGetField(mex_callbacks, 0, "hessian");
 
   func_data->primal = mxCreateDoubleMatrix(1, num_vars, mxREAL);
 
@@ -316,6 +332,8 @@ mex_func_free(void* data)
   mxDestroyArray(func_data->obj_dual);
   mxDestroyArray(func_data->primal);
 
+  SLEQP_CALL(sleqp_params_release(&func_data->params));
+
   sleqp_free(&func_data);
 
   return SLEQP_OKAY;
@@ -324,6 +342,7 @@ mex_func_free(void* data)
 SLEQP_RETCODE
 mex_func_create(SleqpFunc** star,
                 const mxArray* mex_callbacks,
+                SleqpParams* params,
                 int num_variables,
                 int num_constraints)
 {
@@ -339,6 +358,7 @@ mex_func_create(SleqpFunc** star,
 
   SLEQP_CALL(create_func_data(&func_data,
                               mex_callbacks,
+                              params,
                               num_variables,
                               num_constraints));
 

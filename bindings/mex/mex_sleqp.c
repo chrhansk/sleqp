@@ -7,7 +7,7 @@
 // TODO: Better logging
 // TODO: Pass more options / params
 
-int
+static int
 array_or_cell_size(const mxArray* array)
 {
   if (mxIsCell(array))
@@ -31,14 +31,14 @@ array_or_cell_size(const mxArray* array)
   }
 }
 
-int
-num_variables_from_solution(const mxArray* x0)
+static int
+num_vars_from_solution(const mxArray* x0)
 {
   return array_or_cell_size(x0);
 }
 
-int
-num_constraints_from_options(const mxArray* options)
+static int
+num_cons_from_options(const mxArray* options)
 {
   assert(mxIsStruct(options));
 
@@ -52,7 +52,7 @@ num_constraints_from_options(const mxArray* options)
   return 0;
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 create_vec_from_array(SleqpSparseVec** star, const mxArray* array)
 {
   const int dimension = array_or_cell_size(array);
@@ -95,7 +95,7 @@ create_vec_from_array(SleqpSparseVec** star, const mxArray* array)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 create_vec_from_array_default(SleqpSparseVec** star,
                               const mxArray* array,
                               const int dimension,
@@ -114,7 +114,7 @@ create_vec_from_array_default(SleqpSparseVec** star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 create_bounds_from_options(SleqpSparseVec** lb_star,
                            SleqpSparseVec** ub_star,
                            const int dimension,
@@ -130,7 +130,7 @@ create_bounds_from_options(SleqpSparseVec** lb_star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 create_var_bounds_from_options(SleqpSparseVec** var_lb_star,
                                SleqpSparseVec** var_ub_star,
                                const int num_variables,
@@ -144,7 +144,7 @@ create_var_bounds_from_options(SleqpSparseVec** var_lb_star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 create_cons_bounds_from_options(SleqpSparseVec** cons_lb_star,
                                 SleqpSparseVec** cons_ub_star,
                                 const int num_constraints,
@@ -158,15 +158,151 @@ create_cons_bounds_from_options(SleqpSparseVec** cons_lb_star,
   return SLEQP_OKAY;
 }
 
-void
+static void
 mex_log_handler(SLEQP_LOG_LEVEL level, time_t time, const char* message)
 {
   mexPrintf("%s\n", message);
 }
 
+typedef struct
+{
+  SleqpSparseVec* var_lb;
+  SleqpSparseVec* var_ub;
+
+  SleqpSparseVec* cons_lb;
+  SleqpSparseVec* cons_ub;
+
+  SleqpSparseVec* initial;
+
+  SleqpOptions* options;
+  SleqpParams* params;
+
+  SleqpFunc* func;
+  SleqpProblem* problem;
+
+  SleqpSolver* solver;
+
+} Instance;
+
+static SLEQP_RETCODE
+create_instance(Instance* instance,
+                const mxArray* mex_x0,
+                const mxArray* mex_funcs,
+                const mxArray* mex_options)
+{
+  *instance = (Instance){0};
+
+  const int num_vars = num_vars_from_solution(mex_x0);
+  const int num_cons = num_cons_from_options(mex_options);
+
+  SLEQP_CALL(create_var_bounds_from_options(&instance->var_lb,
+                                            &instance->var_ub,
+                                            num_vars,
+                                            mex_options));
+
+  SLEQP_CALL(create_cons_bounds_from_options(&instance->cons_lb,
+                                             &instance->cons_ub,
+                                             num_cons,
+                                             mex_options));
+
+  SLEQP_CALL(create_vec_from_array(&instance->initial, mex_x0));
+
+  SLEQP_CALL(sleqp_options_create(&instance->options));
+  SLEQP_CALL(sleqp_params_create(&instance->params));
+
+  /*
+  sleqp_options_set_int_value(options,
+                              SLEQP_OPTION_INT_HESS_EVAL,
+                              SLEQP_HESS_EVAL_DAMPED_BFGS);
+  */
+
+  SLEQP_CALL(mex_func_create(&instance->func,
+                             mex_funcs,
+                             instance->params,
+                             num_vars,
+                             num_cons));
+
+  SLEQP_CALL(sleqp_problem_create_simple(&instance->problem,
+                                         instance->func,
+                                         instance->params,
+                                         instance->var_lb,
+                                         instance->var_ub,
+                                         instance->cons_lb,
+                                         instance->cons_ub));
+
+  SLEQP_CALL(sleqp_solver_create(&instance->solver,
+                                 instance->problem,
+                                 instance->params,
+                                 instance->options,
+                                 instance->initial,
+                                 NULL));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+free_instance(Instance* instance)
+{
+  SLEQP_CALL(sleqp_solver_release(&instance->solver));
+
+  SLEQP_CALL(sleqp_problem_release(&instance->problem));
+
+  SLEQP_CALL(sleqp_func_release(&instance->func));
+
+  SLEQP_CALL(sleqp_params_release(&instance->params));
+
+  SLEQP_CALL(sleqp_options_release(&instance->options));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&instance->initial));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&instance->cons_ub));
+  SLEQP_CALL(sleqp_sparse_vector_free(&instance->cons_lb));
+
+  SLEQP_CALL(sleqp_sparse_vector_free(&instance->var_ub));
+  SLEQP_CALL(sleqp_sparse_vector_free(&instance->var_lb));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+mex_function_interal(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
+{
+  const mxArray* mex_x0      = prhs[0];
+  const mxArray* mex_funcs   = prhs[1];
+  const mxArray* mex_options = prhs[2];
+
+  Instance instance;
+
+  SLEQP_CALL(create_instance(&instance, mex_x0, mex_funcs, mex_options));
+
+  const int num_vars = sleqp_problem_num_vars(instance.problem);
+
+  SleqpSolver* solver = instance.solver;
+
+  SLEQP_CALL(sleqp_solver_solve(solver, SLEQP_NONE, SLEQP_NONE));
+
+  SleqpIterate* iterate;
+
+  SLEQP_CALL(sleqp_solver_solution(solver, &iterate));
+
+  SleqpSparseVec* solution = sleqp_iterate_primal(iterate);
+
+  plhs[0] = mxCreateDoubleMatrix(num_vars, 1, mxREAL);
+
+  SLEQP_CALL(sleqp_sparse_vector_to_raw(solution, mxGetPr(plhs[0])));
+
+  plhs[1] = mxCreateDoubleMatrix(1, 0, mxREAL);
+
+  SLEQP_CALL(free_instance(&instance));
+
+  return SLEQP_OKAY;
+}
+
 void
 mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 {
+  Instance instance;
+
   sleqp_log_set_handler(mex_log_handler);
 
   if (nrhs != 3)
@@ -183,77 +319,12 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
                       nlhs);
   }
 
-  const mxArray* mex_x0      = prhs[0];
-  const mxArray* mex_funcs   = prhs[1];
-  const mxArray* mex_options = prhs[2];
+  SLEQP_RETCODE status = mex_function_interal(nlhs, plhs, nrhs, prhs);
 
-  const int num_variables   = num_variables_from_solution(mex_x0);
-  const int num_constraints = num_constraints_from_options(mex_options);
-
-  printf("Num variables: %d, num constraints: %d\n",
-         num_variables,
-         num_constraints);
-
-  SleqpSparseVec* var_lb = NULL;
-  SleqpSparseVec* var_ub = NULL;
-
-  create_var_bounds_from_options(&var_lb, &var_ub, num_variables, mex_options);
-
-  SleqpSparseVec* cons_lb = NULL;
-  SleqpSparseVec* cons_ub = NULL;
-
-  create_cons_bounds_from_options(&cons_lb,
-                                  &cons_ub,
-                                  num_constraints,
-                                  mex_options);
-
-  SleqpFunc* func = NULL;
-
-  mex_func_create(&func, mex_funcs, num_variables, num_constraints);
-
-  SleqpProblem* problem = NULL;
-
-  SleqpParams* params = NULL;
-
-  sleqp_params_create(&params);
-
-  sleqp_problem_create_simple(&problem,
-                              func,
-                              params,
-                              var_lb,
-                              var_ub,
-                              cons_lb,
-                              cons_ub);
-
-  SleqpSparseVec* primal = NULL;
-
-  create_vec_from_array(&primal, mex_x0);
-
-  SleqpOptions* options;
-
-  sleqp_options_create(&options);
-
-  sleqp_options_set_int_value(options,
-                              SLEQP_OPTION_INT_HESS_EVAL,
-                              SLEQP_HESS_EVAL_DAMPED_BFGS);
-
-  SleqpSolver* solver;
-
-  sleqp_solver_create(&solver, problem, params, options, primal, NULL);
-
-  sleqp_solver_solve(solver, SLEQP_NONE, SLEQP_NONE);
-
-  SleqpIterate* iterate;
-
-  sleqp_solver_solution(solver, &iterate);
-
-  SleqpSparseVec* solution = sleqp_iterate_primal(iterate);
-
-  plhs[0] = mxCreateDoubleMatrix(num_variables, 1, mxREAL);
-
-  sleqp_sparse_vector_to_raw(solution, mxGetPr(plhs[0]));
-
-  plhs[1] = mxCreateDoubleMatrix(1, 0, mxREAL);
+  if (status != SLEQP_OKAY)
+  {
+    mexErrMsgIdAndTxt("id??", "Internal error");
+  }
 
   return;
 }

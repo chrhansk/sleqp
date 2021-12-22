@@ -8,6 +8,7 @@
 SLEQP_RETCODE
 mex_func_create(SleqpFunc** star,
                 const mxArray* ptr,
+                SleqpParams* params,
                 int num_variables,
                 int num_constraints);
 
