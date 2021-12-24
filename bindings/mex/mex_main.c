@@ -2,7 +2,9 @@
 
 #include <assert.h>
 
+#include "mex_fields.h"
 #include "mex_func.h"
+#include "mex_output.h"
 
 // TODO: Better logging
 // TODO: Pass more options / params
@@ -42,7 +44,7 @@ num_cons_from_options(const mxArray* options)
 {
   assert(mxIsStruct(options));
 
-  const mxArray* cons_lb = mxGetField(options, 0, "cl");
+  const mxArray* cons_lb = mxGetField(options, 0, MEX_INPUT_CONS_LB);
 
   if (cons_lb)
   {
@@ -139,8 +141,8 @@ create_var_bounds_from_options(SleqpSparseVec** var_lb_star,
   return create_bounds_from_options(var_lb_star,
                                     var_ub_star,
                                     num_variables,
-                                    mxGetField(options, 0, "lb"),
-                                    mxGetField(options, 0, "ub"));
+                                    mxGetField(options, 0, MEX_INPUT_VAR_LB),
+                                    mxGetField(options, 0, MEX_INPUT_VAR_UB));
   return SLEQP_OKAY;
 }
 
@@ -153,8 +155,8 @@ create_cons_bounds_from_options(SleqpSparseVec** cons_lb_star,
   return create_bounds_from_options(cons_lb_star,
                                     cons_ub_star,
                                     num_constraints,
-                                    mxGetField(options, 0, "cl"),
-                                    mxGetField(options, 0, "cu"));
+                                    mxGetField(options, 0, MEX_INPUT_CONS_LB),
+                                    mxGetField(options, 0, MEX_INPUT_CONS_UB));
   return SLEQP_OKAY;
 }
 
@@ -210,11 +212,9 @@ create_instance(Instance* instance,
   SLEQP_CALL(sleqp_options_create(&instance->options));
   SLEQP_CALL(sleqp_params_create(&instance->params));
 
-  /*
-  sleqp_options_set_int_value(options,
-                              SLEQP_OPTION_INT_HESS_EVAL,
-                              SLEQP_HESS_EVAL_DAMPED_BFGS);
-  */
+  SLEQP_CALL(sleqp_options_set_int_value(instance->options,
+                                         SLEQP_OPTION_INT_HESS_EVAL,
+                                         SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   SLEQP_CALL(mex_func_create(&instance->func,
                              mex_funcs,
@@ -281,17 +281,8 @@ mex_function_interal(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 
   SLEQP_CALL(sleqp_solver_solve(solver, SLEQP_NONE, SLEQP_NONE));
 
-  SleqpIterate* iterate;
-
-  SLEQP_CALL(sleqp_solver_solution(solver, &iterate));
-
-  SleqpSparseVec* solution = sleqp_iterate_primal(iterate);
-
-  plhs[0] = mxCreateDoubleMatrix(num_vars, 1, mxREAL);
-
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(solution, mxGetPr(plhs[0])));
-
-  plhs[1] = mxCreateDoubleMatrix(1, 0, mxREAL);
+  SLEQP_CALL(
+    create_mex_output(instance.problem, instance.solver, &plhs[0], &plhs[1]));
 
   SLEQP_CALL(free_instance(&instance));
 

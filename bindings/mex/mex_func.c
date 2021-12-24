@@ -1,8 +1,15 @@
 #include "mex_func.h"
 
 #include <assert.h>
+#include <threads.h>
 
-#define MEX_CALL(x)                                                            \
+#include "mex_fields.h"
+
+#define MSG_BUF_SIZE 512
+
+thread_local char msg_buf[MSG_BUF_SIZE];
+
+#define MATLAB_CALL_SIMPLE(x)                                                  \
   do                                                                           \
   {                                                                            \
     mxArray* exception = (x);                                                  \
@@ -15,10 +22,26 @@
                                                                                \
   } while (0)
 
+#define MATLAB_CALL(x)                                                         \
+  do                                                                           \
+  {                                                                            \
+    mxArray* exception = (x);                                                  \
+                                                                               \
+    if (exception)                                                             \
+    {                                                                          \
+      mxArray* lhs;                                                            \
+      MATLAB_CALL_SIMPLE(                                                      \
+        mexCallMATLABWithTrap(1, &lhs, 1, &exception, MATLAB_FUNC_DISP));      \
+      assert(mxIsChar(lhs));                                                   \
+      mxGetString(lhs, msg_buf, MSG_BUF_SIZE);                                 \
+                                                                               \
+      sleqp_log_error("Exception '%s' in Matlab call", msg_buf);               \
+      return SLEQP_INTERNAL_ERROR;                                             \
+    }                                                                          \
+  } while (0)
+
 // TODO: Better handling of matlab exceptions
-// TODO: Perform dimension checks
 // TODO: Better assert
-// TODO: More type checks
 
 typedef struct
 {
@@ -69,13 +92,29 @@ mex_func_obj_val(SleqpFunc* func, double* obj_val, void* data)
   mxArray* lhs;
   mxArray* rhs[] = {func_data->objective, func_data->primal};
 
-  MEX_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, "feval"));
+  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
 
   assert(mxIsScalar(lhs));
   assert(!mxIsComplex(lhs));
   assert(mxIsDouble(lhs));
 
   *obj_val = *mxGetPr(lhs);
+
+  {
+    char buffer[1024];
+
+    mxArray* lhs;
+
+    mxArray* rhs[] = {func_data->primal};
+
+    MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 1, rhs, MATLAB_FUNC_DISP));
+
+    assert(mxIsChar(lhs));
+
+    mxGetString(lhs, buffer, 1024);
+
+    printf("Hello");
+  }
 
   return SLEQP_OKAY;
 }
@@ -91,7 +130,7 @@ mex_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
   mxArray* lhs;
   mxArray* rhs[] = {func_data->gradient, func_data->primal};
 
-  MEX_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, "feval"));
+  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
 
   const int num_vars = sleqp_func_num_vars(func);
 
@@ -119,7 +158,7 @@ mex_func_cons_val(SleqpFunc* func,
   mxArray* lhs;
   mxArray* rhs[] = {func_data->constraints, func_data->primal};
 
-  MEX_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, "feval"));
+  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
 
   const int num_cons = sleqp_func_num_cons(func);
 
@@ -187,7 +226,7 @@ mex_func_cons_jac(SleqpFunc* func,
   mxArray* lhs;
   mxArray* rhs[] = {func_data->jacobian, func_data->primal};
 
-  MEX_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, "feval"));
+  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
 
   SLEQP_CALL(array_to_sparse_matrix(lhs, cons_jac));
 
@@ -269,7 +308,7 @@ mex_func_hess_prod(SleqpFunc* func,
                     func_data->obj_dual,
                     func_data->cons_dual};
 
-  MEX_CALL(mexCallMATLABWithTrap(1, &lhs, 4, rhs, "feval"));
+  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 4, rhs, MATLAB_FUNC_FEVAL));
 
   assert(mxIsDouble(lhs));
   assert(!mxIsComplex(lhs));
@@ -310,17 +349,17 @@ create_func_data(FuncData** star,
 
   assert(mxIsStruct(mex_callbacks));
 
-  func_data->objective   = mxGetField(mex_callbacks, 0, "objective");
-  func_data->gradient    = mxGetField(mex_callbacks, 0, "gradient");
-  func_data->constraints = mxGetField(mex_callbacks, 0, "constraints");
-  func_data->jacobian    = mxGetField(mex_callbacks, 0, "jacobian");
-  func_data->hessian     = mxGetField(mex_callbacks, 0, "hessian");
+  func_data->objective   = mxGetField(mex_callbacks, 0, MEX_INPUT_OBJ_VAL);
+  func_data->gradient    = mxGetField(mex_callbacks, 0, MEX_INPUT_OBJ_GRAD);
+  func_data->constraints = mxGetField(mex_callbacks, 0, MEX_INPUT_CONS_VAL);
+  func_data->jacobian    = mxGetField(mex_callbacks, 0, MEX_INPUT_CONS_JAC);
+  func_data->hessian     = mxGetField(mex_callbacks, 0, MEX_INPUT_HESS);
 
   assert(mxIsFunctionHandle(func_data->objective));
   assert(mxIsFunctionHandle(func_data->gradient));
   assert(mxIsFunctionHandle(func_data->constraints));
   assert(mxIsFunctionHandle(func_data->jacobian));
-  assert(mxIsFunctionHandle(func_data->hessian));
+  // assert(mxIsFunctionHandle(func_data->hessian));
 
   func_data->primal = mxCreateDoubleMatrix(1, num_vars, mxREAL);
 

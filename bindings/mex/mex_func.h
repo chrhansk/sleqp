@@ -1,5 +1,5 @@
-#ifndef MEX_FUNC_H
-#define MEX_FUNC_H
+#ifndef SLEQP_MEX_FUNC_H
+#define SLEQP_MEX_FUNC_H
 
 #include <mex.h>
 
@@ -12,4 +12,4 @@ mex_func_create(SleqpFunc** star,
                 int num_variables,
                 int num_constraints);
 
-#endif /* MEX_FUNC_H */
+#endif /* SLEQP_MEX_FUNC_H */
