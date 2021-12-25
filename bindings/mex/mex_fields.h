@@ -1,6 +1,12 @@
 #ifndef SLEQP_MEX_FIELDS
 #define SLEQP_MEX_FIELDS
 
+#define MEX_MSG_IDENTIFIER "SLEQP:Error"
+
+// #define MEX_COMMAND_INFO "info"
+#define MEX_COMMAND_SOLVE "solve"
+// #define MEX_COMMAND_SOLVE_LSQ "solve_lsq"
+
 #define MATLAB_FUNC_FEVAL "feval"
 #define MATLAB_FUNC_DISP "disp"
 

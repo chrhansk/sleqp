@@ -1,7 +1,8 @@
 set( MEX_SOURCES
   mex_func.c
   mex_main.c
-  mex_output.c)
+  mex_output.c
+  mex_solve.c)
 
 set(MEX_FILE "${CMAKE_CURRENT_BINARY_DIR}/sleqp.mex")
 set(M_FILE "${CMAKE_CURRENT_BINARY_DIR}/sleqp.m")
