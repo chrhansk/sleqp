@@ -9,6 +9,12 @@
 
 thread_local char msg_buf[MSG_BUF_SIZE];
 
+static void
+print_array(mxArray* array)
+{
+  mexCallMATLAB(0, NULL, 1, &array, MATLAB_FUNC_DISP);
+}
+
 #define MATLAB_CALL_SIMPLE(x)                                                  \
   do                                                                           \
   {                                                                            \
@@ -99,22 +105,6 @@ mex_func_obj_val(SleqpFunc* func, double* obj_val, void* data)
   assert(mxIsDouble(lhs));
 
   *obj_val = *mxGetPr(lhs);
-
-  {
-    char buffer[1024];
-
-    mxArray* lhs;
-
-    mxArray* rhs[] = {func_data->primal};
-
-    MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 1, rhs, MATLAB_FUNC_DISP));
-
-    assert(mxIsChar(lhs));
-
-    mxGetString(lhs, buffer, 1024);
-
-    printf("Hello");
-  }
 
   return SLEQP_OKAY;
 }

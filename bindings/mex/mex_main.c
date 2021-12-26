@@ -32,7 +32,7 @@ mex_log_handler(SLEQP_LOG_LEVEL level, time_t time, const char* message)
   mexPrintf("%s\n", message);
 }
 
-void
+SLEQP_EXPORT void
 mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 {
   char command_name[COMMAND_BUFSIZE];
