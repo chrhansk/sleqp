@@ -41,10 +41,10 @@ set_struct_field_to_real(mxArray* info, const char* name, double value)
 }
 
 SLEQP_RETCODE
-create_mex_output(SleqpProblem* problem,
-                  SleqpSolver* solver,
-                  mxArray** sol_star,
-                  mxArray** info_star)
+mex_create_solver_output(SleqpProblem* problem,
+                         SleqpSolver* solver,
+                         mxArray** sol_star,
+                         mxArray** info_star)
 {
   const int num_vars = sleqp_problem_num_vars(problem);
 

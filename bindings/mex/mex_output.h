@@ -6,9 +6,9 @@
 #include "sleqp.h"
 
 SLEQP_RETCODE
-create_mex_output(SleqpProblem* problem,
-                  SleqpSolver* solver,
-                  mxArray** sol_star,
-                  mxArray** info_star);
+mex_create_solver_output(SleqpProblem* problem,
+                         SleqpSolver* solver,
+                         mxArray** sol_star,
+                         mxArray** info_star);
 
 #endif /* SLEQP_MEX_OUTPUT_H */

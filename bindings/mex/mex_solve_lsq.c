@@ -1,11 +1,14 @@
-#include "mex_solve.h"
+#include "mex_solve_lsq.h"
 
 #include <assert.h>
 
 #include "mex_solve_common.h"
 
 SLEQP_RETCODE
-mex_command_solve(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
+mex_command_solve_lsq(int nlhs,
+                      mxArray* plhs[],
+                      int nrhs,
+                      const mxArray* prhs[])
 {
   assert(nlhs == 2);
   assert(nrhs == 3);
@@ -15,7 +18,7 @@ mex_command_solve(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
   const mxArray* mex_options = prhs[2];
 
   SLEQP_CALL(
-    mex_solve(&plhs[0], &plhs[1], false, mex_x0, mex_funcs, mex_options));
+    mex_solve(&plhs[0], &plhs[1], true, mex_x0, mex_funcs, mex_options));
 
   return SLEQP_OKAY;
 }

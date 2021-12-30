@@ -1,17 +1,24 @@
 set(MEX_SOURCES
   mex_func.c
+  mex_func_common.c
+  mex_lsq.c
   mex_main.c
   mex_output.c
-  mex_solve.c)
+  mex_problem.c
+  mex_solve.c
+  mex_solve_common.c
+  mex_solve_lsq.c)
 
 set(MATLAB_OUTPUT_DIR "${CMAKE_BINARY_DIR}/matlab")
 set(SLEQP_MATLAB_OUTPUT_DIR "${MATLAB_OUTPUT_DIR}/+sleqp")
 
 set(MATLAB_SOURCES
-  sleqp/solve.m)
+  sleqp/solve.m
+  sleqp/solve_lsq.m)
 
 set(MATLAB_TESTS
-  tests/test_solve.m)
+  tests/test_solve.m
+  tests/test_solve_lsq.m)
 
 add_custom_target(sleqp_mex ALL)
 

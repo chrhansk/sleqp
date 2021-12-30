@@ -42,11 +42,11 @@ options.cons_lb = [25  40];   % Lower bounds on the constraint functions.
 options.cons_ub = [inf 40];   % Upper bounds on the constraint functions.
 
 % Callbacks
-funcs.objective         = @obj_val;
-funcs.constraints       = @cons_val;
-funcs.gradient          = @obj_grad;
-funcs.jacobian          = @cons_jac;
-funcs.hessian           = @hess;
+funcs.obj_val        = @obj_val;
+funcs.cons_val       = @cons_val;
+funcs.obj_grad       = @obj_grad;
+funcs.cons_jac       = @cons_jac;
+funcs.hess           = @hess;
 
 % Run sleqp.
 [x info] = sleqp.solve(x0, funcs, options);

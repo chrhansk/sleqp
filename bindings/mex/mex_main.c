@@ -5,6 +5,7 @@
 
 #include "mex_fields.h"
 #include "mex_solve.h"
+#include "mex_solve_lsq.h"
 
 #include "sleqp.h"
 
@@ -37,9 +38,11 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 {
   char command_name[COMMAND_BUFSIZE];
 
-  MexCommand commands[] = {{MEX_COMMAND_SOLVE, mex_command_solve, 2, 3}};
+  MexCommand commands[]
+    = {{MEX_COMMAND_SOLVE, mex_command_solve, 2, 3},
+       {MEX_COMMAND_SOLVE_LSQ, mex_command_solve_lsq, 2, 3}};
 
-  const int num_commands = 1;
+  const int num_commands = sizeof(commands) / sizeof(MexCommand);
 
   if (nrhs < 1)
   {
@@ -94,9 +97,9 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
         return;
       }
 
-      SLEQP_STATUS status = commands[i].command(nlhs, plhs, nrhs, prhs);
+      SLEQP_RETCODE retcode = commands[i].command(nlhs, plhs, nrhs, prhs);
 
-      if (status != SLEQP_OKAY)
+      if (retcode != SLEQP_OKAY)
       {
         mexErrMsgIdAndTxt(MEX_MSG_IDENTIFIER,
                           "Error executing command %s",

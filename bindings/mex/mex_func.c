@@ -4,10 +4,7 @@
 #include <threads.h>
 
 #include "mex_fields.h"
-
-#define MSG_BUF_SIZE 512
-
-thread_local char msg_buf[MSG_BUF_SIZE];
+#include "mex_func_common.h"
 
 static void
 print_array(mxArray* array)
@@ -15,49 +12,22 @@ print_array(mxArray* array)
   mexCallMATLAB(0, NULL, 1, &array, MATLAB_FUNC_DISP);
 }
 
-#define MATLAB_CALL_SIMPLE(x)                                                  \
-  do                                                                           \
-  {                                                                            \
-    mxArray* exception = (x);                                                  \
-                                                                               \
-    if (exception)                                                             \
-    {                                                                          \
-      sleqp_log_error("Exception in Matlab call");                             \
-      return SLEQP_INTERNAL_ERROR;                                             \
-    }                                                                          \
-                                                                               \
-  } while (0)
-
-#define MATLAB_CALL(x)                                                         \
-  do                                                                           \
-  {                                                                            \
-    mxArray* exception = (x);                                                  \
-                                                                               \
-    if (exception)                                                             \
-    {                                                                          \
-      mxArray* lhs;                                                            \
-      MATLAB_CALL_SIMPLE(                                                      \
-        mexCallMATLABWithTrap(1, &lhs, 1, &exception, MATLAB_FUNC_DISP));      \
-      assert(mxIsChar(lhs));                                                   \
-      mxGetString(lhs, msg_buf, MSG_BUF_SIZE);                                 \
-                                                                               \
-      sleqp_log_error("Exception '%s' in Matlab call", msg_buf);               \
-      return SLEQP_INTERNAL_ERROR;                                             \
-    }                                                                          \
-  } while (0)
-
 // TODO: Better handling of matlab exceptions
 // TODO: Better assert
 
 typedef struct
 {
   SleqpParams* params;
+
   // Callbacks
-  mxArray* objective;
-  mxArray* gradient;
-  mxArray* constraints;
-  mxArray* jacobian;
-  mxArray* hessian;
+  struct
+  {
+    mxArray* obj_val;
+    mxArray* obj_grad;
+    mxArray* cons_val;
+    mxArray* cons_jac;
+    mxArray* hessian;
+  } callbacks;
 
   mxArray* primal;
 
@@ -96,7 +66,7 @@ mex_func_obj_val(SleqpFunc* func, double* obj_val, void* data)
   FuncData* func_data = (FuncData*)data;
 
   mxArray* lhs;
-  mxArray* rhs[] = {func_data->objective, func_data->primal};
+  mxArray* rhs[] = {func_data->callbacks.obj_val, func_data->primal};
 
   MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
 
@@ -114,22 +84,9 @@ mex_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
 {
   FuncData* func_data = (FuncData*)data;
 
-  const double zero_eps
-    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
+  mxArray* rhs[] = {func_data->callbacks.obj_grad, func_data->primal};
 
-  mxArray* lhs;
-  mxArray* rhs[] = {func_data->gradient, func_data->primal};
-
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
-
-  const int num_vars = sleqp_func_num_vars(func);
-
-  assert(mxIsDouble(lhs));
-  assert(!mxIsComplex(lhs));
-  assert(mxGetNumberOfElements(lhs) == num_vars);
-
-  SLEQP_CALL(
-    sleqp_sparse_vector_from_raw(obj_grad, mxGetPr(lhs), num_vars, zero_eps));
+  SLEQP_CALL(mex_eval_into_sparse_vec(2, rhs, func_data->params, obj_grad));
 
   return SLEQP_OKAY;
 }
@@ -142,65 +99,9 @@ mex_func_cons_val(SleqpFunc* func,
 {
   FuncData* func_data = (FuncData*)data;
 
-  const double zero_eps
-    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
+  mxArray* rhs[] = {func_data->callbacks.cons_val, func_data->primal};
 
-  mxArray* lhs;
-  mxArray* rhs[] = {func_data->constraints, func_data->primal};
-
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
-
-  const int num_cons = sleqp_func_num_cons(func);
-
-  assert(mxIsDouble(lhs));
-  assert(!mxIsComplex(lhs));
-  assert(mxGetNumberOfElements(lhs) == num_cons);
-
-  SLEQP_CALL(
-    sleqp_sparse_vector_from_raw(cons_val, mxGetPr(lhs), num_cons, zero_eps));
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE
-array_to_sparse_matrix(const mxArray* array, SleqpSparseMatrix* matrix)
-{
-  assert(mxIsSparse(array));
-  assert(mxIsDouble(array));
-  assert(!mxIsComplex(array));
-
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
-
-  assert(mxGetM(array) == num_rows);
-  assert(mxGetN(array) == num_cols);
-
-  const mwIndex* jc = mxGetJc(array);
-  const mwIndex* ir = mxGetIr(array);
-  const double* pr  = mxGetPr(array);
-
-  const int nnz = jc[num_cols];
-
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(matrix, nnz));
-
-  assert(jc[0] == 0);
-
-  mwIndex index = 0;
-
-  for (mwIndex col = 0; col < num_cols; ++col)
-  {
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(matrix, col));
-
-    assert(jc[col] <= jc[col + 1]);
-
-    for (; index < jc[col + 1]; ++index)
-    {
-      const mwIndex row  = ir[index];
-      const double value = pr[index];
-
-      SLEQP_CALL(sleqp_sparse_matrix_push(matrix, row, col, value));
-    }
-  }
+  SLEQP_CALL(mex_eval_into_sparse_vec(2, rhs, func_data->params, cons_val));
 
   return SLEQP_OKAY;
 }
@@ -213,12 +114,9 @@ mex_func_cons_jac(SleqpFunc* func,
 {
   FuncData* func_data = (FuncData*)data;
 
-  mxArray* lhs;
-  mxArray* rhs[] = {func_data->jacobian, func_data->primal};
+  mxArray* rhs[] = {func_data->callbacks.cons_jac, func_data->primal};
 
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
-
-  SLEQP_CALL(array_to_sparse_matrix(lhs, cons_jac));
+  SLEQP_CALL(mex_eval_into_sparse_matrix(2, rhs, func_data->params, cons_jac));
 
   return SLEQP_OKAY;
 }
@@ -293,7 +191,7 @@ mex_func_hess_prod(SleqpFunc* func,
   }
 
   mxArray* lhs;
-  mxArray* rhs[] = {func_data->hessian,
+  mxArray* rhs[] = {func_data->callbacks.hessian,
                     func_data->primal,
                     func_data->obj_dual,
                     func_data->cons_dual};
@@ -339,17 +237,28 @@ create_func_data(FuncData** star,
 
   assert(mxIsStruct(mex_callbacks));
 
-  func_data->objective   = mxGetField(mex_callbacks, 0, MEX_INPUT_OBJ_VAL);
-  func_data->gradient    = mxGetField(mex_callbacks, 0, MEX_INPUT_OBJ_GRAD);
-  func_data->constraints = mxGetField(mex_callbacks, 0, MEX_INPUT_CONS_VAL);
-  func_data->jacobian    = mxGetField(mex_callbacks, 0, MEX_INPUT_CONS_JAC);
-  func_data->hessian     = mxGetField(mex_callbacks, 0, MEX_INPUT_HESS);
+  SLEQP_CALL(mex_callback_from_struct(mex_callbacks,
+                                      MEX_INPUT_OBJ_VAL,
+                                      &func_data->callbacks.obj_val));
 
-  assert(mxIsFunctionHandle(func_data->objective));
-  assert(mxIsFunctionHandle(func_data->gradient));
-  assert(mxIsFunctionHandle(func_data->constraints));
-  assert(mxIsFunctionHandle(func_data->jacobian));
-  // assert(mxIsFunctionHandle(func_data->hessian));
+  SLEQP_CALL(mex_callback_from_struct(mex_callbacks,
+                                      MEX_INPUT_OBJ_GRAD,
+                                      &func_data->callbacks.obj_grad));
+
+  if (num_cons > 0)
+  {
+    SLEQP_CALL(mex_callback_from_struct(mex_callbacks,
+                                        MEX_INPUT_CONS_VAL,
+                                        &func_data->callbacks.cons_val));
+
+    SLEQP_CALL(mex_callback_from_struct(mex_callbacks,
+                                        MEX_INPUT_CONS_JAC,
+                                        &func_data->callbacks.cons_jac));
+  }
+
+  SLEQP_CALL(mex_callback_from_struct(mex_callbacks,
+                                      MEX_INPUT_HESS,
+                                      &func_data->callbacks.hessian));
 
   func_data->primal = mxCreateDoubleMatrix(1, num_vars, mxREAL);
 
