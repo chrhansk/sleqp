@@ -19,7 +19,7 @@ function p = adj_prod(x, d)
     p = [-d(1) - 2*x(1)*sqrt(b)*d(2) sqrt(b)*d(2)];
 end
 
-x0 = [0 0];  % The starting point.
+x_init = [0; 0];  % The starting point.
 
 options = struct;
 
@@ -29,4 +29,15 @@ funcs.lsq_jac_forward = @for_prod;
 funcs.lsq_jac_adjoint = @adj_prod;
 
 % Run sleqp.
-[x info] = sleqp.solve_lsq(x0, funcs, options);
+[x_act info] = sleqp.solve_lsq(x_init, funcs, options);
+
+assert(info.status == sleqp.Status.Optimal());
+
+x_exp = [1; 1];
+
+diff = norm(x_exp - x_act, Inf);
+
+tolerance = 1e-8;
+
+assert(diff < tolerance);
+

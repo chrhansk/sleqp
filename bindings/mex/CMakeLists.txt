@@ -22,6 +22,25 @@ set(MATLAB_TESTS
 
 add_custom_target(sleqp_mex ALL)
 
+add_executable(mex_enum_generator
+  gen_enums.c)
+
+target_include_directories(mex_enum_generator
+  PRIVATE
+  ${SLEQP_INCLUDE_DIR}
+  ${SLEQP_LOCAL_HEADER_DIR})
+
+add_dependencies(mex_enum_generator sleqp_local_headers)
+
+target_link_libraries(mex_enum_generator
+  PRIVATE
+  sleqp_objects)
+
+add_custom_command(TARGET sleqp_mex
+    POST_BUILD
+    COMMAND mex_enum_generator
+    WORKING_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
+
 foreach(MATLAB_SOURCE ${MATLAB_SOURCES})
   get_filename_component(MATLAB_SOURCE_ABS ${MATLAB_SOURCE} ABSOLUTE)
 

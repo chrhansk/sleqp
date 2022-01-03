@@ -35,9 +35,9 @@ function H = hess (x, obj_dual, cons_dual)
   H = sparse(H);
 end
 
-x0              = [1 5 5 1];  % The starting point.
-options.var_lb  = [1 1 1 1];  % Lower bound on the variables.
-options.var_ub  = [5 5 5 5];  % Upper bound on the variables.
+x_init          = [1; 5; 5; 1];  % The starting point.
+options.var_lb  = [1; 1; 1; 1];  % Lower bound on the variables.
+options.var_ub  = [5; 5; 5; 5];  % Upper bound on the variables.
 options.cons_lb = [25  40];   % Lower bounds on the constraint functions.
 options.cons_ub = [inf 40];   % Upper bounds on the constraint functions.
 
@@ -49,9 +49,14 @@ funcs.cons_jac       = @cons_jac;
 funcs.hess           = @hess;
 
 % Run sleqp.
-[x info] = sleqp.solve(x0, funcs, options);
+[x_act info] = sleqp.solve(x_init, funcs, options);
 
-disp("x:");
-disp(x);
-disp("info:");
-disp(info);
+assert(info.status == sleqp.Status.Optimal());
+
+x_exp = [1.; 4.742999637; 3.821149984; 1.379408293];
+
+diff = norm(x_exp - x_act, Inf);
+
+tolerance = 1e-8;
+
+assert(diff < tolerance);
