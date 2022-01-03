@@ -130,9 +130,9 @@ END_TEST
 
 START_TEST(test_underflow_error)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS,
-                                          FE_ALL_EXCEPT));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS,
+                                           FE_ALL_EXCEPT));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -10000));
 

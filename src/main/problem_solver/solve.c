@@ -21,7 +21,7 @@ print_warning(SleqpProblemSolver* solver)
   SLEQP_FUNC_TYPE func_type = sleqp_func_get_type(func);
 
   const SLEQP_DERIV_CHECK deriv_check
-    = sleqp_options_int_value(solver->options, SLEQP_OPTION_INT_DERIV_CHECK);
+    = sleqp_options_enum_value(solver->options, SLEQP_OPTION_ENUM_DERIV_CHECK);
 
   const int hessian_check_flags
     = (SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE | SLEQP_DERIV_CHECK_SECOND_SIMPLE);

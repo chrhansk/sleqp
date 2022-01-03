@@ -99,7 +99,7 @@ newton_solver_create(NewtonSolver** star,
                                SLEQP_MAX(num_variables, num_constraints)));
 
   SLEQP_TR_SOLVER tr_solver
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_TR_SOLVER);
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_TR_SOLVER);
 
   if (tr_solver == SLEQP_TR_SOLVER_AUTO)
   {

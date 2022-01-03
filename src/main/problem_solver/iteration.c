@@ -63,7 +63,7 @@ check_derivative(SleqpProblemSolver* solver)
   SleqpIterate* iterate = solver->iterate;
 
   const SLEQP_DERIV_CHECK deriv_check
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_DERIV_CHECK);
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_DERIV_CHECK);
 
   SLEQP_CALL(
     sleqp_deriv_check_perform(solver->deriv_checker, iterate, deriv_check));

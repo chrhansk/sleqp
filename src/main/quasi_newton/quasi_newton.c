@@ -256,7 +256,7 @@ sleqp_quasi_newton_create_default(SleqpQuasiNewton** star,
                                   SleqpOptions* options)
 {
   const SLEQP_HESS_EVAL hessian_eval
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_HESS_EVAL);
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
 
   if (hessian_eval == SLEQP_HESS_EVAL_SIMPLE_BFGS
       || hessian_eval == SLEQP_HESS_EVAL_DAMPED_BFGS)

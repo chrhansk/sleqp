@@ -97,7 +97,7 @@ create_eqp_solver(SleqpTrialPointSolver* solver)
   SleqpOptions* options = solver->options;
 
   SLEQP_TR_SOLVER tr_solver
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_TR_SOLVER);
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_TR_SOLVER);
 
   if (tr_solver == SLEQP_TR_SOLVER_LSQR)
   {
@@ -130,8 +130,8 @@ static SLEQP_RETCODE
 create_parametric_solver(SleqpTrialPointSolver* solver)
 {
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
-    = sleqp_options_int_value(solver->options,
-                              SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+    = sleqp_options_enum_value(solver->options,
+                               SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY);
 
   if (parametric_cauchy == SLEQP_PARAMETRIC_CAUCHY_DISABLED)
   {
@@ -479,7 +479,7 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
 
   {
     SLEQP_LINESEARCH lineserach
-      = sleqp_options_int_value(solver->options, SLEQP_OPTION_INT_LINESEARCH);
+      = sleqp_options_enum_value(solver->options, SLEQP_OPTION_ENUM_LINESEARCH);
 
     double step_length;
 

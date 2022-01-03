@@ -167,9 +167,9 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_DERIV_CHECK,
-                                          SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+                                           SLEQP_DERIV_CHECK_FIRST));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   restoration_problem,
