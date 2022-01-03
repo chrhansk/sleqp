@@ -31,5 +31,6 @@
 #define MEX_OUTPUT_VARS_DUAL "vars_dal"
 #define MEX_OUTPUT_ELAPSED "elapsed"
 #define MEX_OUTPUT_ITER "iterations"
+#define MEX_OUTPUT_STATUS "status"
 
 #endif /* SLEQP_MEX_FIELDS */

@@ -46,17 +46,17 @@ mex_create_solver_output(SleqpProblem* problem,
                          mxArray** sol_star,
                          mxArray** info_star)
 {
-  const int num_vars = sleqp_problem_num_vars(problem);
+  const char* fieldnames[] = {MEX_OUTPUT_PRIMAL,
+                              MEX_OUTPUT_CONS_DUAL,
+                              MEX_OUTPUT_VARS_DUAL,
+                              MEX_OUTPUT_ELAPSED,
+                              MEX_OUTPUT_ITER,
+                              MEX_OUTPUT_STATUS};
 
-  char const* fieldnames[5] = {MEX_OUTPUT_PRIMAL,
-                               MEX_OUTPUT_CONS_DUAL,
-                               MEX_OUTPUT_VARS_DUAL,
-                               MEX_OUTPUT_ELAPSED,
-                               MEX_OUTPUT_ITER};
+  const int num_fields = sizeof(fieldnames) / sizeof(const char*);
 
-  *info_star = mxCreateStructMatrix(1, 1, 5, fieldnames);
+  *info_star = mxCreateStructMatrix(1, 1, num_fields, fieldnames);
 
-  mxArray* sol  = *sol_star;
   mxArray* info = *info_star;
 
   SleqpIterate* iterate;
@@ -84,6 +84,10 @@ mex_create_solver_output(SleqpProblem* problem,
   SLEQP_CALL(set_struct_field_to_real(info,
                                       MEX_OUTPUT_ITER,
                                       sleqp_solver_iterations(solver)));
+
+  SLEQP_CALL(set_struct_field_to_real(info,
+                                      MEX_OUTPUT_STATUS,
+                                      sleqp_solver_status(solver)));
 
   return SLEQP_OKAY;
 }
