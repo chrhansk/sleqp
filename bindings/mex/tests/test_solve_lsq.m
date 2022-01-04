@@ -23,6 +23,10 @@ x_init = [0; 0];  % The starting point.
 
 options = struct;
 
+options.feas_tol = 1e-10;
+options.stat_tol = 1e-10;
+options.slack_tol = 1e-10;
+
 % Callbacks
 funcs.lsq_residuals   = @lsq_res;
 funcs.lsq_jac_forward = @for_prod;

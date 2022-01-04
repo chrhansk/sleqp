@@ -33,4 +33,20 @@
 #define MEX_OUTPUT_ITER "iterations"
 #define MEX_OUTPUT_STATUS "status"
 
+#define MEX_PARAM_ZERO_EPS "zero_eps"
+#define MEX_PARAM_EPS "eps"
+#define MEX_PARAM_OBJ_LOWER "obj_lower"
+#define MEX_PARAM_DERIV_PERTURBATION "deriv_pert"
+#define MEX_PARAM_DERIV_TOL "deriv_tol"
+#define MEX_PARAM_CAUCHY_TAU "cauchy_tau"
+#define MEX_PARAM_CAUCHY_ETA "cauchy_eta"
+#define MEX_PARAM_LINESEARCH_TAU "linesearch_tau"
+#define MEX_PARAM_LINESEARCH_ETA "linesearch_eta"
+#define MEX_PARAM_LINESEARCH_CUTOFF "linesearch_cutoff"
+#define MEX_PARAM_FEASIBILITY_TOL "feas_tol"
+#define MEX_PARAM_SLACKNESS_TOL "slack_tol"
+#define MEX_PARAM_STATIONARITY_TOL "stat_tol"
+#define MEX_PARAM_ACCEPTED_REDUCTION "accepted_reduction"
+#define MEX_PARAM_DEADPOINT_BOUND "deadpoint_bound"
+
 #endif /* SLEQP_MEX_FIELDS */
