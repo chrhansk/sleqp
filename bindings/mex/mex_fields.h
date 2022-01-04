@@ -32,6 +32,8 @@
 #define MEX_OUTPUT_ELAPSED "elapsed"
 #define MEX_OUTPUT_ITER "iterations"
 #define MEX_OUTPUT_STATUS "status"
+#define MEX_OUTPUT_WORKING_VARS "working_vars"
+#define MEX_OUTPUT_WORKING_CONS "working_cons"
 
 #define MEX_PARAM_ZERO_EPS "zero_eps"
 #define MEX_PARAM_EPS "eps"

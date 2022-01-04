@@ -40,6 +40,43 @@ set_struct_field_to_real(mxArray* info, const char* name, double value)
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE
+create_working_set_output(mxArray* info,
+                          SleqpProblem* problem,
+                          const SleqpWorkingSet* working_set)
+{
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
+
+  {
+    mxArray* array = mxCreateDoubleMatrix(num_vars, 1, mxREAL);
+
+    double* values = mxGetPr(array);
+
+    for (int j = 0; j < num_vars; ++j)
+    {
+      values[j] = sleqp_working_set_var_state(working_set, j);
+    }
+
+    mxSetField(info, 0, MEX_OUTPUT_WORKING_VARS, array);
+  }
+
+  {
+    mxArray* array = mxCreateDoubleMatrix(num_cons, 1, mxREAL);
+
+    double* values = mxGetPr(array);
+
+    for (int i = 0; i < num_cons; ++i)
+    {
+      values[i] = sleqp_working_set_cons_state(working_set, i);
+    }
+
+    mxSetField(info, 0, MEX_OUTPUT_WORKING_CONS, array);
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE
 mex_create_solver_output(SleqpProblem* problem,
                          SleqpSolver* solver,
@@ -51,7 +88,9 @@ mex_create_solver_output(SleqpProblem* problem,
                               MEX_OUTPUT_VARS_DUAL,
                               MEX_OUTPUT_ELAPSED,
                               MEX_OUTPUT_ITER,
-                              MEX_OUTPUT_STATUS};
+                              MEX_OUTPUT_STATUS,
+                              MEX_OUTPUT_WORKING_VARS,
+                              MEX_OUTPUT_WORKING_CONS};
 
   const int num_fields = sizeof(fieldnames) / sizeof(const char*);
 
@@ -88,6 +127,10 @@ mex_create_solver_output(SleqpProblem* problem,
   SLEQP_CALL(set_struct_field_to_real(info,
                                       MEX_OUTPUT_STATUS,
                                       sleqp_solver_status(solver)));
+
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
+
+  SLEQP_CALL(create_working_set_output(info, problem, working_set));
 
   return SLEQP_OKAY;
 }
