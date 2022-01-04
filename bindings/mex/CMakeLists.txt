@@ -17,6 +17,7 @@ set(MATLAB_SOURCES
   sleqp/solve_lsq.m)
 
 set(MATLAB_TESTS
+  tests/test_hess_prod.m
   tests/test_solve.m
   tests/test_solve_lsq.m
   tests/test_solve_quasi_newton.m

@@ -15,6 +15,7 @@
 #define MEX_INPUT_CONS_VAL "cons_val"
 #define MEX_INPUT_CONS_JAC "cons_jac"
 #define MEX_INPUT_HESS "hess"
+#define MEX_INPUT_HESS_PROD "hess_prod"
 
 #define MEX_INPUT_LSQ_RES "lsq_residuals"
 #define MEX_INPUT_LSQ_JAC_FWD "lsq_jac_forward"
