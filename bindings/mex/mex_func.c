@@ -85,16 +85,11 @@ mex_func_obj_val(SleqpFunc* func, double* obj_val, void* data)
 {
   FuncData* func_data = (FuncData*)data;
 
-  mxArray* lhs;
   mxArray* rhs[] = {func_data->callbacks.obj_val, func_data->primal};
 
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
+  const int nrhs = sizeof(rhs) / sizeof(rhs[0]);
 
-  assert(mxIsScalar(lhs));
-  assert(!mxIsComplex(lhs));
-  assert(mxIsDouble(lhs));
-
-  *obj_val = *mxGetPr(lhs);
+  SLEQP_CALL(mex_eval_into_real(nrhs, rhs, obj_val));
 
   return SLEQP_OKAY;
 }

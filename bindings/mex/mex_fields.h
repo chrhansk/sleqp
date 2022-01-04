@@ -27,6 +27,8 @@
 #define MEX_INPUT_VAR_LB "var_lb"
 #define MEX_INPUT_VAR_UB "var_ub"
 
+#define MEX_CALLBACK_ACCEPTED_ITERATE "accepted_iterate"
+
 #define MEX_OUTPUT_PRIMAL "primal"
 #define MEX_OUTPUT_CONS_DUAL "cons_dual"
 #define MEX_OUTPUT_VARS_DUAL "vars_dal"

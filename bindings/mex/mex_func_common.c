@@ -23,6 +23,62 @@ mex_callback_from_struct(const mxArray* mex_callbacks,
 }
 
 SLEQP_RETCODE
+mex_callback_has_field(const mxArray* mex_callbacks,
+                       const char* name,
+                       bool* has_field)
+{
+  if (!mxIsStruct(mex_callbacks))
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  mxArray* field = mxGetField(mex_callbacks, 0, name);
+
+  (*has_field) = !!(field);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+mex_eval_into_real(int nrhs, mxArray** rhs, double* value)
+{
+  mxArray* lhs;
+
+  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
+
+  if (!mxIsDouble(lhs) || mxIsComplex(lhs))
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  if (!mxIsScalar(lhs))
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  *value = *mxGetPr(lhs);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+mex_eval_into_bool(int nrhs, mxArray** rhs, bool* value)
+{
+  mxArray* lhs;
+
+  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
+
+  if (!mxIsLogicalScalar(lhs))
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  *value = mxIsLogicalScalarTrue(lhs);
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
 mex_eval_into_sparse_vec(int nrhs,
                          mxArray** rhs,
                          SleqpParams* params,

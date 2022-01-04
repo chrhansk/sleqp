@@ -4,6 +4,7 @@
 #include <mex.h>
 
 #include "mex_fields.h"
+#include "mex_func_common.h"
 #include "mex_output.h"
 #include "mex_problem.h"
 
@@ -191,6 +192,100 @@ read_options(SleqpOptions* options, const mxArray* mex_options)
   return SLEQP_OKAY;
 }
 
+typedef struct
+{
+  mxArray* primal;
+
+  // Callbacks
+  struct
+  {
+    mxArray* accepted_iterate;
+  } callbacks;
+
+} CallbackData;
+
+static SLEQP_RETCODE
+accepted_iterate(SleqpSolver* solver, SleqpIterate* iterate, void* data)
+{
+  CallbackData* callback_data = (CallbackData*)data;
+
+  SleqpSparseVec* primal = sleqp_iterate_primal(iterate);
+
+  SLEQP_CALL(
+    sleqp_sparse_vector_to_raw(primal, mxGetPr(callback_data->primal)));
+
+  mxArray* rhs[]
+    = {callback_data->callbacks.accepted_iterate, callback_data->primal};
+
+  const int nrhs = sizeof(rhs) / sizeof(rhs[0]);
+
+  bool value = false;
+
+  SLEQP_CALL(mex_eval_into_bool(nrhs, rhs, &value));
+
+  if (value)
+  {
+    SLEQP_CALL(sleqp_solver_abort(solver));
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+create_callback_data(SleqpProblem* problem, CallbackData* callback_data)
+{
+  const int num_vars = sleqp_problem_num_vars(problem);
+
+  callback_data->primal = mxCreateDoubleMatrix(num_vars, 1, mxREAL);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+register_callbacks(SleqpProblem* problem,
+                   SleqpSolver* solver,
+                   const mxArray* mex_funcs,
+                   CallbackData* callback_data)
+{
+  bool has_callbacks = false;
+
+  bool has_accepted_iterate;
+
+  SLEQP_CALL(mex_callback_has_field(mex_funcs,
+                                    MEX_CALLBACK_ACCEPTED_ITERATE,
+                                    &has_accepted_iterate));
+
+  if (has_accepted_iterate)
+  {
+    SLEQP_CALL(
+      mex_callback_from_struct(mex_funcs,
+                               MEX_CALLBACK_ACCEPTED_ITERATE,
+                               &callback_data->callbacks.accepted_iterate));
+
+    SLEQP_CALL(sleqp_solver_add_callback(solver,
+                                         SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
+                                         accepted_iterate,
+                                         (void*)callback_data));
+
+    has_callbacks = true;
+  }
+
+  if (has_callbacks)
+  {
+    SLEQP_CALL(create_callback_data(problem, callback_data));
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+destroy_callback_data(CallbackData* callback_data)
+{
+  mxDestroyArray(callback_data->primal);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE
 mex_solve(mxArray** sol_star,
           mxArray** info_star,
@@ -204,6 +299,8 @@ mex_solve(mxArray** sol_star,
   SleqpProblem* problem;
   SleqpSolver* solver;
   SleqpSparseVec* initial;
+
+  CallbackData callback_data = (CallbackData){0};
 
   SLEQP_CALL(sleqp_options_create(&options));
   SLEQP_CALL(sleqp_params_create(&params));
@@ -225,9 +322,13 @@ mex_solve(mxArray** sol_star,
   SLEQP_CALL(
     sleqp_solver_create(&solver, problem, params, options, initial, NULL));
 
+  SLEQP_CALL(register_callbacks(problem, solver, mex_funcs, &callback_data));
+
   SLEQP_CALL(sleqp_solver_solve(solver, SLEQP_NONE, SLEQP_NONE));
 
   SLEQP_CALL(mex_create_solver_output(problem, solver, sol_star, info_star));
+
+  SLEQP_CALL(destroy_callback_data(&callback_data));
 
   SLEQP_CALL(sleqp_sparse_vector_free(&initial));
   SLEQP_CALL(sleqp_solver_release(&solver));

@@ -42,9 +42,20 @@
   } while (0)
 
 SLEQP_RETCODE
+mex_callback_has_field(const mxArray* mex_callbacks,
+                       const char* name,
+                       bool* has_field);
+
+SLEQP_RETCODE
 mex_callback_from_struct(const mxArray* mex_callbacks,
                          const char* name,
                          mxArray** star);
+
+SLEQP_RETCODE
+mex_eval_into_real(int nrhs, mxArray** rhs, double* value);
+
+SLEQP_RETCODE
+mex_eval_into_bool(int nrhs, mxArray** rhs, bool* value);
 
 SLEQP_RETCODE
 mex_eval_into_sparse_vec(int nrhs,
