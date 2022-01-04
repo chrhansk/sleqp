@@ -222,6 +222,7 @@ mex_func_hess_prod(SleqpFunc* func,
 static SLEQP_RETCODE
 create_func_data(FuncData** star,
                  const mxArray* mex_callbacks,
+                 bool with_hessian,
                  SleqpParams* params,
                  int num_vars,
                  int num_cons)
@@ -256,9 +257,12 @@ create_func_data(FuncData** star,
                                         &func_data->callbacks.cons_jac));
   }
 
-  SLEQP_CALL(mex_callback_from_struct(mex_callbacks,
-                                      MEX_INPUT_HESS,
-                                      &func_data->callbacks.hessian));
+  if (with_hessian)
+  {
+    SLEQP_CALL(mex_callback_from_struct(mex_callbacks,
+                                        MEX_INPUT_HESS,
+                                        &func_data->callbacks.hessian));
+  }
 
   func_data->primal = mxCreateDoubleMatrix(1, num_vars, mxREAL);
 
@@ -293,22 +297,25 @@ mex_func_free(void* data)
 SLEQP_RETCODE
 mex_func_create(SleqpFunc** star,
                 const mxArray* mex_callbacks,
+                bool with_hessian,
                 SleqpParams* params,
                 int num_variables,
                 int num_constraints)
 {
-  SleqpFuncCallbacks callbacks = {.set_value = mex_func_set,
-                                  .obj_val   = mex_func_obj_val,
-                                  .obj_grad  = mex_func_obj_grad,
-                                  .cons_val  = mex_func_cons_val,
-                                  .cons_jac  = mex_func_cons_jac,
-                                  .hess_prod = mex_func_hess_prod,
-                                  .func_free = mex_func_free};
+  SleqpFuncCallbacks callbacks
+    = {.set_value = mex_func_set,
+       .obj_val   = mex_func_obj_val,
+       .obj_grad  = mex_func_obj_grad,
+       .cons_val  = mex_func_cons_val,
+       .cons_jac  = mex_func_cons_jac,
+       .hess_prod = with_hessian ? mex_func_hess_prod : NULL,
+       .func_free = mex_func_free};
 
   FuncData* func_data;
 
   SLEQP_CALL(create_func_data(&func_data,
                               mex_callbacks,
+                              with_hessian,
                               params,
                               num_variables,
                               num_constraints));

@@ -18,7 +18,8 @@ set(MATLAB_SOURCES
 
 set(MATLAB_TESTS
   tests/test_solve.m
-  tests/test_solve_lsq.m)
+  tests/test_solve_lsq.m
+  tests/test_solve_quasi_newton.m)
 
 add_custom_target(sleqp_mex ALL)
 

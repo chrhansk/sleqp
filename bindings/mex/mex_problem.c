@@ -158,6 +158,7 @@ create_cons_bounds_from_options(SleqpSparseVec** cons_lb_star,
 SLEQP_RETCODE
 mex_problem_create(SleqpProblem** star,
                    SleqpParams* params,
+                   SleqpOptions* options,
                    bool lsq_problem,
                    const mxArray* mex_x0,
                    const mxArray* mex_funcs,
@@ -191,7 +192,17 @@ mex_problem_create(SleqpProblem** star,
   }
   else
   {
-    SLEQP_CALL(mex_func_create(&func, mex_funcs, params, num_vars, num_cons));
+    const SLEQP_HESS_EVAL hess_eval
+      = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
+
+    const bool with_hessian = (hess_eval == SLEQP_HESS_EVAL_EXACT);
+
+    SLEQP_CALL(mex_func_create(&func,
+                               mex_funcs,
+                               with_hessian,
+                               params,
+                               num_vars,
+                               num_cons));
   }
 
   SLEQP_CALL(sleqp_problem_create_simple(star,

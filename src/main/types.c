@@ -59,7 +59,7 @@ static const SleqpEnum deriv_check_enum
                  {NULL, 0}}};
 
 static const SleqpEnum hess_eval_enum
-  = {.name    = "HessianEval",
+  = {.name    = "HessEval",
      .flags   = false,
      .entries = {{"Exact", SLEQP_HESS_EVAL_EXACT},
                  {"SR1", SLEQP_HESS_EVAL_SR1},

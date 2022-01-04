@@ -10,10 +10,10 @@
 typedef struct
 {
   const char* name;
-  SLEQP_PARAM param;
-} ParamName;
+  int value;
+} Name;
 
-static const ParamName param_names[] = {
+static const Name param_names[] = {
   {MEX_PARAM_ZERO_EPS, SLEQP_PARAM_ZERO_EPS},
   {MEX_PARAM_EPS, SLEQP_PARAM_EPS},
   {MEX_PARAM_OBJ_LOWER, SLEQP_PARAM_OBJ_LOWER},
@@ -31,6 +31,94 @@ static const ParamName param_names[] = {
   {MEX_PARAM_DEADPOINT_BOUND, SLEQP_PARAM_DEADPOINT_BOUND},
 };
 
+static const Name enum_option_names[]
+  = {{MEX_DERIV_CHECK, SLEQP_OPTION_ENUM_DERIV_CHECK},
+     {MEX_HESS_EVAL, SLEQP_OPTION_ENUM_HESS_EVAL},
+     {MEX_DUAL_ESTIMATION_TYPE, SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE},
+     {MEX_BFGS_SIZING, SLEQP_OPTION_ENUM_BFGS_SIZING},
+     {MEX_TR_SOLVER, SLEQP_OPTION_ENUM_TR_SOLVER},
+     {MEX_POLISHING_TYPE, SLEQP_OPTION_ENUM_POLISHING_TYPE},
+     {MEX_STEP_RULE, SLEQP_OPTION_ENUM_STEP_RULE},
+     {MEX_LINESEARCH, SLEQP_OPTION_ENUM_LINESEARCH},
+     {MEX_PARAMETRIC_CAUCHY, SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY},
+     {MEX_INITIAL_TR_CHOICE, SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE}};
+
+static const Name int_option_names[] = {
+  {MEX_NUM_QUASI_NEWTON_ITERATES, SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES},
+  {MEX_MAX_NEWTON_ITERATIONS, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS},
+  {MEX_NUM_THREADS, SLEQP_OPTION_INT_NUM_THREADS}};
+
+static const Name bool_option_names[]
+  = {{MEX_PERFORM_NEWTON_STEP, SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP},
+     {MEX_PERFORM_SOC, SLEQP_OPTION_BOOL_PERFORM_SOC},
+     {MEX_USE_QUADRATIC_MODEL, SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL},
+     {MEX_ALWAYS_WARM_START_LP, SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP},
+     {MEX_ENABLE_RESTORATION_PHASE, SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE},
+     {MEX_ENABLE_PREPROCESSOR, SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR}};
+
+static SLEQP_RETCODE
+read_option_entry(const mxArray* mex_options,
+                  const char* name,
+                  double* scalar_value,
+                  bool* present)
+{
+  const mxArray* value = mxGetField(mex_options, 0, name);
+
+  if (!value)
+  {
+    *present = false;
+    return SLEQP_OKAY;
+  }
+
+  *present = true;
+
+  if (!(mxIsScalar(value) && mxIsDouble(value)))
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  const double* ptr = mxGetPr(value);
+
+  assert(ptr);
+
+  *scalar_value = *ptr;
+
+  return SLEQP_OKAY;
+}
+
+typedef SLEQP_RETCODE (*SET_VALUE)(int name, double value, void* data);
+
+static SLEQP_RETCODE
+read_values(const mxArray* mex_options,
+            const Name* names,
+            int num_names,
+            SET_VALUE set_value,
+            void* data)
+{
+  for (int i = 0; i < num_names; ++i)
+  {
+    const Name* name = names + i;
+    double param_value;
+    bool present;
+
+    SLEQP_CALL(
+      read_option_entry(mex_options, name->name, &param_value, &present));
+
+    if (present)
+    {
+      SLEQP_CALL(set_value(name->value, param_value, data));
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+set_param_value(int name, double value, void* data)
+{
+  return sleqp_params_set_value((SleqpParams*)data, name, value);
+}
+
 static SLEQP_RETCODE
 read_params(SleqpParams* params, const mxArray* mex_options)
 {
@@ -41,29 +129,64 @@ read_params(SleqpParams* params, const mxArray* mex_options)
 
   const int num_params = sizeof(param_names) / sizeof(param_names[0]);
 
-  for (int i = 0; i < num_params; ++i)
+  SLEQP_CALL(
+    read_values(mex_options, param_names, num_params, set_param_value, params));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+set_option_bool_value(int name, double value, void* data)
+{
+  return sleqp_options_set_bool_value((SleqpOptions*)data, name, !!(value));
+}
+
+static SLEQP_RETCODE
+set_option_int_value(int name, double value, void* data)
+{
+  return sleqp_options_set_int_value((SleqpOptions*)data, name, (int)value);
+}
+
+static SLEQP_RETCODE
+set_option_enum_value(int name, double value, void* data)
+{
+  return sleqp_options_set_enum_value((SleqpOptions*)data, name, (int)value);
+}
+
+static SLEQP_RETCODE
+read_options(SleqpOptions* options, const mxArray* mex_options)
+{
+  if (!mxIsStruct(mex_options))
   {
-    const ParamName* param_name = param_names + i;
-    const mxArray* value        = mxGetField(mex_options, 0, param_name->name);
-
-    if (!value)
-    {
-      continue;
-    }
-
-    if (!(mxIsScalar(value) && mxIsDouble(value)))
-    {
-      return SLEQP_ILLEGAL_ARGUMENT;
-    }
-
-    const double* param_ptr = mxGetPr(value);
-
-    assert(param_ptr);
-
-    const double param_value = *param_ptr;
-
-    SLEQP_CALL(sleqp_params_set_value(params, param_name->param, param_value));
+    return SLEQP_ILLEGAL_ARGUMENT;
   }
+
+  const int num_bool_options
+    = sizeof(bool_option_names) / sizeof(bool_option_names[0]);
+
+  SLEQP_CALL(read_values(mex_options,
+                         bool_option_names,
+                         num_bool_options,
+                         set_option_bool_value,
+                         options));
+
+  const int num_int_options
+    = sizeof(int_option_names) / sizeof(int_option_names[0]);
+
+  SLEQP_CALL(read_values(mex_options,
+                         int_option_names,
+                         num_int_options,
+                         set_option_int_value,
+                         options));
+
+  const int num_enum_options
+    = sizeof(enum_option_names) / sizeof(enum_option_names[0]);
+
+  SLEQP_CALL(read_values(mex_options,
+                         enum_option_names,
+                         num_enum_options,
+                         set_option_enum_value,
+                         options));
 
   return SLEQP_OKAY;
 }
@@ -87,8 +210,15 @@ mex_solve(mxArray** sol_star,
 
   SLEQP_CALL(read_params(params, mex_options));
 
-  SLEQP_CALL(
-    mex_problem_create(&problem, params, lsq, mex_x0, mex_funcs, mex_options));
+  SLEQP_CALL(read_options(options, mex_options));
+
+  SLEQP_CALL(mex_problem_create(&problem,
+                                params,
+                                options,
+                                lsq,
+                                mex_x0,
+                                mex_funcs,
+                                mex_options));
 
   SLEQP_CALL(mex_create_vec_from_array(&initial, mex_x0));
 
