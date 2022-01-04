@@ -11,9 +11,6 @@
 
 #define COMMAND_BUFSIZE 256
 
-// TODO: Better logging
-// TODO: Pass more options / params
-
 typedef SLEQP_RETCODE (*MEX_FUNCTION)(int nlhs,
                                       mxArray* plhs[],
                                       int nrhs,
@@ -30,7 +27,27 @@ typedef struct
 static void
 mex_log_handler(SLEQP_LOG_LEVEL level, time_t time, const char* message)
 {
-  mexPrintf("%s\n", message);
+  const char* prefix = "";
+
+  switch (level)
+  {
+  case SLEQP_LOG_ERROR:
+    prefix = "error";
+    break;
+  case SLEQP_LOG_WARN:
+    prefix = "warn";
+    break;
+  case SLEQP_LOG_INFO:
+    prefix = "info";
+    break;
+  case SLEQP_LOG_DEBUG:
+    prefix = "debug";
+    break;
+  default:
+    break;
+  }
+
+  mexPrintf("%5s: %s\n", prefix, message);
 }
 
 SLEQP_EXPORT void
