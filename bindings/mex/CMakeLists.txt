@@ -56,14 +56,13 @@ foreach(MATLAB_SOURCE ${MATLAB_SOURCES})
 endforeach()
 
 if(SLEQP_ENABLE_OCTAVE_MEX)
-
   add_library(sleqp_ext SHARED
     ${MEX_SOURCES})
 
   set_target_properties(sleqp_ext
     PROPERTIES
     PREFIX ""
-    OUTPUT_NAME "_extension"
+    OUTPUT_NAME "extension"
     SUFFIX ".mex"
     LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
 
@@ -93,7 +92,17 @@ if(SLEQP_ENABLE_OCTAVE_MEX)
       NAME "matlab_${TEST_NAME}"
       WORKING_DIRECTORY ${MATLAB_OUTPUT_DIR}
       COMMAND ${Octave_EXECUTABLE} ${MATLAB_TEST_ABS})
-
   endforeach()
+endif()
 
+if(SLEQP_ENABLE_MATLAB_MEX)
+  matlab_add_mex(
+    NAME sleqp_ext
+    SRC ${MEX_SOURCES}
+    OUTPUT_NAME "extension"
+    LINK_TO sleqp)
+
+  set_target_properties(sleqp_ext
+    PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
 endif()
