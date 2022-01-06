@@ -4,8 +4,10 @@
 #include <fenv.h>
 #include <math.h>
 
+#include "enum.h"
 #include "log.h"
 #include "mem.h"
+#include "types.h"
 
 #define PERFORM_NEWTON_DEFAULT true
 #define PERFORM_SOC_DEFAULT true
@@ -19,8 +21,6 @@
 #define DERIV_CHECK_DEFAULT SLEQP_DERIV_CHECK_SKIP
 #define HESS_EVAL_DEFAULT SLEQP_HESS_EVAL_EXACT
 #define DUAL_ESTIMATION_TYPE_DEFAULT SLEQP_DUAL_ESTIMATION_TYPE_LSQ
-#define QUASI_NEWTON_SIZE_DEFAULT 5
-#define MAX_NEWTON_ITERATIONS_DEFAULT 100
 #define FLOAT_WARN_FLAGS_DEFAULT FE_ALL_EXCEPT
 #define FLOAT_ERR_FLAGS_DEFAULT (FE_OVERFLOW | FE_DIVBYZERO | FE_INVALID)
 #define BFGS_SIZING_DEFAULT SLEQP_BFGS_SIZING_CENTERED_OL
@@ -28,6 +28,9 @@
 #define POLISHING_TYPE_DEFAULT SLEQP_POLISHING_ZERO_DUAL
 #define STEP_RULE_DEFAULT SLEQP_STEP_RULE_DIRECT
 #define LINESEARCH_DEFAULT SLEQP_LINESEARCH_APPROX
+
+#define QUASI_NEWTON_SIZE_DEFAULT 5
+#define MAX_NEWTON_ITERATIONS_DEFAULT 100
 #define NUM_THREADS_DEFAULT SLEQP_NONE
 
 #define CHECK_FLOAT_ENV                                                        \
@@ -44,6 +47,7 @@ struct SleqpOptions
 {
   int refcount;
 
+  int enum_values[SLEQP_NUM_ENUM_OPTIONS];
   int int_values[SLEQP_NUM_INT_OPTIONS];
   bool bool_values[SLEQP_NUM_BOOL_OPTIONS];
 
@@ -60,42 +64,94 @@ sleqp_options_create(SleqpOptions** star)
 
   *options = (SleqpOptions){0};
 
-  options->refcount = 1;
+  *options = (SleqpOptions){
+    .refcount = 1,
+    .enum_values
+    = {[SLEQP_OPTION_ENUM_DERIV_CHECK]          = DERIV_CHECK_DEFAULT,
+       [SLEQP_OPTION_ENUM_HESS_EVAL]            = HESS_EVAL_DEFAULT,
+       [SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE] = DUAL_ESTIMATION_TYPE_DEFAULT,
+       [SLEQP_OPTION_ENUM_FLOAT_WARNING_FLAGS]  = FLOAT_WARN_FLAGS_DEFAULT,
+       [SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS]    = FLOAT_ERR_FLAGS_DEFAULT,
+       [SLEQP_OPTION_ENUM_BFGS_SIZING]          = BFGS_SIZING_DEFAULT,
+       [SLEQP_OPTION_ENUM_TR_SOLVER]            = TR_SOLVER_DEFAULT,
+       [SLEQP_OPTION_ENUM_POLISHING_TYPE]       = POLISHING_TYPE_DEFAULT,
+       [SLEQP_OPTION_ENUM_STEP_RULE]            = STEP_RULE_DEFAULT,
+       [SLEQP_OPTION_ENUM_LINESEARCH]           = LINESEARCH_DEFAULT,
+       [SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY]    = PARAMETRIC_CAUCHY_DEFAULT,
+       [SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE]    = INITIAL_TR_CHOICE_DEFAULT},
+    .int_values
+    = {[SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES] = QUASI_NEWTON_SIZE_DEFAULT,
+       [SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS] = MAX_NEWTON_ITERATIONS_DEFAULT,
+       [SLEQP_OPTION_INT_NUM_THREADS]           = NUM_THREADS_DEFAULT},
+    .bool_values
+    = {[SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]  = PERFORM_NEWTON_DEFAULT,
+       [SLEQP_OPTION_BOOL_PERFORM_SOC]          = PERFORM_SOC_DEFAULT,
+       [SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL]  = USE_QUADRATIC_MODEL_DEFAULT,
+       [SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP] = ALWAYS_WARM_START_LP_DEFAULT,
+       [SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE]
+       = ENABLE_RESTORATION_PHASE_DEFAULT,
+       [SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR] = ENABLE_PREPROCESSOR_DEFAULT}};
 
-  options->int_values[SLEQP_OPTION_INT_DERIV_CHECK] = DERIV_CHECK_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_HESS_EVAL]   = HESS_EVAL_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE]
-    = DUAL_ESTIMATION_TYPE_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES]
-    = QUASI_NEWTON_SIZE_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS]
-    = MAX_NEWTON_ITERATIONS_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_FLOAT_WARNING_FLAGS]
-    = FLOAT_WARN_FLAGS_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS]
-    = FLOAT_ERR_FLAGS_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_BFGS_SIZING]    = BFGS_SIZING_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_TR_SOLVER]      = TR_SOLVER_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_POLISHING_TYPE] = POLISHING_TYPE_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_STEP_RULE]      = STEP_RULE_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_LINESEARCH]     = LINESEARCH_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_PARAMETRIC_CAUCHY]
-    = PARAMETRIC_CAUCHY_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_INITIAL_TR_CHOICE]
-    = INITIAL_TR_CHOICE_DEFAULT;
-  options->int_values[SLEQP_OPTION_INT_NUM_THREADS] = NUM_THREADS_DEFAULT;
+  return SLEQP_OKAY;
+}
 
-  options->bool_values[SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]
-    = PERFORM_NEWTON_DEFAULT;
-  options->bool_values[SLEQP_OPTION_BOOL_PERFORM_SOC] = PERFORM_SOC_DEFAULT;
-  options->bool_values[SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL]
-    = USE_QUADRATIC_MODEL_DEFAULT;
-  options->bool_values[SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP]
-    = ALWAYS_WARM_START_LP_DEFAULT;
-  options->bool_values[SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE]
-    = ENABLE_RESTORATION_PHASE_DEFAULT;
-  options->bool_values[SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR]
-    = ENABLE_PREPROCESSOR_DEFAULT;
+static bool
+valid_member(SLEQP_OPTION_ENUM option, int value)
+{
+  switch (option)
+  {
+  case SLEQP_OPTION_ENUM_DERIV_CHECK:
+    return sleqp_enum_member(sleqp_enum_deriv_check(), value);
+  case SLEQP_OPTION_ENUM_HESS_EVAL:
+    return sleqp_enum_member(sleqp_enum_hess_eval(), value);
+  case SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE:
+    return sleqp_enum_member(sleqp_enum_dual_estimation(), value);
+  case SLEQP_OPTION_ENUM_FLOAT_WARNING_FLAGS:
+  case SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS:
+    return true;
+  case SLEQP_OPTION_ENUM_BFGS_SIZING:
+    return sleqp_enum_member(sleqp_enum_bfgs_sizing(), value);
+  case SLEQP_OPTION_ENUM_TR_SOLVER:
+    return sleqp_enum_member(sleqp_enum_tr_solver(), value);
+  case SLEQP_OPTION_ENUM_POLISHING_TYPE:
+    return sleqp_enum_member(sleqp_enum_polishing_type(), value);
+  case SLEQP_OPTION_ENUM_STEP_RULE:
+    return sleqp_enum_member(sleqp_enum_step_rule(), value);
+  case SLEQP_OPTION_ENUM_LINESEARCH:
+    return sleqp_enum_member(sleqp_enum_linesearch(), value);
+  case SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY:
+    return sleqp_enum_member(sleqp_enum_parametric_cauchy(), value);
+  case SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE:
+    return sleqp_enum_member(sleqp_enum_initial_tr(), value);
+  default:
+    assert(0);
+  }
+  return false;
+}
+
+int
+sleqp_options_enum_value(const SleqpOptions* options, SLEQP_OPTION_ENUM option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_ENUM_OPTIONS);
+
+  return options->enum_values[option];
+}
+
+SLEQP_RETCODE
+sleqp_options_set_enum_value(SleqpOptions* options,
+                             SLEQP_OPTION_ENUM option,
+                             int value)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_ENUM_OPTIONS);
+
+  if (!valid_member(option, value))
+  {
+    return SLEQP_ILLEGAL_ARGUMENT;
+  }
+
+  options->enum_values[option] = value;
 
   return SLEQP_OKAY;
 }

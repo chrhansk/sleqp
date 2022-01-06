@@ -221,7 +221,7 @@ bfgs_create(BFGS** star,
   data->options = options;
 
   const SLEQP_HESS_EVAL hessian_eval
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_HESS_EVAL);
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
 
   assert(hessian_eval == SLEQP_HESS_EVAL_SIMPLE_BFGS
          || hessian_eval == SLEQP_HESS_EVAL_DAMPED_BFGS);
@@ -233,7 +233,7 @@ bfgs_create(BFGS** star,
                               SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
 
   const SLEQP_BFGS_SIZING sizing
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_BFGS_SIZING);
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_BFGS_SIZING);
 
   assert(num > 0);
 

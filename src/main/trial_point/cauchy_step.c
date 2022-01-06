@@ -10,7 +10,7 @@ estimate_dual_values(SleqpTrialPointSolver* solver, SleqpIterate* iterate)
   SleqpOptions* options = solver->options;
 
   SLEQP_DUAL_ESTIMATION_TYPE estimation_type
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE);
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE);
 
   if (estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LSQ)
   {
@@ -311,8 +311,8 @@ sleqp_trial_point_solver_compute_cauchy_step(SleqpTrialPointSolver* solver,
                                              bool* full_step)
 {
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
-    = sleqp_options_int_value(solver->options,
-                              SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+    = sleqp_options_enum_value(solver->options,
+                               SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY);
 
   SleqpTimer* timer = solver->elapsed_timer;
   double time_limit = solver->time_limit;

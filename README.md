@@ -2,15 +2,16 @@
 
 ## Dependencies
 
-For the solution of the linear programming problem, one of the following packages is required:
+For the solution of the linear programming problem, one of the
+following linear programming libraries is required:
 
 * [Gurobi](https://www.gurobi.com/)
 * [HiGHS](https://www.highs.dev/)
 * [SoPlex](https://soplex.zib.de/)
 
-For factorizations, one of the following libraries is required:
+For factorizations, one of the following factorization libraries is required:
 
-* [UMFPACK](http://faculty.cse.tamu.edu/davis/suitesparse.html)
+* [Umfpack](http://faculty.cse.tamu.edu/davis/suitesparse.html)
 * [MUMPS](http://mumps.enseeiht.fr/)
 * [MA27](https://www.hsl.rl.ac.uk/archive/specs/ma27.pdf)
 * [MA57](https://www.hsl.rl.ac.uk/archive/specs/ma57.pdf)
@@ -23,6 +24,10 @@ Additional dependencies:
 Optional dependencies for the python bindings:
 * [Python](https://www.python.org/) itself, including `setuptools`, `numpy`, and `scipy`
 * [Cython](https://cython.org/) to build the extension
+
+Optional dependencies for the mex bindings:
+* [MATLAB](https://www.mathworks.com/products/matlab.html), *or*
+* [Octave](https://www.gnu.org/software/octave/index)
 
 Optional dependencies for the unit tests:
 *  [Check](https://libcheck.github.io/check/)
@@ -45,8 +50,10 @@ Use the following options to customize the build process:
 * `SLEQP_ENABLE_UNIT_TESTS`: Enables the unit tests (default: `On`)
 * `SLEQP_ENABLE_CUTEST`: Enables the CUTest suite (default: `Off`)
 * `SLEQP_ENABLE_PYTHON`: Enables the build of the python bindings (default : `On`)
-* `SLEQP_LPS`: Set to specify a linear programming solver
+* `SLEQP_LPS`: Set to specify a linear programming library
 * `SLEQP_FACT`: Set to specify a factorization library
+* `SLEQP_ENABLE_MATLAB_MEX`: Enables the build of mex bindings using MATLAB (default : `Off`)
+* `SLEQP_ENABLE_OCTAVE_MEX`: Enables the build of mex bindings using Octave (default : `Off`)
 
 ## References
 

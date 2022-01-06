@@ -4,8 +4,9 @@ from enum import Enum
 
 
 class _PropType(Enum):
-  Integer = 0
-  Bool = 1
+  Bool = 0
+  Integer = 1
+  Enumerated = 2
 
 
 class _NullConverter:
@@ -57,7 +58,7 @@ class _Prop:
 
   @staticmethod
   def enumerated(value, enum_type):
-    return _Prop(value, _PropType.Integer, _EnumConverter(enum_type))
+    return _Prop(value, _PropType.Enumerated, _EnumConverter(enum_type))
 
 
 cdef dict opt_prop_map = {
@@ -76,16 +77,16 @@ cdef dict opt_prop_map = {
   # SLEQP_OPTION_INT_FLOAT_ERROR_FLAGS,
 
   # Enumerated properties
-  'deriv_check':          _Prop.enumerated(csleqp.SLEQP_OPTION_INT_DERIV_CHECK, DerivCheck),
-  'hessian_eval':         _Prop.enumerated(csleqp.SLEQP_OPTION_INT_HESS_EVAL, HessianEval),
-  'dual_estimation_type': _Prop.enumerated(csleqp.SLEQP_OPTION_INT_DUAL_ESTIMATION_TYPE, DualEstimationType),
-  'initial_tr_choice':    _Prop.enumerated(csleqp.SLEQP_OPTION_INT_INITIAL_TR_CHOICE, InitialTRChoice),
-  'bfgs_sizing':          _Prop.enumerated(csleqp.SLEQP_OPTION_INT_BFGS_SIZING, Sizing),
-  'tr_solver':            _Prop.enumerated(csleqp.SLEQP_OPTION_INT_TR_SOLVER, TRSolver),
-  'polishing_type':       _Prop.enumerated(csleqp.SLEQP_OPTION_INT_POLISHING_TYPE, PolishingType),
-  'step_rule':            _Prop.enumerated(csleqp.SLEQP_OPTION_INT_STEP_RULE, StepRule),
-  'linesearch':           _Prop.enumerated(csleqp.SLEQP_OPTION_INT_LINESEARCH, LineSearch),
-  'parametric_cauchy':    _Prop.enumerated(csleqp.SLEQP_OPTION_INT_PARAMETRIC_CAUCHY, ParametricCauchy)
+  'deriv_check':          _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_DERIV_CHECK, DerivCheck),
+  'hessian_eval':         _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_HESS_EVAL, HessianEval),
+  'dual_estimation_type': _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE, DualEstimationType),
+  'initial_tr_choice':    _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE, InitialTRChoice),
+  'bfgs_sizing':          _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_BFGS_SIZING, Sizing),
+  'tr_solver':            _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_TR_SOLVER, TRSolver),
+  'polishing_type':       _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_POLISHING_TYPE, PolishingType),
+  'step_rule':            _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_STEP_RULE, StepRule),
+  'linesearch':           _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_LINESEARCH, LineSearch),
+  'parametric_cauchy':    _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY, ParametricCauchy)
 }
 
 cdef class Options:
@@ -120,6 +121,9 @@ cdef class Options:
     if prop.prop_type == _PropType.Integer:
       prop_val = csleqp.sleqp_options_int_value(self.options,
                                                 prop.value)
+    elif prop.prop_type == _PropType.Enumerated:
+      prop_val = csleqp.sleqp_options_enum_value(self.options,
+                                                 prop.value)
     else:
       assert prop.prop_type == _PropType.Bool
 
@@ -136,7 +140,10 @@ cdef class Options:
       csleqp_call(csleqp.sleqp_options_set_int_value(self.options,
                                                      prop.value,
                                                      prop_val))
-
+    elif prop.prop_type == _PropType.Enumerated:
+      csleqp_call(csleqp.sleqp_options_set_enum_value(self.options,
+                                                      prop.value,
+                                                      prop_val))
     else:
       assert prop.prop_type == _PropType.Bool
 

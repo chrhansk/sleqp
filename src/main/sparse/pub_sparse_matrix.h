@@ -139,6 +139,16 @@ SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix, int col);
 
 /**
+ * Copies the given matrix
+ *
+ * @param[in]     source     The source matrix
+ * @param[in,out] target     The target matrix
+ **/
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
+                         SleqpSparseMatrix* target);
+
+/**
  * Increases the reference count of the given matrix
  */
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE

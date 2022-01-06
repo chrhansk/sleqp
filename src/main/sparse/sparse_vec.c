@@ -102,6 +102,31 @@ sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
 }
 
 SLEQP_RETCODE
+sleqp_sparse_vector_fill(SleqpSparseVec* vec, double value)
+{
+  if (value == 0)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_clear(vec));
+
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(sleqp_sparse_vector_reserve(vec, vec->dim));
+
+  SLEQP_CALL(sleqp_sparse_vector_clear(vec));
+
+  for (int k = 0; k < vec->dim; ++k)
+  {
+    vec->data[k]    = value;
+    vec->indices[k] = k;
+  }
+
+  vec->nnz = vec->dim;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
 sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec, double* values)
 {
   for (int i = 0; i < vec->dim; ++i)

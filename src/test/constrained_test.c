@@ -47,9 +47,9 @@ START_TEST(test_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_int_value(
+  ASSERT_CALL(sleqp_options_set_enum_value(
     options,
-    SLEQP_OPTION_INT_DERIV_CHECK,
+    SLEQP_OPTION_ENUM_DERIV_CHECK,
     SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
@@ -80,9 +80,9 @@ START_TEST(test_exact_linesearch)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_LINESEARCH,
-                                          SLEQP_LINESEARCH_EXACT));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_LINESEARCH,
+                                           SLEQP_LINESEARCH_EXACT));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -112,9 +112,9 @@ START_TEST(test_initial_tr_wide)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_INITIAL_TR_CHOICE,
-                                          SLEQP_INITIAL_TR_CHOICE_WIDE));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE,
+                                           SLEQP_INITIAL_TR_CHOICE_WIDE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -144,9 +144,9 @@ START_TEST(test_parametric_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_PARAMETRIC_CAUCHY,
-                                          SLEQP_PARAMETRIC_CAUCHY_COARSE));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY,
+                                           SLEQP_PARAMETRIC_CAUCHY_COARSE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -174,13 +174,13 @@ END_TEST
 
 START_TEST(test_sr1_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_DERIV_CHECK,
-                                          SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+                                           SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_HESS_EVAL,
-                                          SLEQP_HESS_EVAL_SR1));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+                                           SLEQP_HESS_EVAL_SR1));
 
   SleqpSolver* solver;
 
@@ -210,17 +210,17 @@ END_TEST
 
 START_TEST(test_bfgs_solve_no_sizing)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_DERIV_CHECK,
-                                          SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+                                           SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_BFGS_SIZING,
-                                          SLEQP_BFGS_SIZING_NONE));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_BFGS_SIZING,
+                                           SLEQP_BFGS_SIZING_NONE));
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_HESS_EVAL,
-                                          SLEQP_HESS_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+                                           SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   SleqpSolver* solver;
 
@@ -250,13 +250,13 @@ END_TEST
 
 START_TEST(test_bfgs_solve_centered_ol_sizing)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_BFGS_SIZING,
-                                          SLEQP_BFGS_SIZING_CENTERED_OL));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_BFGS_SIZING,
+                                           SLEQP_BFGS_SIZING_CENTERED_OL));
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_HESS_EVAL,
-                                          SLEQP_HESS_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+                                           SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   SleqpSolver* solver;
 
@@ -286,9 +286,9 @@ END_TEST
 
 START_TEST(test_unscaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_DERIV_CHECK,
-                                          SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+                                           SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
@@ -326,9 +326,9 @@ END_TEST
 
 START_TEST(test_scaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(
+  ASSERT_CALL(sleqp_options_set_enum_value(
     options,
-    SLEQP_OPTION_INT_DERIV_CHECK,
+    SLEQP_OPTION_ENUM_DERIV_CHECK,
     SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   SleqpSolver* solver;
@@ -375,17 +375,17 @@ END_TEST
 
 START_TEST(test_scaled_sr1_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_DERIV_CHECK,
-                                          SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+                                           SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
   SleqpScaling* scaling;
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_HESS_EVAL,
-                                          SLEQP_HESS_EVAL_SR1));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+                                           SLEQP_HESS_EVAL_SR1));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    constrained_num_variables,
@@ -427,17 +427,17 @@ END_TEST
 
 START_TEST(test_scaled_bfgs_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_DERIV_CHECK,
-                                          SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+                                           SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 
   SleqpScaling* scaling;
 
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_HESS_EVAL,
-                                          SLEQP_HESS_EVAL_DAMPED_BFGS));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+                                           SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
                                    constrained_num_variables,
@@ -479,9 +479,9 @@ END_TEST
 
 START_TEST(test_auto_scaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_int_value(options,
-                                          SLEQP_OPTION_INT_DERIV_CHECK,
-                                          SLEQP_DERIV_CHECK_FIRST));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+                                           SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
 

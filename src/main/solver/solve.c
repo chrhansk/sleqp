@@ -241,7 +241,8 @@ sleqp_solver_solve(SleqpSolver* solver,
     sleqp_iterate_feasibility_residuum(solver->problem, iterate, &violation));
 
   SLEQP_POLISHING_TYPE polishing_type
-    = sleqp_options_int_value(solver->options, SLEQP_OPTION_INT_POLISHING_TYPE);
+    = sleqp_options_enum_value(solver->options,
+                               SLEQP_OPTION_ENUM_POLISHING_TYPE);
 
   SLEQP_CALL(
     sleqp_polishing_polish(solver->polishing, iterate, polishing_type));

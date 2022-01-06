@@ -147,17 +147,6 @@ sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
                                  const char* name);
 
 /**
- * Copies the given matrix
- *
- * @param[in]     source     The source matrix
- * @param[in,out] target     The target matrix
- **/
-SLEQP_NODISCARD
-SLEQP_RETCODE
-sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
-                         SleqpSparseMatrix* target);
-
-/**
  * Returns whether the given matrix is valid, i.e. whether the
  * number of rows / columns is non-negative, all rows / columns are
  * within their respective bounds and properly ordered.

@@ -71,7 +71,7 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                               num_variables));
 
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_PARAMETRIC_CAUCHY);
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY);
 
   if (parametric_cauchy == SLEQP_PARAMETRIC_CAUCHY_COARSE)
   {

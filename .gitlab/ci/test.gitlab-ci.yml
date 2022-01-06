@@ -68,3 +68,11 @@ test_python:
     when: always
     reports:
       junit: ./bindings/python/python_test_output.xml
+
+test_octave_mex:
+  extends: .test
+  script:
+    - cd build
+    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_ENABLE_OCTAVE_MEX=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
+

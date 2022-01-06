@@ -13,6 +13,7 @@ set(COMMON_SRC
   deriv_check.c
   dual_estimation.c
   dyn.c
+  enum.c
   eqp.c
   factorization/factorization.c
   feas.c

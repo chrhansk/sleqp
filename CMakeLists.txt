@@ -61,6 +61,9 @@ option(SLEQP_GENERATE_COVERAGE "Whether or not to generate coverage" OFF)
 
 option(SLEQP_FORMAT_CODES "Whether or not to enable ANSI format codes" ON)
 
+option(SLEQP_ENABLE_OCTAVE_MEX "Compile with Octave MEX interface." OFF)
+option(SLEQP_ENABLE_MATLAB_MEX "Compile with MATLAB MEX interface." OFF)
+
 # Required for MUMPS
 set(SLEQP_WITH_MPI OFF)
 
@@ -74,6 +77,20 @@ include(SearchLPS)
 include(SearchFact)
 
 find_package(trlib REQUIRED)
+
+find_package(Octave)
+
+if(SLEQP_ENABLE_OCTAVE_MEX AND NOT(Octave_FOUND))
+  message(FATAL_ERROR "Could not find Octave")
+endif()
+
+find_package(Matlab COMPONENTS MAIN_PROGRAM)
+
+if(SLEQP_ENABLE_MATLAB_MEX AND NOT(Matlab_FOUND))
+  message(FATAL_ERROR "Could not find MATLAB")
+endif()
+
+set(SLEQP_ENABLE_MEX ${SLEQP_ENABLE_MATLAB_MEX} OR ${SLEQP_ENABLE_OCTAVE_MEX})
 
 find_package(Check)
 find_package(Threads)
@@ -162,9 +179,7 @@ check_c_source_compiles(
 
 add_subdirectory(src)
 
-if(SLEQP_ENABLE_PYTHON)
-  add_subdirectory(bindings)
-endif()
+add_subdirectory(bindings)
 
 # Coverage
 

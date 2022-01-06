@@ -110,8 +110,8 @@ static SLEQP_RETCODE
 compute_initial_trust_radius(SleqpProblemSolver* solver)
 {
   const SLEQP_INITIAL_TR_CHOICE initial_tr_choice
-    = sleqp_options_int_value(solver->options,
-                              SLEQP_OPTION_INT_INITIAL_TR_CHOICE);
+    = sleqp_options_enum_value(solver->options,
+                               SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE);
 
   const int num_vars         = sleqp_problem_num_vars(solver->problem);
   const double sqrt_num_vars = sqrt((double)num_vars);
