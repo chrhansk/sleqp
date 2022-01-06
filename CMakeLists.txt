@@ -84,7 +84,7 @@ if(SLEQP_ENABLE_OCTAVE_MEX AND NOT(Octave_FOUND))
   message(FATAL_ERROR "Could not find Octave")
 endif()
 
-find_package(Matlab)
+find_package(Matlab COMPONENTS MAIN_PROGRAM)
 
 if(SLEQP_ENABLE_MATLAB_MEX AND NOT(Matlab_FOUND))
   message(FATAL_ERROR "Could not find MATLAB")

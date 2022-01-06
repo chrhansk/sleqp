@@ -106,4 +106,13 @@ if(SLEQP_ENABLE_MATLAB_MEX)
   set_target_properties(sleqp_ext
     PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
+
+  foreach(MATLAB_TEST ${MATLAB_TESTS})
+    get_filename_component(TEST_NAME ${MATLAB_TEST} NAME_WE)
+    add_test(
+      NAME "matlab_${TEST_NAME}"
+      WORKING_DIRECTORY ${MATLAB_TEST_DIR}
+      COMMAND ${CMAKE_COMMAND} -E env MATLABPATH=${MATLAB_OUTPUT_DIR}
+      ${Matlab_MAIN_PROGRAM} -nojvm -batch ${TEST_NAME})
+  endforeach()
 endif()
