@@ -11,6 +11,7 @@ set(MEX_SOURCES
 
 set(MATLAB_OUTPUT_DIR "${CMAKE_BINARY_DIR}/matlab")
 set(SLEQP_MATLAB_OUTPUT_DIR "${MATLAB_OUTPUT_DIR}/+sleqp")
+set(MATLAB_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 set(MATLAB_SOURCES
   sleqp/solve.m
@@ -85,13 +86,13 @@ if(SLEQP_ENABLE_OCTAVE_MEX)
   add_dependencies(build_tests sleqp_mex)
 
   foreach(MATLAB_TEST ${MATLAB_TESTS})
-    get_filename_component(MATLAB_TEST_ABS ${MATLAB_TEST} ABSOLUTE)
     get_filename_component(TEST_NAME ${MATLAB_TEST} NAME_WE)
 
     add_test(
-      NAME "matlab_${TEST_NAME}"
-      WORKING_DIRECTORY ${MATLAB_OUTPUT_DIR}
-      COMMAND ${Octave_EXECUTABLE} ${MATLAB_TEST_ABS})
+      NAME "octave_${TEST_NAME}"
+      WORKING_DIRECTORY ${MATLAB_TEST_DIR}
+      COMMAND ${CMAKE_COMMAND} -E env OCTAVE_PATH=${MATLAB_OUTPUT_DIR}
+      ${Octave_EXECUTABLE} --eval ${TEST_NAME})
   endforeach()
 endif()
 
