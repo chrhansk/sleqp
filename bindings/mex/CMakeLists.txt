@@ -27,6 +27,9 @@ set(MATLAB_TESTS
 
 add_custom_target(sleqp_mex ALL)
 
+add_custom_command(TARGET sleqp_mex
+  PRE_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${SLEQP_MATLAB_OUTPUT_DIR})
+
 add_executable(mex_enum_generator
   gen_enums.c)
 
@@ -57,31 +60,31 @@ foreach(MATLAB_SOURCE ${MATLAB_SOURCES})
 endforeach()
 
 if(SLEQP_ENABLE_OCTAVE_MEX)
-  add_library(sleqp_ext SHARED
+  add_library(sleqp_octave_ext SHARED
     ${MEX_SOURCES})
 
-  set_target_properties(sleqp_ext
+  set_target_properties(sleqp_octave_ext
     PROPERTIES
     PREFIX ""
     OUTPUT_NAME "extension"
     SUFFIX ".mex"
     LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
 
-  target_link_libraries(sleqp_ext
+  target_link_libraries(sleqp_octave_ext
     PRIVATE
     sleqp)
 
-  target_include_directories(sleqp_ext
+  target_include_directories(sleqp_octave_ext
     PRIVATE
     ${Octave_INCLUDE_DIR})
 
-  target_include_directories(sleqp_ext
+  target_include_directories(sleqp_octave_ext
     PRIVATE
     ${SLEQP_LOCAL_HEADER_DIR})
 
-  add_dependencies(sleqp_ext sleqp_local_headers)
+  add_dependencies(sleqp_octave_ext sleqp_local_headers)
 
-  add_dependencies(sleqp_mex sleqp_ext)
+  add_dependencies(sleqp_mex sleqp_octave_ext)
 
   add_dependencies(build_tests sleqp_mex)
 
@@ -98,12 +101,12 @@ endif()
 
 if(SLEQP_ENABLE_MATLAB_MEX)
   matlab_add_mex(
-    NAME sleqp_ext
+    NAME sleqp_matlab_ext
     SRC ${MEX_SOURCES}
     OUTPUT_NAME "extension"
     LINK_TO sleqp)
 
-  set_target_properties(sleqp_ext
+  set_target_properties(sleqp_matlab_ext
     PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
 
@@ -115,4 +118,10 @@ if(SLEQP_ENABLE_MATLAB_MEX)
       COMMAND ${CMAKE_COMMAND} -E env MATLABPATH=${MATLAB_OUTPUT_DIR}
       ${Matlab_MAIN_PROGRAM} -nojvm -batch ${TEST_NAME})
   endforeach()
+
+  add_dependencies(sleqp_matlab_ext sleqp_local_headers)
+
+  add_dependencies(sleqp_mex sleqp_matlab_ext)
+
+  add_dependencies(build_tests sleqp_mex)
 endif()
