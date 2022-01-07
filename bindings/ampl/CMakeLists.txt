@@ -6,7 +6,8 @@ if (COINASL_FOUND)
     ampl_main.c
     ampl_data.c
     ampl_output.c
-    ampl_problem.c)
+    ampl_problem.c
+    ampl_util.c)
 
   link_directories(${COINASL_LIBRARY_DIRS})
   include_directories(${COINASL_INCLUDE_DIRS})

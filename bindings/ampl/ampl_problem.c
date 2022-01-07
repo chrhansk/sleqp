@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "ampl_mem.h"
+#include "ampl_util.h"
 
 #define SLEQP_AMPL_ERROR_CHECK(error)                                          \
   do                                                                           \
@@ -56,12 +57,7 @@ ampl_func_data_create(AmplFuncData** star,
   data->zero_eps  = zero_eps;
   data->jac_nnz   = nzc;
 
-  data->inverted_obj = false;
-
-  if (n_obj > 0 && objtype[obj_no] != 0)
-  {
-    data->inverted_obj = true;
-  }
+  data->inverted_obj = sleqp_ampl_max_problem(asl);
 
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->x, num_variables));
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->cons_vals, num_constraints));
