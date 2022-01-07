@@ -59,7 +59,7 @@ builtin_handler(SLEQP_LOG_LEVEL level, time_t time, const char* message)
 
 static SLEQP_LOG_HANDLER handler = builtin_handler;
 
-void
+SLEQP_EXPORT void
 sleqp_log_msg_level(int level, const char* fmt, ...)
 {
   char message_buf[TOTAL_BUF_SIZE];
