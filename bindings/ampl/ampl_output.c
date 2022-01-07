@@ -1,8 +1,9 @@
 #include "ampl_output.h"
 #include "ampl_mem.h"
+#include "ampl_suffix.h"
 #include "ampl_util.h"
 
-#include <asl.h>
+#include <assert.h>
 
 #define BUF_SIZE 512
 
@@ -19,6 +20,78 @@ enum AMPL_CODE
   AMPL_DEADPOINT  = 500,
   AMPL_UNKNOWN    = 501
 };
+
+// AMPL variable / constraint states,
+// as defined in the sstatus_table
+typedef enum
+{
+  AMPL_STATE_NONE       = 0,
+  AMPL_STATE_BASIC      = 1,
+  AMPL_STATE_SUPERBASIC = 2,
+  AMPL_STATE_LOWER      = 3,
+  AMPL_STATE_UPPER      = 4,
+  AMPL_STATE_EQUAL      = 5,
+  AMPL_STATE_BETWEEN    = 6,
+} AMPL_STATE;
+
+static AMPL_STATE
+map_state(SLEQP_ACTIVE_STATE state)
+{
+  switch (state)
+  {
+  case SLEQP_INACTIVE:
+    return AMPL_STATE_BETWEEN;
+  case SLEQP_ACTIVE_LOWER:
+    return AMPL_STATE_LOWER;
+  case SLEQP_ACTIVE_UPPER:
+    return AMPL_STATE_UPPER;
+  case SLEQP_ACTIVE_BOTH:
+    return AMPL_STATE_EQUAL;
+  }
+
+  assert(0);
+}
+
+static SLEQP_RETCODE
+set_suffixes(SleqpProblem* problem, SleqpSolver* solver, ASL* asl)
+{
+  SufDecl* ampl_suffixes = sleqp_ampl_suffixes();
+
+  int* var_stats;
+  int* cons_stats;
+
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
+
+  SLEQP_CALL(sleqp_ampl_alloc_array(&var_stats, num_vars));
+  SLEQP_CALL(sleqp_ampl_alloc_array(&cons_stats, num_cons));
+
+  SleqpIterate* iterate;
+
+  SLEQP_CALL(sleqp_solver_solution(solver, &iterate));
+
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
+
+  for (int j = 0; j < num_vars; ++j)
+  {
+    var_stats[j] = map_state(sleqp_working_set_var_state(working_set, j));
+  }
+
+  suf_iput(ampl_suffixes[AMPL_SUFFIX_VARSTAT].name,
+           ampl_suffixes[AMPL_SUFFIX_VARSTAT].kind,
+           var_stats);
+
+  for (int i = 0; i < num_cons; ++i)
+  {
+    cons_stats[i] = map_state(sleqp_working_set_cons_state(working_set, i));
+  }
+
+  suf_iput(ampl_suffixes[AMPL_SUFFIX_CONSSTAT].name,
+           ampl_suffixes[AMPL_SUFFIX_CONSSTAT].kind,
+           cons_stats);
+
+  return SLEQP_OKAY;
+}
 
 static SLEQP_RETCODE
 report_with_status_message(SleqpSolver* solver,
@@ -81,7 +154,6 @@ sleqp_ampl_report(SleqpProblem* problem,
                   ASL* asl,
                   Option_Info* option_info)
 {
-
   const int num_vars = sleqp_problem_num_vars(problem);
   const int num_cons = sleqp_problem_num_cons(problem);
 
@@ -108,6 +180,8 @@ sleqp_ampl_report(SleqpProblem* problem,
       cons_dual[i] *= -1.;
     }
   }
+
+  SLEQP_CALL(set_suffixes(problem, solver, asl));
 
   SLEQP_CALL(
     report_with_status_message(solver, asl, option_info, primal, cons_dual));

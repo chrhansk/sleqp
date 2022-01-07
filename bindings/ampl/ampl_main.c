@@ -5,6 +5,7 @@
 #include "ampl_data.h"
 #include "ampl_output.h"
 #include "ampl_problem.h"
+#include "ampl_suffix.h"
 
 keyword keywds[] = {
 
@@ -57,6 +58,8 @@ main(int argc, char* argv[])
     n_var,
     n_con,
     n_con - nlc);
+
+  suf_declare(sleqp_ampl_suffixes(), AMPL_NUM_SUFFIX);
 
   // allocate problem data
   SleqpAmplData* data;
