@@ -1,9 +1,10 @@
-#include "sleqp_ampl_data.h"
-#include "sleqp_ampl_mem.h"
+#include "ampl_data.h"
+#include "ampl_mem.h"
 
 #include <assert.h>
 
-SLEQP_RETCODE map_ampl_inf(double *values, int num_values)
+SLEQP_RETCODE
+map_ampl_inf(double* values, int num_values)
 {
   const double inf = sleqp_infinity();
 
@@ -22,27 +23,27 @@ SLEQP_RETCODE map_ampl_inf(double *values, int num_values)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_ampl_data_create(SleqpAmplData **star,
-                                     ASL *asl)
+SLEQP_RETCODE
+sleqp_ampl_data_create(SleqpAmplData** star, ASL* asl)
 {
 
   SLEQP_CALL(sleqp_ampl_malloc(star));
 
-  SleqpAmplData *data = *star;
+  SleqpAmplData* data = *star;
 
   *data = (SleqpAmplData){0};
 
   data->asl = asl;
 
-  int num_variables = n_var;
+  int num_variables   = n_var;
   int num_constraints = n_con;
-  int num_general = nlc;
-  int num_linear = n_con - nlc;
+  int num_general     = nlc;
+  int num_linear      = n_con - nlc;
 
-  data->num_variables = num_variables;
+  data->num_variables   = num_variables;
   data->num_constraints = num_constraints;
-  data->num_linear = num_linear;
-  data->is_constrained = (num_constraints != 0);
+  data->num_linear      = num_linear;
+  data->is_constrained  = (num_constraints != 0);
 
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->var_lb, num_variables));
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->var_ub, num_variables));
@@ -58,9 +59,10 @@ SLEQP_RETCODE sleqp_ampl_data_create(SleqpAmplData **star,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE sleqp_ampl_data_free(SleqpAmplData **star)
+SLEQP_RETCODE
+sleqp_ampl_data_free(SleqpAmplData** star)
 {
-  SleqpAmplData *data = *star;
+  SleqpAmplData* data = *star;
 
   sleqp_ampl_free(&data->x);
 

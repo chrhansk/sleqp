@@ -1,17 +1,28 @@
-#include "getstub.h"
+#include <getstub.h>
+
 #include "sleqp.h"
 
-#include "sleqp_ampl_data.h"
-#include "sleqp_ampl_problem.h"
+#include "ampl_data.h"
+#include "ampl_output.h"
+#include "ampl_problem.h"
 
 keyword keywds[] = {
 
 };
 
 // Options for sleqp/ampl solver
-static Option_Info Oinfo = {
-    "sleqp", "SLEQP", "sleqp_options", keywds, nkeywds, 1,
-    "SLEQP " SLEQP_LONG_VERSION, NULL, NULL, NULL, keywds, nkeywds};
+static Option_Info Oinfo = {"sleqp",
+                            "SLEQP",
+                            "sleqp_options",
+                            keywds,
+                            nkeywds,
+                            1,
+                            "SLEQP " SLEQP_LONG_VERSION,
+                            NULL,
+                            NULL,
+                            NULL,
+                            keywds,
+                            nkeywds};
 
 int
 main(int argc, char* argv[])
@@ -71,13 +82,17 @@ main(int argc, char* argv[])
 
   SLEQP_CALL(sleqp_solver_create(&solver, problem, params, options, x, NULL));
 
-  const int max_num_iterations = -1;
+  const int max_num_iterations = SLEQP_NONE;
   const double time_limit      = 3600.0;
 
   bool success = true;
 
   SLEQP_RETCODE retcode
     = sleqp_solver_solve(solver, max_num_iterations, time_limit);
+
+  success = (retcode == SLEQP_OKAY);
+
+  SLEQP_CALL(sleqp_ampl_report(problem, solver, asl, &Oinfo));
 
   // free data
   SLEQP_CALL(sleqp_solver_release(&solver));
@@ -124,5 +139,6 @@ main(int argc, char* argv[])
   //
   //
   //
-  //  return success ? EXIT_SUCCESS : EXIT_FAILURE;
+
+  return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -1,44 +1,57 @@
-#include "sleqp_ampl_problem.h"
+#include "ampl_problem.h"
 
 #include <assert.h>
-#include "sleqp_ampl_mem.h"
+
+#include "ampl_mem.h"
 
 typedef struct AmplFuncData
 {
-  SleqpAmplData *ampl_data;
+  SleqpAmplData* ampl_data;
   double zero_eps;
 
-  double *x;
-  double *cons_vals;
-  double *func_grad;
+  double* x;
+  double* cons_vals;
+  double* func_grad;
 
-  double *direction;
-  double *multipliers;
-  double *hessian_product;
+  double* direction;
+  double* multipliers;
+  double* hessian_product;
 
   int jac_nnz;
 
-  int *jac_rows;
-  int *jac_cols;
-  double *jac_vals;
+  int* jac_rows;
+  int* jac_cols;
+  double* jac_vals;
+
+  bool inverted_obj;
 
 } AmplFuncData;
 
-static SLEQP_RETCODE ampl_func_data_create(AmplFuncData **star,
-                                           SleqpAmplData *ampl_data,
-                                           double zero_eps)
+static SLEQP_RETCODE
+ampl_func_data_create(AmplFuncData** star,
+                      SleqpAmplData* ampl_data,
+                      double zero_eps)
 {
-  ASL *asl = ampl_data->asl;
+  ASL* asl = ampl_data->asl;
   SLEQP_CALL(sleqp_ampl_malloc(star));
 
-  const int num_variables = ampl_data->num_variables;
+  AmplFuncData* data = *star;
+
+  *data = (AmplFuncData){0};
+
+  const int num_variables   = ampl_data->num_variables;
   const int num_constraints = ampl_data->num_constraints;
 
-  AmplFuncData *data = *star;
-
   data->ampl_data = ampl_data;
-  data->zero_eps = zero_eps;
-  data->jac_nnz = nzc;
+  data->zero_eps  = zero_eps;
+  data->jac_nnz   = nzc;
+
+  data->inverted_obj = false;
+
+  if (n_obj > 0 && objtype[obj_no] != 0)
+  {
+    data->inverted_obj = true;
+  }
 
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->x, num_variables));
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->cons_vals, num_constraints));
@@ -53,9 +66,9 @@ static SLEQP_RETCODE ampl_func_data_create(AmplFuncData **star,
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->jac_cols, data->jac_nnz));
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->jac_vals, data->jac_nnz));
 
-  for (int i = 0; i < data->ampl_data->num_constraints; ++i)
+  for (int i = 0; i < num_constraints; ++i)
   {
-    for (cgrad *cg = Cgrad[i]; cg; cg = cg->next)
+    for (cgrad* cg = Cgrad[i]; cg; cg = cg->next)
     {
       data->jac_rows[cg->goff] = i;
       data->jac_cols[cg->goff] = cg->varno;
@@ -65,10 +78,11 @@ static SLEQP_RETCODE ampl_func_data_create(AmplFuncData **star,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ampl_func_data_free(void *func_data)
+static SLEQP_RETCODE
+ampl_func_data_free(void* func_data)
 {
-  AmplFuncData *data = (AmplFuncData *)func_data;
-  AmplFuncData **star = &data;
+  AmplFuncData* data  = (AmplFuncData*)func_data;
+  AmplFuncData** star = &data;
 
   sleqp_ampl_free(&data->jac_vals);
   sleqp_ampl_free(&data->jac_cols);
@@ -87,16 +101,16 @@ static SLEQP_RETCODE ampl_func_data_free(void *func_data)
 }
 
 static SLEQP_RETCODE
-ampl_func_set(SleqpFunc *func,
-              SleqpSparseVec *x,
+ampl_func_set(SleqpFunc* func,
+              SleqpSparseVec* x,
               SLEQP_VALUE_REASON reason,
-              bool *reject,
-              int *func_grad_nnz,
-              int *cons_val_nnz,
-              int *cons_jac_nnz,
-              void *func_data)
+              bool* reject,
+              int* func_grad_nnz,
+              int* cons_val_nnz,
+              int* cons_jac_nnz,
+              void* func_data)
 {
-  AmplFuncData *data = (AmplFuncData *)func_data;
+  AmplFuncData* data = (AmplFuncData*)func_data;
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->x));
 
@@ -117,6 +131,11 @@ ampl_obj_val(SleqpFunc* func, double* func_val, void* func_data)
   int nerror = 0;
   *func_val  = objval(0, data->x, &nerror);
 
+  if (data->inverted_obj)
+  {
+    *func_val *= -1.;
+  }
+
   return SLEQP_OKAY;
 }
 
@@ -134,16 +153,22 @@ ampl_obj_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
                                           data->ampl_data->num_variables,
                                           data->zero_eps));
 
+  if (data->inverted_obj)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_scale(func_grad, -1.));
+  }
+
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE ampl_cons_val(SleqpFunc *func,
-                                   const SleqpSparseVec *cons_indices,
-                                   SleqpSparseVec *cons_val,
-                                   void *func_data)
+static SLEQP_RETCODE
+ampl_cons_val(SleqpFunc* func,
+              const SleqpSparseVec* cons_indices,
+              SleqpSparseVec* cons_val,
+              void* func_data)
 {
-  AmplFuncData *data = (AmplFuncData *)func_data;
-  ASL *asl = data->ampl_data->asl;
+  AmplFuncData* data = (AmplFuncData*)func_data;
+  ASL* asl           = data->ampl_data->asl;
 
   int nerror = 0;
   conval(data->x, data->cons_vals, &nerror);
@@ -168,8 +193,7 @@ ampl_cons_jac(SleqpFunc* func,
   int nerror = 0;
   jacval(data->x, data->jac_vals, &nerror);
 
-  const int num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
-  int last_col       = 0;
+  int last_col = 0;
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, data->jac_nnz));
 
@@ -206,16 +230,33 @@ ampl_func_hess_product(SleqpFunc* func,
   SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, data->direction));
   SLEQP_CALL(sleqp_sparse_vector_to_raw(cons_duals, data->multipliers));
 
+  if (data->inverted_obj)
+  {
+    const int num_cons = sleqp_func_num_cons(func);
+
+    for (int i = 0; i < num_cons; ++i)
+    {
+      data->multipliers[i] *= -1.;
+    }
+  }
+
+  double objective_dual = obj_dual ? (*obj_dual) : 0.;
+
   hvcomp(data->hessian_product,
          data->direction,
          0,
-         obj_dual,
+         &objective_dual,
          data->multipliers);
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(product,
                                           data->hessian_product,
                                           data->ampl_data->num_variables,
                                           data->zero_eps));
+
+  if (data->inverted_obj)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_scale(product, -1.));
+  }
 
   return SLEQP_OKAY;
 }
