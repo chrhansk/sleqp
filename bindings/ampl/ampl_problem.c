@@ -4,6 +4,16 @@
 
 #include "ampl_mem.h"
 
+#define SLEQP_AMPL_ERROR_CHECK(error)                                          \
+  do                                                                           \
+  {                                                                            \
+    if (error)                                                                 \
+    {                                                                          \
+      sleqp_log_error("Encountered error during evaluation:");                 \
+      return SLEQP_INTERNAL_ERROR;                                             \
+    }                                                                          \
+  } while (false)
+
 typedef struct AmplFuncData
 {
   SleqpAmplData* ampl_data;
@@ -128,8 +138,10 @@ ampl_obj_val(SleqpFunc* func, double* func_val, void* func_data)
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
 
-  int nerror = 0;
-  *func_val  = objval(0, data->x, &nerror);
+  fint nerror = 0;
+  *func_val   = objval(0, data->x, &nerror);
+
+  SLEQP_AMPL_ERROR_CHECK(nerror);
 
   if (data->inverted_obj)
   {
@@ -145,8 +157,10 @@ ampl_obj_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
 
-  int nerror = 0;
+  fint nerror = 0;
   objgrd(0, data->x, data->func_grad, &nerror);
+
+  SLEQP_AMPL_ERROR_CHECK(nerror);
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(func_grad,
                                           data->func_grad,
@@ -170,8 +184,10 @@ ampl_cons_val(SleqpFunc* func,
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
 
-  int nerror = 0;
+  fint nerror = 0;
   conval(data->x, data->cons_vals, &nerror);
+
+  SLEQP_AMPL_ERROR_CHECK(nerror);
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_val,
                                           data->cons_vals,
@@ -190,8 +206,10 @@ ampl_cons_jac(SleqpFunc* func,
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
 
-  int nerror = 0;
+  fint nerror = 0;
   jacval(data->x, data->jac_vals, &nerror);
+
+  SLEQP_AMPL_ERROR_CHECK(nerror);
 
   int last_col = 0;
 
