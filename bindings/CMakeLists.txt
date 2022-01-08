@@ -1,4 +1,6 @@
-add_subdirectory(ampl)
+if(SLEQP_ENABLE_AMPL)
+  add_subdirectory(ampl)
+endif()
 
 if(SLEQP_ENABLE_MEX)
   add_subdirectory(mex)

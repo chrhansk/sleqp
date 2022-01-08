@@ -64,6 +64,8 @@ option(SLEQP_FORMAT_CODES "Whether or not to enable ANSI format codes" ON)
 option(SLEQP_ENABLE_OCTAVE_MEX "Compile with Octave MEX interface." OFF)
 option(SLEQP_ENABLE_MATLAB_MEX "Compile with MATLAB MEX interface." OFF)
 
+option(SLEQP_ENABLE_AMPL "Compile with AMPL interface." OFF)
+
 # Required for MUMPS
 set(SLEQP_WITH_MPI OFF)
 
@@ -71,6 +73,8 @@ set(SLEQP_LPS ""
   CACHE STRING "The LP solver used as a backend")
 
 # Find all packages
+
+find_package(PkgConfig)
 
 include(SearchLPS)
 
@@ -91,6 +95,12 @@ if(SLEQP_ENABLE_MATLAB_MEX AND NOT(Matlab_FOUND))
 endif()
 
 set(SLEQP_ENABLE_MEX ${SLEQP_ENABLE_MATLAB_MEX} OR ${SLEQP_ENABLE_OCTAVE_MEX})
+
+pkg_check_modules(COINASL coinasl)
+
+if(SLEQP_ENABLE_AMPL AND NOT(COINASL_FOUND))
+  message(FATAL_ERROR "Could not find ASL")
+endif()
 
 find_package(Check)
 find_package(Threads)
