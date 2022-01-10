@@ -101,6 +101,7 @@ report_with_status_message(SleqpSolver* solver,
                            double* cons_dual)
 {
   char message[BUF_SIZE];
+  char sol_val[BUF_SIZE];
   const char* status_message = NULL;
 
   SLEQP_STATUS status = sleqp_solver_status(solver);
@@ -137,11 +138,32 @@ report_with_status_message(SleqpSolver* solver,
     break;
   }
 
+  if (solve_result_num == AMPL_UNKNOWN)
+  {
+    snprintf(sol_val, BUF_SIZE, "");
+  }
+  else
+  {
+    SleqpIterate* iterate;
+
+    SLEQP_CALL(sleqp_solver_solution(solver, &iterate));
+
+    const int iterations = sleqp_solver_iterations(solver);
+
+    snprintf(sol_val,
+             BUF_SIZE,
+             ", objective: %.*g, iterations: %d",
+             obj_prec(),
+             sleqp_iterate_obj_val(iterate),
+             iterations);
+  }
+
   snprintf(message,
            BUF_SIZE,
-           "%s: %s",
+           "%s: %s%s",
            "SLEQP " SLEQP_LONG_VERSION,
-           status_message);
+           status_message,
+           sol_val);
 
   write_sol(message, primal, cons_dual, option_info);
 
