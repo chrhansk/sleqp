@@ -112,42 +112,6 @@ main(int argc, char* argv[])
 
   SLEQP_CALL(sleqp_params_release(&params));
   SLEQP_CALL(sleqp_options_release(&options));
-  //  if(!cutest_options->enable_logging)
-  //  {
-  //    sleqp_log_set_level(SLEQP_LOG_ERROR);
-  //  }
-  //
-  //  if(cutest_options->max_num_threads != SLEQP_NONE)
-  //  {
-  //    SLEQP_CALL(sleqp_options_set_int(options,
-  //                                     SLEQP_OPTION_INT_NUM_THREADS,
-  //                                     cutest_options->max_num_threads));
-  //  }
-  //
-  //  /*
-  //  const int max_num_iterations = -1;
-  //  const double time_limit = cutest_options->time_limit;
-  //
-  //  SLEQP_RETCODE retcode = sleqp_solver_solve(solver,
-  //                                             max_num_iterations,
-  //                                             time_limit);
-  //
-  //  if(retcode == SLEQP_OKAY)
-  //  {
-  //    SLEQP_CALL(report_result(solver, problem, probname, output));
-  //
-  //    SLEQP_STATUS status = sleqp_solver_get_status(solver);
-  //  }
-  //  else
-  //  {
-  //    sleqp_log_error("Failed to solve problem %s", probname);
-  //    success = false;
-  //  }
-  //
-  //  /**/
-  //
-  //
-  //
 
   return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }

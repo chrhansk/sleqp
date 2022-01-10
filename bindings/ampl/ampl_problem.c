@@ -35,6 +35,7 @@ typedef struct AmplFuncData
   double* jac_vals;
 
   bool inverted_obj;
+  double offset;
 
 } AmplFuncData;
 
@@ -58,6 +59,15 @@ ampl_func_data_create(AmplFuncData** star,
   data->jac_nnz   = nzc;
 
   data->inverted_obj = sleqp_ampl_max_problem(asl);
+
+  if (n_obj > 0)
+  {
+    data->offset = objconst(0);
+  }
+  else
+  {
+    data->offset = 0.;
+  }
 
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->x, num_variables));
   SLEQP_CALL(sleqp_ampl_alloc_array(&data->cons_vals, num_constraints));
@@ -138,6 +148,8 @@ ampl_obj_val(SleqpFunc* func, double* func_val, void* func_data)
   *func_val   = objval(0, data->x, &nerror);
 
   SLEQP_AMPL_ERROR_CHECK(nerror);
+
+  *func_val += data->offset;
 
   if (data->inverted_obj)
   {
