@@ -8,11 +8,20 @@ typedef struct
   {
     SleqpOptions* options;
     SleqpParams* params;
+    SleqpAmplKeywords* keywords;
   } opt_params;
 
   int index;
 
 } CallbackData;
+
+enum
+{
+  ITER_LIMIT,
+  TIME_LIMIT,
+  LOG_LEVEL,
+  NUM_EXTRA
+};
 
 typedef enum
 {
@@ -20,7 +29,8 @@ typedef enum
   POS_INT           = SLEQP_NUM_ENUM_OPTIONS,
   POS_BOOL          = POS_INT + SLEQP_NUM_INT_OPTIONS,
   POS_PAR           = POS_BOOL + SLEQP_NUM_BOOL_OPTIONS,
-  AMPL_NUM_KEYWORDS = POS_PAR + SLEQP_NUM_PARAMS
+  POS_EXTRA         = POS_PAR + SLEQP_NUM_PARAMS,
+  AMPL_NUM_KEYWORDS = POS_EXTRA + NUM_EXTRA
 } AMPL_KEYWORDS;
 
 static char*
@@ -131,6 +141,99 @@ kwdfunc_param(Option_Info* oi, keyword* kw, char* value)
   return retval;
 }
 
+struct SleqpAmplKeywords
+{
+  SleqpOptions* options;
+  SleqpParams* params;
+
+  CallbackData callback_data[AMPL_NUM_KEYWORDS];
+  keyword keywds[AMPL_NUM_KEYWORDS];
+
+  double time_limit;
+  int iteration_limit;
+};
+
+static char*
+kwdfunc_iterlimit(Option_Info* oi, keyword* kw, char* value)
+{
+  sleqp_log_debug("Inside kwdfunc_iterlimit, kw: %s, value as char: '%s'",
+                  kw->name,
+                  value);
+
+  CallbackData* callback_data = (CallbackData*)kw->info;
+
+  int int_val;
+  kw->info = &int_val;
+
+  char* retval = I_val(oi, kw, value);
+
+  if (int_val != SLEQP_NONE)
+  {
+    if (int_val < 0)
+    {
+      return badval_ASL(oi, kw, value, retval);
+    }
+
+    callback_data->opt_params.keywords->iteration_limit = int_val;
+  }
+
+  return retval;
+}
+
+static char*
+kwdfunc_timelimit(Option_Info* oi, keyword* kw, char* value)
+{
+  sleqp_log_debug("Inside kwdfunc_timelimit, kw: %s, value as char: '%s'",
+                  kw->name,
+                  value);
+
+  CallbackData* callback_data = (CallbackData*)kw->info;
+
+  double real_val;
+  kw->info = &real_val;
+
+  char* retval = D_val(oi, kw, value);
+
+  if (real_val != SLEQP_NONE)
+  {
+    if (real_val < 0)
+    {
+      return badval_ASL(oi, kw, value, retval);
+    }
+
+    callback_data->opt_params.keywords->time_limit = real_val;
+  }
+
+  return retval;
+}
+
+static char*
+kwdfunc_log_level(Option_Info* oi, keyword* kw, char* value)
+{
+  sleqp_log_debug("Inside kwdfunc_log_level, kw: %s, value as char: '%s'",
+                  kw->name,
+                  value);
+
+  CallbackData* callback_data = (CallbackData*)kw->info;
+
+  int int_val;
+  kw->info = &int_val;
+
+  char* retval = I_val(oi, kw, value);
+
+  if (int_val != SLEQP_NONE)
+  {
+    if (int_val < SLEQP_LOG_SILENT || int_val > SLEQP_LOG_DEBUG)
+    {
+      return badval_ASL(oi, kw, value, retval);
+    }
+
+    sleqp_log_set_level(int_val);
+  }
+
+  return retval;
+}
+
 static int
 compare_kwds(const void* first, const void* second)
 {
@@ -138,11 +241,13 @@ compare_kwds(const void* first, const void* second)
 }
 
 static SLEQP_RETCODE
-keywords_fill(SleqpOptions* options,
+keywords_fill(SleqpAmplKeywords* ampl_keywords,
+              SleqpOptions* options,
               SleqpParams* params,
-              keyword* kwds,
-              CallbackData* callback_data)
+              keyword* kwds)
 {
+  CallbackData* callback_data = ampl_keywords->callback_data;
+
   int pos = POS_ENUM;
 
   for (; pos < POS_INT; ++pos)
@@ -179,7 +284,7 @@ keywords_fill(SleqpOptions* options,
                   .desc = "Description"};
   }
 
-  for (; pos < AMPL_NUM_KEYWORDS; ++pos)
+  for (; pos < POS_EXTRA; ++pos)
   {
     callback_data[pos]
       = (CallbackData){.opt_params.params = params, .index = pos - POS_PAR};
@@ -190,20 +295,47 @@ keywords_fill(SleqpOptions* options,
                           .desc = "Description"};
   }
 
+  {
+    pos = POS_EXTRA + ITER_LIMIT;
+
+    callback_data[pos]
+      = (CallbackData){.opt_params.keywords = ampl_keywords, .index = 0};
+
+    kwds[pos] = (keyword){.name = "max_iter",
+                          .kf   = kwdfunc_iterlimit,
+                          .info = callback_data + pos,
+                          .desc = "Maximum number of iterations"};
+  }
+
+  {
+    pos = POS_EXTRA + TIME_LIMIT;
+
+    callback_data[pos]
+      = (CallbackData){.opt_params.keywords = ampl_keywords, .index = 0};
+
+    kwds[pos] = (keyword){.name = "max_wall_time",
+                          .kf   = kwdfunc_timelimit,
+                          .info = callback_data + pos,
+                          .desc = "Wallclock time limit"};
+  }
+
+  {
+    pos = POS_EXTRA + LOG_LEVEL;
+
+    callback_data[pos]
+      = (CallbackData){.opt_params.keywords = ampl_keywords, .index = 0};
+
+    kwds[pos] = (keyword){.name = "print_level",
+                          .kf   = kwdfunc_log_level,
+                          .info = callback_data + pos,
+                          .desc = "Verbosity level"};
+  }
+
   // Keywords must be sorted alphabetically
   qsort(kwds, AMPL_NUM_KEYWORDS, sizeof(keyword), compare_kwds);
 
   return SLEQP_OKAY;
 }
-
-struct SleqpAmplKeywords
-{
-  SleqpOptions* options;
-  SleqpParams* params;
-
-  CallbackData callback_data[AMPL_NUM_KEYWORDS];
-  keyword keywds[AMPL_NUM_KEYWORDS];
-};
 
 SLEQP_RETCODE
 sleqp_ampl_keywords_create(SleqpAmplKeywords** star,
@@ -212,20 +344,35 @@ sleqp_ampl_keywords_create(SleqpAmplKeywords** star,
 {
   SLEQP_CALL(sleqp_ampl_malloc(star));
 
-  SleqpAmplKeywords* sleqp_keywords = *star;
+  SleqpAmplKeywords* ampl_keywords = *star;
+
+  (*ampl_keywords) = (SleqpAmplKeywords){0};
+
+  ampl_keywords->time_limit      = SLEQP_NONE;
+  ampl_keywords->iteration_limit = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_options_capture(options));
-  sleqp_keywords->options = options;
+  ampl_keywords->options = options;
 
   SLEQP_CALL(sleqp_params_capture(params));
-  sleqp_keywords->params = params;
+  ampl_keywords->params = params;
 
-  SLEQP_CALL(keywords_fill(options,
-                           params,
-                           sleqp_keywords->keywds,
-                           sleqp_keywords->callback_data));
+  SLEQP_CALL(
+    keywords_fill(ampl_keywords, options, params, ampl_keywords->keywds));
 
   return SLEQP_OKAY;
+}
+
+double
+sleqp_ampl_keywords_iter_limit(SleqpAmplKeywords* ampl_keywords)
+{
+  return ampl_keywords->iteration_limit;
+}
+
+double
+sleqp_ampl_keywords_time_limit(SleqpAmplKeywords* ampl_keywords)
+{
+  return ampl_keywords->time_limit;
 }
 
 SLEQP_RETCODE

@@ -90,13 +90,12 @@ main(int argc, char* argv[])
 
   SLEQP_CALL(sleqp_solver_create(&solver, problem, params, options, x, NULL));
 
-  const int max_num_iterations = SLEQP_NONE;
-  const double time_limit      = 3600.0;
+  const int iter_limit    = sleqp_ampl_keywords_iter_limit(ampl_keywords);
+  const double time_limit = sleqp_ampl_keywords_time_limit(ampl_keywords);
 
   bool success = true;
 
-  SLEQP_RETCODE retcode
-    = sleqp_solver_solve(solver, max_num_iterations, time_limit);
+  SLEQP_RETCODE retcode = sleqp_solver_solve(solver, iter_limit, time_limit);
 
   success = (retcode == SLEQP_OKAY);
 
