@@ -17,9 +17,11 @@ typedef struct
 
 enum
 {
-  ITER_LIMIT,
+  ITER_LIMIT_MAXITER,
+  ITER_LIMIT_MAXIT,
   TIME_LIMIT,
-  LOG_LEVEL,
+  LOG_LEVEL_PRINT_LEVEL,
+  LOG_LEVEL_OUTLEV,
   NUM_EXTRA
 };
 
@@ -214,8 +216,6 @@ kwdfunc_log_level(Option_Info* oi, keyword* kw, char* value)
                   kw->name,
                   value);
 
-  CallbackData* callback_data = (CallbackData*)kw->info;
-
   int int_val;
   kw->info = &int_val;
 
@@ -295,11 +295,14 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
                           .desc = "Description"};
   }
 
+  for (pos = POS_EXTRA; pos < AMPL_NUM_KEYWORDS; ++pos)
   {
-    pos = POS_EXTRA + ITER_LIMIT;
-
     callback_data[pos]
       = (CallbackData){.opt_params.keywords = ampl_keywords, .index = 0};
+  }
+
+  {
+    pos = POS_EXTRA + ITER_LIMIT_MAXITER;
 
     kwds[pos] = (keyword){.name = "max_iter",
                           .kf   = kwdfunc_iterlimit,
@@ -308,10 +311,16 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
   }
 
   {
-    pos = POS_EXTRA + TIME_LIMIT;
+    pos = POS_EXTRA + ITER_LIMIT_MAXIT;
 
-    callback_data[pos]
-      = (CallbackData){.opt_params.keywords = ampl_keywords, .index = 0};
+    kwds[pos] = (keyword){.name = "maxit",
+                          .kf   = kwdfunc_iterlimit,
+                          .info = callback_data + pos,
+                          .desc = "Alias for 'max_iter'"};
+  }
+
+  {
+    pos = POS_EXTRA + TIME_LIMIT;
 
     kwds[pos] = (keyword){.name = "max_wall_time",
                           .kf   = kwdfunc_timelimit,
@@ -320,15 +329,21 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
   }
 
   {
-    pos = POS_EXTRA + LOG_LEVEL;
-
-    callback_data[pos]
-      = (CallbackData){.opt_params.keywords = ampl_keywords, .index = 0};
+    pos = POS_EXTRA + LOG_LEVEL_PRINT_LEVEL;
 
     kwds[pos] = (keyword){.name = "print_level",
                           .kf   = kwdfunc_log_level,
-                          .info = callback_data + pos,
+                          .info = NULL,
                           .desc = "Verbosity level"};
+  }
+
+  {
+    pos = POS_EXTRA + LOG_LEVEL_OUTLEV;
+
+    kwds[pos] = (keyword){.name = "outlev",
+                          .kf   = kwdfunc_log_level,
+                          .info = NULL,
+                          .desc = "Alias for 'print_level'"};
   }
 
   // Keywords must be sorted alphabetically
