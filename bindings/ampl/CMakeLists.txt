@@ -27,3 +27,7 @@ target_link_libraries(sleqp_ampl
 set_target_properties(sleqp_ampl
   PROPERTIES
   OUTPUT_NAME sleqp)
+
+install(TARGETS sleqp_ampl
+  DESTINATION bin
+  COMPONENT "ampl")
