@@ -3,31 +3,20 @@
 #include "sleqp.h"
 
 #include "ampl_data.h"
+#include "ampl_keywords.h"
 #include "ampl_output.h"
 #include "ampl_problem.h"
 #include "ampl_suffix.h"
 
-keyword keywds[] = {
-
-};
-
-// Options for sleqp/ampl solver
-static Option_Info Oinfo = {"sleqp",
-                            "SLEQP",
-                            "sleqp_options",
-                            keywds,
-                            nkeywds,
-                            1,
-                            "SLEQP " SLEQP_LONG_VERSION,
-                            NULL,
-                            NULL,
-                            NULL,
-                            keywds,
-                            nkeywds};
-
 int
 main(int argc, char* argv[])
 {
+  SleqpOptions* options;
+  SleqpParams* params;
+
+  SLEQP_CALL(sleqp_options_create(&options));
+  SLEQP_CALL(sleqp_params_create(&params));
+
   ASL* asl;
   // allocate ASL
   asl = ASL_alloc(ASL_read_pfgh);
@@ -38,8 +27,31 @@ main(int argc, char* argv[])
   obj_no      = 0;
   want_derivs = 1;
 
+  SleqpAmplKeywords* ampl_keywords;
+
+  SLEQP_CALL(sleqp_ampl_keywords_create(&ampl_keywords, options, params));
+
+  keyword* keywords;
+  int num_keywords;
+
+  SLEQP_CALL(sleqp_ampl_keywords_get(ampl_keywords, &keywords, &num_keywords));
+
+  Option_Info Oinfo = {"sleqp",
+                       "SLEQP",
+                       "sleqp_options",
+                       keywords,
+                       num_keywords,
+                       1,
+                       "SLEQP " SLEQP_LONG_VERSION,
+                       NULL,
+                       NULL,
+                       NULL,
+                       keywords,
+                       num_keywords};
+
   // get stub, options
   char* stub = getstops(argv, &Oinfo);
+
   if (stub == NULL)
   {
     sleqp_log_error("Failed to open nl stub.");
@@ -65,19 +77,12 @@ main(int argc, char* argv[])
   SleqpAmplData* data;
   SLEQP_CALL(sleqp_ampl_data_create(&data, asl));
 
-  SleqpParams* params;
-
-  SLEQP_CALL(sleqp_params_create(&params));
-
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpOptions* options;
   SleqpProblem* problem;
   SleqpSolver* solver;
 
   SLEQP_CALL(sleqp_ampl_problem_create(&problem, data, nl, params));
-
-  SLEQP_CALL(sleqp_options_create(&options));
 
   SleqpSparseVec* x;
   SLEQP_CALL(sleqp_sparse_vector_create(&x, n_var, 0));
@@ -99,13 +104,15 @@ main(int argc, char* argv[])
 
   // free data
   SLEQP_CALL(sleqp_solver_release(&solver));
-  SLEQP_CALL(sleqp_options_release(&options));
   SLEQP_CALL(sleqp_problem_release(&problem));
   SLEQP_CALL(sleqp_sparse_vector_free(&x));
-  SLEQP_CALL(sleqp_params_release(&params));
   ASL_free(&asl);
   SLEQP_CALL(sleqp_ampl_data_free(&data));
 
+  SLEQP_CALL(sleqp_ampl_keywords_free(&ampl_keywords));
+
+  SLEQP_CALL(sleqp_params_release(&params));
+  SLEQP_CALL(sleqp_options_release(&options));
   //  if(!cutest_options->enable_logging)
   //  {
   //    sleqp_log_set_level(SLEQP_LOG_ERROR);

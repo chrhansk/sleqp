@@ -55,6 +55,60 @@ struct SleqpOptions
   SLEQP_TR_SOLVER tr_solver;
 };
 
+const char* enum_option_names[SLEQP_NUM_ENUM_OPTIONS] = {
+  [SLEQP_OPTION_ENUM_DERIV_CHECK]          = "deriv_check",
+  [SLEQP_OPTION_ENUM_HESS_EVAL]            = "hess_eval",
+  [SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE] = "dual_estimation_type",
+  [SLEQP_OPTION_ENUM_FLOAT_WARNING_FLAGS]  = "float_warning_flags",
+  [SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS]    = "float_error_flags",
+  [SLEQP_OPTION_ENUM_BFGS_SIZING]          = "bfgs_sizing",
+  [SLEQP_OPTION_ENUM_TR_SOLVER]            = "tr_solver",
+  [SLEQP_OPTION_ENUM_POLISHING_TYPE]       = "polishing_type",
+  [SLEQP_OPTION_ENUM_STEP_RULE]            = "step_rule",
+  [SLEQP_OPTION_ENUM_LINESEARCH]           = "linesearch",
+  [SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY]    = "parametric_cauchy",
+  [SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE]    = "initial_tr_choice",
+};
+
+const char*
+sleqp_options_enum_name(SLEQP_OPTION_ENUM option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_ENUM_OPTIONS);
+  return enum_option_names[option];
+}
+
+const char* int_option_names[SLEQP_NUM_INT_OPTIONS] = {
+  [SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES] = "num_quasi_newton_iterates",
+  [SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS]     = "max_newton_iterations",
+  [SLEQP_OPTION_INT_NUM_THREADS]               = "num_threads",
+};
+
+const char*
+sleqp_options_int_name(SLEQP_OPTION_INT option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_INT_OPTIONS);
+  return int_option_names[option];
+}
+
+const char* bool_option_names[SLEQP_NUM_BOOL_OPTIONS] = {
+  [SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]      = "perform_newton_step",
+  [SLEQP_OPTION_BOOL_PERFORM_SOC]              = "perform_soc",
+  [SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL]      = "use_quadratic_model",
+  [SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP]     = "always_warm_start_lp",
+  [SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE] = "enable_restoration_phase",
+  [SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR]      = "enable_preprocessor",
+};
+
+const char*
+sleqp_options_bool_name(SLEQP_OPTION_BOOL option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_BOOL_OPTIONS);
+  return bool_option_names[option];
+}
+
 SLEQP_RETCODE
 sleqp_options_create(SleqpOptions** star)
 {

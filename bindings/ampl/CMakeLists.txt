@@ -1,6 +1,7 @@
 add_executable(sleqp_ampl
   ampl_main.c
   ampl_data.c
+  ampl_keywords.c
   ampl_output.c
   ampl_problem.c
   ampl_suffix.c

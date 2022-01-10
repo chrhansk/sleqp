@@ -34,6 +34,9 @@ typedef struct SleqpParams SleqpParams;
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_params_create(SleqpParams** star);
 
+SLEQP_EXPORT const char*
+sleqp_params_name(SLEQP_PARAM param);
+
 SLEQP_EXPORT double
 sleqp_params_value(const SleqpParams* params, SLEQP_PARAM param);
 

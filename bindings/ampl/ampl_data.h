@@ -1,5 +1,5 @@
-#ifndef SLEQP_AMPL
-#define SLEQP_AMPL
+#ifndef SLEQP_AMPL_DATA_H
+#define SLEQP_AMPL_DATA_H
 
 #include <asl.h>
 

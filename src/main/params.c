@@ -34,6 +34,32 @@ struct SleqpParams
 
 #define DEADPOINT_BOUND_DEFAULT 1e-12
 
+const char* param_names[SLEQP_NUM_PARAMS] = {
+  [SLEQP_PARAM_ZERO_EPS]           = "zero_eps",
+  [SLEQP_PARAM_EPS]                = "eps",
+  [SLEQP_PARAM_OBJ_LOWER]          = "obj_lower",
+  [SLEQP_PARAM_DERIV_PERTURBATION] = "deriv_perturbation",
+  [SLEQP_PARAM_DERIV_TOL]          = "deriv_tol",
+  [SLEQP_PARAM_CAUCHY_TAU]         = "cauchy_tau",
+  [SLEQP_PARAM_CAUCHY_ETA]         = "cauchy_eta",
+  [SLEQP_PARAM_LINESEARCH_TAU]     = "linesearch_tau",
+  [SLEQP_PARAM_LINESEARCH_ETA]     = "linesearch_eta",
+  [SLEQP_PARAM_LINESEARCH_CUTOFF]  = "linesearch_cutoff",
+  [SLEQP_PARAM_FEASIBILITY_TOL]    = "feasibility_tol",
+  [SLEQP_PARAM_SLACKNESS_TOL]      = "slackness_tol",
+  [SLEQP_PARAM_STATIONARITY_TOL]   = "stationarity_tol",
+  [SLEQP_PARAM_ACCEPTED_REDUCTION] = "accepted_reduction",
+  [SLEQP_PARAM_DEADPOINT_BOUND]    = "deadpoint_bound",
+};
+
+SLEQP_EXPORT const char*
+sleqp_params_name(SLEQP_PARAM param)
+{
+  assert(param >= 0);
+  assert(param < SLEQP_NUM_PARAMS);
+  return param_names[param];
+}
+
 SLEQP_RETCODE
 sleqp_params_create(SleqpParams** star)
 {
