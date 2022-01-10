@@ -22,6 +22,7 @@ enum
   TIME_LIMIT,
   LOG_LEVEL_PRINT_LEVEL,
   LOG_LEVEL_OUTLEV,
+  WANTSOL,
   NUM_EXTRA
 };
 
@@ -344,6 +345,18 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
                           .kf   = kwdfunc_log_level,
                           .info = NULL,
                           .desc = "Alias for 'print_level'"};
+  }
+
+  {
+    pos = POS_EXTRA + WANTSOL;
+
+    kwds[pos] = (keyword){
+      .name = "wantsol",
+      .kf   = WS_val,
+      .info = NULL,
+      .desc = "solution report without -AMPL: sum of 1 (write .sol file), 2 "
+              "(print primal variable values), 4 (print dual variable values), "
+              "8 (do not print solution message)"};
   }
 
   // Keywords must be sorted alphabetically
