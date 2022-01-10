@@ -8,8 +8,8 @@
 #include "ampl_problem.h"
 #include "ampl_suffix.h"
 
-int
-main(int argc, char* argv[])
+SLEQP_RETCODE
+ampl_main(int argc, char* argv[])
 {
   SleqpOptions* options;
   SleqpParams* params;
@@ -55,14 +55,14 @@ main(int argc, char* argv[])
   if (stub == NULL)
   {
     sleqp_log_error("Failed to open nl stub.");
-    return -1;
+    return SLEQP_INTERNAL_ERROR;
   }
   // get problem dimensions from stub
   FILE* nl = jac0dim(stub, strlen(stub));
   if (nl == NULL)
   {
     sleqp_log_error("Failed to read nl stub.");
-    return EXIT_FAILURE;
+    return SLEQP_INTERNAL_ERROR;
   }
 
   sleqp_log_info(
@@ -93,11 +93,7 @@ main(int argc, char* argv[])
   const int iter_limit    = sleqp_ampl_keywords_iter_limit(ampl_keywords);
   const double time_limit = sleqp_ampl_keywords_time_limit(ampl_keywords);
 
-  bool success = true;
-
   SLEQP_RETCODE retcode = sleqp_solver_solve(solver, iter_limit, time_limit);
-
-  success = (retcode == SLEQP_OKAY);
 
   SLEQP_CALL(sleqp_ampl_report(problem, solver, asl, &Oinfo));
 
@@ -113,5 +109,13 @@ main(int argc, char* argv[])
   SLEQP_CALL(sleqp_params_release(&params));
   SLEQP_CALL(sleqp_options_release(&options));
 
-  return success ? EXIT_SUCCESS : EXIT_FAILURE;
+  return retcode;
+}
+
+int
+main(int argc, char* argv[])
+{
+  SLEQP_RETCODE retcode = ampl_main(argc, argv);
+
+  return (retcode == SLEQP_OKAY) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
