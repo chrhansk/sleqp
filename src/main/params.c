@@ -53,7 +53,7 @@ const ParamInfo param_infos[SLEQP_NUM_PARAMS] = {
   [SLEQP_PARAM_DERIV_PERTURBATION] = {.name = "deriv_perturbation",
                                       .desc = "Perturbation used for "
                                               "the finite-differences "
-                                              "used to check "
+                                              "used for checking "
                                               "derivatives"},
   [SLEQP_PARAM_DERIV_TOL]          = {.name = "deriv_tol",
                                       .desc = "Tolerance used "
