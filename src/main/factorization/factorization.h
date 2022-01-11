@@ -38,7 +38,7 @@ sleqp_factorization_set_matrix(SleqpFactorization* factorization,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_factorization_solve(SleqpFactorization* factorization,
-                          SleqpSparseVec* rhs);
+                          const SleqpSparseVec* rhs);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
