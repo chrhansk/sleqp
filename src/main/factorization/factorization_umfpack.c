@@ -184,7 +184,7 @@ umfpack_factorization_set_matrix(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-set_cache(double* cache, SleqpSparseVec* vec)
+set_cache(double* cache, const SleqpSparseVec* vec)
 {
   for (int k = 0; k < vec->nnz; ++k)
   {
@@ -195,7 +195,7 @@ set_cache(double* cache, SleqpSparseVec* vec)
 }
 
 static SLEQP_RETCODE
-reset_cache(double* cache, SleqpSparseVec* vec)
+reset_cache(double* cache, const SleqpSparseVec* vec)
 {
   for (int k = 0; k < vec->nnz; ++k)
   {
@@ -206,7 +206,7 @@ reset_cache(double* cache, SleqpSparseVec* vec)
 }
 
 static SLEQP_RETCODE
-umfpack_factorization_solve(void* factorization_data, SleqpSparseVec* rhs)
+umfpack_factorization_solve(void* factorization_data, const SleqpSparseVec* rhs)
 {
   UmfpackData* umfpack = (UmfpackData*)factorization_data;
 

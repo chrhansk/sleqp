@@ -1,11 +1,14 @@
 #include "aug_jac.h"
 
+#include <assert.h>
+
 #include "mem.h"
 
 struct SleqpAugJac
 {
   int refcount;
 
+  SleqpProblem* problem;
   SleqpTimer* creation_timer;
   SleqpTimer* solution_timer;
 
@@ -26,6 +29,9 @@ sleqp_aug_jac_create(SleqpAugJac** star,
   *aug_jac = (SleqpAugJac){0};
 
   aug_jac->refcount = 1;
+
+  SLEQP_CALL(sleqp_problem_capture(problem));
+  aug_jac->problem = problem;
 
   SLEQP_CALL(sleqp_timer_create(&aug_jac->creation_timer));
   SLEQP_CALL(sleqp_timer_create(&aug_jac->solution_timer));
@@ -50,9 +56,11 @@ sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac, SleqpIterate* iterate)
 
 SLEQP_RETCODE
 sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
-                                SleqpSparseVec* rhs,
+                                const SleqpSparseVec* rhs,
                                 SleqpSparseVec* sol)
 {
+  assert(sol->dim == sleqp_problem_num_vars(aug_jac->problem));
+
   SLEQP_CALL(sleqp_timer_start(aug_jac->solution_timer));
 
   SLEQP_CALL(aug_jac->callbacks.min_norm_solution(rhs, sol, aug_jac->data));
@@ -64,10 +72,15 @@ sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
 
 SLEQP_RETCODE
 sleqp_aug_jac_projection(SleqpAugJac* aug_jac,
-                         SleqpSparseVec* rhs,
+                         const SleqpSparseVec* rhs,
                          SleqpSparseVec* primal_sol,
                          SleqpSparseVec* dual_sol)
 {
+  if (primal_sol)
+  {
+    assert(primal_sol->dim == sleqp_problem_num_vars(aug_jac->problem));
+  }
+
   SLEQP_CALL(sleqp_timer_start(aug_jac->solution_timer));
 
   SLEQP_CALL(
@@ -115,6 +128,8 @@ aug_jac_free(SleqpAugJac** star)
   {
     SLEQP_CALL(aug_jac->callbacks.free(aug_jac->data));
   }
+
+  SLEQP_CALL(sleqp_problem_release(&aug_jac->problem));
 
   SLEQP_CALL(sleqp_timer_free(&aug_jac->solution_timer));
   SLEQP_CALL(sleqp_timer_free(&aug_jac->creation_timer));

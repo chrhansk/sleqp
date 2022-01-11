@@ -11,7 +11,7 @@ typedef SLEQP_RETCODE (*SLEQP_FACTORIZATION_SET_MATRIX)(
   SleqpSparseMatrix* matrix);
 
 typedef SLEQP_RETCODE (*SLEQP_FACTORIZATION_SOLVE)(void* factorization_data,
-                                                   SleqpSparseVec* rhs);
+                                                   const SleqpSparseVec* rhs);
 
 typedef SLEQP_RETCODE (*SLEQP_FACTORIZATION_SOLUTION)(void* factorization_data,
                                                       SleqpSparseVec* sol,

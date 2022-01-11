@@ -468,7 +468,7 @@ ma27_solve(MA27Data* ma27_data)
 }
 
 static SLEQP_RETCODE
-ma27_data_solve(void* factorization_data, SleqpSparseVec* rhs)
+ma27_data_solve(void* factorization_data, const SleqpSparseVec* rhs)
 {
   MA27Data* ma27_data   = (MA27Data*)factorization_data;
   HSLMatrix* hsl_matrix = &(ma27_data->matrix);

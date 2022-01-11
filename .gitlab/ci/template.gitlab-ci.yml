@@ -1,5 +1,8 @@
 .test:
   stage: test
+  variables:
+    CFLAGS: "-Wall"
+    CXXFLAGS: "-Wall"
   before_script:
     - mkdir -p build
   dependencies: []

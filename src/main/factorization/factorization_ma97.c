@@ -336,7 +336,7 @@ ma97_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-ma97_data_solve(void* factorization_data, SleqpSparseVec* rhs)
+ma97_data_solve(void* factorization_data, const SleqpSparseVec* rhs)
 {
   MA97Data* ma97_data = (MA97Data*)factorization_data;
 

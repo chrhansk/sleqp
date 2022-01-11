@@ -25,7 +25,9 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-aug_jac_min_norm_solution(SleqpSparseVec* rhs, SleqpSparseVec* sol, void* data)
+aug_jac_min_norm_solution(const SleqpSparseVec* rhs,
+                          SleqpSparseVec* sol,
+                          void* data)
 {
   AugJacData* jacobian         = (AugJacData*)data;
   SleqpIterate* iterate        = jacobian->iterate;
@@ -50,7 +52,7 @@ aug_jac_min_norm_solution(SleqpSparseVec* rhs, SleqpSparseVec* sol, void* data)
 }
 
 static SLEQP_RETCODE
-aug_jac_projection(SleqpSparseVec* rhs,
+aug_jac_projection(const SleqpSparseVec* rhs,
                    SleqpSparseVec* primal_sol,
                    SleqpSparseVec* dual_sol,
                    void* data)

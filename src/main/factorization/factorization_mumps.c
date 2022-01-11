@@ -178,7 +178,7 @@ sleqp_mumps_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_solve(void* factorization_data, SleqpSparseVec* rhs)
+sleqp_mumps_solve(void* factorization_data, const SleqpSparseVec* rhs)
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)factorization_data;
 
