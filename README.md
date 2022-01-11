@@ -29,6 +29,9 @@ Optional dependencies for the mex bindings:
 * [MATLAB](https://www.mathworks.com/products/matlab.html), *or*
 * [Octave](https://www.gnu.org/software/octave/index)
 
+Optional dependencies for the AMPL bindings:
+* The AMPL solver library [ASL](https://github.com/coin-or-tools/ThirdParty-ASL)
+
 Optional dependencies for the unit tests:
 *  [Check](https://libcheck.github.io/check/)
 
@@ -54,6 +57,7 @@ Use the following options to customize the build process:
 * `SLEQP_FACT`: Set to specify a factorization library
 * `SLEQP_ENABLE_MATLAB_MEX`: Enables the build of mex bindings using MATLAB (default : `Off`)
 * `SLEQP_ENABLE_OCTAVE_MEX`: Enables the build of mex bindings using Octave (default : `Off`)
+* `SLEQP_ENABLE_AMPL`: Enables the build of the AMPL interface (default: `Off`)
 
 ## References
 
