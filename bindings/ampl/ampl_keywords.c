@@ -287,13 +287,15 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
 
   for (; pos < POS_EXTRA; ++pos)
   {
-    callback_data[pos]
-      = (CallbackData){.opt_params.params = params, .index = pos - POS_PAR};
+    SLEQP_PARAM param_value = pos - POS_PAR;
 
-    kwds[pos] = (keyword){.name = strdup(sleqp_params_name(pos - POS_PAR)),
+    callback_data[pos]
+      = (CallbackData){.opt_params.params = params, .index = param_value};
+
+    kwds[pos] = (keyword){.name = strdup(sleqp_params_name(param_value)),
                           .kf   = kwdfunc_param,
                           .info = callback_data + pos,
-                          .desc = "Description"};
+                          .desc = strdup(sleqp_params_desc(param_value))};
   }
 
   for (pos = POS_EXTRA; pos < AMPL_NUM_KEYWORDS; ++pos)
