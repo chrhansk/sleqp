@@ -253,36 +253,43 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
 
   for (; pos < POS_INT; ++pos)
   {
-    callback_data[pos]
-      = (CallbackData){.opt_params.options = options, .index = pos};
+    SLEQP_OPTION_ENUM option_value = pos;
 
-    kwds[pos] = (keyword){.name = strdup(sleqp_options_enum_name(pos)),
-                          .kf   = kwdfunc_enum,
-                          .info = callback_data + pos,
-                          .desc = "Description"};
+    callback_data[pos]
+      = (CallbackData){.opt_params.options = options, .index = option_value};
+
+    kwds[pos]
+      = (keyword){.name = strdup(sleqp_options_enum_name(option_value)),
+                  .kf   = kwdfunc_enum,
+                  .info = callback_data + pos,
+                  .desc = strdup(sleqp_options_enum_desc(option_value))};
   }
 
   for (; pos < POS_BOOL; ++pos)
   {
-    callback_data[pos]
-      = (CallbackData){.opt_params.options = options, .index = pos - POS_INT};
+    SLEQP_OPTION_INT option_value = pos - POS_INT;
 
-    kwds[pos] = (keyword){.name = strdup(sleqp_options_int_name(pos - POS_INT)),
+    callback_data[pos]
+      = (CallbackData){.opt_params.options = options, .index = option_value};
+
+    kwds[pos] = (keyword){.name = strdup(sleqp_options_int_name(option_value)),
                           .kf   = kwdfunc_int,
                           .info = callback_data + pos,
-                          .desc = "Description"};
+                          .desc = strdup(sleqp_options_int_desc(option_value))};
   }
 
   for (; pos < POS_PAR; ++pos)
   {
+    SLEQP_OPTION_BOOL option_value = pos - POS_BOOL;
+
     callback_data[pos]
-      = (CallbackData){.opt_params.options = options, .index = pos - POS_BOOL};
+      = (CallbackData){.opt_params.options = options, .index = option_value};
 
     kwds[pos]
-      = (keyword){.name = strdup(sleqp_options_bool_name(pos - POS_BOOL)),
+      = (keyword){.name = strdup(sleqp_options_bool_name(option_value)),
                   .kf   = kwdfunc_bool,
                   .info = callback_data + pos,
-                  .desc = "Description"};
+                  .desc = strdup(sleqp_options_bool_desc(option_value))};
   }
 
   for (; pos < POS_EXTRA; ++pos)
