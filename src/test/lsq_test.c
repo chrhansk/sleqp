@@ -88,8 +88,7 @@ START_TEST(test_lm_factor)
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(
-    sleqp_params_set_value(params, SLEQP_PARAM_STATIONARITY_TOL, 1e-8));
+  ASSERT_CALL(sleqp_params_set_value(params, SLEQP_PARAM_STAT_TOL, 1e-8));
 
   ASSERT_CALL(sleqp_lsq_func_set_lm_factor(rosenbrock_lsq_func, 1e-2));
 

@@ -55,6 +55,130 @@ struct SleqpOptions
   SLEQP_TR_SOLVER tr_solver;
 };
 
+typedef struct
+{
+  const char* name;
+  const char* desc;
+} OptionInfo;
+
+OptionInfo enum_option_info[SLEQP_NUM_ENUM_OPTIONS] = {
+  [SLEQP_OPTION_ENUM_DERIV_CHECK]
+  = {.name = "deriv_check",
+     .desc = "Which types of derivative check to perform"},
+  [SLEQP_OPTION_ENUM_HESS_EVAL]
+  = {.name = "hess_eval",
+     .desc = "Whether or not to use a specific quasi-Newton method"},
+  [SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE]
+  = {.name = "dual_estimation_type", .desc = "How to estimate the dual values"},
+  [SLEQP_OPTION_ENUM_FLOAT_WARNING_FLAGS]
+  = {.name = "float_warning_flags",
+     .desc = "Which floating point errors trigger warnings"},
+  [SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS]
+  = {.name = "float_error_flags",
+     .desc = "Which floating point errors trigger errors"},
+  [SLEQP_OPTION_ENUM_BFGS_SIZING]
+  = {.name = "bfgs_sizing", .desc = "How to size the BFGS method"},
+  [SLEQP_OPTION_ENUM_TR_SOLVER]
+  = {.name = "tr_solver", .desc = "Which trust-region solver to use"},
+  [SLEQP_OPTION_ENUM_POLISHING_TYPE]
+  = {.name = "polishing_type", .desc = "Which polishing type to use"},
+  [SLEQP_OPTION_ENUM_STEP_RULE]
+  = {.name = "step_rule", .desc = "Which step rule to use"},
+  [SLEQP_OPTION_ENUM_LINESEARCH]
+  = {.name = "linesearch",
+     .desc = "Which line search to use for the trial point"},
+  [SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY]
+  = {.name = "parametric_cauchy",
+     .desc = "Whether to use a parametric Cauchy line search"},
+  [SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE]
+  = {.name = "initial_tr_choice",
+     .desc = "How to chose the initial trust radius"},
+};
+
+const char*
+sleqp_options_enum_name(SLEQP_OPTION_ENUM option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_ENUM_OPTIONS);
+  return enum_option_info[option].name;
+}
+
+const char*
+sleqp_options_enum_desc(SLEQP_OPTION_ENUM option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_ENUM_OPTIONS);
+  return enum_option_info[option].desc;
+}
+
+OptionInfo int_option_info[SLEQP_NUM_INT_OPTIONS] = {
+  [SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES]
+  = {.name = "num_quasi_newton_iterates",
+     .desc = "Number of iterates to be stored"
+             " for the quasi-Newton approximation "},
+  [SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS]
+  = {.name = "max_newton_iterations",
+     .desc = "Maximum number of Newton iterations "
+             "to be performed per iteration"},
+  [SLEQP_OPTION_INT_NUM_THREADS]
+  = {.name = "num_threads",
+     .desc = "The maximum number of threads to be used."
+             "Set to SLEQP_NONE to remove restriction."},
+};
+
+const char*
+sleqp_options_int_name(SLEQP_OPTION_INT option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_INT_OPTIONS);
+  return int_option_info[option].name;
+}
+
+const char*
+sleqp_options_int_desc(SLEQP_OPTION_INT option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_INT_OPTIONS);
+  return int_option_info[option].desc;
+}
+
+OptionInfo bool_option_info[SLEQP_NUM_BOOL_OPTIONS] = {
+  [SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]
+  = {.name = "perform_newton_step",
+     .desc = "Whether or not to perform Newton steps"},
+  [SLEQP_OPTION_BOOL_PERFORM_SOC]
+  = {.name = "perform_soc",
+     .desc = "Whether or not to perform a second-order correction"},
+  [SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL]
+  = {.name = "use_quadratic_model",
+     .desc = "Whether to use a quadratic or linear model"},
+  [SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP]
+  = {.name = "always_warm_start_lp",
+     .desc = "Whether to warm-start the LP from existing bases"},
+  [SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE]
+  = {.name = "enable_restoration_phase",
+     .desc = "Whether to enable a restoration phase"},
+  [SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR]
+  = {.name = "enable_preprocessor",
+     .desc = "Whether to enable the built-in preprocessor"},
+};
+
+const char*
+sleqp_options_bool_name(SLEQP_OPTION_BOOL option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_BOOL_OPTIONS);
+  return bool_option_info[option].name;
+}
+
+const char*
+sleqp_options_bool_desc(SLEQP_OPTION_BOOL option)
+{
+  assert(option >= 0);
+  assert(option < SLEQP_NUM_BOOL_OPTIONS);
+  return bool_option_info[option].desc;
+}
+
 SLEQP_RETCODE
 sleqp_options_create(SleqpOptions** star)
 {

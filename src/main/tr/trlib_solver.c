@@ -193,8 +193,7 @@ check_optimality(SolverData* data,
 {
   SleqpProblem* problem = data->problem;
 
-  const double eps
-    = sleqp_params_value(data->params, SLEQP_PARAM_STATIONARITY_TOL);
+  const double eps = sleqp_params_value(data->params, SLEQP_PARAM_STAT_TOL);
 
   const double zero_eps
     = sleqp_params_value(data->params, SLEQP_PARAM_ZERO_EPS);
@@ -263,7 +262,7 @@ trlib_loop(SolverData* data,
     = sleqp_params_value(data->params, SLEQP_PARAM_ZERO_EPS);
 
   const double stat_eps
-    = sleqp_params_value(data->params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(data->params, SLEQP_PARAM_STAT_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
 

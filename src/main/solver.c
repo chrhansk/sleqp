@@ -426,7 +426,7 @@ sleqp_solver_violated_constraints(SleqpSolver* solver,
                                   int* num_violated_constraints)
 {
   const double feas_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
 
   SLEQP_CALL(sleqp_iterate_get_violated_constraints(solver->original_problem,
                                                     iterate,

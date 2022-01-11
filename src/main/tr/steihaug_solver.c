@@ -122,7 +122,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
   const double one = 1.;
 
   const double stat_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_STAT_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
 

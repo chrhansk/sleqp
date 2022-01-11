@@ -34,6 +34,80 @@ struct SleqpParams
 
 #define DEADPOINT_BOUND_DEFAULT 1e-12
 
+typedef struct
+{
+  const char* name;
+  const char* desc;
+} ParamInfo;
+
+const ParamInfo param_infos[SLEQP_NUM_PARAMS] = {
+  [SLEQP_PARAM_ZERO_EPS]           = {.name = "zero_eps",
+                                      .desc = "Cut-off bound for "
+                                              "sparse vectors / matrices"},
+  [SLEQP_PARAM_EPS]                = {.name = "eps",
+                                      .desc = "Basic accuracy"
+                                              " for comparisons"},
+  [SLEQP_PARAM_OBJ_LOWER]          = {.name = "obj_lower",
+                                      .desc = "Lower bound on objective below which the "
+                                              "problem is assumed to be unbounded"},
+  [SLEQP_PARAM_DERIV_PERTURBATION] = {.name = "deriv_perturbation",
+                                      .desc = "Perturbation used for "
+                                              "the finite-differences "
+                                              "used for checking "
+                                              "derivatives"},
+  [SLEQP_PARAM_DERIV_TOL]          = {.name = "deriv_tol",
+                                      .desc = "Tolerance used "
+                                              "for derivative checks"},
+  [SLEQP_PARAM_CAUCHY_TAU]         = {.name = "cauchy_tau",
+                                      .desc = "Reduction factor used"
+                                              " during Cauchy line search"},
+  [SLEQP_PARAM_CAUCHY_ETA]         = {.name = "cauchy_eta",
+                                      .desc = "Efficiency parameter used "
+                                              "during Cauchy line search"},
+  [SLEQP_PARAM_LINESEARCH_TAU]     = {.name = "linesearch_tau",
+                                      .desc = "Reduction factor used"
+                                              " during trial point line search"},
+  [SLEQP_PARAM_LINESEARCH_ETA]     = {.name = "linesearch_eta",
+                                      .desc = "Efficiency parameter used "
+                                              "during trial line search"},
+  [SLEQP_PARAM_LINESEARCH_CUTOFF]  = {.name = "linesearch_cutoff",
+                                      .desc = "Cutoff used during trial point "
+                                              "line search below which a "
+                                              "step size of 0 is chosen"},
+  [SLEQP_PARAM_FEAS_TOL]           = {.name = "feas_tol",
+                                      .desc = "Tolerance used to "
+                                              "determine feasibility"},
+  [SLEQP_PARAM_SLACK_TOL]          = {.name = "slack_tol",
+                                      .desc = "Tolerance used to ensure "
+                                              "complementary slackness"},
+  [SLEQP_PARAM_STAT_TOL]           = {.name = "stat_tol",
+                                      .desc = "Tolerance used to "
+                                              "ensure stationarity"},
+  [SLEQP_PARAM_ACCEPTED_REDUCTION] = {.name = "accepted_reduction",
+                                      .desc = "Minimum model reduction "
+                                              "to be accepted"},
+  [SLEQP_PARAM_DEADPOINT_BOUND]    = {.name = "deadpoint_bound",
+                                      .desc = "Lower bound on the normal "
+                                              "and LP trust radius below which a "
+                                              "stall is assumed"},
+};
+
+SLEQP_EXPORT const char*
+sleqp_params_name(SLEQP_PARAM param)
+{
+  assert(param >= 0);
+  assert(param < SLEQP_NUM_PARAMS);
+  return param_infos[param].name;
+}
+
+SLEQP_EXPORT const char*
+sleqp_params_desc(SLEQP_PARAM param)
+{
+  assert(param >= 0);
+  assert(param < SLEQP_NUM_PARAMS);
+  return param_infos[param].desc;
+}
+
 SLEQP_RETCODE
 sleqp_params_create(SleqpParams** star)
 {
@@ -55,9 +129,9 @@ sleqp_params_create(SleqpParams** star)
   params->values[SLEQP_PARAM_LINESEARCH_TAU]     = LINESEARCH_TAU_DEFAULT;
   params->values[SLEQP_PARAM_LINESEARCH_ETA]     = LINESEARCH_ETA_DEFAULT;
   params->values[SLEQP_PARAM_LINESEARCH_CUTOFF]  = LINESEARCH_CUTOFF_DEFAULT;
-  params->values[SLEQP_PARAM_FEASIBILITY_TOL]    = FEASIBILITY_TOL_DEFAULT;
-  params->values[SLEQP_PARAM_SLACKNESS_TOL]      = SLACKNESS_TOL_DEFAULT;
-  params->values[SLEQP_PARAM_STATIONARITY_TOL]   = STATIONARITY_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_FEAS_TOL]           = FEASIBILITY_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_SLACK_TOL]          = SLACKNESS_TOL_DEFAULT;
+  params->values[SLEQP_PARAM_STAT_TOL]           = STATIONARITY_TOL_DEFAULT;
   params->values[SLEQP_PARAM_ACCEPTED_REDUCTION] = ACCEPTED_REDUCTION_DEFAULT;
   params->values[SLEQP_PARAM_DEADPOINT_BOUND]    = DEADPOINT_BOUND_DEFAULT;
 

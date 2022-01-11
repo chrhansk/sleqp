@@ -63,8 +63,7 @@ START_TEST(test_stationarity_residuals)
                            SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
                            stationarity_residuals));
 
-  const double stat_eps
-    = sleqp_params_value(params, SLEQP_PARAM_STATIONARITY_TOL);
+  const double stat_eps = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
 
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
@@ -90,8 +89,7 @@ START_TEST(test_feasibility_residuals)
                            SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
                            feasibility_residuals));
 
-  const double feas_eps
-    = sleqp_params_value(params, SLEQP_PARAM_FEASIBILITY_TOL);
+  const double feas_eps = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
 
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
@@ -117,8 +115,7 @@ START_TEST(test_slackness_residuals)
                            SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
                            slackness_residuals));
 
-  const double slack_eps
-    = sleqp_params_value(params, SLEQP_PARAM_SLACKNESS_TOL);
+  const double slack_eps = sleqp_params_value(params, SLEQP_PARAM_SLACK_TOL);
 
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
@@ -157,12 +154,9 @@ START_TEST(test_residuals)
 
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
-  const double stat_eps
-    = sleqp_params_value(params, SLEQP_PARAM_STATIONARITY_TOL);
-  const double slack_eps
-    = sleqp_params_value(params, SLEQP_PARAM_SLACKNESS_TOL);
-  const double feas_eps
-    = sleqp_params_value(params, SLEQP_PARAM_FEASIBILITY_TOL);
+  const double stat_eps  = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
+  const double slack_eps = sleqp_params_value(params, SLEQP_PARAM_SLACK_TOL);
+  const double feas_eps  = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
 
   double stat_res, slack_res, feas_res;
 

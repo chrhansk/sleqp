@@ -319,7 +319,7 @@ print_residuals(NewtonSolver* solver,
     stat_res);
 
   const double stat_tol
-    = sleqp_params_value(solver->params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_STAT_TOL);
 
   if (stat_res >= stat_tol)
   {

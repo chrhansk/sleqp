@@ -47,6 +47,24 @@ typedef enum
 
 typedef struct SleqpOptions SleqpOptions;
 
+SLEQP_EXPORT const char*
+sleqp_options_enum_name(SLEQP_OPTION_ENUM options);
+
+SLEQP_EXPORT const char*
+sleqp_options_enum_desc(SLEQP_OPTION_ENUM options);
+
+SLEQP_EXPORT const char*
+sleqp_options_int_name(SLEQP_OPTION_INT options);
+
+SLEQP_EXPORT const char*
+sleqp_options_int_desc(SLEQP_OPTION_INT options);
+
+SLEQP_EXPORT const char*
+sleqp_options_bool_name(SLEQP_OPTION_BOOL options);
+
+SLEQP_EXPORT const char*
+sleqp_options_bool_desc(SLEQP_OPTION_BOOL options);
+
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_options_create(SleqpOptions** star);
 
