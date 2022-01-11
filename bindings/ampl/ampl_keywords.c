@@ -39,10 +39,6 @@ typedef enum
 static char*
 kwdfunc_enum(Option_Info* oi, keyword* kw, char* value)
 {
-  sleqp_log_debug("Inside kwdfunc_enum, kw: %s, value as char: '%s'",
-                  kw->name,
-                  value);
-
   CallbackData* callback_data = (CallbackData*)kw->info;
 
   int int_val;
@@ -66,10 +62,6 @@ kwdfunc_enum(Option_Info* oi, keyword* kw, char* value)
 static char*
 kwdfunc_int(Option_Info* oi, keyword* kw, char* value)
 {
-  sleqp_log_debug("Inside kwdfunc_int, kw: %s, value as char: '%s'",
-                  kw->name,
-                  value);
-
   CallbackData* callback_data = (CallbackData*)kw->info;
 
   int int_val;
@@ -93,21 +85,22 @@ kwdfunc_int(Option_Info* oi, keyword* kw, char* value)
 static char*
 kwdfunc_bool(Option_Info* oi, keyword* kw, char* value)
 {
-  sleqp_log_debug("Inside kwdfunc_bool, kw: %s, value as char: '%s'",
-                  kw->name,
-                  value);
-
   CallbackData* callback_data = (CallbackData*)kw->info;
 
   int int_val;
   kw->info = &int_val;
 
-  char* retval = IK1_val(oi, kw, value);
+  char* retval = I_val(oi, kw, value);
+
+  if (!(int_val == 0 || int_val == 1))
+  {
+    return badval_ASL(oi, kw, value, retval);
+  }
 
   SLEQP_RETCODE retcode
     = sleqp_options_set_bool_value(callback_data->opt_params.options,
                                    callback_data->index,
-                                   true);
+                                   !!(int_val));
 
   if (retcode != SLEQP_OKAY)
   {
@@ -120,10 +113,6 @@ kwdfunc_bool(Option_Info* oi, keyword* kw, char* value)
 static char*
 kwdfunc_param(Option_Info* oi, keyword* kw, char* value)
 {
-  sleqp_log_debug("Inside kwdfunc_param, kw: %s, value as char: '%s'",
-                  kw->name,
-                  value);
-
   CallbackData* callback_data = (CallbackData*)kw->info;
 
   double real_val;
@@ -159,10 +148,6 @@ struct SleqpAmplKeywords
 static char*
 kwdfunc_iterlimit(Option_Info* oi, keyword* kw, char* value)
 {
-  sleqp_log_debug("Inside kwdfunc_iterlimit, kw: %s, value as char: '%s'",
-                  kw->name,
-                  value);
-
   CallbackData* callback_data = (CallbackData*)kw->info;
 
   int int_val;
@@ -186,9 +171,6 @@ kwdfunc_iterlimit(Option_Info* oi, keyword* kw, char* value)
 static char*
 kwdfunc_timelimit(Option_Info* oi, keyword* kw, char* value)
 {
-  sleqp_log_debug("Inside kwdfunc_timelimit, kw: %s, value as char: '%s'",
-                  kw->name,
-                  value);
 
   CallbackData* callback_data = (CallbackData*)kw->info;
 
@@ -213,10 +195,6 @@ kwdfunc_timelimit(Option_Info* oi, keyword* kw, char* value)
 static char*
 kwdfunc_log_level(Option_Info* oi, keyword* kw, char* value)
 {
-  sleqp_log_debug("Inside kwdfunc_log_level, kw: %s, value as char: '%s'",
-                  kw->name,
-                  value);
-
   int int_val;
   kw->info = &int_val;
 
