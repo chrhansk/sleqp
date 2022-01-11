@@ -64,10 +64,10 @@ soplex_create_problem(void** lp_data,
     soplex.setRealParam(soplex::SoPlexBase<double>::INFTY, sleqp_infinity()));
 
   const double feas_eps = sleqp_params_value(params,
-                                             SLEQP_PARAM_FEASIBILITY_TOL);
+                                             SLEQP_PARAM_FEAS_TOL);
 
   const double stat_eps
-    = sleqp_params_value(params, SLEQP_PARAM_STATIONARITY_TOL);
+    = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
 
   assert(soplex.setRealParam(soplex::SoPlexBase<double>::FEASTOL,
                              feas_eps * tolerance_factor));

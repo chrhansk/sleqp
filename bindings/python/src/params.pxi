@@ -11,9 +11,9 @@ cdef dict prop_map = {
   'linesearch_tau':         csleqp.SLEQP_PARAM_LINESEARCH_TAU,
   'linesearch_eta':         csleqp.SLEQP_PARAM_LINESEARCH_ETA,
   'linesearch_cutoff':      csleqp.SLEQP_PARAM_LINESEARCH_CUTOFF,
-  'feasibility_tolerance':  csleqp.SLEQP_PARAM_FEASIBILITY_TOL,
-  'slackness_tolerance':    csleqp.SLEQP_PARAM_SLACKNESS_TOL,
-  'stationarity_tolerance': csleqp.SLEQP_PARAM_STATIONARITY_TOL,
+  'feasibility_tolerance':  csleqp.SLEQP_PARAM_FEAS_TOL,
+  'slackness_tolerance':    csleqp.SLEQP_PARAM_SLACK_TOL,
+  'stationarity_tolerance': csleqp.SLEQP_PARAM_STAT_TOL,
   'accepted_reduction':     csleqp.SLEQP_PARAM_ACCEPTED_REDUCTION,
   'deadpoint_bound':        csleqp.SLEQP_PARAM_DEADPOINT_BOUND
 }

@@ -56,8 +56,7 @@ polish_inactive_range(SleqpPolishing* polishing,
 
   (*num_removed) = 0;
 
-  const double feas_eps
-    = sleqp_params_value(params, SLEQP_PARAM_FEASIBILITY_TOL);
+  const double feas_eps = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
 
   const int size = dual->dim;
   int k_d        = 0;

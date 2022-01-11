@@ -374,7 +374,7 @@ check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor)
   SleqpProblem* problem = preprocessor->original_problem;
 
   const double feas_eps
-    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEAS_TOL);
 
   SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
@@ -473,7 +473,7 @@ check_for_variable_infeasibility(SleqpPreprocessor* preprocessor)
     = sleqp_preprocessing_state_variable_states(state);
 
   const double feas_eps
-    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEAS_TOL);
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
@@ -545,7 +545,7 @@ remove_redundant_constraints(SleqpPreprocessor* preprocessor)
   SleqpProblem* problem = preprocessor->original_problem;
 
   const double feas_eps
-    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEAS_TOL);
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_linear_lb(problem),
                                         preprocessor->linear_lb));

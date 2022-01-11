@@ -18,7 +18,7 @@ on_restoration_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
   SleqpFunc* restoration_func       = sleqp_problem_func(restoration_problem);
 
   const double feas_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
 
   SleqpSparseVec* cons_val;
 

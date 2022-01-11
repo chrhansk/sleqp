@@ -35,7 +35,7 @@ check_feasibility(SleqpSolver* solver, bool* feasible)
                                                 &feasibility_residuum));
 
   const double feas_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_FEASIBILITY_TOL);
+    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
 
   *feasible
     = sleqp_iterate_is_feasible(iterate, feasibility_residuum, feas_eps);
