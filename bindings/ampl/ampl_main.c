@@ -82,7 +82,10 @@ ampl_main(int argc, char* argv[])
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  SLEQP_CALL(sleqp_ampl_problem_create(&problem, data, nl, params));
+  bool halt_on_error = sleqp_ampl_keywords_halt_on_error(ampl_keywords);
+
+  SLEQP_CALL(
+    sleqp_ampl_problem_create(&problem, data, nl, params, halt_on_error));
 
   SleqpSparseVec* x;
   SLEQP_CALL(sleqp_sparse_vector_create(&x, n_var, 0));

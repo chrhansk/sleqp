@@ -9,7 +9,7 @@ typedef struct
     SleqpOptions* options;
     SleqpParams* params;
     SleqpAmplKeywords* keywords;
-  } opt_params;
+  } data;
 
   int index;
 
@@ -23,6 +23,7 @@ enum
   LOG_LEVEL_PRINT_LEVEL,
   LOG_LEVEL_OUTLEV,
   WANTSOL,
+  HALTONERROR,
   NUM_EXTRA
 };
 
@@ -36,6 +37,19 @@ typedef enum
   AMPL_NUM_KEYWORDS = POS_EXTRA + NUM_EXTRA
 } AMPL_KEYWORDS;
 
+struct SleqpAmplKeywords
+{
+  SleqpOptions* options;
+  SleqpParams* params;
+
+  CallbackData callback_data[AMPL_NUM_KEYWORDS];
+  keyword keywds[AMPL_NUM_KEYWORDS];
+
+  double time_limit;
+  int iteration_limit;
+  bool halt_on_error;
+};
+
 static char*
 kwdfunc_enum(Option_Info* oi, keyword* kw, char* value)
 {
@@ -47,7 +61,7 @@ kwdfunc_enum(Option_Info* oi, keyword* kw, char* value)
   char* retval = I_val(oi, kw, value);
 
   SLEQP_RETCODE retcode
-    = sleqp_options_set_enum_value(callback_data->opt_params.options,
+    = sleqp_options_set_enum_value(callback_data->data.options,
                                    callback_data->index,
                                    int_val);
 
@@ -70,7 +84,7 @@ kwdfunc_int(Option_Info* oi, keyword* kw, char* value)
   char* retval = I_val(oi, kw, value);
 
   SLEQP_RETCODE retcode
-    = sleqp_options_set_int_value(callback_data->opt_params.options,
+    = sleqp_options_set_int_value(callback_data->data.options,
                                   callback_data->index,
                                   int_val);
 
@@ -98,7 +112,7 @@ kwdfunc_bool(Option_Info* oi, keyword* kw, char* value)
   }
 
   SLEQP_RETCODE retcode
-    = sleqp_options_set_bool_value(callback_data->opt_params.options,
+    = sleqp_options_set_bool_value(callback_data->data.options,
                                    callback_data->index,
                                    !!(int_val));
 
@@ -120,10 +134,9 @@ kwdfunc_param(Option_Info* oi, keyword* kw, char* value)
 
   char* retval = D_val(oi, kw, value);
 
-  SLEQP_RETCODE retcode
-    = sleqp_params_set_value(callback_data->opt_params.params,
-                             callback_data->index,
-                             real_val);
+  SLEQP_RETCODE retcode = sleqp_params_set_value(callback_data->data.params,
+                                                 callback_data->index,
+                                                 real_val);
 
   if (retcode != SLEQP_OKAY)
   {
@@ -132,18 +145,6 @@ kwdfunc_param(Option_Info* oi, keyword* kw, char* value)
 
   return retval;
 }
-
-struct SleqpAmplKeywords
-{
-  SleqpOptions* options;
-  SleqpParams* params;
-
-  CallbackData callback_data[AMPL_NUM_KEYWORDS];
-  keyword keywds[AMPL_NUM_KEYWORDS];
-
-  double time_limit;
-  int iteration_limit;
-};
 
 static char*
 kwdfunc_iterlimit(Option_Info* oi, keyword* kw, char* value)
@@ -162,7 +163,7 @@ kwdfunc_iterlimit(Option_Info* oi, keyword* kw, char* value)
       return badval_ASL(oi, kw, value, retval);
     }
 
-    callback_data->opt_params.keywords->iteration_limit = int_val;
+    callback_data->data.keywords->iteration_limit = int_val;
   }
 
   return retval;
@@ -171,7 +172,6 @@ kwdfunc_iterlimit(Option_Info* oi, keyword* kw, char* value)
 static char*
 kwdfunc_timelimit(Option_Info* oi, keyword* kw, char* value)
 {
-
   CallbackData* callback_data = (CallbackData*)kw->info;
 
   double real_val;
@@ -186,7 +186,7 @@ kwdfunc_timelimit(Option_Info* oi, keyword* kw, char* value)
       return badval_ASL(oi, kw, value, retval);
     }
 
-    callback_data->opt_params.keywords->time_limit = real_val;
+    callback_data->data.keywords->time_limit = real_val;
   }
 
   return retval;
@@ -213,6 +213,34 @@ kwdfunc_log_level(Option_Info* oi, keyword* kw, char* value)
   return retval;
 }
 
+static char*
+kwdfunc_haltonerror(Option_Info* oi, keyword* kw, char* value)
+{
+  CallbackData* callback_data = (CallbackData*)kw->info;
+
+  int int_val;
+  kw->info = &int_val;
+
+  char* str_val;
+  kw->info     = &str_val;
+  char* retval = C_val(oi, kw, value);
+
+  if (strcmp(str_val, "yes") == 0)
+  {
+    callback_data->data.keywords->halt_on_error = true;
+  }
+  else if (strcmp(str_val, "no") == 0)
+  {
+    callback_data->data.keywords->halt_on_error = false;
+  }
+  else
+  {
+    return badval_ASL(oi, kw, value, retval);
+  }
+
+  return retval;
+}
+
 static int
 compare_kwds(const void* first, const void* second)
 {
@@ -234,7 +262,7 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
     SLEQP_OPTION_ENUM option_value = pos;
 
     callback_data[pos]
-      = (CallbackData){.opt_params.options = options, .index = option_value};
+      = (CallbackData){.data.options = options, .index = option_value};
 
     kwds[pos]
       = (keyword){.name = strdup(sleqp_options_enum_name(option_value)),
@@ -248,7 +276,7 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
     SLEQP_OPTION_INT option_value = pos - POS_INT;
 
     callback_data[pos]
-      = (CallbackData){.opt_params.options = options, .index = option_value};
+      = (CallbackData){.data.options = options, .index = option_value};
 
     kwds[pos] = (keyword){.name = strdup(sleqp_options_int_name(option_value)),
                           .kf   = kwdfunc_int,
@@ -261,7 +289,7 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
     SLEQP_OPTION_BOOL option_value = pos - POS_BOOL;
 
     callback_data[pos]
-      = (CallbackData){.opt_params.options = options, .index = option_value};
+      = (CallbackData){.data.options = options, .index = option_value};
 
     kwds[pos]
       = (keyword){.name = strdup(sleqp_options_bool_name(option_value)),
@@ -275,7 +303,7 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
     SLEQP_PARAM param_value = pos - POS_PAR;
 
     callback_data[pos]
-      = (CallbackData){.opt_params.params = params, .index = param_value};
+      = (CallbackData){.data.params = params, .index = param_value};
 
     kwds[pos] = (keyword){.name = strdup(sleqp_params_name(param_value)),
                           .kf   = kwdfunc_param,
@@ -286,7 +314,7 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
   for (pos = POS_EXTRA; pos < AMPL_NUM_KEYWORDS; ++pos)
   {
     callback_data[pos]
-      = (CallbackData){.opt_params.keywords = ampl_keywords, .index = 0};
+      = (CallbackData){.data.keywords = ampl_keywords, .index = 0};
   }
 
   {
@@ -346,6 +374,15 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
               "8 (do not print solution message)"};
   }
 
+  {
+    pos = POS_EXTRA + HALTONERROR;
+
+    kwds[pos] = (keyword){.name = "halt_on_ampl_error",
+                          .kf   = kwdfunc_haltonerror,
+                          .info = callback_data + pos,
+                          .desc = "Exit with message on evaluation error"};
+  }
+
   // Keywords must be sorted alphabetically
   qsort(kwds, AMPL_NUM_KEYWORDS, sizeof(keyword), compare_kwds);
 
@@ -365,6 +402,7 @@ sleqp_ampl_keywords_create(SleqpAmplKeywords** star,
 
   ampl_keywords->time_limit      = SLEQP_NONE;
   ampl_keywords->iteration_limit = SLEQP_NONE;
+  ampl_keywords->halt_on_error   = false;
 
   SLEQP_CALL(sleqp_options_capture(options));
   ampl_keywords->options = options;
@@ -388,6 +426,12 @@ double
 sleqp_ampl_keywords_time_limit(SleqpAmplKeywords* ampl_keywords)
 {
   return ampl_keywords->time_limit;
+}
+
+bool
+sleqp_ampl_keywords_halt_on_error(SleqpAmplKeywords* ampl_keywords)
+{
+  return ampl_keywords->halt_on_error;
 }
 
 SLEQP_RETCODE
