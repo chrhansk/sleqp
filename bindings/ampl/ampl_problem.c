@@ -219,24 +219,29 @@ ampl_cons_jac(SleqpFunc* func,
 
   SLEQP_AMPL_ERROR_CHECK(nerror);
 
-  int last_col = 0;
+  int next_col = 0;
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, data->jac_nnz));
 
   for (int i = 0; i < data->jac_nnz; ++i)
   {
-    int row    = data->jac_rows[i];
-    int col    = data->jac_cols[i];
-    double val = data->jac_vals[i];
+    const int row    = data->jac_rows[i];
+    const int col    = data->jac_cols[i];
+    const double val = data->jac_vals[i];
 
-    while (col > last_col)
+    while (col >= next_col)
     {
-      SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, ++last_col));
+      SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, next_col++));
     }
 
-    last_col = col;
-
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, row, col, val));
+  }
+
+  const int num_cols = data->ampl_data->num_variables;
+
+  while (num_cols > next_col)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, next_col++));
   }
 
   return SLEQP_OKAY;
