@@ -5,12 +5,13 @@
 #include "ampl_mem.h"
 #include "ampl_util.h"
 
-#define SLEQP_AMPL_ERROR_CHECK(error)                                          \
+#define SLEQP_AMPL_ERROR_CHECK(errorptr)                                       \
   do                                                                           \
   {                                                                            \
-    if (error)                                                                 \
+    if (errorptr && (*errorptr != 0))                                          \
     {                                                                          \
-      sleqp_log_error("Encountered error during evaluation:");                 \
+      sleqp_log_error("Error during evaluation. "                              \
+                      "Run with \"halt_on_ampl_error yes\" to see details.");  \
       return SLEQP_INTERNAL_ERROR;                                             \
     }                                                                          \
   } while (false)
@@ -37,12 +38,16 @@ typedef struct AmplFuncData
   bool inverted_obj;
   double offset;
 
+  fint error;
+  fint* nerror;
+
 } AmplFuncData;
 
 static SLEQP_RETCODE
 ampl_func_data_create(AmplFuncData** star,
                       SleqpAmplData* ampl_data,
-                      double zero_eps)
+                      double zero_eps,
+                      bool halt_on_error)
 {
   ASL* asl = ampl_data->asl;
   SLEQP_CALL(sleqp_ampl_malloc(star));
@@ -59,6 +64,15 @@ ampl_func_data_create(AmplFuncData** star,
   data->jac_nnz   = nzc;
 
   data->inverted_obj = sleqp_ampl_max_problem(asl);
+
+  if (halt_on_error)
+  {
+    data->nerror = NULL;
+  }
+  else
+  {
+    data->nerror = &data->error;
+  }
 
   if (n_obj > 0)
   {
@@ -144,10 +158,9 @@ ampl_obj_val(SleqpFunc* func, double* func_val, void* func_data)
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
 
-  fint nerror = 0;
-  *func_val   = objval(0, data->x, &nerror);
+  *func_val = objval(0, data->x, data->nerror);
 
-  SLEQP_AMPL_ERROR_CHECK(nerror);
+  SLEQP_AMPL_ERROR_CHECK(data->nerror);
 
   *func_val += data->offset;
 
@@ -165,10 +178,9 @@ ampl_obj_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
 
-  fint nerror = 0;
-  objgrd(0, data->x, data->func_grad, &nerror);
+  objgrd(0, data->x, data->func_grad, data->nerror);
 
-  SLEQP_AMPL_ERROR_CHECK(nerror);
+  SLEQP_AMPL_ERROR_CHECK(data->nerror);
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(func_grad,
                                           data->func_grad,
@@ -192,10 +204,9 @@ ampl_cons_val(SleqpFunc* func,
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
 
-  fint nerror = 0;
-  conval(data->x, data->cons_vals, &nerror);
+  conval(data->x, data->cons_vals, data->nerror);
 
-  SLEQP_AMPL_ERROR_CHECK(nerror);
+  SLEQP_AMPL_ERROR_CHECK(data->nerror);
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_val,
                                           data->cons_vals,
@@ -214,10 +225,9 @@ ampl_cons_jac(SleqpFunc* func,
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
 
-  fint nerror = 0;
-  jacval(data->x, data->jac_vals, &nerror);
+  jacval(data->x, data->jac_vals, data->nerror);
 
-  SLEQP_AMPL_ERROR_CHECK(nerror);
+  SLEQP_AMPL_ERROR_CHECK(data->nerror);
 
   int next_col = 0;
 
@@ -292,10 +302,11 @@ ampl_func_hess_product(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
-sleqp_ampl_func_create(SleqpFunc** star,
-                       SleqpAmplData* ampl_data,
-                       SleqpParams* params)
+static SLEQP_RETCODE
+ampl_func_create(SleqpFunc** star,
+                 SleqpAmplData* ampl_data,
+                 SleqpParams* params,
+                 bool halt_on_error)
 {
   AmplFuncData* data;
 
@@ -304,7 +315,7 @@ sleqp_ampl_func_create(SleqpFunc** star,
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(ampl_func_data_create(&data, ampl_data, zero_eps));
+  SLEQP_CALL(ampl_func_data_create(&data, ampl_data, zero_eps, halt_on_error));
 
   SleqpFuncCallbacks callbacks
     = {.set_value = ampl_func_set,
@@ -325,7 +336,8 @@ SLEQP_RETCODE
 sleqp_ampl_problem_create(SleqpProblem** star,
                           SleqpAmplData* data,
                           FILE* nl,
-                          SleqpParams* params)
+                          SleqpParams* params,
+                          bool halt_on_error)
 {
   const int num_variables   = data->num_variables;
   const int num_constraints = data->num_constraints;
@@ -386,7 +398,7 @@ sleqp_ampl_problem_create(SleqpProblem** star,
                                           num_constraints,
                                           zero_eps));
 
-  SLEQP_CALL(sleqp_ampl_func_create(&func, data, params));
+  SLEQP_CALL(ampl_func_create(&func, data, params, halt_on_error));
 
   SLEQP_CALL(sleqp_problem_create_simple(star,
                                          func,

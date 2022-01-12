@@ -24,6 +24,9 @@ sleqp_ampl_keywords_iter_limit(SleqpAmplKeywords* ampl_keywords);
 double
 sleqp_ampl_keywords_time_limit(SleqpAmplKeywords* ampl_keywords);
 
+bool
+sleqp_ampl_keywords_halt_on_error(SleqpAmplKeywords* ampl_keywords);
+
 SLEQP_RETCODE
 sleqp_ampl_keywords_free(SleqpAmplKeywords** star);
 

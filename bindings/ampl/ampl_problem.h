@@ -10,6 +10,7 @@ SLEQP_RETCODE
 sleqp_ampl_problem_create(SleqpProblem** star,
                           SleqpAmplData* data,
                           FILE* nl,
-                          SleqpParams* params);
+                          SleqpParams* params,
+                          bool halt_on_error);
 
 #endif /* SLEQP_AMPL_PROBLEM_H */
