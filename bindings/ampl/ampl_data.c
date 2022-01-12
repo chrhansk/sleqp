@@ -37,7 +37,6 @@ sleqp_ampl_data_create(SleqpAmplData** star, ASL* asl)
 
   int num_variables   = n_var;
   int num_constraints = n_con;
-  int num_general     = nlc;
   int num_linear      = n_con - nlc;
 
   data->num_variables   = num_variables;

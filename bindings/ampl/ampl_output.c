@@ -50,6 +50,7 @@ map_state(SLEQP_ACTIVE_STATE state)
   }
 
   assert(0);
+  return AMPL_STATE_NONE;
 }
 
 static SLEQP_RETCODE
