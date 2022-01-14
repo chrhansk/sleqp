@@ -1,5 +1,6 @@
 #include "hess_struct.h"
 
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -45,19 +46,19 @@ sleqp_hess_struct_push_block(SleqpHessStruct* hessian_struct, int end)
 {
   if (end > hessian_struct->dimension)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid block index (%d)", end);
   }
 
   const int num_blocks = sleqp_hess_struct_num_blocks(hessian_struct);
 
   if (num_blocks >= hessian_struct->dimension)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid block index (%d)", end);
   }
 
   if (num_blocks > 0 && end <= hessian_struct->block_ends[num_blocks - 1])
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid block index (%d)", end);
   }
 
   hessian_struct->block_ends[num_blocks] = end;
@@ -82,7 +83,7 @@ sleqp_hess_struct_block_range(const SleqpHessStruct* hessian_struct,
 {
   if (block > hessian_struct->num_blocks)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid block index (%d)", block);
   }
 
   *begin = (block > 0) ? hessian_struct->block_ends[block - 1] : 0;

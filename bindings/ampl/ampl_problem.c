@@ -9,9 +9,9 @@
   {                                                                            \
     if (errorptr && (*errorptr != 0))                                          \
     {                                                                          \
-      sleqp_log_error("Error during evaluation. "                              \
-                      "Run with \"halt_on_ampl_error yes\" to see details.");  \
-      return SLEQP_INTERNAL_ERROR;                                             \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "Error during evaluation. "                                  \
+                  "Run with \"halt_on_ampl_error yes\" to see details.");      \
     }                                                                          \
   } while (false)
 
@@ -365,9 +365,10 @@ sleqp_ampl_problem_create(SleqpProblem** star,
 
   // read remaining data from stub and set functions
   int retcode = pfgh_read(nl, ASL_return_read_err);
+
   if (retcode != ASL_readerr_none)
   {
-    sleqp_log_error("Error in reading nl file %d", retcode);
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Error %d in reading nl file", retcode);
   }
 
   SLEQP_CALL(map_ampl_inf(data->var_lb, num_variables));

@@ -1,22 +1,18 @@
 #cython: language_level=3
 
-class SLEQPError(Exception):
-  def __init__(self, code):
-    assert code != csleqp.SLEQP_OKAY
-    self.code = code
+# SLEQP_FAILED_ASSERTION,
+# SLEQP_NOMEM,
+# SLEQP_INTERNAL_ERROR,
+# SLEQP_FUNC_EVAL_ERROR,
+# SLEQP_MATH_ERROR,
+# SLEQP_INVALID_DERIV,
+# SLEQP_ILLEGAL_ARGUMENT
 
-  def __str__(self):
-    messages = {
-      csleqp.SLEQP_NOMEM: "Out of memory",
-      csleqp.SLEQP_ILLEGAL_ARGUMENT: "Illegal argument",
-      csleqp.SLEQP_INVALID_DERIV: "Invalid derivative",
-      csleqp.SLEQP_INTERNAL_ERROR: "Internal error"
-    }
-
-    assert self.code in messages
-
-    return messages[self.code]
+cdef _raise_exception():
+  cdef csleqp.SLEQP_ERROR_TYPE error_type = csleqp.sleqp_error_type()
+  cdef const char* error_msg = csleqp.sleqp_error_msg()
+  raise Exception(error_msg.decode('UTF-8'))
 
 cdef csleqp_call(csleqp.SLEQP_RETCODE retcode):
   if retcode != csleqp.SLEQP_OKAY:
-    raise SLEQPError(retcode)
+    _raise_exception()

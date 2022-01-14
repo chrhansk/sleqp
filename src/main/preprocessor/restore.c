@@ -1,6 +1,7 @@
 #include "restore.h"
 
 #include "cmp.h"
+#include "error.h"
 #include "fail.h"
 #include "log.h"
 #include "mem.h"
@@ -750,8 +751,9 @@ sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
 
   if (reject)
   {
-    sleqp_log_error("Function rejected restoration");
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_FUNC_EVAL_ERROR,
+                "Function rejected restored solution",
+                "");
   }
 
   SLEQP_CALL(prepare_working_set(restoration,

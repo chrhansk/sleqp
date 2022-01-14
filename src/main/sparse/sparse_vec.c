@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "cmp.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -708,7 +709,9 @@ sleqp_sparse_vector_dump_to_file(const SleqpSparseVec* vec, const char* name)
 
   if (!output)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Failed to open output file '%s'",
+                name);
   }
 
   SLEQP_CALL(sleqp_sparse_vector_dump(vec, output));

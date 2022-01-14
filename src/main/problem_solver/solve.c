@@ -1,6 +1,7 @@
 #include "problem_solver.h"
 
 #include "cmp.h"
+#include "error.h"
 #include "feas.h"
 
 static bool
@@ -97,8 +98,7 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
 
   if (reject_initial)
   {
-    sleqp_log_error("Function rejected initial solution");
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Function rejected initial solution");
   }
 
   {

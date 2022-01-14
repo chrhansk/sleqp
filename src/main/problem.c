@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "cmp.h"
+#include "error.h"
 #include "fail.h"
 #include "mem.h"
 
@@ -86,22 +87,22 @@ check_bounds(const SleqpSparseVec* lb,
     {
       if (cons_bounds)
       {
-        sleqp_log_error("Inconsistent constraint bound values at index %d: "
-                        "lower = %f > %f = upper",
-                        idx,
-                        lb_val,
-                        ub_val);
+        sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                    "Inconsistent constraint bound values at index %d: "
+                    "lower = %f > %f = upper",
+                    idx,
+                    lb_val,
+                    ub_val);
       }
       else
       {
-        sleqp_log_error("Inconsistent variable bound values at index %d: lower "
-                        "= %f > %f = upper",
-                        idx,
-                        lb_val,
-                        ub_val);
+        sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                    "Inconsistent variable bound values at index %d: lower "
+                    "= %f > %f = upper",
+                    idx,
+                    lb_val,
+                    ub_val);
       }
-
-      return SLEQP_ILLEGAL_ARGUMENT;
     }
 
     if (valid_lb)

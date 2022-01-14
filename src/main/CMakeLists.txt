@@ -15,6 +15,7 @@ set(COMMON_SRC
   dyn.c
   enum.c
   eqp.c
+  error.c
   factorization/factorization.c
   feas.c
   func.c

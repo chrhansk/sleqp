@@ -54,15 +54,13 @@ ampl_main(int argc, char* argv[])
 
   if (stub == NULL)
   {
-    sleqp_log_error("Failed to open nl stub.");
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Failed to open nl stub.");
   }
   // get problem dimensions from stub
   FILE* nl = jac0dim(stub, strlen(stub));
   if (nl == NULL)
   {
-    sleqp_log_error("Failed to read nl stub.");
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Failed to read nl stub.");
   }
 
   sleqp_log_info(
@@ -98,7 +96,9 @@ ampl_main(int argc, char* argv[])
 
   SLEQP_RETCODE retcode = sleqp_solver_solve(solver, iter_limit, time_limit);
 
-  SLEQP_CALL(sleqp_ampl_report(problem, solver, asl, &Oinfo));
+  bool error_occured = (retcode != SLEQP_OKAY);
+
+  SLEQP_CALL(sleqp_ampl_report(problem, solver, asl, &Oinfo, error_occured));
 
   // free data
   SLEQP_CALL(sleqp_solver_release(&solver));

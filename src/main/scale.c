@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "cmp.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -102,14 +103,16 @@ sleqp_scaling_create(SleqpScaling** star,
 
   if (num_variables < 0)
   {
-    sleqp_log_error("Negative number of variables provided to scaling");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Negative number of variables (%d) provided to scaling",
+                num_variables);
   }
 
   if (num_constraints < 0)
   {
-    sleqp_log_error("Negative number of constraints provided to scaling");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Negative number of constraints (%d) provided to scaling",
+                num_constraints);
   }
 
   scaling->refcount = 1;
@@ -169,7 +172,7 @@ sleqp_scaling_set_var_weight(SleqpScaling* scaling, int index, int weight)
 {
   if (index < 0 || index >= scaling->num_variables)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid variable index %d", index);
   }
 
   scaling->var_weights[index] = weight;
@@ -196,7 +199,7 @@ sleqp_scaling_set_var_weight_from_nominal(SleqpScaling* scaling,
 {
   if (index < 0 || index >= scaling->num_variables)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid variable index %d", index);
   }
 
   frexp(nominal_value, scaling->var_weights + index);
@@ -209,7 +212,7 @@ sleqp_scaling_set_cons_weight(SleqpScaling* scaling, int index, int weight)
 {
   if (index < 0 || index >= scaling->num_constraints)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid constraint index %d", index);
   }
 
   scaling->cons_weights[index] = weight;
@@ -236,7 +239,7 @@ sleqp_scaling_set_cons_weight_from_nominal(SleqpScaling* scaling,
 {
   if (index < 0 || index >= scaling->num_constraints)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid constraint index %d", index);
   }
 
   frexp(nominal_value, scaling->cons_weights + index);

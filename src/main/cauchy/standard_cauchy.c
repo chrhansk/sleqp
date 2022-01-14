@@ -3,6 +3,7 @@
 #include <math.h>
 
 #include "cmp.h"
+#include "error.h"
 #include "fail.h"
 #include "mem.h"
 #include "merit.h"
@@ -630,8 +631,7 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
 
   if (status != SLEQP_LP_STATUS_OPTIMAL)
   {
-    sleqp_log_error("Invalid LP status: %d", status);
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Invalid LP status: %d", status);
   }
 
 #if !defined(NDEBUG)

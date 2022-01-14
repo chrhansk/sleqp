@@ -82,7 +82,7 @@ cdef class Solver:
                                             time_limit)
 
     if retcode != csleqp.SLEQP_OKAY:
-      exception = SLEQPError(retcode)
+      exception = Exception("Failed to solve")
       call_exception = self.problem.func.call_exception
       if call_exception:
         self.problem.func.call_exception = None

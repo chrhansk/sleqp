@@ -1,9 +1,11 @@
 #ifndef SLEQP_MATH_ERROR_H
 #define SLEQP_MATH_ERROR_H
 
-#include "types.h"
 #include <fenv.h>
 #include <math.h>
+
+#include "error.h"
+#include "types.h"
 
 #define SLEQP_INIT_MATH_CHECK                                                  \
   fenv_t fenv_current;                                                         \
@@ -16,22 +18,22 @@
     }                                                                          \
   } while (false)
 
-#define SLEQP_MATH_CHECK_ERRORS(error_flags, has_errors)                       \
+#define SLEQP_MATH_CHECK_ERRORS(error_flags)                                   \
   do                                                                           \
   {                                                                            \
     if (math_errhandling & MATH_ERREXCEPT)                                     \
     {                                                                          \
-      *(has_errors) = fetestexcept(error_flags);                               \
+      bool has_errors = fetestexcept(error_flags);                             \
                                                                                \
-      if (*(has_errors))                                                       \
+      if (has_errors)                                                          \
       {                                                                        \
-        sleqp_log_error(                                                       \
-          "Encountered floating point errors (%s, %s, %s, %s, %s)",            \
-          fetestexcept(FE_DIVBYZERO) ? "FE_DIVBYZERO" : "",                    \
-          fetestexcept(FE_INEXACT) ? "FE_INEXACT" : "",                        \
-          fetestexcept(FE_INVALID) ? "FE_INVALID" : "",                        \
-          fetestexcept(FE_OVERFLOW) ? "FE_OVERFLOW" : "",                      \
-          fetestexcept(FE_UNDERFLOW) ? "FE_UNDERFLOW" : "");                   \
+        sleqp_raise(SLEQP_MATH_ERROR,                                          \
+                    "Encountered floating point errors (%s, %s, %s, %s, %s)",  \
+                    fetestexcept(FE_DIVBYZERO) ? "FE_DIVBYZERO" : "",          \
+                    fetestexcept(FE_INEXACT) ? "FE_INEXACT" : "",              \
+                    fetestexcept(FE_INVALID) ? "FE_INVALID" : "",              \
+                    fetestexcept(FE_OVERFLOW) ? "FE_OVERFLOW" : "",            \
+                    fetestexcept(FE_UNDERFLOW) ? "FE_UNDERFLOW" : "");         \
       }                                                                        \
     }                                                                          \
   } while (false)
@@ -61,17 +63,8 @@
   {                                                                            \
     if (math_errhandling & MATH_ERREXCEPT)                                     \
     {                                                                          \
-      bool has_errors = false;                                                 \
-      SLEQP_MATH_CHECK_ERRORS(error_flags, &has_errors);                       \
-      if (!has_errors)                                                         \
-      {                                                                        \
-        SLEQP_MATH_CHECK_WARNINGS(warn_flags);                                 \
-      }                                                                        \
-      fesetenv(&fenv_current);                                                 \
-      if (has_errors)                                                          \
-      {                                                                        \
-        return SLEQP_MATH_ERROR;                                               \
-      }                                                                        \
+      SLEQP_MATH_CHECK_WARNINGS(warn_flags);                                   \
+      SLEQP_MATH_CHECK_ERRORS(error_flags);                                    \
     }                                                                          \
   } while (false)
 

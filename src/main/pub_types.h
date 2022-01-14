@@ -14,15 +14,21 @@
 
 typedef enum
 {
-  SLEQP_NOMEM            = -6,
-  SLEQP_FAILED_ASSERTION = -5,
-  SLEQP_ILLEGAL_ARGUMENT = -4,
-  SLEQP_INVALID_DERIV    = -3,
-  SLEQP_INTERNAL_ERROR   = -2,
-  SLEQP_MATH_ERROR       = -1,
-  SLEQP_OKAY             = 0,
-  SLEQP_ABORT_TIME       = 1,
+  SLEQP_ERROR      = -1,
+  SLEQP_OKAY       = 0,
+  SLEQP_ABORT_TIME = 1,
 } SLEQP_RETCODE;
+
+typedef enum
+{
+  SLEQP_FAILED_ASSERTION,
+  SLEQP_NOMEM,
+  SLEQP_INTERNAL_ERROR,
+  SLEQP_FUNC_EVAL_ERROR,
+  SLEQP_MATH_ERROR,
+  SLEQP_INVALID_DERIV,
+  SLEQP_ILLEGAL_ARGUMENT
+} SLEQP_ERROR_TYPE;
 
 #ifdef SLEQP_HAVE_WARN_UNUSED_RESULT
 #define SLEQP_NODISCARD __attribute__((warn_unused_result))
@@ -51,19 +57,13 @@ typedef enum
   SLEQP_STATUS_ABORT_TIME
 } SLEQP_STATUS;
 
-SLEQP_EXPORT const char*
-sleqp_retcode_str(SLEQP_RETCODE retcode);
-
 #define SLEQP_CALL(x)                                                          \
   do                                                                           \
   {                                                                            \
     const SLEQP_RETCODE _status = (x);                                         \
     if (_status < SLEQP_OKAY)                                                  \
     {                                                                          \
-      sleqp_log_error("Error <%d> (%s) in function %s",                        \
-                      _status,                                                 \
-                      sleqp_retcode_str(_status),                              \
-                      __func__);                                               \
+      sleqp_log_error("Error in function %s", __func__);                       \
       return _status;                                                          \
     }                                                                          \
     else if (_status != SLEQP_OKAY)                                            \

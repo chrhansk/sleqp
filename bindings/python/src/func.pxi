@@ -35,7 +35,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
 
   except BaseException as exception:
     func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -72,7 +72,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val(csleqp.SleqpFunc* func,
 
   except BaseException as exception:
     func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -106,7 +106,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad(csleqp.SleqpFunc* func,
 
   except BaseException as exception:
     func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -140,7 +140,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
 
   except BaseException as exception:
     func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -179,7 +179,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
 
   except BaseException as exception:
     func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -226,7 +226,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
 
   except BaseException as exception:
     func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 

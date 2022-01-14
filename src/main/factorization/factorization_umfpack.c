@@ -6,6 +6,7 @@
 #include <umfpack.h>
 
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -56,8 +57,7 @@ umfpack_get_error_string(int value, const char** message)
     (*message) = "UMFPACK_ERROR_internal_error";
     break;
   default:
-    (*message) = "Unknown";
-    return SLEQP_INTERNAL_ERROR;
+    (*message) = "<Unknown>";
   }
 
   return SLEQP_OKAY;
@@ -74,20 +74,10 @@ umfpack_get_error_string(int value, const char** message)
       SLEQP_CALL(                                                              \
         umfpack_get_error_string(umfpack_status, &umfpack_error_string));      \
                                                                                \
-      sleqp_log_error("Caught Umfpack error <%d> (%s)",                        \
-                      umfpack_status,                                          \
-                      umfpack_error_string);                                   \
-                                                                               \
-      switch (umfpack_status)                                                  \
-      {                                                                        \
-      case UMFPACK_ERROR_invalid_matrix:                                       \
-      case UMFPACK_ERROR_argument_missing:                                     \
-        return SLEQP_ILLEGAL_ARGUMENT;                                         \
-      case UMFPACK_ERROR_out_of_memory:                                        \
-        return SLEQP_NOMEM;                                                    \
-      default:                                                                 \
-        return SLEQP_INTERNAL_ERROR;                                           \
-      }                                                                        \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "Caught Umfpack error <%d> (%s)",                            \
+                  umfpack_status,                                              \
+                  umfpack_error_string);                                       \
     }                                                                          \
   } while (0)
 

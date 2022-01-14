@@ -169,17 +169,11 @@ ma97_get_error_string(int value, const char** message)
     if (MA97_IS_ERROR(ma97_status))                                            \
     {                                                                          \
                                                                                \
-      sleqp_log_error("Caught hsl_ma97 error <%d> (%s) in function %s",        \
-                      ma97_status,                                             \
-                      ma97_error_string,                                       \
-                      __func__);                                               \
-                                                                               \
-      if (ma97_status == MA97_ERROR_ALLOCATION)                                \
-      {                                                                        \
-        return SLEQP_NOMEM;                                                    \
-      }                                                                        \
-                                                                               \
-      return SLEQP_INTERNAL_ERROR;                                             \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "Caught hsl_ma97 error <%d> (%s) in function %s",            \
+                  ma97_status,                                                 \
+                  ma97_error_string,                                           \
+                  __func__);                                                   \
     }                                                                          \
     else                                                                       \
     {                                                                          \

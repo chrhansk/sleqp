@@ -1,6 +1,7 @@
 #include "problem_scaling.h"
 
 #include "cmp.h"
+#include "error.h"
 #include "func.h"
 #include "log.h"
 #include "lsq.h"
@@ -330,14 +331,20 @@ sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   if (num_variables != sleqp_scaling_num_vars(scaling))
   {
-    sleqp_log_error("Invalid number of variables provided to scaled problem");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Invalid number of variables provided to scaled problem, "
+                "expected %d, actual: %d",
+                num_variables,
+                sleqp_scaling_num_vars(scaling));
   }
 
   if (num_constraints != sleqp_scaling_num_cons(scaling))
   {
-    sleqp_log_error("Invalid number of constraints provided to scaled problem");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Invalid number of constraints provided to scaled problem, "
+                "expected %d, actual %d",
+                num_constraints,
+                sleqp_scaling_num_cons(scaling));
   }
 
   problem_scaling->refcount = 1;

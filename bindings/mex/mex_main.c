@@ -51,6 +51,26 @@ mex_log_handler(SLEQP_LOG_LEVEL level, time_t time, const char* message)
   mexPrintf("%5s: %s\n", prefix, message);
 }
 
+const char*
+error_prefix(SLEQP_ERROR_TYPE error_type)
+{
+  switch (error_type)
+  {
+  case SLEQP_INTERNAL_ERROR:
+    return MEX_IDENTIFIER_INTERNAL_ERROR;
+  case SLEQP_FUNC_EVAL_ERROR:
+    return MEX_IDENTIFIER_FUNC_EVAL_ERROR;
+  case SLEQP_MATH_ERROR:
+    return MEX_IDENTIFIER_MATH_ERROR;
+  case SLEQP_INVALID_DERIV:
+    return MEX_IDENTIFIER_INVALID_DERIV;
+  case SLEQP_ILLEGAL_ARGUMENT:
+    return MEX_IDENTIFIER_ILLEGAL_ARGUMENT;
+  }
+
+  return MEX_IDENTIFIER_DEFAULT;
+}
+
 SLEQP_EXPORT void
 mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 {
@@ -65,14 +85,14 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 
   if (nrhs < 1)
   {
-    mexErrMsgIdAndTxt(MEX_MSG_IDENTIFIER, "Need at least one argument");
+    mexErrMsgIdAndTxt(MEX_IDENTIFIER_DEFAULT, "Need at least one argument");
 
     return;
   }
 
   if (!mxIsChar(prhs[0]))
   {
-    mexErrMsgIdAndTxt(MEX_MSG_IDENTIFIER,
+    mexErrMsgIdAndTxt(MEX_IDENTIFIER_DEFAULT,
                       "First argument needs to be a string");
 
     return;
@@ -82,7 +102,7 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 
   if (mxGetString(prhs[0], command_name, COMMAND_BUFSIZE) == 1)
   {
-    mexErrMsgIdAndTxt(MEX_MSG_IDENTIFIER, "Failed to extract command name");
+    mexErrMsgIdAndTxt(MEX_IDENTIFIER_DEFAULT, "Failed to extract command name");
 
     return;
   }
@@ -96,7 +116,7 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 
       if (commands[i].nlhs != nlhs)
       {
-        mexErrMsgIdAndTxt(MEX_MSG_IDENTIFIER,
+        mexErrMsgIdAndTxt(MEX_IDENTIFIER_DEFAULT,
                           "Invalid number of return values for function '%s', "
                           "expected %d, received %d",
                           command_name,
@@ -107,7 +127,7 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 
       if (commands[i].nrhs != nrhs)
       {
-        mexErrMsgIdAndTxt(MEX_MSG_IDENTIFIER,
+        mexErrMsgIdAndTxt(MEX_IDENTIFIER_DEFAULT,
                           "Invalid number of parameters for function '%s', "
                           "expected %d, received %d",
                           command_name,
@@ -120,16 +140,14 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
 
       if (retcode != SLEQP_OKAY)
       {
-        mexErrMsgIdAndTxt(MEX_MSG_IDENTIFIER,
-                          "Error executing command %s",
-                          command_name);
+        mexErrMsgIdAndTxt(error_prefix(sleqp_error_type()), sleqp_error_msg());
       }
 
       return;
     }
   }
 
-  mexErrMsgIdAndTxt(MEX_MSG_IDENTIFIER, "Invalid command %s", command_name);
+  mexErrMsgIdAndTxt(MEX_IDENTIFIER_DEFAULT, "Invalid command %s", command_name);
 
   return;
 }

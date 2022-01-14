@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "enum.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 #include "types.h"
@@ -253,11 +254,16 @@ valid_member(SLEQP_OPTION_ENUM option, int value)
   return false;
 }
 
+#define OPT_VALID(option, NUM_OPTIONS)                                         \
+  (((option) >= 0) && ((option) < (NUM_OPTIONS)))
+
 int
 sleqp_options_enum_value(const SleqpOptions* options, SLEQP_OPTION_ENUM option)
 {
-  assert(option >= 0);
-  assert(option < SLEQP_NUM_ENUM_OPTIONS);
+  if (!OPT_VALID(option, SLEQP_NUM_ENUM_OPTIONS))
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid enum option (%d)", option);
+  }
 
   return options->enum_values[option];
 }
@@ -267,12 +273,17 @@ sleqp_options_set_enum_value(SleqpOptions* options,
                              SLEQP_OPTION_ENUM option,
                              int value)
 {
-  assert(option >= 0);
-  assert(option < SLEQP_NUM_ENUM_OPTIONS);
+  if (!OPT_VALID(option, SLEQP_NUM_ENUM_OPTIONS))
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid enum option (%d)", option);
+  }
 
   if (!valid_member(option, value))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Invalid option value (%d) for option %s",
+                value,
+                sleqp_options_enum_desc(option));
   }
 
   options->enum_values[option] = value;
@@ -283,8 +294,10 @@ sleqp_options_set_enum_value(SleqpOptions* options,
 int
 sleqp_options_int_value(const SleqpOptions* options, SLEQP_OPTION_INT option)
 {
-  assert(option >= 0);
-  assert(option < SLEQP_NUM_INT_OPTIONS);
+  if (!OPT_VALID(option, SLEQP_NUM_INT_OPTIONS))
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid int option (%d)", option);
+  }
 
   return options->int_values[option];
 }
@@ -294,8 +307,10 @@ sleqp_options_set_int_value(SleqpOptions* options,
                             SLEQP_OPTION_INT option,
                             int value)
 {
-  assert(option >= 0);
-  assert(option < SLEQP_NUM_INT_OPTIONS);
+  if (!OPT_VALID(option, SLEQP_NUM_INT_OPTIONS))
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid int option (%d)", option);
+  }
 
   options->int_values[option] = value;
 
@@ -305,8 +320,10 @@ sleqp_options_set_int_value(SleqpOptions* options,
 bool
 sleqp_options_bool_value(const SleqpOptions* options, SLEQP_OPTION_BOOL option)
 {
-  assert(option >= 0);
-  assert(option < SLEQP_NUM_BOOL_OPTIONS);
+  if (!OPT_VALID(option, SLEQP_NUM_BOOL_OPTIONS))
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid bool option (%d)", option);
+  }
 
   return options->bool_values[option];
 }
@@ -316,8 +333,10 @@ sleqp_options_set_bool_value(SleqpOptions* options,
                              SLEQP_OPTION_BOOL option,
                              bool value)
 {
-  assert(option >= 0);
-  assert(option < SLEQP_NUM_BOOL_OPTIONS);
+  if (!OPT_VALID(option, SLEQP_NUM_BOOL_OPTIONS))
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid bool option (%d)", option);
+  }
 
   options->bool_values[option] = value;
 

@@ -238,6 +238,24 @@ prepare_trial_point_solver(SleqpProblemSolver* solver)
   return SLEQP_OKAY;
 }
 
+static double
+percent_reduction(double current, double trial)
+{
+  if (current == 0.)
+  {
+    return 0.;
+  }
+
+  double value = 100. * (current - trial) / current;
+
+  if (current < 0.)
+  {
+    return -value;
+  }
+
+  return value;
+}
+
 SLEQP_RETCODE
 sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 {
@@ -338,10 +356,17 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                                   solver->penalty_parameter,
                                   &exact_trial_value));
 
+      sleqp_log_debug("Current merit function value: %e", exact_iterate_value);
+
       sleqp_log_debug(
-        "Current merit function value: %e, trial merit function value: %e",
-        exact_iterate_value,
-        exact_trial_value);
+        "Model merit function value: %e, reduction: %g%%",
+        model_trial_value,
+        percent_reduction(exact_iterate_value, model_trial_value));
+
+      sleqp_log_debug(
+        "Exact merit function value: %e, reduction: %g%%",
+        exact_trial_value,
+        percent_reduction(exact_iterate_value, exact_trial_value));
 
       SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
                                        exact_iterate_value,
@@ -430,6 +455,11 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                                            model_trial_value,
                                            &step_accepted,
                                            &reduction_ratio));
+
+          sleqp_log_debug(
+            "Exact merit function value: %e, reduction: %g%%",
+            soc_exact_trial_value,
+            percent_reduction(exact_iterate_value, soc_exact_trial_value));
 
           sleqp_log_debug("SOC Reduction ratio: %e", reduction_ratio);
         }

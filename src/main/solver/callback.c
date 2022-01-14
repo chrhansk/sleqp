@@ -1,5 +1,7 @@
 #include "solver.h"
 
+#include "error.h"
+
 SLEQP_RETCODE
 sleqp_solver_add_callback(SleqpSolver* solver,
                           SLEQP_SOLVER_EVENT solver_event,
@@ -8,8 +10,9 @@ sleqp_solver_add_callback(SleqpSolver* solver,
 {
   if (solver_event < 0 || solver_event >= SLEQP_SOLVER_NUM_EVENTS)
   {
-    sleqp_log_error("Invalid callback");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Invalid event number %d",
+                solver_event);
   }
 
   SLEQP_CALL(sleqp_callback_handler_add(solver->callback_handlers[solver_event],
@@ -27,8 +30,9 @@ sleqp_solver_remove_callback(SleqpSolver* solver,
 {
   if (solver_event < 0 || solver_event >= SLEQP_SOLVER_NUM_EVENTS)
   {
-    sleqp_log_error("Invalid callback");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Invalid event number %d",
+                solver_event);
   }
 
   SLEQP_CALL(

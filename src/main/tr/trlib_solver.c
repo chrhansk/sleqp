@@ -6,6 +6,7 @@
 #include <trlib.h>
 
 #include "cmp.h"
+#include "error.h"
 #include "fail.h"
 #include "mem.h"
 
@@ -631,8 +632,9 @@ trlib_loop(SolverData* data,
     }
     default:
     {
-      sleqp_log_error("Invalid trlib action requested: %d", action);
-      return SLEQP_INTERNAL_ERROR;
+      sleqp_raise(SLEQP_INTERNAL_ERROR,
+                  "Invalid trlib action requested: %d",
+                  action);
     }
     }
 
@@ -750,7 +752,9 @@ trlib_solve(SleqpAugJac* jacobian,
 
   if (failure_occured)
   {
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR,
+                "Failure %s occured in trlib",
+                trlib_status_string);
   }
 
   return SLEQP_OKAY;
