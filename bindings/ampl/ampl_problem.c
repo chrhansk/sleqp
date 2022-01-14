@@ -100,8 +100,27 @@ ampl_func_data_create(AmplFuncData** star,
   {
     for (cgrad* cg = Cgrad[i]; cg; cg = cg->next)
     {
+      assert(cg->goff >= 0);
+      assert(cg->goff < data->jac_nnz);
+
       data->jac_rows[cg->goff] = i;
       data->jac_cols[cg->goff] = cg->varno;
+    }
+  }
+
+  for (int i = 0; i + 1 < data->jac_nnz; ++i)
+  {
+    assert(data->jac_cols[i] >= 0);
+    assert(data->jac_cols[i] < num_variables);
+
+    assert(data->jac_rows[i] >= 0);
+    assert(data->jac_rows[i] < num_constraints);
+
+    assert(data->jac_cols[i] <= data->jac_cols[i + 1]);
+
+    if (data->jac_cols[i] == data->jac_cols[i + 1])
+    {
+      assert(data->jac_rows[i] < data->jac_rows[i + 1]);
     }
   }
 
