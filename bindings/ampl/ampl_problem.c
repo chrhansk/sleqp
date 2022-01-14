@@ -2,7 +2,6 @@
 
 #include <assert.h>
 
-#include "ampl_mem.h"
 #include "ampl_util.h"
 
 #define SLEQP_AMPL_ERROR_CHECK(errorptr)                                       \
@@ -50,7 +49,7 @@ ampl_func_data_create(AmplFuncData** star,
                       bool halt_on_error)
 {
   ASL* asl = ampl_data->asl;
-  SLEQP_CALL(sleqp_ampl_malloc(star));
+  SLEQP_CALL(sleqp_malloc(star));
 
   AmplFuncData* data = *star;
 
@@ -83,18 +82,18 @@ ampl_func_data_create(AmplFuncData** star,
     data->offset = 0.;
   }
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->x, num_variables));
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->cons_vals, num_constraints));
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->multipliers, num_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&data->x, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->cons_vals, num_constraints));
+  SLEQP_CALL(sleqp_alloc_array(&data->multipliers, num_constraints));
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->func_grad, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->func_grad, num_variables));
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->direction, num_variables));
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->hessian_product, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->direction, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->hessian_product, num_variables));
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->jac_rows, data->jac_nnz));
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->jac_cols, data->jac_nnz));
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->jac_vals, data->jac_nnz));
+  SLEQP_CALL(sleqp_alloc_array(&data->jac_rows, data->jac_nnz));
+  SLEQP_CALL(sleqp_alloc_array(&data->jac_cols, data->jac_nnz));
+  SLEQP_CALL(sleqp_alloc_array(&data->jac_vals, data->jac_nnz));
 
   for (int i = 0; i < num_constraints; ++i)
   {
@@ -133,18 +132,18 @@ ampl_func_data_free(void* func_data)
   AmplFuncData* data  = (AmplFuncData*)func_data;
   AmplFuncData** star = &data;
 
-  sleqp_ampl_free(&data->jac_vals);
-  sleqp_ampl_free(&data->jac_cols);
-  sleqp_ampl_free(&data->jac_rows);
-  sleqp_ampl_free(&data->hessian_product);
-  sleqp_ampl_free(&data->direction);
+  sleqp_free(&data->jac_vals);
+  sleqp_free(&data->jac_cols);
+  sleqp_free(&data->jac_rows);
+  sleqp_free(&data->hessian_product);
+  sleqp_free(&data->direction);
 
-  sleqp_ampl_free(&data->func_grad);
-  sleqp_ampl_free(&data->multipliers);
-  sleqp_ampl_free(&data->cons_vals);
-  sleqp_ampl_free(&data->x);
+  sleqp_free(&data->func_grad);
+  sleqp_free(&data->multipliers);
+  sleqp_free(&data->cons_vals);
+  sleqp_free(&data->x);
 
-  sleqp_ampl_free(star);
+  sleqp_free(star);
 
   return SLEQP_OKAY;
 }

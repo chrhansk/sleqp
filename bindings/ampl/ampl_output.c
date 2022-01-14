@@ -1,5 +1,4 @@
 #include "ampl_output.h"
-#include "ampl_mem.h"
 #include "ampl_suffix.h"
 #include "ampl_util.h"
 
@@ -64,8 +63,8 @@ set_suffixes(SleqpProblem* problem, SleqpSolver* solver, ASL* asl)
   const int num_vars = sleqp_problem_num_vars(problem);
   const int num_cons = sleqp_problem_num_cons(problem);
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&var_stats, num_vars));
-  SLEQP_CALL(sleqp_ampl_alloc_array(&cons_stats, num_cons));
+  SLEQP_CALL(sleqp_alloc_array(&var_stats, num_vars));
+  SLEQP_CALL(sleqp_alloc_array(&cons_stats, num_cons));
 
   SleqpIterate* iterate;
 
@@ -187,11 +186,11 @@ sleqp_ampl_report(SleqpProblem* problem,
   double* primal;
   double* cons_dual;
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&primal, num_vars));
+  SLEQP_CALL(sleqp_alloc_array(&primal, num_vars));
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_iterate_primal(iterate), primal));
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&cons_dual, num_cons));
+  SLEQP_CALL(sleqp_alloc_array(&cons_dual, num_cons));
 
   SLEQP_CALL(
     sleqp_sparse_vector_to_raw(sleqp_iterate_cons_dual(iterate), cons_dual));
@@ -209,8 +208,8 @@ sleqp_ampl_report(SleqpProblem* problem,
   SLEQP_CALL(
     report_with_status_message(solver, asl, option_info, primal, cons_dual));
 
-  sleqp_ampl_free(&cons_dual);
-  sleqp_ampl_free(&primal);
+  sleqp_free(&cons_dual);
+  sleqp_free(&primal);
 
   return SLEQP_OKAY;
 }

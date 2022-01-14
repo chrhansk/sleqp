@@ -1,7 +1,5 @@
 #include "ampl_keywords.h"
 
-#include "ampl_mem.h"
-
 typedef struct
 {
   union
@@ -394,7 +392,7 @@ sleqp_ampl_keywords_create(SleqpAmplKeywords** star,
                            SleqpOptions* options,
                            SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_ampl_malloc(star));
+  SLEQP_CALL(sleqp_malloc(star));
 
   SleqpAmplKeywords* ampl_keywords = *star;
 
