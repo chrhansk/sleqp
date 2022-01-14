@@ -1,6 +1,7 @@
 set(MEX_SOURCES
   mex_func.c
   mex_func_common.c
+  mex_info.c
   mex_lsq.c
   mex_main.c
   mex_output.c
@@ -14,6 +15,7 @@ set(SLEQP_MATLAB_OUTPUT_DIR "${MATLAB_OUTPUT_DIR}/+sleqp")
 set(MATLAB_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 set(MATLAB_SOURCES
+  sleqp/info.m
   sleqp/solve.m
   sleqp/solve_lsq.m)
 
