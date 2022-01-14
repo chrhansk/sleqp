@@ -18,11 +18,8 @@
 
 #include "step/step_rule.h"
 
-#define INFO_BUF_SIZE 100
 #define SOLVER_INFO_BUF_SIZE 400
 
-thread_local char lps_info[INFO_BUF_SIZE];
-thread_local char fact_info[INFO_BUF_SIZE];
 thread_local char solver_info[SOLVER_INFO_BUF_SIZE];
 
 static SLEQP_RETCODE
@@ -342,68 +339,15 @@ sleqp_solver_create(SleqpSolver** star,
   return SLEQP_OKAY;
 }
 
-/*
-static void print_solver(char* buffer,
-                         int len,
-                         const char* name,
-                         const char* version)
-{
-  if(strlen(version) == 0)
-  {
-    snprintf(buffer, len, "%s", name);
-  }
-  else
-  {
-    snprintf(buffer, len, "%s %s", name, version);
-  }
-}
-*/
-
 const char*
 sleqp_solver_info(const SleqpSolver* solver)
 {
-  /*
-  if(solver->lp_interface)
-  {
-    print_solver(lps_info,
-                 INFO_BUF_SIZE,
-                 sleqp_lpi_get_name(solver->lp_interface),
-                 sleqp_lpi_get_version(solver->lp_interface));
-  }
-  else
-  {
-    snprintf(lps_info,
-             INFO_BUF_SIZE,
-             "None");
-  }
-  */
-
-  snprintf(lps_info, INFO_BUF_SIZE, "None");
-
-  /*
-  if(solver->factorization)
-  {
-    print_solver(fact_info,
-                 INFO_BUF_SIZE,
-                 sleqp_factorization_get_name(solver->factorization),
-                 sleqp_factorization_get_version(solver->factorization));
-  }
-  else
-  {
-    snprintf(fact_info,
-             INFO_BUF_SIZE,
-             "None");
-  }
-  */
-
-  snprintf(fact_info, INFO_BUF_SIZE, "None");
-
   snprintf(solver_info,
            SOLVER_INFO_BUF_SIZE,
-           "Sleqp version %s [LP solver: %s] [Factorization: %s] [GitHash %s]",
+           "SLEQP version %s [LP solver: %s] [Factorization: %s] [GitHash %s]",
            SLEQP_VERSION,
-           lps_info,
-           fact_info,
+           SLEQP_LP_SOLVER_NAME " " SLEQP_LP_SOLVER_VERSION,
+           SLEQP_FACT_NAME " " SLEQP_FACT_VERSION,
            SLEQP_GIT_COMMIT_HASH);
 
   return solver_info;
