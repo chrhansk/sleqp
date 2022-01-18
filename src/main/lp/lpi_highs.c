@@ -33,6 +33,10 @@
 #define HIGHS_ITERATION_LIMIT 14
 #define HIGHS_UNKNOWN 15
 
+static const int sense_min             = 1;
+static const int format_sparse_columns = 1;
+static const double objective_offset   = 0.;
+
 typedef struct SleqpLpiHIGHS
 {
   void* highs;
@@ -48,6 +52,23 @@ typedef struct SleqpLpiHIGHS
 
   int* col_basis;
   int* row_basis;
+
+  double* costs;
+  double* col_lb;
+  double* col_ub;
+
+  double* row_lb;
+  double* row_ub;
+
+  enum
+  {
+    NONE       = 0,
+    COL_BOUNDS = (1 << 0),
+    ROW_BOUNDS = (1 << 1),
+    OBJECTIVE  = (1 << 2),
+    COEFFS     = (1 << 3),
+    ALL        = (COL_BOUNDS | ROW_BOUNDS | OBJECTIVE | COEFFS),
+  } dirty;
 
   double* cols_primal_dummysol;
   double* rows_primal_dummysol;
@@ -78,15 +99,6 @@ highs_create_problem(void** star,
 {
   SleqpLpiHIGHS* lp_interface = NULL;
 
-  const int sense_min             = 1;
-  const int format_sparse_columns = 1;
-  const int dummy_nnz             = 0;
-  const double objective_offset   = 0.;
-
-  double* zero_vector_columns;
-  double* zero_vector_rows;
-  int* zero_matrix_colptr;
-
   SLEQP_CALL(sleqp_malloc(&lp_interface));
 
   *lp_interface = (SleqpLpiHIGHS){0};
@@ -99,6 +111,7 @@ highs_create_problem(void** star,
 
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->col_basis, num_cols));
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->row_basis, num_rows));
+
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->cols_primal_dummysol,
                                lp_interface->num_cols));
   SLEQP_CALL(sleqp_alloc_array(&lp_interface->rows_primal_dummysol,
@@ -155,44 +168,30 @@ highs_create_problem(void** star,
 
   // allocate dummy vectors to pass an empty linear program of appropriate size
 
-  SLEQP_CALL(sleqp_alloc_array(&zero_vector_columns, lp_interface->num_cols));
-  SLEQP_CALL(sleqp_alloc_array(&zero_vector_rows, lp_interface->num_rows));
-  SLEQP_CALL(
-    sleqp_alloc_array(&zero_matrix_colptr, lp_interface->num_cols + 1));
+  SLEQP_CALL(sleqp_alloc_array(&lp_interface->costs, num_cols));
+
+  SLEQP_CALL(sleqp_alloc_array(&lp_interface->col_lb, num_cols));
+  SLEQP_CALL(sleqp_alloc_array(&lp_interface->col_ub, num_cols));
+
+  SLEQP_CALL(sleqp_alloc_array(&lp_interface->row_lb, num_rows));
+  SLEQP_CALL(sleqp_alloc_array(&lp_interface->row_ub, num_rows));
 
   for (int i = 0; i < num_cols; ++i)
   {
-    zero_vector_columns[i] = 0.;
-  }
-  for (int i = 0; i < num_rows; ++i)
-  {
-    zero_vector_rows[i] = 0.;
-  }
-  for (int i = 0; i < num_cols + 1; ++i)
-  {
-    zero_matrix_colptr[i] = 0;
+    lp_interface->costs[i] = 0.;
   }
 
-  SLEQP_HIGHS_CALL(Highs_passLp(highs,
-                                lp_interface->num_cols,
-                                lp_interface->num_rows,
-                                dummy_nnz,
-                                format_sparse_columns,
-                                sense_min,
-                                objective_offset,
-                                zero_vector_columns,
-                                zero_vector_columns,
-                                zero_vector_columns,
-                                zero_vector_rows,
-                                zero_vector_rows,
-                                zero_matrix_colptr,
-                                NULL,
-                                NULL),
-                   highs);
+  for (int i = 0; i < num_cols; ++i)
+  {
+    lp_interface->col_lb[i] = 0.;
+  }
 
-  sleqp_free(&zero_vector_columns);
-  sleqp_free(&zero_vector_rows);
-  sleqp_free(&zero_matrix_colptr);
+  for (int i = 0; i < num_cols; ++i)
+  {
+    lp_interface->col_ub[i] = 0.;
+  }
+
+  lp_interface->dirty = ALL;
 
   return SLEQP_OKAY;
 }
@@ -209,6 +208,59 @@ highs_write(void* lp_data, const char* filename)
 }
 
 static SLEQP_RETCODE
+prepare_problem(SleqpLpiHIGHS* lp_interface)
+{
+  // coeffs must be set
+  assert(!(lp_interface->dirty & COEFFS));
+
+  void* highs = lp_interface->highs;
+
+  if (lp_interface->dirty & COL_BOUNDS)
+  {
+
+    for (int j = 0; j < lp_interface->num_cols; ++j)
+    {
+      SLEQP_HIGHS_CALL(Highs_changeColBounds(highs,
+                                             j,
+                                             lp_interface->col_lb[j],
+                                             lp_interface->col_ub[j]),
+                       highs);
+    }
+
+    lp_interface->dirty &= ~(COL_BOUNDS);
+  }
+
+  if (lp_interface->dirty & ROW_BOUNDS)
+  {
+
+    for (int i = 0; i < lp_interface->num_rows; ++i)
+    {
+      SLEQP_HIGHS_CALL(Highs_changeRowBounds(highs,
+                                             i,
+                                             lp_interface->row_lb[i],
+                                             lp_interface->row_ub[i]),
+                       highs);
+    }
+
+    lp_interface->dirty &= ~(ROW_BOUNDS);
+  }
+
+  if (lp_interface->dirty & OBJECTIVE)
+  {
+
+    for (int j = 0; j < lp_interface->num_cols; ++j)
+    {
+      SLEQP_HIGHS_CALL(Highs_changeColCost(highs, j, lp_interface->costs[j]),
+                       highs);
+    }
+
+    lp_interface->dirty &= ~(OBJECTIVE);
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
 {
   int model_status;
@@ -216,6 +268,10 @@ highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
 
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
   void* highs                 = lp_interface->highs;
+
+  SLEQP_CALL(prepare_problem(lp_interface));
+
+  assert(lp_interface->dirty == NONE);
 
   if (time_limit != SLEQP_NONE)
   {
@@ -324,24 +380,21 @@ highs_set_bounds(void* lp_data,
                  double* vars_ub)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
-  void* highs                 = lp_interface->highs;
 
   for (int i = 0; i < num_cols; ++i)
   {
-    SLEQP_HIGHS_CALL(Highs_changeColBounds(highs,
-                                           i,
-                                           adjust_neg_inf(vars_lb[i]),
-                                           adjust_pos_inf(vars_ub[i])),
-                     highs);
+    lp_interface->col_lb[i] = adjust_neg_inf(vars_lb[i]);
+    lp_interface->col_ub[i] = adjust_pos_inf(vars_ub[i]);
+
+    lp_interface->dirty |= COL_BOUNDS;
   }
 
   for (int i = 0; i < num_rows; ++i)
   {
-    SLEQP_HIGHS_CALL(Highs_changeRowBounds(highs,
-                                           i,
-                                           adjust_neg_inf(cons_lb[i]),
-                                           adjust_pos_inf(cons_ub[i])),
-                     highs);
+    lp_interface->row_lb[i] = adjust_neg_inf(cons_lb[i]);
+    lp_interface->row_ub[i] = adjust_pos_inf(cons_ub[i]);
+
+    lp_interface->dirty |= ROW_BOUNDS;
   }
 
   return SLEQP_OKAY;
@@ -362,17 +415,26 @@ highs_set_coeffs(void* lp_data,
   const int* coeff_matrix_cols = sleqp_sparse_matrix_cols(coeff_matrix);
   const int* coeff_matrix_rows = sleqp_sparse_matrix_rows(coeff_matrix);
   double* coeff_matrix_data    = sleqp_sparse_matrix_data(coeff_matrix);
+  const int coeff_nnz          = sleqp_sparse_matrix_nnz(coeff_matrix);
 
-  for (int col = 0; col < num_cols; ++col)
-  {
-    for (int k = coeff_matrix_cols[col]; k < coeff_matrix_cols[col + 1]; ++k)
-    {
-      int row      = coeff_matrix_rows[k];
-      double entry = coeff_matrix_data[k];
+  SLEQP_HIGHS_CALL(Highs_passLp(highs,
+                                lp_interface->num_cols, // num cols
+                                lp_interface->num_rows, // num rows
+                                coeff_nnz,              // num nnz
+                                format_sparse_columns,  // format
+                                sense_min,              // sense
+                                objective_offset,       // objective offset
+                                lp_interface->costs,    // costs
+                                lp_interface->col_lb,   // var lb
+                                lp_interface->col_ub,   // var ub
+                                lp_interface->row_lb,   // cons lb
+                                lp_interface->row_ub,   // cons ub
+                                coeff_matrix_cols,      // coeff colptr
+                                coeff_matrix_rows,      // coeff indices
+                                coeff_matrix_data),     // coeff values
+                   highs);
 
-      SLEQP_HIGHS_CALL(Highs_changeCoeff(highs, row, col, entry), highs);
-    }
-  }
+  lp_interface->dirty &= ~(COL_BOUNDS | ROW_BOUNDS | OBJECTIVE | COEFFS);
 
   return SLEQP_OKAY;
 }
@@ -384,13 +446,13 @@ highs_set_objective(void* lp_data,
                     double* objective)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
-  void* highs                 = lp_interface->highs;
 
   for (int i = 0; i < num_cols; ++i)
   {
-
-    SLEQP_HIGHS_CALL(Highs_changeColCost(highs, i, objective[i]), highs);
+    lp_interface->costs[i] = objective[i];
   }
+
+  lp_interface->dirty |= OBJECTIVE;
 
   return SLEQP_OKAY;
 }
@@ -602,10 +664,21 @@ highs_free(void** star)
     return SLEQP_OKAY;
   }
 
-  if (lp_interface->highs)
-  {
-    Highs_destroy(highs);
-  }
+  sleqp_free(&lp_interface->rows_dual_dummysol);
+  sleqp_free(&lp_interface->cols_dual_dummysol);
+  sleqp_free(&lp_interface->rows_primal_dummysol);
+  sleqp_free(&lp_interface->cols_primal_dummysol);
+
+  sleqp_free(&lp_interface->row_ub);
+  sleqp_free(&lp_interface->row_lb);
+
+  sleqp_free(&lp_interface->col_ub);
+  sleqp_free(&lp_interface->col_lb);
+
+  sleqp_free(&lp_interface->costs);
+
+  sleqp_free(&lp_interface->row_basis);
+  sleqp_free(&lp_interface->col_basis);
 
   for (int i = 0; i < lp_interface->num_bases; ++i)
   {
@@ -616,12 +689,10 @@ highs_free(void** star)
   sleqp_free(&lp_interface->vbases);
   sleqp_free(&lp_interface->cbases);
 
-  sleqp_free(&lp_interface->row_basis);
-  sleqp_free(&lp_interface->col_basis);
-  sleqp_free(&lp_interface->cols_primal_dummysol);
-  sleqp_free(&lp_interface->rows_primal_dummysol);
-  sleqp_free(&lp_interface->cols_dual_dummysol);
-  sleqp_free(&lp_interface->rows_dual_dummysol);
+  if (lp_interface->highs)
+  {
+    Highs_destroy(highs);
+  }
 
   sleqp_free(star);
 
