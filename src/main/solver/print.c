@@ -82,7 +82,7 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
                                  elapsed_seconds));
 
   SLEQP_CALL(sleqp_timer_display(sleqp_func_get_val_timer(original_func),
-                                 "Function evaluations",
+                                 "Objective evaluations",
                                  elapsed_seconds));
 
   SLEQP_CALL(sleqp_timer_display(sleqp_func_get_grad_timer(original_func),

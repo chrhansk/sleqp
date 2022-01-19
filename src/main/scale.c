@@ -604,9 +604,9 @@ sleqp_unscale_iterate(SleqpScaling* scaling,
 }
 
 SLEQP_RETCODE
-sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
-                                 SleqpSparseVec* gradient,
-                                 double eps)
+sleqp_obj_scaling_from_grad(SleqpScaling* scaling,
+                            SleqpSparseVec* gradient,
+                            double eps)
 {
   double max_val = 0.;
 
