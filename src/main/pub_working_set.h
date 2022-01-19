@@ -32,13 +32,27 @@ sleqp_working_set_var_state(const SleqpWorkingSet* working_set, int index);
 
 /**
  * Returns the state of the given constraint with respect to the given working
- *set
+ * set
  *
  * @param[in]  working_set           The working set
  * @param[in]  index                 The constraint index
  **/
 SLEQP_EXPORT SLEQP_ACTIVE_STATE
 sleqp_working_set_cons_state(const SleqpWorkingSet* working_set, int index);
+
+/**
+ * Returns an array containing the states of all variables with respect to the
+ * given working set
+ **/
+SLEQP_EXPORT const SLEQP_ACTIVE_STATE*
+sleqp_working_set_var_states(const SleqpWorkingSet* working_set);
+
+/**
+ * Returns an array containing the states of all constraints with respect to the
+ * given working set
+ **/
+SLEQP_EXPORT const SLEQP_ACTIVE_STATE*
+sleqp_working_set_cons_states(const SleqpWorkingSet* working_set);
 
 SLEQP_EXPORT SLEQP_ACTIVE_STATE
 sleqp_working_set_state(const SleqpWorkingSet* working_set,

@@ -217,14 +217,14 @@ sleqp_working_set_content(const SleqpWorkingSet* working_set, int index)
   return working_set->content_indices[index];
 }
 
-SLEQP_ACTIVE_STATE*
-sleqp_working_set_variable_states(const SleqpWorkingSet* working_set)
+const SLEQP_ACTIVE_STATE*
+sleqp_working_set_var_states(const SleqpWorkingSet* working_set)
 {
   return working_set->variable_states;
 }
 
-SLEQP_ACTIVE_STATE*
-sleqp_working_set_constraint_states(const SleqpWorkingSet* working_set)
+const SLEQP_ACTIVE_STATE*
+sleqp_working_set_cons_states(const SleqpWorkingSet* working_set)
 {
   return working_set->constraint_states;
 }
