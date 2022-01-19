@@ -39,7 +39,7 @@ sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
 {
   sleqp_log_info(HEADER_FORMAT,
                  "Iteration",
-                 "Func val",
+                 "Obj val",
                  "Merit val",
                  "Feas res",
                  "Slack res",

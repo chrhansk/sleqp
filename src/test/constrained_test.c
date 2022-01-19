@@ -500,9 +500,8 @@ START_TEST(test_auto_scaled_solve)
                                    constrained_num_variables,
                                    constrained_num_constraints));
 
-  ASSERT_CALL(sleqp_func_scaling_from_gradient(scaling,
-                                               sleqp_iterate_obj_grad(iterate),
-                                               eps));
+  ASSERT_CALL(
+    sleqp_obj_scaling_from_grad(scaling, sleqp_iterate_obj_grad(iterate), eps));
 
   ASSERT_CALL(
     sleqp_scaling_from_cons_jac(scaling, sleqp_iterate_cons_jac(iterate), eps));

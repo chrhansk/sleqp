@@ -57,7 +57,7 @@ cdef class Scaling:
     val = "Scaling(num_variables={0}, num_constraints={1})\n".format(self.num_vars,
                                                                      self.num_cons)
 
-    val += "Function weight: {0}\n".format(self.func_weight)
+    val += "Objective weight: {0}\n".format(self.obj_weight)
 
     val += "Variable weights: {0}\n".format(self.variable_weights)
 
@@ -162,15 +162,15 @@ cdef class Scaling:
                                                                   index,
                                                                   nominal_value))
 
-  def set_from_gradient(self,
+  def set_from_obj_grad(self,
                         np.ndarray grad_array,
                         float eps):
     csleqp_call(array_to_sleqp_sparse_vec(grad_array,
                                           self.gradient))
 
-    csleqp_call(csleqp.sleqp_func_scaling_from_gradient(self.scaling,
-                                                        self.gradient,
-                                                        eps))
+    csleqp_call(csleqp.sleqp_obj_scaling_from_grad(self.scaling,
+                                                   self.gradient,
+                                                   eps))
 
   def set_from_cons_jac(self,
                         object mat,

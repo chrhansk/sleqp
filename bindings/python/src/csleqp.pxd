@@ -506,9 +506,9 @@ cdef extern from "sleqp.h":
                                                            int index,
                                                            double nominal_value);
 
-  SLEQP_RETCODE sleqp_func_scaling_from_gradient(SleqpScaling* scaling,
-                                                 SleqpSparseVec* gradient,
-                                                 double eps)
+  SLEQP_RETCODE sleqp_obj_scaling_from_grad(SleqpScaling* scaling,
+                                            SleqpSparseVec* gradient,
+                                            double eps)
 
   SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
                                             SleqpSparseMatrix* cons_jac,
