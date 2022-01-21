@@ -121,7 +121,6 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad_nogil(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
-                                              const csleqp.SleqpSparseVec* cons_indices,
                                               csleqp.SleqpSparseVec* cons_vals,
                                               void* func_data):
   cdef int num_cons
@@ -147,18 +146,15 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val_nogil(csleqp.SleqpFunc* func,
-                                                    const csleqp.SleqpSparseVec* cons_indices,
                                                     csleqp.SleqpSparseVec* cons_vals,
                                                     void* func_data) nogil:
   with gil:
     return sleqp_func_cons_val(func,
-                               cons_indices,
                                cons_vals,
                                func_data)
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
-                                              const csleqp.SleqpSparseVec* cons_indices,
                                               csleqp.SleqpSparseMatrix* cons_jac,
                                               void* func_data):
   cdef int num_vars
@@ -189,12 +185,10 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac_nogil(csleqp.SleqpFunc* func,
-                                                    const csleqp.SleqpSparseVec* cons_indices,
                                                     csleqp.SleqpSparseMatrix* cons_jac,
                                                     void* func_data) nogil:
   with gil:
     return sleqp_func_cons_jac(func,
-                               cons_indices,
                                cons_jac,
                                func_data)
 

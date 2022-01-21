@@ -46,8 +46,6 @@ sleqp_func_set_value(SleqpFunc* func,
  * Evaluates the function and its gradient at the current input vector
  *
  * @param[in]     func            The function
- * @param[in]     cons_indices    The indices of the constraint function
- *                                to be evaluated
  * @param[out]    obj_grad        The objective gradient \f$ \nabla f(x) \f$
  * @param[out]    cons_val        The value of the constraint function \f$ c(x)
  *\f$
@@ -56,7 +54,6 @@ sleqp_func_set_value(SleqpFunc* func,
  **/
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_eval(SleqpFunc* func,
-                const SleqpSparseVec* cons_indices,
                 double* obj,
                 SleqpSparseVec* obj_grad,
                 SleqpSparseVec* cons_val,
@@ -69,14 +66,10 @@ SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad);
 
 SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_func_cons_val(SleqpFunc* func,
-                    const SleqpSparseVec* cons_indices,
-                    SleqpSparseVec* cons_val);
+sleqp_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val);
 
 SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_func_cons_jac(SleqpFunc* func,
-                    const SleqpSparseVec* cons_indices,
-                    SleqpSparseMatrix* cons_jac);
+sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac);
 
 SLEQP_HESS_FLAGS
 sleqp_func_hess_flags(const SleqpFunc* func);

@@ -23,7 +23,6 @@ sleqp_problem_set_value(SleqpProblem* problem,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_eval(SleqpProblem* problem,
-                   const SleqpSparseVec* cons_indices,
                    double* obj_val,
                    SleqpSparseVec* obj_grad,
                    SleqpSparseVec* cons_val,
@@ -39,15 +38,11 @@ sleqp_problem_obj_grad(SleqpProblem* problem, SleqpSparseVec* obj_grad);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_problem_cons_val(SleqpProblem* problem,
-                       const SleqpSparseVec* cons_indices,
-                       SleqpSparseVec* cons_val);
+sleqp_problem_cons_val(SleqpProblem* problem, SleqpSparseVec* cons_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_problem_cons_jac(SleqpProblem* problem,
-                       const SleqpSparseVec* cons_indices,
-                       SleqpSparseMatrix* cons_jac);
+sleqp_problem_cons_jac(SleqpProblem* problem, SleqpSparseMatrix* cons_jac);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

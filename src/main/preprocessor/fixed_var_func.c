@@ -84,26 +84,19 @@ fixed_var_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
 }
 
 static SLEQP_RETCODE
-fixed_var_cons_val(SleqpFunc* func,
-                   const SleqpSparseVec* cons_indices,
-                   SleqpSparseVec* cons_val,
-                   void* data)
+fixed_var_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
-  return sleqp_func_cons_val(func_data->func, cons_indices, cons_val);
+  return sleqp_func_cons_val(func_data->func, cons_val);
 }
 
 static SLEQP_RETCODE
-fixed_var_cons_jac(SleqpFunc* func,
-                   const SleqpSparseVec* cons_indices,
-                   SleqpSparseMatrix* cons_jac,
-                   void* data)
+fixed_var_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
-  SLEQP_CALL(
-    sleqp_func_cons_jac(func_data->func, cons_indices, func_data->jacobian));
+  SLEQP_CALL(sleqp_func_cons_jac(func_data->func, func_data->jacobian));
 
   SLEQP_CALL(sleqp_sparse_matrix_remove_cols(func_data->jacobian,
                                              cons_jac,
@@ -276,14 +269,12 @@ fixed_dyn_obj_val(SleqpFunc* func, double accuracy, double* obj_val, void* data)
 static SLEQP_RETCODE
 fixed_dyn_func_cons_val(SleqpFunc* func,
                         double accuracy,
-                        const SleqpSparseVec* cons_indices,
                         SleqpSparseVec* cons_val,
                         void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
-  SLEQP_CALL(
-    sleqp_dyn_func_cons_val(func_data->func, accuracy, cons_indices, cons_val));
+  SLEQP_CALL(sleqp_dyn_func_cons_val(func_data->func, accuracy, cons_val));
 
   return SLEQP_OKAY;
 }

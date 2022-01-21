@@ -52,32 +52,22 @@ dyn_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 }
 
 static SLEQP_RETCODE
-dyn_func_cons_val(SleqpFunc* func,
-                  const SleqpSparseVec* cons_indices,
-                  SleqpSparseVec* cons_val,
-                  void* func_data)
+dyn_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
 
   return data->callbacks.cons_val(func,
                                   data->accuracy,
-                                  cons_indices,
                                   cons_val,
                                   data->func_data);
 }
 
 static SLEQP_RETCODE
-dyn_func_cons_jac(SleqpFunc* func,
-                  const SleqpSparseVec* cons_indices,
-                  SleqpSparseMatrix* cons_jac,
-                  void* func_data)
+dyn_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
 
-  return data->callbacks.cons_jac(func,
-                                  cons_indices,
-                                  cons_jac,
-                                  data->func_data);
+  return data->callbacks.cons_jac(func, cons_jac, data->func_data);
 }
 
 static SLEQP_RETCODE
@@ -197,7 +187,6 @@ sleqp_dyn_func_obj_val(SleqpFunc* func, double accuracy, double* obj_val)
 SLEQP_RETCODE
 sleqp_dyn_func_cons_val(SleqpFunc* func,
                         double accuracy,
-                        const SleqpSparseVec* cons_indices,
                         SleqpSparseVec* cons_val)
 {
   assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
@@ -206,11 +195,8 @@ sleqp_dyn_func_cons_val(SleqpFunc* func,
 
   DynFuncData* data = (DynFuncData*)func_data;
 
-  SLEQP_CALL(data->callbacks.cons_val(func,
-                                      accuracy,
-                                      cons_indices,
-                                      cons_val,
-                                      data->func_data));
+  SLEQP_CALL(
+    data->callbacks.cons_val(func, accuracy, cons_val, data->func_data));
 
   return SLEQP_OKAY;
 }

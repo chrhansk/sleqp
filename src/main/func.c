@@ -149,9 +149,7 @@ sleqp_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad)
 }
 
 SLEQP_RETCODE
-sleqp_func_cons_val(SleqpFunc* func,
-                    const SleqpSparseVec* cons_indices,
-                    SleqpSparseVec* cons_val)
+sleqp_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val)
 {
   const int num_constraints = sleqp_func_num_cons(func);
 
@@ -163,8 +161,7 @@ sleqp_func_cons_val(SleqpFunc* func,
     {
       SLEQP_CALL(sleqp_timer_start(func->cons_val_timer));
 
-      SLEQP_CALL(
-        func->callbacks.cons_val(func, cons_indices, cons_val, func->data));
+      SLEQP_CALL(func->callbacks.cons_val(func, cons_val, func->data));
 
       SLEQP_CALL(sleqp_timer_stop(func->cons_val_timer));
     }
@@ -180,9 +177,7 @@ sleqp_func_cons_val(SleqpFunc* func,
 }
 
 SLEQP_RETCODE
-sleqp_func_cons_jac(SleqpFunc* func,
-                    const SleqpSparseVec* cons_indices,
-                    SleqpSparseMatrix* cons_jac)
+sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac)
 {
   const int num_constraints = sleqp_func_num_cons(func);
 
@@ -194,8 +189,7 @@ sleqp_func_cons_jac(SleqpFunc* func,
     {
       SLEQP_CALL(sleqp_timer_start(func->cons_jac_timer));
 
-      SLEQP_CALL(
-        func->callbacks.cons_jac(func, cons_indices, cons_jac, func->data));
+      SLEQP_CALL(func->callbacks.cons_jac(func, cons_jac, func->data));
 
       SLEQP_CALL(sleqp_timer_stop(func->cons_jac_timer));
     }
@@ -212,7 +206,6 @@ sleqp_func_cons_jac(SleqpFunc* func,
 
 SLEQP_RETCODE
 sleqp_func_eval(SleqpFunc* func,
-                const SleqpSparseVec* cons_indices,
                 double* obj_val,
                 SleqpSparseVec* obj_grad,
                 SleqpSparseVec* cons_val,
@@ -222,9 +215,9 @@ sleqp_func_eval(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_func_obj_grad(func, obj_grad));
 
-  SLEQP_CALL(sleqp_func_cons_val(func, cons_indices, cons_val));
+  SLEQP_CALL(sleqp_func_cons_val(func, cons_val));
 
-  SLEQP_CALL(sleqp_func_cons_jac(func, cons_indices, cons_jac));
+  SLEQP_CALL(sleqp_func_cons_jac(func, cons_jac));
 
   return SLEQP_OKAY;
 }

@@ -117,10 +117,7 @@ mex_lsq_func_set(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-mex_lsq_func_cons_val(SleqpFunc* func,
-                      const SleqpSparseVec* cons_indices,
-                      SleqpSparseVec* cons_val,
-                      void* data)
+mex_lsq_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* data)
 {
   LSQFuncData* func_data = (LSQFuncData*)data;
 
@@ -132,10 +129,7 @@ mex_lsq_func_cons_val(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-mex_lsq_func_cons_jac(SleqpFunc* func,
-                      const SleqpSparseVec* cons_indices,
-                      SleqpSparseMatrix* cons_jac,
-                      void* data)
+mex_lsq_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
 {
   LSQFuncData* func_data = (LSQFuncData*)data;
 

@@ -89,7 +89,6 @@ quadconsfunc_obj_grad(SleqpFunc* func,
 
 SLEQP_RETCODE
 quadconsfunc_cons_val(SleqpFunc* func,
-                      const SleqpSparseVec* cons_indices,
                       SleqpSparseVec* cons_val,
                       void* func_data)
 {
@@ -114,7 +113,6 @@ quadconsfunc_cons_val(SleqpFunc* func,
 
 SLEQP_RETCODE
 quadconsfunc_cons_jac(SleqpFunc* func,
-                      const SleqpSparseVec* cons_indices,
                       SleqpSparseMatrix* cons_jac,
                       void* func_data)
 {

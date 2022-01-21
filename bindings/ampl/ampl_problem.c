@@ -215,10 +215,7 @@ ampl_obj_grad(SleqpFunc* func, SleqpSparseVec* func_grad, void* func_data)
 }
 
 static SLEQP_RETCODE
-ampl_cons_val(SleqpFunc* func,
-              const SleqpSparseVec* cons_indices,
-              SleqpSparseVec* cons_val,
-              void* func_data)
+ampl_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
 {
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
@@ -236,10 +233,7 @@ ampl_cons_val(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-ampl_cons_jac(SleqpFunc* func,
-              const SleqpSparseVec* cons_indices,
-              SleqpSparseMatrix* cons_jac,
-              void* func_data)
+ampl_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 {
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;

@@ -63,26 +63,24 @@ quasi_newton_func_obj_grad(SleqpFunc* func,
 
 static SLEQP_RETCODE
 quasi_newton_func_cons_val(SleqpFunc* func,
-                           const SleqpSparseVec* cons_indices,
                            SleqpSparseVec* cons_val,
                            void* func_data)
 {
   SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_cons_val(quasi_newton->func, cons_indices, cons_val));
+  SLEQP_CALL(sleqp_func_cons_val(quasi_newton->func, cons_val));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 quasi_newton_func_cons_jac(SleqpFunc* func,
-                           const SleqpSparseVec* cons_indices,
                            SleqpSparseMatrix* cons_jac,
                            void* func_data)
 {
   SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_cons_jac(quasi_newton->func, cons_indices, cons_jac));
+  SLEQP_CALL(sleqp_func_cons_jac(quasi_newton->func, cons_jac));
 
   return SLEQP_OKAY;
 }

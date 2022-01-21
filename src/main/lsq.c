@@ -106,10 +106,7 @@ lsq_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 }
 
 static SLEQP_RETCODE
-lsq_func_cons_val(SleqpFunc* func,
-                  const SleqpSparseVec* cons_indices,
-                  SleqpSparseVec* cons_val,
-                  void* func_data)
+lsq_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
 {
   SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
 
@@ -117,20 +114,15 @@ lsq_func_cons_val(SleqpFunc* func,
 
   if (lsq_data->callbacks.cons_val)
   {
-    SLEQP_CALL(lsq_data->callbacks.cons_val(func,
-                                            cons_indices,
-                                            cons_val,
-                                            lsq_data->func_data));
+    SLEQP_CALL(
+      lsq_data->callbacks.cons_val(func, cons_val, lsq_data->func_data));
   }
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-lsq_func_cons_jac(SleqpFunc* func,
-                  const SleqpSparseVec* cons_indices,
-                  SleqpSparseMatrix* cons_jac,
-                  void* func_data)
+lsq_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 {
   SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
 
@@ -138,10 +130,8 @@ lsq_func_cons_jac(SleqpFunc* func,
 
   if (lsq_data->callbacks.cons_jac)
   {
-    SLEQP_CALL(lsq_data->callbacks.cons_jac(func,
-                                            cons_indices,
-                                            cons_jac,
-                                            lsq_data->func_data));
+    SLEQP_CALL(
+      lsq_data->callbacks.cons_jac(func, cons_jac, lsq_data->func_data));
   }
 
   return SLEQP_OKAY;

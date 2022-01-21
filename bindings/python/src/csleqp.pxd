@@ -309,12 +309,10 @@ cdef extern from "sleqp.h":
                                                 void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
-                                                const SleqpSparseVec* cons_indices,
                                                 SleqpSparseVec* cons_val,
                                                 void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
-                                                const SleqpSparseVec* cons_indices,
                                                 SleqpSparseMatrix* cons_jac,
                                                 void* func_data)
 

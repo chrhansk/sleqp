@@ -25,7 +25,6 @@ evaluate_at_trial_iterate(SleqpProblemSolver* solver, bool* reject)
   double obj_val;
 
   SLEQP_CALL(sleqp_problem_eval(problem,
-                                NULL,
                                 &obj_val,
                                 NULL,
                                 sleqp_iterate_cons_val(trial_iterate),
