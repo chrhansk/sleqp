@@ -116,8 +116,7 @@ compute_cons_val(FuncData* func_data)
 {
   if (!func_data->has_cons_val)
   {
-    SLEQP_CALL(
-      sleqp_problem_cons_val(func_data->problem, NULL, func_data->cons_val));
+    SLEQP_CALL(sleqp_problem_cons_val(func_data->problem, func_data->cons_val));
     func_data->has_cons_val = true;
   }
 
@@ -149,8 +148,7 @@ compute_cons_jac(FuncData* func_data)
 {
   if (!func_data->has_cons_jac)
   {
-    SLEQP_CALL(
-      sleqp_problem_cons_jac(func_data->problem, NULL, func_data->cons_jac));
+    SLEQP_CALL(sleqp_problem_cons_jac(func_data->problem, func_data->cons_jac));
 
     func_data->has_cons_jac = true;
   }

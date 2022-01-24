@@ -47,7 +47,7 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
   double obj_val;
 
   SLEQP_CALL(
-    sleqp_problem_eval(problem, NULL, &obj_val, obj_grad, cons_val, cons_jac));
+    sleqp_problem_eval(problem, &obj_val, obj_grad, cons_val, cons_jac));
 
   SLEQP_CALL(sleqp_iterate_set_obj_val(iterate, obj_val));
 

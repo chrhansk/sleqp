@@ -226,7 +226,7 @@ START_TEST(test_cons_val)
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  ASSERT_CALL(sleqp_func_cons_val(fixed_var_func, NULL, fixed_cons_val));
+  ASSERT_CALL(sleqp_func_cons_val(fixed_var_func, fixed_cons_val));
 
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
@@ -236,7 +236,7 @@ START_TEST(test_cons_val)
                                    &cons_val_nnz,
                                    &cons_jac_nnz));
 
-  ASSERT_CALL(sleqp_func_cons_val(quadconsfunc, NULL, cons_val));
+  ASSERT_CALL(sleqp_func_cons_val(quadconsfunc, cons_val));
 
   for (int i = 0; i < num_constraints; ++i)
   {
@@ -262,7 +262,7 @@ START_TEST(test_cons_jac)
 
   ASSERT_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac_nnz));
 
-  ASSERT_CALL(sleqp_func_cons_jac(fixed_var_func, NULL, fixed_cons_jac));
+  ASSERT_CALL(sleqp_func_cons_jac(fixed_var_func, fixed_cons_jac));
 
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
@@ -274,7 +274,7 @@ START_TEST(test_cons_jac)
 
   ASSERT_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac_nnz));
 
-  ASSERT_CALL(sleqp_func_cons_jac(quadconsfunc, NULL, cons_jac));
+  ASSERT_CALL(sleqp_func_cons_jac(quadconsfunc, cons_jac));
 
   for (int i = 0; i < num_constraints; ++i)
   {

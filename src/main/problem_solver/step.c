@@ -87,7 +87,6 @@ sleqp_problem_solver_accept_step(SleqpProblemSolver* solver)
 
   SLEQP_CALL(sleqp_problem_eval(problem,
                                 NULL,
-                                NULL,
                                 sleqp_iterate_obj_grad(trial_iterate),
                                 sleqp_iterate_cons_val(trial_iterate),
                                 sleqp_iterate_cons_jac(trial_iterate)));

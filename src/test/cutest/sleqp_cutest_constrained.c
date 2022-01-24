@@ -260,10 +260,7 @@ cutest_cons_func_obj_grad(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-cutest_cons_cons_val(SleqpFunc* func,
-                     const SleqpSparseVec* cons_indices,
-                     SleqpSparseVec* cons_val,
-                     void* func_data)
+cutest_cons_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
   int status;
@@ -291,7 +288,6 @@ cutest_cons_cons_val(SleqpFunc* func,
 
 static SLEQP_RETCODE
 cutest_cons_cons_jac(SleqpFunc* func,
-                     const SleqpSparseVec* cons_indices,
                      SleqpSparseMatrix* cons_jac,
                      void* func_data)
 {

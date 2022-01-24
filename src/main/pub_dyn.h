@@ -21,18 +21,14 @@ typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_OBJ_VAL)(SleqpFunc* func,
  *
  * @param[in]     func            The function
  * @param[in]     accuracy        The desired accuracy \f$  \epsilon \f$
- * @param[in]     cons_indices    The indices of the constraint function
- *                                to be evaluated
  * @param[out]    cons_val        The value of the constraint function \f$ c(x,
  *\epsilon) \f$
  * @param[in,out] func_data       The function data
  **/
-typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_CONS_VAL)(
-  SleqpFunc* func,
-  double accuracy,
-  const SleqpSparseVec* cons_indices,
-  SleqpSparseVec* cons_val,
-  void* func_data);
+typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_CONS_VAL)(SleqpFunc* func,
+                                                 double accuracy,
+                                                 SleqpSparseVec* cons_val,
+                                                 void* func_data);
 
 typedef struct
 {

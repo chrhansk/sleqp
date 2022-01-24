@@ -280,14 +280,14 @@ eval_at_check_iterate(SleqpDerivChecker* deriv_checker, SLEQP_DERIV_CHECK flags)
 
   double obj_val;
 
-  double* func_ptr            = NULL;
+  double* obj_ptr             = NULL;
   SleqpSparseVec* cons_val    = NULL;
   SleqpSparseVec* obj_grad    = NULL;
   SleqpSparseMatrix* cons_jac = NULL;
 
   if (flags & SLEQP_DERIV_CHECK_FIRST_OBJ)
   {
-    func_ptr = &obj_val;
+    obj_ptr = &obj_val;
   }
 
   if (flags & SLEQP_DERIV_CHECK_FIRST_CONS)
@@ -308,9 +308,9 @@ eval_at_check_iterate(SleqpDerivChecker* deriv_checker, SLEQP_DERIV_CHECK flags)
   }
 
   SLEQP_CALL(
-    sleqp_problem_eval(problem, NULL, func_ptr, obj_grad, cons_val, cons_jac));
+    sleqp_problem_eval(problem, obj_ptr, obj_grad, cons_val, cons_jac));
 
-  if (func_ptr)
+  if (obj_ptr)
   {
     SLEQP_CALL(sleqp_iterate_set_obj_val(check_iterate, obj_val));
   }

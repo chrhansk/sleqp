@@ -103,10 +103,7 @@ linquadfunc_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 }
 
 SLEQP_RETCODE
-linquadfunc_cons_val(SleqpFunc* func,
-                     const SleqpSparseVec* cons_indices,
-                     SleqpSparseVec* cons_val,
-                     void* func_data)
+linquadfunc_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
 {
   LinQuadFuncData* data = (LinQuadFuncData*)func_data;
 
@@ -117,7 +114,6 @@ linquadfunc_cons_val(SleqpFunc* func,
 
 SLEQP_RETCODE
 linquadfunc_cons_jac(SleqpFunc* func,
-                     const SleqpSparseVec* cons_indices,
                      SleqpSparseMatrix* cons_jac,
                      void* func_data)
 {
