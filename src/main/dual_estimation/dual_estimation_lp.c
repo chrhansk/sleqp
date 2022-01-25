@@ -1,10 +1,10 @@
 #include "dual_estimation_lp.h"
 
 static SLEQP_RETCODE
-estimate_duals(const SleqpIterate* iterate,
-               SleqpSparseVec* cons_dual,
-               SleqpSparseVec* vars_dual,
-               void* estimation_data)
+estimate_duals_lp(const SleqpIterate* iterate,
+                  SleqpSparseVec* cons_dual,
+                  SleqpSparseVec* vars_dual,
+                  void* estimation_data)
 {
   SleqpCauchy* cauchy = (SleqpCauchy*)estimation_data;
 
@@ -30,7 +30,7 @@ SLEQP_RETCODE
 sleqp_dual_estimation_lp_create(SleqpDualEstimation** star, SleqpCauchy* cauchy)
 {
   SleqpDualEstimationCallbacks callbacks = {
-    .estimate_duals  = estimate_duals,
+    .estimate_duals  = estimate_duals_lp,
     .estimation_free = estimation_free,
   };
 

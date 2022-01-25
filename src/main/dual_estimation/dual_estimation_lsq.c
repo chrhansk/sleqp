@@ -148,10 +148,10 @@ estimate_duals_internal(const SleqpIterate* iterate,
 }
 
 static SLEQP_RETCODE
-estimate_duals(const SleqpIterate* iterate,
-               SleqpSparseVec* cons_dual,
-               SleqpSparseVec* vars_dual,
-               void* data)
+estimate_duals_lsq(const SleqpIterate* iterate,
+                   SleqpSparseVec* cons_dual,
+                   SleqpSparseVec* vars_dual,
+                   void* data)
 {
   int num_clipped_vars, num_clipped_cons;
 
@@ -232,7 +232,7 @@ sleqp_dual_estimation_lsq_create(SleqpDualEstimation** star,
                                  SleqpAugJac* aug_jacobian)
 {
   SleqpDualEstimationCallbacks callbacks = {
-    .estimate_duals  = estimate_duals,
+    .estimate_duals  = estimate_duals_lsq,
     .estimation_free = estimation_free,
   };
 
