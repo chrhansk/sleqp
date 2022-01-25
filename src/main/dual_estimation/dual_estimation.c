@@ -66,6 +66,12 @@ sleqp_estimate_duals(SleqpDualEstimation* estimation,
   return SLEQP_OKAY;
 }
 
+void*
+sleqp_dual_estimation_data(SleqpDualEstimation* estimation)
+{
+  return estimation->estimation_data;
+}
+
 SLEQP_RETCODE
 sleqp_dual_estimation_capture(SleqpDualEstimation* estimation)
 {

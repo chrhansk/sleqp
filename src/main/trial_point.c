@@ -18,6 +18,7 @@
 
 #include "dual_estimation/dual_estimation_lp.h"
 #include "dual_estimation/dual_estimation_lsq.h"
+#include "dual_estimation/dual_estimation_mixed.h"
 
 static SLEQP_RETCODE
 create_dual_estimation(SleqpTrialPointSolver* solver)
@@ -32,13 +33,20 @@ create_dual_estimation(SleqpTrialPointSolver* solver)
     SLEQP_CALL(sleqp_dual_estimation_lp_create(&solver->estimation_data,
                                                solver->cauchy_data));
   }
-  else
+  else if (estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LSQ)
   {
-    assert(estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LSQ);
-
     SLEQP_CALL(sleqp_dual_estimation_lsq_create(&solver->estimation_data,
                                                 solver->problem,
                                                 solver->aug_jac));
+  }
+  else
+  {
+    assert(estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_MIXED);
+
+    SLEQP_CALL(sleqp_dual_estimation_mixed_create(&solver->estimation_data,
+                                                  solver->problem,
+                                                  solver->cauchy_data,
+                                                  solver->aug_jac));
   }
 
   return SLEQP_OKAY;

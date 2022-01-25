@@ -13,6 +13,7 @@ set(COMMON_SRC
   dual_estimation/dual_estimation.c
   dual_estimation/dual_estimation_lp.c
   dual_estimation/dual_estimation_lsq.c
+  dual_estimation/dual_estimation_mixed.c
   dyn.c
   enum.c
   eqp.c

@@ -16,10 +16,12 @@ typedef struct
 } EstimationData;
 
 static SLEQP_RETCODE
-estimate_duals(const SleqpIterate* iterate,
-               SleqpSparseVec* cons_dual,
-               SleqpSparseVec* vars_dual,
-               void* data)
+estimate_duals_internal(const SleqpIterate* iterate,
+                        SleqpSparseVec* cons_dual,
+                        SleqpSparseVec* vars_dual,
+                        void* data,
+                        int* num_clipped_vars,
+                        int* num_clipped_cons)
 {
   EstimationData* estimation_data = (EstimationData*)data;
 
@@ -44,7 +46,8 @@ estimate_duals(const SleqpIterate* iterate,
                                       NULL,
                                       dual_sol));
 
-  int num_clipped_vars = 0, num_clipped_cons = 0;
+  *num_clipped_vars = 0;
+  *num_clipped_cons = 0;
 
   {
     SLEQP_CALL(sleqp_sparse_vector_reserve(cons_dual, dual_sol->nnz));
@@ -75,7 +78,7 @@ estimate_duals(const SleqpIterate* iterate,
           }
           else if (dual_value < 0.)
           {
-            ++num_clipped_vars;
+            ++(*num_clipped_vars);
           }
         }
         else if (var_state == SLEQP_ACTIVE_LOWER)
@@ -86,7 +89,7 @@ estimate_duals(const SleqpIterate* iterate,
           }
           else if (dual_value > 0.)
           {
-            ++num_clipped_vars;
+            ++(*num_clipped_vars);
           }
         }
         else
@@ -113,7 +116,7 @@ estimate_duals(const SleqpIterate* iterate,
           }
           else if (dual_value < 0.)
           {
-            ++num_clipped_cons;
+            ++(*num_clipped_cons);
           }
         }
         else if (cons_state == SLEQP_ACTIVE_LOWER)
@@ -124,7 +127,7 @@ estimate_duals(const SleqpIterate* iterate,
           }
           else if (dual_value > 0.)
           {
-            ++num_clipped_cons;
+            ++(*num_clipped_cons);
           }
         }
         else
@@ -138,10 +141,45 @@ estimate_duals(const SleqpIterate* iterate,
   }
 
   sleqp_log_debug("Dual estimation clipped %d variable and %d constraint duals",
-                  num_clipped_vars,
-                  num_clipped_cons);
+                  *num_clipped_vars,
+                  *num_clipped_cons);
 
   return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+estimate_duals(const SleqpIterate* iterate,
+               SleqpSparseVec* cons_dual,
+               SleqpSparseVec* vars_dual,
+               void* data)
+{
+  int num_clipped_vars, num_clipped_cons;
+
+  return estimate_duals_internal(iterate,
+                                 cons_dual,
+                                 vars_dual,
+                                 data,
+                                 &num_clipped_vars,
+                                 &num_clipped_cons);
+}
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_estimate_duals_lsq(SleqpDualEstimation* estimation,
+                         const SleqpIterate* iterate,
+                         SleqpSparseVec* cons_dual,
+                         SleqpSparseVec* vars_dual,
+                         int* num_clipped_vars,
+                         int* num_clipped_cons)
+{
+  void* data = sleqp_dual_estimation_data(estimation);
+
+  return estimate_duals_internal(iterate,
+                                 cons_dual,
+                                 vars_dual,
+                                 data,
+                                 num_clipped_vars,
+                                 num_clipped_cons);
 }
 
 static SLEQP_RETCODE
