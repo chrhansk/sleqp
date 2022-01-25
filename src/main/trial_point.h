@@ -1,7 +1,7 @@
 #ifndef SLEQP_TRIAL_POINT_H
 #define SLEQP_TRIAL_POINT_H
 
-#include "dual_estimation.h"
+#include "dual_estimation/dual_estimation.h"
 #include "eqp.h"
 #include "iterate.h"
 #include "linesearch.h"

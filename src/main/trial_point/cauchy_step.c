@@ -11,43 +11,10 @@ const double penalty_offset      = 10.;
 static SLEQP_RETCODE
 estimate_dual_values(SleqpTrialPointSolver* solver, SleqpIterate* iterate)
 {
-  SleqpOptions* options = solver->options;
-
-  SLEQP_DUAL_ESTIMATION_TYPE estimation_type
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE);
-
-  if (estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LSQ)
-  {
-    SLEQP_CALL(sleqp_dual_estimation_compute(solver->estimation_data,
-                                             iterate,
-                                             solver->estimation_residuals,
-                                             solver->aug_jac));
-
-#ifndef NDEBUG
-
-    double unclipped_residuum
-      = sleqp_sparse_vector_inf_norm(solver->estimation_residuals);
-    double residuum;
-
-    SLEQP_CALL(sleqp_iterate_stationarity_residuum(solver->problem,
-                                                   solver->iterate,
-                                                   solver->dense_cache,
-                                                   &residuum));
-
-    const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
-
-    SLEQP_NUM_ASSERT_PARAM(eps);
-
-    sleqp_assert_is_geq(residuum, unclipped_residuum, eps);
-
-#endif
-  }
-  else
-  {
-    assert(estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LP);
-
-    SLEQP_CALL(sleqp_cauchy_get_dual_estimation(solver->cauchy_data, iterate));
-  }
+  SLEQP_CALL(sleqp_estimate_duals(solver->estimation_data,
+                                  iterate,
+                                  sleqp_iterate_cons_dual(iterate),
+                                  sleqp_iterate_vars_dual(iterate)));
 
   SLEQP_CALL(sleqp_eqp_solver_add_violated_multipliers(solver->eqp_solver,
                                                        solver->multipliers));

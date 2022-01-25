@@ -40,8 +40,11 @@ typedef SLEQP_RETCODE (*SLEQP_CAUCHY_LOCALLY_INFEASIBLE)(
   bool* locally_infeasible,
   void* cauchy_data);
 
-typedef SLEQP_RETCODE (*SLEQP_CAUCHY_GET_DUAL_ESTIMATION)(SleqpIterate* iterate,
-                                                          void* cauchy_data);
+typedef SLEQP_RETCODE (*SLEQP_CAUCHY_ESTIMATE_DUALS)(
+  const SleqpWorkingSet* working_set,
+  SleqpSparseVec* cons_dual,
+  SleqpSparseVec* vars_dual,
+  void* cauchy_data);
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_GET_VIOLATION)(double* violation,
                                                     void* cauchy_data);
@@ -61,7 +64,7 @@ typedef struct
   SLEQP_CAUCHY_GET_WORKING_SET get_working_set;
   SLEQP_CAUCHY_GET_DIRECTION get_direction;
   SLEQP_CAUCHY_LOCALLY_INFEASIBLE locally_infeasible;
-  SLEQP_CAUCHY_GET_DUAL_ESTIMATION get_dual_estimation;
+  SLEQP_CAUCHY_ESTIMATE_DUALS estimate_duals;
   SLEQP_CAUCHY_GET_VIOLATION get_violation;
   SLEQP_CAUCHY_GET_BASIS_CONDITION get_basis_condition;
   SLEQP_CAUCHY_FREE free;

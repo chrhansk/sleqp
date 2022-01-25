@@ -1023,12 +1023,12 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
+standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
+                               SleqpSparseVec* cons_dual,
+                               SleqpSparseVec* vars_dual,
+                               void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
-
-  SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
-  SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
 
   const double zero_eps
     = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
@@ -1037,8 +1037,6 @@ standard_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
 
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
-
-  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   if (vars_dual)
   {
@@ -1215,7 +1213,7 @@ sleqp_standard_cauchy_create(SleqpCauchy** star,
        .get_working_set     = standard_cauchy_get_working_set,
        .get_direction       = standard_cauchy_get_direction,
        .locally_infeasible  = standard_cauchy_locally_infeasible,
-       .get_dual_estimation = standard_cauchy_get_dual_estimation,
+       .estimate_duals      = standard_cauchy_estimate_duals,
        .get_violation       = standard_cauchy_get_violation,
        .get_basis_condition = standard_cauchy_get_basis_condition,
        .free                = standard_cauchy_free};

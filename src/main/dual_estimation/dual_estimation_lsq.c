@@ -1,45 +1,28 @@
-#include "dual_estimation.h"
+#include "dual_estimation_lsq.h"
 
 #include <assert.h>
 
-#include "cmp.h"
-#include "fail.h"
-#include "log.h"
 #include "mem.h"
 
-struct SleqpDualEstimation
+typedef struct
 {
   SleqpProblem* problem;
 
+  SleqpAugJac* aug_jac;
+
   SleqpSparseVec* solution;
   SleqpSparseVec* neg_grad;
-};
 
-SLEQP_RETCODE
-sleqp_dual_estimation_create(SleqpDualEstimation** star, SleqpProblem* problem)
+} EstimationData;
+
+static SLEQP_RETCODE
+estimate_duals(const SleqpIterate* iterate,
+               SleqpSparseVec* cons_dual,
+               SleqpSparseVec* vars_dual,
+               void* data)
 {
-  SLEQP_CALL(sleqp_malloc(star));
+  EstimationData* estimation_data = (EstimationData*)data;
 
-  const int num_variables = sleqp_problem_num_vars(problem);
-
-  SleqpDualEstimation* data = *star;
-
-  data->problem = problem;
-  SLEQP_CALL(sleqp_problem_capture(data->problem));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->solution, 0));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->neg_grad, num_variables));
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE
-sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
-                              SleqpIterate* iterate,
-                              SleqpSparseVec* residuum,
-                              SleqpAugJac* jacobian)
-{
   SleqpProblem* problem        = estimation_data->problem;
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
@@ -56,12 +39,12 @@ sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
   SLEQP_CALL(sleqp_sparse_vector_copy(grad, neg_grad));
   SLEQP_CALL(sleqp_sparse_vector_scale(neg_grad, -1.));
 
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, neg_grad, residuum, dual_sol));
+  SLEQP_CALL(sleqp_aug_jac_projection(estimation_data->aug_jac,
+                                      neg_grad,
+                                      NULL,
+                                      dual_sol));
 
   int num_clipped_vars = 0, num_clipped_cons = 0;
-
-  SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
-  SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
   {
     SLEQP_CALL(sleqp_sparse_vector_reserve(cons_dual, dual_sol->nnz));
@@ -154,26 +137,6 @@ sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
     }
   }
 
-#ifndef NDEBUG
-
-  bool supports_cons_dual, supports_vars_dual;
-
-  SLEQP_CALL(sleqp_working_set_supports_cons_dual(working_set,
-                                                  cons_dual,
-                                                  &supports_cons_dual));
-
-  sleqp_assert_msg(supports_cons_dual,
-                   "Working set does not support estimated constraint duals");
-
-  SLEQP_CALL(sleqp_working_set_supports_vars_dual(working_set,
-                                                  vars_dual,
-                                                  &supports_vars_dual));
-
-  sleqp_assert_msg(supports_vars_dual,
-                   "Working set does not support estimated variable duals");
-
-#endif
-
   sleqp_log_debug("Dual estimation clipped %d variable and %d constraint duals",
                   num_clipped_vars,
                   num_clipped_cons);
@@ -181,23 +144,66 @@ sleqp_dual_estimation_compute(SleqpDualEstimation* estimation_data,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
-sleqp_dual_estimation_free(SleqpDualEstimation** star)
+static SLEQP_RETCODE
+estimation_free(void* data)
 {
-  SleqpDualEstimation* data = *star;
+  EstimationData* estimation_data = (EstimationData*)data;
 
-  if (!data)
-  {
-    return SLEQP_OKAY;
-  }
+  SLEQP_CALL(sleqp_sparse_vector_free(&estimation_data->solution));
+  SLEQP_CALL(sleqp_sparse_vector_free(&estimation_data->neg_grad));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->neg_grad));
+  SLEQP_CALL(sleqp_aug_jac_release(&estimation_data->aug_jac));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->solution));
+  SLEQP_CALL(sleqp_problem_release(&estimation_data->problem));
 
-  SLEQP_CALL(sleqp_problem_release(&data->problem));
+  sleqp_free(&data);
 
-  sleqp_free(star);
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+estimation_data_create(EstimationData** star,
+                       SleqpProblem* problem,
+                       SleqpAugJac* aug_jac)
+{
+  SLEQP_CALL(sleqp_malloc(star));
+
+  const int num_vars = sleqp_problem_num_vars(problem);
+
+  EstimationData* estimation_data = *star;
+
+  *estimation_data = (EstimationData){0};
+
+  SLEQP_CALL(sleqp_sparse_vector_create_empty(&estimation_data->solution, 0));
+
+  SLEQP_CALL(
+    sleqp_sparse_vector_create_empty(&estimation_data->neg_grad, num_vars));
+
+  SLEQP_CALL(sleqp_problem_capture(problem));
+  estimation_data->problem = problem;
+
+  SLEQP_CALL(sleqp_aug_jac_capture(aug_jac));
+  estimation_data->aug_jac = aug_jac;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_dual_estimation_lsq_create(SleqpDualEstimation** star,
+                                 SleqpProblem* problem,
+                                 SleqpAugJac* aug_jacobian)
+{
+  SleqpDualEstimationCallbacks callbacks = {
+    .estimate_duals  = estimate_duals,
+    .estimation_free = estimation_free,
+  };
+
+  EstimationData* estimation_data;
+
+  SLEQP_CALL(estimation_data_create(&estimation_data, problem, aug_jacobian));
+
+  SLEQP_CALL(
+    sleqp_dual_estimation_create(star, &callbacks, (void*)estimation_data));
 
   return SLEQP_OKAY;
 }

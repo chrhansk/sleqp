@@ -1,22 +1,17 @@
 #include <check.h>
 #include <stdlib.h>
 
+#include "aug_jac/standard_aug_jac.h"
+#include "cauchy/standard_cauchy.h"
 #include "cmp.h"
-#include "dual_estimation.h"
+#include "dual_estimation/dual_estimation_lsq.h"
+#include "factorization/factorization.h"
+#include "lp/lpi.h"
 #include "mem.h"
 #include "util.h"
 
-#include "aug_jac/standard_aug_jac.h"
-
-#include "cauchy/standard_cauchy.h"
-
-#include "factorization/factorization.h"
-
-#include "lp/lpi.h"
-
-#include "test_common.h"
-
 #include "quadcons_fixture.h"
+#include "test_common.h"
 
 SleqpParams* params;
 SleqpOptions* options;
@@ -120,10 +115,13 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
-  ASSERT_CALL(sleqp_dual_estimation_create(&estimation_data, problem));
-
   ASSERT_CALL(
-    sleqp_dual_estimation_compute(estimation_data, iterate, NULL, jacobian));
+    sleqp_dual_estimation_lsq_create(&estimation_data, problem, jacobian));
+
+  ASSERT_CALL(sleqp_estimate_duals(estimation_data,
+                                   iterate,
+                                   sleqp_iterate_cons_dual(iterate),
+                                   sleqp_iterate_vars_dual(iterate)));
 
   ck_assert_int_eq(cons_dual->dim, 2);
   ck_assert_int_eq(cons_dual->nnz, 1);
@@ -132,7 +130,7 @@ START_TEST(test_dual_variable)
 
   ck_assert(sleqp_is_eq(cons_dual->data[0], 0.4142135623, 1e-8));
 
-  ASSERT_CALL(sleqp_dual_estimation_free(&estimation_data));
+  ASSERT_CALL(sleqp_dual_estimation_release(&estimation_data));
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 

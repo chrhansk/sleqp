@@ -1,21 +1,18 @@
 #include <check.h>
 #include <stdlib.h>
 
+#include "aug_jac/standard_aug_jac.h"
+#include "cauchy/standard_cauchy.h"
 #include "cmp.h"
-#include "dual_estimation.h"
+#include "dual_estimation/dual_estimation.h"
+#include "factorization/factorization.h"
 #include "mem.h"
 #include "newton.h"
 #include "util.h"
 #include "working_step.h"
 
-#include "aug_jac/standard_aug_jac.h"
-#include "cauchy/standard_cauchy.h"
-
-#include "factorization/factorization.h"
-
-#include "test_common.h"
-
 #include "quadfunc_fixture.h"
+#include "test_common.h"
 
 SleqpParams* params;
 SleqpOptions* options;
