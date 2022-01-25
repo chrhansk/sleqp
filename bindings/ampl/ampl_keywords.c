@@ -65,7 +65,11 @@ kwdfunc_enum(Option_Info* oi, keyword* kw, char* value)
 
   if (retcode != SLEQP_OKAY)
   {
-    return badval_ASL(oi, kw, value, retval);
+    fprintf(stderr,
+            "Invalid value \"%d\" for keyword \"%s\"\n",
+            int_val,
+            kw->name);
+    badopt_ASL(oi);
   }
 
   return retval;
@@ -88,7 +92,11 @@ kwdfunc_int(Option_Info* oi, keyword* kw, char* value)
 
   if (retcode != SLEQP_OKAY)
   {
-    return badval_ASL(oi, kw, value, retval);
+    fprintf(stderr,
+            "Invalid value \"%d\" for keyword \"%s\"\n",
+            int_val,
+            kw->name);
+    badopt_ASL(oi);
   }
 
   return retval;
@@ -106,7 +114,11 @@ kwdfunc_bool(Option_Info* oi, keyword* kw, char* value)
 
   if (!(int_val == 0 || int_val == 1))
   {
-    return badval_ASL(oi, kw, value, retval);
+    fprintf(stderr,
+            "Invalid value \"%d\" for keyword \"%s\"\n",
+            int_val,
+            kw->name);
+    badopt_ASL(oi);
   }
 
   SLEQP_RETCODE retcode
@@ -116,7 +128,7 @@ kwdfunc_bool(Option_Info* oi, keyword* kw, char* value)
 
   if (retcode != SLEQP_OKAY)
   {
-    return badval_ASL(oi, kw, value, retval);
+    badopt_ASL(oi);
   }
 
   return retval;
@@ -138,7 +150,11 @@ kwdfunc_param(Option_Info* oi, keyword* kw, char* value)
 
   if (retcode != SLEQP_OKAY)
   {
-    return badval_ASL(oi, kw, value, retval);
+    fprintf(stderr,
+            "Invalid value \"%f\" for keyword \"%s\"\n",
+            real_val,
+            kw->name);
+    badopt_ASL(oi);
   }
 
   return retval;
@@ -158,7 +174,11 @@ kwdfunc_iterlimit(Option_Info* oi, keyword* kw, char* value)
   {
     if (int_val < 0)
     {
-      return badval_ASL(oi, kw, value, retval);
+      fprintf(stderr,
+              "Invalid value \"%d\" for keyword \"%s\"\n",
+              int_val,
+              kw->name);
+      badopt_ASL(oi);
     }
 
     callback_data->data.keywords->iteration_limit = int_val;
@@ -181,7 +201,11 @@ kwdfunc_timelimit(Option_Info* oi, keyword* kw, char* value)
   {
     if (real_val < 0)
     {
-      return badval_ASL(oi, kw, value, retval);
+      fprintf(stderr,
+              "Invalid value \"%f\" for keyword \"%s\"\n",
+              real_val,
+              kw->name);
+      badopt_ASL(oi);
     }
 
     callback_data->data.keywords->time_limit = real_val;
@@ -202,7 +226,11 @@ kwdfunc_log_level(Option_Info* oi, keyword* kw, char* value)
   {
     if (int_val < SLEQP_LOG_SILENT || int_val > SLEQP_LOG_DEBUG)
     {
-      return badval_ASL(oi, kw, value, retval);
+      fprintf(stderr,
+              "Invalid value \"%d\" for keyword \"%s\"\n",
+              int_val,
+              kw->name);
+      badopt_ASL(oi);
     }
 
     sleqp_log_set_level(int_val);
@@ -233,7 +261,11 @@ kwdfunc_haltonerror(Option_Info* oi, keyword* kw, char* value)
   }
   else
   {
-    return badval_ASL(oi, kw, value, retval);
+    fprintf(stderr,
+            "Invalid value '%\"s'\" for keyword \"%s\"\n",
+            str_val,
+            kw->name);
+    badopt_ASL(oi);
   }
 
   return retval;
