@@ -56,6 +56,8 @@ error_prefix(SLEQP_ERROR_TYPE error_type)
 {
   switch (error_type)
   {
+  case SLEQP_NOMEM:
+    return MEX_IDENTIFIER_NOMEM;
   case SLEQP_INTERNAL_ERROR:
     return MEX_IDENTIFIER_INTERNAL_ERROR;
   case SLEQP_FUNC_EVAL_ERROR:
