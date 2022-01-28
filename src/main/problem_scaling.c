@@ -275,8 +275,12 @@ func_create(SleqpProblemScaling* problem_scaling)
     sleqp_func_hess_struct(problem_scaling->scaled_func)));
 
   SLEQP_CALL(
-    sleqp_func_set_hess_flags(problem_scaling->scaled_func,
-                              sleqp_func_hess_flags(problem_scaling->func)));
+    sleqp_func_flags_copy(problem_scaling->func,
+                          problem_scaling->scaled_func,
+                          SLEQP_FUNC_HESS_INEXACT | SLEQP_FUNC_HESS_PSD));
+
+  SLEQP_CALL(
+    sleqp_func_flags_add(problem_scaling->scaled_func, SLEQP_FUNC_INTERNAL));
 
   return SLEQP_OKAY;
 }
@@ -309,6 +313,9 @@ lsq_func_create(SleqpProblemScaling* problem_scaling)
                                    levenberg_marquardt,
                                    problem_scaling->params,
                                    problem_scaling));
+
+  SLEQP_CALL(
+    sleqp_func_flags_add(problem_scaling->scaled_func, SLEQP_FUNC_INTERNAL));
 
   return SLEQP_OKAY;
 }

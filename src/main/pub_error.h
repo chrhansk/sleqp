@@ -6,9 +6,6 @@
 SLEQP_EXPORT SLEQP_ERROR_TYPE
 sleqp_error_type();
 
-SLEQP_EXPORT void
-sleqp_error_type_set(SLEQP_ERROR_TYPE error_type);
-
 SLEQP_EXPORT const char*
 sleqp_error_msg();
 

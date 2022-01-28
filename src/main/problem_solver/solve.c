@@ -31,7 +31,8 @@ print_warning(SleqpProblemSolver* solver)
 
   if (hessian_check)
   {
-    const bool inexact_hessian = sleqp_func_hess_inexact(func);
+    const bool inexact_hessian
+      = sleqp_func_has_flags(func, SLEQP_FUNC_HESS_INEXACT);
 
     if (inexact_hessian)
     {

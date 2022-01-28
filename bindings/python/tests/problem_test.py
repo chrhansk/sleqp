@@ -67,13 +67,13 @@ class ProblemTest(unittest.TestCase):
         cons_lb[0] = 1.
         cons_ub[0] = 0.
 
-        self.assertRaises(sleqp.SLEQPError,
-                          lambda: sleqp.Problem(self.func,
-                                                self.params,
-                                                self.var_lb,
-                                                self.var_ub,
-                                                cons_lb,
-                                                cons_ub))
+        with self.assertRaises(ValueError):
+          sleqp.Problem(self.func,
+                        self.params,
+                        self.var_lb,
+                        self.var_ub,
+                        cons_lb,
+                        cons_ub)
 
     def test_invalid_var_bounds(self):
 
@@ -83,10 +83,10 @@ class ProblemTest(unittest.TestCase):
         var_lb[0] = 1.
         var_ub[0] = 0.
 
-        self.assertRaises(sleqp.SLEQPError,
-                          lambda: sleqp.Problem(self.func,
-                                                self.params,
-                                                var_lb,
-                                                var_ub,
-                                                self.cons_lb,
-                                                self.cons_ub))
+        with self.assertRaises(ValueError):
+          sleqp.Problem(self.func,
+                        self.params,
+                        var_lb,
+                        var_ub,
+                        self.cons_lb,
+                        self.cons_ub)

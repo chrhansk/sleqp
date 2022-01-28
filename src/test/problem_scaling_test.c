@@ -94,7 +94,8 @@ START_TEST(test_overflow)
 
   ASSERT_CALL(sleqp_sparse_vector_free(&point));
 
-  ck_assert_int_eq(retcode, SLEQP_MATH_ERROR);
+  ck_assert_int_eq(retcode, SLEQP_ERROR);
+  ck_assert_int_eq(sleqp_error_type(), SLEQP_MATH_ERROR);
 }
 END_TEST
 
@@ -158,7 +159,8 @@ START_TEST(test_underflow_error)
 
   ASSERT_CALL(sleqp_sparse_vector_free(&point));
 
-  ck_assert_int_eq(retcode, SLEQP_MATH_ERROR);
+  ck_assert_int_eq(retcode, SLEQP_ERROR);
+  ck_assert_int_eq(sleqp_error_type(), SLEQP_MATH_ERROR);
 }
 END_TEST
 

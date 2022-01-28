@@ -64,7 +64,8 @@ cdef class Solver:
               double time_limit):
 
     cdef csleqp.SleqpSolver* solver = self.solver
-    cdef int retcode = csleqp.SLEQP_OKAY
+    cdef csleqp.SLEQP_RETCODE retcode = csleqp.SLEQP_OKAY
+    cdef csleqp.SLEQP_ERROR_TYPE error_type
 
     self.problem.func.call_exception = None
 
@@ -81,20 +82,37 @@ cdef class Solver:
                                             max_num_iterations,
                                             time_limit)
 
-    if retcode != csleqp.SLEQP_OKAY:
-      exception = Exception("Failed to solve")
-      call_exception = self.problem.func.call_exception
-      if call_exception:
-        self.problem.func.call_exception = None
-        raise exception from call_exception
-      else:
-        for obj in self.callback_handles:
-          call_exception = (<CallbackHandle> obj).call_exception
-          if call_exception is not None:
-            raise exception from call_exception
+    if retcode == csleqp.SLEQP_OKAY:
+      return
 
-        # raise default
-        raise exception
+    exception = Exception("Error during solution process")
+    error_type = csleqp.sleqp_error_type()
+
+    if error_type == csleqp.SLEQP_FUNC_EVAL_ERROR:
+      call_exception = self.problem.func.call_exception
+      inner_exception = _get_exception()
+
+      if call_exception:
+        inner_exception.__cause__ = call_exception
+        self.problem.func.call_exception = None
+
+      raise exception from inner_exception
+
+    elif error_type == csleqp.SLEQP_CALLBACK_ERROR:
+      callback_exception = CallbackError()
+      call_exception = None
+
+      for obj in self.callback_handles:
+        call_exception = (<CallbackHandle> obj).call_exception
+        if call_exception is not None:
+          (<CallbackHandle> obj).call_exception = None
+          break
+
+      if call_exception:
+        callback_exception.__cause__ = call_exception
+      raise exception from callback_exception
+
+    raise exception from _get_exception()
 
   def info(self) -> str:
     return str(csleqp.sleqp_solver_info(self.solver))

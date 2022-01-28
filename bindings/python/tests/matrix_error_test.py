@@ -74,8 +74,37 @@ class MatrixErrorTest(unittest.TestCase):
                           self.options,
                           self.x)
 
-    with self.assertRaises(sleqp.SLEQPError):
-      solver.solve(1, 3600)
+    with self.assertRaises(Exception):
+      solver.solve(max_num_iterations=1)
+
+  def test_error_chain(self):
+    func = MatrixErrorFunc()
+
+    func.set_matrix_value("asd")
+
+    problem = sleqp.Problem(func,
+                            self.params,
+                            self.var_lb,
+                            self.var_ub,
+                            self.cons_lb,
+                            self.cons_ub)
+
+    solver = sleqp.Solver(problem,
+                          self.params,
+                          self.options,
+                          self.x)
+
+    failed = False
+
+    try:
+      solver.solve(max_num_iterations=1)
+    except Exception as exc:
+      cause = exc.__cause__
+      assert(isinstance(cause, sleqp.EvaluationError))
+      failed = True
+
+    if not failed:
+      self.fail("No exception thrown")
 
   def test_wrong_shape(self):
     func = MatrixErrorFunc()
@@ -94,8 +123,8 @@ class MatrixErrorTest(unittest.TestCase):
                           self.options,
                           self.x)
 
-    with self.assertRaises(sleqp.SLEQPError):
-        solver.solve(1, 3600)
+    with self.assertRaises(Exception):
+        solver.solve(max_num_iterations=1)
 
   def test_sparse_type(self):
     func = MatrixErrorFunc()
@@ -116,7 +145,7 @@ class MatrixErrorTest(unittest.TestCase):
                           self.options,
                           self.x)
 
-    solver.solve(1, 3600)
+    solver.solve(max_num_iterations=1)
 
 
 if __name__ == '__main__':

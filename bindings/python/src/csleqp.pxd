@@ -26,6 +26,7 @@ cdef extern from "sleqp.h":
     SLEQP_NOMEM,
     SLEQP_INTERNAL_ERROR,
     SLEQP_FUNC_EVAL_ERROR,
+    SLEQP_CALLBACK_ERROR,
     SLEQP_MATH_ERROR,
     SLEQP_INVALID_DERIV,
     SLEQP_ILLEGAL_ARGUMENT
@@ -233,12 +234,6 @@ cdef extern from "sleqp.h":
   SLEQP_ERROR_TYPE sleqp_error_type()
 
   const char* sleqp_error_msg()
-
-  void sleqp_set_error(const char* file,
-                       int line,
-                       const char* func,
-                       SLEQP_ERROR_TYPE error_type,
-                       const char* message)
 
   # Sparse vectors
   SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,

@@ -105,7 +105,7 @@ newton_solver_create(NewtonSolver** star,
   {
     SleqpFunc* func = sleqp_problem_func(problem);
 
-    if (sleqp_func_hess_psd(func))
+    if (sleqp_func_has_flags(func, SLEQP_FUNC_HESS_PSD))
     {
       tr_solver = SLEQP_TR_SOLVER_CG;
     }
@@ -351,7 +351,8 @@ check_spectrum(NewtonSolver* solver)
 
   sleqp_log_debug("Spectrum: %.14e, %.14e", min_rayleigh, max_rayleigh);
 
-  if (sleqp_func_hess_psd(func) && sleqp_is_neg(min_rayleigh, eps))
+  if (sleqp_func_has_flags(func, SLEQP_FUNC_HESS_PSD)
+      && sleqp_is_neg(min_rayleigh, eps))
   {
     sleqp_log_warn(
       "Encountered negative Rayleigh quotient (%.14e) on PSD Hessian",
