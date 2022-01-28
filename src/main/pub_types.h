@@ -25,6 +25,7 @@ typedef enum
   SLEQP_NOMEM,
   SLEQP_INTERNAL_ERROR,
   SLEQP_FUNC_EVAL_ERROR,
+  SLEQP_CALLBACK_ERROR,
   SLEQP_MATH_ERROR,
   SLEQP_INVALID_DERIV,
   SLEQP_ILLEGAL_ARGUMENT
@@ -63,7 +64,7 @@ typedef enum
     const SLEQP_RETCODE _status = (x);                                         \
     if (_status < SLEQP_OKAY)                                                  \
     {                                                                          \
-      sleqp_log_error("Error in function %s", __func__);                       \
+      sleqp_log_error("Error in function %s", __PRETTY_FUNCTION__);            \
       return _status;                                                          \
     }                                                                          \
     else if (_status != SLEQP_OKAY)                                            \

@@ -247,11 +247,11 @@ sleqp_solver_solve(SleqpSolver* solver,
   SLEQP_CALL(
     sleqp_polishing_polish(solver->polishing, iterate, polishing_type));
 
-  SLEQP_CALLBACK_HANDLER_EXECUTE(
-    solver->callback_handlers[SLEQP_SOLVER_EVENT_FINISHED],
-    SLEQP_FINISHED,
-    solver,
-    solver->original_iterate);
+  SLEQP_CALLBACK_EVENT(solver->callback_handlers,
+                       SLEQP_SOLVER_EVENT_FINISHED,
+                       SLEQP_FINISHED,
+                       solver,
+                       solver->original_iterate);
 
   SLEQP_CALL(sleqp_solver_print_stats(solver, violation));
 

@@ -8,6 +8,12 @@
 static thread_local char error_msg[ERROR_MSG_SIZE];
 static thread_local SLEQP_ERROR_TYPE etype;
 
+void
+sleqp_error_type_set(SLEQP_ERROR_TYPE error_type)
+{
+  etype = error_type;
+}
+
 const char*
 sleqp_error_msg()
 {
