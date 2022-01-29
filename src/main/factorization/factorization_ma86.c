@@ -6,6 +6,7 @@
 #include <hsl_mc68i.h>
 
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -109,17 +110,11 @@ ma86_get_error_string(int value, const char** message)
     if (MA86_IS_ERROR(ma86_status))                                            \
     {                                                                          \
                                                                                \
-      sleqp_log_error("Caught hsl_ma86 error <%d> (%s) in function %s",        \
-                      ma86_status,                                             \
-                      ma86_error_string,                                       \
-                      __func__);                                               \
-                                                                               \
-      if (ma86_status == MA86_ERROR_ALLOCATION)                                \
-      {                                                                        \
-        return SLEQP_NOMEM;                                                    \
-      }                                                                        \
-                                                                               \
-      return SLEQP_INTERNAL_ERROR;                                             \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "Caught hsl_ma86 error <%d> (%s) in function %s",            \
+                  ma86_status,                                                 \
+                  ma86_error_string,                                           \
+                  __func__);                                                   \
     }                                                                          \
     else                                                                       \
     {                                                                          \

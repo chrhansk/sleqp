@@ -1,5 +1,4 @@
 #include "ampl_output.h"
-#include "ampl_mem.h"
 #include "ampl_suffix.h"
 #include "ampl_util.h"
 
@@ -18,7 +17,8 @@ enum AMPL_CODE
   AMPL_TIME_LIMIT = 400,
   AMPL_ITER_LIMIT = 410,
   AMPL_DEADPOINT  = 500,
-  AMPL_UNKNOWN    = 501
+  AMPL_UNKNOWN    = 501,
+  AMPL_ERROR      = 502
 };
 
 // AMPL variable / constraint states,
@@ -64,8 +64,8 @@ set_suffixes(SleqpProblem* problem, SleqpSolver* solver, ASL* asl)
   const int num_vars = sleqp_problem_num_vars(problem);
   const int num_cons = sleqp_problem_num_cons(problem);
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&var_stats, num_vars));
-  SLEQP_CALL(sleqp_ampl_alloc_array(&cons_stats, num_cons));
+  SLEQP_CALL(sleqp_alloc_array(&var_stats, num_vars));
+  SLEQP_CALL(sleqp_alloc_array(&cons_stats, num_cons));
 
   SleqpIterate* iterate;
 
@@ -171,12 +171,37 @@ report_with_status_message(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE
+report_error(ASL* asl, Option_Info* option_info)
+{
+  char message[BUF_SIZE];
+
+  snprintf(message,
+           BUF_SIZE,
+           "%s: %s",
+           "SLEQP " SLEQP_LONG_VERSION,
+           sleqp_error_msg());
+
+  solve_result_num = AMPL_ERROR;
+
+  write_sol(message, NULL, NULL, option_info);
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE
 sleqp_ampl_report(SleqpProblem* problem,
                   SleqpSolver* solver,
                   ASL* asl,
-                  Option_Info* option_info)
+                  Option_Info* option_info,
+                  bool error_occurred)
 {
+  if (error_occurred)
+  {
+    SLEQP_CALL(report_error(asl, option_info));
+    return SLEQP_OKAY;
+  }
+
   const int num_vars = sleqp_problem_num_vars(problem);
   const int num_cons = sleqp_problem_num_cons(problem);
 
@@ -187,11 +212,11 @@ sleqp_ampl_report(SleqpProblem* problem,
   double* primal;
   double* cons_dual;
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&primal, num_vars));
+  SLEQP_CALL(sleqp_alloc_array(&primal, num_vars));
 
   SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_iterate_primal(iterate), primal));
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&cons_dual, num_cons));
+  SLEQP_CALL(sleqp_alloc_array(&cons_dual, num_cons));
 
   SLEQP_CALL(
     sleqp_sparse_vector_to_raw(sleqp_iterate_cons_dual(iterate), cons_dual));
@@ -209,8 +234,8 @@ sleqp_ampl_report(SleqpProblem* problem,
   SLEQP_CALL(
     report_with_status_message(solver, asl, option_info, primal, cons_dual));
 
-  sleqp_ampl_free(&cons_dual);
-  sleqp_ampl_free(&primal);
+  sleqp_free(&cons_dual);
+  sleqp_free(&primal);
 
   return SLEQP_OKAY;
 }

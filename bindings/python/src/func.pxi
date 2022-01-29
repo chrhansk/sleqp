@@ -1,5 +1,7 @@
 #cython: language_level=3
 
+cdef store_func_exc(func_obj, exception):
+  func_obj.call_exception = exception
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
                                          csleqp.SleqpSparseVec* x,
@@ -34,8 +36,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
     cons_jac_nnz[0] = try_call(lambda : func_obj.cons_jac_nnz())
 
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -71,8 +73,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val(csleqp.SleqpFunc* func,
     obj_val[0] = result
 
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -105,8 +107,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad(csleqp.SleqpFunc* func,
     csleqp_call(array_to_sleqp_sparse_vec(grad_array, obj_grad))
 
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -139,8 +141,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
     csleqp_call(array_to_sleqp_sparse_vec(cons_array, cons_vals))
 
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -178,8 +180,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
 
 
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -225,8 +227,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
     csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 

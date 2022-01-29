@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "cmp.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -782,7 +783,9 @@ sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
 
   if (!output)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Failed to open output file '%s'",
+                name);
   }
 
   SLEQP_CALL(sleqp_sparse_matrix_dump(matrix, output));

@@ -363,6 +363,10 @@ restoration_func_create(SleqpFunc** star,
                                    params,
                                    func_data));
 
+  SleqpFunc* func = *star;
+
+  SLEQP_CALL(sleqp_func_flags_add(func, SLEQP_FUNC_INTERNAL));
+
   return SLEQP_OKAY;
 }
 

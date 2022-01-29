@@ -7,11 +7,8 @@ import sleqp
 class OptionTest(unittest.TestCase):
 
   def test_invalid_construction(self):
-
-    def test():
+    with self.assertRaises(AttributeError):
       options = sleqp.Options(invalid_value=1)
-
-    self.assertRaises(AttributeError, test)
 
   def test_roundtrip(self):
     options = sleqp.Options(dual_estimation_type=sleqp.DualEstimationType.LP)

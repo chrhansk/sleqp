@@ -5,6 +5,7 @@
 #include <dmumps_c.h>
 
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 #include "mpi_utils.h"
@@ -38,11 +39,10 @@ typedef struct SleqpMUMPSData
     if (SLEQP_MUMPS_IS_ERROR(sleqp_mumps_status))                              \
     {                                                                          \
                                                                                \
-      sleqp_log_error("Caught MUMPS error <%d> in function %s",                \
-                      sleqp_mumps_status,                                      \
-                      __func__);                                               \
-                                                                               \
-      return SLEQP_INTERNAL_ERROR;                                             \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "Caught MUMPS error <%d> in function %s",                    \
+                  sleqp_mumps_status,                                          \
+                  __func__);                                                   \
     }                                                                          \
   } while (0)
 

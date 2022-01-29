@@ -391,7 +391,11 @@ sleqp_fixed_var_func_create(SleqpFunc** star,
   SleqpFunc* fixed_var_func = *star;
 
   SLEQP_CALL(
-    sleqp_func_set_hess_flags(fixed_var_func, sleqp_func_hess_flags(func)));
+    sleqp_func_flags_copy(func,
+                          fixed_var_func,
+                          SLEQP_FUNC_HESS_INEXACT | SLEQP_FUNC_HESS_PSD));
+
+  SLEQP_CALL(sleqp_func_flags_add(fixed_var_func, SLEQP_FUNC_INTERNAL));
 
   SLEQP_CALL(
     create_fixed_var_hess_struct(sleqp_func_hess_struct(func),
@@ -447,6 +451,10 @@ sleqp_fixed_var_lsq_func_create(SleqpFunc** star,
                                    params,
                                    (void*)func_data));
 
+  SleqpFunc* fixed_var_func = *star;
+
+  SLEQP_CALL(sleqp_func_flags_add(fixed_var_func, SLEQP_FUNC_INTERNAL));
+
   return SLEQP_OKAY;
 }
 
@@ -489,8 +497,9 @@ sleqp_fixed_var_dyn_func_create(SleqpFunc** star,
 
   SleqpFunc* fixed_var_func = *star;
 
-  SLEQP_CALL(
-    sleqp_func_set_hess_psd(fixed_var_func, sleqp_func_hess_psd(func)));
+  SLEQP_CALL(sleqp_func_flags_copy(func, fixed_var_func, SLEQP_FUNC_HESS_PSD));
+
+  SLEQP_CALL(sleqp_func_flags_add(fixed_var_func, SLEQP_FUNC_INTERNAL));
 
   SLEQP_CALL(
     create_fixed_var_hess_struct(sleqp_func_hess_struct(func),

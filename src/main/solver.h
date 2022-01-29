@@ -5,6 +5,7 @@
 
 #include "callback_handler.h"
 #include "deriv_check.h"
+#include "error.h"
 #include "merit.h"
 #include "polish.h"
 #include "problem_scaling.h"
@@ -16,6 +17,33 @@
 #include "step/step_rule.h"
 
 #include "preprocessor/preprocessor.h"
+
+#define SLEQP_CALLBACK_EVENT(handlers, event, func_type, ...)                  \
+  do                                                                           \
+  {                                                                            \
+    SleqpCallbackHandler* handler = (handlers)[event];                         \
+    const int size                = sleqp_callback_handler_size(handler);      \
+                                                                               \
+    void* callback_func;                                                       \
+    void* callback_data;                                                       \
+                                                                               \
+    for (int pos = 0; pos < size; ++pos)                                       \
+    {                                                                          \
+      SLEQP_CALL(sleqp_callback_handler_get(handler,                           \
+                                            pos,                               \
+                                            &callback_func,                    \
+                                            &callback_data));                  \
+                                                                               \
+      SLEQP_RETCODE retcode                                                    \
+        = (((func_type)(callback_func))(__VA_ARGS__, callback_data));          \
+      if (retcode != SLEQP_OKAY)                                               \
+      {                                                                        \
+        sleqp_raise(SLEQP_CALLBACK_ERROR,                                      \
+                    "Error executing callback handler for event %s",           \
+                    #event);                                                   \
+      }                                                                        \
+    }                                                                          \
+  } while (false)
 
 struct SleqpSolver
 {

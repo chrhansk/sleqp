@@ -737,7 +737,9 @@ sleqp_sr1_create(SleqpQuasiNewton** star,
   SLEQP_CALL(sleqp_hess_struct_copy(sleqp_func_hess_struct(func),
                                     sleqp_func_hess_struct(sr1_func)));
 
-  SLEQP_CALL(sleqp_func_set_hess_flags(sr1_func, SLEQP_HESS_INEXACT));
+  SLEQP_CALL(
+    sleqp_func_flags_add(sr1_func,
+                         SLEQP_FUNC_HESS_INEXACT | SLEQP_FUNC_HESS_INTERNAL));
 
   return SLEQP_OKAY;
 }

@@ -1,6 +1,7 @@
 #include "trial_point.h"
 
 #include "dyn.h"
+#include "error.h"
 #include "fail.h"
 #include "gauss_newton.h"
 #include "mem.h"
@@ -105,8 +106,8 @@ create_eqp_solver(SleqpTrialPointSolver* solver)
 
     if (sleqp_func_get_type(func) != SLEQP_FUNC_TYPE_LSQ)
     {
-      sleqp_log_error("LSQR solver is only available for LSQ problems");
-      return SLEQP_ILLEGAL_ARGUMENT;
+      sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                  "LSQR solver is only available for LSQ problems");
     }
 
     SLEQP_CALL(sleqp_gauss_newton_solver_create(&solver->eqp_solver,

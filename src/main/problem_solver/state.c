@@ -1,5 +1,6 @@
 #include "problem_solver.h"
 
+#include "error.h"
 #include "feas.h"
 #include "solver.h"
 
@@ -49,8 +50,7 @@ sleqp_problem_solver_get_real_state(const SleqpProblemSolver* solver,
     (*value) = max_rayleigh;
     break;
   default:
-    sleqp_log_error("Invalid state requested (%d)", value);
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid state value (%d)", value);
   }
 
   return SLEQP_OKAY;
@@ -73,8 +73,7 @@ sleqp_problem_solver_get_int_state(const SleqpProblemSolver* solver,
     (*value) = solver->last_step_type;
     break;
   default:
-    sleqp_log_error("Invalid state requested (%d)", value);
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid state value (%d)", value);
   }
 
   return SLEQP_OKAY;
@@ -115,8 +114,7 @@ sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solver,
                                                       zero_eps));
     break;
   default:
-    sleqp_log_error("Invalid state requested (%d)", value);
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid state value (%d)", value);
   }
 
   return SLEQP_OKAY;

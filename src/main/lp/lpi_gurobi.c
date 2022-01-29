@@ -5,6 +5,7 @@
 
 #include "cmp.h"
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -46,17 +47,10 @@ typedef struct SleqpLpiGRB
     {                                                                          \
       const char* error_string = GRBgeterrormsg(env);                          \
                                                                                \
-      sleqp_log_error("Caught Gurobi error <%d> (%s)",                         \
-                      grb_ret_status,                                          \
-                      error_string);                                           \
-                                                                               \
-      switch (grb_ret_status)                                                  \
-      {                                                                        \
-      case GRB_ERROR_OUT_OF_MEMORY:                                            \
-        return SLEQP_NOMEM;                                                    \
-      default:                                                                 \
-        return SLEQP_INTERNAL_ERROR;                                           \
-      }                                                                        \
+      sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,                                      \
+                  "Caught Gurobi error <%d> (%s)",                             \
+                  grb_ret_status,                                              \
+                  error_string);                                               \
     }                                                                          \
   } while (0)
 
@@ -91,8 +85,7 @@ gurobi_create_problem(void** star,
 
   if (err || env == NULL)
   {
-    sleqp_log_error("Failed to create Gurobi environment");
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Failed to create Gurobi environment");
   }
 
   if (sleqp_log_level() < SLEQP_LOG_DEBUG)
@@ -203,9 +196,8 @@ gurobi_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
     return SLEQP_ABORT_TIME;
     break;
   default:
-    sleqp_log_error("Invalid Gurobi status: %d", sol_stat);
     lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Invalid Gurobi status: %d", sol_stat);
   }
 
   return SLEQP_OKAY;
@@ -528,8 +520,7 @@ gurobi_cons_stats(void* lp_data,
       constraint_stats[i] = SLEQP_BASESTAT_UPPER;
       break;
     case GRB_SUPERBASIC:
-      sleqp_log_error("Encountered a super-basic constraint");
-      return SLEQP_INTERNAL_ERROR;
+      sleqp_raise(SLEQP_INTERNAL_ERROR, "Encountered a super-basic constraint");
     default:
       assert(false);
     }

@@ -18,11 +18,18 @@ cdef extern from "sleqp.h":
     SLEQP_NONE
 
   ctypedef enum SLEQP_RETCODE:
-    SLEQP_OKAY,
+    SLEQP_ERROR,
+    SLEQP_OKAY
+
+  ctypedef enum SLEQP_ERROR_TYPE:
+    SLEQP_FAILED_ASSERTION,
     SLEQP_NOMEM,
-    SLEQP_ILLEGAL_ARGUMENT,
+    SLEQP_INTERNAL_ERROR,
+    SLEQP_FUNC_EVAL_ERROR,
+    SLEQP_CALLBACK_ERROR,
+    SLEQP_MATH_ERROR,
     SLEQP_INVALID_DERIV,
-    SLEQP_INTERNAL_ERROR
+    SLEQP_ILLEGAL_ARGUMENT
 
   ctypedef enum SLEQP_ACTIVE_STATE:
     SLEQP_INACTIVE,
@@ -223,6 +230,10 @@ cdef extern from "sleqp.h":
     SLEQP_LOG_WARN,
     SLEQP_LOG_INFO,
     SLEQP_LOG_DEBUG
+
+  SLEQP_ERROR_TYPE sleqp_error_type()
+
+  const char* sleqp_error_msg()
 
   # Sparse vectors
   SLEQP_RETCODE sleqp_sparse_vector_create(SleqpSparseVec** vec,

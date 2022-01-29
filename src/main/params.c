@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -155,9 +156,10 @@ sleqp_params_set_value(SleqpParams* params, SLEQP_PARAM param, double value)
 
   if (value <= 0.)
   {
-    sleqp_log_error("Wrong value for parameter %d: %f", param, value);
-
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Wrong value for parameter %d: %f",
+                param,
+                value);
   }
 
   params->values[param] = value;

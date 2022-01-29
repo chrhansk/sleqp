@@ -1,3 +1,8 @@
+from inspect import currentframe, getframeinfo
+
+cdef store_callback_exc(CallbackHandle handle, exception):
+  handle.call_exception = exception
+
 cdef class CallbackHandle:
   cdef Solver solver
   cdef object function
@@ -34,8 +39,10 @@ cdef csleqp.SLEQP_RETCODE accepted_iterate(csleqp.SleqpSolver* sol,
     function(solver, iterate)
 
   except BaseException as exception:
-    callback_object.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_callback_exc(callback_object, exception)
+    return csleqp.SLEQP_ERROR
+
+  return csleqp.SLEQP_OKAY
 
 cdef csleqp.SLEQP_RETCODE accepted_iterate_nogil(csleqp.SleqpSolver* solver,
                                                  csleqp.SleqpIterate* iterate,
@@ -57,8 +64,10 @@ cdef csleqp.SLEQP_RETCODE performed_iteration(csleqp.SleqpSolver* sol,
     function(solver)
 
   except BaseException as exception:
-    callback_object.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_callback_exc(callback_object, exception)
+    return csleqp.SLEQP_ERROR
+
+  return csleqp.SLEQP_OKAY
 
 cdef csleqp.SLEQP_RETCODE performed_iteration_nogil(csleqp.SleqpSolver* solver,
                                                     void* callback_data) nogil:
@@ -84,8 +93,10 @@ cdef csleqp.SLEQP_RETCODE finished(csleqp.SleqpSolver* sol,
     function(solver, iterate)
 
   except BaseException as exception:
-    callback_object.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_callback_exc(callback_object, exception)
+    return csleqp.SLEQP_ERROR
+
+  return csleqp.SLEQP_OKAY
 
 cdef csleqp.SLEQP_RETCODE finished_nogil(csleqp.SleqpSolver* solver,
                                          csleqp.SleqpIterate* iterate,
@@ -112,6 +123,6 @@ cdef  get_callback_function_pointer(solver_event, void** pointer):
       pointer[0] = <void*> finished
   else:
     pointer[0] = NULL
-    return csleqp.SLEQP_INTERNAL_ERROR
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY

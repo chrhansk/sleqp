@@ -9,6 +9,7 @@ extern "C"
 
 #include "cmp.h"
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 }
@@ -201,9 +202,8 @@ soplex_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
     spx->status = SLEQP_LP_STATUS_INF_OR_UNBOUNDED;
     break;
   default:
-    sleqp_log_error("Invalid SoPlex status: %d", status);
     spx->status = SLEQP_LP_STATUS_UNKNOWN;
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR,"Invalid SoPlex status: %d", status);
   }
 
   assert(soplex.hasBasis());
@@ -536,8 +536,7 @@ soplex_basis_condition_estimate(void* lp_data, bool* exact, double* condition)
 
     if (!success)
     {
-      sleqp_log_error("Failed to get basis condition");
-      return SLEQP_INTERNAL_ERROR;
+      sleqp_raise(SLEQP_INTERNAL_ERROR, "Failed to get basis condition");
     }
   }
   else
@@ -546,8 +545,7 @@ soplex_basis_condition_estimate(void* lp_data, bool* exact, double* condition)
 
     if (!success)
     {
-      sleqp_log_error("Failed to get basis condition");
-      return SLEQP_INTERNAL_ERROR;
+      sleqp_raise(SLEQP_INTERNAL_ERROR, "Failed to get basis condition");
     }
   }
 

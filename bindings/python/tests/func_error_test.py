@@ -8,7 +8,7 @@ import sleqp
 num_variables = 2
 num_constraints = 0
 
-inner = Exception("Error in set_value")
+inner = Exception("Inner exception")
 
 
 class ErrorFunc:
@@ -87,7 +87,7 @@ class FuncErrorTest(unittest.TestCase):
                                self.options,
                                self.x)
 
-    with self.assertRaises(sleqp.SLEQPError):
+    with self.assertRaises(Exception):
       self.solver.solve()
 
   def test_error_chain(self):
@@ -105,10 +105,19 @@ class FuncErrorTest(unittest.TestCase):
                                self.options,
                                self.x)
 
+    failed = False
+
     try:
       self.solver.solve()
-    except sleqp.SLEQPError as err:
-      self.assertEqual(err.__cause__, inner)
+    except Exception as err:
+      eval_error = err.__cause__
+      orig_error = eval_error.__cause__
+      self.assertTrue(isinstance(eval_error, sleqp.EvaluationError))
+      self.assertEqual(orig_error, inner)
+
+      failed = True
+
+    self.assertTrue(failed)
 
   def test_type_error_func(self):
     func = TypeErrorFunc()
@@ -125,7 +134,7 @@ class FuncErrorTest(unittest.TestCase):
                           self.options,
                           self.x)
 
-    with self.assertRaises(sleqp.SLEQPError):
+    with self.assertRaises(Exception):
       solver.solve()
 
   def test_matrix_error_func(self):
@@ -143,7 +152,7 @@ class FuncErrorTest(unittest.TestCase):
                           self.options,
                           self.x)
 
-    with self.assertRaises(sleqp.SLEQPError):
+    with self.assertRaises(Exception):
       solver.solve()
 
 if __name__ == '__main__':

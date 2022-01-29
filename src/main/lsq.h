@@ -3,6 +3,8 @@
 
 #include "pub_lsq.h"
 
+#include "func.h"
+
 double
 sleqp_lsq_func_get_levenberg_marquardt(SleqpFunc* func);
 

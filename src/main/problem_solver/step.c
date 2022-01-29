@@ -1,5 +1,7 @@
 #include "problem_solver.h"
 
+#include "error.h"
+
 SLEQP_RETCODE
 sleqp_problem_solver_set_func_value(SleqpProblemSolver* solver,
                                     SleqpIterate* iterate,
@@ -32,8 +34,8 @@ sleqp_problem_solver_set_func_value(SleqpProblemSolver* solver,
     if (reason != SLEQP_VALUE_REASON_TRYING_ITERATE
         && reason != SLEQP_VALUE_REASON_TRYING_SOC_ITERATE)
     {
-      sleqp_log_error("Function can only reject trial steps");
-      return SLEQP_INTERNAL_ERROR;
+      sleqp_raise(SLEQP_FUNC_EVAL_ERROR,
+                  "Function can only reject trial steps");
     }
 
     return SLEQP_OKAY;

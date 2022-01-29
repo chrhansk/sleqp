@@ -92,11 +92,8 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
 
     return csleqp.SLEQP_OKAY
 
-  except SLEQPError as error:
-    return error.code
-
   except BaseException as exception:
-    return csleqp.SLEQP_INTERNAL_ERROR
+    return csleqp.SLEQP_ERROR
 
   finally:
     csleqp_call(csleqp.sleqp_sparse_vector_free(&linear_ub_vec))

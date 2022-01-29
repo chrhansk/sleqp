@@ -15,9 +15,35 @@
 
 typedef enum
 {
-  SLEQP_HESS_INEXACT = (1 << 1),
-  SLEQP_HESS_PSD     = (1 << 2),
-} SLEQP_HESS_FLAGS;
+  SLEQP_FUNC_HESS_INEXACT  = (1 << 0),
+  SLEQP_FUNC_HESS_PSD      = (1 << 1),
+  SLEQP_FUNC_INTERNAL      = (1 << 2),
+  SLEQP_FUNC_HESS_INTERNAL = (1 << 3)
+} SLEQP_FUNC_FLAGS;
+
+#define SLEQP_FUNC_CALL(x, noraise, message)                                   \
+  do                                                                           \
+  {                                                                            \
+    if ((noraise))                                                             \
+    {                                                                          \
+      SLEQP_CALL(x);                                                           \
+    }                                                                          \
+    else                                                                       \
+    {                                                                          \
+      SLEQP_RETCODE retcode = (x);                                             \
+      if (retcode != SLEQP_OKAY)                                               \
+      {                                                                        \
+        sleqp_raise(SLEQP_FUNC_EVAL_ERROR, message);                           \
+      }                                                                        \
+    }                                                                          \
+  } while (false)
+
+#define SLEQP_FUNC_ERROR_SET_VALUE "Error setting function value"
+#define SLEQP_FUNC_ERROR_OBJ_VAL "Error evaluating objective"
+#define SLEQP_FUNC_ERROR_OBJ_GRAD "Error evaluating objective gradient"
+#define SLEQP_FUNC_ERROR_CONS_VAL "Error evaluating constraints"
+#define SLEQP_FUNC_ERROR_CONS_JAC "Error evaluating constraint Jacobian"
+#define SLEQP_FUNC_ERROR_HESS_PROD "Error evaluating Hessian product"
 
 /**
  * Sets the current input vector of a function
@@ -71,26 +97,28 @@ sleqp_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val);
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac);
 
-SLEQP_HESS_FLAGS
-sleqp_func_hess_flags(const SleqpFunc* func);
+SLEQP_FUNC_FLAGS
+sleqp_func_flags(const SleqpFunc* func);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_func_set_hess_flags(SleqpFunc* func, SLEQP_HESS_FLAGS flags);
+sleqp_func_flags_add(SleqpFunc* func, SLEQP_FUNC_FLAGS flags);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_func_flags_remove(SleqpFunc* func, SLEQP_FUNC_FLAGS flags);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_func_flags_set(SleqpFunc* func, SLEQP_FUNC_FLAGS flags, bool value);
 
 bool
-sleqp_func_hess_inexact(const SleqpFunc* func);
-
-SLEQP_NODISCARD
-SLEQP_RETCODE
-sleqp_func_set_hess_inexact(SleqpFunc* func, bool value);
+sleqp_func_has_flags(const SleqpFunc* func, SLEQP_FUNC_FLAGS flags);
 
 bool
-sleqp_func_hess_psd(const SleqpFunc* func);
-
-SLEQP_NODISCARD
-SLEQP_RETCODE
-sleqp_func_set_hess_psd(SleqpFunc* func, bool value);
+sleqp_func_flags_copy(const SleqpFunc* source,
+                      SleqpFunc* target,
+                      SLEQP_FUNC_FLAGS flags);
 
 SLEQP_FUNC_TYPE
 sleqp_func_get_type(const SleqpFunc* func);

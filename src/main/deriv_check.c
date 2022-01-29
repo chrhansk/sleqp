@@ -1,6 +1,7 @@
 #include "deriv_check.h"
 
 #include "cmp.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 #include "problem.h"
@@ -804,7 +805,7 @@ sleqp_deriv_check_perform(SleqpDerivChecker* deriv_checker,
 
   if (!deriv_checker->valid_deriv)
   {
-    return SLEQP_INVALID_DERIV;
+    sleqp_raise(SLEQP_INVALID_DERIV, "Invalid derivative");
   }
 
   return SLEQP_OKAY;

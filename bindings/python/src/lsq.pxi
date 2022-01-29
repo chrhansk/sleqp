@@ -10,8 +10,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals(csleqp.SleqpFunc* func,
     csleqp_call(array_to_sleqp_sparse_vec(array, residual))
 
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -41,8 +41,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(csleqp.SleqpFunc* func,
       csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
 
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 
@@ -73,8 +73,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(csleqp.SleqpFunc* func,
 
       csleqp_call(array_to_sleqp_sparse_vec(product_array, product))
   except BaseException as exception:
-    func_obj.call_exception = exception
-    return csleqp.SLEQP_INTERNAL_ERROR
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
 
   return csleqp.SLEQP_OKAY
 

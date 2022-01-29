@@ -1,5 +1,4 @@
 #include "ampl_data.h"
-#include "ampl_mem.h"
 
 #include <assert.h>
 
@@ -27,7 +26,7 @@ SLEQP_RETCODE
 sleqp_ampl_data_create(SleqpAmplData** star, ASL* asl)
 {
 
-  SLEQP_CALL(sleqp_ampl_malloc(star));
+  SLEQP_CALL(sleqp_malloc(star));
 
   SleqpAmplData* data = *star;
 
@@ -44,15 +43,15 @@ sleqp_ampl_data_create(SleqpAmplData** star, ASL* asl)
   data->num_linear      = num_linear;
   data->is_constrained  = (num_constraints != 0);
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->var_lb, num_variables));
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->var_ub, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->var_lb, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->var_ub, num_variables));
 
-  SLEQP_CALL(sleqp_ampl_alloc_array(&data->x, num_variables));
+  SLEQP_CALL(sleqp_alloc_array(&data->x, num_variables));
 
   if (data->is_constrained)
   {
-    SLEQP_CALL(sleqp_ampl_alloc_array(&data->cons_lb, num_constraints));
-    SLEQP_CALL(sleqp_ampl_alloc_array(&data->cons_ub, num_constraints));
+    SLEQP_CALL(sleqp_alloc_array(&data->cons_lb, num_constraints));
+    SLEQP_CALL(sleqp_alloc_array(&data->cons_ub, num_constraints));
   }
 
   return SLEQP_OKAY;
@@ -63,15 +62,15 @@ sleqp_ampl_data_free(SleqpAmplData** star)
 {
   SleqpAmplData* data = *star;
 
-  sleqp_ampl_free(&data->x);
+  sleqp_free(&data->x);
 
-  sleqp_ampl_free(&data->cons_ub);
-  sleqp_ampl_free(&data->cons_lb);
+  sleqp_free(&data->cons_ub);
+  sleqp_free(&data->cons_lb);
 
-  sleqp_ampl_free(&data->var_ub);
-  sleqp_ampl_free(&data->var_lb);
+  sleqp_free(&data->var_ub);
+  sleqp_free(&data->var_lb);
 
-  sleqp_ampl_free(star);
+  sleqp_free(star);
 
   return SLEQP_OKAY;
 }

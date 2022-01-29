@@ -8,6 +8,7 @@
 
 #include "cmp.h"
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -119,29 +120,11 @@ ma57_get_error_string(int value, const char** message)
       const char* ma57_error_string;                                           \
       SLEQP_CALL(ma57_get_error_string(ma57_status, &ma57_error_string));      \
                                                                                \
-      sleqp_log_error("Caught hsl_ma57 error <%d> (%s) in function %s",        \
-                      ma57_status,                                             \
-                      ma57_error_string,                                       \
-                      __func__);                                               \
-                                                                               \
-      if (ma57_status == MA57_N_OUT_OF_RANGE                                   \
-          || ma57_status == MA57_NE_OUT_OF_RANGE                               \
-          || ma57_status == MA57_LRHS_OUT_OF_RANGE                             \
-          || ma57_status == MA57_JOB_OUT_OF_RANGE                              \
-          || ma57_status == MA57_LKEEP_OUT_OF_RANGE                            \
-          || ma57_status == MA57_NRHS_OUT_OF_RANGE                             \
-          || ma57_status == MA57_LWORK_OUT_OF_RANGE)                           \
-      {                                                                        \
-        return SLEQP_ILLEGAL_ARGUMENT;                                         \
-      }                                                                        \
-      if (ma57_status == MA57_TINY_PIVOT                                       \
-          || ma57_status == MA57_PIVOT_SIGN_CHANGE)                            \
-      {                                                                        \
-        return SLEQP_MATH_ERROR;                                               \
-      }                                                                        \
-      if (ma57_status == MA57_INSUFFICIENT_REAL_SPACE                          \
-          || ma57_status == MA57_INSUFFICIENT_INTEGER_SPACE)                   \
-        return SLEQP_INTERNAL_ERROR;                                           \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "Caught hsl_ma57 error <%d> (%s) in function %s",            \
+                  ma57_status,                                                 \
+                  ma57_error_string,                                           \
+                  __func__);                                                   \
     }                                                                          \
   } while (0)
 

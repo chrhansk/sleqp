@@ -83,7 +83,9 @@ START_TEST(test_add_invalid_number)
   sleqp_log_set_level(SLEQP_LOG_SILENT);
 
   ck_assert_int_eq(sleqp_solver_add_callback(solver, -1, NULL, NULL),
-                   SLEQP_ILLEGAL_ARGUMENT);
+                   SLEQP_ERROR);
+
+  ck_assert_int_eq(sleqp_error_type(), SLEQP_ILLEGAL_ARGUMENT);
 }
 END_TEST
 
@@ -92,7 +94,9 @@ START_TEST(test_remove_invalid_number)
   sleqp_log_set_level(SLEQP_LOG_SILENT);
 
   ck_assert_int_eq(sleqp_solver_remove_callback(solver, -1, NULL, NULL),
-                   SLEQP_ILLEGAL_ARGUMENT);
+                   SLEQP_ERROR);
+
+  ck_assert_int_eq(sleqp_error_type(), SLEQP_ILLEGAL_ARGUMENT);
 }
 END_TEST
 

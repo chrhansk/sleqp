@@ -1,6 +1,7 @@
 #include "problem_solver.h"
 
 #include "cmp.h"
+#include "error.h"
 #include "feas.h"
 
 static bool
@@ -30,7 +31,8 @@ print_warning(SleqpProblemSolver* solver)
 
   if (hessian_check)
   {
-    const bool inexact_hessian = sleqp_func_hess_inexact(func);
+    const bool inexact_hessian
+      = sleqp_func_has_flags(func, SLEQP_FUNC_HESS_INEXACT);
 
     if (inexact_hessian)
     {
@@ -97,8 +99,7 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
 
   if (reject_initial)
   {
-    sleqp_log_error("Function rejected initial solution");
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Function rejected initial solution");
   }
 
   {

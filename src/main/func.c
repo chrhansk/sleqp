@@ -13,7 +13,7 @@ struct SleqpFunc
 
   SleqpFuncCallbacks callbacks;
 
-  SLEQP_HESS_FLAGS hess_flags;
+  SLEQP_FUNC_FLAGS flags;
 
   SLEQP_FUNC_TYPE type;
 
@@ -52,8 +52,7 @@ sleqp_func_create(SleqpFunc** fstar,
 
   func->callbacks = *callbacks;
 
-  // Hessian is exact but not PSD
-  func->hess_flags = 0;
+  func->flags = 0;
 
   func->num_variables   = num_variables;
   func->num_constraints = num_constraints;
@@ -93,14 +92,16 @@ sleqp_func_set_value(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_timer_start(func->set_timer));
 
-  SLEQP_CALL(func->callbacks.set_value(func,
-                                       x,
-                                       reason,
-                                       reject,
-                                       obj_grad_nnz,
-                                       cons_val_nnz,
-                                       cons_jac_nnz,
-                                       func->data));
+  SLEQP_FUNC_CALL(func->callbacks.set_value(func,
+                                            x,
+                                            reason,
+                                            reject,
+                                            obj_grad_nnz,
+                                            cons_val_nnz,
+                                            cons_jac_nnz,
+                                            func->data),
+                  sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+                  SLEQP_FUNC_ERROR_SET_VALUE);
 
   SLEQP_CALL(sleqp_timer_stop(func->set_timer));
 
@@ -114,7 +115,9 @@ sleqp_func_obj_val(SleqpFunc* func, double* obj_val)
   {
     SLEQP_CALL(sleqp_timer_start(func->val_timer));
 
-    SLEQP_CALL(func->callbacks.obj_val(func, obj_val, func->data));
+    SLEQP_FUNC_CALL(func->callbacks.obj_val(func, obj_val, func->data),
+                    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+                    SLEQP_FUNC_ERROR_OBJ_VAL);
 
     SLEQP_CALL(sleqp_timer_stop(func->val_timer));
 
@@ -134,7 +137,9 @@ sleqp_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad)
 
     SLEQP_CALL(sleqp_timer_start(func->grad_timer));
 
-    SLEQP_CALL(func->callbacks.obj_grad(func, obj_grad, func->data));
+    SLEQP_FUNC_CALL(func->callbacks.obj_grad(func, obj_grad, func->data),
+                    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+                    SLEQP_FUNC_ERROR_OBJ_GRAD);
 
     SLEQP_CALL(sleqp_timer_stop(func->grad_timer));
 
@@ -157,11 +162,13 @@ sleqp_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val)
   {
     SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
 
-    if ((num_constraints != 0) && (func->callbacks.cons_val))
+    if ((num_constraints != 0))
     {
       SLEQP_CALL(sleqp_timer_start(func->cons_val_timer));
 
-      SLEQP_CALL(func->callbacks.cons_val(func, cons_val, func->data));
+      SLEQP_FUNC_CALL(func->callbacks.cons_val(func, cons_val, func->data),
+                      sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+                      SLEQP_FUNC_ERROR_CONS_VAL);
 
       SLEQP_CALL(sleqp_timer_stop(func->cons_val_timer));
     }
@@ -185,11 +192,13 @@ sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac)
   {
     SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
 
-    if ((num_constraints != 0) && (func->callbacks.cons_jac))
+    if ((num_constraints != 0))
     {
       SLEQP_CALL(sleqp_timer_start(func->cons_jac_timer));
 
-      SLEQP_CALL(func->callbacks.cons_jac(func, cons_jac, func->data));
+      SLEQP_FUNC_CALL(func->callbacks.cons_jac(func, cons_jac, func->data),
+                      sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+                      SLEQP_FUNC_ERROR_CONS_JAC);
 
       SLEQP_CALL(sleqp_timer_stop(func->cons_jac_timer));
     }
@@ -236,58 +245,48 @@ sleqp_func_hess_struct(SleqpFunc* func)
   return func->hess_struct;
 }
 
-static void
-set_flag(SLEQP_HESS_FLAGS* flags, SLEQP_HESS_FLAGS flag, bool value)
+SLEQP_RETCODE
+sleqp_func_flags_set(SleqpFunc* func, SLEQP_FUNC_FLAGS flags, bool value)
 {
   if (value)
   {
-    (*flags) |= flag;
+    return sleqp_func_flags_add(func, flags);
   }
   else
   {
-    (*flags) &= ~(flag);
+    return sleqp_func_flags_remove(func, flags);
   }
 }
 
-SLEQP_HESS_FLAGS
-sleqp_func_hess_flags(const SleqpFunc* func)
+SLEQP_RETCODE
+sleqp_func_flags_add(SleqpFunc* func, SLEQP_FUNC_FLAGS flags)
 {
-  return func->hess_flags;
+  func->flags |= flags;
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_func_set_hess_flags(SleqpFunc* func, SLEQP_HESS_FLAGS flags)
+sleqp_func_flags_remove(SleqpFunc* func, SLEQP_FUNC_FLAGS flags)
 {
-  func->hess_flags = flags;
+  func->flags &= ~(flags);
 
   return SLEQP_OKAY;
 }
 
 bool
-sleqp_func_hess_inexact(const SleqpFunc* func)
+sleqp_func_has_flags(const SleqpFunc* func, SLEQP_FUNC_FLAGS flags)
 {
-  return func->hess_flags & SLEQP_HESS_INEXACT;
-}
-
-SLEQP_RETCODE
-sleqp_func_set_hess_inexact(SleqpFunc* func, bool value)
-{
-  set_flag(&(func->hess_flags), SLEQP_HESS_INEXACT, value);
-
-  return SLEQP_OKAY;
+  return !!(func->flags & flags);
 }
 
 bool
-sleqp_func_hess_psd(const SleqpFunc* func)
+sleqp_func_flags_copy(const SleqpFunc* source,
+                      SleqpFunc* target,
+                      SLEQP_FUNC_FLAGS flags)
 {
-  return func->hess_flags & SLEQP_HESS_PSD;
-}
-
-SLEQP_RETCODE
-sleqp_func_set_hess_psd(SleqpFunc* func, bool value)
-{
-  set_flag(&(func->hess_flags), SLEQP_HESS_PSD, value);
-
+  SLEQP_CALL(
+    sleqp_func_flags_set(target, flags, sleqp_func_has_flags(source, flags)));
   return SLEQP_OKAY;
 }
 
@@ -374,9 +373,11 @@ sleqp_func_hess_prod(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_timer_start(func->hess_timer));
 
-  SLEQP_CALL(
+  SLEQP_FUNC_CALL(
     func->callbacks
-      .hess_prod(func, obj_dual, direction, cons_duals, product, func->data));
+      .hess_prod(func, obj_dual, direction, cons_duals, product, func->data),
+    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL | SLEQP_FUNC_HESS_INTERNAL),
+    SLEQP_FUNC_ERROR_HESS_PROD);
 
   SLEQP_CALL(sleqp_timer_stop(func->hess_timer));
 

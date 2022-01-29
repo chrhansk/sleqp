@@ -59,7 +59,7 @@ class CallbackTest(unittest.TestCase):
     self.solver.add_callback(sleqp.SolverEvent.AcceptedIterate,
                              accepted_iterate)
 
-    self.solver.solve(100, 3600)
+    self.solver.solve(max_num_iterations=100)
 
     self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
@@ -67,14 +67,27 @@ class CallbackTest(unittest.TestCase):
 
   def test_callback_error(self):
 
+    exception = Exception("Error")
+
     def accepted_iterate(solver, iterate):
-      raise Exception("Error")
+      raise exception
 
     self.solver.add_callback(sleqp.SolverEvent.AcceptedIterate,
                              accepted_iterate)
 
-    self.assertRaises(sleqp.SLEQPError,
-                      self.solver.solve, 100, 3600)
+    fail = False
+
+    try:
+      self.solver.solve(max_num_iterations=100)
+    except Exception as exc:
+      cause = exc.__cause__
+      orig = cause.__cause__
+
+      self.assertTrue(isinstance(cause, sleqp.CallbackError))
+      self.assertTrue(orig is exception)
+      fail = True
+
+    self.assertTrue(fail)
 
   def test_callback_abort(self):
 
@@ -84,7 +97,7 @@ class CallbackTest(unittest.TestCase):
     self.solver.add_callback(sleqp.SolverEvent.PerformedIteration,
                              performed_iteration)
 
-    self.solver.solve(100, 3600)
+    self.solver.solve(max_num_iterations=100)
 
     self.assertEqual(self.solver.iterations, 1)
 
@@ -95,7 +108,7 @@ class CallbackTest(unittest.TestCase):
     self.solver.add_callback(sleqp.SolverEvent.AcceptedIterate,
                              accepted_iterate)
 
-    self.solver.solve(100, 3600)
+    self.solver.solve(max_num_iterations=100)
 
     self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
@@ -111,7 +124,7 @@ class CallbackTest(unittest.TestCase):
       self.solver.add_callback(sleqp.SolverEvent.AcceptedIterate,
                                accepted_iterate)
 
-      self.solver.solve(100, 3600)
+      self.solver.solve(max_num_iterations=100)
 
       self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
@@ -128,7 +141,7 @@ class CallbackTest(unittest.TestCase):
 
     handle.unregister()
 
-    self.solver.solve(100, 3600)
+    self.solver.solve(max_num_iterations=100)
 
     self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
@@ -145,7 +158,7 @@ class CallbackTest(unittest.TestCase):
     self.solver.add_callback(sleqp.SolverEvent.Finished,
                              finished)
 
-    self.solver.solve(100, 3600)
+    self.solver.solve(max_num_iterations=100)
 
     self.assertEqual(did_finish, 1)
 

@@ -16,8 +16,7 @@
                                                                                \
     if (exception)                                                             \
     {                                                                          \
-      sleqp_log_error("Exception in Matlab call");                             \
-      return SLEQP_INTERNAL_ERROR;                                             \
+      sleqp_raise(SLEQP_FUNC_EVAL_ERROR, "Unknown exception in Matlab call");  \
     }                                                                          \
                                                                                \
   } while (0)
@@ -36,8 +35,9 @@
       assert(mxIsChar(lhs));                                                   \
       mxGetString(lhs, msg_buf, MEX_MSG_BUF_SIZE);                             \
                                                                                \
-      sleqp_log_error("Exception '%s' in Matlab call", msg_buf);               \
-      return SLEQP_INTERNAL_ERROR;                                             \
+      sleqp_raise(SLEQP_FUNC_EVAL_ERROR,                                       \
+                  "Exception '%s' in Matlab call",                             \
+                  msg_buf);                                                    \
     }                                                                          \
   } while (0)
 

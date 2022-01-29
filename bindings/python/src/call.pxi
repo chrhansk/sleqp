@@ -1,22 +1,36 @@
 #cython: language_level=3
 
-class SLEQPError(Exception):
-  def __init__(self, code):
-    assert code != csleqp.SLEQP_OKAY
-    self.code = code
+from collections import defaultdict
 
-  def __str__(self):
-    messages = {
-      csleqp.SLEQP_NOMEM: "Out of memory",
-      csleqp.SLEQP_ILLEGAL_ARGUMENT: "Illegal argument",
-      csleqp.SLEQP_INVALID_DERIV: "Invalid derivative",
-      csleqp.SLEQP_INTERNAL_ERROR: "Internal error"
-    }
+class CallbackError(Exception):
+  def __init__(self, *args, **kwds):
+    super().__init__(*args, **kwds)
 
-    assert self.code in messages
+class EvaluationError(Exception):
+  def __init__(self, *args, **kwds):
+    super().__init__(*args, **kwds)
 
-    return messages[self.code]
+cdef object _exception_map = {
+  csleqp.SLEQP_FAILED_ASSERTION: AssertionError,
+  csleqp.SLEQP_NOMEM: MemoryError,
+  csleqp.SLEQP_INTERNAL_ERROR: Exception,
+  csleqp.SLEQP_FUNC_EVAL_ERROR: EvaluationError,
+  csleqp.SLEQP_CALLBACK_ERROR: CallbackError,
+  csleqp.SLEQP_MATH_ERROR: ArithmeticError,
+  csleqp.SLEQP_INVALID_DERIV: Exception,
+  csleqp.SLEQP_ILLEGAL_ARGUMENT: ValueError
+}
+
+cdef _get_exception():
+  cdef csleqp.SLEQP_ERROR_TYPE error_type = csleqp.sleqp_error_type()
+  cdef const char* error_msg = csleqp.sleqp_error_msg()
+  if error_type in _exception_map:
+    return _exception_map[error_type]
+  return Exception(error_msg.decode('UTF-8'))
+
+cdef _raise_exception():
+  raise _get_exception()
 
 cdef csleqp_call(csleqp.SLEQP_RETCODE retcode):
   if retcode != csleqp.SLEQP_OKAY:
-    raise SLEQPError(retcode)
+    _raise_exception()

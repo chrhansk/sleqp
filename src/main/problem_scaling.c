@@ -1,6 +1,7 @@
 #include "problem_scaling.h"
 
 #include "cmp.h"
+#include "error.h"
 #include "func.h"
 #include "log.h"
 #include "lsq.h"
@@ -274,8 +275,12 @@ func_create(SleqpProblemScaling* problem_scaling)
     sleqp_func_hess_struct(problem_scaling->scaled_func)));
 
   SLEQP_CALL(
-    sleqp_func_set_hess_flags(problem_scaling->scaled_func,
-                              sleqp_func_hess_flags(problem_scaling->func)));
+    sleqp_func_flags_copy(problem_scaling->func,
+                          problem_scaling->scaled_func,
+                          SLEQP_FUNC_HESS_INEXACT | SLEQP_FUNC_HESS_PSD));
+
+  SLEQP_CALL(
+    sleqp_func_flags_add(problem_scaling->scaled_func, SLEQP_FUNC_INTERNAL));
 
   return SLEQP_OKAY;
 }
@@ -309,6 +314,9 @@ lsq_func_create(SleqpProblemScaling* problem_scaling)
                                    problem_scaling->params,
                                    problem_scaling));
 
+  SLEQP_CALL(
+    sleqp_func_flags_add(problem_scaling->scaled_func, SLEQP_FUNC_INTERNAL));
+
   return SLEQP_OKAY;
 }
 
@@ -330,14 +338,20 @@ sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   if (num_variables != sleqp_scaling_num_vars(scaling))
   {
-    sleqp_log_error("Invalid number of variables provided to scaled problem");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Invalid number of variables provided to scaled problem, "
+                "expected %d, actual: %d",
+                num_variables,
+                sleqp_scaling_num_vars(scaling));
   }
 
   if (num_constraints != sleqp_scaling_num_cons(scaling))
   {
-    sleqp_log_error("Invalid number of constraints provided to scaled problem");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Invalid number of constraints provided to scaled problem, "
+                "expected %d, actual %d",
+                num_constraints,
+                sleqp_scaling_num_cons(scaling));
   }
 
   problem_scaling->refcount = 1;

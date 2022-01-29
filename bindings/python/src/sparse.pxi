@@ -10,7 +10,7 @@ cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpSparseVec* vec):
   return values
 
 cdef csleqp.SLEQP_RETCODE array_to_sleqp_sparse_vec(np.ndarray array,
-                                                    csleqp.SleqpSparseVec* vec) except csleqp.SLEQP_INTERNAL_ERROR:
+                                                    csleqp.SleqpSparseVec* vec) except csleqp.SLEQP_ERROR:
   assert vec != NULL
 
   csleqp_call(csleqp.sleqp_sparse_vector_clear(vec))
@@ -93,7 +93,7 @@ def matrix_iterator(matrix):
 
 cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
                                                         csleqp.SleqpSparseMatrix* matrix) \
-                                                        except csleqp.SLEQP_INTERNAL_ERROR:
+                                                        except csleqp.SLEQP_ERROR:
   assert matrix
 
   if mat is None:

@@ -7,6 +7,7 @@
 
 #include "cmp.h"
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -84,9 +85,9 @@ typedef struct SleqpLpiHIGHS
                                                                                \
     if (highs_ret_status != HighsStatuskOk)                                    \
     {                                                                          \
-      sleqp_log_error("Caught HiGHS error <%d>", highs_ret_status);            \
-                                                                               \
-      return SLEQP_INTERNAL_ERROR;                                             \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "Caught HiGHS error <%d>",                                   \
+                  highs_ret_status);                                           \
     }                                                                          \
   } while (0)
 
@@ -309,10 +310,10 @@ highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
       return SLEQP_ABORT_TIME;
       break;
     default:
-      sleqp_log_error("Invalid HiGHS status for scaled model: %d",
-                      model_status);
       lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
-      return SLEQP_INTERNAL_ERROR;
+      sleqp_raise(SLEQP_INTERNAL_ERROR,
+                  "Invalid HiGHS status for scaled model: %d",
+                  model_status);
     }
     break;
     // case HIGHS_ERROR:
@@ -342,9 +343,8 @@ highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
   case HIGHS_ITERATION_LIMIT: // fallthrough
   case HIGHS_UNKNOWN:         // fallthrough
   default:
-    sleqp_log_error("Invalid HiGHS status: %d", model_status);
     lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Invalid HiGHS status: %d", model_status);
   }
 
   return SLEQP_OKAY;

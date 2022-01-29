@@ -7,6 +7,7 @@
 
 #include "cmp.h"
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "mem.h"
 
@@ -73,28 +74,10 @@ ma27_get_error_string(int value, const char** message)
       const char* ma27_error_string;                                           \
       SLEQP_CALL(ma27_get_error_string(ma27_status, &ma27_error_string));      \
                                                                                \
-      sleqp_log_error("Caught hsl_ma27 error <%d> (%s)",                       \
-                      ma27_status,                                             \
-                      ma27_error_string);                                      \
-                                                                               \
-      switch (ma27_status)                                                     \
-      {                                                                        \
-      case MA27_NSTEPS_OUT_OF_RANGE:                                           \
-      case MA27_NZ_OUT_OF_RANGE:                                               \
-      case MA27_N_OUT_OF_RANGE:                                                \
-      case MA27_WARN_IRN_ICN_OUT_OF_RANGE:                                     \
-        return SLEQP_ILLEGAL_ARGUMENT;                                         \
-      case MA27_A_MEM_TOO_SMALL:                                               \
-      case MA27_IW_MEM_TOO_SMALL:                                              \
-        return SLEQP_NOMEM;                                                    \
-      case MA27_PIVOT_SIGN_CHANGE:                                             \
-      case MA27_SINGULAR_MATRIX:                                               \
-      case MA27_WARN_INDEFINITE:                                               \
-      case MA27_WARN_RANK_DEFICIENT:                                           \
-        return SLEQP_MATH_ERROR;                                               \
-      default:                                                                 \
-        return SLEQP_INTERNAL_ERROR;                                           \
-      }                                                                        \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "Caught hsl_ma27 error <%d> (%s)",                           \
+                  ma27_status,                                                 \
+                  ma27_error_string);                                          \
     }                                                                          \
   } while (0)
 

@@ -215,10 +215,10 @@ on_problem_solver_performed_iteration(SleqpProblemSolver* problem_solver,
 {
   SleqpSolver* solver = (SleqpSolver*)callback_data;
 
-  SleqpCallbackHandler* handler
-    = solver->callback_handlers[SLEQP_SOLVER_EVENT_PERFORMED_ITERATION];
-
-  SLEQP_CALLBACK_HANDLER_EXECUTE(handler, SLEQP_PERFORMED_ITERATION, solver);
+  SLEQP_CALLBACK_EVENT(solver->callback_handlers,
+                       SLEQP_SOLVER_EVENT_PERFORMED_ITERATION,
+                       SLEQP_PERFORMED_ITERATION,
+                       solver);
 
   return SLEQP_OKAY;
 }
@@ -244,13 +244,11 @@ on_problem_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
   // TODO: make restoration more efficient
   SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
 
-  SleqpCallbackHandler* handler
-    = solver->callback_handlers[SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE];
-
-  SLEQP_CALLBACK_HANDLER_EXECUTE(handler,
-                                 SLEQP_ACCEPTED_ITERATE,
-                                 solver,
-                                 trial_iterate);
+  SLEQP_CALLBACK_EVENT(solver->callback_handlers,
+                       SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
+                       SLEQP_ACCEPTED_ITERATE,
+                       solver,
+                       trial_iterate);
 
   return SLEQP_OKAY;
 }
