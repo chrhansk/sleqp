@@ -43,6 +43,15 @@ rosenbrock_hess_prod(SleqpFunc* func,
                      void* func_data);
 
 void
+rosenbrock_create(SleqpFunc** fstar,
+                  SleqpSparseVec** var_lbstar,
+                  SleqpSparseVec** var_ubstar,
+                  SleqpSparseVec** cons_lbstar,
+                  SleqpSparseVec** cons_ubstar,
+                  SleqpSparseVec** init_star,
+                  SleqpSparseVec** opt_star);
+
+void
 rosenbrock_setup();
 
 void

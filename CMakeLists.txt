@@ -103,7 +103,7 @@ if(SLEQP_ENABLE_AMPL AND NOT(COINASL_FOUND))
 endif()
 
 find_package(Check)
-find_package(Threads)
+find_package(Threads REQUIRED)
 
 if(NOT(OpenMP_FOUND))
   find_package(OpenMP)
@@ -112,6 +112,7 @@ endif()
 add_library(trlib INTERFACE IMPORTED)
 
 set(SLEQP_DEPENDENCIES
+  Threads::Threads
   trlib::trlib
   ${SLEQP_LPS_LIBRARIES}
   ${SLEQP_FACT_LIBRARIES}

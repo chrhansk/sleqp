@@ -1,5 +1,7 @@
 #include "log.h"
 
+#include <pthread.h>
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,14 +42,39 @@ sleqp_log_set_level(SLEQP_LOG_LEVEL value)
   level = value;
 }
 
+struct tm*
+localtime_synced(const time_t* timer, struct tm* result)
+{
+  static pthread_mutex_t localtime_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+  struct tm* r = NULL;
+
+  if (pthread_mutex_lock(&localtime_mutex) == 0)
+  {
+    r = localtime(timer);
+    if (r != 0)
+    {
+      *result = *r;
+      r       = result;
+    }
+    if (pthread_mutex_unlock(&localtime_mutex) != 0)
+    {
+      r = NULL;
+    }
+  }
+  return r;
+}
+
 static void
 builtin_handler(SLEQP_LOG_LEVEL level, time_t time, const char* message)
 {
   char buf[TIME_BUF_SIZE];
 
-  struct tm* lt = localtime(&time);
+  struct tm result;
 
-  buf[strftime(buf, TIME_BUF_SIZE - 1, "%H:%M:%S", lt)] = '\0';
+  localtime_synced(&time, &result);
+
+  buf[strftime(buf, TIME_BUF_SIZE - 1, "%H:%M:%S", &result)] = '\0';
 
   fprintf(stderr,
           "[" SLEQP_FORMAT_BOLD "%s %s%5s" SLEQP_FORMAT_RESET "] %s\n",

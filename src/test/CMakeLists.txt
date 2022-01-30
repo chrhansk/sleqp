@@ -92,6 +92,8 @@ add_unit_test(unconstrained_test)
 add_unit_test(unbounded_test)
 add_unit_test(working_set_var_test)
 
+add_unit_test(thread_test)
+
 if(SLEQP_ENABLE_CUTEST)
   add_subdirectory(cutest)
 endif()
