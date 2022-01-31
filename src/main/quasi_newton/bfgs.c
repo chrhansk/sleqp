@@ -886,7 +886,7 @@ sleqp_bfgs_create(SleqpQuasiNewton** star,
   SLEQP_FUNC_FLAGS flags = (SLEQP_FUNC_HESS_PSD | SLEQP_FUNC_HESS_INTERNAL
                             | SLEQP_FUNC_HESS_INEXACT);
 
-  SLEQP_CALL(sleqp_func_flags_add(func, flags));
+  SLEQP_CALL(sleqp_func_flags_add(bfgs_func, flags));
 
   return SLEQP_OKAY;
 }
