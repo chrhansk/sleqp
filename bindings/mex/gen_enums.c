@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "enum.h"
+#include "options.h"
 #include "types.h"
 
 #define BUF_SIZE 256
@@ -19,7 +21,7 @@ generate_enum_entries(FILE* file, const SleqpEnumEntry* entry)
 }
 
 void
-generate_mex_enum(const SleqpEnum* sleqp_enum)
+generate_mex_enum(const SleqpEnum* sleqp_enum, const char* desc)
 {
   char buffer[BUF_SIZE];
 
@@ -30,6 +32,8 @@ generate_mex_enum(const SleqpEnum* sleqp_enum)
   fprintf(file, "%% Auto-generated file\n\n");
 
   fprintf(file, "classdef %s\n", sleqp_enum->name);
+
+  fprintf(file, "  %% %s %s\n", sleqp_enum->name, desc);
 
   fprintf(file, "  methods (Static = true)\n");
 
@@ -43,30 +47,47 @@ generate_mex_enum(const SleqpEnum* sleqp_enum)
 }
 
 int
-main(int argc, char* argv[])
+main()
 {
+  SleqpOptions* options;
+
+  SLEQP_CALL(sleqp_options_create(&options));
+
   {
-    const SleqpEnum* sleqp_enums[] = {sleqp_enum_active_state(),
-                                      sleqp_enum_deriv_check(),
-                                      sleqp_enum_hess_eval(),
-                                      sleqp_enum_bfgs_sizing(),
-                                      sleqp_enum_steptype(),
-                                      sleqp_enum_dual_estimation(),
-                                      sleqp_enum_tr_solver(),
-                                      sleqp_enum_polishing_type(),
-                                      sleqp_enum_parametric_cauchy(),
-                                      sleqp_enum_initial_tr(),
-                                      sleqp_enum_linesearch(),
-                                      sleqp_enum_status(),
-                                      sleqp_enum_step_rule()};
+    const SleqpEnum* option_enums[SLEQP_NUM_ENUM_OPTIONS]
+      = {sleqp_enum_deriv_check(),
+         sleqp_enum_hess_eval(),
+         sleqp_enum_dual_estimation(),
+         NULL, // Floating point warning flags
+         NULL, // Floating point error flags
+         sleqp_enum_bfgs_sizing(),
+         sleqp_enum_tr_solver(),
+         sleqp_enum_polishing_type(),
+         sleqp_enum_step_rule(),
+         sleqp_enum_linesearch(),
+         sleqp_enum_parametric_cauchy(),
+         sleqp_enum_initial_tr()};
 
-    const int num_enums = sizeof(sleqp_enums) / sizeof(SleqpEnum*);
-
-    for (int i = 0; i < num_enums; ++i)
+    for (int i = 0; i < SLEQP_NUM_ENUM_OPTIONS; ++i)
     {
-      generate_mex_enum(sleqp_enums[i]);
+      if (!option_enums[i])
+      {
+        continue;
+      }
+
+      generate_mex_enum(option_enums[i],
+                        sleqp_options_enum_desc((SLEQP_OPTION_ENUM)i));
     }
+
+    generate_mex_enum(sleqp_enum_active_state(),
+                      "State of a variable or constrain in working set");
+
+    generate_mex_enum(sleqp_enum_status(),
+                      "Status of the solver after optimization");
+
+    generate_mex_enum(sleqp_enum_steptype(),
+                      "Type of steps taken during the solution process");
   }
 
-  return 0;
+  return EXIT_SUCCESS;
 }
