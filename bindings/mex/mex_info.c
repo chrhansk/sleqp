@@ -42,10 +42,12 @@ mex_command_info(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
                               MEX_INFO_VERSION_MAJOR,
                               MEX_INFO_VERSION_MINOR,
                               MEX_INFO_VERSION_PATCH,
+                              MEX_INFO_GITHASH,
                               MEX_INFO_FACT_NAME,
                               MEX_INFO_FACT_VERSION,
                               MEX_INFO_LPS_NAME,
-                              MEX_INFO_LPS_VERSION};
+                              MEX_INFO_LPS_VERSION,
+                              MEX_INFO_TRLIB_VERSION};
 
   const int num_fields = sizeof(fieldnames) / sizeof(const char*);
 
@@ -69,6 +71,10 @@ mex_command_info(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
                                       SLEQP_VERSION_PATCH));
 
   SLEQP_CALL(set_struct_field_to_string(info_array,
+                                        MEX_INFO_GITHASH,
+                                        SLEQP_GIT_COMMIT_HASH));
+
+  SLEQP_CALL(set_struct_field_to_string(info_array,
                                         MEX_INFO_FACT_NAME,
                                         SLEQP_FACT_NAME));
 
@@ -83,6 +89,10 @@ mex_command_info(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
   SLEQP_CALL(set_struct_field_to_string(info_array,
                                         MEX_INFO_LPS_VERSION,
                                         SLEQP_LP_SOLVER_VERSION));
+
+  SLEQP_CALL(set_struct_field_to_string(info_array,
+                                        MEX_INFO_TRLIB_VERSION,
+                                        SLEQP_TRLIB_VERSION));
 
   return SLEQP_OKAY;
 }

@@ -342,11 +342,11 @@ sleqp_solver_info(const SleqpSolver* solver)
 {
   snprintf(solver_info,
            SOLVER_INFO_BUF_SIZE,
-           "SLEQP version %s [LP solver: %s] [Factorization: %s] [GitHash %s]",
-           SLEQP_VERSION,
+           "SLEQP version %s [LP solver: %s] [Factorization: %s] [trlib: %s]",
+           SLEQP_LONG_VERSION,
            SLEQP_LP_SOLVER_NAME " " SLEQP_LP_SOLVER_VERSION,
            SLEQP_FACT_NAME " " SLEQP_FACT_VERSION,
-           SLEQP_GIT_COMMIT_HASH);
+           SLEQP_TRLIB_VERSION);
 
   return solver_info;
 }
