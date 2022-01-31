@@ -32,11 +32,12 @@
 #define MEX_INFO_VERSION_MAJOR "version_major"
 #define MEX_INFO_VERSION_MINOR "version_minor"
 #define MEX_INFO_VERSION_PATCH "version_patch"
+#define MEX_INFO_GITHASH "git_hash"
 #define MEX_INFO_FACT_NAME "fact_name"
 #define MEX_INFO_FACT_VERSION "fact_version"
-
 #define MEX_INFO_LPS_NAME "lps_name"
 #define MEX_INFO_LPS_VERSION "lps_version"
+#define MEX_INFO_TRLIB_VERSION "trlib_version"
 
 #define MEX_INPUT_LSQ_RES "lsq_residuals"
 #define MEX_INPUT_LSQ_JAC_FWD "lsq_jac_forward"

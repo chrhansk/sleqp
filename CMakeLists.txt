@@ -82,6 +82,8 @@ include(SearchFact)
 
 find_package(trlib REQUIRED)
 
+set(SLEQP_TRLIB_VERSION "${trlib_VERSION}")
+
 find_package(Octave)
 
 if(SLEQP_ENABLE_OCTAVE_MEX AND NOT(Octave_FOUND))
