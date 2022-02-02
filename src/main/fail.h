@@ -6,18 +6,27 @@
 #include "log.h"
 #include "types.h"
 
-void
-sleqp_log_assert_fail(const char* assertion,
-                      const char* file,
-                      unsigned int line,
-                      const char* function);
+#define sleqp_log_assert_fail(assertion)                                       \
+  sleqp_raise(SLEQP_FAILED_ASSERTION,                                          \
+              "Assertion `%s' failed at %s:%d: %s",                            \
+              #assertion,                                                      \
+              __FILE__,                                                        \
+              __LINE__,                                                        \
+              __PRETTY_FUNCTION__);
 
-void
-sleqp_log_assert_fail_msg(const char* file,
-                          unsigned int line,
-                          const char* function,
-                          const char* format,
-                          ...);
+#define sleqp_log_assert_fail_msg(format, ...)                                 \
+  do                                                                           \
+  {                                                                            \
+    char message_buf[1024];                                                    \
+    snprintf(message_buf, 1024, format, ##__VA_ARGS__);                        \
+                                                                               \
+    sleqp_raise(SLEQP_FAILED_ASSERTION,                                        \
+                "Assertion `%s' failed at %s:%d: %s",                          \
+                message_buf,                                                   \
+                __FILE__,                                                      \
+                __LINE__,                                                      \
+                __PRETTY_FUNCTION__);                                          \
+  } while (false)
 
 #if defined(NDEBUG)
 
@@ -38,8 +47,7 @@ sleqp_log_assert_fail_msg(const char* file,
       ;                                                                        \
     else                                                                       \
     {                                                                          \
-      sleqp_log_assert_fail(#expr, __FILE__, __LINE__, __PRETTY_FUNCTION__);   \
-      return SLEQP_FAILED_ASSERTION;                                           \
+      sleqp_log_assert_fail(#expr);                                            \
     }                                                                          \
   } while (false)
 
@@ -50,12 +58,7 @@ sleqp_log_assert_fail_msg(const char* file,
       ;                                                                        \
     else                                                                       \
     {                                                                          \
-      sleqp_log_assert_fail_msg(__FILE__,                                      \
-                                __LINE__,                                      \
-                                __PRETTY_FUNCTION__,                           \
-                                format,                                        \
-                                ##__VA_ARGS__);                                \
-      return SLEQP_FAILED_ASSERTION;                                           \
+      sleqp_log_assert_fail_msg(format, ##__VA_ARGS__);                        \
     }                                                                          \
   } while (false)
 

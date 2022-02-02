@@ -68,8 +68,8 @@ restore_iterate(SleqpDerivChecker* deriv_checker, SleqpIterate* iterate)
 
   if (reject)
   {
-    sleqp_log_error("Function rejected restoration after derivative check");
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR,
+                "Function rejected restoration after derivative check");
   }
 
   return SLEQP_OKAY;

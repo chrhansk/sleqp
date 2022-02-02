@@ -133,8 +133,7 @@ sleqp_working_set_add_var(SleqpWorkingSet* working_set,
 
   if (sleqp_working_set_num_active_cons(working_set) != 0)
   {
-    sleqp_log_error("Must add variables before constraints");
-    return SLEQP_INTERNAL_ERROR;
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Must add variables before constraints");
   }
 
   const int size = sleqp_working_set_size(working_set);
