@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "cmp.h"
+#include "error.h"
 #include "log.h"
 
 SLEQP_RETCODE
@@ -31,7 +32,7 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
   }
   else if (manual_reject)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Function is not allowed to raise");
   }
 
   SleqpSparseVec* obj_grad    = sleqp_iterate_obj_grad(iterate);

@@ -58,8 +58,7 @@ sleqp_callback_handler_get(SleqpCallbackHandler* handler,
 {
   if (pos < 0 || pos >= handler->size)
   {
-    sleqp_log_error("Invalid index");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid index %d", pos);
   }
 
   assert(callback);
@@ -126,8 +125,8 @@ sleqp_callback_handler_remove(SleqpCallbackHandler* handler,
 
   if (!found)
   {
-    sleqp_log_error("Attempted to remove non-existing callback");
-    return SLEQP_ILLEGAL_ARGUMENT;
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Attempted to remove non-existing callback");
   }
 
   --handler->size;

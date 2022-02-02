@@ -1,5 +1,4 @@
 set(COMMON_SRC
-  assert.c
   aug_jac/aug_jac.c
   aug_jac/box_constrained_aug_jac.c
   aug_jac/standard_aug_jac.c
