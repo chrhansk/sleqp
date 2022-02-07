@@ -21,5 +21,9 @@ test_install_cmake:
 test_install_python_sdist:
   extends: .test_install
   script:
-    - cd $CI_PROJECT_DIR
     - ./src/test/install/test_python_sdist.sh
+
+test_install_octave:
+  extends: .test_install
+  script:
+    - ./src/test/install/test_octave.sh

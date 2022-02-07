@@ -8,11 +8,12 @@ set(PROJECT_DESCRIPTION "Active set-based NLP solver")
 set(PROJECT_MAINTAINER_NAME "Christoph Hansknecht")
 set(PROJECT_MAINTAINER_EMAIL "c.hansknecht@tu-braunschweig.de")
 
-set(PROJECT_LONG_DESCRIPTION "This package provides sleqp, an
-open-source solver for large-scale nonlinear continuous
-optimization. sleqp is available as a callable library with interfaces
-to C++, C, and python. It uses an active set method based on a
-combination of successive linear programming and equality constrained
+set(PROJECT_LONG_DESCRIPTION
+"This package provides SLEQP, an\
+open-source solver for large-scale nonlinear continuous\
+optimization. SLEQP is available as a callable library with interfaces\
+to C, Python, AMPL, and MATLAB / Octave. It uses an active set method based on a\
+combination of successive linear programming and equality constrained\
 quadratic programming.")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
@@ -42,6 +43,7 @@ execute_process(
 )
 
 set(PROJECT_NAMESPACE "${PROJECT_NAME}::")
+set(LICENSE_FILE "${CMAKE_SOURCE_DIR}/LICENSE")
 
 string(TOUPPER "${PROJECT_NAME}" PROJECT_PREFIX)
 

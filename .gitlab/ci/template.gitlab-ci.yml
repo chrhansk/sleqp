@@ -14,3 +14,4 @@
   before_script:
     - cd build
     - apt -y install ./*.deb
+    - cd $CI_PROJECT_DIR

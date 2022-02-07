@@ -11,7 +11,7 @@ set(MEX_SOURCES
   mex_solve_lsq.c)
 
 set(MATLAB_OUTPUT_DIR "${CMAKE_BINARY_DIR}/matlab")
-set(SLEQP_MATLAB_OUTPUT_DIR "${MATLAB_OUTPUT_DIR}/+sleqp")
+set(SLEQP_MEX_OUTPUT_DIR "${MATLAB_OUTPUT_DIR}/+sleqp")
 set(MATLAB_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 
 set(MATLAB_SOURCES
@@ -29,8 +29,7 @@ set(MATLAB_TESTS
 
 add_custom_target(sleqp_mex ALL)
 
-add_custom_command(TARGET sleqp_mex
-  PRE_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${SLEQP_MATLAB_OUTPUT_DIR})
+file(MAKE_DIRECTORY ${SLEQP_MEX_OUTPUT_DIR})
 
 add_executable(mex_enum_generator
   gen_enums.c)
@@ -49,7 +48,9 @@ target_link_libraries(mex_enum_generator
 add_custom_command(TARGET sleqp_mex
     POST_BUILD
     COMMAND mex_enum_generator
-    WORKING_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
+    WORKING_DIRECTORY ${SLEQP_MEX_OUTPUT_DIR})
+
+string(TIMESTAMP SLEQP_MEX_DATE "%Y-%m-%d")
 
 foreach(MATLAB_SOURCE ${MATLAB_SOURCES})
   get_filename_component(MATLAB_SOURCE_ABS ${MATLAB_SOURCE} ABSOLUTE)
@@ -57,8 +58,7 @@ foreach(MATLAB_SOURCE ${MATLAB_SOURCES})
   add_custom_command(TARGET sleqp_mex
     PRE_BUILD
     COMMAND ${CMAKE_COMMAND} -E
-    copy ${MATLAB_SOURCE_ABS} ${SLEQP_MATLAB_OUTPUT_DIR})
-
+    copy ${MATLAB_SOURCE_ABS} ${SLEQP_MEX_OUTPUT_DIR})
 endforeach()
 
 if(SLEQP_ENABLE_OCTAVE_MEX)
@@ -70,7 +70,10 @@ if(SLEQP_ENABLE_OCTAVE_MEX)
     PREFIX ""
     OUTPUT_NAME "extension"
     SUFFIX ".mex"
-    LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
+    LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MEX_OUTPUT_DIR}
+    BUILD_WITH_INSTALL_RPATH On)
+
+  set(SLEQP_OCTAVE_OUTPUT_FILE "${SLEQP_MEX_OUTPUT_DIR}/extension.mex")
 
   target_link_libraries(sleqp_octave_ext
     PRIVATE
@@ -96,9 +99,50 @@ if(SLEQP_ENABLE_OCTAVE_MEX)
     add_test(
       NAME "octave_${TEST_NAME}"
       WORKING_DIRECTORY ${MATLAB_TEST_DIR}
-      COMMAND ${CMAKE_COMMAND} -E env OCTAVE_PATH=${MATLAB_OUTPUT_DIR}
+      COMMAND ${CMAKE_COMMAND} -E env
+      OCTAVE_PATH=${MATLAB_OUTPUT_DIR}
+      LD_LIBRARY_PATH=${SLEQP_LIBRARY_DIR}
       ${Octave_EXECUTABLE} --eval ${TEST_NAME})
   endforeach()
+
+  set(SLEQP_OCTAVE_PACKAGE_NAME "sleqp_octave-${PROJECT_VERSION}")
+  set(OCTAVE_PACKAGE_DIR "${CMAKE_BINARY_DIR}/octave_package")
+  set(SLEQP_OCTAVE_PACKAGE_DIR "${OCTAVE_PACKAGE_DIR}/${SLEQP_OCTAVE_PACKAGE_NAME}")
+  set(SLEQP_OCTAVE_INST_DIR "${SLEQP_OCTAVE_PACKAGE_DIR}/inst/+sleqp")
+
+  file(MAKE_DIRECTORY ${SLEQP_OCTAVE_INST_DIR})
+
+  add_custom_target(sleqp_octave_package)
+
+  add_custom_command(
+    POST_BUILD
+    TARGET sleqp_octave_package
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${SLEQP_MEX_OUTPUT_DIR}
+    ${SLEQP_OCTAVE_INST_DIR}
+    DEPENDS sleqp_octave_ext
+    )
+
+  add_dependencies(sleqp_octave_package sleqp_octave_ext)
+
+  add_custom_command(
+    TARGET sleqp_octave_package
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    "${LICENSE_FILE}"
+    "${SLEQP_OCTAVE_PACKAGE_DIR}/COPYING"
+    )
+
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/octave/DESCRIPTION.in"
+    "${SLEQP_OCTAVE_PACKAGE_DIR}/DESCRIPTION"
+    @ONLY)
+
+  add_custom_command(TARGET sleqp_octave_package
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E tar "cz"
+    "${CMAKE_BINARY_DIR}/${SLEQP_OCTAVE_PACKAGE_NAME}.tar.gz"
+    "${SLEQP_OCTAVE_PACKAGE_NAME}"
+    WORKING_DIRECTORY ${OCTAVE_PACKAGE_DIR})
+
 endif()
 
 if(SLEQP_ENABLE_MATLAB_MEX)
@@ -110,7 +154,7 @@ if(SLEQP_ENABLE_MATLAB_MEX)
 
   set_target_properties(sleqp_matlab_ext
     PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MATLAB_OUTPUT_DIR})
+    LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MEX_OUTPUT_DIR})
 
   foreach(MATLAB_TEST ${MATLAB_TESTS})
     get_filename_component(TEST_NAME ${MATLAB_TEST} NAME_WE)
