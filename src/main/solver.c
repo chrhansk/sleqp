@@ -390,6 +390,11 @@ sleqp_solver_reset(SleqpSolver* solver)
 {
   SLEQP_CALL(sleqp_problem_solver_reset(solver->problem_solver));
 
+  if (solver->restoration_problem_solver)
+  {
+    SLEQP_CALL(sleqp_problem_solver_reset(solver->restoration_problem_solver));
+  }
+
   if (solver->quasi_newton)
   {
     SLEQP_CALL(sleqp_quasi_newton_reset(solver->quasi_newton));

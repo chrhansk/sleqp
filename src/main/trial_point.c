@@ -258,6 +258,18 @@ sleqp_trial_point_solver_set_iterate(SleqpTrialPointSolver* solver,
 }
 
 SLEQP_RETCODE
+sleqp_trial_point_solver_set_penalty_info(SleqpTrialPointSolver* solver,
+                                          double feas_res,
+                                          bool allow_global_reset)
+{
+  solver->feasibility_residuum   = feas_res;
+  solver->allow_global_reset     = allow_global_reset;
+  solver->performed_global_reset = false;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
 sleqp_trial_point_solver_set_trust_radius(SleqpTrialPointSolver* solver,
                                           double trust_radius)
 {
@@ -291,8 +303,8 @@ sleqp_trial_point_solver_set_penalty(SleqpTrialPointSolver* solver,
 }
 
 SLEQP_RETCODE
-sleqp_trial_point_solver_get_penalty(SleqpTrialPointSolver* solver,
-                                     double* penalty_parameter)
+sleqp_trial_point_solver_penalty(SleqpTrialPointSolver* solver,
+                                 double* penalty_parameter)
 {
   *penalty_parameter = solver->penalty_parameter;
 
@@ -305,34 +317,42 @@ sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver)
   return solver->locally_infeasible;
 }
 
+SLEQP_RETCODE
+sleqp_trial_point_solver_penalty_info(SleqpTrialPointSolver* solver,
+                                      bool* performed_global_reset)
+{
+  *performed_global_reset = solver->performed_global_reset;
+  return SLEQP_OKAY;
+}
+
 SleqpSparseVec*
-sleqp_trial_point_solver_get_multipliers(SleqpTrialPointSolver* solver)
+sleqp_trial_point_solver_multipliers(SleqpTrialPointSolver* solver)
 {
   return solver->multipliers;
 }
 
 SleqpSparseVec*
-sleqp_trial_point_solver_get_cauchy_step(SleqpTrialPointSolver* solver)
+sleqp_trial_point_solver_cauchy_step(SleqpTrialPointSolver* solver)
 {
   return solver->cauchy_step;
 }
 
 SleqpSparseVec*
-sleqp_trial_point_solver_get_trial_step(SleqpTrialPointSolver* solver)
+sleqp_trial_point_solver_trial_step(SleqpTrialPointSolver* solver)
 {
   return solver->trial_step;
 }
 
 SleqpSparseVec*
-sleqp_trial_point_solver_get_soc_step(SleqpTrialPointSolver* solver)
+sleqp_trial_point_solver_soc_step(SleqpTrialPointSolver* solver)
 {
   return solver->soc_step;
 }
 
 SLEQP_RETCODE
-sleqp_trial_point_solver_get_rayleigh(SleqpTrialPointSolver* solver,
-                                      double* min_rayleigh,
-                                      double* max_rayleigh)
+sleqp_trial_point_solver_rayleigh(SleqpTrialPointSolver* solver,
+                                  double* min_rayleigh,
+                                  double* max_rayleigh)
 {
   SLEQP_CALL(sleqp_eqp_solver_current_rayleigh(solver->eqp_solver,
                                                min_rayleigh,

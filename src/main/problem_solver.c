@@ -144,6 +144,9 @@ sleqp_problem_solver_reset(SleqpProblemSolver* solver)
   // penalty parameter as suggested:
   solver->penalty_parameter = 10.;
 
+  solver->num_feasible_steps        = 0;
+  solver->num_global_penalty_resets = 0;
+
   return SLEQP_OKAY;
 }
 

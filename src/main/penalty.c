@@ -1,5 +1,7 @@
 #include "penalty.h"
 
+#include <assert.h>
+
 #include "log.h"
 
 const double penalty_increase    = 10.;
@@ -16,12 +18,9 @@ sleqp_update_penalty(SleqpProblem* problem,
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  (*locally_infeasible) = false;
+  assert(num_constraints > 0);
 
-  if (num_constraints == 0)
-  {
-    return SLEQP_OKAY;
-  }
+  (*locally_infeasible) = false;
 
   double current_violation;
 

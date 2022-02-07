@@ -46,11 +46,11 @@ struct SleqpProblemSolver
 
   SLEQP_STEPTYPE last_step_type;
 
-  double slackness_residuum;
+  double slack_res;
 
-  double stationarity_residuum;
+  double stat_res;
 
-  double feasibility_residuum;
+  double feas_res;
 
   double trust_radius;
 
@@ -64,6 +64,9 @@ struct SleqpProblemSolver
   int num_accepted_steps;
   int num_soc_accepted_steps;
   int num_rejected_steps;
+
+  int num_feasible_steps;
+  int num_global_penalty_resets;
 
   double time_limit;
 

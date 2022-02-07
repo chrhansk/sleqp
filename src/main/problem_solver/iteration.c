@@ -5,6 +5,9 @@
 #include "cmp.h"
 #include "fail.h"
 
+const int max_num_global_resets = 2;
+const int num_reset_steps       = 5;
+
 static SLEQP_RETCODE
 evaluate_at_trial_iterate(SleqpProblemSolver* solver, bool* reject)
 {
@@ -36,21 +39,103 @@ evaluate_at_trial_iterate(SleqpProblemSolver* solver, bool* reject)
 }
 
 static SLEQP_RETCODE
-set_residuum(SleqpProblemSolver* solver)
+set_residua(SleqpProblemSolver* solver)
 {
   SLEQP_CALL(sleqp_iterate_slackness_residuum(solver->problem,
                                               solver->iterate,
-                                              &solver->slackness_residuum));
+                                              &solver->slack_res));
 
   SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->problem,
                                                 solver->iterate,
-                                                &solver->feasibility_residuum));
+                                                &solver->feas_res));
+
+  SLEQP_CALL(sleqp_iterate_stationarity_residuum(solver->problem,
+                                                 solver->iterate,
+                                                 solver->dense_cache,
+                                                 &solver->stat_res));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+prepare_trial_point_solver(SleqpProblemSolver* solver)
+{
+  SleqpTimer* timer     = solver->elapsed_timer;
+  double time_limit     = solver->time_limit;
+  double remaining_time = sleqp_timer_remaining_time(timer, time_limit);
+
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
   SLEQP_CALL(
-    sleqp_iterate_stationarity_residuum(solver->problem,
-                                        solver->iterate,
-                                        solver->dense_cache,
-                                        &solver->stationarity_residuum));
+    sleqp_trial_point_solver_set_iterate(trial_point_solver, solver->iterate));
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_time_limit(trial_point_solver,
+                                                     remaining_time));
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_trust_radius(trial_point_solver,
+                                                       solver->trust_radius));
+
+  SLEQP_CALL(
+    sleqp_trial_point_solver_set_lp_trust_radius(trial_point_solver,
+                                                 solver->lp_trust_radius));
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_penalty(trial_point_solver,
+                                                  solver->penalty_parameter));
+
+  const bool global_resets
+    = sleqp_options_bool_value(solver->options,
+                               SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS);
+
+  const bool many_feasible_steps
+    = (solver->num_feasible_steps >= num_reset_steps);
+
+  const bool reached_max_num_resets
+    = (solver->num_global_penalty_resets >= max_num_global_resets);
+
+  bool allow_global_reset
+    = (global_resets && many_feasible_steps && !(reached_max_num_resets));
+
+  SLEQP_CALL(sleqp_trial_point_solver_set_penalty_info(trial_point_solver,
+                                                       solver->feas_res,
+                                                       allow_global_reset));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+update_feasible_steps(SleqpProblemSolver* solver)
+{
+  SleqpIterate* iterate = solver->iterate;
+
+  const double feas_eps
+    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+
+  const bool is_feasible
+    = sleqp_iterate_is_feasible(iterate, solver->feas_res, feas_eps);
+
+  if (is_feasible)
+  {
+    ++solver->num_feasible_steps;
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+prepare_iteration(SleqpProblemSolver* solver)
+{
+  SleqpIterate* iterate = solver->iterate;
+
+  SLEQP_CALL(sleqp_merit_func(solver->merit,
+                              iterate,
+                              solver->penalty_parameter,
+                              &solver->current_merit_value));
+
+  SLEQP_CALL(set_residua(solver));
+
+  SLEQP_CALL(update_feasible_steps(solver));
+
+  SLEQP_CALL(prepare_trial_point_solver(solver));
 
   return SLEQP_OKAY;
 }
@@ -80,9 +165,9 @@ update_trust_radii(SleqpProblemSolver* solver,
   SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
   SleqpSparseVec* cauchy_step
-    = sleqp_trial_point_solver_get_cauchy_step(trial_point_solver);
+    = sleqp_trial_point_solver_cauchy_step(trial_point_solver);
   SleqpSparseVec* trial_step
-    = sleqp_trial_point_solver_get_trial_step(trial_point_solver);
+    = sleqp_trial_point_solver_trial_step(trial_point_solver);
 
   const SleqpOptions* options = solver->options;
 
@@ -116,6 +201,25 @@ update_trust_radii(SleqpProblemSolver* solver,
                                                 full_cauchy_step,
                                                 zero_eps,
                                                 &(solver->lp_trust_radius)));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+update_penalty_stats(SleqpProblemSolver* solver)
+{
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
+
+  bool performed_global_reset;
+
+  SLEQP_CALL(sleqp_trial_point_solver_penalty_info(trial_point_solver,
+                                                   &performed_global_reset));
+
+  if (performed_global_reset)
+  {
+    solver->num_feasible_steps = 0;
+    ++(solver->num_global_penalty_resets);
+  }
 
   return SLEQP_OKAY;
 }
@@ -176,9 +280,7 @@ check_for_unboundedness(SleqpProblemSolver* solver, SleqpIterate* iterate)
       = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
 
     const bool feasible
-      = sleqp_iterate_is_feasible(iterate,
-                                  solver->feasibility_residuum,
-                                  feas_eps);
+      = sleqp_iterate_is_feasible(iterate, solver->feas_res, feas_eps);
 
     if (feasible)
     {
@@ -197,9 +299,9 @@ check_for_optimality(SleqpProblemSolver* solver, SleqpIterate* iterate)
   // Optimality check with respect to scaled problem
   if (sleqp_iterate_is_optimal(iterate,
                                solver->params,
-                               solver->feasibility_residuum,
-                               solver->slackness_residuum,
-                               solver->stationarity_residuum))
+                               solver->feas_res,
+                               solver->slack_res,
+                               solver->stat_res))
   {
     sleqp_log_debug("Achieved optimality");
     solver->status = SLEQP_PROBLEM_SOLVER_STATUS_OPTIMAL;
@@ -207,35 +309,6 @@ check_for_optimality(SleqpProblemSolver* solver, SleqpIterate* iterate)
   }
 
   return false;
-}
-
-static SLEQP_RETCODE
-prepare_trial_point_solver(SleqpProblemSolver* solver)
-{
-  SleqpTimer* timer = solver->elapsed_timer;
-  double time_limit = solver->time_limit;
-
-  double remaining_time = sleqp_timer_remaining_time(timer, time_limit);
-
-  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
-
-  SLEQP_CALL(
-    sleqp_trial_point_solver_set_iterate(trial_point_solver, solver->iterate));
-
-  SLEQP_CALL(sleqp_trial_point_solver_set_time_limit(trial_point_solver,
-                                                     remaining_time));
-
-  SLEQP_CALL(sleqp_trial_point_solver_set_trust_radius(trial_point_solver,
-                                                       solver->trust_radius));
-
-  SLEQP_CALL(
-    sleqp_trial_point_solver_set_lp_trust_radius(trial_point_solver,
-                                                 solver->lp_trust_radius));
-
-  SLEQP_CALL(sleqp_trial_point_solver_set_penalty(trial_point_solver,
-                                                  solver->penalty_parameter));
-
-  return SLEQP_OKAY;
 }
 
 static double
@@ -282,20 +355,9 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(prepare_trial_point_solver(solver));
+  SLEQP_CALL(prepare_iteration(solver));
 
-  double exact_iterate_value, model_iterate_value;
-
-  {
-    SLEQP_CALL(sleqp_merit_func(solver->merit,
-                                iterate,
-                                solver->penalty_parameter,
-                                &exact_iterate_value));
-
-    solver->current_merit_value = model_iterate_value = exact_iterate_value;
-  }
-
-  SLEQP_CALL(set_residuum(solver));
+  const double exact_iterate_value = solver->current_merit_value;
 
   if (solver->iteration == 0)
   {
@@ -329,12 +391,13 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
     return SLEQP_OKAY;
   }
 
+  SLEQP_CALL(update_penalty_stats(solver));
   SLEQP_CALL(compute_step_lengths(solver));
 
   bool step_accepted = !reject_step;
 
   SleqpSparseVec* trial_step
-    = sleqp_trial_point_solver_get_trial_step(trial_point_solver);
+    = sleqp_trial_point_solver_trial_step(trial_point_solver);
 
   const double trial_step_norm = sleqp_sparse_vector_norm(trial_step);
 
@@ -425,7 +488,7 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                                                          &reject_step));
 
       SleqpSparseVec* soc_step
-        = sleqp_trial_point_solver_get_soc_step(trial_point_solver);
+        = sleqp_trial_point_solver_soc_step(trial_point_solver);
 
       const double soc_step_norm = sleqp_sparse_vector_norm(soc_step);
 
@@ -505,8 +568,8 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                                 full_cauchy_step,
                                 step_accepted));
 
-  SLEQP_CALL(sleqp_trial_point_solver_get_penalty(trial_point_solver,
-                                                  &solver->penalty_parameter));
+  SLEQP_CALL(sleqp_trial_point_solver_penalty(trial_point_solver,
+                                              &solver->penalty_parameter));
 
   // update current iterate
 
