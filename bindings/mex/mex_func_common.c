@@ -9,14 +9,14 @@ mex_callback_from_struct(const mxArray* mex_callbacks,
 {
   if (!mxIsStruct(mex_callbacks))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   *star = mxGetField(mex_callbacks, 0, name);
 
   if (!(*star && mxIsFunctionHandle(*star)))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   return SLEQP_OKAY;
@@ -29,7 +29,7 @@ mex_callback_has_field(const mxArray* mex_callbacks,
 {
   if (!mxIsStruct(mex_callbacks))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   mxArray* field = mxGetField(mex_callbacks, 0, name);
@@ -48,12 +48,12 @@ mex_eval_into_real(int nrhs, mxArray** rhs, double* value)
 
   if (!mxIsDouble(lhs) || mxIsComplex(lhs))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   if (!mxIsScalar(lhs))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   *value = *mxGetPr(lhs);
@@ -70,7 +70,7 @@ mex_eval_into_bool(int nrhs, mxArray** rhs, bool* value)
 
   if (!mxIsLogicalScalar(lhs))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   *value = mxIsLogicalScalarTrue(lhs);
@@ -92,12 +92,12 @@ mex_eval_into_sparse_vec(int nrhs,
 
   if (!mxIsDouble(lhs) || mxIsComplex(lhs))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   if (mxGetNumberOfElements(lhs) != vec->dim)
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   SLEQP_CALL(
@@ -161,7 +161,7 @@ mex_eval_into_sparse_matrix(int nrhs,
 
   if (!mxIsDouble(lhs) || mxIsComplex(lhs) || !mxIsSparse(lhs))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   SLEQP_CALL(array_to_sparse_matrix(lhs, matrix));

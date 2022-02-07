@@ -19,7 +19,7 @@ callback_has_field(const mxArray* mex_callbacks,
 {
   if (!mxIsStruct(mex_callbacks))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   mxArray* field = mxGetField(mex_callbacks, 0, name);
