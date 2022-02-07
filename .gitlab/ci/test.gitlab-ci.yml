@@ -2,7 +2,13 @@ test_fact:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_FACT=$FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
   parallel:
     matrix:
@@ -18,7 +24,13 @@ test_lps:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$LPS
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$LPS
     - make build_tests test
   parallel:
     matrix:
@@ -30,7 +42,14 @@ test_coverage:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_GENERATE_COVERAGE=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_GENERATE_COVERAGE=On
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test_coverage
 
 # Excluding python tests since they are built by tox
@@ -39,9 +58,18 @@ test_memcheck:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests
-    - ctest -T memcheck -E "python_sleqp_tests|problem_scaling_test" --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=1"
+    - >-
+      ctest -T memcheck
+      -E "python_sleqp_tests|problem_scaling_test"
+      --overwrite MemoryCheckCommandOptions="--leak-check=full --error-exitcode=1"
   artifacts:
     paths:
       - build/Testing/Temporary/MemoryChecker.*.log
@@ -50,7 +78,14 @@ test_sanitizers:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS -DUSE_SANITIZER=$SANITIZER
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
+      -DUSE_SANITIZER=$SANITIZER
     - make build_tests test
   parallel:
     matrix:
@@ -62,7 +97,13 @@ test_python:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_PYTHON=On
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
   artifacts:
     when: always
@@ -73,12 +114,26 @@ test_octave_mex:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_ENABLE_OCTAVE_MEX=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_ENABLE_OCTAVE_MEX=On
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test
 
 test_ampl:
   extends: .test
   script:
     - cd build
-    - cmake .. -DCMAKE_BUILD_TYPE="Debug" -DSLEQP_ENABLE_UNIT_TESTS=On -DSLEQP_ENABLE_PYTHON=Off -DSLEQP_ENABLE_AMPL=On -DSLEQP_FACT=$DEFAULT_FACT -DSLEQP_LPS=$DEFAULT_LPS
-    - make
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_ENABLE_AMPL=On
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
