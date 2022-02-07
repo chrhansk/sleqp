@@ -63,10 +63,11 @@ class _Prop:
 
 cdef dict opt_prop_map = {
   # Boolean properties
-  'perform_newton_step': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP),
-  'perform_soc':         _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_SOC),
-  'use_quadratic_model': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL),
-  'enable_preprocessor': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR),
+  'perform_newton_step':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP),
+  'global_penalty_resets': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS),
+  'perform_soc':           _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_SOC),
+  'use_quadratic_model':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL),
+  'enable_preprocessor':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR),
 
   # Integer properties
   'num_quasi_newton_iterates': _Prop.integer(csleqp.SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES),

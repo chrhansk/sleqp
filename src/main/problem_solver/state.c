@@ -13,9 +13,9 @@ sleqp_problem_solver_get_real_state(const SleqpProblemSolver* solver,
 
   double min_rayleigh, max_rayleigh;
 
-  SLEQP_CALL(sleqp_trial_point_solver_get_rayleigh(trial_point_solver,
-                                                   &min_rayleigh,
-                                                   &max_rayleigh));
+  SLEQP_CALL(sleqp_trial_point_solver_rayleigh(trial_point_solver,
+                                               &min_rayleigh,
+                                               &max_rayleigh));
 
   switch (state)
   {
@@ -32,13 +32,13 @@ sleqp_problem_solver_get_real_state(const SleqpProblemSolver* solver,
     (*value) = solver->current_merit_value;
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_FEAS_RES:
-    (*value) = solver->feasibility_residuum;
+    (*value) = solver->feas_res;
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_STAT_RES:
-    (*value) = solver->stationarity_residuum;
+    (*value) = solver->stat_res;
     break;
   case SLEQP_SOLVER_STATE_REAL_SCALED_SLACK_RES:
-    (*value) = solver->slackness_residuum;
+    (*value) = solver->slack_res;
     break;
   case SLEQP_SOLVER_STATE_REAL_PENALTY_PARAM:
     (*value) = solver->penalty_parameter;

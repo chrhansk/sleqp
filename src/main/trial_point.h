@@ -78,6 +78,10 @@ typedef struct
 
   bool locally_infeasible;
 
+  double feasibility_residuum;
+  bool allow_global_reset;
+  bool performed_global_reset;
+
   double current_merit_value;
 
   double time_limit;
@@ -95,6 +99,12 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_iterate(SleqpTrialPointSolver* solver,
                                      SleqpIterate* iterate);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_trial_point_solver_set_penalty_info(SleqpTrialPointSolver* solver,
+                                          double feas_res,
+                                          bool allow_global_reset);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -118,29 +128,34 @@ sleqp_trial_point_solver_set_penalty(SleqpTrialPointSolver* solver,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_trial_point_solver_get_penalty(SleqpTrialPointSolver* solver,
-                                     double* penalty_parameter);
+sleqp_trial_point_solver_penalty(SleqpTrialPointSolver* solver,
+                                 double* penalty_parameter);
 
 bool
 sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver);
 
-SleqpSparseVec*
-sleqp_trial_point_solver_get_multipliers(SleqpTrialPointSolver* solver);
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_trial_point_solver_penalty_info(SleqpTrialPointSolver* solver,
+                                      bool* performed_global_reset);
 
 SleqpSparseVec*
-sleqp_trial_point_solver_get_cauchy_step(SleqpTrialPointSolver* solver);
+sleqp_trial_point_solver_multipliers(SleqpTrialPointSolver* solver);
 
 SleqpSparseVec*
-sleqp_trial_point_solver_get_trial_step(SleqpTrialPointSolver* solver);
+sleqp_trial_point_solver_cauchy_step(SleqpTrialPointSolver* solver);
 
 SleqpSparseVec*
-sleqp_trial_point_solver_get_soc_step(SleqpTrialPointSolver* solver);
+sleqp_trial_point_solver_trial_step(SleqpTrialPointSolver* solver);
+
+SleqpSparseVec*
+sleqp_trial_point_solver_soc_step(SleqpTrialPointSolver* solver);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_trial_point_solver_get_rayleigh(SleqpTrialPointSolver* solver,
-                                      double* min_rayleigh,
-                                      double* max_rayleigh);
+sleqp_trial_point_solver_rayleigh(SleqpTrialPointSolver* solver,
+                                  double* min_rayleigh,
+                                  double* max_rayleigh);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
