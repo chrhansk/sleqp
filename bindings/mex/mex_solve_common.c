@@ -75,7 +75,7 @@ read_option_entry(const mxArray* mex_options,
 
   if (!(mxIsScalar(value) && mxIsDouble(value)))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   const double* ptr = mxGetPr(value);
@@ -125,7 +125,7 @@ read_params(SleqpParams* params, const mxArray* mex_options)
 {
   if (!mxIsStruct(mex_options))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   const int num_params = sizeof(param_names) / sizeof(param_names[0]);
@@ -159,7 +159,7 @@ read_options(SleqpOptions* options, const mxArray* mex_options)
 {
   if (!mxIsStruct(mex_options))
   {
-    return SLEQP_ILLEGAL_ARGUMENT;
+    return SLEQP_ERROR;
   }
 
   const int num_bool_options
