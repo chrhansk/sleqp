@@ -84,8 +84,10 @@ update_penalty(SleqpTrialPointSolver* solver)
       const SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
       const SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
-      const double dual_norm = sleqp_sparse_vector_one_norm(cons_dual)
-                               + sleqp_sparse_vector_one_norm(vars_dual);
+      const double cons_dual_norm = sleqp_sparse_vector_inf_norm(cons_dual);
+      const double vars_dual_norm = sleqp_sparse_vector_inf_norm(vars_dual);
+
+      const double dual_norm = SLEQP_MAX(cons_dual_norm, vars_dual_norm);
 
       const double max_allowed_penalty
         = allowed_dual_factor * (dual_norm + allowed_dual_offset);
