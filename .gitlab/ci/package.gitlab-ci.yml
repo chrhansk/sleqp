@@ -43,3 +43,16 @@ package_sdist:
   artifacts:
     paths:
       - bindings/python/dist/*.tar.gz
+
+package_octave:
+  stage: package
+  only:
+    - master
+  script:
+    - cd build
+    - make sleqp_octave_package
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - build/sleqp_octave*.tar.gz

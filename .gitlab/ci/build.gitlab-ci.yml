@@ -13,6 +13,7 @@ build:
       -DSLEQP_ENABLE_PYTHON=On
       -DSLEQP_FACT=$DEFAULT_FACT
       -DSLEQP_LPS=$DEFAULT_LPS
+      -DSLEQP_ENABLE_OCTAVE_MEX=On
     - make -j$(nproc)
   artifacts:
     paths:
