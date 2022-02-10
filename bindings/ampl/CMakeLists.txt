@@ -44,5 +44,5 @@ if(SLEQP_ENABLE_UNIT_TESTS)
 endif()
 
 install(TARGETS sleqp_ampl
-  DESTINATION bin
+  DESTINATION ${CMAKE_INSTALL_BINDIR}
   COMPONENT "ampl")

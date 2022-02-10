@@ -18,6 +18,7 @@ quadratic programming.")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
+include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(FindPackageHandleStandardArgs)
 include(GenerateExportHeader)
@@ -200,9 +201,9 @@ add_subdirectory(bindings)
 
 # Miscellaneous installs
 
-set(CONFIG_DESTINATION "lib/cmake/sleqp")
+set(CONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/sleqp")
 
-set(PKGCONFIG_DESTINATION "lib/pkgconfig")
+set(PKGCONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
 set(CONFIG_FILE "${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake")
 set(CONFIG_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake")

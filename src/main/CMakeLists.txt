@@ -141,7 +141,7 @@ target_include_directories(sleqp_objects
 target_include_directories(sleqp_objects
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:"include/sleqp">)
+  $<INSTALL_INTERFACE:"${CMAKE_INSTALL_INCLUDEDIR}/sleqp">)
 
 add_library(sleqp SHARED
   sleqp.c)
@@ -172,7 +172,7 @@ foreach(PUB_HEADER ${PUB_HEADERS})
   get_filename_component(HEADER_NAME ${PUB_HEADER} NAME)
 
   install(FILES ${PUB_HEADER}
-    DESTINATION "include/sleqp/${HEADER_DIR}"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/sleqp/${HEADER_DIR}"
     COMPONENT "headers")
 
   set(HEADER_FULL "${CMAKE_CURRENT_SOURCE_DIR}/${PUB_HEADER}")
@@ -205,8 +205,8 @@ generate_export_header(sleqp
 
 install(TARGETS sleqp
   EXPORT sleqp-targets
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   COMPONENT "libraries")
 
 
@@ -214,11 +214,11 @@ install(
   FILES
   "${SLEQP_DEFS_FILE_NAME}"
   "${SLEQP_EXPORT_FILE_NAME}"
-  DESTINATION include/sleqp
+  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/sleqp"
   COMPONENT "headers")
 
 install(
   FILES
   "${CMAKE_BINARY_DIR}/sleqp.h"
-  DESTINATION include
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   COMPONENT "headers")
