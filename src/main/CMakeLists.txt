@@ -10,7 +10,10 @@ set(COMMON_SRC
   cauchy/unconstrained_cauchy.c
   cmp.c
   deriv_check.c
-  dual_estimation.c
+  dual_estimation/dual_estimation.c
+  dual_estimation/dual_estimation_lp.c
+  dual_estimation/dual_estimation_lsq.c
+  dual_estimation/dual_estimation_mixed.c
   dyn.c
   enum.c
   eqp.c

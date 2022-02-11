@@ -89,9 +89,15 @@ sleqp_cauchy_locally_infeasible(SleqpCauchy* cauchy, bool* locally_infeasible)
 }
 
 SLEQP_RETCODE
-sleqp_cauchy_get_dual_estimation(SleqpCauchy* cauchy, SleqpIterate* iterate)
+sleqp_cauchy_estimate_duals(SleqpCauchy* cauchy,
+                            const SleqpWorkingSet* working_set,
+                            SleqpSparseVec* cons_dual,
+                            SleqpSparseVec* vars_dual)
 {
-  return cauchy->callbacks.get_dual_estimation(iterate, cauchy->cauchy_data);
+  return cauchy->callbacks.estimate_duals(working_set,
+                                          cons_dual,
+                                          vars_dual,
+                                          cauchy->cauchy_data);
 }
 
 SLEQP_RETCODE

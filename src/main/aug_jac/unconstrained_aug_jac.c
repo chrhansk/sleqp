@@ -45,7 +45,10 @@ aug_jac_projection(const SleqpSparseVec* rhs,
 
 #endif
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(rhs, primal_sol));
+  if (primal_sol)
+  {
+    SLEQP_CALL(sleqp_sparse_vector_copy(rhs, primal_sol));
+  }
 
   return SLEQP_OKAY;
 }

@@ -152,7 +152,10 @@ START_TEST(test_large_trust_region)
 
   ck_assert(sleqp_is_eq(actual_objective, expected_objective, eps));
 
-  ASSERT_CALL(sleqp_cauchy_get_dual_estimation(cauchy, iterate));
+  ASSERT_CALL(sleqp_cauchy_estimate_duals(cauchy,
+                                          sleqp_iterate_working_set(iterate),
+                                          sleqp_iterate_cons_dual(iterate),
+                                          sleqp_iterate_vars_dual(iterate)));
 
   SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
@@ -200,7 +203,10 @@ START_TEST(test_small_trust_region)
 
   ck_assert(sleqp_is_eq(actual_objective, expected_objective, eps));
 
-  ASSERT_CALL(sleqp_cauchy_get_dual_estimation(cauchy, iterate));
+  ASSERT_CALL(sleqp_cauchy_estimate_duals(cauchy,
+                                          sleqp_iterate_working_set(iterate),
+                                          sleqp_iterate_cons_dual(iterate),
+                                          sleqp_iterate_vars_dual(iterate)));
 
   SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 

@@ -63,6 +63,7 @@ static const SleqpEnum dual_estimation_enum
      .flags   = false,
      .entries = {{"LP", SLEQP_DUAL_ESTIMATION_TYPE_LP},
                  {"LSQ", SLEQP_DUAL_ESTIMATION_TYPE_LSQ},
+                 {"Mixed", SLEQP_DUAL_ESTIMATION_TYPE_MIXED},
                  {NULL, 0}}};
 
 static const SleqpEnum tr_solver_enum
@@ -71,7 +72,7 @@ static const SleqpEnum tr_solver_enum
      .entries = {{"Trlib", SLEQP_TR_SOLVER_TRLIB},
                  {"CG", SLEQP_TR_SOLVER_CG},
                  {"LSQR", SLEQP_TR_SOLVER_LSQR},
-                 {"auto", SLEQP_TR_SOLVER_AUTO},
+                 {"Auto", SLEQP_TR_SOLVER_AUTO},
                  {NULL, 0}}};
 
 static const SleqpEnum polishing_enum

@@ -1,18 +1,14 @@
 #include <check.h>
 #include <stdlib.h>
 
+#include "cauchy/standard_cauchy.h"
 #include "cmp.h"
-#include "dual_estimation.h"
+#include "lp/lpi.h"
 #include "mem.h"
 #include "util.h"
 
-#include "cauchy/standard_cauchy.h"
-
-#include "lp/lpi.h"
-
-#include "test_common.h"
-
 #include "quadfunc_fixture.h"
+#include "test_common.h"
 
 SleqpParams* params;
 SleqpOptions* options;

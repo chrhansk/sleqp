@@ -1022,13 +1022,68 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
   return SLEQP_OKAY;
 }
 
+/*
+ * Trims off dual values by
+ * removing entries in the sparse vector
+ * which are inactive or have the wrong sign
+ */
 static SLEQP_RETCODE
-standard_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
+trim_duals_to_working_set(const SLEQP_ACTIVE_STATE* states,
+                          SleqpSparseVec* duals,
+                          double zero_eps)
+{
+  int offset = 0;
+
+  for (int k = 0; k < duals->nnz; ++k)
+  {
+    const int i = duals->indices[k];
+
+    const SLEQP_ACTIVE_STATE state = states[i];
+
+    if (state == SLEQP_INACTIVE)
+    {
+      ++offset;
+    }
+    else
+    {
+      duals->indices[k - offset] = duals->indices[k];
+      duals->data[k - offset]    = duals->data[k];
+
+      if (state == SLEQP_ACTIVE_UPPER)
+      {
+        // Should be zero up to dual feasibility tolerance
+        sleqp_assert_is_geq(duals->data[k - offset], 0., zero_eps);
+
+        if (duals->data[k - offset] < 0)
+        {
+          ++offset;
+        }
+      }
+      else if (state == SLEQP_ACTIVE_LOWER)
+      {
+        // Should be zero up to dual feasibility tolerance
+        sleqp_assert_is_leq(duals->data[k - offset], 0., zero_eps);
+
+        if (duals->data[k - offset] > 0)
+        {
+          ++offset;
+        }
+      }
+    }
+  }
+
+  duals->nnz -= offset;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
+                               SleqpSparseVec* cons_dual,
+                               SleqpSparseVec* vars_dual,
+                               void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
-
-  SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
-  SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
 
   const double zero_eps
     = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
@@ -1037,8 +1092,6 @@ standard_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
 
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
-
-  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   if (vars_dual)
   {
@@ -1056,29 +1109,10 @@ standard_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
     // Note: We rescale here since sign conventions vary...
     SLEQP_CALL(sleqp_sparse_vector_scale(vars_dual, -1.));
 
-    for (int k = 0; k < vars_dual->nnz; ++k)
-    {
-      const int i = vars_dual->indices[k];
-
-      const SLEQP_ACTIVE_STATE var_state
-        = sleqp_working_set_var_state(working_set, i);
-
-      if (var_state == SLEQP_INACTIVE)
-      {
-        vars_dual->data[k] = 0.;
-      }
-      else
-      {
-        if (var_state == SLEQP_ACTIVE_UPPER)
-        {
-          sleqp_assert_is_geq(vars_dual->data[k], 0., zero_eps);
-        }
-        else if (var_state == SLEQP_ACTIVE_LOWER)
-        {
-          sleqp_assert_is_leq(vars_dual->data[k], 0., zero_eps);
-        }
-      }
-    }
+    SLEQP_CALL(
+      trim_duals_to_working_set(sleqp_working_set_var_states(working_set),
+                                vars_dual,
+                                zero_eps));
   }
 
   if (cons_dual)
@@ -1097,29 +1131,10 @@ standard_cauchy_get_dual_estimation(SleqpIterate* iterate, void* data)
     // Note: We rescale here since sign conventions vary...
     SLEQP_CALL(sleqp_sparse_vector_scale(cons_dual, -1.));
 
-    for (int k = 0; k < cons_dual->nnz; ++k)
-    {
-      const int i = cons_dual->indices[k];
-
-      const SLEQP_ACTIVE_STATE var_state
-        = sleqp_working_set_cons_state(working_set, i);
-
-      if (var_state == SLEQP_INACTIVE)
-      {
-        cons_dual->data[k] = 0.;
-      }
-      else
-      {
-        if (var_state == SLEQP_ACTIVE_UPPER)
-        {
-          sleqp_assert_is_geq(cons_dual->data[k], 0., zero_eps);
-        }
-        else if (var_state == SLEQP_ACTIVE_LOWER)
-        {
-          sleqp_assert_is_leq(cons_dual->data[k], 0., zero_eps);
-        }
-      }
-    }
+    SLEQP_CALL(
+      trim_duals_to_working_set(sleqp_working_set_cons_states(working_set),
+                                cons_dual,
+                                zero_eps));
   }
 
   return SLEQP_OKAY;
@@ -1215,7 +1230,7 @@ sleqp_standard_cauchy_create(SleqpCauchy** star,
        .get_working_set     = standard_cauchy_get_working_set,
        .get_direction       = standard_cauchy_get_direction,
        .locally_infeasible  = standard_cauchy_locally_infeasible,
-       .get_dual_estimation = standard_cauchy_get_dual_estimation,
+       .estimate_duals      = standard_cauchy_estimate_duals,
        .get_violation       = standard_cauchy_get_violation,
        .get_basis_condition = standard_cauchy_get_basis_condition,
        .free                = standard_cauchy_free};

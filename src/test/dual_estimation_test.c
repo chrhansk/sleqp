@@ -1,18 +1,14 @@
 #include <check.h>
 #include <stdlib.h>
 
-#include "cmp.h"
-#include "dual_estimation.h"
-#include "mem.h"
-#include "util.h"
-
 #include "aug_jac/standard_aug_jac.h"
-
 #include "cauchy/standard_cauchy.h"
-
+#include "cmp.h"
+#include "dual_estimation/dual_estimation_lsq.h"
 #include "factorization/factorization.h"
-
+#include "mem.h"
 #include "test_common.h"
+#include "util.h"
 
 #include "quadfunc_fixture.h"
 
@@ -26,7 +22,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpCauchy* cauchy_data;
   SleqpWorkingSet* working_set;
   SleqpFactorization* factorization;
-  SleqpAugJac* jacobian;
+  SleqpAugJac* aug_jac;
 
   SleqpDualEstimation* estimation_data;
 
@@ -72,9 +68,10 @@ START_TEST(test_simply_constrained_dual_estimation)
   ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
 
   ASSERT_CALL(
-    sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
+    sleqp_standard_aug_jac_create(&aug_jac, problem, params, factorization));
 
-  ASSERT_CALL(sleqp_dual_estimation_create(&estimation_data, problem));
+  ASSERT_CALL(
+    sleqp_dual_estimation_lsq_create(&estimation_data, problem, aug_jac));
 
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
@@ -85,10 +82,17 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
 
-  ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
+  ASSERT_CALL(sleqp_aug_jac_set_iterate(aug_jac, iterate));
 
-  ASSERT_CALL(
-    sleqp_dual_estimation_compute(estimation_data, iterate, NULL, jacobian));
+  /*
+    ASSERT_CALL(
+      sleqp_dual_estimation_compute(estimation_data, iterate, NULL, aug_jac));
+    */
+
+  ASSERT_CALL(sleqp_estimate_duals(estimation_data,
+                                   iterate,
+                                   sleqp_iterate_cons_dual(iterate),
+                                   sleqp_iterate_vars_dual(iterate)));
 
   SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
@@ -100,9 +104,9 @@ START_TEST(test_simply_constrained_dual_estimation)
   ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(vars_dual, 0), -2., tolerance));
   ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(vars_dual, 1), -4., tolerance));
 
-  ASSERT_CALL(sleqp_dual_estimation_free(&estimation_data));
+  ASSERT_CALL(sleqp_dual_estimation_release(&estimation_data));
 
-  ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
+  ASSERT_CALL(sleqp_aug_jac_release(&aug_jac));
 
   ASSERT_CALL(sleqp_factorization_release(&factorization));
 

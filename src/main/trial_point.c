@@ -16,6 +16,42 @@
 #include "cauchy/standard_cauchy.h"
 #include "cauchy/unconstrained_cauchy.h"
 
+#include "dual_estimation/dual_estimation_lp.h"
+#include "dual_estimation/dual_estimation_lsq.h"
+#include "dual_estimation/dual_estimation_mixed.h"
+
+static SLEQP_RETCODE
+create_dual_estimation(SleqpTrialPointSolver* solver)
+{
+  SleqpOptions* options = solver->options;
+
+  SLEQP_DUAL_ESTIMATION_TYPE estimation_type
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE);
+
+  if (estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LP)
+  {
+    SLEQP_CALL(sleqp_dual_estimation_lp_create(&solver->estimation_data,
+                                               solver->cauchy_data));
+  }
+  else if (estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LSQ)
+  {
+    SLEQP_CALL(sleqp_dual_estimation_lsq_create(&solver->estimation_data,
+                                                solver->problem,
+                                                solver->aug_jac));
+  }
+  else
+  {
+    assert(estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_MIXED);
+
+    SLEQP_CALL(sleqp_dual_estimation_mixed_create(&solver->estimation_data,
+                                                  solver->problem,
+                                                  solver->cauchy_data,
+                                                  solver->aug_jac));
+  }
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE
 create_aug_jac(SleqpTrialPointSolver* solver)
 {
@@ -212,10 +248,9 @@ sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
 
   SLEQP_CALL(create_cauchy_solver(solver));
 
-  SLEQP_CALL(
-    sleqp_dual_estimation_create(&solver->estimation_data, solver->problem));
-
   SLEQP_CALL(create_aug_jac(solver));
+
+  SLEQP_CALL(create_dual_estimation(solver));
 
   SLEQP_CALL(sleqp_linesearch_create(&solver->linesearch,
                                      solver->problem,
@@ -899,7 +934,7 @@ trial_point_solver_free(SleqpTrialPointSolver** star)
 
   SLEQP_CALL(sleqp_factorization_release(&solver->factorization));
 
-  SLEQP_CALL(sleqp_dual_estimation_free(&solver->estimation_data));
+  SLEQP_CALL(sleqp_dual_estimation_release(&solver->estimation_data));
 
   SLEQP_CALL(sleqp_cauchy_release(&solver->cauchy_data));
 
