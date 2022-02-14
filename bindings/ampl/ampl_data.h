@@ -16,8 +16,15 @@ typedef struct
   double* var_lb;
   double* var_ub;
 
+  double* cons_val;
+
   double* cons_lb;
   double* cons_ub;
+
+  int jac_nnz;
+  int* jac_rows;
+  int* jac_cols;
+  double* jac_vals;
 
   double* x;
 
@@ -29,7 +36,7 @@ map_ampl_inf(double* values, int num_values);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_ampl_data_create(SleqpAmplData** star, ASL* asl);
+sleqp_ampl_data_create(SleqpAmplData** star, ASL* asl, FILE* nl);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

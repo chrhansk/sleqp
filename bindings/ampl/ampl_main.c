@@ -73,7 +73,7 @@ ampl_main(int argc, char* argv[])
 
   // allocate problem data
   SleqpAmplData* data;
-  SLEQP_CALL(sleqp_ampl_data_create(&data, asl));
+  SLEQP_CALL(sleqp_ampl_data_create(&data, asl, nl));
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
@@ -82,8 +82,7 @@ ampl_main(int argc, char* argv[])
 
   bool halt_on_error = sleqp_ampl_keywords_halt_on_error(ampl_keywords);
 
-  SLEQP_CALL(
-    sleqp_ampl_problem_create(&problem, data, nl, params, halt_on_error));
+  SLEQP_CALL(sleqp_ampl_problem_create(&problem, data, params, halt_on_error));
 
   SleqpSparseVec* x;
   SLEQP_CALL(sleqp_sparse_vector_create(&x, n_var, 0));
