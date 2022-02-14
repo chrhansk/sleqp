@@ -9,7 +9,6 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_ampl_problem_create(SleqpProblem** star,
                           SleqpAmplData* data,
-                          FILE* nl,
                           SleqpParams* params,
                           bool halt_on_error);
 

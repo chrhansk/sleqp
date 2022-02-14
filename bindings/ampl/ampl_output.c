@@ -91,6 +91,9 @@ set_suffixes(SleqpProblem* problem, SleqpSolver* solver, ASL* asl)
            ampl_suffixes[AMPL_SUFFIX_CONSSTAT].kind,
            cons_stats);
 
+  sleqp_free(&cons_stats);
+  sleqp_free(&var_stats);
+
   return SLEQP_OKAY;
 }
 
