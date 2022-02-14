@@ -1,5 +1,7 @@
 #include "ampl_keywords.h"
 
+#include <string.h>
+
 typedef struct
 {
   union
@@ -15,7 +17,7 @@ typedef struct
 
 enum
 {
-  ITER_LIMIT_MAXITER,
+  ITER_LIMIT_MAXITER = 0,
   ITER_LIMIT_MAXIT,
   TIME_LIMIT,
   LOG_LEVEL_PRINT_LEVEL,
@@ -278,14 +280,15 @@ compare_kwds(const void* first, const void* second)
 }
 
 static SLEQP_RETCODE
-keywords_fill(SleqpAmplKeywords* ampl_keywords,
+keywords_fill(SleqpAmplKeywords* sleqp_keywords,
               SleqpOptions* options,
-              SleqpParams* params,
-              keyword* kwds)
+              SleqpParams* params)
 {
-  CallbackData* callback_data = ampl_keywords->callback_data;
+  CallbackData* callback_data = sleqp_keywords->callback_data;
 
   int pos = POS_ENUM;
+
+  keyword* kwds = sleqp_keywords->keywds;
 
   for (; pos < POS_INT; ++pos)
   {
@@ -344,73 +347,75 @@ keywords_fill(SleqpAmplKeywords* ampl_keywords,
   for (pos = POS_EXTRA; pos < AMPL_NUM_KEYWORDS; ++pos)
   {
     callback_data[pos]
-      = (CallbackData){.data.keywords = ampl_keywords, .index = 0};
+      = (CallbackData){.data.keywords = sleqp_keywords, .index = 0};
   }
 
   {
     pos = POS_EXTRA + ITER_LIMIT_MAXITER;
 
-    kwds[pos] = (keyword){.name = "max_iter",
+    kwds[pos] = (keyword){.name = strdup("max_iter"),
                           .kf   = kwdfunc_iterlimit,
                           .info = callback_data + pos,
-                          .desc = "Maximum number of iterations"};
+                          .desc = strdup("Maximum number of iterations")};
   }
 
   {
     pos = POS_EXTRA + ITER_LIMIT_MAXIT;
 
-    kwds[pos] = (keyword){.name = "maxit",
+    kwds[pos] = (keyword){.name = strdup("maxit"),
                           .kf   = kwdfunc_iterlimit,
                           .info = callback_data + pos,
-                          .desc = "Alias for 'max_iter'"};
+                          .desc = strdup("Alias for 'max_iter'")};
   }
 
   {
     pos = POS_EXTRA + TIME_LIMIT;
 
-    kwds[pos] = (keyword){.name = "max_wall_time",
+    kwds[pos] = (keyword){.name = strdup("max_wall_time"),
                           .kf   = kwdfunc_timelimit,
                           .info = callback_data + pos,
-                          .desc = "Wallclock time limit"};
+                          .desc = strdup("Wallclock time limit")};
   }
 
   {
     pos = POS_EXTRA + LOG_LEVEL_PRINT_LEVEL;
 
-    kwds[pos] = (keyword){.name = "print_level",
+    kwds[pos] = (keyword){.name = strdup("print_level"),
                           .kf   = kwdfunc_log_level,
                           .info = NULL,
-                          .desc = "Verbosity level"};
+                          .desc = strdup("Verbosity level")};
   }
 
   {
     pos = POS_EXTRA + LOG_LEVEL_OUTLEV;
 
-    kwds[pos] = (keyword){.name = "outlev",
+    kwds[pos] = (keyword){.name = strdup("outlev"),
                           .kf   = kwdfunc_log_level,
                           .info = NULL,
-                          .desc = "Alias for 'print_level'"};
+                          .desc = strdup("Alias for 'print_level'")};
   }
 
   {
     pos = POS_EXTRA + WANTSOL;
 
     kwds[pos] = (keyword){
-      .name = "wantsol",
+      .name = strdup("wantsol"),
       .kf   = WS_val,
       .info = NULL,
-      .desc = "solution report without -AMPL: sum of 1 (write .sol file), 2 "
-              "(print primal variable values), 4 (print dual variable values), "
-              "8 (do not print solution message)"};
+      .desc = strdup(
+        "solution report without -AMPL: sum of 1 (write .sol file), 2 "
+        "(print primal variable values), 4 (print dual variable values), "
+        "8 (do not print solution message)")};
   }
 
   {
     pos = POS_EXTRA + HALTONERROR;
 
-    kwds[pos] = (keyword){.name = "halt_on_ampl_error",
-                          .kf   = kwdfunc_haltonerror,
-                          .info = callback_data + pos,
-                          .desc = "Exit with message on evaluation error"};
+    kwds[pos]
+      = (keyword){.name = strdup("halt_on_ampl_error"),
+                  .kf   = kwdfunc_haltonerror,
+                  .info = callback_data + pos,
+                  .desc = strdup("Exit with message on evaluation error")};
   }
 
   // Keywords must be sorted alphabetically
@@ -440,8 +445,7 @@ sleqp_ampl_keywords_create(SleqpAmplKeywords** star,
   SLEQP_CALL(sleqp_params_capture(params));
   ampl_keywords->params = params;
 
-  SLEQP_CALL(
-    keywords_fill(ampl_keywords, options, params, ampl_keywords->keywds));
+  SLEQP_CALL(keywords_fill(ampl_keywords, options, params));
 
   return SLEQP_OKAY;
 }
@@ -489,6 +493,14 @@ sleqp_ampl_keywords_free(SleqpAmplKeywords** star)
   SLEQP_CALL(sleqp_params_release(&sleqp_keywords->params));
 
   SLEQP_CALL(sleqp_options_release(&sleqp_keywords->options));
+
+  keyword* kwds = sleqp_keywords->keywds;
+
+  for (int pos = POS_ENUM; pos < AMPL_NUM_KEYWORDS; ++pos)
+  {
+    sleqp_free(&(kwds[pos].name));
+    sleqp_free(&(kwds[pos].desc));
+  }
 
   sleqp_free(star);
 
