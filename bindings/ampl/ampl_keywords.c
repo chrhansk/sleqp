@@ -264,7 +264,7 @@ kwdfunc_haltonerror(Option_Info* oi, keyword* kw, char* value)
   else
   {
     fprintf(stderr,
-            "Invalid value '%\"s'\" for keyword \"%s\"\n",
+            "Invalid value \"%s\" for keyword \"%s\"\n",
             str_val,
             kw->name);
     badopt_ASL(oi);
