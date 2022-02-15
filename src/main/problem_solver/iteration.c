@@ -8,6 +8,8 @@
 const int max_num_global_resets = 2;
 const int num_reset_steps       = 5;
 
+const double soc_safeguard_factor = 10.;
+
 static SLEQP_RETCODE
 evaluate_at_trial_iterate(SleqpProblemSolver* solver, bool* reject)
 {
@@ -492,10 +494,15 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 
       const double soc_step_norm = sleqp_sparse_vector_norm(soc_step);
 
-      solver->boundary_step
-        = sleqp_is_geq(soc_step_norm, solver->trust_radius, eps);
-
       step_accepted = !reject_step;
+
+      if (sleqp_is_gt(soc_step_norm, soc_safeguard_factor * solver->trust_radius, eps))
+      {
+        sleqp_log_debug("Rejecting SOC step due to large norm (%e)",
+                        soc_step_norm);
+
+        step_accepted = false;
+      }
 
       if (step_accepted)
       {
