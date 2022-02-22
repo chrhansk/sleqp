@@ -18,7 +18,7 @@
                          __LINE__,                                             \
                          __PRETTY_FUNCTION__,                                  \
                          SLEQP_NOMEM,                                          \
-                         "Failed to allocate %d bytes of memory",              \
+                         "Failed to allocate %ld bytes of memory",             \
                          size),                                                \
          SLEQP_ERROR)                                                          \
       : SLEQP_OKAY
@@ -29,7 +29,7 @@
                        __LINE__,                                               \
                        __PRETTY_FUNCTION__,                                    \
                        SLEQP_NOMEM,                                            \
-                       "Failed to allocate %d bytes of memory",                \
+                       "Failed to allocate %ld bytes of memory",               \
                        size),                                                  \
        SLEQP_ERROR)                                                            \
     : SLEQP_OKAY

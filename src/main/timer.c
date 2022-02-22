@@ -180,7 +180,7 @@ sleqp_timer_display(SleqpTimer* timer,
            total_time,
            percent);
 
-  sleqp_log_info(buffer);
+  sleqp_log_info("%s", buffer);
 
   return SLEQP_OKAY;
 }

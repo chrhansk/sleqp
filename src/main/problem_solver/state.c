@@ -50,7 +50,7 @@ sleqp_problem_solver_get_real_state(const SleqpProblemSolver* solver,
     (*value) = max_rayleigh;
     break;
   default:
-    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid state value (%d)", value);
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid state value (%d)", state);
   }
 
   return SLEQP_OKAY;
@@ -73,7 +73,7 @@ sleqp_problem_solver_get_int_state(const SleqpProblemSolver* solver,
     (*value) = solver->last_step_type;
     break;
   default:
-    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid state value (%d)", value);
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid state value (%d)", state);
   }
 
   return SLEQP_OKAY;

@@ -79,8 +79,6 @@ sleqp_problem_solver_print_initial_line(SleqpProblemSolver* solver)
                  "",
                  "",
                  "",
-                 "",
-                 "",
                  "");
 
   return SLEQP_OKAY;
