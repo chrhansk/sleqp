@@ -194,6 +194,9 @@ gurobi_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
   case GRB_TIME_LIMIT:
     lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
     return SLEQP_ABORT_TIME;
+  case GRB_NUMERIC:
+    lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
+    sleqp_raise(SLEQP_MATH_ERROR, "Numeric error in Gurobi");
     break;
   default:
     lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
