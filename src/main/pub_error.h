@@ -15,7 +15,7 @@ sleqp_set_error(const char* file,
                 const char* func,
                 SLEQP_ERROR_TYPE error_type,
                 const char* fmt,
-                ...);
+                ...) SLEQP_FORMAT_PRINTF(5, 6);
 
 #define sleqp_raise(error_type, fmt, ...)                                      \
   do                                                                           \

@@ -30,14 +30,14 @@ SLEQP_EXPORT void
 sleqp_log_set_handler(SLEQP_LOG_HANDLER handler);
 
 SLEQP_EXPORT void
-sleqp_log_msg_level(int level, const char* fmt, ...);
+sleqp_log_msg_level(int level, const char* fmt, ...) SLEQP_FORMAT_PRINTF(2, 3);
 
 void
 sleqp_log_trace_level(int level,
                       const char* file,
                       int line,
                       const char* fmt,
-                      ...);
+                      ...) SLEQP_FORMAT_PRINTF(4, 5);
 
 #define sleqp_bool_string(x) ((x) ? "true" : "false")
 
