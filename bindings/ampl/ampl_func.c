@@ -152,7 +152,6 @@ static SLEQP_RETCODE
 set_eval(AmplFuncData* data, bool* reject)
 {
   SleqpAmplData* ampl_data = data->ampl_data;
-  ASL* asl                 = data->ampl_data->asl;
 
   *reject = false;
 
@@ -351,8 +350,6 @@ ampl_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 static SLEQP_RETCODE
 ensure_eval(AmplFuncData* data)
 {
-  ASL* asl = data->ampl_data->asl;
-
   if (!(data->evaluated & OBJ_VAL))
   {
     bool reject = false;

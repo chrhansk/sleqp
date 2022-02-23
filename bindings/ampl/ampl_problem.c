@@ -10,8 +10,6 @@ compute_linear_coeffs(SleqpSparseMatrix* linear_coeffs, SleqpAmplData* data)
 {
   ASL* asl = data->asl;
 
-  const int num_linear = n_con - nlc;
-
   jacval(data->x, data->jac_vals, NULL);
 
   int next_col = 0;
@@ -56,8 +54,6 @@ apply_linear_offset(const SleqpSparseMatrix* linear_coeffs,
 
   const int num_linear = n_con - nlc;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
-
   double* linear_val = data->cons_val + nlc;
 
   const int linear_nnz = sleqp_sparse_matrix_nnz(linear_coeffs);
@@ -70,6 +66,8 @@ apply_linear_offset(const SleqpSparseMatrix* linear_coeffs,
   {
     for (int entry = linear_cols[col]; entry < linear_cols[col + 1]; ++entry)
     {
+      assert(entry < linear_nnz);
+
       const int row      = linear_rows[entry];
       const double value = linear_data[entry];
 

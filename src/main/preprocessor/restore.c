@@ -751,9 +751,7 @@ sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
 
   if (reject)
   {
-    sleqp_raise(SLEQP_FUNC_EVAL_ERROR,
-                "Function rejected restored solution",
-                "");
+    sleqp_raise(SLEQP_FUNC_EVAL_ERROR, "Function rejected restored solution");
   }
 
   SLEQP_CALL(prepare_working_set(restoration,

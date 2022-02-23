@@ -633,7 +633,7 @@ trlib_loop(SolverData* data,
     default:
     {
       sleqp_raise(SLEQP_INTERNAL_ERROR,
-                  "Invalid trlib action requested: %d",
+                  "Invalid trlib action requested: %ld",
                   action);
     }
     }
