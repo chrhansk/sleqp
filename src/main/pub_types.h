@@ -31,7 +31,7 @@ typedef enum
   SLEQP_ILLEGAL_ARGUMENT
 } SLEQP_ERROR_TYPE;
 
-#ifdef SLEQP_HAVE_WARN_UNUSED_RESULT
+#ifdef SLEQP_HAVE_ATTRIBUTE_WARN_UNUSED_RESULT
 #define SLEQP_NODISCARD __attribute__((warn_unused_result))
 #else
 #define SLEQP_NODISCARD

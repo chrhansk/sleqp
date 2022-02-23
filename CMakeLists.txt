@@ -16,15 +16,15 @@ to C, Python, AMPL, and MATLAB / Octave. It uses an active set method based on a
 combination of successive linear programming and equality constrained\
 quadratic programming.")
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
-
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(FindPackageHandleStandardArgs)
 include(GenerateExportHeader)
-include(CheckCCompilerFlag)
 include(CTest)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
+include(CompilerOptions)
 include(Sanitizers)
 
 # Get the current working branch
@@ -175,31 +175,6 @@ if(SLEQP_GENERATE_COVERAGE)
     DEPENDS build_tests
     EXCLUDE ${TEST_DIR})
 endif()
-
-# Compiler options
-
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-check_c_compiler_flag("-fmacro-prefix-map=.=." HAVE_MACRO_PREFIX_MAP)
-check_c_compiler_flag("-ffile-prefix-map=.=." HAVE_FILE_PREFIX_MAP)
-
-check_c_source_compiles(
-    "
-        __attribute__((warn_unused_result))
-        void f() {};
-        int main(void) {return 0;}
-    "
-    SLEQP_HAVE_WARN_UNUSED_RESULT
-)
-
-check_c_source_compiles(
-    "
-        __attribute__((__format__(__printf__, 1, 2)))
-        void f(const char* format, ...) {};
-        int main(void) {return 0;}
-    "
-    SLEQP_HAVE_ATTRIBUTE_FORMAT
-)
 
 # Subdirectories
 
