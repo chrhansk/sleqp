@@ -2,20 +2,20 @@
 
 # global constant properties
 cdef dict prop_map = {
-  'zero_eps':               csleqp.SLEQP_PARAM_ZERO_EPS,
-  'eps':                    csleqp.SLEQP_PARAM_EPS,
-  'deriv_perturbation':     csleqp.SLEQP_PARAM_DERIV_PERTURBATION,
-  'deriv_tolerance':        csleqp.SLEQP_PARAM_DERIV_TOL,
-  'cauchy_tau':             csleqp.SLEQP_PARAM_CAUCHY_TAU,
-  'cauchy_eta':             csleqp.SLEQP_PARAM_CAUCHY_ETA,
-  'linesearch_tau':         csleqp.SLEQP_PARAM_LINESEARCH_TAU,
-  'linesearch_eta':         csleqp.SLEQP_PARAM_LINESEARCH_ETA,
-  'linesearch_cutoff':      csleqp.SLEQP_PARAM_LINESEARCH_CUTOFF,
-  'feasibility_tolerance':  csleqp.SLEQP_PARAM_FEAS_TOL,
-  'slackness_tolerance':    csleqp.SLEQP_PARAM_SLACK_TOL,
-  'stationarity_tolerance': csleqp.SLEQP_PARAM_STAT_TOL,
-  'accepted_reduction':     csleqp.SLEQP_PARAM_ACCEPTED_REDUCTION,
-  'deadpoint_bound':        csleqp.SLEQP_PARAM_DEADPOINT_BOUND
+  'zero_eps':           csleqp.SLEQP_PARAM_ZERO_EPS,
+  'eps':                csleqp.SLEQP_PARAM_EPS,
+  'deriv_perturbation': csleqp.SLEQP_PARAM_DERIV_PERTURBATION,
+  'deriv_tol':          csleqp.SLEQP_PARAM_DERIV_TOL,
+  'cauchy_tau':         csleqp.SLEQP_PARAM_CAUCHY_TAU,
+  'cauchy_eta':         csleqp.SLEQP_PARAM_CAUCHY_ETA,
+  'linesearch_tau':     csleqp.SLEQP_PARAM_LINESEARCH_TAU,
+  'linesearch_eta':     csleqp.SLEQP_PARAM_LINESEARCH_ETA,
+  'linesearch_cutoff':  csleqp.SLEQP_PARAM_LINESEARCH_CUTOFF,
+  'feas_tol':           csleqp.SLEQP_PARAM_FEAS_TOL,
+  'slack_tol':          csleqp.SLEQP_PARAM_SLACK_TOL,
+  'stat_tol':           csleqp.SLEQP_PARAM_STAT_TOL,
+  'accepted_reduction': csleqp.SLEQP_PARAM_ACCEPTED_REDUCTION,
+  'deadpoint_bound':    csleqp.SLEQP_PARAM_DEADPOINT_BOUND
 }
 
 cdef class Params:

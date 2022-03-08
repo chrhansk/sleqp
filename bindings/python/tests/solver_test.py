@@ -75,7 +75,7 @@ class SolverTest(unittest.TestCase):
     tol = 1e-4
 
     options = sleqp.Options(perform_newton_step=False)
-    params = sleqp.Params(stationarity_tolerance=tol)
+    params = sleqp.Params(stat_tol=tol)
 
     solver = self.get_solver(options=options,
                              params=params)
