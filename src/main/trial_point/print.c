@@ -12,16 +12,11 @@ sleqp_trial_point_solver_print_stats(SleqpTrialPointSolver* solver,
                                  "Substitutions",
                                  elapsed_seconds));
 
-  if (solver->lp_interface)
-  {
-    SLEQP_CALL(sleqp_timer_display(sleqp_lpi_solve_timer(solver->lp_interface),
-                                   "Solved LPs",
-                                   elapsed_seconds));
-  }
-
   SLEQP_CALL(sleqp_timer_display(sleqp_eqp_solver_get_timer(solver->eqp_solver),
                                  "Solved EQPs",
                                  elapsed_seconds));
+
+  SLEQP_CALL(sleqp_cauchy_print_stats(solver->cauchy_data, elapsed_seconds));
 
   SLEQP_CALL(sleqp_timer_display(sleqp_linesearch_get_timer(solver->linesearch),
                                  "Line searches",

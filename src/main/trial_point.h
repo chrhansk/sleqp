@@ -46,8 +46,6 @@ typedef struct
 
   SleqpIterate* iterate;
 
-  SleqpLPi* lp_interface;
-
   SleqpCauchy* cauchy_data;
 
   SleqpDualEstimation* estimation_data;

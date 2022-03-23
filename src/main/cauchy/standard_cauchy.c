@@ -8,6 +8,16 @@
 #include "mem.h"
 #include "merit.h"
 #include "problem.h"
+#include "timer.h"
+
+typedef enum
+{
+  NONE        = 0,
+  BASE_STATS  = (1 << 0),
+  PRIMAL_VALS = (1 << 1),
+  DUAL_VALS   = (1 << 2),
+  ALL         = (BASE_STATS | PRIMAL_VALS | DUAL_VALS),
+} Components;
 
 typedef struct
 {
@@ -21,6 +31,8 @@ typedef struct
   double trust_radius;
   SleqpIterate* iterate;
 
+  double time_limit;
+
   SLEQP_BASESTAT* var_stats;
   SLEQP_BASESTAT* cons_stats;
 
@@ -28,8 +40,12 @@ typedef struct
   SLEQP_CAUCHY_OBJECTIVE_TYPE current_objective;
 
   bool has_coefficients;
+  bool use_reduced_interface;
 
-  SleqpLPi* lp_interface;
+  Components dirty_components;
+
+  SleqpLPi* default_interface;
+  SleqpLPi* reduced_interface;
 
   double* objective;
   double* cons_lb;
@@ -38,15 +54,17 @@ typedef struct
   double* vars_ub;
 
   double* primal_values;
-  double* dual_values;
+
+  double* vars_dual;
+  double* cons_dual;
+
 } CauchyData;
 
 static SLEQP_RETCODE
 cauchy_data_create(CauchyData** star,
                    SleqpProblem* problem,
                    SleqpParams* params,
-                   SleqpOptions* options,
-                   SleqpLPi* lp_interface)
+                   SleqpOptions* options)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -71,9 +89,7 @@ cauchy_data_create(CauchyData** star,
   data->num_lp_constraints = num_constraints;
 
   data->trust_radius = SLEQP_NONE;
-
-  assert(data->num_lp_variables == sleqp_lpi_num_vars(lp_interface));
-  assert(data->num_lp_constraints == sleqp_lpi_num_cons(lp_interface));
+  data->time_limit   = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_alloc_array(&data->var_stats, data->num_lp_variables));
   SLEQP_CALL(sleqp_alloc_array(&data->cons_stats, data->num_lp_constraints));
@@ -85,8 +101,11 @@ cauchy_data_create(CauchyData** star,
 
   data->has_coefficients = false;
 
-  SLEQP_CALL(sleqp_lpi_capture(lp_interface));
-  data->lp_interface = lp_interface;
+  SLEQP_CALL(sleqp_lpi_create_default(&data->default_interface,
+                                      data->num_lp_variables,
+                                      data->num_lp_constraints,
+                                      params,
+                                      options));
 
   SLEQP_CALL(sleqp_alloc_array(&data->objective, data->num_lp_variables));
 
@@ -100,7 +119,8 @@ cauchy_data_create(CauchyData** star,
 
   const int dual_size = data->num_lp_constraints + data->num_lp_variables;
 
-  SLEQP_CALL(sleqp_alloc_array(&data->dual_values, dual_size));
+  SLEQP_CALL(sleqp_alloc_array(&data->vars_dual, dual_size));
+  data->cons_dual = data->vars_dual + data->num_lp_variables;
 
   const double inf = sleqp_infinity();
 
@@ -135,7 +155,7 @@ append_identities(SleqpSparseMatrix* cons_jac,
                                         num_rows,
                                         num_cols + 2 * num_constraints));
 
-  // append a + id
+  // append the +I
   for (int i = 0; i < num_constraints; ++i)
   {
     const int con = num_variables + i;
@@ -145,7 +165,7 @@ append_identities(SleqpSparseMatrix* cons_jac,
     SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, i, con, 1.));
   }
 
-  // append a - id
+  // append the -I
   for (int i = 0; i < num_constraints; ++i)
   {
     const int con = num_variables + num_constraints + i;
@@ -315,18 +335,15 @@ create_var_bounds(CauchyData* cauchy_data,
 }
 
 static SLEQP_RETCODE
-create_objective(CauchyData* cauchy_data,
-                 SleqpSparseVec* gradient,
-                 double penalty)
+create_default_objective(CauchyData* cauchy_data,
+                         SleqpSparseVec* gradient,
+                         double penalty)
 {
   SleqpProblem* problem = cauchy_data->problem;
 
-  const int num_variables   = sleqp_problem_num_vars(problem);
-  const int num_constraints = sleqp_problem_num_cons(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
-  const int num_lp_variables = sleqp_lpi_num_vars(cauchy_data->lp_interface);
-
-  assert(num_lp_variables == num_variables + 2 * num_constraints);
+  const int num_lp_variables = cauchy_data->num_lp_variables;
 
   for (int j = 0; j < num_variables; ++j)
   {
@@ -352,7 +369,7 @@ create_objective(CauchyData* cauchy_data,
 }
 
 static SLEQP_RETCODE
-cauchy_set_coefficients(CauchyData* cauchy_data, SleqpSparseMatrix* cons_jac)
+set_default_coefficients(CauchyData* cauchy_data, SleqpSparseMatrix* cons_jac)
 {
   SleqpProblem* problem = cauchy_data->problem;
 
@@ -370,7 +387,7 @@ cauchy_set_coefficients(CauchyData* cauchy_data, SleqpSparseMatrix* cons_jac)
 
   assert(sleqp_sparse_matrix_is_valid(cons_jac));
 
-  SLEQP_CALL(sleqp_lpi_set_coeffs(cauchy_data->lp_interface, cons_jac));
+  SLEQP_CALL(sleqp_lpi_set_coeffs(cauchy_data->default_interface, cons_jac));
 
   SLEQP_CALL(remove_identities(cons_jac, num_variables, num_constraints));
 
@@ -408,13 +425,13 @@ standard_cauchy_set_iterate(SleqpIterate* iterate,
   SLEQP_CALL(
     create_cons_bounds(cauchy_data, iterate, num_variables, num_constraints));
 
-  SLEQP_CALL(sleqp_lpi_set_bounds(cauchy_data->lp_interface,
+  SLEQP_CALL(sleqp_lpi_set_bounds(cauchy_data->default_interface,
                                   cauchy_data->cons_lb,
                                   cauchy_data->cons_ub,
                                   cauchy_data->vars_lb,
                                   cauchy_data->vars_ub));
 
-  SLEQP_CALL(cauchy_set_coefficients(cauchy_data, cons_jac));
+  SLEQP_CALL(set_default_coefficients(cauchy_data, cons_jac));
 
   return SLEQP_OKAY;
 }
@@ -436,11 +453,228 @@ standard_cauchy_set_trust_radius(double trust_radius, void* data)
                                num_variables,
                                num_constraints));
 
-  SLEQP_CALL(sleqp_lpi_set_bounds(cauchy_data->lp_interface,
+  SLEQP_CALL(sleqp_lpi_set_bounds(cauchy_data->default_interface,
                                   cauchy_data->cons_lb,
                                   cauchy_data->cons_ub,
                                   cauchy_data->vars_lb,
                                   cauchy_data->vars_ub));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+cauchy_fetch_components(CauchyData* cauchy_data, Components components)
+{
+  SleqpLPi* solver = cauchy_data->default_interface;
+
+  if (cauchy_data->use_reduced_interface)
+  {
+    solver = cauchy_data->reduced_interface;
+  }
+
+  if ((cauchy_data->dirty_components & BASE_STATS) && (components & BASE_STATS))
+  {
+    SLEQP_CALL(sleqp_lpi_vars_stats(solver, cauchy_data->var_stats));
+
+    SLEQP_CALL(sleqp_lpi_cons_stats(solver, cauchy_data->cons_stats));
+
+    cauchy_data->dirty_components &= ~(BASE_STATS);
+  }
+
+  if ((cauchy_data->dirty_components & PRIMAL_VALS)
+      && (components & PRIMAL_VALS))
+  {
+    SLEQP_CALL(sleqp_lpi_primal_sol(solver, NULL, cauchy_data->primal_values));
+
+    cauchy_data->dirty_components &= ~(PRIMAL_VALS);
+  }
+
+  if ((cauchy_data->dirty_components & DUAL_VALS) && (components & DUAL_VALS))
+  {
+
+    SLEQP_CALL(sleqp_lpi_dual_sol(solver,
+                                  cauchy_data->vars_dual,
+                                  cauchy_data->cons_dual));
+
+    cauchy_data->dirty_components &= ~(DUAL_VALS);
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+switch_to_reduced_problem(CauchyData* cauchy_data)
+{
+  SleqpProblem* problem = cauchy_data->problem;
+  SleqpIterate* iterate = cauchy_data->iterate;
+
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
+
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+
+  if (!cauchy_data->reduced_interface)
+  {
+    SLEQP_CALL(sleqp_lpi_create_default(&cauchy_data->reduced_interface,
+                                        num_variables,
+                                        num_constraints,
+                                        cauchy_data->params,
+                                        cauchy_data->options));
+  }
+
+  SLEQP_CALL(sleqp_lpi_set_objective(cauchy_data->reduced_interface,
+                                     cauchy_data->objective));
+
+  SLEQP_CALL(sleqp_lpi_set_coeffs(cauchy_data->reduced_interface, cons_jac));
+
+  const double* lower_slack_values = cauchy_data->primal_values + num_variables;
+  const double* upper_slack_values = lower_slack_values + num_constraints;
+
+  for (int i = 0; i < num_constraints; ++i)
+  {
+    const double slack_diff = lower_slack_values[i] - upper_slack_values[i];
+
+    cauchy_data->cons_lb[i] += slack_diff;
+    cauchy_data->cons_ub[i] += slack_diff;
+  }
+
+  // adapt cons bounds
+  SLEQP_CALL(sleqp_lpi_set_bounds(cauchy_data->reduced_interface,
+                                  cauchy_data->cons_lb,
+                                  cauchy_data->cons_ub,
+                                  cauchy_data->vars_lb,
+                                  cauchy_data->vars_ub));
+
+  SLEQP_CALL(sleqp_lpi_set_time_limit(cauchy_data->reduced_interface,
+                                      cauchy_data->time_limit));
+
+  // TODO: Warm-start with basis adapted from current one
+  SLEQP_CALL(sleqp_lpi_solve(cauchy_data->reduced_interface));
+
+  SLEQP_LP_STATUS status = sleqp_lpi_status(cauchy_data->reduced_interface);
+
+  if (status != SLEQP_LP_STATUS_OPTIMAL)
+  {
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Invalid LP status: %d", status);
+  }
+
+  cauchy_data->use_reduced_interface = true;
+  cauchy_data->dirty_components      = ALL;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_ACTIVE_STATE
+cauchy_cons_state(SLEQP_BASESTAT cons_stat,
+                  SLEQP_BASESTAT lower_slack_stat,
+                  SLEQP_BASESTAT upper_slack_stat,
+                  bool equal_bounds)
+{
+  assert((lower_slack_stat == SLEQP_BASESTAT_LOWER)
+         || (upper_slack_stat == SLEQP_BASESTAT_LOWER));
+
+  if ((cons_stat == SLEQP_BASESTAT_BASIC) || (cons_stat == SLEQP_BASESTAT_ZERO))
+  {
+    return SLEQP_INACTIVE;
+  }
+
+  const bool zero_slacks = (lower_slack_stat == SLEQP_BASESTAT_LOWER)
+                           && (upper_slack_stat == SLEQP_BASESTAT_LOWER);
+
+  if (zero_slacks)
+  {
+    if (equal_bounds)
+    {
+      return SLEQP_ACTIVE_BOTH;
+    }
+    if (cons_stat == SLEQP_BASESTAT_LOWER)
+    {
+      return SLEQP_ACTIVE_LOWER;
+    }
+    if (cons_stat == SLEQP_BASESTAT_UPPER)
+    {
+      return SLEQP_ACTIVE_UPPER;
+    }
+  }
+
+  return SLEQP_INACTIVE;
+}
+
+static SLEQP_RETCODE
+needs_reduced_resolve(CauchyData* cauchy_data, bool* resolve)
+{
+  assert(!(cauchy_data->use_reduced_interface));
+
+  SleqpProblem* problem = cauchy_data->problem;
+
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
+
+  const double eps = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_EPS);
+
+  *resolve = false;
+
+  SLEQP_CALL(
+    cauchy_fetch_components(cauchy_data, BASE_STATS | PRIMAL_VALS | DUAL_VALS));
+
+  SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
+  SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
+
+  const double* lower_slack_values = cauchy_data->primal_values + num_variables;
+  const double* upper_slack_values = lower_slack_values + num_constraints;
+
+  const double* cons_dual = cauchy_data->cons_dual;
+
+  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+
+  int k_lb = 0, k_ub = 0;
+
+  for (int i = 0; i < num_constraints; ++i)
+  {
+    while (k_lb < lb->nnz && lb->indices[k_lb] < i)
+    {
+      ++k_lb;
+    }
+
+    while (k_ub < ub->nnz && ub->indices[k_ub] < i)
+    {
+      ++k_ub;
+    }
+
+    const bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
+    const bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
+
+    const double lb_val = valid_lb ? lb->data[k_lb] : 0.;
+    const double ub_val = valid_ub ? ub->data[k_ub] : 0.;
+
+    const bool equal_bounds = (sleqp_is_eq(lb_val, ub_val, eps));
+
+    SLEQP_ACTIVE_STATE cons_stat = cauchy_cons_state(cauchy_data->cons_stats[i],
+                                                     lower_slack_stats[i],
+                                                     upper_slack_stats[i],
+                                                     equal_bounds);
+
+    if (cons_stat != SLEQP_INACTIVE)
+    {
+      continue;
+    }
+
+    const double lower_slack = lower_slack_values[i];
+    const double upper_slack = upper_slack_values[i];
+
+    const bool zero_slacks  = (lower_slack == 0) && (upper_slack == 0.);
+    const bool nonzero_dual = (cons_dual[i] != 0.);
+
+    // A constraint which is tight in the linearization with
+    // a nonzero dual variable in the LP is *not* included
+    // in the working set.
+    if (zero_slacks && nonzero_dual)
+    {
+      *resolve = true;
+      break;
+    }
+  }
 
   return SLEQP_OKAY;
 }
@@ -452,8 +686,7 @@ check_basis(CauchyData* cauchy_data, bool* valid_basis)
 
   int basis_size = 0;
 
-  SLEQP_CALL(
-    sleqp_lpi_vars_stats(cauchy_data->lp_interface, cauchy_data->var_stats));
+  SLEQP_CALL(cauchy_fetch_components(cauchy_data, BASE_STATS));
 
   for (int j = 0; j < cauchy_data->num_lp_variables; ++j)
   {
@@ -464,9 +697,6 @@ check_basis(CauchyData* cauchy_data, bool* valid_basis)
       ++basis_size;
     }
   }
-
-  SLEQP_CALL(
-    sleqp_lpi_cons_stats(cauchy_data->lp_interface, cauchy_data->cons_stats));
 
   for (int i = 0; i < cauchy_data->num_lp_constraints; ++i)
   {
@@ -491,7 +721,7 @@ restore_basis(CauchyData* cauchy_data,
       && cauchy_data->has_basis[objective_type])
   {
     SLEQP_CALL(
-      sleqp_lpi_restore_basis(cauchy_data->lp_interface, objective_type));
+      sleqp_lpi_restore_basis(cauchy_data->default_interface, objective_type));
   }
 
   return SLEQP_OKAY;
@@ -505,10 +735,10 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(create_objective(cauchy_data, gradient, penalty));
+  SLEQP_CALL(create_default_objective(cauchy_data, gradient, penalty));
 
-  SLEQP_CALL(
-    sleqp_lpi_set_objective(cauchy_data->lp_interface, cauchy_data->objective));
+  SLEQP_CALL(sleqp_lpi_set_objective(cauchy_data->default_interface,
+                                     cauchy_data->objective));
 
   bool warm_start
     = sleqp_options_bool_value(cauchy_data->options,
@@ -539,9 +769,25 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
 
   cauchy_data->current_objective = objective_type;
 
-  SLEQP_CALL(sleqp_lpi_solve(cauchy_data->lp_interface));
+  {
+    SLEQP_CALL(sleqp_lpi_set_time_limit(cauchy_data->default_interface,
+                                        cauchy_data->time_limit));
 
-  SLEQP_LP_STATUS status = sleqp_lpi_status(cauchy_data->lp_interface);
+    SLEQP_CALL(sleqp_lpi_solve(cauchy_data->default_interface));
+
+    SleqpTimer* lpi_timer
+      = sleqp_lpi_solve_timer(cauchy_data->default_interface);
+
+    const double elapsed_time = sleqp_timer_elapsed(lpi_timer);
+
+    cauchy_data->time_limit
+      = sleqp_remaining_time(elapsed_time, cauchy_data->time_limit);
+  }
+
+  cauchy_data->dirty_components      = ALL;
+  cauchy_data->use_reduced_interface = false;
+
+  SLEQP_LP_STATUS status = sleqp_lpi_status(cauchy_data->default_interface);
 
   if (status != SLEQP_LP_STATUS_OPTIMAL)
   {
@@ -561,10 +807,24 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
 
   if (warm_start)
   {
-    SLEQP_CALL(sleqp_lpi_save_basis(cauchy_data->lp_interface, objective_type));
+    SLEQP_CALL(
+      sleqp_lpi_save_basis(cauchy_data->default_interface, objective_type));
   }
 
   cauchy_data->has_basis[objective_type] = true;
+
+  if (objective_type == SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT)
+  {
+    bool resolve;
+
+    SLEQP_CALL(needs_reduced_resolve(cauchy_data, &resolve));
+
+    if (resolve)
+    {
+      sleqp_log_debug("Resolving reduced problem");
+      switch_to_reduced_problem(cauchy_data);
+    }
+  }
 
   return SLEQP_OKAY;
 }
@@ -574,8 +834,9 @@ standard_cauchy_get_objective_value(double* objective_value, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(
-    sleqp_lpi_primal_sol(cauchy_data->lp_interface, objective_value, NULL));
+  SLEQP_CALL(sleqp_lpi_primal_sol(cauchy_data->default_interface,
+                                  objective_value,
+                                  NULL));
 
   (*objective_value) += sleqp_iterate_obj_val(cauchy_data->iterate);
 
@@ -590,12 +851,13 @@ cauchy_working_set_add_vars(CauchyData* cauchy_data, SleqpIterate* iterate)
   const SleqpSparseVec* lb = sleqp_problem_vars_lb(problem);
   const SleqpSparseVec* ub = sleqp_problem_vars_ub(problem);
 
-  const int num_variables   = sleqp_problem_num_vars(problem);
-  const int num_constraints = sleqp_problem_num_cons(problem);
+  const int num_variables = sleqp_problem_num_vars(problem);
 
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   const double trust_radius = cauchy_data->trust_radius;
+
+  SLEQP_CALL(cauchy_fetch_components(cauchy_data, BASE_STATS));
 
   const double eps = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_EPS);
 
@@ -664,6 +926,8 @@ cauchy_working_set_add_cons(CauchyData* cauchy_data, SleqpIterate* iterate)
 
   int k_lb = 0, k_ub = 0;
 
+  SLEQP_CALL(cauchy_fetch_components(cauchy_data, BASE_STATS));
+
   SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
   SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
 
@@ -672,13 +936,6 @@ cauchy_working_set_add_cons(CauchyData* cauchy_data, SleqpIterate* iterate)
 
   for (int i = 0; i < num_constraints; ++i)
   {
-    const SLEQP_BASESTAT cons_stat = cauchy_data->cons_stats[i];
-
-    if (cons_stat == SLEQP_BASESTAT_BASIC)
-    {
-      continue;
-    }
-
     while (k_lb < lb->nnz && lb->indices[k_lb] < i)
     {
       ++k_lb;
@@ -689,60 +946,78 @@ cauchy_working_set_add_cons(CauchyData* cauchy_data, SleqpIterate* iterate)
       ++k_ub;
     }
 
-    const bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
     const bool valid_lb = (k_lb < lb->nnz) && (i == lb->indices[k_lb]);
+    const bool valid_ub = (k_ub < ub->nnz) && (i == ub->indices[k_ub]);
 
-    const double ubval = valid_ub ? ub->data[k_ub] : 0.;
-    const double lbval = valid_lb ? lb->data[k_lb] : 0.;
+    const double lb_val = valid_lb ? lb->data[k_lb] : 0.;
+    const double ub_val = valid_ub ? ub->data[k_ub] : 0.;
 
-    assert(lower_slack_stats[i] != SLEQP_BASESTAT_BASIC
-           || upper_slack_stats[i] != SLEQP_BASESTAT_BASIC);
+    const bool equal_bounds = (sleqp_is_eq(lb_val, ub_val, eps));
 
-    const bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER
-                            && upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
+    SLEQP_ACTIVE_STATE cons_stat = cauchy_cons_state(cauchy_data->cons_stats[i],
+                                                     lower_slack_stats[i],
+                                                     upper_slack_stats[i],
+                                                     equal_bounds);
 
-    if (cons_stat == SLEQP_BASESTAT_ZERO)
+    if (cons_stat != SLEQP_INACTIVE)
     {
-      assert(sleqp_is_infinite(ubval));
-      assert(sleqp_is_infinite(-lbval));
+      SLEQP_CALL(sleqp_working_set_add_cons(working_set, i, cons_stat));
+    }
+  }
 
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+get_reduced_working_set(CauchyData* cauchy_data, SleqpIterate* iterate)
+{
+  SLEQP_CALL(cauchy_fetch_components(cauchy_data, BASE_STATS));
+
+  SleqpProblem* problem     = cauchy_data->problem;
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
+
+  SLEQP_CALL(cauchy_working_set_add_vars(cauchy_data, iterate));
+
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
+
+  const double* lower_slack_values = cauchy_data->primal_values + num_variables;
+  const double* upper_slack_values = lower_slack_values + num_constraints;
+
+  for (int i = 0; i < num_constraints; ++i)
+  {
+    const SLEQP_BASESTAT cons_stat = cauchy_data->cons_stats[i];
+
+    if ((cons_stat == SLEQP_BASESTAT_BASIC)
+        || (cons_stat == SLEQP_BASESTAT_ZERO))
+    {
       continue;
     }
 
-    if (sleqp_is_eq(lbval, ubval, eps))
+    if ((lower_slack_values[i] == 0) && (upper_slack_values[i] == 0.))
     {
-      if (zero_slack)
+      if (cons_stat == SLEQP_BASESTAT_LOWER)
       {
         SLEQP_CALL(
-          sleqp_working_set_add_cons(working_set, i, SLEQP_ACTIVE_BOTH));
+          sleqp_working_set_add_cons(working_set, i, SLEQP_ACTIVE_LOWER));
       }
-    }
-    else
-    {
-      if (cauchy_data->cons_stats[i] == SLEQP_BASESTAT_UPPER)
+      else if (cons_stat == SLEQP_BASESTAT_UPPER)
       {
-        if (zero_slack)
-        {
-          // the constraint c(x) + grad(c(x))*d +I s_l -I s_u  <= u
-          // is tight at i
-
-          SLEQP_CALL(
-            sleqp_working_set_add_cons(working_set, i, SLEQP_ACTIVE_UPPER));
-        }
-      }
-      else if (cauchy_data->cons_stats[i] == SLEQP_BASESTAT_LOWER)
-      {
-        if (zero_slack)
-        {
-          // the constraint l <= c(x) + grad(c(x))*d +I s_l -I s_u
-          // is tight at i
-
-          SLEQP_CALL(
-            sleqp_working_set_add_cons(working_set, i, SLEQP_ACTIVE_LOWER));
-        }
+        SLEQP_CALL(
+          sleqp_working_set_add_cons(working_set, i, SLEQP_ACTIVE_UPPER));
       }
     }
   }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+get_simple_working_set(CauchyData* cauchy_data, SleqpIterate* iterate)
+{
+  SLEQP_CALL(cauchy_working_set_add_vars(cauchy_data, iterate));
+
+  SLEQP_CALL(cauchy_working_set_add_cons(cauchy_data, iterate));
 
   return SLEQP_OKAY;
 }
@@ -756,28 +1031,14 @@ standard_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 
   SLEQP_CALL(sleqp_working_set_reset(working_set));
 
-  assert(sleqp_working_set_valid(working_set));
-
-  SLEQP_CALL(
-    sleqp_lpi_vars_stats(cauchy_data->lp_interface, cauchy_data->var_stats));
-
-  SLEQP_CALL(
-    sleqp_lpi_cons_stats(cauchy_data->lp_interface, cauchy_data->cons_stats));
-
-  const double trust_radius = cauchy_data->trust_radius;
-
-  assert(trust_radius > 0.);
-
-  SleqpProblem* problem = cauchy_data->problem;
-
-  const int num_variables   = sleqp_problem_num_vars(problem);
-  const int num_constraints = sleqp_problem_num_cons(problem);
-
-  const double eps = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_EPS);
-
-  SLEQP_CALL(cauchy_working_set_add_vars(cauchy_data, iterate));
-
-  SLEQP_CALL(cauchy_working_set_add_cons(cauchy_data, iterate));
+  if (cauchy_data->use_reduced_interface)
+  {
+    SLEQP_CALL(get_reduced_working_set(cauchy_data, iterate));
+  }
+  else
+  {
+    SLEQP_CALL(get_simple_working_set(cauchy_data, iterate));
+  }
 
   const int num_active_vars = sleqp_working_set_num_active_vars(working_set);
   const int num_active_cons = sleqp_working_set_num_active_cons(working_set);
@@ -796,14 +1057,12 @@ standard_cauchy_get_direction(SleqpSparseVec* direction, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
+  SLEQP_CALL(cauchy_fetch_components(cauchy_data, PRIMAL_VALS));
+
   const double zero_eps
     = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
 
   const int num_variables = sleqp_problem_num_vars(cauchy_data->problem);
-
-  SLEQP_CALL(sleqp_lpi_primal_sol(cauchy_data->lp_interface,
-                                  NULL,
-                                  cauchy_data->primal_values));
 
   SLEQP_CALL(sleqp_sparse_vector_from_raw(direction,
                                           cauchy_data->primal_values,
@@ -823,12 +1082,9 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
   SleqpIterate* iterate = cauchy_data->iterate;
 
   assert(iterate);
+  assert(!cauchy_data->use_reduced_interface);
 
-  SLEQP_CALL(
-    sleqp_lpi_vars_stats(cauchy_data->lp_interface, cauchy_data->var_stats));
-
-  SLEQP_CALL(
-    sleqp_lpi_cons_stats(cauchy_data->lp_interface, cauchy_data->cons_stats));
+  SLEQP_CALL(cauchy_fetch_components(cauchy_data, BASE_STATS));
 
   const double trust_radius = cauchy_data->trust_radius;
 
@@ -1027,12 +1283,12 @@ standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
   {
     assert(vars_dual->dim == num_variables);
 
-    SLEQP_CALL(sleqp_lpi_dual_sol(cauchy_data->lp_interface,
-                                  cauchy_data->dual_values,
+    SLEQP_CALL(sleqp_lpi_dual_sol(cauchy_data->default_interface,
+                                  cauchy_data->vars_dual,
                                   NULL));
 
     SLEQP_CALL(sleqp_sparse_vector_from_raw(vars_dual,
-                                            cauchy_data->dual_values,
+                                            cauchy_data->vars_dual,
                                             vars_dual->dim,
                                             zero_eps));
 
@@ -1049,12 +1305,12 @@ standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
   {
     assert(cons_dual->dim == num_constraints);
 
-    SLEQP_CALL(sleqp_lpi_dual_sol(cauchy_data->lp_interface,
+    SLEQP_CALL(sleqp_lpi_dual_sol(cauchy_data->default_interface,
                                   NULL,
-                                  cauchy_data->dual_values));
+                                  cauchy_data->vars_dual));
 
     SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_dual,
-                                            cauchy_data->dual_values,
+                                            cauchy_data->vars_dual,
                                             cons_dual->dim,
                                             zero_eps));
 
@@ -1079,7 +1335,7 @@ standard_cauchy_get_violation(double* violation, void* data)
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  SLEQP_CALL(sleqp_lpi_primal_sol(cauchy_data->lp_interface,
+  SLEQP_CALL(sleqp_lpi_primal_sol(cauchy_data->default_interface,
                                   NULL,
                                   cauchy_data->primal_values));
 
@@ -1094,13 +1350,45 @@ standard_cauchy_get_violation(double* violation, void* data)
 }
 
 static SLEQP_RETCODE
+standard_cauchy_set_time_limit(double time_limit, void* data)
+{
+  CauchyData* cauchy_data = (CauchyData*)data;
+
+  cauchy_data->time_limit = time_limit;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 standard_cauchy_get_basis_condition(bool* exact, double* condition, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(sleqp_lpi_basis_condition_estimate(cauchy_data->lp_interface,
+  SLEQP_CALL(sleqp_lpi_basis_condition_estimate(cauchy_data->default_interface,
                                                 exact,
                                                 condition));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+standard_cauchy_print_stats(double total_elapsed, void* data)
+{
+  CauchyData* cauchy_data = (CauchyData*)data;
+
+  SleqpTimer* default_timer
+    = sleqp_lpi_solve_timer(cauchy_data->default_interface);
+
+  SLEQP_CALL(sleqp_timer_display(default_timer, "Solved LPs", total_elapsed));
+
+  if (cauchy_data->reduced_interface)
+  {
+    SleqpTimer* reduced_timer
+      = sleqp_lpi_solve_timer(cauchy_data->reduced_interface);
+
+    SLEQP_CALL(
+      sleqp_timer_display(reduced_timer, "Solved reduced LPs", total_elapsed));
+  }
 
   return SLEQP_OKAY;
 }
@@ -1110,7 +1398,7 @@ standard_cauchy_free(void* star)
 {
   CauchyData* cauchy_data = (CauchyData*)star;
 
-  sleqp_free(&cauchy_data->dual_values);
+  sleqp_free(&cauchy_data->vars_dual);
   sleqp_free(&cauchy_data->primal_values);
 
   sleqp_free(&cauchy_data->vars_ub);
@@ -1121,7 +1409,8 @@ standard_cauchy_free(void* star)
 
   sleqp_free(&cauchy_data->objective);
 
-  SLEQP_CALL(sleqp_lpi_release(&cauchy_data->lp_interface));
+  SLEQP_CALL(sleqp_lpi_release(&cauchy_data->reduced_interface));
+  SLEQP_CALL(sleqp_lpi_release(&cauchy_data->default_interface));
 
   sleqp_free(&cauchy_data->cons_stats);
   sleqp_free(&cauchy_data->var_stats);
@@ -1142,13 +1431,11 @@ SLEQP_RETCODE
 sleqp_standard_cauchy_create(SleqpCauchy** star,
                              SleqpProblem* problem,
                              SleqpParams* params,
-                             SleqpOptions* options,
-                             SleqpLPi* lp_interface)
+                             SleqpOptions* options)
 {
   CauchyData* cauchy_data;
 
-  SLEQP_CALL(
-    cauchy_data_create(&cauchy_data, problem, params, options, lp_interface));
+  SLEQP_CALL(cauchy_data_create(&cauchy_data, problem, params, options));
 
   SleqpCauchyCallbacks callbacks
     = {.set_iterate         = standard_cauchy_set_iterate,
@@ -1160,7 +1447,9 @@ sleqp_standard_cauchy_create(SleqpCauchy** star,
        .locally_infeasible  = standard_cauchy_locally_infeasible,
        .estimate_duals      = standard_cauchy_estimate_duals,
        .get_violation       = standard_cauchy_get_violation,
+       .set_time_limit      = standard_cauchy_set_time_limit,
        .get_basis_condition = standard_cauchy_get_basis_condition,
+       .print_stats         = standard_cauchy_print_stats,
        .free                = standard_cauchy_free};
 
   SLEQP_CALL(sleqp_cauchy_create(star, &callbacks, (void*)cauchy_data));

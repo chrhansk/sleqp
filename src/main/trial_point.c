@@ -106,21 +106,10 @@ create_cauchy_solver(SleqpTrialPointSolver* solver)
   }
   else
   {
-    const int num_variables      = sleqp_problem_num_vars(problem);
-    const int num_lp_variables   = num_variables + 2 * num_constraints;
-    const int num_lp_constraints = num_constraints;
-
-    SLEQP_CALL(sleqp_lpi_create_default(&solver->lp_interface,
-                                        num_lp_variables,
-                                        num_lp_constraints,
-                                        params,
-                                        options));
-
     SLEQP_CALL(sleqp_standard_cauchy_create(&solver->cauchy_data,
                                             problem,
                                             params,
-                                            options,
-                                            solver->lp_interface));
+                                            options));
   }
 
   return SLEQP_OKAY;
@@ -937,8 +926,6 @@ trial_point_solver_free(SleqpTrialPointSolver** star)
   SLEQP_CALL(sleqp_dual_estimation_release(&solver->estimation_data));
 
   SLEQP_CALL(sleqp_cauchy_release(&solver->cauchy_data));
-
-  SLEQP_CALL(sleqp_lpi_release(&solver->lp_interface));
 
   SLEQP_CALL(sleqp_iterate_release(&solver->iterate));
 

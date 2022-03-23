@@ -188,11 +188,17 @@ sleqp_timer_display(SleqpTimer* timer,
 double
 sleqp_timer_remaining_time(SleqpTimer* timer, double time_limit)
 {
+  return sleqp_remaining_time(sleqp_timer_get_ttl(timer), time_limit);
+}
+
+double
+sleqp_remaining_time(double elapsed_time, double time_limit)
+{
   if (time_limit != SLEQP_NONE)
   {
-    double remaining_time = time_limit - sleqp_timer_get_ttl(timer);
+    double remaining_time = time_limit - elapsed_time;
 
-    return remaining_time;
+    return SLEQP_MAX(remaining_time, 0.);
   }
 
   return SLEQP_NONE;
