@@ -813,7 +813,12 @@ standard_cauchy_solve(SleqpSparseVec* gradient,
 
   cauchy_data->has_basis[objective_type] = true;
 
-  if (objective_type == SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT)
+  const bool enable_resolves
+    = sleqp_options_bool_value(cauchy_data->options,
+                               SLEQP_OPTION_BOOL_LP_RESOLVES);
+
+  if (enable_resolves
+      && (objective_type == SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT))
   {
     bool resolve;
 

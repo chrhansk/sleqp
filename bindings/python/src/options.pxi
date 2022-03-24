@@ -68,6 +68,7 @@ cdef dict opt_prop_map = {
   'perform_soc':           _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_SOC),
   'use_quadratic_model':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL),
   'enable_preprocessor':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR),
+  'lp_resolves':           _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_LP_RESOLVES),
 
   # Integer properties
   'num_quasi_newton_iterates': _Prop.integer(csleqp.SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES),

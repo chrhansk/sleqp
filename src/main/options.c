@@ -17,6 +17,7 @@
 #define ALWAYS_WARM_START_LP_DEFAULT true
 #define ENABLE_PREPROCESSOR_DEFAULT false
 #define ENABLE_RESTORATION_PHASE_DEFAULT false
+#define LP_RESOLVES_DEFAULT true
 
 #define PARAMETRIC_CAUCHY_DEFAULT SLEQP_PARAMETRIC_CAUCHY_DISABLED
 #define INITIAL_TR_CHOICE_DEFAULT SLEQP_INITIAL_TR_CHOICE_NARROW
@@ -144,29 +145,31 @@ sleqp_options_int_desc(SLEQP_OPTION_INT option)
   return int_option_info[option].desc;
 }
 
-OptionInfo bool_option_info[SLEQP_NUM_BOOL_OPTIONS] = {
-  [SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]
-  = {.name = "perform_newton_step",
-     .desc = "Whether or not to perform Newton steps"},
-  [SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS]
-  = {.name = "global_penalty_resets",
-     .desc = "Whether or not to perform global penalty resets"},
-  [SLEQP_OPTION_BOOL_PERFORM_SOC]
-  = {.name = "perform_soc",
-     .desc = "Whether or not to perform a second-order correction"},
-  [SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL]
-  = {.name = "use_quadratic_model",
-     .desc = "Whether to use a quadratic or linear model"},
-  [SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP]
-  = {.name = "always_warm_start_lp",
-     .desc = "Whether to warm-start the LP from existing bases"},
-  [SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE]
-  = {.name = "enable_restoration_phase",
-     .desc = "Whether to enable a restoration phase"},
-  [SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR]
-  = {.name = "enable_preprocessor",
-     .desc = "Whether to enable the built-in preprocessor"},
-};
+OptionInfo bool_option_info[SLEQP_NUM_BOOL_OPTIONS]
+  = {[SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]
+     = {.name = "perform_newton_step",
+        .desc = "Whether or not to perform Newton steps"},
+     [SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS]
+     = {.name = "global_penalty_resets",
+        .desc = "Whether or not to perform global penalty resets"},
+     [SLEQP_OPTION_BOOL_PERFORM_SOC]
+     = {.name = "perform_soc",
+        .desc = "Whether or not to perform a second-order correction"},
+     [SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL]
+     = {.name = "use_quadratic_model",
+        .desc = "Whether to use a quadratic or linear model"},
+     [SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP]
+     = {.name = "always_warm_start_lp",
+        .desc = "Whether to warm-start the LP from existing bases"},
+     [SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE]
+     = {.name = "enable_restoration_phase",
+        .desc = "Whether to enable a restoration phase"},
+     [SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR]
+     = {.name = "enable_preprocessor",
+        .desc = "Whether to enable the built-in preprocessor"},
+     [SLEQP_OPTION_BOOL_LP_RESOLVES]
+     = {.name = "lp_resolves",
+        .desc = "Enable LP resolves in case of ambiguous optimal bases"}};
 
 const char*
 sleqp_options_bool_name(SLEQP_OPTION_BOOL option)
@@ -220,7 +223,8 @@ sleqp_options_create(SleqpOptions** star)
       [SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP]  = ALWAYS_WARM_START_LP_DEFAULT,
       [SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE]
       = ENABLE_RESTORATION_PHASE_DEFAULT,
-      [SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR] = ENABLE_PREPROCESSOR_DEFAULT}};
+      [SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR] = ENABLE_PREPROCESSOR_DEFAULT,
+      [SLEQP_OPTION_BOOL_LP_RESOLVES]         = LP_RESOLVES_DEFAULT}};
 
   return SLEQP_OKAY;
 }
