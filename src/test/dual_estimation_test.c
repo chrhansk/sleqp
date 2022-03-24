@@ -18,7 +18,6 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpOptions* options;
   SleqpProblem* problem;
   SleqpIterate* iterate;
-  SleqpLPi* lp_interface;
   SleqpCauchy* cauchy_data;
   SleqpWorkingSet* working_set;
   SleqpFactorization* factorization;
@@ -40,28 +39,13 @@ START_TEST(test_simply_constrained_dual_estimation)
                                           quadfunc_cons_lb,
                                           quadfunc_cons_ub));
 
-  const int num_variables   = sleqp_problem_num_vars(problem);
-  const int num_constraints = sleqp_problem_num_cons(problem);
-
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadfunc_x));
-
-  int num_lp_variables   = num_variables + 2 * num_constraints;
-  int num_lp_constraints = num_constraints;
-
-  ASSERT_CALL(sleqp_lpi_create_default(&lp_interface,
-                                       num_lp_variables,
-                                       num_lp_constraints,
-                                       params,
-                                       options));
 
   ASSERT_CALL(
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
-  ASSERT_CALL(sleqp_standard_cauchy_create(&cauchy_data,
-                                           problem,
-                                           params,
-                                           options,
-                                           lp_interface));
+  ASSERT_CALL(
+    sleqp_standard_cauchy_create(&cauchy_data, problem, params, options));
 
   ASSERT_CALL(sleqp_working_set_create(&working_set, problem));
 
@@ -113,8 +97,6 @@ START_TEST(test_simply_constrained_dual_estimation)
   ASSERT_CALL(sleqp_working_set_release(&working_set));
 
   ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
-
-  ASSERT_CALL(sleqp_lpi_release(&lp_interface));
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 

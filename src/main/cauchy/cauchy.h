@@ -57,9 +57,17 @@ sleqp_cauchy_get_violation(SleqpCauchy* cauchy, double* violation);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
+sleqp_cauchy_set_time_limit(SleqpCauchy* cauchy, double time_limit);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
 sleqp_cauchy_get_basis_condition(SleqpCauchy* cauchy,
                                  bool* exact,
                                  double* condition);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_cauchy_print_stats(SleqpCauchy* cauchy, double total_elapsed);
 
 // Bound on the criticality measure used in
 // "On the Convergence of Successive Linear Programming Algorithms"

@@ -2,8 +2,8 @@
 #define SLEQP_STANDARD_CAUCHY_H
 
 /**
- * @file cauchy.h
- * @brief Definition of Cauchy step-related functions.
+ * @file standard_cauchy.h
+ * @brief Definition of LP-based Cauchy solver.
  **/
 
 #include "cauchy.h"
@@ -18,7 +18,6 @@ SLEQP_RETCODE
 sleqp_standard_cauchy_create(SleqpCauchy** star,
                              SleqpProblem* problem,
                              SleqpParams* params,
-                             SleqpOptions* options,
-                             SleqpLPi* lp_interface);
+                             SleqpOptions* options);
 
 #endif /* SLEQP_STANDARD_CAUCHY_H */

@@ -54,6 +54,9 @@ sleqp_timer_display(SleqpTimer* timer,
 double
 sleqp_timer_remaining_time(SleqpTimer* timer, double time_limit);
 
+double
+sleqp_remaining_time(double elapsed_time, double time_limit);
+
 bool
 sleqp_timer_exhausted_time_limit(SleqpTimer* timer, double time_limit);
 

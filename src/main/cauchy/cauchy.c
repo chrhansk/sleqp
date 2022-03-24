@@ -107,6 +107,12 @@ sleqp_cauchy_get_violation(SleqpCauchy* cauchy, double* violation)
 }
 
 SLEQP_RETCODE
+sleqp_cauchy_set_time_limit(SleqpCauchy* cauchy, double time_limit)
+{
+  return cauchy->callbacks.set_time_limit(time_limit, cauchy->cauchy_data);
+}
+
+SLEQP_RETCODE
 sleqp_cauchy_get_basis_condition(SleqpCauchy* cauchy,
                                  bool* exact,
                                  double* condition)
@@ -114,6 +120,12 @@ sleqp_cauchy_get_basis_condition(SleqpCauchy* cauchy,
   return cauchy->callbacks.get_basis_condition(exact,
                                                condition,
                                                cauchy->cauchy_data);
+}
+
+SLEQP_RETCODE
+sleqp_cauchy_print_stats(SleqpCauchy* cauchy, double total_elapsed)
+{
+  return cauchy->callbacks.print_stats(total_elapsed, cauchy->cauchy_data);
 }
 
 SLEQP_RETCODE

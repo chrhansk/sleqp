@@ -157,6 +157,12 @@ unconstrained_cauchy_get_violation(double* violation, void* data)
 }
 
 static SLEQP_RETCODE
+unconstrained_cauchy_set_time_limit(double time_limit, void* data)
+{
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 unconstrained_cauchy_get_basis_condition(bool* exact,
                                          double* condition,
                                          void* data)
@@ -164,6 +170,12 @@ unconstrained_cauchy_get_basis_condition(bool* exact,
   *condition = 1.;
   *exact     = true;
 
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+unconstrained_cauchy_print_stats(double total_elapsed, void* data)
+{
   return SLEQP_OKAY;
 }
 
@@ -233,7 +245,9 @@ sleqp_unconstrained_cauchy_create(SleqpCauchy** star,
        .locally_infeasible  = unconstrained_cauchy_locally_infeasible,
        .estimate_duals      = unconstrained_cauchy_estimate_duals,
        .get_violation       = unconstrained_cauchy_get_violation,
+       .set_time_limit      = unconstrained_cauchy_set_time_limit,
        .get_basis_condition = unconstrained_cauchy_get_basis_condition,
+       .print_stats         = unconstrained_cauchy_print_stats,
        .free                = unconstrained_cauchy_free};
 
   SLEQP_CALL(sleqp_cauchy_create(star, &callbacks, (void*)cauchy_data));

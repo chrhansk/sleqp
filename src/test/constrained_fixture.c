@@ -91,10 +91,9 @@ cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
 
   SLEQP_CALL(sleqp_sparse_vector_push(cons_val, 0, x[0] * x[1] * x[2] * x[3]));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_push(cons_val,
-                             1,
-                             sq(x[0]) + sq(x[1]) + sq(x[2]) + sq(x[3])));
+  const double sq_sum = sq(x[0]) + sq(x[1]) + sq(x[2]) + sq(x[3]);
+
+  SLEQP_CALL(sleqp_sparse_vector_push(cons_val, 1, sq_sum));
 
   return SLEQP_OKAY;
 }

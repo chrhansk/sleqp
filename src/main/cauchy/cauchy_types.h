@@ -46,12 +46,18 @@ typedef SLEQP_RETCODE (*SLEQP_CAUCHY_ESTIMATE_DUALS)(
   SleqpSparseVec* vars_dual,
   void* cauchy_data);
 
+typedef SLEQP_RETCODE (*SLEQP_CAUCHY_SET_TIME_LIMIT)(double time_limit,
+                                                     void* cauchy_data);
+
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_GET_VIOLATION)(double* violation,
                                                     void* cauchy_data);
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_GET_BASIS_CONDITION)(bool* exact,
                                                           double* condition,
                                                           void* cauchy_data);
+
+typedef SLEQP_RETCODE (*SLEQP_CAUCHY_PRINT_STATS)(double total_elapsed,
+                                                  void* cauchy_data);
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_FREE)(void* cauchy_data);
 
@@ -66,7 +72,9 @@ typedef struct
   SLEQP_CAUCHY_LOCALLY_INFEASIBLE locally_infeasible;
   SLEQP_CAUCHY_ESTIMATE_DUALS estimate_duals;
   SLEQP_CAUCHY_GET_VIOLATION get_violation;
+  SLEQP_CAUCHY_SET_TIME_LIMIT set_time_limit;
   SLEQP_CAUCHY_GET_BASIS_CONDITION get_basis_condition;
+  SLEQP_CAUCHY_PRINT_STATS print_stats;
   SLEQP_CAUCHY_FREE free;
 } SleqpCauchyCallbacks;
 
