@@ -100,31 +100,6 @@ sleqp_vec_from_raw(SleqpVec* vec, double* values, int dim, double zero_eps)
 }
 
 SLEQP_RETCODE
-sleqp_vec_fill(SleqpVec* vec, double value)
-{
-  if (value == 0)
-  {
-    SLEQP_CALL(sleqp_vec_clear(vec));
-
-    return SLEQP_OKAY;
-  }
-
-  SLEQP_CALL(sleqp_vec_reserve(vec, vec->dim));
-
-  SLEQP_CALL(sleqp_vec_clear(vec));
-
-  for (int k = 0; k < vec->dim; ++k)
-  {
-    vec->data[k]    = value;
-    vec->indices[k] = k;
-  }
-
-  vec->nnz = vec->dim;
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE
 sleqp_vec_to_raw(const SleqpVec* vec, double* values)
 {
   for (int i = 0; i < vec->dim; ++i)
@@ -442,6 +417,34 @@ sleqp_vec_add_scaled(const SleqpVec* first,
 
     SLEQP_CALL(sleqp_vec_push(result, i_combined, value));
   }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_vec_fill(SleqpVec* vec, double value)
+{
+  if (value == 0.)
+  {
+    SLEQP_CALL(sleqp_vec_clear(vec));
+    return SLEQP_OKAY;
+  }
+
+  const int dim = vec->dim;
+
+  SLEQP_CALL(sleqp_vec_reserve(vec, dim));
+
+  for (int i = 0; i < dim; ++i)
+  {
+    vec->data[i] = value;
+  }
+
+  for (int i = 0; i < dim; ++i)
+  {
+    vec->indices[i] = i;
+  }
+
+  vec->nnz = dim;
 
   return SLEQP_OKAY;
 }

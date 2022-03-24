@@ -37,24 +37,17 @@ unconstrained_setup()
 {
   const double inf = sleqp_infinity();
 
-  double neg_inf_vals[] = {inf, inf};
-  double pos_inf_vals[] = {inf, inf};
-
   ASSERT_CALL(sleqp_params_create(&params));
 
   ASSERT_CALL(zero_func_create(&func, num_variables, num_constraints));
 
   ASSERT_CALL(sleqp_vec_create_full(&var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_fill(var_lb, -inf));
 
   ASSERT_CALL(sleqp_vec_create_full(&var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_fill(var_ub, -inf));
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
-
-  ASSERT_CALL(
-    sleqp_vec_from_raw(var_lb, neg_inf_vals, num_variables, zero_eps));
-
-  ASSERT_CALL(
-    sleqp_vec_from_raw(var_ub, pos_inf_vals, num_variables, zero_eps));
 
   ASSERT_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
 

@@ -86,9 +86,7 @@ linfunc_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 
   obj_grad->nnz = 0;
 
-  SLEQP_CALL(sleqp_vec_push(obj_grad, 0, 1.));
-
-  SLEQP_CALL(sleqp_vec_push(obj_grad, 1, 1.));
+  SLEQP_CALL(sleqp_vec_fill(obj_grad, 1.));
 
   return SLEQP_OKAY;
 }
@@ -129,14 +127,10 @@ unconstrained_setup()
                                 func_data));
 
   ASSERT_CALL(sleqp_vec_create_full(&linfunc_var_lb, num_variables));
-
-  ASSERT_CALL(sleqp_vec_push(linfunc_var_lb, 0, -inf));
-  ASSERT_CALL(sleqp_vec_push(linfunc_var_lb, 1, -inf));
+  ASSERT_CALL(sleqp_vec_fill(linfunc_var_lb, -inf));
 
   ASSERT_CALL(sleqp_vec_create_full(&linfunc_var_ub, num_variables));
-
-  ASSERT_CALL(sleqp_vec_push(linfunc_var_ub, 0, inf));
-  ASSERT_CALL(sleqp_vec_push(linfunc_var_ub, 1, inf));
+  ASSERT_CALL(sleqp_vec_fill(linfunc_var_ub, inf));
 
   ASSERT_CALL(sleqp_vec_create_empty(&linfunc_cons_lb, num_constraints));
 

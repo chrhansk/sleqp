@@ -210,6 +210,16 @@ sleqp_vec_add_scaled(const SleqpVec* first,
                      SleqpVec* result);
 
 /**
+ * Fills all entries of the vector with the specified value
+ *
+ * @param[in,out] vector   A pointer to the vector
+ * @param[in]      value   The value
+ **/
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_vec_fill(SleqpVec* vec,
+               double value);
+
+/**
  * Returns the 2-norm of the given vector
  *
  * @param[in] vector   A pointer to the vector

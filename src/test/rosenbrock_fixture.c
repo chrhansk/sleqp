@@ -189,15 +189,11 @@ rosenbrock_create(SleqpFunc** fstar,
                                 rosenbrock_num_constraints,
                                 func_data));
 
-  ASSERT_CALL(sleqp_vec_create(var_lbstar, 2, 2));
+  ASSERT_CALL(sleqp_vec_create_full(var_lbstar, 2));
+  ASSERT_CALL(sleqp_vec_fill(*var_lbstar, -inf));
 
-  ASSERT_CALL(sleqp_vec_push(*var_lbstar, 0, -inf));
-  ASSERT_CALL(sleqp_vec_push(*var_lbstar, 1, -inf));
-
-  ASSERT_CALL(sleqp_vec_create(var_ubstar, 2, 2));
-
-  ASSERT_CALL(sleqp_vec_push(*var_ubstar, 0, inf));
-  ASSERT_CALL(sleqp_vec_push(*var_ubstar, 1, inf));
+  ASSERT_CALL(sleqp_vec_create_full(var_ubstar, 2));
+  ASSERT_CALL(sleqp_vec_fill(*var_ubstar, inf));
 
   ASSERT_CALL(sleqp_vec_create_empty(cons_lbstar, 0));
 
@@ -206,9 +202,7 @@ rosenbrock_create(SleqpFunc** fstar,
   ASSERT_CALL(sleqp_vec_create_empty(init_star, 2));
 
   ASSERT_CALL(sleqp_vec_create_full(opt_star, 2));
-
-  ASSERT_CALL(sleqp_vec_push(*opt_star, 0, 1.));
-  ASSERT_CALL(sleqp_vec_push(*opt_star, 1, 1.));
+  ASSERT_CALL(sleqp_vec_fill(*opt_star, 1.));
 }
 
 void

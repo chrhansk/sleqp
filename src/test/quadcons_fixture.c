@@ -191,22 +191,17 @@ quadconsfunc_setup()
   ASSERT_CALL(sleqp_vec_push(quadconsfunc_var_ub, 0, 1.));
   ASSERT_CALL(sleqp_vec_push(quadconsfunc_var_ub, 1, 1.));
 
-  ASSERT_CALL(sleqp_vec_create(&quadconsfunc_cons_lb, 2, 2));
+  ASSERT_CALL(sleqp_vec_create_full(&quadconsfunc_cons_lb, 2));
+  ASSERT_CALL(sleqp_vec_fill(quadconsfunc_cons_lb, -inf));
 
-  ASSERT_CALL(sleqp_vec_push(quadconsfunc_cons_lb, 0, -inf));
-  ASSERT_CALL(sleqp_vec_push(quadconsfunc_cons_lb, 1, -inf));
-
-  ASSERT_CALL(sleqp_vec_create(&quadconsfunc_cons_ub, 2, 2));
-
-  ASSERT_CALL(sleqp_vec_push(quadconsfunc_cons_ub, 0, 1.));
-  ASSERT_CALL(sleqp_vec_push(quadconsfunc_cons_ub, 1, 1.));
+  ASSERT_CALL(sleqp_vec_create_full(&quadconsfunc_cons_ub, 2));
+  ASSERT_CALL(sleqp_vec_fill(quadconsfunc_cons_ub, 1.));
 
   ASSERT_CALL(sleqp_vec_create(&quadconsfunc_x, 2, 2));
 
   double val = 0.29289321881345254;
 
-  ASSERT_CALL(sleqp_vec_push(quadconsfunc_x, 0, val));
-  ASSERT_CALL(sleqp_vec_push(quadconsfunc_x, 1, val));
+  ASSERT_CALL(sleqp_vec_fill(quadconsfunc_x, val));
 }
 
 void

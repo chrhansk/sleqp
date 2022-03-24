@@ -140,9 +140,7 @@ linear_cons_create(SleqpSparseMatrix** cstar,
     SLEQP_CALL(sleqp_vec_push(linear_lb, 2, 2.));
   }
 
-  SLEQP_CALL(sleqp_vec_push(linear_ub, 0, inf));
-  SLEQP_CALL(sleqp_vec_push(linear_ub, 1, inf));
-  SLEQP_CALL(sleqp_vec_push(linear_ub, 2, inf));
+  SLEQP_CALL(sleqp_vec_fill(linear_ub, inf));
 
   if (swapped)
   {
@@ -193,11 +191,8 @@ degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
   SLEQP_CALL(sleqp_vec_create_full(&var_lb, DEGRADED_NUM_VARS));
   SLEQP_CALL(sleqp_vec_create_full(&var_ub, DEGRADED_NUM_VARS));
 
-  SLEQP_CALL(sleqp_vec_push(var_lb, 0, -inf));
-  SLEQP_CALL(sleqp_vec_push(var_lb, 1, -inf));
-
-  SLEQP_CALL(sleqp_vec_push(var_ub, 0, inf));
-  SLEQP_CALL(sleqp_vec_push(var_ub, 1, inf));
+  SLEQP_CALL(sleqp_vec_fill(var_lb, -inf));
+  SLEQP_CALL(sleqp_vec_fill(var_ub, inf));
 
   SLEQP_CALL(sleqp_vec_create_empty(&cons_bounds, 0.));
 

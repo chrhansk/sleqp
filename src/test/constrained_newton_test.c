@@ -173,14 +173,10 @@ newton_setup()
   double inf = sleqp_infinity();
 
   ASSERT_CALL(sleqp_vec_create_full(&linquadfunc_var_lb, num_variables));
-
-  ASSERT_CALL(sleqp_vec_push(linquadfunc_var_lb, 0, -inf));
-  ASSERT_CALL(sleqp_vec_push(linquadfunc_var_lb, 1, -inf));
+  ASSERT_CALL(sleqp_vec_fill(linquadfunc_var_lb, -inf));
 
   ASSERT_CALL(sleqp_vec_create_full(&linquadfunc_var_ub, num_variables));
-
-  ASSERT_CALL(sleqp_vec_push(linquadfunc_var_ub, 0, inf));
-  ASSERT_CALL(sleqp_vec_push(linquadfunc_var_ub, 1, inf));
+  ASSERT_CALL(sleqp_vec_fill(linquadfunc_var_ub, inf));
 
   ASSERT_CALL(sleqp_vec_create_full(&linquadfunc_cons_lb, num_constraints));
 
