@@ -22,27 +22,27 @@ struct SleqpTransformation
 
   SleqpParams* params;
 
-  SleqpSparseVec* transformed_var_lb;
-  SleqpSparseVec* transformed_var_ub;
+  SleqpVec* transformed_var_lb;
+  SleqpVec* transformed_var_ub;
 
-  SleqpSparseVec* fixed_variable_values;
+  SleqpVec* fixed_variable_values;
 
-  SleqpSparseVec* fixed_linear_lb;
-  SleqpSparseVec* fixed_linear_ub;
+  SleqpVec* fixed_linear_lb;
+  SleqpVec* fixed_linear_ub;
 
-  SleqpSparseVec* redundant_linear_lb;
-  SleqpSparseVec* redundant_linear_ub;
+  SleqpVec* redundant_linear_lb;
+  SleqpVec* redundant_linear_ub;
 
-  SleqpSparseVec* transformed_linear_lb;
-  SleqpSparseVec* transformed_linear_ub;
+  SleqpVec* transformed_linear_lb;
+  SleqpVec* transformed_linear_ub;
 
   SleqpSparseMatrix* transformed_linear_coeffs;
 
   SleqpFunc* transformed_func;
 
   double* dense_cache;
-  SleqpSparseVec* sparse_cache;
-  SleqpSparseVec* trans_cache;
+  SleqpVec* sparse_cache;
+  SleqpVec* trans_cache;
 };
 
 SLEQP_RETCODE
@@ -89,39 +89,34 @@ sleqp_transformation_create(SleqpTransformation** star,
   transformation->num_transformed_linear_cons
     = num_linear_cons - num_removed_cons;
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&transformation->transformed_var_lb,
-                                     transformation->num_transformed_vars));
+  SLEQP_CALL(sleqp_vec_create_empty(&transformation->transformed_var_lb,
+                                    transformation->num_transformed_vars));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&transformation->transformed_var_ub,
+                                    transformation->num_transformed_vars));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&transformation->fixed_variable_values,
+                                    num_variables));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&transformation->transformed_var_ub,
-                                     transformation->num_transformed_vars));
+    sleqp_vec_create_empty(&transformation->fixed_linear_lb, num_linear));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&transformation->fixed_variable_values,
-                                     num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&transformation->fixed_linear_lb,
-                                              num_linear));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&transformation->fixed_linear_ub,
-                                              num_linear));
+    sleqp_vec_create_empty(&transformation->fixed_linear_ub, num_linear));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&transformation->redundant_linear_lb,
-                                     num_linear));
+    sleqp_vec_create_empty(&transformation->redundant_linear_lb, num_linear));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&transformation->redundant_linear_ub,
-                                     num_linear));
+    sleqp_vec_create_empty(&transformation->redundant_linear_ub, num_linear));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(
-    &transformation->transformed_linear_lb,
-    transformation->num_transformed_linear_cons));
+  SLEQP_CALL(
+    sleqp_vec_create_empty(&transformation->transformed_linear_lb,
+                           transformation->num_transformed_linear_cons));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(
-    &transformation->transformed_linear_ub,
-    transformation->num_transformed_linear_cons));
+  SLEQP_CALL(
+    sleqp_vec_create_empty(&transformation->transformed_linear_ub,
+                           transformation->num_transformed_linear_cons));
 
   SLEQP_CALL(
     sleqp_sparse_matrix_create(&transformation->transformed_linear_coeffs,
@@ -132,20 +127,19 @@ sleqp_transformation_create(SleqpTransformation** star,
   SLEQP_CALL(sleqp_alloc_array(&transformation->dense_cache,
                                SLEQP_MAX(num_variables, num_constraints)));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_full(&transformation->sparse_cache,
-                                    transformation->num_transformed_vars));
+  SLEQP_CALL(sleqp_vec_create_full(&transformation->sparse_cache,
+                                   transformation->num_transformed_vars));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_full(&transformation->trans_cache,
-                                             num_variables));
+  SLEQP_CALL(
+    sleqp_vec_create_full(&transformation->trans_cache, num_variables));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
 sleqp_transformation_convert_primal(SleqpTransformation* transformation,
-                                    const SleqpSparseVec* source,
-                                    SleqpSparseVec* target)
+                                    const SleqpVec* source,
+                                    SleqpVec* target)
 {
   int num_fixed_vars;
   int* fixed_var_indices;
@@ -157,10 +151,10 @@ sleqp_transformation_convert_primal(SleqpTransformation* transformation,
     &fixed_var_indices,
     &fixed_var_values));
 
-  SLEQP_CALL(sleqp_sparse_vector_remove_entries(source,
-                                                target,
-                                                fixed_var_indices,
-                                                num_fixed_vars));
+  SLEQP_CALL(sleqp_vec_remove_entries(source,
+                                      target,
+                                      fixed_var_indices,
+                                      num_fixed_vars));
 
   return SLEQP_OKAY;
 }
@@ -226,18 +220,18 @@ static SLEQP_RETCODE
 replace_redundant_bound(SleqpTransformation* transformation,
                         int num_removed_bounds,
                         SleqpBoundRequirementState* requirement_states,
-                        const SleqpSparseVec* source,
-                        SleqpSparseVec* target,
+                        const SleqpVec* source,
+                        SleqpVec* target,
                         SleqpBoundRequirementState required_state,
                         double value)
 {
   const int dim = source->dim;
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(target));
+  SLEQP_CALL(sleqp_vec_clear(target));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(
-    target,
-    SLEQP_MIN(dim, source->nnz + num_removed_bounds)));
+  SLEQP_CALL(
+    sleqp_vec_reserve(target,
+                      SLEQP_MIN(dim, source->nnz + num_removed_bounds)));
 
   int k = 0;
 
@@ -245,7 +239,7 @@ replace_redundant_bound(SleqpTransformation* transformation,
   {
     if (requirement_states[j] == required_state)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(target, j, value));
+      SLEQP_CALL(sleqp_vec_push(target, j, value));
       continue;
     }
 
@@ -256,7 +250,7 @@ replace_redundant_bound(SleqpTransformation* transformation,
 
     if (k < source->nnz && source->indices[k] == j)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(target, j, source->data[k]));
+      SLEQP_CALL(sleqp_vec_push(target, j, source->data[k]));
       ++k;
     }
   }
@@ -268,10 +262,10 @@ static SLEQP_RETCODE
 remove_redundant_bounds(SleqpTransformation* transformation,
                         int num_removed_bounds,
                         SleqpBoundRequirementState* requirement_states,
-                        const SleqpSparseVec* source_lb,
-                        const SleqpSparseVec* source_ub,
-                        SleqpSparseVec* target_lb,
-                        SleqpSparseVec* target_ub)
+                        const SleqpVec* source_lb,
+                        const SleqpVec* source_ub,
+                        SleqpVec* target_lb,
+                        SleqpVec* target_ub)
 {
   assert(source_lb->dim == source_ub->dim);
   assert(target_lb->dim == target_ub->dim);
@@ -337,8 +331,8 @@ create_transformed_var_lb(SleqpTransformation* transformation)
                                      SLEQP_BOUND_REDUNDANT_LOWER,
                                      -inf));
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(transformation->trans_cache,
-                                        transformation->dense_cache));
+  SLEQP_CALL(
+    sleqp_vec_to_raw(transformation->trans_cache, transformation->dense_cache));
 
   SleqpConvertedBound* converted_bounds;
   int num_converted_bounds;
@@ -355,16 +349,15 @@ create_transformed_var_lb(SleqpTransformation* transformation)
       = SLEQP_MAX(transformation->dense_cache[j], converted_bounds[k].var_lb);
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(transformation->sparse_cache,
-                                          transformation->dense_cache,
-                                          num_variables,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(transformation->sparse_cache,
+                                    transformation->dense_cache,
+                                    num_variables,
+                                    zero_eps));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_remove_entries(transformation->sparse_cache,
-                                       transformation->transformed_var_lb,
-                                       fixed_var_indices,
-                                       num_fixed_vars));
+  SLEQP_CALL(sleqp_vec_remove_entries(transformation->sparse_cache,
+                                      transformation->transformed_var_lb,
+                                      fixed_var_indices,
+                                      num_fixed_vars));
 
   return SLEQP_OKAY;
 }
@@ -409,8 +402,8 @@ create_transformed_var_ub(SleqpTransformation* transformation)
                                      SLEQP_BOUND_REDUNDANT_UPPER,
                                      inf));
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(transformation->trans_cache,
-                                        transformation->dense_cache));
+  SLEQP_CALL(
+    sleqp_vec_to_raw(transformation->trans_cache, transformation->dense_cache));
 
   SleqpConvertedBound* converted_bounds;
   int num_converted_bounds;
@@ -427,16 +420,15 @@ create_transformed_var_ub(SleqpTransformation* transformation)
       = SLEQP_MIN(transformation->dense_cache[j], converted_bounds[k].var_ub);
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(transformation->sparse_cache,
-                                          transformation->dense_cache,
-                                          num_variables,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(transformation->sparse_cache,
+                                    transformation->dense_cache,
+                                    num_variables,
+                                    zero_eps));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_remove_entries(transformation->sparse_cache,
-                                       transformation->transformed_var_ub,
-                                       fixed_var_indices,
-                                       num_fixed_vars));
+  SLEQP_CALL(sleqp_vec_remove_entries(transformation->sparse_cache,
+                                      transformation->transformed_var_ub,
+                                      fixed_var_indices,
+                                      num_fixed_vars));
 
   return SLEQP_OKAY;
 }
@@ -463,23 +455,21 @@ transform_linear_constraints(SleqpTransformation* transformation)
                                                        &fixed_var_indices,
                                                        &fixed_var_values));
 
-  SleqpSparseVec* fixed_linear_lb = sleqp_problem_linear_lb(problem);
-  SleqpSparseVec* fixed_linear_ub = sleqp_problem_linear_ub(problem);
+  SleqpVec* fixed_linear_lb = sleqp_problem_linear_lb(problem);
+  SleqpVec* fixed_linear_ub = sleqp_problem_linear_ub(problem);
 
   if (num_fixed_vars > 0)
   {
-    SLEQP_CALL(
-      sleqp_sparse_vector_clear(transformation->fixed_variable_values));
+    SLEQP_CALL(sleqp_vec_clear(transformation->fixed_variable_values));
 
     SLEQP_CALL(
-      sleqp_sparse_vector_reserve(transformation->fixed_variable_values,
-                                  num_fixed_vars));
+      sleqp_vec_reserve(transformation->fixed_variable_values, num_fixed_vars));
 
     for (int j = 0; j < num_fixed_vars; ++j)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(transformation->fixed_variable_values,
-                                          fixed_var_indices[j],
-                                          fixed_var_values[j]));
+      SLEQP_CALL(sleqp_vec_push(transformation->fixed_variable_values,
+                                fixed_var_indices[j],
+                                fixed_var_values[j]));
     }
 
     SLEQP_CALL(
@@ -487,24 +477,24 @@ transform_linear_constraints(SleqpTransformation* transformation)
                                          transformation->fixed_variable_values,
                                          transformation->dense_cache));
 
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(transformation->sparse_cache,
-                                            transformation->dense_cache,
-                                            num_linear,
-                                            zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(transformation->sparse_cache,
+                                      transformation->dense_cache,
+                                      num_linear,
+                                      zero_eps));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_problem_linear_lb(problem),
-                                              transformation->sparse_cache,
-                                              1.,
-                                              -1.,
-                                              zero_eps,
-                                              transformation->fixed_linear_lb));
+    SLEQP_CALL(sleqp_vec_add_scaled(sleqp_problem_linear_lb(problem),
+                                    transformation->sparse_cache,
+                                    1.,
+                                    -1.,
+                                    zero_eps,
+                                    transformation->fixed_linear_lb));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_problem_linear_ub(problem),
-                                              transformation->sparse_cache,
-                                              1.,
-                                              -1.,
-                                              zero_eps,
-                                              transformation->fixed_linear_ub));
+    SLEQP_CALL(sleqp_vec_add_scaled(sleqp_problem_linear_ub(problem),
+                                    transformation->sparse_cache,
+                                    1.,
+                                    -1.,
+                                    zero_eps,
+                                    transformation->fixed_linear_ub));
 
     fixed_linear_lb = transformation->fixed_linear_lb;
     fixed_linear_ub = transformation->fixed_linear_ub;
@@ -514,8 +504,8 @@ transform_linear_constraints(SleqpTransformation* transformation)
     = sleqp_preprocessing_state_num_removed_variable_bounds(
       preprocessing_state);
 
-  SleqpSparseVec* redundant_linear_lb = NULL;
-  SleqpSparseVec* redundant_linear_ub = NULL;
+  SleqpVec* redundant_linear_lb = NULL;
+  SleqpVec* redundant_linear_ub = NULL;
 
   if (num_removed_bounds)
   {
@@ -552,17 +542,15 @@ transform_linear_constraints(SleqpTransformation* transformation)
     &num_removed_cons,
     &removed_cons_indices));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_remove_entries(redundant_linear_lb,
-                                       transformation->transformed_linear_lb,
-                                       removed_cons_indices,
-                                       num_removed_cons));
+  SLEQP_CALL(sleqp_vec_remove_entries(redundant_linear_lb,
+                                      transformation->transformed_linear_lb,
+                                      removed_cons_indices,
+                                      num_removed_cons));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_remove_entries(redundant_linear_ub,
-                                       transformation->transformed_linear_ub,
-                                       removed_cons_indices,
-                                       num_removed_cons));
+  SLEQP_CALL(sleqp_vec_remove_entries(redundant_linear_ub,
+                                      transformation->transformed_linear_ub,
+                                      removed_cons_indices,
+                                      num_removed_cons));
 
   SLEQP_CALL(sleqp_sparse_matrix_remove_entries(
     sleqp_problem_linear_coeffs(problem),
@@ -638,9 +626,9 @@ transformation_free(SleqpTransformation** star)
 {
   SleqpTransformation* transformation = *star;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->trans_cache));
+  SLEQP_CALL(sleqp_vec_free(&transformation->trans_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->sparse_cache));
+  SLEQP_CALL(sleqp_vec_free(&transformation->sparse_cache));
 
   sleqp_free(&transformation->dense_cache);
 
@@ -649,19 +637,19 @@ transformation_free(SleqpTransformation** star)
   SLEQP_CALL(
     sleqp_sparse_matrix_release(&transformation->transformed_linear_coeffs));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->transformed_linear_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->transformed_linear_lb));
+  SLEQP_CALL(sleqp_vec_free(&transformation->transformed_linear_ub));
+  SLEQP_CALL(sleqp_vec_free(&transformation->transformed_linear_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->redundant_linear_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->redundant_linear_lb));
+  SLEQP_CALL(sleqp_vec_free(&transformation->redundant_linear_ub));
+  SLEQP_CALL(sleqp_vec_free(&transformation->redundant_linear_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->fixed_linear_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->fixed_linear_lb));
+  SLEQP_CALL(sleqp_vec_free(&transformation->fixed_linear_ub));
+  SLEQP_CALL(sleqp_vec_free(&transformation->fixed_linear_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->fixed_variable_values));
+  SLEQP_CALL(sleqp_vec_free(&transformation->fixed_variable_values));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->transformed_var_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&transformation->transformed_var_lb));
+  SLEQP_CALL(sleqp_vec_free(&transformation->transformed_var_ub));
+  SLEQP_CALL(sleqp_vec_free(&transformation->transformed_var_lb));
 
   SLEQP_CALL(
     sleqp_preprocessing_state_release(&transformation->preprocessing_state));

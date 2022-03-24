@@ -18,14 +18,14 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
   assert general_lb is not None
   assert general_ub is not None
 
-  cdef csleqp.SleqpSparseVec* var_lb_vec
-  cdef csleqp.SleqpSparseVec* var_ub_vec
+  cdef csleqp.SleqpVec* var_lb_vec
+  cdef csleqp.SleqpVec* var_ub_vec
 
-  cdef csleqp.SleqpSparseVec* general_lb_vec
-  cdef csleqp.SleqpSparseVec* general_ub_vec
+  cdef csleqp.SleqpVec* general_lb_vec
+  cdef csleqp.SleqpVec* general_ub_vec
 
-  cdef csleqp.SleqpSparseVec* linear_lb_vec
-  cdef csleqp.SleqpSparseVec* linear_ub_vec
+  cdef csleqp.SleqpVec* linear_lb_vec
+  cdef csleqp.SleqpVec* linear_ub_vec
 
   cdef csleqp.SleqpSparseMatrix* linear_coeffs_mat
 
@@ -41,16 +41,16 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
 
   try:
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&var_lb_vec,
+    csleqp_call(csleqp.sleqp_vec_create_empty(&var_lb_vec,
                                                         num_vars))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&var_ub_vec,
+    csleqp_call(csleqp.sleqp_vec_create_empty(&var_ub_vec,
                                                         num_vars))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&general_lb_vec,
+    csleqp_call(csleqp.sleqp_vec_create_empty(&general_lb_vec,
                                                         num_cons))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&general_ub_vec,
+    csleqp_call(csleqp.sleqp_vec_create_empty(&general_ub_vec,
                                                         num_cons))
 
     csleqp_call(csleqp.sleqp_sparse_matrix_create(&linear_coeffs_mat,
@@ -58,10 +58,10 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
                                                   num_vars,
                                                   0))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&linear_lb_vec,
+    csleqp_call(csleqp.sleqp_vec_create_empty(&linear_lb_vec,
                                                         num_linear_constraints))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&linear_ub_vec,
+    csleqp_call(csleqp.sleqp_vec_create_empty(&linear_ub_vec,
                                                         num_linear_constraints))
 
     array_to_sleqp_sparse_vec(var_lb, var_lb_vec)
@@ -96,16 +96,16 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
     return csleqp.SLEQP_ERROR
 
   finally:
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&linear_ub_vec))
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&linear_lb_vec))
+    csleqp_call(csleqp.sleqp_vec_free(&linear_ub_vec))
+    csleqp_call(csleqp.sleqp_vec_free(&linear_lb_vec))
 
     csleqp_call(csleqp.sleqp_sparse_matrix_release(&linear_coeffs_mat))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&general_ub_vec))
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&general_lb_vec))
+    csleqp_call(csleqp.sleqp_vec_free(&general_ub_vec))
+    csleqp_call(csleqp.sleqp_vec_free(&general_lb_vec))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&var_ub_vec))
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&var_lb_vec))
+    csleqp_call(csleqp.sleqp_vec_free(&var_ub_vec))
+    csleqp_call(csleqp.sleqp_vec_free(&var_lb_vec))
 
 
 cdef class _Problem:

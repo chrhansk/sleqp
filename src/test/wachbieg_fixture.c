@@ -15,12 +15,12 @@ const double b = .5;
 
 SleqpFunc* wachbieg_func;
 
-SleqpSparseVec* wachbieg_var_lb;
-SleqpSparseVec* wachbieg_var_ub;
-SleqpSparseVec* wachbieg_cons_lb;
-SleqpSparseVec* wachbieg_cons_ub;
-SleqpSparseVec* wachbieg_initial;
-SleqpSparseVec* wachbieg_optimal;
+SleqpVec* wachbieg_var_lb;
+SleqpVec* wachbieg_var_ub;
+SleqpVec* wachbieg_cons_lb;
+SleqpVec* wachbieg_cons_ub;
+SleqpVec* wachbieg_initial;
+SleqpVec* wachbieg_optimal;
 
 SleqpFunc* wachbieg_func;
 
@@ -41,7 +41,7 @@ const int wachbieg_jac_nnz = 4;
 
 static SLEQP_RETCODE
 wachbieg_set(SleqpFunc* func,
-             SleqpSparseVec* x,
+             SleqpVec* x,
              SLEQP_VALUE_REASON reason,
              bool* reject,
              int* obj_grad_nnz,
@@ -80,23 +80,23 @@ wachbieg_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-wachbieg_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+wachbieg_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 1.));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 0, 1.));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-wachbieg_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
+wachbieg_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 {
   const double x0 = wachbieg_data.x[0];
   const double x1 = wachbieg_data.x[1];
   const double x2 = wachbieg_data.x[2];
 
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val, 0, sq(x0) - x1 + a));
+  SLEQP_CALL(sleqp_vec_push(cons_val, 0, sq(x0) - x1 + a));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val, 1, x0 - x2 - b));
+  SLEQP_CALL(sleqp_vec_push(cons_val, 1, x0 - x2 - b));
 
   return SLEQP_OKAY;
 }
@@ -126,17 +126,17 @@ wachbieg_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 static SLEQP_RETCODE
 wachbieg_hess_prod(SleqpFunc* func,
                    const double* obj_dual,
-                   const SleqpSparseVec* direction,
-                   const SleqpSparseVec* cons_duals,
-                   SleqpSparseVec* product,
+                   const SleqpVec* direction,
+                   const SleqpVec* cons_duals,
+                   SleqpVec* product,
                    void* func_data)
 {
-  const double d0 = sleqp_sparse_vector_value_at(direction, 0);
-  const double m  = sleqp_sparse_vector_value_at(cons_duals, 0);
+  const double d0 = sleqp_vec_value_at(direction, 0);
+  const double m  = sleqp_vec_value_at(cons_duals, 0);
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(product, 1));
+  SLEQP_CALL(sleqp_vec_reserve(product, 1));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(product, 0, 2. * d0 * m));
+  SLEQP_CALL(sleqp_vec_push(product, 0, 2. * d0 * m));
 
   return SLEQP_OKAY;
 }
@@ -160,50 +160,46 @@ wachbieg_setup()
                                 wachbieg_num_constraints,
                                 NULL));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&wachbieg_var_lb, wachbieg_num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&wachbieg_var_lb, wachbieg_num_variables));
 
   {
     double values[3] = {-inf, 0., 0.};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(wachbieg_var_lb,
-                                             values,
-                                             wachbieg_num_variables,
-                                             0.));
+    ASSERT_CALL(sleqp_vec_set_from_raw(wachbieg_var_lb,
+                                       values,
+                                       wachbieg_num_variables,
+                                       0.));
   }
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&wachbieg_var_ub, wachbieg_num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&wachbieg_var_ub, wachbieg_num_variables));
 
   {
     double values[3] = {inf, inf, inf};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(wachbieg_var_ub,
-                                             values,
-                                             wachbieg_num_variables,
-                                             0.));
+    ASSERT_CALL(sleqp_vec_set_from_raw(wachbieg_var_ub,
+                                       values,
+                                       wachbieg_num_variables,
+                                       0.));
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&wachbieg_cons_lb,
-                                               wachbieg_num_constraints));
-
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&wachbieg_cons_ub,
-                                               wachbieg_num_constraints));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&wachbieg_cons_lb, wachbieg_num_constraints));
 
   ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&wachbieg_initial, wachbieg_num_variables));
+    sleqp_vec_create_empty(&wachbieg_cons_ub, wachbieg_num_constraints));
+
+  ASSERT_CALL(sleqp_vec_create_full(&wachbieg_initial, wachbieg_num_variables));
 
   {
     double values[3] = {-2., 1., 1.};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(wachbieg_initial,
-                                             values,
-                                             wachbieg_num_variables,
-                                             0.));
+    ASSERT_CALL(sleqp_vec_set_from_raw(wachbieg_initial,
+                                       values,
+                                       wachbieg_num_variables,
+                                       0.));
   }
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&wachbieg_optimal, wachbieg_num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&wachbieg_optimal, wachbieg_num_variables));
 
   // Note: This is not unique...
   // General solutions: [x1, x2, x3] with
@@ -211,24 +207,24 @@ wachbieg_setup()
   {
     double values[3] = {1., 0., .5};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(wachbieg_optimal,
-                                             values,
-                                             wachbieg_num_variables,
-                                             0.));
+    ASSERT_CALL(sleqp_vec_set_from_raw(wachbieg_optimal,
+                                       values,
+                                       wachbieg_num_variables,
+                                       0.));
   }
 }
 
 void
 wachbieg_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_optimal));
-  ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_initial));
+  ASSERT_CALL(sleqp_vec_free(&wachbieg_optimal));
+  ASSERT_CALL(sleqp_vec_free(&wachbieg_initial));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_cons_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&wachbieg_cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&wachbieg_cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_var_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&wachbieg_var_lb));
+  ASSERT_CALL(sleqp_vec_free(&wachbieg_var_ub));
+  ASSERT_CALL(sleqp_vec_free(&wachbieg_var_lb));
 
   ASSERT_CALL(sleqp_func_release(&wachbieg_func));
 }

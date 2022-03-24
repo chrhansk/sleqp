@@ -18,7 +18,7 @@ struct SleqpQuasiNewton
 
 static SLEQP_RETCODE
 quasi_newton_func_set_value(SleqpFunc* func,
-                            SleqpSparseVec* x,
+                            SleqpVec* x,
                             SLEQP_VALUE_REASON reason,
                             bool* reject,
                             int* obj_grad_nnz,
@@ -50,9 +50,7 @@ quasi_newton_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-quasi_newton_func_obj_grad(SleqpFunc* func,
-                           SleqpSparseVec* obj_grad,
-                           void* func_data)
+quasi_newton_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
@@ -62,9 +60,7 @@ quasi_newton_func_obj_grad(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-quasi_newton_func_cons_val(SleqpFunc* func,
-                           SleqpSparseVec* cons_val,
-                           void* func_data)
+quasi_newton_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 {
   SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
@@ -88,9 +84,9 @@ quasi_newton_func_cons_jac(SleqpFunc* func,
 static SLEQP_RETCODE
 quasi_newton_func_hess_prod(SleqpFunc* func,
                             const double* obj_dual,
-                            const SleqpSparseVec* direction,
-                            const SleqpSparseVec* cons_duals,
-                            SleqpSparseVec* product,
+                            const SleqpVec* direction,
+                            const SleqpVec* cons_duals,
+                            SleqpVec* product,
                             void* func_data)
 {
   SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
@@ -156,7 +152,7 @@ SLEQP_RETCODE
 sleqp_quasi_newton_push(SleqpQuasiNewton* quasi_newton,
                         const SleqpIterate* old_iterate,
                         const SleqpIterate* new_iterate,
-                        const SleqpSparseVec* multipliers)
+                        const SleqpVec* multipliers)
 {
   SLEQP_CALL(sleqp_timer_start(quasi_newton->update_timer));
 
@@ -180,8 +176,8 @@ sleqp_quasi_newton_reset(SleqpQuasiNewton* quasi_newton)
 
 SLEQP_RETCODE
 sleqp_quasi_newton_hess_prod(SleqpQuasiNewton* quasi_newton,
-                             const SleqpSparseVec* direction,
-                             SleqpSparseVec* product)
+                             const SleqpVec* direction,
+                             SleqpVec* product)
 {
   SLEQP_CALL(quasi_newton->callbacks
                .hess_prod(direction, product, quasi_newton->quasi_newton_data));

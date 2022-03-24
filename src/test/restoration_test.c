@@ -63,17 +63,16 @@ restoration_teardown()
 
 START_TEST(test_transform)
 {
-  SleqpSparseVec* restoration_primal;
+  SleqpVec* restoration_primal;
 
-  SleqpSparseVec* residuals;
-
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(
-    &restoration_primal,
-    sleqp_problem_num_vars(restoration_problem)));
+  SleqpVec* residuals;
 
   ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&residuals,
-                                     sleqp_problem_num_cons(problem)));
+    sleqp_vec_create_empty(&restoration_primal,
+                           sleqp_problem_num_vars(restoration_problem)));
+
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&residuals, sleqp_problem_num_cons(problem)));
 
   ASSERT_CALL(sleqp_feasibility_residuals(problem,
                                           sleqp_iterate_cons_val(iterate),
@@ -104,14 +103,14 @@ START_TEST(test_transform)
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
   ck_assert(sleqp_is_eq(sleqp_iterate_obj_val(restoration_iterate),
-                        .5 * sleqp_sparse_vector_norm_sq(residuals),
+                        .5 * sleqp_vec_norm_sq(residuals),
                         eps));
 
   ASSERT_CALL(sleqp_iterate_release(&restoration_iterate));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&residuals));
+  ASSERT_CALL(sleqp_vec_free(&residuals));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&restoration_primal));
+  ASSERT_CALL(sleqp_vec_free(&restoration_primal));
 }
 END_TEST
 
@@ -119,16 +118,15 @@ START_TEST(test_restore)
 {
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpSparseVec* transformed_primal;
-  SleqpSparseVec* restored_primal;
-
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(
-    &transformed_primal,
-    sleqp_problem_num_vars(restoration_problem)));
+  SleqpVec* transformed_primal;
+  SleqpVec* restored_primal;
 
   ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&restored_primal,
-                                     sleqp_problem_num_vars(problem)));
+    sleqp_vec_create_empty(&transformed_primal,
+                           sleqp_problem_num_vars(restoration_problem)));
+
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&restored_primal, sleqp_problem_num_vars(problem)));
 
   ASSERT_CALL(
     sleqp_restoration_problem_transform(problem,
@@ -140,30 +138,28 @@ START_TEST(test_restore)
                                                 transformed_primal,
                                                 restored_primal));
 
-  ck_assert(sleqp_sparse_vector_eq(sleqp_iterate_primal(iterate),
-                                   restored_primal,
-                                   zero_eps));
+  ck_assert(
+    sleqp_vec_eq(sleqp_iterate_primal(iterate), restored_primal, zero_eps));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&restored_primal));
+  ASSERT_CALL(sleqp_vec_free(&restored_primal));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&transformed_primal));
+  ASSERT_CALL(sleqp_vec_free(&transformed_primal));
 }
 END_TEST
 
 START_TEST(test_solve)
 {
-  SleqpSparseVec* initial;
-  SleqpSparseVec* residuals;
+  SleqpVec* initial;
+  SleqpVec* residuals;
   SleqpOptions* options;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(
-    &initial,
-    sleqp_problem_num_vars(restoration_problem)));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&initial,
+                           sleqp_problem_num_vars(restoration_problem)));
 
   ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&residuals,
-                                     sleqp_problem_num_cons(problem)));
+    sleqp_vec_create_empty(&residuals, sleqp_problem_num_cons(problem)));
 
   ASSERT_CALL(sleqp_options_create(&options));
 
@@ -187,7 +183,7 @@ START_TEST(test_solve)
 
   ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* transformed_solution = sleqp_iterate_primal(solution_iterate);
+  SleqpVec* transformed_solution = sleqp_iterate_primal(solution_iterate);
 
   ASSERT_CALL(sleqp_restoration_problem_restore(problem,
                                                 transformed_solution,
@@ -205,15 +201,15 @@ START_TEST(test_solve)
                                           residuals,
                                           NULL));
 
-  ck_assert(sleqp_is_zero(sleqp_sparse_vector_inf_norm(residuals), 1e-4));
+  ck_assert(sleqp_is_zero(sleqp_vec_inf_norm(residuals), 1e-4));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
   ASSERT_CALL(sleqp_options_release(&options));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&residuals));
+  ASSERT_CALL(sleqp_vec_free(&residuals));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&initial));
+  ASSERT_CALL(sleqp_vec_free(&initial));
 }
 END_TEST
 

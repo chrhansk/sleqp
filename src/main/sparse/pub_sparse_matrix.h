@@ -8,7 +8,7 @@
 
 #include "sleqp/export.h"
 #include "sleqp/pub_types.h"
-#include "sleqp/sparse/pub_sparse_vec.h"
+#include "sleqp/sparse/pub_vec.h"
 
 /**
  * A sparse matrix data structure.
@@ -128,9 +128,7 @@ sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
                          double value);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_push_vec(SleqpSparseMatrix* matrix,
-                             int col,
-                             SleqpSparseVec* vec);
+sleqp_sparse_matrix_push_vec(SleqpSparseMatrix* matrix, int col, SleqpVec* vec);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix, int col);

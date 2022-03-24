@@ -30,13 +30,13 @@ sleqp_eqp_solver_get_timer(SleqpEQPSolver* solver);
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_eqp_solver_add_violated_multipliers(SleqpEQPSolver* solver,
-                                          SleqpSparseVec* multipliers);
+                                          SleqpVec* multipliers);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_eqp_solver_compute_step(SleqpEQPSolver* solver,
-                              const SleqpSparseVec* multipliers,
-                              SleqpSparseVec* newton_step);
+                              const SleqpVec* multipliers,
+                              SleqpVec* newton_step);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

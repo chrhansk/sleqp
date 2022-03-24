@@ -2,7 +2,7 @@
 #define ROSENBROCK_FIXTURE_H
 
 #include "func.h"
-#include "sparse/sparse_vec.h"
+#include "sparse/vec.h"
 
 #include "test_common.h"
 
@@ -11,16 +11,16 @@ extern const int rosenbrock_num_constraints;
 
 extern SleqpFunc* rosenbrock_func;
 
-extern SleqpSparseVec* rosenbrock_var_lb;
-extern SleqpSparseVec* rosenbrock_var_ub;
-extern SleqpSparseVec* rosenbrock_cons_lb;
-extern SleqpSparseVec* rosenbrock_cons_ub;
-extern SleqpSparseVec* rosenbrock_initial;
-extern SleqpSparseVec* rosenbrock_optimal;
+extern SleqpVec* rosenbrock_var_lb;
+extern SleqpVec* rosenbrock_var_ub;
+extern SleqpVec* rosenbrock_cons_lb;
+extern SleqpVec* rosenbrock_cons_ub;
+extern SleqpVec* rosenbrock_initial;
+extern SleqpVec* rosenbrock_optimal;
 
 SLEQP_RETCODE
 rosenbrock_set(SleqpFunc* func,
-               SleqpSparseVec* x,
+               SleqpVec* x,
                SLEQP_VALUE_REASON reason,
                bool* reject,
                int* obj_grad_nnz,
@@ -32,24 +32,24 @@ SLEQP_RETCODE
 rosenbrock_obj_val(SleqpFunc* func, double* obj_val, void* func_data);
 
 SLEQP_RETCODE
-rosenbrock_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data);
+rosenbrock_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data);
 
 SLEQP_RETCODE
 rosenbrock_hess_prod(SleqpFunc* func,
                      const double* obj_dual,
-                     const SleqpSparseVec* direction,
-                     const SleqpSparseVec* cons_duals,
-                     SleqpSparseVec* product,
+                     const SleqpVec* direction,
+                     const SleqpVec* cons_duals,
+                     SleqpVec* product,
                      void* func_data);
 
 void
 rosenbrock_create(SleqpFunc** fstar,
-                  SleqpSparseVec** var_lbstar,
-                  SleqpSparseVec** var_ubstar,
-                  SleqpSparseVec** cons_lbstar,
-                  SleqpSparseVec** cons_ubstar,
-                  SleqpSparseVec** init_star,
-                  SleqpSparseVec** opt_star);
+                  SleqpVec** var_lbstar,
+                  SleqpVec** var_ubstar,
+                  SleqpVec** cons_lbstar,
+                  SleqpVec** cons_ubstar,
+                  SleqpVec** init_star,
+                  SleqpVec** opt_star);
 
 void
 rosenbrock_setup();

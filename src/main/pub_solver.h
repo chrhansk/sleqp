@@ -43,7 +43,7 @@ sleqp_solver_create(SleqpSolver** star,
                     SleqpProblem* problem,
                     SleqpParams* params,
                     SleqpOptions* options,
-                    SleqpSparseVec* primal,
+                    SleqpVec* primal,
                     SleqpScaling* scaling_data);
 
 /**
@@ -72,7 +72,7 @@ sleqp_solver_int_state(const SleqpSolver* solver,
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_solver_vec_state(const SleqpSolver* solver,
                        SLEQP_SOLVER_STATE_VEC value,
-                       SleqpSparseVec* result);
+                       SleqpVec* result);
 
 SLEQP_EXPORT
 const char*

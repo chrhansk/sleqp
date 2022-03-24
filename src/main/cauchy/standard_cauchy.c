@@ -203,10 +203,10 @@ create_cons_bounds(CauchyData* cauchy_data,
 {
   int k_c = 0, k_lb = 0, k_ub = 0;
 
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(cauchy_data->problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(cauchy_data->problem);
+  const SleqpVec* lb = sleqp_problem_cons_lb(cauchy_data->problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(cauchy_data->problem);
 
-  SleqpSparseVec* val = sleqp_iterate_cons_val(iterate);
+  SleqpVec* val = sleqp_iterate_cons_val(iterate);
 
   const double inf = sleqp_infinity();
 
@@ -269,11 +269,11 @@ create_var_bounds(CauchyData* cauchy_data,
                   int num_variables,
                   int num_constraints)
 {
-  SleqpSparseVec* x     = sleqp_iterate_primal(iterate);
+  SleqpVec* x           = sleqp_iterate_primal(iterate);
   SleqpProblem* problem = cauchy_data->problem;
 
-  const SleqpSparseVec* lb = sleqp_problem_vars_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_vars_ub(problem);
+  const SleqpVec* lb = sleqp_problem_vars_lb(problem);
+  const SleqpVec* ub = sleqp_problem_vars_ub(problem);
 
   const double trust_radius = cauchy_data->trust_radius;
 
@@ -336,7 +336,7 @@ create_var_bounds(CauchyData* cauchy_data,
 
 static SLEQP_RETCODE
 create_default_objective(CauchyData* cauchy_data,
-                         SleqpSparseVec* gradient,
+                         SleqpVec* gradient,
                          double penalty)
 {
   SleqpProblem* problem = cauchy_data->problem;
@@ -625,8 +625,8 @@ needs_reduced_resolve(CauchyData* cauchy_data, bool* resolve)
 
   const double* cons_dual = cauchy_data->cons_dual;
 
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
 
   int k_lb = 0, k_ub = 0;
 
@@ -728,7 +728,7 @@ restore_basis(CauchyData* cauchy_data,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_solve(SleqpSparseVec* gradient,
+standard_cauchy_solve(SleqpVec* gradient,
                       double penalty,
                       SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
                       void* data)
@@ -851,10 +851,10 @@ standard_cauchy_get_objective_value(double* objective_value, void* data)
 static SLEQP_RETCODE
 cauchy_working_set_add_vars(CauchyData* cauchy_data, SleqpIterate* iterate)
 {
-  SleqpProblem* problem    = cauchy_data->problem;
-  SleqpSparseVec* x        = sleqp_iterate_primal(iterate);
-  const SleqpSparseVec* lb = sleqp_problem_vars_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_vars_ub(problem);
+  SleqpProblem* problem = cauchy_data->problem;
+  SleqpVec* x           = sleqp_iterate_primal(iterate);
+  const SleqpVec* lb    = sleqp_problem_vars_lb(problem);
+  const SleqpVec* ub    = sleqp_problem_vars_ub(problem);
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
@@ -936,8 +936,8 @@ cauchy_working_set_add_cons(CauchyData* cauchy_data, SleqpIterate* iterate)
   SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
   SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
 
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
 
   for (int i = 0; i < num_constraints; ++i)
   {
@@ -1058,7 +1058,7 @@ standard_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_direction(SleqpSparseVec* direction, void* data)
+standard_cauchy_get_direction(SleqpVec* direction, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
@@ -1069,10 +1069,10 @@ standard_cauchy_get_direction(SleqpSparseVec* direction, void* data)
 
   const int num_variables = sleqp_problem_num_vars(cauchy_data->problem);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(direction,
-                                          cauchy_data->primal_values,
-                                          num_variables,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(direction,
+                                    cauchy_data->primal_values,
+                                    num_variables,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -1106,9 +1106,9 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
 
   // Check if trust region is active
   {
-    SleqpSparseVec* x        = sleqp_iterate_primal(iterate);
-    const SleqpSparseVec* lb = sleqp_problem_vars_lb(problem);
-    const SleqpSparseVec* ub = sleqp_problem_vars_ub(problem);
+    SleqpVec* x        = sleqp_iterate_primal(iterate);
+    const SleqpVec* lb = sleqp_problem_vars_lb(problem);
+    const SleqpVec* ub = sleqp_problem_vars_ub(problem);
 
     int k_x = 0, k_lb = 0, k_ub = 0;
 
@@ -1169,8 +1169,8 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
     SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
     SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
 
-    const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-    const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+    const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+    const SleqpVec* ub = sleqp_problem_cons_ub(problem);
 
     for (int i = 0; i < num_constraints; ++i)
     {
@@ -1220,7 +1220,7 @@ standard_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
  */
 static SLEQP_RETCODE
 trim_duals_to_working_set(const SLEQP_ACTIVE_STATE* states,
-                          SleqpSparseVec* duals,
+                          SleqpVec* duals,
                           double zero_eps)
 {
   int offset = 0;
@@ -1270,8 +1270,8 @@ trim_duals_to_working_set(const SLEQP_ACTIVE_STATE* states,
 
 static SLEQP_RETCODE
 standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
-                               SleqpSparseVec* cons_dual,
-                               SleqpSparseVec* vars_dual,
+                               SleqpVec* cons_dual,
+                               SleqpVec* vars_dual,
                                void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
@@ -1292,13 +1292,13 @@ standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
                                   cauchy_data->vars_dual,
                                   NULL));
 
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(vars_dual,
-                                            cauchy_data->vars_dual,
-                                            vars_dual->dim,
-                                            zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(vars_dual,
+                                      cauchy_data->vars_dual,
+                                      vars_dual->dim,
+                                      zero_eps));
 
     // Note: We rescale here since sign conventions vary...
-    SLEQP_CALL(sleqp_sparse_vector_scale(vars_dual, -1.));
+    SLEQP_CALL(sleqp_vec_scale(vars_dual, -1.));
 
     SLEQP_CALL(
       trim_duals_to_working_set(sleqp_working_set_var_states(working_set),
@@ -1314,13 +1314,13 @@ standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
                                   NULL,
                                   cauchy_data->vars_dual));
 
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_dual,
-                                            cauchy_data->vars_dual,
-                                            cons_dual->dim,
-                                            zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(cons_dual,
+                                      cauchy_data->vars_dual,
+                                      cons_dual->dim,
+                                      zero_eps));
 
     // Note: We rescale here since sign conventions vary...
-    SLEQP_CALL(sleqp_sparse_vector_scale(cons_dual, -1.));
+    SLEQP_CALL(sleqp_vec_scale(cons_dual, -1.));
 
     SLEQP_CALL(
       trim_duals_to_working_set(sleqp_working_set_cons_states(working_set),

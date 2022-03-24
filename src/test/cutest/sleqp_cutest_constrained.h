@@ -23,7 +23,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_cutest_eval_linear(SleqpFunc* func, SleqpSparseVec* linear);
+sleqp_cutest_eval_linear(SleqpFunc* func, SleqpVec* linear);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

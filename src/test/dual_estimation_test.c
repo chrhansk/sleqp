@@ -78,15 +78,15 @@ START_TEST(test_simply_constrained_dual_estimation)
                                    sleqp_iterate_cons_dual(iterate),
                                    sleqp_iterate_vars_dual(iterate)));
 
-  SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
+  SleqpVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
-  ck_assert(sleqp_sparse_vector_at(vars_dual, 0));
-  ck_assert(sleqp_sparse_vector_at(vars_dual, 1));
+  ck_assert(sleqp_vec_at(vars_dual, 0));
+  ck_assert(sleqp_vec_at(vars_dual, 1));
 
   double tolerance = 1e-8;
 
-  ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(vars_dual, 0), -2., tolerance));
-  ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(vars_dual, 1), -4., tolerance));
+  ck_assert(sleqp_is_eq(*sleqp_vec_at(vars_dual, 0), -2., tolerance));
+  ck_assert(sleqp_is_eq(*sleqp_vec_at(vars_dual, 1), -4., tolerance));
 
   ASSERT_CALL(sleqp_dual_estimation_release(&estimation_data));
 

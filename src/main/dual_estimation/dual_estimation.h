@@ -31,8 +31,8 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_estimate_duals(SleqpDualEstimation* estimation,
                      const SleqpIterate* iterate,
-                     SleqpSparseVec* cons_dual,
-                     SleqpSparseVec* vars_dual);
+                     SleqpVec* cons_dual,
+                     SleqpVec* vars_dual);
 
 void*
 sleqp_dual_estimation_data(SleqpDualEstimation* estimation);

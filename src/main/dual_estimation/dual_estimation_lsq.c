@@ -10,15 +10,15 @@ typedef struct
 
   SleqpAugJac* aug_jac;
 
-  SleqpSparseVec* solution;
-  SleqpSparseVec* neg_grad;
+  SleqpVec* solution;
+  SleqpVec* neg_grad;
 
 } EstimationData;
 
 static SLEQP_RETCODE
 estimate_duals_internal(const SleqpIterate* iterate,
-                        SleqpSparseVec* cons_dual,
-                        SleqpSparseVec* vars_dual,
+                        SleqpVec* cons_dual,
+                        SleqpVec* vars_dual,
                         void* data,
                         int* num_clipped_vars,
                         int* num_clipped_cons)
@@ -30,16 +30,15 @@ estimate_duals_internal(const SleqpIterate* iterate,
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  SleqpSparseVec* grad = sleqp_iterate_obj_grad(iterate);
+  SleqpVec* grad = sleqp_iterate_obj_grad(iterate);
 
-  SleqpSparseVec* dual_sol = estimation_data->solution;
-  SleqpSparseVec* neg_grad = estimation_data->neg_grad;
+  SleqpVec* dual_sol = estimation_data->solution;
+  SleqpVec* neg_grad = estimation_data->neg_grad;
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_resize(dual_sol, sleqp_working_set_size(working_set)));
+  SLEQP_CALL(sleqp_vec_resize(dual_sol, sleqp_working_set_size(working_set)));
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(grad, neg_grad));
-  SLEQP_CALL(sleqp_sparse_vector_scale(neg_grad, -1.));
+  SLEQP_CALL(sleqp_vec_copy(grad, neg_grad));
+  SLEQP_CALL(sleqp_vec_scale(neg_grad, -1.));
 
   SLEQP_CALL(sleqp_aug_jac_projection(estimation_data->aug_jac,
                                       neg_grad,
@@ -50,11 +49,11 @@ estimate_duals_internal(const SleqpIterate* iterate,
   *num_clipped_cons = 0;
 
   {
-    SLEQP_CALL(sleqp_sparse_vector_reserve(cons_dual, dual_sol->nnz));
-    SLEQP_CALL(sleqp_sparse_vector_reserve(vars_dual, dual_sol->nnz));
+    SLEQP_CALL(sleqp_vec_reserve(cons_dual, dual_sol->nnz));
+    SLEQP_CALL(sleqp_vec_reserve(vars_dual, dual_sol->nnz));
 
-    SLEQP_CALL(sleqp_sparse_vector_clear(cons_dual));
-    SLEQP_CALL(sleqp_sparse_vector_clear(vars_dual));
+    SLEQP_CALL(sleqp_vec_clear(cons_dual));
+    SLEQP_CALL(sleqp_vec_clear(vars_dual));
 
     for (int k = 0; k < dual_sol->nnz; ++k)
     {
@@ -74,7 +73,7 @@ estimate_duals_internal(const SleqpIterate* iterate,
         {
           if (dual_value > 0.)
           {
-            SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, dual_value));
+            SLEQP_CALL(sleqp_vec_push(vars_dual, index, dual_value));
           }
           else if (dual_value < 0.)
           {
@@ -85,7 +84,7 @@ estimate_duals_internal(const SleqpIterate* iterate,
         {
           if (dual_value < 0.)
           {
-            SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, dual_value));
+            SLEQP_CALL(sleqp_vec_push(vars_dual, index, dual_value));
           }
           else if (dual_value > 0.)
           {
@@ -96,7 +95,7 @@ estimate_duals_internal(const SleqpIterate* iterate,
         {
           assert(var_state == SLEQP_ACTIVE_BOTH);
 
-          SLEQP_CALL(sleqp_sparse_vector_push(vars_dual, index, dual_value));
+          SLEQP_CALL(sleqp_vec_push(vars_dual, index, dual_value));
         }
       }
       else
@@ -112,7 +111,7 @@ estimate_duals_internal(const SleqpIterate* iterate,
         {
           if (dual_value > 0.)
           {
-            SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, dual_value));
+            SLEQP_CALL(sleqp_vec_push(cons_dual, index, dual_value));
           }
           else if (dual_value < 0.)
           {
@@ -123,7 +122,7 @@ estimate_duals_internal(const SleqpIterate* iterate,
         {
           if (dual_value < 0.)
           {
-            SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, dual_value));
+            SLEQP_CALL(sleqp_vec_push(cons_dual, index, dual_value));
           }
           else if (dual_value > 0.)
           {
@@ -134,7 +133,7 @@ estimate_duals_internal(const SleqpIterate* iterate,
         {
           assert(cons_state == SLEQP_ACTIVE_BOTH);
 
-          SLEQP_CALL(sleqp_sparse_vector_push(cons_dual, index, dual_value));
+          SLEQP_CALL(sleqp_vec_push(cons_dual, index, dual_value));
         }
       }
     }
@@ -149,8 +148,8 @@ estimate_duals_internal(const SleqpIterate* iterate,
 
 static SLEQP_RETCODE
 estimate_duals_lsq(const SleqpIterate* iterate,
-                   SleqpSparseVec* cons_dual,
-                   SleqpSparseVec* vars_dual,
+                   SleqpVec* cons_dual,
+                   SleqpVec* vars_dual,
                    void* data)
 {
   int num_clipped_vars, num_clipped_cons;
@@ -167,8 +166,8 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_estimate_duals_lsq(SleqpDualEstimation* estimation,
                          const SleqpIterate* iterate,
-                         SleqpSparseVec* cons_dual,
-                         SleqpSparseVec* vars_dual,
+                         SleqpVec* cons_dual,
+                         SleqpVec* vars_dual,
                          int* num_clipped_vars,
                          int* num_clipped_cons)
 {
@@ -187,8 +186,8 @@ estimation_free(void* data)
 {
   EstimationData* estimation_data = (EstimationData*)data;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&estimation_data->solution));
-  SLEQP_CALL(sleqp_sparse_vector_free(&estimation_data->neg_grad));
+  SLEQP_CALL(sleqp_vec_free(&estimation_data->solution));
+  SLEQP_CALL(sleqp_vec_free(&estimation_data->neg_grad));
 
   SLEQP_CALL(sleqp_aug_jac_release(&estimation_data->aug_jac));
 
@@ -212,10 +211,9 @@ estimation_data_create(EstimationData** star,
 
   *estimation_data = (EstimationData){0};
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&estimation_data->solution, 0));
+  SLEQP_CALL(sleqp_vec_create_empty(&estimation_data->solution, 0));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&estimation_data->neg_grad, num_vars));
+  SLEQP_CALL(sleqp_vec_create_empty(&estimation_data->neg_grad, num_vars));
 
   SLEQP_CALL(sleqp_problem_capture(problem));
   estimation_data->problem = problem;

@@ -25,16 +25,14 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-aug_jac_min_norm_solution(const SleqpSparseVec* rhs,
-                          SleqpSparseVec* sol,
-                          void* data)
+aug_jac_min_norm_solution(const SleqpVec* rhs, SleqpVec* sol, void* data)
 {
   AugJacData* jacobian         = (AugJacData*)data;
   SleqpIterate* iterate        = jacobian->iterate;
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(sol));
-  SLEQP_CALL(sleqp_sparse_vector_reserve(sol, rhs->nnz));
+  SLEQP_CALL(sleqp_vec_clear(sol));
+  SLEQP_CALL(sleqp_vec_reserve(sol, rhs->nnz));
 
   for (int k = 0; k < rhs->nnz; ++k)
   {
@@ -44,7 +42,7 @@ aug_jac_min_norm_solution(const SleqpSparseVec* rhs,
 
     if (index == SLEQP_NONE)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(sol, j, value));
+      SLEQP_CALL(sleqp_vec_push(sol, j, value));
     }
   }
 
@@ -52,9 +50,9 @@ aug_jac_min_norm_solution(const SleqpSparseVec* rhs,
 }
 
 static SLEQP_RETCODE
-aug_jac_projection(const SleqpSparseVec* rhs,
-                   SleqpSparseVec* primal_sol,
-                   SleqpSparseVec* dual_sol,
+aug_jac_projection(const SleqpVec* rhs,
+                   SleqpVec* primal_sol,
+                   SleqpVec* dual_sol,
                    void* data)
 {
   AugJacData* jacobian         = (AugJacData*)data;
@@ -63,14 +61,14 @@ aug_jac_projection(const SleqpSparseVec* rhs,
 
   if (primal_sol)
   {
-    SLEQP_CALL(sleqp_sparse_vector_clear(primal_sol));
-    SLEQP_CALL(sleqp_sparse_vector_reserve(primal_sol, rhs->nnz));
+    SLEQP_CALL(sleqp_vec_clear(primal_sol));
+    SLEQP_CALL(sleqp_vec_reserve(primal_sol, rhs->nnz));
   }
 
   if (dual_sol)
   {
-    SLEQP_CALL(sleqp_sparse_vector_clear(dual_sol));
-    SLEQP_CALL(sleqp_sparse_vector_reserve(dual_sol, rhs->nnz));
+    SLEQP_CALL(sleqp_vec_clear(dual_sol));
+    SLEQP_CALL(sleqp_vec_reserve(dual_sol, rhs->nnz));
   }
 
   for (int k = 0; k < rhs->nnz; ++k)
@@ -83,14 +81,14 @@ aug_jac_projection(const SleqpSparseVec* rhs,
     {
       if (primal_sol)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(primal_sol, j, value));
+        SLEQP_CALL(sleqp_vec_push(primal_sol, j, value));
       }
     }
     else
     {
       if (dual_sol)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(dual_sol, index, value));
+        SLEQP_CALL(sleqp_vec_push(dual_sol, index, value));
       }
     }
   }

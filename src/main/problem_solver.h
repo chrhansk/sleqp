@@ -23,9 +23,9 @@ struct SleqpProblemSolver
 
   double* dense_cache;
 
-  SleqpSparseVec* primal_diff;
-  SleqpSparseVec* cons_dual_diff;
-  SleqpSparseVec* vars_dual_diff;
+  SleqpVec* primal_diff;
+  SleqpVec* cons_dual_diff;
+  SleqpVec* vars_dual_diff;
 
   SleqpIterate* iterate;
   SleqpIterate* trial_iterate;
@@ -90,12 +90,12 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
                             SleqpProblem* problem,
                             SleqpParams* params,
                             SleqpOptions* options,
-                            SleqpSparseVec* primal);
+                            SleqpVec* primal);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
-                                const SleqpSparseVec* primal);
+                                const SleqpVec* primal);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -179,7 +179,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solver,
                                    SLEQP_SOLVER_STATE_VEC value,
-                                   SleqpSparseVec* result);
+                                   SleqpVec* result);
 
 SLEQP_RETCODE
 sleqp_problem_solver_print_header(SleqpProblemSolver* solver);

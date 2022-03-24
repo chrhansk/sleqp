@@ -33,7 +33,7 @@ SleqpFunc* rosenbrock_lsq_func;
 
 static SLEQP_RETCODE
 rosenbrock_lsq_set(SleqpFunc* func,
-                   SleqpSparseVec* x,
+                   SleqpVec* x,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
                    int* obj_grad_nnz,
@@ -47,13 +47,13 @@ rosenbrock_lsq_set(SleqpFunc* func,
 
   RosenbrockData* data = (RosenbrockData*)func_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->x));
+  SLEQP_CALL(sleqp_vec_to_raw(x, data->x));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-rosenbrock_lsq_eval(SleqpFunc* func, SleqpSparseVec* residual, void* func_data)
+rosenbrock_lsq_eval(SleqpFunc* func, SleqpVec* residual, void* func_data)
 {
   assert(residual->dim == num_residuals);
 
@@ -65,19 +65,19 @@ rosenbrock_lsq_eval(SleqpFunc* func, SleqpSparseVec* residual, void* func_data)
   const double x0 = data->x[0];
   const double x1 = data->x[1];
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(residual, 2));
+  SLEQP_CALL(sleqp_vec_reserve(residual, 2));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(residual, 0, a - x0));
+  SLEQP_CALL(sleqp_vec_push(residual, 0, a - x0));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(residual, 1, sqrt(b) * (x1 - sq(x0))));
+  SLEQP_CALL(sleqp_vec_push(residual, 1, sqrt(b) * (x1 - sq(x0))));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
 rosenbrock_lsq_jac_forward(SleqpFunc* func,
-                           const SleqpSparseVec* forward_direction,
-                           SleqpSparseVec* product,
+                           const SleqpVec* forward_direction,
+                           SleqpVec* product,
                            void* func_data)
 {
   assert(forward_direction->dim == num_variables);
@@ -85,7 +85,7 @@ rosenbrock_lsq_jac_forward(SleqpFunc* func,
 
   RosenbrockData* data = (RosenbrockData*)func_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(forward_direction, data->d));
+  SLEQP_CALL(sleqp_vec_to_raw(forward_direction, data->d));
 
   const double b = data->b;
 
@@ -94,20 +94,19 @@ rosenbrock_lsq_jac_forward(SleqpFunc* func,
   const double d0 = data->d[0];
   const double d1 = data->d[1];
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(product, 2));
+  SLEQP_CALL(sleqp_vec_reserve(product, 2));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(product, 0, -1. * d0));
+  SLEQP_CALL(sleqp_vec_push(product, 0, -1. * d0));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_push(product, 1, sqrt(b) * (-2 * x0 * d0 + d1)));
+  SLEQP_CALL(sleqp_vec_push(product, 1, sqrt(b) * (-2 * x0 * d0 + d1)));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
 rosenbrock_lsq_jac_adjoint(SleqpFunc* func,
-                           const SleqpSparseVec* adjoint_direction,
-                           SleqpSparseVec* product,
+                           const SleqpVec* adjoint_direction,
+                           SleqpVec* product,
                            void* func_data)
 {
   assert(adjoint_direction->dim == num_residuals);
@@ -115,7 +114,7 @@ rosenbrock_lsq_jac_adjoint(SleqpFunc* func,
 
   RosenbrockData* data = (RosenbrockData*)func_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(adjoint_direction, data->d));
+  SLEQP_CALL(sleqp_vec_to_raw(adjoint_direction, data->d));
 
   const double b = data->b;
 
@@ -124,12 +123,11 @@ rosenbrock_lsq_jac_adjoint(SleqpFunc* func,
   const double d0 = data->d[0];
   const double d1 = data->d[1];
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(product, 2));
+  SLEQP_CALL(sleqp_vec_reserve(product, 2));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_push(product, 0, -1. * d0 - 2 * sqrt(b) * x0 * d1));
+  SLEQP_CALL(sleqp_vec_push(product, 0, -1. * d0 - 2 * sqrt(b) * x0 * d1));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(product, 1, sqrt(b) * d1));
+  SLEQP_CALL(sleqp_vec_push(product, 1, sqrt(b) * d1));
 
   return SLEQP_OKAY;
 }

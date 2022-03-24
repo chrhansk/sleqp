@@ -217,12 +217,11 @@ sleqp_ampl_report(SleqpProblem* problem,
 
   SLEQP_CALL(sleqp_alloc_array(&primal, num_vars));
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_iterate_primal(iterate), primal));
+  SLEQP_CALL(sleqp_vec_to_raw(sleqp_iterate_primal(iterate), primal));
 
   SLEQP_CALL(sleqp_alloc_array(&cons_dual, num_cons));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_to_raw(sleqp_iterate_cons_dual(iterate), cons_dual));
+  SLEQP_CALL(sleqp_vec_to_raw(sleqp_iterate_cons_dual(iterate), cons_dual));
 
   if (!sleqp_ampl_max_problem(asl))
   {

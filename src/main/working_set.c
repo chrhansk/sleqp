@@ -448,7 +448,7 @@ sleqp_working_set_valid(const SleqpWorkingSet* working_set)
 }
 
 static SLEQP_RETCODE
-supports_range(SleqpSparseVec* dual, SLEQP_ACTIVE_STATE* states, bool* supports)
+supports_range(SleqpVec* dual, SLEQP_ACTIVE_STATE* states, bool* supports)
 {
   *supports = true;
 
@@ -492,7 +492,7 @@ supports_range(SleqpSparseVec* dual, SLEQP_ACTIVE_STATE* states, bool* supports)
 
 SLEQP_RETCODE
 sleqp_working_set_supports_cons_dual(const SleqpWorkingSet* working_set,
-                                     SleqpSparseVec* cons_dual,
+                                     SleqpVec* cons_dual,
                                      bool* supports)
 {
   SleqpProblem* problem = working_set->problem;
@@ -507,7 +507,7 @@ sleqp_working_set_supports_cons_dual(const SleqpWorkingSet* working_set,
 
 SLEQP_RETCODE
 sleqp_working_set_supports_vars_dual(const SleqpWorkingSet* working_set,
-                                     SleqpSparseVec* vars_dual,
+                                     SleqpVec* vars_dual,
                                      bool* supports)
 {
   SleqpProblem* problem = working_set->problem;

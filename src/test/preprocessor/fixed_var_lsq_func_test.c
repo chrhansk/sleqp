@@ -10,14 +10,14 @@
 
 #include "preprocessor/fixed_var_func.h"
 
-SleqpSparseVec* residuals;
-SleqpSparseVec* fixed_residuals;
+SleqpVec* residuals;
+SleqpVec* fixed_residuals;
 
-SleqpSparseVec* forward;
-SleqpSparseVec* fixed_forward;
+SleqpVec* forward;
+SleqpVec* fixed_forward;
 
-SleqpSparseVec* adjoint;
-SleqpSparseVec* fixed_adjoint;
+SleqpVec* adjoint;
+SleqpVec* fixed_adjoint;
 
 SleqpParams* params;
 
@@ -27,7 +27,7 @@ double fixed_values[] = {1.};
 
 SleqpFunc* fixed_var_func;
 
-SleqpSparseVec* fixed_initial;
+SleqpVec* fixed_initial;
 
 void
 setup()
@@ -38,27 +38,21 @@ setup()
 
   ASSERT_CALL(sleqp_params_create(&params));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&residuals, rosenbrock_num_residuals));
-
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&fixed_residuals,
-                                               rosenbrock_num_residuals));
+  ASSERT_CALL(sleqp_vec_create_empty(&residuals, rosenbrock_num_residuals));
 
   ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&forward, rosenbrock_num_variables));
+    sleqp_vec_create_empty(&fixed_residuals, rosenbrock_num_residuals));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&fixed_forward,
+  ASSERT_CALL(sleqp_vec_create_full(&forward, rosenbrock_num_variables));
+
+  ASSERT_CALL(sleqp_vec_create_full(&fixed_forward,
                                     rosenbrock_num_variables - num_fixed));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&adjoint, rosenbrock_num_residuals));
+  ASSERT_CALL(sleqp_vec_create_full(&adjoint, rosenbrock_num_residuals));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&fixed_adjoint, rosenbrock_num_residuals));
+  ASSERT_CALL(sleqp_vec_create_full(&fixed_adjoint, rosenbrock_num_residuals));
 
-  fixed_values[0]
-    = sleqp_sparse_vector_value_at(rosenbrock_initial, fixed_indices[0]);
+  fixed_values[0] = sleqp_vec_value_at(rosenbrock_initial, fixed_indices[0]);
 
   ASSERT_CALL(sleqp_fixed_var_lsq_func_create(&fixed_var_func,
                                               rosenbrock_lsq_func,
@@ -67,16 +61,14 @@ setup()
                                               fixed_indices,
                                               fixed_values));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&fixed_initial,
+  ASSERT_CALL(sleqp_vec_create_full(&fixed_initial,
                                     rosenbrock_num_variables - num_fixed));
 
-  const double fixed_value
-    = sleqp_sparse_vector_value_at(rosenbrock_initial, 1);
+  const double fixed_value = sleqp_vec_value_at(rosenbrock_initial, 1);
 
   fixed_values[0] = fixed_value;
 
-  ASSERT_CALL(sleqp_sparse_vector_push(fixed_initial, 0, fixed_value));
+  ASSERT_CALL(sleqp_vec_push(fixed_initial, 0, fixed_value));
 
   bool reject;
 
@@ -106,18 +98,18 @@ setup()
 void
 teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_initial));
+  ASSERT_CALL(sleqp_vec_free(&fixed_initial));
 
   ASSERT_CALL(sleqp_func_release(&fixed_var_func));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_adjoint));
-  ASSERT_CALL(sleqp_sparse_vector_free(&adjoint));
+  ASSERT_CALL(sleqp_vec_free(&fixed_adjoint));
+  ASSERT_CALL(sleqp_vec_free(&adjoint));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_forward));
-  ASSERT_CALL(sleqp_sparse_vector_free(&forward));
+  ASSERT_CALL(sleqp_vec_free(&fixed_forward));
+  ASSERT_CALL(sleqp_vec_free(&forward));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_residuals));
-  ASSERT_CALL(sleqp_sparse_vector_free(&residuals));
+  ASSERT_CALL(sleqp_vec_free(&fixed_residuals));
+  ASSERT_CALL(sleqp_vec_free(&residuals));
 
   ASSERT_CALL(sleqp_params_release(&params));
 
@@ -134,7 +126,7 @@ START_TEST(test_residuals)
 
   ASSERT_CALL(sleqp_lsq_func_residuals(fixed_var_func, fixed_residuals));
 
-  ck_assert(sleqp_sparse_vector_eq(residuals, fixed_residuals, zero_eps));
+  ck_assert(sleqp_vec_eq(residuals, fixed_residuals, zero_eps));
 }
 END_TEST
 
@@ -142,23 +134,23 @@ START_TEST(test_jac_forward)
 {
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  ASSERT_CALL(sleqp_sparse_vector_push(forward, 1, 1.));
+  ASSERT_CALL(sleqp_vec_push(forward, 1, 1.));
 
   ASSERT_CALL(
     sleqp_lsq_func_jac_forward(rosenbrock_lsq_func, forward, adjoint));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(fixed_forward, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(fixed_forward, 0, 1.));
 
   ASSERT_CALL(
     sleqp_lsq_func_jac_forward(fixed_var_func, fixed_forward, fixed_adjoint));
 
-  ck_assert(sleqp_sparse_vector_eq(adjoint, fixed_adjoint, zero_eps));
+  ck_assert(sleqp_vec_eq(adjoint, fixed_adjoint, zero_eps));
 }
 END_TEST
 
 START_TEST(test_jac_adjoint)
 {
-  ASSERT_CALL(sleqp_sparse_vector_push(adjoint, 1, 1.));
+  ASSERT_CALL(sleqp_vec_push(adjoint, 1, 1.));
 
   ASSERT_CALL(
     sleqp_lsq_func_jac_adjoint(rosenbrock_lsq_func, adjoint, forward));
@@ -166,8 +158,8 @@ START_TEST(test_jac_adjoint)
   ASSERT_CALL(
     sleqp_lsq_func_jac_adjoint(fixed_var_func, adjoint, fixed_forward));
 
-  ck_assert(sleqp_sparse_vector_value_at(forward, 1)
-            == sleqp_sparse_vector_value_at(fixed_forward, 0));
+  ck_assert(sleqp_vec_value_at(forward, 1)
+            == sleqp_vec_value_at(fixed_forward, 0));
 }
 END_TEST
 

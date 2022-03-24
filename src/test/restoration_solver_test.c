@@ -68,9 +68,9 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
+  SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
-  ck_assert(sleqp_sparse_vector_eq(actual_solution, wachbieg_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, wachbieg_optimal, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 }

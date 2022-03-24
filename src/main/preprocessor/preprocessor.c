@@ -57,7 +57,7 @@ struct SleqpPreprocessor
   int* removed_linear_cons;
   int num_removed_linear_cons;
 
-  SleqpSparseVec* cache;
+  SleqpVec* cache;
 
   bool infeasible;
 
@@ -547,11 +547,11 @@ remove_redundant_constraints(SleqpPreprocessor* preprocessor)
   const double feas_eps
     = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEAS_TOL);
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_linear_lb(problem),
-                                        preprocessor->linear_lb));
+  SLEQP_CALL(sleqp_vec_to_raw(sleqp_problem_linear_lb(problem),
+                              preprocessor->linear_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_linear_ub(problem),
-                                        preprocessor->linear_ub));
+  SLEQP_CALL(sleqp_vec_to_raw(sleqp_problem_linear_ub(problem),
+                              preprocessor->linear_ub));
 
   SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
@@ -685,14 +685,13 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
   SLEQP_CALL(
     sleqp_alloc_array(&preprocessor->cons_state_dense, num_constraints));
 
+  SLEQP_CALL(sleqp_vec_create_empty(&preprocessor->cache, num_variables));
+
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&preprocessor->cache, num_variables));
+    sleqp_vec_to_raw(sleqp_problem_vars_lb(problem), preprocessor->var_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_vars_lb(problem),
-                                        preprocessor->var_lb));
-
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(sleqp_problem_vars_ub(problem),
-                                        preprocessor->var_ub));
+  SLEQP_CALL(
+    sleqp_vec_to_raw(sleqp_problem_vars_ub(problem), preprocessor->var_ub));
 
   SLEQP_CALL(fix_variables_by_bounds(preprocessor));
 
@@ -769,8 +768,8 @@ sleqp_preprocessor_transformed_problem(SleqpPreprocessor* preprocessor)
 
 SLEQP_RETCODE
 sleqp_preprocessor_transform_primal(SleqpPreprocessor* preprocessor,
-                                    const SleqpSparseVec* source,
-                                    SleqpSparseVec* target)
+                                    const SleqpVec* source,
+                                    SleqpVec* target)
 {
   SLEQP_CALL(sleqp_transformation_convert_primal(preprocessor->transformation,
                                                  source,
@@ -797,7 +796,7 @@ preprocessor_free(SleqpPreprocessor** star)
 
   SLEQP_CALL(sleqp_problem_release(&preprocessor->transformed_problem));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&preprocessor->cache));
+  SLEQP_CALL(sleqp_vec_free(&preprocessor->cache));
 
   sleqp_free(&preprocessor->removed_linear_cons);
 

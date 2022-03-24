@@ -1,6 +1,6 @@
 #cython: language_level=3
 
-cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpSparseVec* vec):
+cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpVec* vec):
   assert vec
   values = np.zeros((vec.dim,), dtype=np.float64)
 
@@ -10,10 +10,10 @@ cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpSparseVec* vec):
   return values
 
 cdef csleqp.SLEQP_RETCODE array_to_sleqp_sparse_vec(np.ndarray array,
-                                                    csleqp.SleqpSparseVec* vec) except csleqp.SLEQP_ERROR:
+                                                    csleqp.SleqpVec* vec) except csleqp.SLEQP_ERROR:
   assert vec != NULL
 
-  csleqp_call(csleqp.sleqp_sparse_vector_clear(vec))
+  csleqp_call(csleqp.sleqp_vec_clear(vec))
 
   if array is None:
     return csleqp.SLEQP_OKAY
@@ -22,11 +22,11 @@ cdef csleqp.SLEQP_RETCODE array_to_sleqp_sparse_vec(np.ndarray array,
 
   cdef int dim = array.shape[0]
 
-  csleqp_call(csleqp.sleqp_sparse_vector_reserve(vec, dim))
+  csleqp_call(csleqp.sleqp_vec_reserve(vec, dim))
 
   for i in range(dim):
     if array[i] != 0.:
-      csleqp_call(csleqp.sleqp_sparse_vector_push(vec,
+      csleqp_call(csleqp.sleqp_vec_push(vec,
                                                   i,
                                                   array[i]))
 

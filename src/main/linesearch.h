@@ -62,9 +62,9 @@ sleqp_linesearch_set_iterate(SleqpLineSearch* linesearch,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
-                             SleqpSparseVec* direction,
-                             const SleqpSparseVec* multipliers,
-                             SleqpSparseVec* hessian_direction,
+                             SleqpVec* direction,
+                             const SleqpVec* multipliers,
+                             SleqpVec* hessian_direction,
                              bool* full_step,
                              double* quadratic_merit_value);
 
@@ -93,26 +93,26 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
-                            const SleqpSparseVec* cauchy_step,
-                            const SleqpSparseVec* cauchy_hessian_step,
+                            const SleqpVec* cauchy_step,
+                            const SleqpVec* cauchy_hessian_step,
                             const double cauchy_quadratic_merit_value,
-                            const SleqpSparseVec* newton_step,
-                            const SleqpSparseVec* newton_hessian_step,
-                            const SleqpSparseVec* multipliers,
-                            SleqpSparseVec* trial_step,
+                            const SleqpVec* newton_step,
+                            const SleqpVec* newton_hessian_step,
+                            const SleqpVec* multipliers,
+                            SleqpVec* trial_step,
                             double* step_length,
                             double* trial_quadratic_merit_value);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
-                                  const SleqpSparseVec* cauchy_step,
-                                  const SleqpSparseVec* cauchy_hessian_step,
+                                  const SleqpVec* cauchy_step,
+                                  const SleqpVec* cauchy_hessian_step,
                                   const double cauchy_quadratic_merit_value,
-                                  const SleqpSparseVec* newton_step,
-                                  const SleqpSparseVec* newton_hessian_step,
-                                  const SleqpSparseVec* multipliers,
-                                  SleqpSparseVec* trial_step,
+                                  const SleqpVec* newton_step,
+                                  const SleqpVec* newton_hessian_step,
+                                  const SleqpVec* multipliers,
+                                  SleqpVec* trial_step,
                                   double* step_length,
                                   double* trial_quadratic_merit_value);
 

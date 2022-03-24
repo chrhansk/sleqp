@@ -40,7 +40,7 @@ delay()
 
 static SLEQP_RETCODE
 delay_func_set(SleqpFunc* func,
-               SleqpSparseVec* x,
+               SleqpVec* x,
                SLEQP_VALUE_REASON reason,
                bool* reject,
                int* obj_grad_nnz,
@@ -52,7 +52,7 @@ delay_func_set(SleqpFunc* func,
   *cons_val_nnz = 0;
   *cons_jac_nnz = 0;
 
-  sleqp_sparse_vector_value_at(x, value);
+  sleqp_vec_value_at(x, value);
 
   delay();
 
@@ -70,9 +70,9 @@ delay_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-delay_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+delay_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 1.));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 0, 1.));
 
   delay();
 
@@ -80,7 +80,7 @@ delay_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 }
 
 static SLEQP_RETCODE
-delay_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
+delay_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 {
   return SLEQP_OKAY;
 }
@@ -96,9 +96,9 @@ delay_func_cons_jac(SleqpFunc* func,
 static SLEQP_RETCODE
 delay_func_hess_prod(SleqpFunc* func,
                      const double* obj_dual,
-                     const SleqpSparseVec* direction,
-                     const SleqpSparseVec* cons_duals,
-                     SleqpSparseVec* result,
+                     const SleqpVec* direction,
+                     const SleqpVec* cons_duals,
+                     SleqpVec* result,
                      void* func_data)
 {
   return SLEQP_OKAY;
@@ -109,15 +109,15 @@ SleqpFunc* func;
 SleqpParams* params;
 SleqpOptions* options;
 
-SleqpSparseVec* var_lb;
-SleqpSparseVec* var_ub;
+SleqpVec* var_lb;
+SleqpVec* var_ub;
 
-SleqpSparseVec* cons_lb;
-SleqpSparseVec* cons_ub;
+SleqpVec* cons_lb;
+SleqpVec* cons_ub;
 
 SleqpProblem* problem;
 
-SleqpSparseVec* primal;
+SleqpVec* primal;
 
 void
 time_limit_setup()
@@ -137,11 +137,11 @@ time_limit_setup()
 
   ASSERT_CALL(sleqp_options_create(&options));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&var_lb, num_variables));
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&var_ub, num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&cons_lb, num_constraints));
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&cons_ub, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_empty(&cons_ub, num_constraints));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
@@ -151,21 +151,21 @@ time_limit_setup()
                                           cons_lb,
                                           cons_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&primal, num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&primal, num_variables));
 }
 
 void
 time_limit_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&primal));
+  ASSERT_CALL(sleqp_vec_free(&primal));
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_lb));
+  ASSERT_CALL(sleqp_vec_free(&var_ub));
+  ASSERT_CALL(sleqp_vec_free(&var_lb));
 
   ASSERT_CALL(sleqp_options_release(&options));
 

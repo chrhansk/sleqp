@@ -56,8 +56,8 @@ sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac, SleqpIterate* iterate)
 
 SLEQP_RETCODE
 sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
-                                const SleqpSparseVec* rhs,
-                                SleqpSparseVec* sol)
+                                const SleqpVec* rhs,
+                                SleqpVec* sol)
 {
   assert(sol->dim == sleqp_problem_num_vars(aug_jac->problem));
 
@@ -72,9 +72,9 @@ sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
 
 SLEQP_RETCODE
 sleqp_aug_jac_projection(SleqpAugJac* aug_jac,
-                         const SleqpSparseVec* rhs,
-                         SleqpSparseVec* primal_sol,
-                         SleqpSparseVec* dual_sol)
+                         const SleqpVec* rhs,
+                         SleqpVec* primal_sol,
+                         SleqpVec* dual_sol)
 {
   if (primal_sol)
   {

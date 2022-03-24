@@ -84,9 +84,9 @@ ampl_main(int argc, char* argv[])
 
   SLEQP_CALL(sleqp_ampl_problem_create(&problem, data, params, halt_on_error));
 
-  SleqpSparseVec* x;
-  SLEQP_CALL(sleqp_sparse_vector_create(&x, n_var, 0));
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(x, data->x, n_var, zero_eps));
+  SleqpVec* x;
+  SLEQP_CALL(sleqp_vec_create(&x, n_var, 0));
+  SLEQP_CALL(sleqp_vec_set_from_raw(x, data->x, n_var, zero_eps));
 
   SLEQP_CALL(sleqp_solver_create(&solver, problem, params, options, x, NULL));
 
@@ -102,7 +102,7 @@ ampl_main(int argc, char* argv[])
   // free data
   SLEQP_CALL(sleqp_solver_release(&solver));
   SLEQP_CALL(sleqp_problem_release(&problem));
-  SLEQP_CALL(sleqp_sparse_vector_free(&x));
+  SLEQP_CALL(sleqp_vec_free(&x));
   ASL_free(&asl);
   SLEQP_CALL(sleqp_ampl_data_free(&data));
 

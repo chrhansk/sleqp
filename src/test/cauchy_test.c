@@ -19,11 +19,11 @@ const int num_constraints = 0;
 
 SleqpFunc* linfunc;
 
-SleqpSparseVec* var_lb;
-SleqpSparseVec* var_ub;
-SleqpSparseVec* cons_lb;
-SleqpSparseVec* cons_ub;
-SleqpSparseVec* x;
+SleqpVec* var_lb;
+SleqpVec* var_ub;
+SleqpVec* cons_lb;
+SleqpVec* cons_ub;
+SleqpVec* x;
 
 typedef struct LinFuncData
 {
@@ -32,15 +32,15 @@ typedef struct LinFuncData
 
 LinFuncData* func_data;
 
-SleqpSparseVec* linfunc_var_lb;
-SleqpSparseVec* linfunc_var_ub;
-SleqpSparseVec* linfunc_cons_lb;
-SleqpSparseVec* linfunc_cons_ub;
-SleqpSparseVec* linfunc_x;
+SleqpVec* linfunc_var_lb;
+SleqpVec* linfunc_var_ub;
+SleqpVec* linfunc_cons_lb;
+SleqpVec* linfunc_cons_ub;
+SleqpVec* linfunc_x;
 
 static SLEQP_RETCODE
 linfunc_set(SleqpFunc* func,
-            SleqpSparseVec* x,
+            SleqpVec* x,
             SLEQP_VALUE_REASON reason,
             bool* reject,
             int* obj_grad_nnz,
@@ -80,15 +80,13 @@ linfunc_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-linfunc_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+linfunc_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   assert(obj_grad->dim == 2);
 
   obj_grad->nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 1.));
-
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, 1.));
+  SLEQP_CALL(sleqp_vec_fill(obj_grad, 1.));
 
   return SLEQP_OKAY;
 }
@@ -96,9 +94,9 @@ linfunc_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 static SLEQP_RETCODE
 linfunc_hess_prod(SleqpFunc* func,
                   const double* obj_dual,
-                  const SleqpSparseVec* direction,
-                  const SleqpSparseVec* cons_duals,
-                  SleqpSparseVec* product,
+                  const SleqpVec* direction,
+                  const SleqpVec* cons_duals,
+                  SleqpVec* product,
                   void* func_data)
 {
   product->nnz = 0;
@@ -128,40 +126,34 @@ unconstrained_setup()
                                 num_constraints,
                                 func_data));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&linfunc_var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&linfunc_var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_fill(linfunc_var_lb, -inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(linfunc_var_lb, 0, -inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(linfunc_var_lb, 1, -inf));
+  ASSERT_CALL(sleqp_vec_create_full(&linfunc_var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_fill(linfunc_var_ub, inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&linfunc_var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&linfunc_cons_lb, num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(linfunc_var_ub, 0, inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(linfunc_var_ub, 1, inf));
+  ASSERT_CALL(sleqp_vec_create_empty(&linfunc_cons_ub, num_constraints));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&linfunc_cons_lb, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_full(&linfunc_x, num_variables));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&linfunc_cons_ub, num_constraints));
-
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&linfunc_x, num_variables));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(linfunc_x, 0, 0.));
-  ASSERT_CALL(sleqp_sparse_vector_push(linfunc_x, 1, 0.));
+  ASSERT_CALL(sleqp_vec_push(linfunc_x, 0, 0.));
+  ASSERT_CALL(sleqp_vec_push(linfunc_x, 1, 0.));
 }
 
 void
 unconstrained_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&linfunc_x));
+  ASSERT_CALL(sleqp_vec_free(&linfunc_x));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linfunc_cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&linfunc_cons_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linfunc_cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&linfunc_cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linfunc_var_ub));
+  ASSERT_CALL(sleqp_vec_free(&linfunc_var_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linfunc_var_lb));
+  ASSERT_CALL(sleqp_vec_free(&linfunc_var_lb));
 
   ASSERT_CALL(sleqp_func_release(&linfunc));
 
@@ -176,7 +168,7 @@ START_TEST(test_unconstrained_cauchy_direction)
   SleqpOptions* options;
   SleqpProblem* problem;
   SleqpIterate* iterate;
-  SleqpSparseVec* direction;
+  SleqpVec* direction;
   SleqpCauchy* cauchy_data;
 
   double penalty_parameter = 1., trust_radius = 1.5;
@@ -198,7 +190,7 @@ START_TEST(test_unconstrained_cauchy_direction)
   ASSERT_CALL(
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&direction, 0, 0));
+  ASSERT_CALL(sleqp_vec_create(&direction, 0, 0));
 
   ASSERT_CALL(
     sleqp_standard_cauchy_create(&cauchy_data, problem, params, options));
@@ -214,21 +206,17 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ck_assert_int_eq(direction->dim, 2);
 
-  ck_assert(sleqp_sparse_vector_at(direction, 0));
-  ck_assert(sleqp_sparse_vector_at(direction, 1));
+  ck_assert(sleqp_vec_at(direction, 0));
+  ck_assert(sleqp_vec_at(direction, 1));
 
   double tolerance = 1e-8;
 
-  ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(direction, 0),
-                        -trust_radius,
-                        tolerance));
-  ck_assert(sleqp_is_eq(*sleqp_sparse_vector_at(direction, 1),
-                        -trust_radius,
-                        tolerance));
+  ck_assert(sleqp_is_eq(*sleqp_vec_at(direction, 0), -trust_radius, tolerance));
+  ck_assert(sleqp_is_eq(*sleqp_vec_at(direction, 1), -trust_radius, tolerance));
 
   ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&direction));
+  ASSERT_CALL(sleqp_vec_free(&direction));
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 

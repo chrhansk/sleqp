@@ -48,11 +48,11 @@ update_penalty(SleqpTrialPointSolver* solver)
 
     if (solver->allow_global_reset)
     {
-      const SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
-      const SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
+      const SleqpVec* cons_dual = sleqp_iterate_cons_dual(iterate);
+      const SleqpVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
-      const double cons_dual_norm = sleqp_sparse_vector_inf_norm(cons_dual);
-      const double vars_dual_norm = sleqp_sparse_vector_inf_norm(vars_dual);
+      const double cons_dual_norm = sleqp_vec_inf_norm(cons_dual);
+      const double vars_dual_norm = sleqp_vec_inf_norm(vars_dual);
 
       const double dual_norm = SLEQP_MAX(cons_dual_norm, vars_dual_norm);
 
@@ -265,8 +265,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 
 #endif
 
-    SLEQP_CALL(
-      sleqp_sparse_vector_copy(solver->cauchy_direction, solver->cauchy_step));
+    SLEQP_CALL(sleqp_vec_copy(solver->cauchy_direction, solver->cauchy_step));
 
     if (!quadratic_model)
     {

@@ -3,7 +3,7 @@
 
 #include "pub_sparse_matrix.h"
 
-#include "sparse_vec.h"
+#include "vec.h"
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -22,7 +22,7 @@ sleqp_sparse_matrix_vstack(const SleqpSparseMatrix* first,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
-                                   const SleqpSparseVec* vector,
+                                   const SleqpVec* vector,
                                    double* result);
 
 /**
@@ -38,9 +38,9 @@ sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* matrix,
-                                         const SleqpSparseVec* vector,
+                                         const SleqpVec* vector,
                                          double eps,
-                                         SleqpSparseVec* result);
+                                         SleqpVec* result);
 
 /**
  * Returns a pointer to the entry to the given element of the matrix
@@ -70,7 +70,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_sparse_matrix_col(const SleqpSparseMatrix* matrix,
                         int col,
-                        SleqpSparseVec* vec);
+                        SleqpVec* vec);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

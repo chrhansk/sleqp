@@ -8,12 +8,12 @@ extern const int wachbieg_num_constraints;
 
 extern SleqpFunc* wachbieg_func;
 
-extern SleqpSparseVec* wachbieg_var_lb;
-extern SleqpSparseVec* wachbieg_var_ub;
-extern SleqpSparseVec* wachbieg_cons_lb;
-extern SleqpSparseVec* wachbieg_cons_ub;
-extern SleqpSparseVec* wachbieg_initial;
-extern SleqpSparseVec* wachbieg_optimal;
+extern SleqpVec* wachbieg_var_lb;
+extern SleqpVec* wachbieg_var_ub;
+extern SleqpVec* wachbieg_cons_lb;
+extern SleqpVec* wachbieg_cons_ub;
+extern SleqpVec* wachbieg_initial;
+extern SleqpVec* wachbieg_optimal;
 
 extern SleqpFunc* wachbieg_func;
 

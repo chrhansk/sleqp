@@ -166,9 +166,9 @@ update_trust_radii(SleqpProblemSolver* solver,
 {
   SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
-  SleqpSparseVec* cauchy_step
+  SleqpVec* cauchy_step
     = sleqp_trial_point_solver_cauchy_step(trial_point_solver);
-  SleqpSparseVec* trial_step
+  SleqpVec* trial_step
     = sleqp_trial_point_solver_trial_step(trial_point_solver);
 
   const SleqpOptions* options = solver->options;
@@ -184,8 +184,8 @@ update_trust_radii(SleqpProblemSolver* solver,
       && sleqp_options_bool_value(options,
                                   SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
 
-  const double trial_step_infnorm  = sleqp_sparse_vector_inf_norm(trial_step);
-  const double cauchy_step_infnorm = sleqp_sparse_vector_inf_norm(cauchy_step);
+  const double trial_step_infnorm  = sleqp_vec_inf_norm(trial_step);
+  const double cauchy_step_infnorm = sleqp_vec_inf_norm(cauchy_step);
 
   if (perform_newton_step)
   {
@@ -235,35 +235,33 @@ compute_step_lengths(SleqpProblemSolver* solver)
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_primal(iterate),
-                                            sleqp_iterate_primal(trial_iterate),
-                                            1.,
-                                            -1,
-                                            zero_eps,
-                                            solver->primal_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_primal(iterate),
+                                  sleqp_iterate_primal(trial_iterate),
+                                  1.,
+                                  -1,
+                                  zero_eps,
+                                  solver->primal_diff));
 
-  solver->primal_diff_norm = sleqp_sparse_vector_norm(solver->primal_diff);
+  solver->primal_diff_norm = sleqp_vec_norm(solver->primal_diff);
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_add_scaled(sleqp_iterate_cons_dual(iterate),
-                                   sleqp_iterate_cons_dual(trial_iterate),
-                                   1.,
-                                   -1,
-                                   zero_eps,
-                                   solver->cons_dual_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_cons_dual(iterate),
+                                  sleqp_iterate_cons_dual(trial_iterate),
+                                  1.,
+                                  -1,
+                                  zero_eps,
+                                  solver->cons_dual_diff));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_add_scaled(sleqp_iterate_vars_dual(iterate),
-                                   sleqp_iterate_vars_dual(trial_iterate),
-                                   1.,
-                                   -1,
-                                   zero_eps,
-                                   solver->vars_dual_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_vars_dual(iterate),
+                                  sleqp_iterate_vars_dual(trial_iterate),
+                                  1.,
+                                  -1,
+                                  zero_eps,
+                                  solver->vars_dual_diff));
 
   solver->dual_diff_norm = 0.;
 
-  solver->dual_diff_norm += sleqp_sparse_vector_norm_sq(solver->cons_dual_diff);
-  solver->dual_diff_norm += sleqp_sparse_vector_norm_sq(solver->vars_dual_diff);
+  solver->dual_diff_norm += sleqp_vec_norm_sq(solver->cons_dual_diff);
+  solver->dual_diff_norm += sleqp_vec_norm_sq(solver->vars_dual_diff);
 
   solver->dual_diff_norm = sqrt(solver->dual_diff_norm);
 
@@ -346,9 +344,9 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  assert(sleqp_sparse_vector_is_boxed(sleqp_iterate_primal(iterate),
-                                      sleqp_problem_vars_lb(problem),
-                                      sleqp_problem_vars_ub(problem)));
+  assert(sleqp_vec_is_boxed(sleqp_iterate_primal(iterate),
+                            sleqp_problem_vars_lb(problem),
+                            sleqp_problem_vars_ub(problem)));
 
   const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
@@ -398,10 +396,10 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 
   bool step_accepted = !reject_step;
 
-  SleqpSparseVec* trial_step
+  SleqpVec* trial_step
     = sleqp_trial_point_solver_trial_step(trial_point_solver);
 
-  const double trial_step_norm = sleqp_sparse_vector_norm(trial_step);
+  const double trial_step_norm = sleqp_vec_norm(trial_step);
 
   double reduction_ratio = SLEQP_NONE;
 
@@ -489,14 +487,16 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                                                          trial_iterate,
                                                          &reject_step));
 
-      SleqpSparseVec* soc_step
+      SleqpVec* soc_step
         = sleqp_trial_point_solver_soc_step(trial_point_solver);
 
-      const double soc_step_norm = sleqp_sparse_vector_norm(soc_step);
+      const double soc_step_norm = sleqp_vec_norm(soc_step);
 
       step_accepted = !reject_step;
 
-      if (sleqp_is_gt(soc_step_norm, soc_safeguard_factor * solver->trust_radius, eps))
+      if (sleqp_is_gt(soc_step_norm,
+                      soc_safeguard_factor * solver->trust_radius,
+                      eps))
       {
         sleqp_log_debug("Rejecting SOC step due to large norm (%e)",
                         soc_step_norm);

@@ -18,21 +18,19 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* aug_jac)
 }
 
 static SLEQP_RETCODE
-aug_jac_min_norm_solution(const SleqpSparseVec* rhs,
-                          SleqpSparseVec* sol,
-                          void* aug_jac)
+aug_jac_min_norm_solution(const SleqpVec* rhs, SleqpVec* sol, void* aug_jac)
 {
   assert(rhs->dim == 0);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(sol));
+  SLEQP_CALL(sleqp_vec_clear(sol));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-aug_jac_projection(const SleqpSparseVec* rhs,
-                   SleqpSparseVec* primal_sol,
-                   SleqpSparseVec* dual_sol,
+aug_jac_projection(const SleqpVec* rhs,
+                   SleqpVec* primal_sol,
+                   SleqpVec* dual_sol,
                    void* aug_jac)
 {
 
@@ -47,7 +45,7 @@ aug_jac_projection(const SleqpSparseVec* rhs,
 
   if (primal_sol)
   {
-    SLEQP_CALL(sleqp_sparse_vector_copy(rhs, primal_sol));
+    SLEQP_CALL(sleqp_vec_copy(rhs, primal_sol));
   }
 
   return SLEQP_OKAY;

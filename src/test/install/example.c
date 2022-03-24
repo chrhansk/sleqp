@@ -14,7 +14,7 @@
 
 SLEQP_RETCODE
 test_set(SleqpFunc* func,
-         SleqpSparseVec* x,
+         SleqpVec* x,
          SLEQP_VALUE_REASON reason,
          bool* reject,
          int* obj_grad_nnz,
@@ -38,7 +38,7 @@ test_obj_val(SleqpFunc* func, double* obj, void* func_data)
 }
 
 SLEQP_RETCODE
-test_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+test_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   return SLEQP_OKAY;
 }
@@ -46,9 +46,9 @@ test_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 SLEQP_RETCODE
 test_hess_prod(SleqpFunc* func,
                const double* obj_dual,
-               const SleqpSparseVec* direction,
-               const SleqpSparseVec* cons_duals,
-               SleqpSparseVec* product,
+               const SleqpVec* direction,
+               const SleqpVec* cons_duals,
+               SleqpVec* product,
                void* func_data)
 {
   return SLEQP_OKAY;

@@ -72,20 +72,20 @@ START_TEST(newton_wide_step)
   SleqpWorkingStep* working_step;
   SleqpEQPSolver* newton_solver;
 
-  SleqpSparseVec* expected_step;
-  SleqpSparseVec* actual_step;
+  SleqpVec* expected_step;
+  SleqpVec* actual_step;
 
   SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 2));
+  ASSERT_CALL(sleqp_vec_create(&expected_step, num_variables, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_step, 0, -1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_step, 1, -2.));
+  ASSERT_CALL(sleqp_vec_push(expected_step, 0, -1.));
+  ASSERT_CALL(sleqp_vec_push(expected_step, 1, -2.));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&actual_step, num_variables, 0));
+  ASSERT_CALL(sleqp_vec_create(&actual_step, num_variables, 0));
 
   double penalty_parameter = 1.;
   double trust_radius      = 10.;
@@ -119,7 +119,7 @@ START_TEST(newton_wide_step)
                                             sleqp_iterate_cons_dual(iterate),
                                             actual_step));
 
-  ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
+  ck_assert(sleqp_vec_eq(expected_step, actual_step, tolerance));
 
   ASSERT_CALL(sleqp_eqp_solver_release(&newton_solver));
 
@@ -129,9 +129,9 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_factorization_release(&factorization));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&actual_step));
+  ASSERT_CALL(sleqp_vec_free(&actual_step));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&expected_step));
+  ASSERT_CALL(sleqp_vec_free(&expected_step));
 }
 END_TEST
 
@@ -140,20 +140,20 @@ START_TEST(newton_small_step)
   SleqpWorkingStep* working_step;
   SleqpEQPSolver* newton_solver;
 
-  SleqpSparseVec* expected_step;
-  SleqpSparseVec* actual_step;
+  SleqpVec* expected_step;
+  SleqpVec* actual_step;
 
   SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 2));
+  ASSERT_CALL(sleqp_vec_create(&expected_step, num_variables, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_step, 0, -0.44721359549995793));
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_step, 1, -0.89442719099991586));
+  ASSERT_CALL(sleqp_vec_push(expected_step, 0, -0.44721359549995793));
+  ASSERT_CALL(sleqp_vec_push(expected_step, 1, -0.89442719099991586));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&actual_step, num_variables, 0));
+  ASSERT_CALL(sleqp_vec_create(&actual_step, num_variables, 0));
 
   double penalty_parameter = 1.;
   double trust_radius      = 1.;
@@ -187,7 +187,7 @@ START_TEST(newton_small_step)
                                             sleqp_iterate_cons_dual(iterate),
                                             actual_step));
 
-  ck_assert(sleqp_sparse_vector_eq(expected_step, actual_step, tolerance));
+  ck_assert(sleqp_vec_eq(expected_step, actual_step, tolerance));
 
   ASSERT_CALL(sleqp_eqp_solver_release(&newton_solver));
 
@@ -197,9 +197,9 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_factorization_release(&factorization));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&actual_step));
+  ASSERT_CALL(sleqp_vec_free(&actual_step));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&expected_step));
+  ASSERT_CALL(sleqp_vec_free(&expected_step));
 }
 END_TEST
 

@@ -55,9 +55,9 @@ solve_and_release_solver(SleqpSolver* solver)
 
   ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_primal(iterate);
+  SleqpVec* actual_solution = sleqp_iterate_primal(iterate);
 
-  ck_assert(sleqp_sparse_vector_eq(actual_solution, constrained_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, constrained_optimal, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 }

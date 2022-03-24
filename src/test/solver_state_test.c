@@ -51,10 +51,10 @@ solver_state_teardown()
 
 START_TEST(test_stationarity_residuals)
 {
-  SleqpSparseVec* stationarity_residuals;
+  SleqpVec* stationarity_residuals;
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&stationarity_residuals,
-                                               constrained_num_variables));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&stationarity_residuals, constrained_num_variables));
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
@@ -67,20 +67,19 @@ START_TEST(test_stationarity_residuals)
 
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
-  ck_assert(sleqp_is_leq(sleqp_sparse_vector_inf_norm(stationarity_residuals),
-                         stat_eps,
-                         eps));
+  ck_assert(
+    sleqp_is_leq(sleqp_vec_inf_norm(stationarity_residuals), stat_eps, eps));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&stationarity_residuals));
+  ASSERT_CALL(sleqp_vec_free(&stationarity_residuals));
 }
 END_TEST
 
 START_TEST(test_feasibility_residuals)
 {
-  SleqpSparseVec* feasibility_residuals;
+  SleqpVec* feasibility_residuals;
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&feasibility_residuals,
-                                               constrained_num_constraints));
+  ASSERT_CALL(sleqp_vec_create_empty(&feasibility_residuals,
+                                     constrained_num_constraints));
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
@@ -93,20 +92,19 @@ START_TEST(test_feasibility_residuals)
 
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
-  ck_assert(sleqp_is_leq(sleqp_sparse_vector_inf_norm(feasibility_residuals),
-                         feas_eps,
-                         eps));
+  ck_assert(
+    sleqp_is_leq(sleqp_vec_inf_norm(feasibility_residuals), feas_eps, eps));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&feasibility_residuals));
+  ASSERT_CALL(sleqp_vec_free(&feasibility_residuals));
 }
 END_TEST
 
 START_TEST(test_slackness_residuals)
 {
-  SleqpSparseVec* slackness_residuals;
+  SleqpVec* slackness_residuals;
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&slackness_residuals,
-                                               constrained_num_constraints));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&slackness_residuals, constrained_num_constraints));
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
@@ -119,11 +117,10 @@ START_TEST(test_slackness_residuals)
 
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
-  ck_assert(sleqp_is_leq(sleqp_sparse_vector_inf_norm(slackness_residuals),
-                         slack_eps,
-                         eps));
+  ck_assert(
+    sleqp_is_leq(sleqp_vec_inf_norm(slackness_residuals), slack_eps, eps));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&slackness_residuals));
+  ASSERT_CALL(sleqp_vec_free(&slackness_residuals));
 }
 END_TEST
 

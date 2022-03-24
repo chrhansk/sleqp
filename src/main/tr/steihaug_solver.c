@@ -26,13 +26,13 @@ typedef struct
   double time_limit;
   int max_iter;
 
-  SleqpSparseVec* d;  // projected descent direction
-  SleqpSparseVec* Bd; // Hessian-times-direction product
-  SleqpSparseVec* g;  // projected residual
-  SleqpSparseVec* r;  // full-space residual
-  SleqpSparseVec* z;  // CG iterate
+  SleqpVec* d;  // projected descent direction
+  SleqpVec* Bd; // Hessian-times-direction product
+  SleqpVec* g;  // projected residual
+  SleqpVec* r;  // full-space residual
+  SleqpVec* z;  // CG iterate
 
-  SleqpSparseVec* sparse_cache;
+  SleqpVec* sparse_cache;
 
   double min_rayleigh, max_rayleigh;
 
@@ -51,12 +51,12 @@ steihaug_solver_free(void** star)
 
   SLEQP_CALL(sleqp_timer_free(&solver->timer));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->sparse_cache));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->z));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->r));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->g));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->Bd));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->d));
+  SLEQP_CALL(sleqp_vec_free(&solver->sparse_cache));
+  SLEQP_CALL(sleqp_vec_free(&solver->z));
+  SLEQP_CALL(sleqp_vec_free(&solver->r));
+  SLEQP_CALL(sleqp_vec_free(&solver->g));
+  SLEQP_CALL(sleqp_vec_free(&solver->Bd));
+  SLEQP_CALL(sleqp_vec_free(&solver->d));
 
   SLEQP_CALL(sleqp_params_release(&solver->params));
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
@@ -68,10 +68,10 @@ steihaug_solver_free(void** star)
 
 static SLEQP_RETCODE
 steihaug_collect_rayleigh(SleqpSteihaugSolver* solver,
-                          const SleqpSparseVec* direction,
-                          const SleqpSparseVec* product)
+                          const SleqpVec* direction,
+                          const SleqpVec* product)
 {
-  const double dir_normsq = sleqp_sparse_vector_norm_sq(direction);
+  const double dir_normsq = sleqp_vec_norm_sq(direction);
 
   if (dir_normsq == 0.)
   {
@@ -80,7 +80,7 @@ steihaug_collect_rayleigh(SleqpSteihaugSolver* solver,
 
   double dot_product;
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(direction, product, &dot_product));
+  SLEQP_CALL(sleqp_vec_dot(direction, product, &dot_product));
 
   const double cur_rayleigh = dot_product / dir_normsq;
 
@@ -106,9 +106,9 @@ steihaug_solver_rayleigh(double* min_rayleigh,
 
 static SLEQP_RETCODE
 steihaug_solver_solve(SleqpAugJac* jacobian,
-                      const SleqpSparseVec* multipliers,
-                      const SleqpSparseVec* gradient,
-                      SleqpSparseVec* newton_step,
+                      const SleqpVec* multipliers,
+                      const SleqpVec* gradient,
+                      SleqpVec* newton_step,
                       double trust_radius,
                       double* tr_dual,
                       double time_limit,
@@ -150,27 +150,27 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 
   SLEQP_CALL(sleqp_timer_start(solver->timer));
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(newton_step));
+  SLEQP_CALL(sleqp_vec_clear(newton_step));
 
   // set z0 such that P[z0] = 0
-  SLEQP_CALL(sleqp_sparse_vector_clear(solver->z));
+  SLEQP_CALL(sleqp_vec_clear(solver->z));
 
   // set r0 = nabla f_k
-  SLEQP_CALL(sleqp_sparse_vector_copy(gradient, solver->r));
+  SLEQP_CALL(sleqp_vec_copy(gradient, solver->r));
 
   // set g0 = P[r0]
   SLEQP_CALL(sleqp_aug_jac_projection(jacobian, solver->r, solver->g, NULL));
 
   // set d0 = -P[r0] = - P[nabla f_k] = -g0
-  SLEQP_CALL(sleqp_sparse_vector_copy(solver->g, solver->d));
-  SLEQP_CALL(sleqp_sparse_vector_scale(solver->d, -1.));
+  SLEQP_CALL(sleqp_vec_copy(solver->g, solver->d));
+  SLEQP_CALL(sleqp_vec_scale(solver->d, -1.));
 
   // if ||d0|| < eps_k: return p_k = P[z_0] = 0
-  d_nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
+  d_nrm_sq = sleqp_vec_norm_sq(solver->d);
 
   if (d_nrm_sq < rel_tol_sq)
   {
-    SLEQP_CALL(sleqp_sparse_vector_copy(solver->z, newton_step));
+    SLEQP_CALL(sleqp_vec_copy(solver->z, newton_step));
     SLEQP_CALL(sleqp_timer_stop(solver->timer));
     return SLEQP_OKAY;
   }
@@ -178,7 +178,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
   // compute r_j^T * g_j
   double r_dot_g;
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(solver->r, solver->g, &r_dot_g));
+  SLEQP_CALL(sleqp_vec_dot(solver->r, solver->g, &r_dot_g));
 
   bool reached_time_limit = false;
 
@@ -204,7 +204,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
                       iteration);
 
       // return p_k = z_{j+1}
-      SLEQP_CALL(sleqp_sparse_vector_copy(solver->z, newton_step));
+      SLEQP_CALL(sleqp_vec_copy(solver->z, newton_step));
       break;
     }
 
@@ -218,7 +218,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
     SLEQP_CALL(steihaug_collect_rayleigh(solver, solver->d, solver->Bd));
 
     // compute d_j^T * (B_k * d_j)
-    SLEQP_CALL(sleqp_sparse_vector_dot(solver->d, solver->Bd, &dBd));
+    SLEQP_CALL(sleqp_vec_dot(solver->d, solver->Bd, &dBd));
 
     // if d_j^T * B_k * d_j <= 0:
     if (dBd <= 0.)
@@ -229,9 +229,9 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 
       // solving for tau results in tau = - z^T * d / ||d||^2 \pm Delta / ||d||
       double z_dot_d;
-      SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->d, &z_dot_d));
+      SLEQP_CALL(sleqp_vec_dot(solver->z, solver->d, &z_dot_d));
 
-      const double d_nrm_sq = sleqp_sparse_vector_norm_sq(solver->d);
+      const double d_nrm_sq = sleqp_vec_norm_sq(solver->d);
       const double z_nrm_sq = z_curr_nrm_sq;
 
       assert(d_nrm_sq > 0.);
@@ -244,8 +244,8 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
       const double tau_max = 1. / d_nrm_sq * (-z_dot_d + sqrt(inner));
 
       // compute dot products g^T * d and z^T * (B * d)
-      SLEQP_CALL(sleqp_sparse_vector_dot(gradient, solver->d, &gd));
-      SLEQP_CALL(sleqp_sparse_vector_dot(solver->z, solver->Bd, &zBd));
+      SLEQP_CALL(sleqp_vec_dot(gradient, solver->d, &gd));
+      SLEQP_CALL(sleqp_vec_dot(solver->z, solver->Bd, &zBd));
 
       const double tau_min_obj = tau_min * ((gd + zBd) + 0.5 * tau_min * dBd);
       const double tau_max_obj = tau_max * ((gd + zBd) + 0.5 * tau_max * dBd);
@@ -256,15 +256,15 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
       const double tau = (tau_min_obj < tau_max_obj) ? tau_min : tau_max;
 
       // return p_k
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->z,
-                                                solver->d,
-                                                1.,
-                                                tau,
-                                                zero_eps,
-                                                newton_step));
+      SLEQP_CALL(sleqp_vec_add_scaled(solver->z,
+                                      solver->d,
+                                      1.,
+                                      tau,
+                                      zero_eps,
+                                      newton_step));
 
       sleqp_num_assert(
-        sleqp_is_eq(sleqp_sparse_vector_norm(newton_step), trust_radius, eps));
+        sleqp_is_eq(sleqp_vec_norm(newton_step), trust_radius, eps));
 
       sleqp_log_debug(
         "CG solver found negative curvature direction after %d iterations",
@@ -277,14 +277,14 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
     alpha = r_dot_g / dBd;
 
     // set z_{j+1} = z_j + alpha_j * d_j
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->z,
-                                              solver->d,
-                                              1.,
-                                              alpha,
-                                              zero_eps,
-                                              solver->sparse_cache));
+    SLEQP_CALL(sleqp_vec_add_scaled(solver->z,
+                                    solver->d,
+                                    1.,
+                                    alpha,
+                                    zero_eps,
+                                    solver->sparse_cache));
 
-    z_next_nrm_sq = sleqp_sparse_vector_norm_sq(solver->sparse_cache);
+    z_next_nrm_sq = sleqp_vec_norm_sq(solver->sparse_cache);
 
     // if ||z_{j+1}|| >= Delta_k:
 
@@ -302,42 +302,42 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
       break;
     }
 
-    SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache, solver->z));
+    SLEQP_CALL(sleqp_vec_copy(solver->sparse_cache, solver->z));
 
     z_curr_nrm_sq = z_next_nrm_sq;
 
     // set r_{j+1} = r_j + alpha_j * (B_k * d_j)
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->r,
-                                              solver->Bd,
-                                              1.,
-                                              alpha,
-                                              zero_eps,
-                                              solver->sparse_cache));
+    SLEQP_CALL(sleqp_vec_add_scaled(solver->r,
+                                    solver->Bd,
+                                    1.,
+                                    alpha,
+                                    zero_eps,
+                                    solver->sparse_cache));
 
-    SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache, solver->r));
+    SLEQP_CALL(sleqp_vec_copy(solver->sparse_cache, solver->r));
 
     // set g_{j+1} = P[r_{j+1}]
     SLEQP_CALL(sleqp_aug_jac_projection(jacobian, solver->r, solver->g, NULL));
 
     // set beta_{j+1} = r_{j+1}^T * g_{j+1} / r_j^T * g_j
     beta = 1. / r_dot_g;
-    SLEQP_CALL(sleqp_sparse_vector_dot(solver->r, solver->g, &r_dot_g));
+    SLEQP_CALL(sleqp_vec_dot(solver->r, solver->g, &r_dot_g));
     beta *= r_dot_g;
 
     // set d_{j+1} = - g_{j+1} + beta_{j+1} * d_j
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->g,
-                                              solver->d,
-                                              -1.,
-                                              beta,
-                                              zero_eps,
-                                              solver->sparse_cache));
+    SLEQP_CALL(sleqp_vec_add_scaled(solver->g,
+                                    solver->d,
+                                    -1.,
+                                    beta,
+                                    zero_eps,
+                                    solver->sparse_cache));
 
-    SLEQP_CALL(sleqp_sparse_vector_copy(solver->sparse_cache, solver->d));
+    SLEQP_CALL(sleqp_vec_copy(solver->sparse_cache, solver->d));
   }
   // end loop
 
   sleqp_num_assert(
-    sleqp_is_leq(sleqp_sparse_vector_norm(newton_step), trust_radius, eps));
+    sleqp_is_leq(sleqp_vec_norm(newton_step), trust_radius, eps));
 
   SLEQP_CALL(sleqp_timer_stop(solver->timer));
 
@@ -372,13 +372,12 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
   solver->max_iter
     = sleqp_options_int_value(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->d, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->Bd, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->g, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->r, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->z, num_variables));
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->sparse_cache, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->d, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->Bd, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->g, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->r, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->z, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->sparse_cache, num_variables));
 
   SLEQP_CALL(sleqp_timer_create(&solver->timer));
 

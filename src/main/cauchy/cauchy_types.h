@@ -21,7 +21,7 @@ typedef SLEQP_RETCODE (*SLEQP_CAUCHY_SET_TRUST_RADIUS)(double trust_radius,
                                                        void* cauchy_data);
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_SOLVE)(
-  SleqpSparseVec* gradient,
+  SleqpVec* gradient,
   double penalty,
   SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
   void* cauchy_data);
@@ -33,7 +33,7 @@ typedef SLEQP_RETCODE (*SLEQP_CAUCHY_GET_OBJECTIVE_VALUE)(
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_GET_WORKING_SET)(SleqpIterate* iterate,
                                                       void* cauchy_data);
 
-typedef SLEQP_RETCODE (*SLEQP_CAUCHY_GET_DIRECTION)(SleqpSparseVec* direction,
+typedef SLEQP_RETCODE (*SLEQP_CAUCHY_GET_DIRECTION)(SleqpVec* direction,
                                                     void* cauchy_data);
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_LOCALLY_INFEASIBLE)(
@@ -42,8 +42,8 @@ typedef SLEQP_RETCODE (*SLEQP_CAUCHY_LOCALLY_INFEASIBLE)(
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_ESTIMATE_DUALS)(
   const SleqpWorkingSet* working_set,
-  SleqpSparseVec* cons_dual,
-  SleqpSparseVec* vars_dual,
+  SleqpVec* cons_dual,
+  SleqpVec* vars_dual,
   void* cauchy_data);
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_SET_TIME_LIMIT)(double time_limit,

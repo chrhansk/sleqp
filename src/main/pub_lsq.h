@@ -9,7 +9,7 @@
 #include "sleqp/export.h"
 #include "sleqp/pub_iterate.h"
 #include "sleqp/pub_problem.h"
-#include "sleqp/sparse/pub_sparse_vec.h"
+#include "sleqp/sparse/pub_vec.h"
 
 /**
  * A least-squares function consists of a residual \f$ r : \mathbb{R}^n \to
@@ -31,7 +31,7 @@
  *
  */
 typedef SLEQP_RETCODE (*SLEQP_LSQ_RESIDUALS)(SleqpFunc* func,
-                                             SleqpSparseVec* residual,
+                                             SleqpVec* residual,
                                              void* func_data);
 
 /**
@@ -46,8 +46,8 @@ typedef SLEQP_RETCODE (*SLEQP_LSQ_RESIDUALS)(SleqpFunc* func,
  */
 typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(
   SleqpFunc* func,
-  const SleqpSparseVec* forward_direction,
-  SleqpSparseVec* product,
+  const SleqpVec* forward_direction,
+  SleqpVec* product,
   void* func_data);
 
 /**
@@ -62,8 +62,8 @@ typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(
  */
 typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_ADJOINT)(
   SleqpFunc* func,
-  const SleqpSparseVec* adjoint_direction,
-  SleqpSparseVec* product,
+  const SleqpVec* adjoint_direction,
+  SleqpVec* product,
   void* func_data);
 
 typedef struct

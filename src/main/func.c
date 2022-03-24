@@ -31,7 +31,7 @@ struct SleqpFunc
 
   SleqpTimer* hess_timer;
 
-  SleqpSparseVec* product;
+  SleqpVec* product;
 
   SleqpHessStruct* hess_struct;
 };
@@ -68,7 +68,7 @@ sleqp_func_create(SleqpFunc** fstar,
 
   SLEQP_CALL(sleqp_timer_create(&func->hess_timer));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&func->product, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&func->product, num_variables));
 
   SLEQP_CALL(
     sleqp_hess_struct_create(&func->hess_struct, num_variables, false));
@@ -78,15 +78,15 @@ sleqp_func_create(SleqpFunc** fstar,
 
 SLEQP_RETCODE
 sleqp_func_set_value(SleqpFunc* func,
-                     SleqpSparseVec* x,
+                     SleqpVec* x,
                      SLEQP_VALUE_REASON reason,
                      bool* reject,
                      int* obj_grad_nnz,
                      int* cons_val_nnz,
                      int* cons_jac_nnz)
 {
-  assert(sleqp_sparse_vector_is_valid(x));
-  assert(sleqp_sparse_vector_is_finite(x));
+  assert(sleqp_vec_is_valid(x));
+  assert(sleqp_vec_is_finite(x));
 
   *reject = false;
 
@@ -129,11 +129,11 @@ sleqp_func_obj_val(SleqpFunc* func, double* obj_val)
 }
 
 SLEQP_RETCODE
-sleqp_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad)
+sleqp_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad)
 {
   if (obj_grad)
   {
-    SLEQP_CALL(sleqp_sparse_vector_clear(obj_grad));
+    SLEQP_CALL(sleqp_vec_clear(obj_grad));
 
     SLEQP_CALL(sleqp_timer_start(func->grad_timer));
 
@@ -143,10 +143,10 @@ sleqp_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad)
 
     SLEQP_CALL(sleqp_timer_stop(func->grad_timer));
 
-    sleqp_assert_msg(sleqp_sparse_vector_is_valid(obj_grad),
+    sleqp_assert_msg(sleqp_vec_is_valid(obj_grad),
                      "Returned invalid function gradient");
 
-    sleqp_assert_msg(sleqp_sparse_vector_is_finite(obj_grad),
+    sleqp_assert_msg(sleqp_vec_is_finite(obj_grad),
                      "Returned function gradient is not all-finite");
   }
 
@@ -154,13 +154,13 @@ sleqp_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad)
 }
 
 SLEQP_RETCODE
-sleqp_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val)
+sleqp_func_cons_val(SleqpFunc* func, SleqpVec* cons_val)
 {
   const int num_constraints = sleqp_func_num_cons(func);
 
   if (cons_val)
   {
-    SLEQP_CALL(sleqp_sparse_vector_clear(cons_val));
+    SLEQP_CALL(sleqp_vec_clear(cons_val));
 
     if ((num_constraints != 0))
     {
@@ -173,10 +173,10 @@ sleqp_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val)
       SLEQP_CALL(sleqp_timer_stop(func->cons_val_timer));
     }
 
-    sleqp_assert_msg(sleqp_sparse_vector_is_valid(cons_val),
+    sleqp_assert_msg(sleqp_vec_is_valid(cons_val),
                      "Returned invalid constraint values");
 
-    sleqp_assert_msg(sleqp_sparse_vector_is_finite(cons_val),
+    sleqp_assert_msg(sleqp_vec_is_finite(cons_val),
                      "Returned constraint values are not all-finite");
   }
 
@@ -216,8 +216,8 @@ sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac)
 SLEQP_RETCODE
 sleqp_func_eval(SleqpFunc* func,
                 double* obj_val,
-                SleqpSparseVec* obj_grad,
-                SleqpSparseVec* cons_val,
+                SleqpVec* obj_grad,
+                SleqpVec* cons_val,
                 SleqpSparseMatrix* cons_jac)
 {
   SLEQP_CALL(sleqp_func_obj_val(func, obj_val));
@@ -355,21 +355,21 @@ sleqp_func_get_hess_timer(SleqpFunc* func)
 SLEQP_RETCODE
 sleqp_func_hess_prod(SleqpFunc* func,
                      const double* obj_dual,
-                     const SleqpSparseVec* direction,
-                     const SleqpSparseVec* cons_duals,
-                     SleqpSparseVec* product)
+                     const SleqpVec* direction,
+                     const SleqpVec* cons_duals,
+                     SleqpVec* product)
 {
   assert(func->num_variables == direction->dim);
   assert(func->num_variables == product->dim);
   assert(func->num_constraints == cons_duals->dim);
 
-  assert(sleqp_sparse_vector_is_valid(direction));
-  assert(sleqp_sparse_vector_is_finite(direction));
+  assert(sleqp_vec_is_valid(direction));
+  assert(sleqp_vec_is_finite(direction));
 
-  assert(sleqp_sparse_vector_is_valid(cons_duals));
-  assert(sleqp_sparse_vector_is_finite(cons_duals));
+  assert(sleqp_vec_is_valid(cons_duals));
+  assert(sleqp_vec_is_finite(cons_duals));
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(product));
+  SLEQP_CALL(sleqp_vec_clear(product));
 
   SLEQP_CALL(sleqp_timer_start(func->hess_timer));
 
@@ -381,10 +381,10 @@ sleqp_func_hess_prod(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_timer_stop(func->hess_timer));
 
-  sleqp_assert_msg(sleqp_sparse_vector_is_valid(product),
+  sleqp_assert_msg(sleqp_vec_is_valid(product),
                    "Returned invalid Hessian product");
 
-  sleqp_assert_msg(sleqp_sparse_vector_is_finite(product),
+  sleqp_assert_msg(sleqp_vec_is_finite(product),
                    "Returned Hessian product is not all-finite");
 
   return SLEQP_OKAY;
@@ -393,19 +393,16 @@ sleqp_func_hess_prod(SleqpFunc* func,
 SLEQP_RETCODE
 sleqp_func_hess_bilinear(SleqpFunc* func,
                          const double* obj_dual,
-                         const SleqpSparseVec* direction,
-                         const SleqpSparseVec* cons_duals,
+                         const SleqpVec* direction,
+                         const SleqpVec* cons_duals,
                          double* bilinear_prod)
 {
-  SLEQP_CALL(sleqp_sparse_vector_clear(func->product));
+  SLEQP_CALL(sleqp_vec_clear(func->product));
 
-  SLEQP_CALL(sleqp_func_hess_prod(func,
-                                  obj_dual,
-                                  direction,
-                                  cons_duals,
-                                  func->product));
+  SLEQP_CALL(
+    sleqp_func_hess_prod(func, obj_dual, direction, cons_duals, func->product));
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(direction, func->product, bilinear_prod));
+  SLEQP_CALL(sleqp_vec_dot(direction, func->product, bilinear_prod));
 
   return SLEQP_OKAY;
 }
@@ -440,7 +437,7 @@ func_free(SleqpFunc** fstar)
   SLEQP_CALL(sleqp_timer_free(&func->val_timer));
   SLEQP_CALL(sleqp_timer_free(&func->set_timer));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&func->product));
+  SLEQP_CALL(sleqp_vec_free(&func->product));
 
   SLEQP_CALL(sleqp_hess_struct_release(&func->hess_struct));
 

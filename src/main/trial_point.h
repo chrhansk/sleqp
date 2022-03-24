@@ -24,23 +24,23 @@ typedef struct
   SleqpParams* params;
   SleqpOptions* options;
 
-  SleqpSparseVec* cauchy_direction;
+  SleqpVec* cauchy_direction;
 
-  SleqpSparseVec* cauchy_step;
-  SleqpSparseVec* cauchy_hessian_step;
+  SleqpVec* cauchy_step;
+  SleqpVec* cauchy_hessian_step;
 
-  SleqpSparseVec* estimation_residuals;
+  SleqpVec* estimation_residuals;
 
-  SleqpSparseVec* newton_step;
-  SleqpSparseVec* newton_hessian_step;
+  SleqpVec* newton_step;
+  SleqpVec* newton_hessian_step;
 
-  SleqpSparseVec* soc_step;
+  SleqpVec* soc_step;
 
-  SleqpSparseVec* trial_step;
+  SleqpVec* trial_step;
 
-  SleqpSparseVec* multipliers;
+  SleqpVec* multipliers;
 
-  SleqpSparseVec* initial_trial_point;
+  SleqpVec* initial_trial_point;
 
   SleqpMerit* merit;
 
@@ -137,16 +137,16 @@ SLEQP_RETCODE
 sleqp_trial_point_solver_penalty_info(SleqpTrialPointSolver* solver,
                                       bool* performed_global_reset);
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_trial_point_solver_multipliers(SleqpTrialPointSolver* solver);
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_trial_point_solver_cauchy_step(SleqpTrialPointSolver* solver);
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_trial_point_solver_trial_step(SleqpTrialPointSolver* solver);
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_trial_point_solver_soc_step(SleqpTrialPointSolver* solver);
 
 SLEQP_NODISCARD

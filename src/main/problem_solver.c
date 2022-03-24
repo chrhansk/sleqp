@@ -13,7 +13,7 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
                             SleqpProblem* problem,
                             SleqpParams* params,
                             SleqpOptions* options,
-                            SleqpSparseVec* primal)
+                            SleqpVec* primal)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -40,25 +40,22 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
   SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
                                SLEQP_MAX(num_variables, num_constraints)));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->primal_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->primal_diff, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->cons_dual_diff, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->cons_dual_diff, num_constraints));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->vars_dual_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->vars_dual_diff, num_variables));
 
   SLEQP_CALL(sleqp_iterate_create(&solver->iterate, solver->problem, primal));
 
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_clip(primal,
-                                      sleqp_problem_vars_lb(solver->problem),
-                                      sleqp_problem_vars_ub(solver->problem),
-                                      zero_eps,
-                                      sleqp_iterate_primal(solver->iterate)));
+  SLEQP_CALL(sleqp_vec_clip(primal,
+                            sleqp_problem_vars_lb(solver->problem),
+                            sleqp_problem_vars_ub(solver->problem),
+                            zero_eps,
+                            sleqp_iterate_primal(solver->iterate)));
 
   SLEQP_CALL(sleqp_iterate_create(&solver->trial_iterate,
                                   solver->problem,
@@ -94,14 +91,13 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
 
 SLEQP_RETCODE
 sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
-                                const SleqpSparseVec* primal)
+                                const SleqpVec* primal)
 {
   const int num_variables = sleqp_problem_num_vars(solver->problem);
 
   assert(primal->dim == num_variables);
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_copy(primal, sleqp_iterate_primal(solver->iterate)));
+  SLEQP_CALL(sleqp_vec_copy(primal, sleqp_iterate_primal(solver->iterate)));
 
   return SLEQP_OKAY;
 }
@@ -213,11 +209,11 @@ problem_solver_free(SleqpProblemSolver** star)
   SLEQP_CALL(sleqp_iterate_release(&solver->trial_iterate));
   SLEQP_CALL(sleqp_iterate_release(&solver->iterate));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->vars_dual_diff));
+  SLEQP_CALL(sleqp_vec_free(&solver->vars_dual_diff));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cons_dual_diff));
+  SLEQP_CALL(sleqp_vec_free(&solver->cons_dual_diff));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->primal_diff));
+  SLEQP_CALL(sleqp_vec_free(&solver->primal_diff));
 
   sleqp_free(&solver->dense_cache);
 

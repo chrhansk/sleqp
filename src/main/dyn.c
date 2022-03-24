@@ -12,7 +12,7 @@ typedef struct
 
 static SLEQP_RETCODE
 dyn_func_set_value(SleqpFunc* func,
-                   SleqpSparseVec* value,
+                   SleqpVec* value,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
                    int* obj_grad_nnz,
@@ -50,7 +50,7 @@ dyn_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-dyn_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+dyn_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
 
@@ -62,7 +62,7 @@ dyn_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 }
 
 static SLEQP_RETCODE
-dyn_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
+dyn_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
 
@@ -89,9 +89,9 @@ dyn_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 static SLEQP_RETCODE
 dyn_func_hess_product(SleqpFunc* func,
                       const double* obj_dual,
-                      const SleqpSparseVec* direction,
-                      const SleqpSparseVec* cons_duals,
-                      SleqpSparseVec* product,
+                      const SleqpVec* direction,
+                      const SleqpVec* cons_duals,
+                      SleqpVec* product,
                       void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
@@ -213,9 +213,7 @@ sleqp_dyn_func_obj_val(SleqpFunc* func, double accuracy, double* obj_val)
 }
 
 SLEQP_RETCODE
-sleqp_dyn_func_cons_val(SleqpFunc* func,
-                        double accuracy,
-                        SleqpSparseVec* cons_val)
+sleqp_dyn_func_cons_val(SleqpFunc* func, double accuracy, SleqpVec* cons_val)
 {
   assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
 

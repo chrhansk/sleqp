@@ -18,17 +18,17 @@ const double objective = 25.;
 
 SleqpFunc* func;
 
-SleqpSparseVec* var_lb;
-SleqpSparseVec* var_ub;
-SleqpSparseVec* cons_lb;
-SleqpSparseVec* cons_ub;
-SleqpSparseVec* primal;
-SleqpSparseVec* grad;
+SleqpVec* var_lb;
+SleqpVec* var_ub;
+SleqpVec* cons_lb;
+SleqpVec* cons_ub;
+SleqpVec* primal;
+SleqpVec* grad;
 
 SleqpProblem* problem;
 SleqpIterate* iterate;
 
-SleqpSparseVec* direction;
+SleqpVec* direction;
 
 SleqpCauchy* cauchy;
 
@@ -37,46 +37,34 @@ unconstrained_setup()
 {
   const double inf = sleqp_infinity();
 
-  double neg_inf_vals[] = {inf, inf};
-  double pos_inf_vals[] = {inf, inf};
-
   ASSERT_CALL(sleqp_params_create(&params));
 
   ASSERT_CALL(zero_func_create(&func, num_variables, num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_fill(var_lb, -inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_fill(var_ub, -inf));
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  ASSERT_CALL(sleqp_sparse_vector_from_raw(var_lb,
-                                           neg_inf_vals,
-                                           num_variables,
-                                           zero_eps));
+  ASSERT_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_from_raw(var_ub,
-                                           pos_inf_vals,
-                                           num_variables,
-                                           zero_eps));
+  ASSERT_CALL(sleqp_vec_create_empty(&cons_ub, num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&cons_lb, num_constraints));
-
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&cons_ub, num_constraints));
-
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&primal, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&primal, num_variables));
 
   double primal_vals[] = {1., 1.};
 
   ASSERT_CALL(
-    sleqp_sparse_vector_from_raw(primal, primal_vals, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(primal, primal_vals, num_variables, zero_eps));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&grad, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&grad, num_variables));
 
   double grad_vals[] = {1., -1.};
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_from_raw(grad, grad_vals, num_variables, zero_eps));
+  ASSERT_CALL(sleqp_vec_set_from_raw(grad, grad_vals, num_variables, zero_eps));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
@@ -88,11 +76,11 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, primal));
 
-  ASSERT_CALL(sleqp_sparse_vector_copy(grad, sleqp_iterate_obj_grad(iterate)));
+  ASSERT_CALL(sleqp_vec_copy(grad, sleqp_iterate_obj_grad(iterate)));
 
   ASSERT_CALL(sleqp_iterate_set_obj_val(iterate, objective));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&direction, num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&direction, num_variables));
 
   ASSERT_CALL(sleqp_unconstrained_cauchy_create(&cauchy, problem, params));
 }
@@ -102,20 +90,20 @@ unconstrained_teardown()
 {
   ASSERT_CALL(sleqp_cauchy_release(&cauchy));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&direction));
+  ASSERT_CALL(sleqp_vec_free(&direction));
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&grad));
-  ASSERT_CALL(sleqp_sparse_vector_free(&primal));
+  ASSERT_CALL(sleqp_vec_free(&grad));
+  ASSERT_CALL(sleqp_vec_free(&primal));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_lb));
+  ASSERT_CALL(sleqp_vec_free(&var_ub));
+  ASSERT_CALL(sleqp_vec_free(&var_lb));
 
   ASSERT_CALL(sleqp_func_release(&func));
 
@@ -141,9 +129,9 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_cauchy_get_direction(cauchy, direction));
 
-  ck_assert_int_eq(sleqp_sparse_vector_value_at(direction, 0), -trust_radius);
+  ck_assert_int_eq(sleqp_vec_value_at(direction, 0), -trust_radius);
 
-  ck_assert_int_eq(sleqp_sparse_vector_value_at(direction, 1), trust_radius);
+  ck_assert_int_eq(sleqp_vec_value_at(direction, 1), trust_radius);
 
   const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
@@ -153,7 +141,7 @@ START_TEST(test_solve)
 
   double inner_product;
 
-  ASSERT_CALL(sleqp_sparse_vector_dot(direction, grad, &inner_product));
+  ASSERT_CALL(sleqp_vec_dot(direction, grad, &inner_product));
 
   const double expected_objective
     = sleqp_iterate_obj_val(iterate) + inner_product;
@@ -165,7 +153,7 @@ START_TEST(test_solve)
                                           sleqp_iterate_cons_dual(iterate),
                                           sleqp_iterate_vars_dual(iterate)));
 
-  SleqpSparseVec* vars_dual = sleqp_iterate_vars_dual(iterate);
+  SleqpVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
   ck_assert(vars_dual->nnz == 0);
 }

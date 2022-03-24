@@ -3,21 +3,19 @@
 #include "mex_fields.h"
 
 static SLEQP_RETCODE
-create_array_from_vec(const SleqpSparseVec* vec, mxArray** array_star)
+create_array_from_vec(const SleqpVec* vec, mxArray** array_star)
 {
   const int dim = vec->dim;
 
   *array_star = mxCreateDoubleMatrix(dim, 1, mxREAL);
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(vec, mxGetPr(*array_star)));
+  SLEQP_CALL(sleqp_vec_to_raw(vec, mxGetPr(*array_star)));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-set_struct_field_to_vec(mxArray* info,
-                        const char* name,
-                        const SleqpSparseVec* vec)
+set_struct_field_to_vec(mxArray* info, const char* name, const SleqpVec* vec)
 {
   mxArray* array;
 

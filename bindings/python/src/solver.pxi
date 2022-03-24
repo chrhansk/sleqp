@@ -14,7 +14,7 @@ cdef class Solver:
   cdef object problem
   cdef Params params
   cdef Options options
-  cdef csleqp.SleqpSparseVec* residuals
+  cdef csleqp.SleqpVec* residuals
 
   cdef list callback_handles
 
@@ -25,17 +25,17 @@ cdef class Solver:
                 np.ndarray primal,
                 Scaling scaling=None):
 
-    cdef csleqp.SleqpSparseVec* primal_vec
+    cdef csleqp.SleqpVec* primal_vec
     cdef _Problem _problem = <_Problem> problem._get_problem()
 
     self.params = params
     self.options = options
     self.callback_handles = []
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&primal_vec,
+    csleqp_call(csleqp.sleqp_vec_create_empty(&primal_vec,
                                                         problem.num_vars))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.residuals, 0))
+    csleqp_call(csleqp.sleqp_vec_create_empty(&self.residuals, 0))
 
     array_to_sleqp_sparse_vec(primal, primal_vec)
 
@@ -46,7 +46,7 @@ cdef class Solver:
                                            primal_vec,
                                            scaling.scaling if scaling is not None else NULL))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&primal_vec))
+    csleqp_call(csleqp.sleqp_vec_free(&primal_vec))
 
     self.problem = problem
 
@@ -57,7 +57,7 @@ cdef class Solver:
 
     csleqp_call(csleqp.sleqp_solver_release(&self.solver))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&self.residuals))
+    csleqp_call(csleqp.sleqp_vec_free(&self.residuals))
 
   cdef _solve(self,
               int max_num_iterations,

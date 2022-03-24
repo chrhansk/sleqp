@@ -24,13 +24,13 @@ SleqpIterate* iterate;
 
 SleqpAugJac* aug_jac;
 
-SleqpSparseVec* direction;
-SleqpSparseVec* point;
-SleqpSparseVec* initial;
+SleqpVec* direction;
+SleqpVec* point;
+SleqpVec* initial;
 
 SleqpFunc* zero_func;
 
-SleqpSparseVec* zero_vec;
+SleqpVec* zero_vec;
 
 void
 unconstrained_setup()
@@ -57,24 +57,21 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac, problem));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&direction, linear_lsq_num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&direction, linear_lsq_num_variables));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&point, linear_lsq_num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&point, linear_lsq_num_variables));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&initial, linear_lsq_num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&initial, linear_lsq_num_variables));
 }
 
 void
 unconstrained_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&initial));
+  ASSERT_CALL(sleqp_vec_free(&initial));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&point));
+  ASSERT_CALL(sleqp_vec_free(&point));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&direction));
+  ASSERT_CALL(sleqp_vec_free(&direction));
 
   ASSERT_CALL(sleqp_aug_jac_release(&aug_jac));
 
@@ -90,7 +87,7 @@ unconstrained_teardown()
 }
 
 void
-compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
+compute_point(const SleqpVec* initial, SleqpVec* point)
 {
   const double penalty_parameter = 1.;
   const double trust_radius      = 1e6;
@@ -98,7 +95,7 @@ compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
   const double zero_eps
     = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
-  ASSERT_CALL(sleqp_sparse_vector_copy(initial, sleqp_iterate_primal(iterate)));
+  ASSERT_CALL(sleqp_vec_copy(initial, sleqp_iterate_primal(iterate)));
 
   bool reject;
 
@@ -116,7 +113,7 @@ compute_point(const SleqpSparseVec* initial, SleqpSparseVec* point)
   ASSERT_CALL(
     sleqp_eqp_solver_compute_step(gauss_newton_solver, NULL, direction));
 
-  ASSERT_CALL(sleqp_sparse_vector_add(initial, direction, zero_eps, point));
+  ASSERT_CALL(sleqp_vec_add(initial, direction, zero_eps, point));
 }
 
 // LSQR direction should point to optimum
@@ -126,7 +123,7 @@ START_TEST(test_unconstrained_solve)
 
   compute_point(linear_lsq_initial, point);
 
-  ck_assert(sleqp_sparse_vector_eq(point, linear_lsq_optimal, eps));
+  ck_assert(sleqp_vec_eq(point, linear_lsq_optimal, eps));
 }
 END_TEST
 
@@ -138,15 +135,13 @@ START_TEST(test_unconstrained_start_high)
   {
     double values[] = {20., 20.};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(initial,
-                                             values,
-                                             linear_lsq_num_variables,
-                                             0.));
+    ASSERT_CALL(
+      sleqp_vec_set_from_raw(initial, values, linear_lsq_num_variables, 0.));
   }
 
   compute_point(initial, point);
 
-  ck_assert(sleqp_sparse_vector_eq(point, linear_lsq_optimal, eps));
+  ck_assert(sleqp_vec_eq(point, linear_lsq_optimal, eps));
 }
 END_TEST
 
@@ -158,15 +153,13 @@ START_TEST(test_unconstrained_start_low)
   {
     double values[] = {-10., -10.};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(initial,
-                                             values,
-                                             linear_lsq_num_variables,
-                                             0.));
+    ASSERT_CALL(
+      sleqp_vec_set_from_raw(initial, values, linear_lsq_num_variables, 0.));
   }
 
   compute_point(initial, point);
 
-  ck_assert(sleqp_sparse_vector_eq(point, linear_lsq_optimal, eps));
+  ck_assert(sleqp_vec_eq(point, linear_lsq_optimal, eps));
 }
 END_TEST
 
@@ -187,8 +180,7 @@ START_TEST(test_unconstrained_small)
   ASSERT_CALL(
     sleqp_eqp_solver_compute_step(gauss_newton_solver, NULL, direction));
 
-  ck_assert(
-    sleqp_is_eq(sleqp_sparse_vector_norm(direction), trust_radius, eps));
+  ck_assert(sleqp_is_eq(sleqp_vec_norm(direction), trust_radius, eps));
 }
 END_TEST
 
@@ -206,7 +198,7 @@ constrained_setup()
                                    num_constraints,
                                    num_residuals));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&zero_vec, 0));
+  ASSERT_CALL(sleqp_vec_create_empty(&zero_vec, 0));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    zero_func,
@@ -231,24 +223,21 @@ constrained_setup()
 
   ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac, problem));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&direction, linear_lsq_num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&direction, linear_lsq_num_variables));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&point, linear_lsq_num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&point, linear_lsq_num_variables));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&initial, linear_lsq_num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&initial, linear_lsq_num_variables));
 }
 
 void
 constrained_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&initial));
+  ASSERT_CALL(sleqp_vec_free(&initial));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&point));
+  ASSERT_CALL(sleqp_vec_free(&point));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&direction));
+  ASSERT_CALL(sleqp_vec_free(&direction));
 
   ASSERT_CALL(sleqp_aug_jac_release(&aug_jac));
 
@@ -260,7 +249,7 @@ constrained_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&zero_vec));
+  ASSERT_CALL(sleqp_vec_free(&zero_vec));
 
   ASSERT_CALL(sleqp_func_release(&zero_func));
 
@@ -274,15 +263,13 @@ START_TEST(test_constrained_start_high)
   {
     double values[] = {20., 20.};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(initial,
-                                             values,
-                                             linear_lsq_num_variables,
-                                             0.));
+    ASSERT_CALL(
+      sleqp_vec_set_from_raw(initial, values, linear_lsq_num_variables, 0.));
   }
 
   compute_point(initial, point);
 
-  ck_assert(sleqp_sparse_vector_eq(point, linear_lsq_optimal, eps));
+  ck_assert(sleqp_vec_eq(point, linear_lsq_optimal, eps));
 }
 END_TEST
 
@@ -293,15 +280,13 @@ START_TEST(test_constrained_start_low)
   {
     double values[] = {-10., -10.};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(initial,
-                                             values,
-                                             linear_lsq_num_variables,
-                                             0.));
+    ASSERT_CALL(
+      sleqp_vec_set_from_raw(initial, values, linear_lsq_num_variables, 0.));
   }
 
   compute_point(initial, point);
 
-  ck_assert(sleqp_sparse_vector_eq(point, linear_lsq_optimal, eps));
+  ck_assert(sleqp_vec_eq(point, linear_lsq_optimal, eps));
 }
 END_TEST
 

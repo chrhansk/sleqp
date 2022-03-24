@@ -82,7 +82,7 @@ SLEQP_RETCODE
 mex_eval_into_sparse_vec(int nrhs,
                          mxArray** rhs,
                          SleqpParams* params,
-                         SleqpSparseVec* vec)
+                         SleqpVec* vec)
 {
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
@@ -100,8 +100,7 @@ mex_eval_into_sparse_vec(int nrhs,
     return SLEQP_ERROR;
   }
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_from_raw(vec, mxGetPr(lhs), vec->dim, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(vec, mxGetPr(lhs), vec->dim, zero_eps));
 
   return SLEQP_OKAY;
 }

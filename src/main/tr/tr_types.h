@@ -4,17 +4,16 @@
 #include "problem.h"
 
 #include "aug_jac/aug_jac.h"
-#include "sparse/sparse_vec.h"
+#include "sparse/vec.h"
 
-typedef SLEQP_RETCODE (*SLEQP_TR_SOLVER_SOLVE)(
-  SleqpAugJac* jacobian,
-  const SleqpSparseVec* multipliers,
-  const SleqpSparseVec* gradient,
-  SleqpSparseVec* newton_step,
-  double trust_radius,
-  double* tr_dual,
-  double time_limit,
-  void* solver_data);
+typedef SLEQP_RETCODE (*SLEQP_TR_SOLVER_SOLVE)(SleqpAugJac* jacobian,
+                                               const SleqpVec* multipliers,
+                                               const SleqpVec* gradient,
+                                               SleqpVec* newton_step,
+                                               double trust_radius,
+                                               double* tr_dual,
+                                               double time_limit,
+                                               void* solver_data);
 
 typedef SLEQP_RETCODE (*SLEQP_TR_SOLVER_RAYLEIGH)(double* min_rayleigh,
                                                   double* max_rayleigh,

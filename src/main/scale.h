@@ -9,7 +9,7 @@ sleqp_scaling_set_func(SleqpScaling* scaling, SleqpFunc* func);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_point(SleqpScaling* scaling, SleqpSparseVec* point);
+sleqp_scale_point(SleqpScaling* scaling, SleqpVec* point);
 
 double
 sleqp_scale_obj_val(SleqpScaling* scaling, double obj_val);
@@ -18,31 +18,31 @@ double
 sleqp_scale_lsq_obj_val(SleqpScaling* scaling, double obj_val);
 
 SLEQP_RETCODE
-sleqp_scale_lsq_residuals(SleqpScaling* scaling, SleqpSparseVec* lsq_residuals);
+sleqp_scale_lsq_residuals(SleqpScaling* scaling, SleqpVec* lsq_residuals);
 
 SLEQP_RETCODE
 sleqp_scale_lsq_forward_direction(SleqpScaling* scaling,
-                                  SleqpSparseVec* forward_direction);
+                                  SleqpVec* forward_direction);
 
 SLEQP_RETCODE
 sleqp_scale_lsq_adjoint_direction(SleqpScaling* scaling,
-                                  SleqpSparseVec* adjoint_direction);
+                                  SleqpVec* adjoint_direction);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_obj_grad(SleqpScaling* scaling, SleqpSparseVec* obj_grad);
+sleqp_scale_obj_grad(SleqpScaling* scaling, SleqpVec* obj_grad);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_cons_val(SleqpScaling* scaling, SleqpSparseVec* cons_val);
+sleqp_scale_cons_val(SleqpScaling* scaling, SleqpVec* cons_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_cons_general(SleqpScaling* scaling, SleqpSparseVec* general_val);
+sleqp_scale_cons_general(SleqpScaling* scaling, SleqpVec* general_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_cons_linear(SleqpScaling* scaling, SleqpSparseVec* linear_val);
+sleqp_scale_cons_linear(SleqpScaling* scaling, SleqpVec* linear_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -55,15 +55,15 @@ sleqp_scale_linear_coeffs(SleqpScaling* scaling,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_cons_duals(SleqpScaling* scaling, SleqpSparseVec* cons_duals);
+sleqp_scale_cons_duals(SleqpScaling* scaling, SleqpVec* cons_duals);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_var_duals(SleqpScaling* scaling, SleqpSparseVec* var_duals);
+sleqp_scale_var_duals(SleqpScaling* scaling, SleqpVec* var_duals);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_hessian_product(SleqpScaling* scaling, SleqpSparseVec* product);
+sleqp_scale_hessian_product(SleqpScaling* scaling, SleqpVec* product);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -71,7 +71,7 @@ sleqp_scale_iterate(SleqpScaling* scaling, SleqpIterate* iterate, bool lsq);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_unscale_point(SleqpScaling* scaling, SleqpSparseVec* scaled_point);
+sleqp_unscale_point(SleqpScaling* scaling, SleqpVec* scaled_point);
 
 double
 sleqp_unscale_obj_val(SleqpScaling* scaling, double unscaled_obj_val);
@@ -81,11 +81,11 @@ sleqp_unscale_lsq_obj_val(SleqpScaling* scaling, double obj_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_unscale_obj_grad(SleqpScaling* scaling, SleqpSparseVec* scaled_obj_grad);
+sleqp_unscale_obj_grad(SleqpScaling* scaling, SleqpVec* scaled_obj_grad);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_unscale_cons_val(SleqpScaling* scaling, SleqpSparseVec* scaled_cons_val);
+sleqp_unscale_cons_val(SleqpScaling* scaling, SleqpVec* scaled_cons_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -94,19 +94,17 @@ sleqp_unscale_cons_jac(SleqpScaling* scaling,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_unscale_cons_duals(SleqpScaling* scaling,
-                         SleqpSparseVec* scaled_cons_duals);
+sleqp_unscale_cons_duals(SleqpScaling* scaling, SleqpVec* scaled_cons_duals);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_unscale_var_duals(SleqpScaling* scaling,
-                        SleqpSparseVec* scaled_var_duals);
+sleqp_unscale_var_duals(SleqpScaling* scaling, SleqpVec* scaled_var_duals);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_unscale_hessian_direction(SleqpScaling* scaling,
-                                SleqpSparseVec* direction,
-                                SleqpSparseVec* cons_duals);
+                                SleqpVec* direction,
+                                SleqpVec* cons_duals);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

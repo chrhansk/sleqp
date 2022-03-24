@@ -589,7 +589,7 @@ ma57_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-ma57_solve(void* factorization_data, const SleqpSparseVec* rhs)
+ma57_solve(void* factorization_data, const SleqpVec* rhs)
 {
   MA57Data* ma57_data = (MA57Data*)factorization_data;
 
@@ -606,7 +606,7 @@ ma57_solve(void* factorization_data, const SleqpSparseVec* rhs)
 
   double* rhs_sol = ma57_workspace->rhs_sol;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(rhs, rhs_sol));
+  SLEQP_CALL(sleqp_vec_to_raw(rhs, rhs_sol));
 
   double* factor            = ma57_factor->factor;
   const int32_t factor_size = ma57_factor->factor_size;
@@ -639,7 +639,7 @@ ma57_solve(void* factorization_data, const SleqpSparseVec* rhs)
 
 static SLEQP_RETCODE
 ma57_solution(void* factorization_data,
-              SleqpSparseVec* sol,
+              SleqpVec* sol,
               int begin,
               int end,
               double zero_eps)
@@ -648,10 +648,10 @@ ma57_solution(void* factorization_data,
 
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
-                                          ma57_workspace->rhs_sol + begin,
-                                          end - begin,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sol,
+                                    ma57_workspace->rhs_sol + begin,
+                                    end - begin,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }

@@ -18,20 +18,20 @@ struct SleqpWorkingStep
   SleqpProblem* problem;
   SleqpParams* params;
 
-  SleqpSparseVec* lower_diff;
-  SleqpSparseVec* upper_diff;
+  SleqpVec* lower_diff;
+  SleqpVec* upper_diff;
 
-  SleqpSparseVec* initial_rhs;
-  SleqpSparseVec* initial_direction;
-  SleqpSparseVec* initial_step;
+  SleqpVec* initial_rhs;
+  SleqpVec* initial_direction;
+  SleqpVec* initial_step;
 
-  SleqpSparseVec* initial_point;
+  SleqpVec* initial_point;
 
-  SleqpSparseVec* initial_cons_val;
+  SleqpVec* initial_cons_val;
 
-  SleqpSparseVec* violated_constraint_multipliers;
+  SleqpVec* violated_constraint_multipliers;
 
-  SleqpSparseVec* sparse_cache;
+  SleqpVec* sparse_cache;
   double* dense_cache;
 
   double reduced_trust_radius;
@@ -63,33 +63,24 @@ sleqp_working_step_create(SleqpWorkingStep** star,
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->lower_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->lower_diff, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->upper_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->upper_diff, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->initial_rhs, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->initial_rhs, num_constraints));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->initial_direction, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->initial_direction, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->initial_step, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->initial_step, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->initial_point, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->initial_point, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->initial_cons_val, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->initial_cons_val, num_constraints));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->violated_constraint_multipliers,
-                                     num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->violated_constraint_multipliers,
+                                    num_constraints));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&step->sparse_cache, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&step->sparse_cache, num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&step->dense_cache,
                                SLEQP_MAX(num_variables, num_constraints)));
@@ -104,8 +95,8 @@ compute_offset(SleqpWorkingStep* step, SleqpIterate* iterate)
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  SleqpSparseVec* lower_diff = step->lower_diff;
-  SleqpSparseVec* upper_diff = step->upper_diff;
+  SleqpVec* lower_diff = step->lower_diff;
+  SleqpVec* upper_diff = step->upper_diff;
 
   assert(lower_diff->dim == num_constraints);
   assert(upper_diff->dim == num_constraints);
@@ -165,11 +156,11 @@ compute_initial_rhs(SleqpWorkingStep* step,
 {
   SleqpProblem* problem = step->problem;
 
-  SleqpSparseVec* initial_rhs        = step->initial_rhs;
+  SleqpVec* initial_rhs              = step->initial_rhs;
   const SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  SleqpSparseVec* lower_diff = step->lower_diff;
-  SleqpSparseVec* upper_diff = step->upper_diff;
+  SleqpVec* lower_diff = step->lower_diff;
+  SleqpVec* upper_diff = step->upper_diff;
 
   const double eps = sleqp_params_value(step->params, SLEQP_PARAM_EPS);
 
@@ -180,35 +171,27 @@ compute_initial_rhs(SleqpWorkingStep* step,
 
   const int working_set_size = sleqp_working_set_size(working_set);
 
-  SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, working_set_size));
+  SLEQP_CALL(sleqp_vec_resize(initial_rhs, working_set_size));
 
   {
-    SLEQP_CALL(sleqp_sparse_vector_clear(initial_rhs));
+    SLEQP_CALL(sleqp_vec_clear(initial_rhs));
 
-    SLEQP_CALL(sleqp_sparse_vector_reserve(initial_rhs, working_set_size));
+    SLEQP_CALL(sleqp_vec_reserve(initial_rhs, working_set_size));
 
-    SLEQP_CALL(sleqp_sparse_vector_resize(initial_rhs, working_set_size));
+    SLEQP_CALL(sleqp_vec_resize(initial_rhs, working_set_size));
   }
 
   // variables
   {
-    const SleqpSparseVec* values = sleqp_iterate_primal(iterate);
-    const SleqpSparseVec* var_lb = sleqp_problem_vars_lb(problem);
-    const SleqpSparseVec* var_ub = sleqp_problem_vars_ub(problem);
+    const SleqpVec* values = sleqp_iterate_primal(iterate);
+    const SleqpVec* var_lb = sleqp_problem_vars_lb(problem);
+    const SleqpVec* var_ub = sleqp_problem_vars_ub(problem);
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values,
-                                              var_ub,
-                                              -1.,
-                                              1.,
-                                              zero_eps,
-                                              upper_diff));
+    SLEQP_CALL(
+      sleqp_vec_add_scaled(values, var_ub, -1., 1., zero_eps, upper_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values,
-                                              var_lb,
-                                              -1.,
-                                              1.,
-                                              zero_eps,
-                                              lower_diff));
+    SLEQP_CALL(
+      sleqp_vec_add_scaled(values, var_lb, -1., 1., zero_eps, lower_diff));
 
     int k_lower = 0, k_upper = 0;
 
@@ -239,17 +222,17 @@ compute_initial_rhs(SleqpWorkingStep* step,
 
       if (var_state == SLEQP_ACTIVE_UPPER)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, upper_value));
+        SLEQP_CALL(sleqp_vec_push(initial_rhs, i_set, upper_value));
       }
       else if (var_state == SLEQP_ACTIVE_LOWER)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, lower_value));
+        SLEQP_CALL(sleqp_vec_push(initial_rhs, i_set, lower_value));
       }
       else if (var_state == SLEQP_ACTIVE_BOTH)
       {
         sleqp_assert_is_eq(lower_value, upper_value, eps);
 
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, lower_value));
+        SLEQP_CALL(sleqp_vec_push(initial_rhs, i_set, lower_value));
       }
 
       if (i_lower == i_combined)
@@ -266,23 +249,15 @@ compute_initial_rhs(SleqpWorkingStep* step,
 
   // constraints
   {
-    SleqpSparseVec* values  = sleqp_iterate_cons_val(iterate);
-    SleqpSparseVec* cons_lb = sleqp_problem_cons_lb(problem);
-    SleqpSparseVec* cons_ub = sleqp_problem_cons_ub(problem);
+    SleqpVec* values  = sleqp_iterate_cons_val(iterate);
+    SleqpVec* cons_lb = sleqp_problem_cons_lb(problem);
+    SleqpVec* cons_ub = sleqp_problem_cons_ub(problem);
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values,
-                                              cons_ub,
-                                              -1.,
-                                              1.,
-                                              zero_eps,
-                                              upper_diff));
+    SLEQP_CALL(
+      sleqp_vec_add_scaled(values, cons_ub, -1., 1., zero_eps, upper_diff));
 
-    SLEQP_CALL(sleqp_sparse_vector_add_scaled(values,
-                                              cons_lb,
-                                              -1.,
-                                              1.,
-                                              zero_eps,
-                                              lower_diff));
+    SLEQP_CALL(
+      sleqp_vec_add_scaled(values, cons_lb, -1., 1., zero_eps, lower_diff));
 
     int k_lower = 0, k_upper = 0;
 
@@ -313,17 +288,17 @@ compute_initial_rhs(SleqpWorkingStep* step,
 
       if (cons_state == SLEQP_ACTIVE_UPPER)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, upper_value));
+        SLEQP_CALL(sleqp_vec_push(initial_rhs, i_set, upper_value));
       }
       else if (cons_state == SLEQP_ACTIVE_LOWER)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, lower_value));
+        SLEQP_CALL(sleqp_vec_push(initial_rhs, i_set, lower_value));
       }
       else if (cons_state == SLEQP_ACTIVE_BOTH)
       {
         sleqp_assert_is_eq(lower_value, upper_value, eps);
 
-        SLEQP_CALL(sleqp_sparse_vector_push(initial_rhs, i_set, lower_value));
+        SLEQP_CALL(sleqp_vec_push(initial_rhs, i_set, lower_value));
       }
 
       if (valid_lower)
@@ -383,12 +358,11 @@ compute_initial_direction(SleqpWorkingStep* step,
 static SLEQP_RETCODE
 compute_initial_step(SleqpWorkingStep* step, double trust_radius)
 {
-  SLEQP_CALL(
-    sleqp_sparse_vector_copy(step->initial_direction, step->initial_step));
+  SLEQP_CALL(sleqp_vec_copy(step->initial_direction, step->initial_step));
 
   const double eps = sleqp_params_value(step->params, SLEQP_PARAM_EPS);
 
-  const double initial_norm = sleqp_sparse_vector_norm(step->initial_direction);
+  const double initial_norm = sleqp_vec_norm(step->initial_direction);
 
   double alpha = 1.;
 
@@ -418,7 +392,7 @@ compute_initial_step(SleqpWorkingStep* step, double trust_radius)
     {
       step->initial_step_in_working_set = false;
 
-      SLEQP_CALL(sleqp_sparse_vector_scale(step->initial_step, alpha));
+      SLEQP_CALL(sleqp_vec_scale(step->initial_step, alpha));
 
       // we know that the scaled initial solution
       // has norm equal to norm_ratio * trust_radius
@@ -440,10 +414,10 @@ compute_initial_point(SleqpWorkingStep* step, SleqpIterate* iterate)
   const double zero_eps
     = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_primal(iterate),
-                                     step->initial_step,
-                                     zero_eps,
-                                     step->initial_point));
+  SLEQP_CALL(sleqp_vec_add(sleqp_iterate_primal(iterate),
+                           step->initial_step,
+                           zero_eps,
+                           step->initial_point));
 
   return SLEQP_OKAY;
 }
@@ -467,15 +441,15 @@ compute_violated_multipliers(SleqpWorkingStep* step, SleqpIterate* iterate)
                                                   step->initial_step,
                                                   step->dense_cache));
 
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(step->sparse_cache,
-                                            step->dense_cache,
-                                            num_constraints,
-                                            zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(step->sparse_cache,
+                                      step->dense_cache,
+                                      num_constraints,
+                                      zero_eps));
 
-    SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_cons_val(iterate),
-                                       step->sparse_cache,
-                                       zero_eps,
-                                       step->initial_cons_val));
+    SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
+                             step->sparse_cache,
+                             zero_eps,
+                             step->initial_cons_val));
   }
 
   // Compute violated multipliers
@@ -510,13 +484,13 @@ sleqp_working_step_set_iterate(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_working_step_get_direction(SleqpWorkingStep* step)
 {
   return step->initial_direction;
 }
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_working_step_get_step(SleqpWorkingStep* step)
 {
   return step->initial_step;
@@ -534,7 +508,7 @@ sleqp_working_step_in_working_set(SleqpWorkingStep* step)
   return step->initial_step_in_working_set;
 }
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step)
 {
   return step->violated_constraint_multipliers;
@@ -552,19 +526,19 @@ working_step_free(SleqpWorkingStep** star)
 
   sleqp_free(&step->dense_cache);
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->sparse_cache));
+  SLEQP_CALL(sleqp_vec_free(&step->sparse_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->violated_constraint_multipliers));
+  SLEQP_CALL(sleqp_vec_free(&step->violated_constraint_multipliers));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->initial_cons_val));
+  SLEQP_CALL(sleqp_vec_free(&step->initial_cons_val));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->initial_point));
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->initial_step));
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->initial_direction));
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->initial_rhs));
+  SLEQP_CALL(sleqp_vec_free(&step->initial_point));
+  SLEQP_CALL(sleqp_vec_free(&step->initial_step));
+  SLEQP_CALL(sleqp_vec_free(&step->initial_direction));
+  SLEQP_CALL(sleqp_vec_free(&step->initial_rhs));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->upper_diff));
-  SLEQP_CALL(sleqp_sparse_vector_free(&step->lower_diff));
+  SLEQP_CALL(sleqp_vec_free(&step->upper_diff));
+  SLEQP_CALL(sleqp_vec_free(&step->lower_diff));
 
   SLEQP_CALL(sleqp_params_release(&step->params));
 

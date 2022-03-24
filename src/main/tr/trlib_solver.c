@@ -28,24 +28,24 @@ typedef struct
 
   trlib_int_t iwork_size, fwork_size;
 
-  SleqpSparseVec* s;
-  SleqpSparseVec* g;
-  SleqpSparseVec* gm;
+  SleqpVec* s;
+  SleqpVec* g;
+  SleqpVec* gm;
 
-  SleqpSparseVec* h;
+  SleqpVec* h;
 
-  SleqpSparseVec* v;
-  SleqpSparseVec* p;
-  SleqpSparseVec* Hp;
+  SleqpVec* v;
+  SleqpVec* p;
+  SleqpVec* Hp;
 
-  SleqpSparseVec* l;
-  SleqpSparseVec* h_lhs;
-  SleqpSparseVec* h_rhs;
+  SleqpVec* l;
+  SleqpVec* h_lhs;
+  SleqpVec* h_rhs;
 
   SleqpSparseMatrix* Q;
 
   double* dense_cache;
-  SleqpSparseVec* sparse_cache;
+  SleqpVec* sparse_cache;
 
   SleqpTimer* timer;
 } SolverData;
@@ -64,23 +64,23 @@ trlib_free(void** star)
 
   SLEQP_CALL(sleqp_sparse_matrix_release(&data->Q));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->sparse_cache));
+  SLEQP_CALL(sleqp_vec_free(&data->sparse_cache));
   sleqp_free(&data->dense_cache);
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->h_rhs));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->h_lhs));
+  SLEQP_CALL(sleqp_vec_free(&data->h_rhs));
+  SLEQP_CALL(sleqp_vec_free(&data->h_lhs));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->l));
+  SLEQP_CALL(sleqp_vec_free(&data->l));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->Hp));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->p));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->v));
+  SLEQP_CALL(sleqp_vec_free(&data->Hp));
+  SLEQP_CALL(sleqp_vec_free(&data->p));
+  SLEQP_CALL(sleqp_vec_free(&data->v));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->h));
+  SLEQP_CALL(sleqp_vec_free(&data->h));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->gm));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->g));
-  SLEQP_CALL(sleqp_sparse_vector_free(&data->s));
+  SLEQP_CALL(sleqp_vec_free(&data->gm));
+  SLEQP_CALL(sleqp_vec_free(&data->g));
+  SLEQP_CALL(sleqp_vec_free(&data->s));
 
   sleqp_free(&data->trlib_timinig);
   sleqp_free(&data->trlib_fwork);
@@ -96,9 +96,7 @@ trlib_free(void** star)
 }
 
 static SLEQP_RETCODE
-matrix_push_column(SleqpSparseMatrix* matrix,
-                   SleqpSparseVec* vector,
-                   double scale)
+matrix_push_column(SleqpSparseMatrix* matrix, SleqpVec* vector, double scale)
 {
   const int nnz = sleqp_sparse_matrix_nnz(matrix);
 
@@ -186,9 +184,9 @@ trlib_get_status_string(int value, const char** message)
 static SLEQP_RETCODE
 check_optimality(SolverData* data,
                  SleqpAugJac* jacobian,
-                 const SleqpSparseVec* multipliers,
-                 const SleqpSparseVec* gradient,
-                 const SleqpSparseVec* newton_step,
+                 const SleqpVec* multipliers,
+                 const SleqpVec* gradient,
+                 const SleqpVec* newton_step,
                  bool bdry_sol,
                  bool* is_optimal)
 {
@@ -205,11 +203,11 @@ check_optimality(SolverData* data,
   SLEQP_CALL(
     sleqp_problem_hess_prod(problem, &one, newton_step, multipliers, data->Hp));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(gradient, data->Hp, zero_eps, data->g));
+  SLEQP_CALL(sleqp_vec_add(gradient, data->Hp, zero_eps, data->g));
 
   SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->g, data->v, NULL));
 
-  const double vnorm = sleqp_sparse_vector_norm(data->v);
+  const double vnorm = sleqp_vec_norm(data->v);
 
   if (bdry_sol)
   {
@@ -220,11 +218,11 @@ check_optimality(SolverData* data,
 
     double dot;
 
-    SLEQP_CALL(sleqp_sparse_vector_dot(data->v, newton_step, &dot));
+    SLEQP_CALL(sleqp_vec_dot(data->v, newton_step, &dot));
 
     dot *= -1.;
 
-    const double snorm = sleqp_sparse_vector_norm(newton_step);
+    const double snorm = sleqp_vec_norm(newton_step);
 
     assert(snorm > 0.);
 
@@ -247,8 +245,8 @@ check_optimality(SolverData* data,
 static SLEQP_RETCODE
 trlib_loop(SolverData* data,
            SleqpAugJac* jacobian,
-           const SleqpSparseVec* multipliers,
-           const SleqpSparseVec* gradient,
+           const SleqpVec* multipliers,
+           const SleqpVec* gradient,
            double trust_radius,
            double time_limit,
            trlib_int_t* trlib_ret)
@@ -312,8 +310,8 @@ trlib_loop(SolverData* data,
 
   SLEQP_CALL(sleqp_sparse_matrix_clear(data->Q));
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(data->p));
-  SLEQP_CALL(sleqp_sparse_vector_clear(data->Hp));
+  SLEQP_CALL(sleqp_vec_clear(data->p));
+  SLEQP_CALL(sleqp_vec_clear(data->Hp));
 
   char* prefix = "trlib: ";
   FILE* fout   = stderr;
@@ -367,26 +365,26 @@ trlib_loop(SolverData* data,
     case TRLIB_CLA_INIT:
     {
       // reset s to 0
-      SLEQP_CALL(sleqp_sparse_vector_clear(data->s));
+      SLEQP_CALL(sleqp_vec_clear(data->s));
 
-      SLEQP_CALL(sleqp_sparse_vector_copy(gradient, data->g));
+      SLEQP_CALL(sleqp_vec_copy(gradient, data->g));
 
-      SLEQP_CALL(sleqp_sparse_vector_clear(data->gm));
+      SLEQP_CALL(sleqp_vec_clear(data->gm));
 
       SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->g, data->v, NULL));
 
-      SLEQP_CALL(sleqp_sparse_vector_copy(data->v, data->p));
+      SLEQP_CALL(sleqp_vec_copy(data->v, data->p));
 
-      SLEQP_CALL(sleqp_sparse_vector_scale(data->p, -1.));
+      SLEQP_CALL(sleqp_vec_scale(data->p, -1.));
 
-      g_dot_g = sleqp_sparse_vector_norm_sq(data->g);
+      g_dot_g = sleqp_vec_norm_sq(data->g);
 
-      SLEQP_CALL(sleqp_sparse_vector_dot(data->v, data->g, &v_dot_g));
+      SLEQP_CALL(sleqp_vec_dot(data->v, data->g, &v_dot_g));
 
       SLEQP_CALL(
         sleqp_problem_hess_prod(problem, &one, data->p, multipliers, data->Hp));
 
-      SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
+      SLEQP_CALL(sleqp_vec_dot(data->p, data->Hp, &p_dot_Hp));
 
       const int num_rows = sleqp_sparse_matrix_num_rows(data->Q);
 
@@ -412,23 +410,22 @@ trlib_loop(SolverData* data,
     }
     case TRLIB_CLA_RETRANSF:
     {
-      SLEQP_CALL(sleqp_sparse_vector_from_raw(data->h,
-                                              fwork + data->trlib_h_pointer,
-                                              iter + 1,
-                                              zero_eps));
+      SLEQP_CALL(sleqp_vec_set_from_raw(data->h,
+                                        fwork + data->trlib_h_pointer,
+                                        iter + 1,
+                                        zero_eps));
 
       SLEQP_CALL(
-        sleqp_sparse_vector_resize(data->h,
-                                   sleqp_sparse_matrix_num_cols(data->Q)));
+        sleqp_vec_resize(data->h, sleqp_sparse_matrix_num_cols(data->Q)));
 
       SLEQP_CALL(sleqp_sparse_matrix_vector_product(data->Q,
                                                     data->h,
                                                     data->dense_cache));
 
-      SLEQP_CALL(sleqp_sparse_vector_from_raw(data->s,
-                                              data->dense_cache,
-                                              num_variables,
-                                              zero_eps));
+      SLEQP_CALL(sleqp_vec_set_from_raw(data->s,
+                                        data->dense_cache,
+                                        num_variables,
+                                        zero_eps));
 
       break;
     }
@@ -436,14 +433,14 @@ trlib_loop(SolverData* data,
     {
       if (ityp == TRLIB_CLT_CG)
       {
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->s,
-                                                  data->p,
-                                                  1.,
-                                                  flt1,
-                                                  zero_eps,
-                                                  data->sparse_cache));
+        SLEQP_CALL(sleqp_vec_add_scaled(data->s,
+                                        data->p,
+                                        1.,
+                                        flt1,
+                                        zero_eps,
+                                        data->sparse_cache));
 
-        SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->s));
+        SLEQP_CALL(sleqp_vec_copy(data->sparse_cache, data->s));
       }
       break;
     }
@@ -464,48 +461,48 @@ trlib_loop(SolverData* data,
         assert(iter + 1 == sleqp_sparse_matrix_num_cols(data->Q));
         assert(sleqp_sparse_matrix_is_valid(data->Q));
 
-        SLEQP_CALL(sleqp_sparse_vector_copy(data->g, data->gm));
+        SLEQP_CALL(sleqp_vec_copy(data->g, data->gm));
 
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->g,
-                                                  data->Hp,
-                                                  1.,
-                                                  flt1,
-                                                  zero_eps,
-                                                  data->sparse_cache));
+        SLEQP_CALL(sleqp_vec_add_scaled(data->g,
+                                        data->Hp,
+                                        1.,
+                                        flt1,
+                                        zero_eps,
+                                        data->sparse_cache));
 
-        SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->g));
+        SLEQP_CALL(sleqp_vec_copy(data->sparse_cache, data->g));
 
         SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->g, data->v, NULL));
 
-        g_dot_g = sleqp_sparse_vector_norm_sq(data->g);
+        g_dot_g = sleqp_vec_norm_sq(data->g);
 
-        SLEQP_CALL(sleqp_sparse_vector_dot(data->v, data->g, &v_dot_g));
+        SLEQP_CALL(sleqp_vec_dot(data->v, data->g, &v_dot_g));
       }
       if (ityp == TRLIB_CLT_L)
       {
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->Hp,
-                                                  data->g,
-                                                  1.,
-                                                  flt1,
-                                                  zero_eps,
-                                                  data->sparse_cache));
+        SLEQP_CALL(sleqp_vec_add_scaled(data->Hp,
+                                        data->g,
+                                        1.,
+                                        flt1,
+                                        zero_eps,
+                                        data->sparse_cache));
 
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache,
-                                                  data->gm,
-                                                  1.,
-                                                  flt2,
-                                                  zero_eps,
-                                                  data->s));
+        SLEQP_CALL(sleqp_vec_add_scaled(data->sparse_cache,
+                                        data->gm,
+                                        1.,
+                                        flt2,
+                                        zero_eps,
+                                        data->s));
 
-        SLEQP_CALL(sleqp_sparse_vector_copy(data->g, data->gm));
+        SLEQP_CALL(sleqp_vec_copy(data->g, data->gm));
 
-        SLEQP_CALL(sleqp_sparse_vector_scale(data->gm, flt3));
+        SLEQP_CALL(sleqp_vec_scale(data->gm, flt3));
 
-        SLEQP_CALL(sleqp_sparse_vector_copy(data->s, data->g));
+        SLEQP_CALL(sleqp_vec_copy(data->s, data->g));
 
         SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->g, data->v, NULL));
 
-        SLEQP_CALL(sleqp_sparse_vector_dot(data->v, data->g, &v_dot_g));
+        SLEQP_CALL(sleqp_vec_dot(data->v, data->g, &v_dot_g));
       }
 
       break;
@@ -518,29 +515,27 @@ trlib_loop(SolverData* data,
                                          multipliers,
                                          data->sparse_cache));
 
-      SLEQP_CALL(sleqp_sparse_vector_add(data->sparse_cache,
-                                         gradient,
-                                         zero_eps,
-                                         data->l));
+      SLEQP_CALL(
+        sleqp_vec_add(data->sparse_cache, gradient, zero_eps, data->l));
 
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->l,
-                                                data->s,
-                                                1.,
-                                                flt1,
-                                                zero_eps,
-                                                data->h_lhs));
+      SLEQP_CALL(sleqp_vec_add_scaled(data->l,
+                                      data->s,
+                                      1.,
+                                      flt1,
+                                      zero_eps,
+                                      data->h_lhs));
 
       SLEQP_CALL(
         sleqp_aug_jac_projection(jacobian, data->l, data->sparse_cache, NULL));
 
-      SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->sparse_cache,
-                                                data->s,
-                                                1.,
-                                                flt1,
-                                                zero_eps,
-                                                data->h_rhs));
+      SLEQP_CALL(sleqp_vec_add_scaled(data->sparse_cache,
+                                      data->s,
+                                      1.,
+                                      flt1,
+                                      zero_eps,
+                                      data->h_rhs));
 
-      SLEQP_CALL(sleqp_sparse_vector_dot(data->h_lhs, data->h_rhs, &v_dot_g));
+      SLEQP_CALL(sleqp_vec_dot(data->h_lhs, data->h_rhs, &v_dot_g));
 
       break;
     }
@@ -557,14 +552,14 @@ trlib_loop(SolverData* data,
       {
         assert(flt1 == -1.);
 
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->v,
-                                                  data->p,
-                                                  flt1,
-                                                  flt2,
-                                                  zero_eps,
-                                                  data->sparse_cache));
+        SLEQP_CALL(sleqp_vec_add_scaled(data->v,
+                                        data->p,
+                                        flt1,
+                                        flt2,
+                                        zero_eps,
+                                        data->sparse_cache));
 
-        SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->p));
+        SLEQP_CALL(sleqp_vec_copy(data->sparse_cache, data->p));
 
         SLEQP_CALL(sleqp_problem_hess_prod(problem,
                                            &one,
@@ -572,7 +567,7 @@ trlib_loop(SolverData* data,
                                            multipliers,
                                            data->Hp));
 
-        SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
+        SLEQP_CALL(sleqp_vec_dot(data->p, data->Hp, &p_dot_Hp));
       }
       else if (ityp == TRLIB_CLT_L)
       {
@@ -589,14 +584,14 @@ trlib_loop(SolverData* data,
 
         assert(iter == sleqp_sparse_matrix_num_cols(data->Q));
 
-        SLEQP_CALL(sleqp_sparse_vector_add_scaled(data->v,
-                                                  data->p,
-                                                  flt1,
-                                                  flt2,
-                                                  zero_eps,
-                                                  data->sparse_cache));
+        SLEQP_CALL(sleqp_vec_add_scaled(data->v,
+                                        data->p,
+                                        flt1,
+                                        flt2,
+                                        zero_eps,
+                                        data->sparse_cache));
 
-        SLEQP_CALL(sleqp_sparse_vector_copy(data->sparse_cache, data->p));
+        SLEQP_CALL(sleqp_vec_copy(data->sparse_cache, data->p));
 
         SLEQP_CALL(sleqp_problem_hess_prod(problem,
                                            &one,
@@ -604,7 +599,7 @@ trlib_loop(SolverData* data,
                                            multipliers,
                                            data->Hp));
 
-        SLEQP_CALL(sleqp_sparse_vector_dot(data->p, data->Hp, &p_dot_Hp));
+        SLEQP_CALL(sleqp_vec_dot(data->p, data->Hp, &p_dot_Hp));
 
         SLEQP_CALL(matrix_push_column(data->Q, data->p, 1.));
 
@@ -624,7 +619,7 @@ trlib_loop(SolverData* data,
                                              multipliers,
                                              &quad_term));
 
-      SLEQP_CALL(sleqp_sparse_vector_dot(data->s, data->g, &lin_term));
+      SLEQP_CALL(sleqp_vec_dot(data->s, data->g, &lin_term));
 
       g_dot_g = lin_term + .5 * quad_term;
 
@@ -678,9 +673,9 @@ trlib_rayleigh(double* min_rayleigh, double* max_rayleigh, void* solver_data)
 
 static SLEQP_RETCODE
 trlib_solve(SleqpAugJac* jacobian,
-            const SleqpSparseVec* multipliers,
-            const SleqpSparseVec* gradient,
-            SleqpSparseVec* newton_step,
+            const SleqpVec* multipliers,
+            const SleqpVec* gradient,
+            SleqpVec* newton_step,
             double trust_radius,
             double* tr_dual,
             double time_limit,
@@ -690,7 +685,7 @@ trlib_solve(SleqpAugJac* jacobian,
 
   SolverData* data = (SolverData*)solver_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(newton_step));
+  SLEQP_CALL(sleqp_vec_clear(newton_step));
 
   SLEQP_CALL(trlib_loop(data,
                         jacobian,
@@ -731,7 +726,7 @@ trlib_solve(SleqpAugJac* jacobian,
   }
 
   // TODO: Choose appropriate tolerance
-  // assert(sleqp_is_leq(sleqp_sparse_vector_norm(newton_step), trust_radius,
+  // assert(sleqp_is_leq(sleqp_vec_norm(newton_step), trust_radius,
   // eps));
 
 #endif
@@ -801,20 +796,20 @@ sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   SLEQP_CALL(
     sleqp_alloc_array(&data->trlib_timinig, trlib_krylov_timing_size()));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->s, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->g, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->gm, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->s, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->g, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->gm, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->h, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->v, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->p, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->Hp, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->v, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->p, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->Hp, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->l, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->l, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_lhs, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&data->h_rhs, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->h_lhs, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->h_rhs, num_variables));
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&data->Q,
                                         num_variables,
@@ -824,8 +819,7 @@ sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   SLEQP_CALL(sleqp_alloc_array(&data->dense_cache,
                                SLEQP_MAX(num_variables, num_constraints)));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&data->sparse_cache, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&data->sparse_cache, num_variables));
 
   SLEQP_CALL(sleqp_timer_create(&data->timer));
 

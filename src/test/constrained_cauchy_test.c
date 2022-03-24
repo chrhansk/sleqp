@@ -19,7 +19,7 @@ SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpCauchy* cauchy_data;
 
-SleqpSparseVec* cauchy_direction;
+SleqpVec* cauchy_direction;
 
 void
 constrained_setup()
@@ -46,7 +46,7 @@ constrained_setup()
   ASSERT_CALL(
     sleqp_standard_cauchy_create(&cauchy_data, problem, params, options));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&cauchy_direction, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&cauchy_direction, 2, 2));
 }
 
 START_TEST(test_working_set)
@@ -73,7 +73,7 @@ END_TEST
 
 START_TEST(test_dual_variable)
 {
-  SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(iterate);
+  SleqpVec* cons_dual = sleqp_iterate_cons_dual(iterate);
 
   SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
@@ -125,7 +125,7 @@ END_TEST
 void
 constrained_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&cauchy_direction));
+  ASSERT_CALL(sleqp_vec_free(&cauchy_direction));
 
   ASSERT_CALL(sleqp_cauchy_release(&cauchy_data));
 

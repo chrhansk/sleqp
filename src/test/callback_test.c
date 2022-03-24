@@ -66,11 +66,11 @@ accepted_iterate(SleqpSolver* solver, SleqpIterate* iterate, void* data)
 
   callback_data->called = true;
 
-  SleqpSparseVec* solution = sleqp_iterate_primal(iterate);
+  SleqpVec* solution = sleqp_iterate_primal(iterate);
 
   assert(solution->dim == 2);
 
-  if (sleqp_sparse_vector_eq(solution, rosenbrock_optimal, 1e-6))
+  if (sleqp_vec_eq(solution, rosenbrock_optimal, 1e-6))
   {
     callback_data->accepted_optimal_sol = true;
   }

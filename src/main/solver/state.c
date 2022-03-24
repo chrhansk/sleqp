@@ -25,7 +25,7 @@ sleqp_solver_int_state(const SleqpSolver* solver,
 SLEQP_RETCODE
 sleqp_solver_vec_state(const SleqpSolver* solver,
                        SLEQP_SOLVER_STATE_VEC value,
-                       SleqpSparseVec* result)
+                       SleqpVec* result)
 {
   SLEQP_CALL(
     sleqp_problem_solver_get_vec_state(solver->problem_solver, value, result));

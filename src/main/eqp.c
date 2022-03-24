@@ -63,7 +63,7 @@ sleqp_eqp_solver_get_timer(SleqpEQPSolver* solver)
 
 SLEQP_RETCODE
 sleqp_eqp_solver_add_violated_multipliers(SleqpEQPSolver* solver,
-                                          SleqpSparseVec* multipliers)
+                                          SleqpVec* multipliers)
 {
   SLEQP_CALL(
     solver->callbacks.add_violated_multipliers(multipliers, solver->eqp_data));
@@ -73,8 +73,8 @@ sleqp_eqp_solver_add_violated_multipliers(SleqpEQPSolver* solver,
 
 SLEQP_RETCODE
 sleqp_eqp_solver_compute_step(SleqpEQPSolver* solver,
-                              const SleqpSparseVec* multipliers,
-                              SleqpSparseVec* newton_step)
+                              const SleqpVec* multipliers,
+                              SleqpVec* newton_step)
 {
   SLEQP_CALL(sleqp_timer_start(solver->timer));
 

@@ -15,14 +15,14 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_iterate_vars_slackness_residuals(SleqpProblem* problem,
                                        SleqpIterate* iterate,
-                                       SleqpSparseVec* residuals,
+                                       SleqpVec* residuals,
                                        double zero_eps);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_iterate_cons_slackness_residuals(SleqpProblem* problem,
                                        SleqpIterate* iterate,
-                                       SleqpSparseVec* residuals,
+                                       SleqpVec* residuals,
                                        double zero_eps);
 
 SLEQP_NODISCARD
@@ -36,7 +36,7 @@ SLEQP_RETCODE
 sleqp_iterate_stationarity_residuals(SleqpProblem* problem,
                                      SleqpIterate* iterate,
                                      double* cache,
-                                     SleqpSparseVec* residuals,
+                                     SleqpVec* residuals,
                                      double zero_eps);
 
 SLEQP_NODISCARD

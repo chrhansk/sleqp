@@ -42,9 +42,9 @@ SLEQP_RETCODE
 sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
                               SleqpIterate* iterate,
                               SleqpCauchy* cauchy_data,
-                              SleqpSparseVec* cauchy_direction,
-                              SleqpSparseVec* cauchy_hessian_direction,
-                              const SleqpSparseVec* multipliers,
+                              SleqpVec* cauchy_direction,
+                              SleqpVec* cauchy_hessian_direction,
+                              const SleqpVec* multipliers,
                               double* trust_radius,
                               double* quadratic_merit_value);
 

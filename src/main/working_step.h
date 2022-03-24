@@ -29,10 +29,10 @@ sleqp_working_step_set_iterate(SleqpWorkingStep* step,
                                SleqpAugJac* jacobian,
                                double trust_radius);
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_working_step_get_direction(SleqpWorkingStep* step);
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_working_step_get_step(SleqpWorkingStep* step);
 
 double
@@ -45,7 +45,7 @@ double
 sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
                                         double penalty_parameter);
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step);
 
 SLEQP_NODISCARD

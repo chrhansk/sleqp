@@ -33,8 +33,8 @@ sleqp_dual_estimation_create(SleqpDualEstimation** star,
 SLEQP_RETCODE
 sleqp_estimate_duals(SleqpDualEstimation* estimation,
                      const SleqpIterate* iterate,
-                     SleqpSparseVec* cons_dual,
-                     SleqpSparseVec* vars_dual)
+                     SleqpVec* cons_dual,
+                     SleqpVec* vars_dual)
 {
   SLEQP_CALL(estimation->callbacks.estimate_duals(iterate,
                                                   cons_dual,

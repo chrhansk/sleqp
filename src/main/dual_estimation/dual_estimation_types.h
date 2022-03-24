@@ -5,8 +5,8 @@
 #include "working_set.h"
 
 typedef SLEQP_RETCODE (*SLEQP_ESTIMATE_DUALS)(const SleqpIterate* iterate,
-                                              SleqpSparseVec* cons_dual,
-                                              SleqpSparseVec* vars_dual,
+                                              SleqpVec* cons_dual,
+                                              SleqpVec* vars_dual,
                                               void* estimation_data);
 
 typedef SLEQP_RETCODE (*SLEQP_ESTIMATION_FREE)(void* estimation_data);

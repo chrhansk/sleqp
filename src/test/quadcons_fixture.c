@@ -2,11 +2,11 @@
 
 SleqpFunc* quadconsfunc;
 
-SleqpSparseVec* quadconsfunc_var_lb;
-SleqpSparseVec* quadconsfunc_var_ub;
-SleqpSparseVec* quadconsfunc_cons_lb;
-SleqpSparseVec* quadconsfunc_cons_ub;
-SleqpSparseVec* quadconsfunc_x;
+SleqpVec* quadconsfunc_var_lb;
+SleqpVec* quadconsfunc_var_ub;
+SleqpVec* quadconsfunc_cons_lb;
+SleqpVec* quadconsfunc_cons_ub;
+SleqpVec* quadconsfunc_x;
 
 static const int num_variables   = 2;
 static const int num_constraints = 2;
@@ -29,7 +29,7 @@ square(double v)
 
 SLEQP_RETCODE
 quadconsfunc_set(SleqpFunc* func,
-                 SleqpSparseVec* x,
+                 SleqpVec* x,
                  SLEQP_VALUE_REASON reason,
                  bool* reject,
                  int* obj_grad_nnz,
@@ -69,9 +69,7 @@ quadconsfunc_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 SLEQP_RETCODE
-quadconsfunc_obj_grad(SleqpFunc* func,
-                      SleqpSparseVec* obj_grad,
-                      void* func_data)
+quadconsfunc_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*)func_data;
 
@@ -80,17 +78,15 @@ quadconsfunc_obj_grad(SleqpFunc* func,
 
   obj_grad->nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 2. * data->x[0]));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 0, 2. * data->x[0]));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, 2. * data->x[1]));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 1, 2. * data->x[1]));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-quadconsfunc_cons_val(SleqpFunc* func,
-                      SleqpSparseVec* cons_val,
-                      void* func_data)
+quadconsfunc_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*)func_data;
 
@@ -99,14 +95,12 @@ quadconsfunc_cons_val(SleqpFunc* func,
 
   cons_val->nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                      0,
-                                      square(data->x[0]) + square(data->x[1])));
+  SLEQP_CALL(
+    sleqp_vec_push(cons_val, 0, square(data->x[0]) + square(data->x[1])));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val,
-                                      1,
-                                      (square(1 - data->x[0]))
-                                        + square(1 - data->x[1])));
+  SLEQP_CALL(sleqp_vec_push(cons_val,
+                            1,
+                            (square(1 - data->x[0])) + square(1 - data->x[1])));
 
   return SLEQP_OKAY;
 }
@@ -138,9 +132,9 @@ quadconsfunc_cons_jac(SleqpFunc* func,
 SLEQP_RETCODE
 quadconsfunc_hess_prod(SleqpFunc* func,
                        const double* obj_dual,
-                       const SleqpSparseVec* direction,
-                       const SleqpSparseVec* cons_duals,
-                       SleqpSparseVec* result,
+                       const SleqpVec* direction,
+                       const SleqpVec* cons_duals,
+                       SleqpVec* result,
                        void* func_data)
 {
   double total_value = 0.;
@@ -157,9 +151,9 @@ quadconsfunc_hess_prod(SleqpFunc* func,
 
   total_value *= 2;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(direction, result));
+  SLEQP_CALL(sleqp_vec_copy(direction, result));
 
-  SLEQP_CALL(sleqp_sparse_vector_scale(result, total_value));
+  SLEQP_CALL(sleqp_vec_scale(result, total_value));
 
   return SLEQP_OKAY;
 }
@@ -187,46 +181,41 @@ quadconsfunc_setup()
                                 num_constraints,
                                 func_data));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadconsfunc_var_lb, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&quadconsfunc_var_lb, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_var_lb, 0, 0.));
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_var_lb, 1, 0.));
+  ASSERT_CALL(sleqp_vec_push(quadconsfunc_var_lb, 0, 0.));
+  ASSERT_CALL(sleqp_vec_push(quadconsfunc_var_lb, 1, 0.));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadconsfunc_var_ub, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&quadconsfunc_var_ub, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_var_ub, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_var_ub, 1, 1.));
+  ASSERT_CALL(sleqp_vec_push(quadconsfunc_var_ub, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(quadconsfunc_var_ub, 1, 1.));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadconsfunc_cons_lb, 2, 2));
+  ASSERT_CALL(sleqp_vec_create_full(&quadconsfunc_cons_lb, 2));
+  ASSERT_CALL(sleqp_vec_fill(quadconsfunc_cons_lb, -inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_cons_lb, 0, -inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_cons_lb, 1, -inf));
+  ASSERT_CALL(sleqp_vec_create_full(&quadconsfunc_cons_ub, 2));
+  ASSERT_CALL(sleqp_vec_fill(quadconsfunc_cons_ub, 1.));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadconsfunc_cons_ub, 2, 2));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_cons_ub, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_cons_ub, 1, 1.));
-
-  ASSERT_CALL(sleqp_sparse_vector_create(&quadconsfunc_x, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&quadconsfunc_x, 2, 2));
 
   double val = 0.29289321881345254;
 
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_x, 0, val));
-  ASSERT_CALL(sleqp_sparse_vector_push(quadconsfunc_x, 1, val));
+  ASSERT_CALL(sleqp_vec_fill(quadconsfunc_x, val));
 }
 
 void
 quadconsfunc_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&quadconsfunc_x));
+  ASSERT_CALL(sleqp_vec_free(&quadconsfunc_x));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&quadconsfunc_cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&quadconsfunc_cons_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&quadconsfunc_cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&quadconsfunc_cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&quadconsfunc_var_ub));
+  ASSERT_CALL(sleqp_vec_free(&quadconsfunc_var_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&quadconsfunc_var_lb));
+  ASSERT_CALL(sleqp_vec_free(&quadconsfunc_var_lb));
 
   ASSERT_CALL(sleqp_func_release(&quadconsfunc));
 

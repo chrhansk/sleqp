@@ -25,8 +25,8 @@ sleqp_preprocessor_transformed_problem(SleqpPreprocessor* preprocessor);
 
 SLEQP_RETCODE
 sleqp_preprocessor_transform_primal(SleqpPreprocessor* preprocessor,
-                                    const SleqpSparseVec* source,
-                                    SleqpSparseVec* target);
+                                    const SleqpVec* source,
+                                    SleqpVec* target);
 
 SLEQP_RETCODE
 sleqp_preprocessor_restore_iterate(SleqpPreprocessor* preprocessor,

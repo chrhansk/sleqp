@@ -6,14 +6,13 @@
 typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_SET_ITERATE)(SleqpIterate* iterate,
                                                    void* aug_jac);
 
-typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_MIN_NORM_SOLUTION)(
-  const SleqpSparseVec* rhs,
-  SleqpSparseVec* sol,
-  void* aug_jac);
+typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_MIN_NORM_SOLUTION)(const SleqpVec* rhs,
+                                                         SleqpVec* sol,
+                                                         void* aug_jac);
 
-typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_PROJECTION)(const SleqpSparseVec* rhs,
-                                                  SleqpSparseVec* primal_sol,
-                                                  SleqpSparseVec* dual_sol,
+typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_PROJECTION)(const SleqpVec* rhs,
+                                                  SleqpVec* primal_sol,
+                                                  SleqpVec* dual_sol,
                                                   void* aug_jac);
 
 typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_CONDITION)(bool* exact,

@@ -4,7 +4,7 @@
 #include "cmp.h"
 #include "func.h"
 #include "mem.h"
-#include "sparse/sparse_vec.h"
+#include "sparse/vec.h"
 
 #include "test_common.h"
 

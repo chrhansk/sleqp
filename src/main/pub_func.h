@@ -3,7 +3,7 @@
 
 #include "sleqp/pub_hess_struct.h"
 #include "sparse/pub_sparse_matrix.h"
-#include "sparse/pub_sparse_vec.h"
+#include "sparse/pub_vec.h"
 
 /**
  * @defgroup function Function definition
@@ -46,7 +46,7 @@ typedef enum
  * @param[in,out] func_data       The function data
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
-                                        SleqpSparseVec* value,
+                                        SleqpVec* value,
                                         SLEQP_VALUE_REASON reason,
                                         bool* reject,
                                         int* obj_grad_nnz,
@@ -73,7 +73,7 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_VAL)(SleqpFunc* func,
  * @param[in,out] func_data       The function data
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_GRAD)(SleqpFunc* func,
-                                             SleqpSparseVec* obj_grad,
+                                             SleqpVec* obj_grad,
                                              void* func_data);
 
 /**
@@ -85,7 +85,7 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_GRAD)(SleqpFunc* func,
  * @param[in,out] func_data       The function data
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
-                                             SleqpSparseVec* cons_val,
+                                             SleqpVec* cons_val,
                                              void* func_data);
 
 /**
@@ -124,9 +124,9 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_HESS_PROD)(SleqpFunc* func,
                                               const double* obj_dual,
-                                              const SleqpSparseVec* direction,
-                                              const SleqpSparseVec* cons_duals,
-                                              SleqpSparseVec* product,
+                                              const SleqpVec* direction,
+                                              const SleqpVec* cons_duals,
+                                              SleqpVec* product,
                                               void* func_data);
 
 /**

@@ -2,8 +2,8 @@
 
 static SLEQP_RETCODE
 estimate_duals_lp(const SleqpIterate* iterate,
-                  SleqpSparseVec* cons_dual,
-                  SleqpSparseVec* vars_dual,
+                  SleqpVec* cons_dual,
+                  SleqpVec* vars_dual,
                   void* estimation_data)
 {
   SleqpCauchy* cauchy = (SleqpCauchy*)estimation_data;

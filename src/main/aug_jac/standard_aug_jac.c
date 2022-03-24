@@ -264,14 +264,12 @@ aug_jac_condition(bool* exact, double* condition, void* data)
 }
 
 static SLEQP_RETCODE
-aug_jac_min_norm_solution(const SleqpSparseVec* _rhs,
-                          SleqpSparseVec* sol,
-                          void* data)
+aug_jac_min_norm_solution(const SleqpVec* _rhs, SleqpVec* sol, void* data)
 {
   AugJacData* jacobian = (AugJacData*)data;
 
   // Cast away constness
-  SleqpSparseVec* rhs = (SleqpSparseVec*)_rhs;
+  SleqpVec* rhs = (SleqpVec*)_rhs;
 
   assert(jacobian->factorization);
 
@@ -314,15 +312,15 @@ aug_jac_min_norm_solution(const SleqpSparseVec* _rhs,
 }
 
 static SLEQP_RETCODE
-aug_jac_projection(const SleqpSparseVec* _rhs,
-                   SleqpSparseVec* primal_sol,
-                   SleqpSparseVec* dual_sol,
+aug_jac_projection(const SleqpVec* _rhs,
+                   SleqpVec* primal_sol,
+                   SleqpVec* dual_sol,
                    void* data)
 {
   AugJacData* jacobian = (AugJacData*)data;
 
   // Cast away constness
-  SleqpSparseVec* rhs = (SleqpSparseVec*)_rhs;
+  SleqpVec* rhs = (SleqpVec*)_rhs;
 
   assert(jacobian->factorization);
 
@@ -340,7 +338,7 @@ aug_jac_projection(const SleqpSparseVec* _rhs,
   assert(rhs->dim == num_variables);
 
   // just add some zeros...
-  SLEQP_CALL(sleqp_sparse_vector_resize(rhs, total_size));
+  SLEQP_CALL(sleqp_vec_resize(rhs, total_size));
 
   SLEQP_CALL(sleqp_factorization_solve(factorization, rhs));
 
@@ -365,11 +363,11 @@ aug_jac_projection(const SleqpSparseVec* _rhs,
                                             total_size,
                                             zero_eps));
 
-    // SLEQP_CALL(sleqp_sparse_vector_scale(dual_sol, -1.));
+    // SLEQP_CALL(sleqp_vec_scale(dual_sol, -1.));
   }
 
   // erase the zeros
-  SLEQP_CALL(sleqp_sparse_vector_resize(rhs, num_variables));
+  SLEQP_CALL(sleqp_vec_resize(rhs, num_variables));
 
   SLEQP_CALL(sleqp_timer_stop(jacobian->substitution_timer));
 

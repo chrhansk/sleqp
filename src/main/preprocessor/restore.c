@@ -27,7 +27,7 @@ struct SleqpRestoration
   double* cons_dual;
 
   double* cache;
-  SleqpSparseVec* stationarity_residuals;
+  SleqpVec* stationarity_residuals;
   double* dense_stationarity_residuals;
 
   // Maps from transformed to original
@@ -128,9 +128,8 @@ sleqp_restoration_create(SleqpRestoration** star,
 
   SLEQP_CALL(sleqp_alloc_array(&restoration->cache, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&restoration->stationarity_residuals,
-                                     num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&restoration->stationarity_residuals,
+                                    num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&restoration->dense_stationarity_residuals,
                                num_variables));
@@ -150,8 +149,8 @@ sleqp_restoration_create(SleqpRestoration** star,
 
 static SLEQP_RETCODE
 restore_primal(SleqpRestoration* restoration,
-               const SleqpSparseVec* source,
-               SleqpSparseVec* target)
+               const SleqpVec* source,
+               SleqpVec* target)
 {
   int num_fixed_vars;
   int* fixed_var_indices;
@@ -217,15 +216,15 @@ store_duals(const SleqpRestoration* restoration, SleqpIterate* original)
   const double zero_eps
     = sleqp_params_value(restoration->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sleqp_iterate_vars_dual(original),
-                                          restoration->var_dual,
-                                          num_variables,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sleqp_iterate_vars_dual(original),
+                                    restoration->var_dual,
+                                    num_variables,
+                                    zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sleqp_iterate_cons_dual(original),
-                                          restoration->cons_dual,
-                                          num_constraints,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sleqp_iterate_cons_dual(original),
+                                    restoration->cons_dual,
+                                    num_constraints,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -671,7 +670,7 @@ prepare_duals(SleqpRestoration* restoration, const SleqpIterate* transformed)
   SLEQP_CALL(reset_duals(restoration));
 
   {
-    SleqpSparseVec* var_dual = sleqp_iterate_vars_dual(transformed);
+    SleqpVec* var_dual = sleqp_iterate_vars_dual(transformed);
 
     for (int k = 0; k < var_dual->nnz; ++k)
     {
@@ -683,7 +682,7 @@ prepare_duals(SleqpRestoration* restoration, const SleqpIterate* transformed)
   }
 
   {
-    SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(transformed);
+    SleqpVec* cons_dual = sleqp_iterate_cons_dual(transformed);
 
     for (int k = 0; k < cons_dual->nnz; ++k)
     {
@@ -716,7 +715,7 @@ compute_stationarity_residuals(SleqpRestoration* restoration,
 
   SLEQP_CALL(store_duals(restoration, original));
 
-  SleqpSparseVec* residuals = restoration->stationarity_residuals;
+  SleqpVec* residuals = restoration->stationarity_residuals;
 
   SLEQP_CALL(sleqp_iterate_stationarity_residuals(problem,
                                                   original,
@@ -726,7 +725,7 @@ compute_stationarity_residuals(SleqpRestoration* restoration,
 
   double* dense_residuals = restoration->dense_stationarity_residuals;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(residuals, dense_residuals));
+  SLEQP_CALL(sleqp_vec_to_raw(residuals, dense_residuals));
 
   return SLEQP_OKAY;
 }
@@ -818,7 +817,7 @@ restoration_free(SleqpRestoration** star)
 
   sleqp_free(&restoration->dense_stationarity_residuals);
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&restoration->stationarity_residuals));
+  SLEQP_CALL(sleqp_vec_free(&restoration->stationarity_residuals));
 
   sleqp_free(&restoration->cache);
 

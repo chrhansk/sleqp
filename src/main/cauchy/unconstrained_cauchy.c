@@ -11,7 +11,7 @@ typedef struct
   SleqpIterate* iterate;
   double trust_radius;
 
-  SleqpSparseVec* direction;
+  SleqpVec* direction;
   double objective;
 
 } CauchyData;
@@ -45,7 +45,7 @@ unconstrained_cauchy_set_trust_radius(double trust_radius, void* data)
 }
 
 static SLEQP_RETCODE
-unconstrained_cauchy_solve(SleqpSparseVec* gradient,
+unconstrained_cauchy_solve(SleqpVec* gradient,
                            double penalty,
                            SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
                            void* data)
@@ -55,18 +55,18 @@ unconstrained_cauchy_solve(SleqpSparseVec* gradient,
   SleqpProblem* problem = cauchy_data->problem;
   SleqpIterate* iterate = cauchy_data->iterate;
 
-  SleqpSparseVec* direction = cauchy_data->direction;
+  SleqpVec* direction = cauchy_data->direction;
 
   double* objective = &(cauchy_data->objective);
 
   (*objective) = sleqp_iterate_obj_val(iterate);
 
-  const SleqpSparseVec* grad = sleqp_iterate_obj_grad(iterate);
+  const SleqpVec* grad = sleqp_iterate_obj_grad(iterate);
 
   const int num_variables   = sleqp_problem_num_vars(problem);
   const double trust_radius = cauchy_data->trust_radius;
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(direction));
+  SLEQP_CALL(sleqp_vec_clear(direction));
 
   int k_g = 0;
 
@@ -83,13 +83,13 @@ unconstrained_cauchy_solve(SleqpSparseVec* gradient,
 
     if (ng_val >= 0.)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(direction, j, trust_radius));
+      SLEQP_CALL(sleqp_vec_push(direction, j, trust_radius));
 
       (*objective) += trust_radius * g_val;
     }
     else
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(direction, j, -trust_radius));
+      SLEQP_CALL(sleqp_vec_push(direction, j, -trust_radius));
 
       (*objective) += (-trust_radius) * g_val;
     }
@@ -119,11 +119,11 @@ unconstrained_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-unconstrained_cauchy_get_direction(SleqpSparseVec* direction, void* data)
+unconstrained_cauchy_get_direction(SleqpVec* direction, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(cauchy_data->direction, direction));
+  SLEQP_CALL(sleqp_vec_copy(cauchy_data->direction, direction));
 
   return SLEQP_OKAY;
 }
@@ -138,12 +138,12 @@ unconstrained_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
 
 static SLEQP_RETCODE
 unconstrained_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
-                                    SleqpSparseVec* cons_dual,
-                                    SleqpSparseVec* vars_dual,
+                                    SleqpVec* cons_dual,
+                                    SleqpVec* vars_dual,
                                     void* data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_clear(vars_dual));
-  SLEQP_CALL(sleqp_sparse_vector_clear(cons_dual));
+  SLEQP_CALL(sleqp_vec_clear(vars_dual));
+  SLEQP_CALL(sleqp_vec_clear(cons_dual));
 
   return SLEQP_OKAY;
 }
@@ -184,7 +184,7 @@ unconstrained_cauchy_free(void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cauchy_data->direction));
+  SLEQP_CALL(sleqp_vec_free(&cauchy_data->direction));
 
   SLEQP_CALL(sleqp_iterate_release(&cauchy_data->iterate));
 
@@ -218,8 +218,7 @@ cauchy_data_create(CauchyData** star,
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_full(&cauchy_data->direction, num_variables));
+  SLEQP_CALL(sleqp_vec_create_full(&cauchy_data->direction, num_variables));
 
   cauchy_data->trust_radius = SLEQP_NONE;
 

@@ -73,11 +73,11 @@ START_TEST(test_overflow)
 {
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, 10000));
 
-  SleqpSparseVec* point;
+  SleqpVec* point;
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&point, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&point, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(point, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(point, 0, 1.));
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
@@ -92,7 +92,7 @@ START_TEST(test_overflow)
                                                &cons_val_nnz,
                                                &cons_jac_nnz);
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&point));
+  ASSERT_CALL(sleqp_vec_free(&point));
 
   ck_assert_int_eq(retcode, SLEQP_ERROR);
   ck_assert_int_eq(sleqp_error_type(), SLEQP_MATH_ERROR);
@@ -103,11 +103,11 @@ START_TEST(test_underflow_warning)
 {
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -10000));
 
-  SleqpSparseVec* point;
+  SleqpVec* point;
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&point, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&point, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(point, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(point, 0, 1.));
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
@@ -123,7 +123,7 @@ START_TEST(test_underflow_warning)
                                                &cons_val_nnz,
                                                &cons_jac_nnz);
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&point));
+  ASSERT_CALL(sleqp_vec_free(&point));
 
   ck_assert_int_eq(retcode, SLEQP_OKAY);
 }
@@ -137,11 +137,11 @@ START_TEST(test_underflow_error)
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -10000));
 
-  SleqpSparseVec* point;
+  SleqpVec* point;
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&point, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&point, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(point, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(point, 0, 1.));
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
@@ -157,7 +157,7 @@ START_TEST(test_underflow_error)
                                                &cons_val_nnz,
                                                &cons_jac_nnz);
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&point));
+  ASSERT_CALL(sleqp_vec_free(&point));
 
   ck_assert_int_eq(retcode, SLEQP_ERROR);
   ck_assert_int_eq(sleqp_error_type(), SLEQP_MATH_ERROR);

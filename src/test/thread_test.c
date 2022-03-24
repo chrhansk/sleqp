@@ -20,12 +20,12 @@ SLEQP_RETCODE
 solve_problem()
 {
   SleqpFunc* func;
-  SleqpSparseVec* var_lb;
-  SleqpSparseVec* var_ub;
-  SleqpSparseVec* cons_lb;
-  SleqpSparseVec* cons_ub;
-  SleqpSparseVec* initial;
-  SleqpSparseVec* opt;
+  SleqpVec* var_lb;
+  SleqpVec* var_ub;
+  SleqpVec* cons_lb;
+  SleqpVec* cons_ub;
+  SleqpVec* initial;
+  SleqpVec* opt;
 
   rosenbrock_create(&func,
                     &var_lb,
@@ -66,14 +66,14 @@ solve_problem()
 
   ASSERT_CALL(sleqp_params_release(&params));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&opt));
-  ASSERT_CALL(sleqp_sparse_vector_free(&initial));
+  ASSERT_CALL(sleqp_vec_free(&opt));
+  ASSERT_CALL(sleqp_vec_free(&initial));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_lb));
+  ASSERT_CALL(sleqp_vec_free(&var_ub));
+  ASSERT_CALL(sleqp_vec_free(&var_lb));
 
   ASSERT_CALL(sleqp_func_release(&func));
 

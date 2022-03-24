@@ -20,7 +20,7 @@ on_restoration_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
   const double feas_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
 
-  SleqpSparseVec* cons_val;
+  SleqpVec* cons_val;
 
   SLEQP_CALL(sleqp_restoration_func_cons_val(restoration_func, &cons_val));
 
@@ -79,8 +79,8 @@ create_restoration_solver(SleqpSolver* solver)
 
   const int num_variables = sleqp_problem_num_vars(solver->restoration_problem);
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->restoration_primal,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_vec_create_empty(&solver->restoration_primal, num_variables));
 
   SLEQP_CALL(create_restoration_primal(solver));
 
