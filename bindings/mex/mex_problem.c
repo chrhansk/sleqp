@@ -52,13 +52,13 @@ num_cons_from_options(const mxArray* options)
 }
 
 SLEQP_RETCODE
-mex_create_vec_from_array(SleqpSparseVec** star, const mxArray* array)
+mex_create_vec_from_array(SleqpVec** star, const mxArray* array)
 {
   const int dimension = array_or_cell_size(array);
 
-  SLEQP_CALL(sleqp_sparse_vector_create_full(star, dimension));
+  SLEQP_CALL(sleqp_vec_create_full(star, dimension));
 
-  SleqpSparseVec* vec = *star;
+  SleqpVec* vec = *star;
 
   if (mxIsCell(array))
   {
@@ -73,7 +73,7 @@ mex_create_vec_from_array(SleqpSparseVec** star, const mxArray* array)
 
       for (int k = 0; k < cur_num_elements; ++k)
       {
-        SLEQP_CALL(sleqp_sparse_vector_push(vec, k + offset, ptr[k]));
+        SLEQP_CALL(sleqp_vec_push(vec, k + offset, ptr[k]));
       }
 
       offset += cur_num_elements;
@@ -85,7 +85,7 @@ mex_create_vec_from_array(SleqpSparseVec** star, const mxArray* array)
 
     for (int k = 0; k < dimension; ++k)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(vec, k, ptr[k]));
+      SLEQP_CALL(sleqp_vec_push(vec, k, ptr[k]));
     }
   }
 
@@ -93,7 +93,7 @@ mex_create_vec_from_array(SleqpSparseVec** star, const mxArray* array)
 }
 
 static SLEQP_RETCODE
-create_vec_from_array_default(SleqpSparseVec** star,
+create_vec_from_array_default(SleqpVec** star,
                               const mxArray* array,
                               const int dimension,
                               double value)
@@ -104,16 +104,16 @@ create_vec_from_array_default(SleqpSparseVec** star,
   }
   else
   {
-    SLEQP_CALL(sleqp_sparse_vector_create_full(star, dimension));
-    SLEQP_CALL(sleqp_sparse_vector_fill(*star, value));
+    SLEQP_CALL(sleqp_vec_create_full(star, dimension));
+    SLEQP_CALL(sleqp_vec_fill(*star, value));
   }
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-create_bounds_from_options(SleqpSparseVec** lb_star,
-                           SleqpSparseVec** ub_star,
+create_bounds_from_options(SleqpVec** lb_star,
+                           SleqpVec** ub_star,
                            const int dimension,
                            const mxArray* lb_array,
                            const mxArray* ub_array)
@@ -128,8 +128,8 @@ create_bounds_from_options(SleqpSparseVec** lb_star,
 }
 
 static SLEQP_RETCODE
-create_var_bounds_from_options(SleqpSparseVec** var_lb_star,
-                               SleqpSparseVec** var_ub_star,
+create_var_bounds_from_options(SleqpVec** var_lb_star,
+                               SleqpVec** var_ub_star,
                                const int num_variables,
                                const mxArray* options)
 {
@@ -142,8 +142,8 @@ create_var_bounds_from_options(SleqpSparseVec** var_lb_star,
 }
 
 static SLEQP_RETCODE
-create_cons_bounds_from_options(SleqpSparseVec** cons_lb_star,
-                                SleqpSparseVec** cons_ub_star,
+create_cons_bounds_from_options(SleqpVec** cons_lb_star,
+                                SleqpVec** cons_ub_star,
                                 const int num_constraints,
                                 const mxArray* options)
 {
@@ -167,11 +167,11 @@ mex_problem_create(SleqpProblem** star,
   const int num_vars = num_vars_from_solution(mex_x0);
   const int num_cons = num_cons_from_options(mex_options);
 
-  SleqpSparseVec* var_lb;
-  SleqpSparseVec* var_ub;
+  SleqpVec* var_lb;
+  SleqpVec* var_ub;
 
-  SleqpSparseVec* cons_lb;
-  SleqpSparseVec* cons_ub;
+  SleqpVec* cons_lb;
+  SleqpVec* cons_ub;
 
   SLEQP_CALL(
     create_var_bounds_from_options(&var_lb, &var_ub, num_vars, mex_options));
@@ -213,11 +213,11 @@ mex_problem_create(SleqpProblem** star,
                                          cons_lb,
                                          cons_ub));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cons_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&cons_lb));
+  SLEQP_CALL(sleqp_vec_free(&cons_ub));
+  SLEQP_CALL(sleqp_vec_free(&cons_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_lb));
+  SLEQP_CALL(sleqp_vec_free(&var_ub));
+  SLEQP_CALL(sleqp_vec_free(&var_lb));
 
   return SLEQP_OKAY;
 }

@@ -7,7 +7,7 @@
 #include "mem.h"
 
 #include "sparse/sparse_matrix.h"
-#include "sparse/sparse_vec.h"
+#include "sparse/vec.h"
 
 START_TEST(test_sparse_matrix_vector_product)
 {
@@ -30,13 +30,13 @@ START_TEST(test_sparse_matrix_vector_product)
   ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 0, 2, 2.));
   ASSERT_CALL(sleqp_sparse_matrix_push(matrix, 1, 2, 3.));
 
-  SleqpSparseVec* vector;
+  SleqpVec* vector;
   double* result;
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&vector, 3, 3));
-  ASSERT_CALL(sleqp_sparse_vector_push(vector, 0, 2.));
-  ASSERT_CALL(sleqp_sparse_vector_push(vector, 1, 4.));
-  ASSERT_CALL(sleqp_sparse_vector_push(vector, 2, 3.));
+  ASSERT_CALL(sleqp_vec_create(&vector, 3, 3));
+  ASSERT_CALL(sleqp_vec_push(vector, 0, 2.));
+  ASSERT_CALL(sleqp_vec_push(vector, 1, 4.));
+  ASSERT_CALL(sleqp_vec_push(vector, 2, 3.));
 
   ASSERT_CALL(sleqp_alloc_array(&result, 2));
 
@@ -49,7 +49,7 @@ START_TEST(test_sparse_matrix_vector_product)
 
   sleqp_free(&result);
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&vector));
+  ASSERT_CALL(sleqp_vec_free(&vector));
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&matrix));
 }

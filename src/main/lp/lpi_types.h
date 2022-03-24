@@ -12,7 +12,7 @@
 #include "params.h"
 
 #include "sparse/sparse_matrix.h"
-#include "sparse/sparse_vec.h"
+#include "sparse/vec.h"
 
 typedef enum
 {

@@ -97,7 +97,7 @@ create_lsq_func_data(LSQFuncData** star,
 
 static SLEQP_RETCODE
 mex_lsq_func_set(SleqpFunc* func,
-                 SleqpSparseVec* x,
+                 SleqpVec* x,
                  SLEQP_VALUE_REASON reason,
                  bool* reject,
                  int* obj_grad_nnz,
@@ -111,13 +111,13 @@ mex_lsq_func_set(SleqpFunc* func,
   *cons_val_nnz = 0;
   *cons_jac_nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(x, mxGetPr(func_data->primal)));
+  SLEQP_CALL(sleqp_vec_to_raw(x, mxGetPr(func_data->primal)));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-mex_lsq_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* data)
+mex_lsq_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* data)
 {
   LSQFuncData* func_data = (LSQFuncData*)data;
 
@@ -141,7 +141,7 @@ mex_lsq_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
 }
 
 static SLEQP_RETCODE
-mex_lsq_residuals(SleqpFunc* func, SleqpSparseVec* residual, void* data)
+mex_lsq_residuals(SleqpFunc* func, SleqpVec* residual, void* data)
 {
   LSQFuncData* func_data = (LSQFuncData*)data;
 
@@ -154,14 +154,14 @@ mex_lsq_residuals(SleqpFunc* func, SleqpSparseVec* residual, void* data)
 
 static SLEQP_RETCODE
 mex_lsq_jac_forward(SleqpFunc* func,
-                    const SleqpSparseVec* forward_direction,
-                    SleqpSparseVec* product,
+                    const SleqpVec* forward_direction,
+                    SleqpVec* product,
                     void* data)
 {
   LSQFuncData* func_data = (LSQFuncData*)data;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(forward_direction,
-                                        mxGetPr(func_data->forward_dir)));
+  SLEQP_CALL(
+    sleqp_vec_to_raw(forward_direction, mxGetPr(func_data->forward_dir)));
 
   mxArray* rhs[] = {func_data->callbacks.lsq_jac_forward,
                     func_data->primal,
@@ -174,14 +174,14 @@ mex_lsq_jac_forward(SleqpFunc* func,
 
 static SLEQP_RETCODE
 mex_lsq_jac_adjoint(SleqpFunc* func,
-                    const SleqpSparseVec* adjoint_direction,
-                    SleqpSparseVec* product,
+                    const SleqpVec* adjoint_direction,
+                    SleqpVec* product,
                     void* data)
 {
   LSQFuncData* func_data = (LSQFuncData*)data;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(adjoint_direction,
-                                        mxGetPr(func_data->adjoint_dir)));
+  SLEQP_CALL(
+    sleqp_vec_to_raw(adjoint_direction, mxGetPr(func_data->adjoint_dir)));
 
   mxArray* rhs[] = {func_data->callbacks.lsq_jac_adjoint,
                     func_data->primal,

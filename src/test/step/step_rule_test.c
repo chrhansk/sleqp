@@ -48,10 +48,9 @@ test_step_rule(SLEQP_STEP_RULE step_rule)
 
   ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
 
-  SleqpSparseVec* actual_solution = sleqp_iterate_primal(solution_iterate);
+  SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
-  ck_assert(
-    sleqp_sparse_vector_eq(actual_solution, log_rosenbrock_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, log_rosenbrock_optimal, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 

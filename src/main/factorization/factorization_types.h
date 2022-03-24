@@ -2,7 +2,7 @@
 #define SLEQP_FACTORIZATION_TYPES_H
 
 #include "sparse/sparse_matrix.h"
-#include "sparse/sparse_vec.h"
+#include "sparse/vec.h"
 
 typedef struct SleqpFactorization SleqpFactorization;
 
@@ -11,10 +11,10 @@ typedef SLEQP_RETCODE (*SLEQP_FACTORIZATION_SET_MATRIX)(
   SleqpSparseMatrix* matrix);
 
 typedef SLEQP_RETCODE (*SLEQP_FACTORIZATION_SOLVE)(void* factorization_data,
-                                                   const SleqpSparseVec* rhs);
+                                                   const SleqpVec* rhs);
 
 typedef SLEQP_RETCODE (*SLEQP_FACTORIZATION_SOLUTION)(void* factorization_data,
-                                                      SleqpSparseVec* sol,
+                                                      SleqpVec* sol,
                                                       int begin,
                                                       int end,
                                                       double zero_eps);
@@ -34,5 +34,5 @@ typedef struct
   SLEQP_FACTORIZATION_FREE free;
 } SleqpFactorizationCallbacks;
 
-#endif /* SLEQP_FACTORIZATION
+#endif /* SLEQP_FACTORIZATION                                                  \
 _TYPES_H */

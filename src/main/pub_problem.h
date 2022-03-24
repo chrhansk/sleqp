@@ -6,7 +6,7 @@
 #include "sleqp/pub_func.h"
 #include "sleqp/pub_params.h"
 #include "sparse/pub_sparse_matrix.h"
-#include "sparse/pub_sparse_vec.h"
+#include "sparse/pub_vec.h"
 
 /**
  * @file pub_problem.h
@@ -50,22 +50,22 @@ SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_problem_create_simple(SleqpProblem** star,
                             SleqpFunc* func,
                             SleqpParams* params,
-                            const SleqpSparseVec* var_lb,
-                            const SleqpSparseVec* var_ub,
-                            const SleqpSparseVec* general_lb,
-                            const SleqpSparseVec* general_ub);
+                            const SleqpVec* var_lb,
+                            const SleqpVec* var_ub,
+                            const SleqpVec* general_lb,
+                            const SleqpVec* general_ub);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_problem_create(SleqpProblem** star,
                      SleqpFunc* func,
                      SleqpParams* params,
-                     const SleqpSparseVec* var_lb,
-                     const SleqpSparseVec* var_ub,
-                     const SleqpSparseVec* genereal_lb,
-                     const SleqpSparseVec* genereal_ub,
+                     const SleqpVec* var_lb,
+                     const SleqpVec* var_ub,
+                     const SleqpVec* genereal_lb,
+                     const SleqpVec* genereal_ub,
                      const SleqpSparseMatrix* linear_coeffs,
-                     const SleqpSparseVec* linear_lb,
-                     const SleqpSparseVec* linear_ub);
+                     const SleqpVec* linear_lb,
+                     const SleqpVec* linear_ub);
 
 /**
  * Returns the total number of constraints (both general and linear) of the
@@ -92,31 +92,31 @@ sleqp_problem_func(SleqpProblem* problem);
 SLEQP_EXPORT int
 sleqp_problem_num_vars(SleqpProblem* problem);
 
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_problem_vars_lb(SleqpProblem* problem);
 
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_problem_vars_ub(SleqpProblem* problem);
 
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_problem_general_lb(SleqpProblem* problem);
 
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_problem_general_ub(SleqpProblem* problem);
 
 SLEQP_EXPORT SleqpSparseMatrix*
 sleqp_problem_linear_coeffs(SleqpProblem* problem);
 
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_problem_linear_lb(SleqpProblem* problem);
 
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_problem_linear_ub(SleqpProblem* problem);
 
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_problem_cons_lb(SleqpProblem* problem);
 
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_problem_cons_ub(SleqpProblem* problem);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE

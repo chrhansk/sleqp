@@ -191,7 +191,7 @@ set_eval(AmplFuncData* data, bool* reject)
 
 static SLEQP_RETCODE
 ampl_func_set(SleqpFunc* func,
-              SleqpSparseVec* x,
+              SleqpVec* x,
               SLEQP_VALUE_REASON reason,
               bool* reject,
               int* obj_grad_nnz,
@@ -201,7 +201,7 @@ ampl_func_set(SleqpFunc* func,
 {
   AmplFuncData* data = (AmplFuncData*)func_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->x));
+  SLEQP_CALL(sleqp_vec_to_raw(x, data->x));
 
   data->evaluated = NONE;
 
@@ -255,7 +255,7 @@ ampl_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-ampl_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+ampl_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   AmplFuncData* data = (AmplFuncData*)func_data;
   ASL* asl           = data->ampl_data->asl;
@@ -264,21 +264,21 @@ ampl_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 
   SLEQP_AMPL_ERROR_CHECK(data->nerror);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(obj_grad,
-                                          data->obj_grad,
-                                          data->ampl_data->num_variables,
-                                          data->zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(obj_grad,
+                                data->obj_grad,
+                                data->ampl_data->num_variables,
+                                data->zero_eps));
 
   if (data->inverted_obj)
   {
-    SLEQP_CALL(sleqp_sparse_vector_scale(obj_grad, -1.));
+    SLEQP_CALL(sleqp_vec_scale(obj_grad, -1.));
   }
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-ampl_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
+ampl_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 {
   AmplFuncData* data       = (AmplFuncData*)func_data;
   SleqpAmplData* ampl_data = data->ampl_data;
@@ -295,10 +295,10 @@ ampl_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
 
   const int num_general = ampl_data->num_constraints - ampl_data->num_linear;
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_val,
-                                          ampl_data->cons_val,
-                                          num_general,
-                                          data->zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(cons_val,
+                                ampl_data->cons_val,
+                                num_general,
+                                data->zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -376,9 +376,9 @@ ensure_eval(AmplFuncData* data)
 static SLEQP_RETCODE
 ampl_func_hess_product(SleqpFunc* func,
                        const double* obj_dual,
-                       const SleqpSparseVec* direction,
-                       const SleqpSparseVec* cons_duals,
-                       SleqpSparseVec* product,
+                       const SleqpVec* direction,
+                       const SleqpVec* cons_duals,
+                       SleqpVec* product,
                        void* func_data)
 {
   AmplFuncData* data = (AmplFuncData*)func_data;
@@ -388,8 +388,8 @@ ampl_func_hess_product(SleqpFunc* func,
   // have been evaluated at the current primal point
   SLEQP_CALL(ensure_eval(data));
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, data->direction));
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(cons_duals, data->multipliers));
+  SLEQP_CALL(sleqp_vec_to_raw(direction, data->direction));
+  SLEQP_CALL(sleqp_vec_to_raw(cons_duals, data->multipliers));
 
   if (data->inverted_obj)
   {
@@ -409,14 +409,14 @@ ampl_func_hess_product(SleqpFunc* func,
          &objective_dual,
          data->multipliers);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(product,
-                                          data->hessian_product,
-                                          data->ampl_data->num_variables,
-                                          data->zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(product,
+                                data->hessian_product,
+                                data->ampl_data->num_variables,
+                                data->zero_eps));
 
   if (data->inverted_obj)
   {
-    SLEQP_CALL(sleqp_sparse_vector_scale(product, -1.));
+    SLEQP_CALL(sleqp_vec_scale(product, -1.));
   }
 
   return SLEQP_OKAY;

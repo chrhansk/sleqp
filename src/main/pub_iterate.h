@@ -11,7 +11,7 @@
 #include "sleqp/pub_working_set.h"
 
 #include "sparse/pub_sparse_matrix.h"
-#include "sparse/pub_sparse_vec.h"
+#include "sparse/pub_vec.h"
 
 typedef struct SleqpIterate SleqpIterate;
 
@@ -25,12 +25,12 @@ typedef struct SleqpIterate SleqpIterate;
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_iterate_create(SleqpIterate** star,
                      SleqpProblem* problem,
-                     const SleqpSparseVec* x);
+                     const SleqpVec* x);
 
 /**
  * The current point. Has dimension = num_variables.
  **/
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_iterate_primal(const SleqpIterate* iterate);
 
 /**
@@ -45,13 +45,13 @@ sleqp_iterate_set_obj_val(SleqpIterate* iterate, double value);
 /**
  * The current function gradient. Has dimension = num_variables.
  **/
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_iterate_obj_grad(const SleqpIterate* iterate);
 
 /**
  * The current constraint values. Has dimension = num_constraints.
  **/
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_iterate_cons_val(const SleqpIterate* iterate);
 
 /**
@@ -70,13 +70,13 @@ sleqp_iterate_working_set(const SleqpIterate* iterate);
 /**
  * The dual values of the constraints. Has dimension = num_constraints.
  */
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_iterate_cons_dual(const SleqpIterate* iterate);
 
 /**
  * The dual values of the variable bounds. Has dimension = num_variables.
  */
-SLEQP_EXPORT SleqpSparseVec*
+SLEQP_EXPORT SleqpVec*
 sleqp_iterate_vars_dual(const SleqpIterate* iterate);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE

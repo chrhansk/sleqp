@@ -115,28 +115,22 @@ sleqp_ampl_problem_create(SleqpProblem** star,
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpSparseVec* var_lb;
-  SleqpSparseVec* var_ub;
+  SleqpVec* var_lb;
+  SleqpVec* var_ub;
 
-  SleqpSparseVec* cons_lb;
-  SleqpSparseVec* cons_ub;
+  SleqpVec* cons_lb;
+  SleqpVec* cons_ub;
 
   SleqpFunc* func;
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&var_lb, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&var_ub, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&var_lb, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&var_ub, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&cons_lb, num_constraints));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&cons_ub, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&cons_ub, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(var_lb,
-                                          data->var_lb,
-                                          num_variables,
-                                          zero_eps));
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(var_ub,
-                                          data->var_ub,
-                                          num_variables,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(var_lb, data->var_lb, num_variables, zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(var_ub, data->var_ub, num_variables, zero_eps));
 
   const int num_linear = n_con - nlc;
 
@@ -145,17 +139,17 @@ sleqp_ampl_problem_create(SleqpProblem** star,
   if (num_linear > 0)
   {
     SleqpSparseMatrix* linear_coeffs;
-    SleqpSparseVec* linear_lb;
-    SleqpSparseVec* linear_ub;
+    SleqpVec* linear_lb;
+    SleqpVec* linear_ub;
 
-    SleqpSparseVec* general_lb = cons_lb;
-    SleqpSparseVec* general_ub = cons_ub;
+    SleqpVec* general_lb = cons_lb;
+    SleqpVec* general_ub = cons_ub;
 
     SLEQP_CALL(
       sleqp_sparse_matrix_create(&linear_coeffs, num_linear, n_var, nzc));
 
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&linear_lb, num_linear));
-    SLEQP_CALL(sleqp_sparse_vector_create_empty(&linear_ub, num_linear));
+    SLEQP_CALL(sleqp_vec_create_empty(&linear_lb, num_linear));
+    SLEQP_CALL(sleqp_vec_create_empty(&linear_ub, num_linear));
 
     SLEQP_CALL(compute_linear_coeffs(linear_coeffs, data));
 
@@ -164,19 +158,13 @@ sleqp_ampl_problem_create(SleqpProblem** star,
     general_lb->dim = nlc;
     general_ub->dim = nlc;
 
-    SLEQP_CALL(
-      sleqp_sparse_vector_from_raw(general_lb, data->cons_lb, nlc, zero_eps));
-    SLEQP_CALL(
-      sleqp_sparse_vector_from_raw(general_ub, data->cons_ub, nlc, zero_eps));
+    SLEQP_CALL(sleqp_vec_from_raw(general_lb, data->cons_lb, nlc, zero_eps));
+    SLEQP_CALL(sleqp_vec_from_raw(general_ub, data->cons_ub, nlc, zero_eps));
 
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(linear_lb,
-                                            data->cons_lb + nlc,
-                                            num_linear,
-                                            zero_eps));
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(linear_ub,
-                                            data->cons_ub + nlc,
-                                            num_linear,
-                                            zero_eps));
+    SLEQP_CALL(
+      sleqp_vec_from_raw(linear_lb, data->cons_lb + nlc, num_linear, zero_eps));
+    SLEQP_CALL(
+      sleqp_vec_from_raw(linear_ub, data->cons_ub + nlc, num_linear, zero_eps));
 
     SLEQP_CALL(sleqp_problem_create(star,
                                     func,
@@ -189,21 +177,17 @@ sleqp_ampl_problem_create(SleqpProblem** star,
                                     linear_lb,
                                     linear_ub));
 
-    SLEQP_CALL(sleqp_sparse_vector_free(&linear_ub));
-    SLEQP_CALL(sleqp_sparse_vector_free(&linear_lb));
+    SLEQP_CALL(sleqp_vec_free(&linear_ub));
+    SLEQP_CALL(sleqp_vec_free(&linear_lb));
 
     SLEQP_CALL(sleqp_sparse_matrix_release(&linear_coeffs));
   }
   else
   {
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_lb,
-                                            data->cons_lb,
-                                            num_constraints,
-                                            zero_eps));
-    SLEQP_CALL(sleqp_sparse_vector_from_raw(cons_ub,
-                                            data->cons_ub,
-                                            num_constraints,
-                                            zero_eps));
+    SLEQP_CALL(
+      sleqp_vec_from_raw(cons_lb, data->cons_lb, num_constraints, zero_eps));
+    SLEQP_CALL(
+      sleqp_vec_from_raw(cons_ub, data->cons_ub, num_constraints, zero_eps));
 
     SLEQP_CALL(sleqp_problem_create_simple(star,
                                            func,
@@ -216,11 +200,11 @@ sleqp_ampl_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(sleqp_func_release(&func));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cons_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&cons_lb));
+  SLEQP_CALL(sleqp_vec_free(&cons_ub));
+  SLEQP_CALL(sleqp_vec_free(&cons_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_lb));
+  SLEQP_CALL(sleqp_vec_free(&var_ub));
+  SLEQP_CALL(sleqp_vec_free(&var_lb));
 
   return SLEQP_OKAY;
 }

@@ -5,19 +5,19 @@
 
 SLEQP_RETCODE
 sleqp_violated_constraint_multipliers(SleqpProblem* problem,
-                                      const SleqpSparseVec* cons_vals,
-                                      SleqpSparseVec* multipliers,
+                                      const SleqpVec* cons_vals,
+                                      SleqpVec* multipliers,
                                       SleqpWorkingSet* working_set)
 {
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
-  const SleqpSparseVec* v  = cons_vals;
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpVec* v  = cons_vals;
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(multipliers));
+  SLEQP_CALL(sleqp_vec_clear(multipliers));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(multipliers, num_constraints));
+  SLEQP_CALL(sleqp_vec_reserve(multipliers, num_constraints));
 
   const int dim = v->dim;
 
@@ -65,11 +65,11 @@ sleqp_violated_constraint_multipliers(SleqpProblem* problem,
 
     if (upper_violation > 0.)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(multipliers, idx, 1.));
+      SLEQP_CALL(sleqp_vec_push(multipliers, idx, 1.));
     }
     else if (lower_violation > 0.)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(multipliers, idx, -1.));
+      SLEQP_CALL(sleqp_vec_push(multipliers, idx, -1.));
     }
   }
 
@@ -78,13 +78,13 @@ sleqp_violated_constraint_multipliers(SleqpProblem* problem,
 
 SLEQP_RETCODE
 sleqp_violated_constraints(SleqpProblem* problem,
-                           SleqpSparseVec* cons_val,
+                           SleqpVec* cons_val,
                            int* violated_constraints,
                            int* num_violated_constraints)
 {
-  SleqpSparseVec* c        = cons_val;
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  SleqpVec* c        = cons_val;
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
 
   int k_c = 0, k_lb = 0, k_ub = 0;
 
@@ -146,14 +146,14 @@ sleqp_violated_constraints(SleqpProblem* problem,
 
 SLEQP_RETCODE
 sleqp_violation_values(SleqpProblem* problem,
-                       const SleqpSparseVec* cons_val,
-                       SleqpSparseVec* violation)
+                       const SleqpVec* cons_val,
+                       SleqpVec* violation)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
-  const SleqpSparseVec* c  = cons_val;
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpVec* c  = cons_val;
 
   const int dim = c->dim;
 
@@ -165,9 +165,9 @@ sleqp_violation_values(SleqpProblem* problem,
     int max_size = lb->nnz + ub->nnz + c->nnz;
     max_size     = SLEQP_MIN(max_size, num_constraints);
 
-    SLEQP_CALL(sleqp_sparse_vector_clear(violation));
-    SLEQP_CALL(sleqp_sparse_vector_resize(violation, dim));
-    SLEQP_CALL(sleqp_sparse_vector_reserve(violation, max_size));
+    SLEQP_CALL(sleqp_vec_clear(violation));
+    SLEQP_CALL(sleqp_vec_resize(violation, dim));
+    SLEQP_CALL(sleqp_vec_reserve(violation, max_size));
   }
 
   int k_c = 0, k_lb = 0, k_ub = 0;
@@ -204,11 +204,11 @@ sleqp_violation_values(SleqpProblem* problem,
 
     if (upper_violation > 0.)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(violation, idx, c_val - ub_val));
+      SLEQP_CALL(sleqp_vec_push(violation, idx, c_val - ub_val));
     }
     else if (lower_violation > 0.)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(violation, idx, c_val - lb_val));
+      SLEQP_CALL(sleqp_vec_push(violation, idx, c_val - lb_val));
     }
   }
 
@@ -217,16 +217,16 @@ sleqp_violation_values(SleqpProblem* problem,
 
 static SLEQP_RETCODE
 feasibility_residuals(SleqpProblem* problem,
-                      const SleqpSparseVec* cons_val,
-                      SleqpSparseVec* residuals,
+                      const SleqpVec* cons_val,
+                      SleqpVec* residuals,
                       SleqpWorkingSet* working_set,
                       bool signed_residuals)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
-  const SleqpSparseVec* c  = cons_val;
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpVec* c  = cons_val;
 
   const int dim = c->dim;
 
@@ -238,9 +238,9 @@ feasibility_residuals(SleqpProblem* problem,
     int max_size = lb->nnz + ub->nnz + c->nnz;
     max_size     = SLEQP_MIN(max_size, num_constraints);
 
-    SLEQP_CALL(sleqp_sparse_vector_clear(residuals));
-    SLEQP_CALL(sleqp_sparse_vector_resize(residuals, dim));
-    SLEQP_CALL(sleqp_sparse_vector_reserve(residuals, max_size));
+    SLEQP_CALL(sleqp_vec_clear(residuals));
+    SLEQP_CALL(sleqp_vec_resize(residuals, dim));
+    SLEQP_CALL(sleqp_vec_reserve(residuals, max_size));
   }
 
   int k_c = 0, k_lb = 0, k_ub = 0;
@@ -296,7 +296,7 @@ feasibility_residuals(SleqpProblem* problem,
 
     if (residual != 0.)
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(residuals, idx, residual));
+      SLEQP_CALL(sleqp_vec_push(residuals, idx, residual));
     }
   }
 
@@ -305,8 +305,8 @@ feasibility_residuals(SleqpProblem* problem,
 
 SLEQP_RETCODE
 sleqp_feasibility_residuals(SleqpProblem* problem,
-                            const SleqpSparseVec* cons_val,
-                            SleqpSparseVec* residuals,
+                            const SleqpVec* cons_val,
+                            SleqpVec* residuals,
                             SleqpWorkingSet* working_set)
 {
   return feasibility_residuals(problem,
@@ -318,8 +318,8 @@ sleqp_feasibility_residuals(SleqpProblem* problem,
 
 SLEQP_RETCODE
 sleqp_signed_feasibility_residuals(SleqpProblem* problem,
-                                   const SleqpSparseVec* cons_val,
-                                   SleqpSparseVec* residuals,
+                                   const SleqpVec* cons_val,
+                                   SleqpVec* residuals,
                                    SleqpWorkingSet* working_set)
 {
   return feasibility_residuals(problem, cons_val, residuals, working_set, true);
@@ -327,14 +327,14 @@ sleqp_signed_feasibility_residuals(SleqpProblem* problem,
 
 SLEQP_RETCODE
 sleqp_violation_inf_norm(SleqpProblem* problem,
-                         SleqpSparseVec* cons_val,
+                         SleqpVec* cons_val,
                          double* max_violation)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
-  SleqpSparseVec* c        = cons_val;
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
+  SleqpVec* c        = cons_val;
 
   const int dim = c->dim;
 
@@ -391,14 +391,14 @@ sleqp_violation_inf_norm(SleqpProblem* problem,
 
 SLEQP_RETCODE
 sleqp_violation_one_norm(SleqpProblem* problem,
-                         SleqpSparseVec* cons_val,
+                         SleqpVec* cons_val,
                          double* total_violation)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
-  SleqpSparseVec* c        = cons_val;
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
+  SleqpVec* c        = cons_val;
 
   const int dim = c->dim;
 

@@ -4,17 +4,17 @@
 #include "cmp.h"
 #include "func.h"
 #include "mem.h"
-#include "sparse/sparse_vec.h"
+#include "sparse/vec.h"
 
 #include "test_common.h"
 
 extern SleqpFunc* quadfunc;
 
-extern SleqpSparseVec* quadfunc_var_lb;
-extern SleqpSparseVec* quadfunc_var_ub;
-extern SleqpSparseVec* quadfunc_cons_lb;
-extern SleqpSparseVec* quadfunc_cons_ub;
-extern SleqpSparseVec* quadfunc_x;
+extern SleqpVec* quadfunc_var_lb;
+extern SleqpVec* quadfunc_var_ub;
+extern SleqpVec* quadfunc_cons_lb;
+extern SleqpVec* quadfunc_cons_ub;
+extern SleqpVec* quadfunc_x;
 
 void
 quadfunc_setup();

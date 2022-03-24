@@ -27,7 +27,7 @@ typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_OBJ_VAL)(SleqpFunc* func,
  **/
 typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_CONS_VAL)(SleqpFunc* func,
                                                  double accuracy,
-                                                 SleqpSparseVec* cons_val,
+                                                 SleqpVec* cons_val,
                                                  void* func_data);
 
 typedef struct

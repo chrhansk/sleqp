@@ -65,7 +65,7 @@ cutest_uncons_data_free(void* data)
 
 static SLEQP_RETCODE
 cutest_uncons_func_set(SleqpFunc* func,
-                       SleqpSparseVec* x,
+                       SleqpVec* x,
                        SLEQP_VALUE_REASON reason,
                        bool* reject,
                        int* obj_grad_nnz,
@@ -75,7 +75,7 @@ cutest_uncons_func_set(SleqpFunc* func,
 {
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*)func_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(x, data->x));
+  SLEQP_CALL(sleqp_vec_to_raw(x, data->x));
 
   data->goth = cutest_false;
 
@@ -102,7 +102,7 @@ cutest_uncons_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 
 static SLEQP_RETCODE
 cutest_uncons_func_obj_grad(SleqpFunc* func,
-                            SleqpSparseVec* obj_grad,
+                            SleqpVec* obj_grad,
                             void* func_data)
 {
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*)func_data;
@@ -112,10 +112,10 @@ cutest_uncons_func_obj_grad(SleqpFunc* func,
 
   SLEQP_CUTEST_CHECK_STATUS(status);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(obj_grad,
-                                          data->obj_grad,
-                                          data->num_variables,
-                                          data->eps));
+  SLEQP_CALL(sleqp_vec_from_raw(obj_grad,
+                                data->obj_grad,
+                                data->num_variables,
+                                data->eps));
 
   return SLEQP_OKAY;
 }
@@ -123,15 +123,15 @@ cutest_uncons_func_obj_grad(SleqpFunc* func,
 static SLEQP_RETCODE
 cutest_uncons_func_hess_product(SleqpFunc* func,
                                 const double* obj_dual,
-                                const SleqpSparseVec* direction,
-                                const SleqpSparseVec* cons_duals,
-                                SleqpSparseVec* product,
+                                const SleqpVec* direction,
+                                const SleqpVec* cons_duals,
+                                SleqpVec* product,
                                 void* func_data)
 {
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*)func_data;
   int status;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, data->direction));
+  SLEQP_CALL(sleqp_vec_to_raw(direction, data->direction));
 
   {
     CUTEST_uhprod(&status,
@@ -146,10 +146,10 @@ cutest_uncons_func_hess_product(SleqpFunc* func,
     data->goth = cutest_true;
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(product,
-                                          data->hessian_product,
-                                          data->num_variables,
-                                          data->eps));
+  SLEQP_CALL(sleqp_vec_from_raw(product,
+                                data->hessian_product,
+                                data->num_variables,
+                                data->eps));
 
   return SLEQP_OKAY;
 }
@@ -193,28 +193,22 @@ sleqp_cutest_uncons_problem_create(SleqpProblem** star,
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpSparseVec* var_lb;
-  SleqpSparseVec* var_ub;
+  SleqpVec* var_lb;
+  SleqpVec* var_ub;
 
-  SleqpSparseVec* cons_lb;
-  SleqpSparseVec* cons_ub;
+  SleqpVec* cons_lb;
+  SleqpVec* cons_ub;
 
   SleqpFunc* func;
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&var_lb, num_variables));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&var_ub, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&var_lb, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&var_ub, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&cons_lb, num_constraints));
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&cons_ub, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&cons_ub, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(var_lb,
-                                          data->var_lb,
-                                          num_variables,
-                                          zero_eps));
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(var_ub,
-                                          data->var_ub,
-                                          num_variables,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(var_lb, data->var_lb, num_variables, zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(var_ub, data->var_ub, num_variables, zero_eps));
 
   SLEQP_CALL(sleqp_cutest_uncons_func_create(&func, num_variables, params));
 
@@ -228,11 +222,11 @@ sleqp_cutest_uncons_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(sleqp_func_release(&func));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cons_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&cons_lb));
+  SLEQP_CALL(sleqp_vec_free(&cons_ub));
+  SLEQP_CALL(sleqp_vec_free(&cons_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_lb));
+  SLEQP_CALL(sleqp_vec_free(&var_ub));
+  SLEQP_CALL(sleqp_vec_free(&var_lb));
 
   return SLEQP_OKAY;
 }

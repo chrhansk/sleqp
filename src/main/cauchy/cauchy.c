@@ -52,7 +52,7 @@ sleqp_cauchy_set_trust_radius(SleqpCauchy* cauchy, double trust_radius)
 
 SLEQP_RETCODE
 sleqp_cauchy_solve(SleqpCauchy* cauchy,
-                   SleqpSparseVec* gradient,
+                   SleqpVec* gradient,
                    double penalty,
                    SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
 {
@@ -76,7 +76,7 @@ sleqp_cauchy_get_working_set(SleqpCauchy* cauchy, SleqpIterate* iterate)
 }
 
 SLEQP_RETCODE
-sleqp_cauchy_get_direction(SleqpCauchy* cauchy, SleqpSparseVec* direction)
+sleqp_cauchy_get_direction(SleqpCauchy* cauchy, SleqpVec* direction)
 {
   return cauchy->callbacks.get_direction(direction, cauchy->cauchy_data);
 }
@@ -91,8 +91,8 @@ sleqp_cauchy_locally_infeasible(SleqpCauchy* cauchy, bool* locally_infeasible)
 SLEQP_RETCODE
 sleqp_cauchy_estimate_duals(SleqpCauchy* cauchy,
                             const SleqpWorkingSet* working_set,
-                            SleqpSparseVec* cons_dual,
-                            SleqpSparseVec* vars_dual)
+                            SleqpVec* cons_dual,
+                            SleqpVec* vars_dual)
 {
   return cauchy->callbacks.estimate_duals(working_set,
                                           cons_dual,

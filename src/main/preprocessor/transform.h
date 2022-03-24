@@ -14,8 +14,8 @@ sleqp_transformation_create(SleqpTransformation** star,
 
 SLEQP_RETCODE
 sleqp_transformation_convert_primal(SleqpTransformation* transformation,
-                                    const SleqpSparseVec* source,
-                                    SleqpSparseVec* target);
+                                    const SleqpVec* source,
+                                    SleqpVec* target);
 
 SLEQP_RETCODE
 sleqp_transformation_create_transformed_problem(

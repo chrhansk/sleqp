@@ -1,4 +1,4 @@
-#include "sparse_vec.h"
+#include "vec.h"
 
 #include <assert.h>
 #include <math.h>
@@ -10,14 +10,14 @@
 #include "mem.h"
 
 SLEQP_RETCODE
-sleqp_sparse_vector_create(SleqpSparseVec** vstar, int dim, int nnz_max)
+sleqp_vec_create(SleqpVec** vstar, int dim, int nnz_max)
 {
   assert(dim >= 0);
   assert(nnz_max >= 0);
 
   SLEQP_CALL(sleqp_malloc(vstar));
 
-  SleqpSparseVec* vec = *vstar;
+  SleqpVec* vec = *vstar;
 
   vec->nnz     = 0;
   vec->dim     = dim;
@@ -30,23 +30,23 @@ sleqp_sparse_vector_create(SleqpSparseVec** vstar, int dim, int nnz_max)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_create_empty(SleqpSparseVec** vec, int dim)
+sleqp_vec_create_empty(SleqpVec** vec, int dim)
 {
-  SLEQP_CALL(sleqp_sparse_vector_create(vec, dim, 0));
+  SLEQP_CALL(sleqp_vec_create(vec, dim, 0));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_create_full(SleqpSparseVec** vec, int dim)
+sleqp_vec_create_full(SleqpVec** vec, int dim)
 {
-  SLEQP_CALL(sleqp_sparse_vector_create(vec, dim, dim));
+  SLEQP_CALL(sleqp_vec_create(vec, dim, dim));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_push(SleqpSparseVec* vec, int idx, double value)
+sleqp_vec_push(SleqpVec* vec, int idx, double value)
 {
   assert(vec->nnz < vec->nnz_max);
 
@@ -69,10 +69,7 @@ sleqp_sparse_vector_push(SleqpSparseVec* vec, int idx, double value)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
-                             double* values,
-                             int dim,
-                             double zero_eps)
+sleqp_vec_from_raw(SleqpVec* vec, double* values, int dim, double zero_eps)
 {
   int nnz = 0;
 
@@ -84,10 +81,10 @@ sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
     }
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(vec));
-  SLEQP_CALL(sleqp_sparse_vector_resize(vec, dim));
+  SLEQP_CALL(sleqp_vec_clear(vec));
+  SLEQP_CALL(sleqp_vec_resize(vec, dim));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(vec, nnz));
+  SLEQP_CALL(sleqp_vec_reserve(vec, nnz));
 
   for (int i = 0; i < dim; ++i)
   {
@@ -95,7 +92,7 @@ sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
 
     if (!sleqp_is_zero(v, zero_eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(vec, i, v));
+      SLEQP_CALL(sleqp_vec_push(vec, i, v));
     }
   }
 
@@ -103,18 +100,18 @@ sleqp_sparse_vector_from_raw(SleqpSparseVec* vec,
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_fill(SleqpSparseVec* vec, double value)
+sleqp_vec_fill(SleqpVec* vec, double value)
 {
   if (value == 0)
   {
-    SLEQP_CALL(sleqp_sparse_vector_clear(vec));
+    SLEQP_CALL(sleqp_vec_clear(vec));
 
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(vec, vec->dim));
+  SLEQP_CALL(sleqp_vec_reserve(vec, vec->dim));
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(vec));
+  SLEQP_CALL(sleqp_vec_clear(vec));
 
   for (int k = 0; k < vec->dim; ++k)
   {
@@ -128,7 +125,7 @@ sleqp_sparse_vector_fill(SleqpSparseVec* vec, double value)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec, double* values)
+sleqp_vec_to_raw(const SleqpVec* vec, double* values)
 {
   for (int i = 0; i < vec->dim; ++i)
   {
@@ -144,25 +141,24 @@ sleqp_sparse_vector_to_raw(const SleqpSparseVec* vec, double* values)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_copy(const SleqpSparseVec* source, SleqpSparseVec* target)
+sleqp_vec_copy(const SleqpVec* source, SleqpVec* target)
 {
   assert(source->dim == target->dim);
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(target, source->nnz));
+  SLEQP_CALL(sleqp_vec_reserve(target, source->nnz));
 
   target->nnz = 0;
 
   for (int k = 0; k < source->nnz; ++k)
   {
-    SLEQP_CALL(
-      sleqp_sparse_vector_push(target, source->indices[k], source->data[k]));
+    SLEQP_CALL(sleqp_vec_push(target, source->indices[k], source->data[k]));
   }
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_clear(SleqpSparseVec* vec)
+sleqp_vec_clear(SleqpVec* vec)
 {
   vec->nnz = 0;
 
@@ -170,7 +166,7 @@ sleqp_sparse_vector_clear(SleqpSparseVec* vec)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_reserve(SleqpSparseVec* vec, int nnz_max)
+sleqp_vec_reserve(SleqpVec* vec, int nnz_max)
 {
   if (vec->nnz_max >= nnz_max)
   {
@@ -186,7 +182,7 @@ sleqp_sparse_vector_reserve(SleqpSparseVec* vec, int nnz_max)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_resize(SleqpSparseVec* vec, int dim)
+sleqp_vec_resize(SleqpVec* vec, int dim)
 {
   if (dim < vec->dim)
   {
@@ -202,37 +198,33 @@ sleqp_sparse_vector_resize(SleqpSparseVec* vec, int dim)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_concat(const SleqpSparseVec* first,
-                           const SleqpSparseVec* second,
-                           SleqpSparseVec* result)
+sleqp_vec_concat(const SleqpVec* first,
+                 const SleqpVec* second,
+                 SleqpVec* result)
 {
   assert(first != result);
   assert(second != result);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(result));
-  SLEQP_CALL(sleqp_sparse_vector_reserve(result, first->nnz + second->nnz));
-  SLEQP_CALL(sleqp_sparse_vector_resize(result, first->dim + second->dim));
+  SLEQP_CALL(sleqp_vec_clear(result));
+  SLEQP_CALL(sleqp_vec_reserve(result, first->nnz + second->nnz));
+  SLEQP_CALL(sleqp_vec_resize(result, first->dim + second->dim));
 
   for (int k = 0; k < first->nnz; ++k)
   {
-    SLEQP_CALL(
-      sleqp_sparse_vector_push(result, first->indices[k], first->data[k]));
+    SLEQP_CALL(sleqp_vec_push(result, first->indices[k], first->data[k]));
   }
 
   for (int k = 0; k < second->nnz; ++k)
   {
-    SLEQP_CALL(sleqp_sparse_vector_push(result,
-                                        second->indices[k] + first->dim,
-                                        second->data[k]));
+    SLEQP_CALL(
+      sleqp_vec_push(result, second->indices[k] + first->dim, second->data[k]));
   }
 
   return SLEQP_OKAY;
 }
 
 bool
-sleqp_sparse_vector_eq(const SleqpSparseVec* first,
-                       const SleqpSparseVec* second,
-                       double eps)
+sleqp_vec_eq(const SleqpVec* first, const SleqpVec* second, double eps)
 {
   assert(first->dim == second->dim);
 
@@ -274,9 +266,7 @@ sleqp_sparse_vector_eq(const SleqpSparseVec* first,
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_dot(const SleqpSparseVec* first,
-                        const SleqpSparseVec* second,
-                        double* product)
+sleqp_vec_dot(const SleqpVec* first, const SleqpVec* second, double* product)
 {
   assert(first->dim == second->dim);
 
@@ -309,13 +299,13 @@ sleqp_sparse_vector_dot(const SleqpSparseVec* first,
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_scale(SleqpSparseVec* vector, const double factor)
+sleqp_vec_scale(SleqpVec* vector, const double factor)
 {
   // assert(!(isinf(factor) || isnan(factor)));
 
   if (factor == 0.)
   {
-    SLEQP_CALL(sleqp_sparse_vector_clear(vector));
+    SLEQP_CALL(sleqp_vec_clear(vector));
   }
   else if (factor == 1.)
   {
@@ -331,15 +321,15 @@ sleqp_sparse_vector_scale(SleqpSparseVec* vector, const double factor)
 }
 
 double
-sleqp_sparse_vector_norm(const SleqpSparseVec* vec)
+sleqp_vec_norm(const SleqpVec* vec)
 {
-  double normsq = sleqp_sparse_vector_norm_sq(vec);
+  double normsq = sleqp_vec_norm_sq(vec);
 
   return sqrt(normsq);
 }
 
 double
-sleqp_sparse_vector_one_norm(const SleqpSparseVec* vec)
+sleqp_vec_one_norm(const SleqpVec* vec)
 {
   double one_norm = 0.;
 
@@ -354,7 +344,7 @@ sleqp_sparse_vector_one_norm(const SleqpSparseVec* vec)
 }
 
 double
-sleqp_sparse_vector_norm_sq(const SleqpSparseVec* vec)
+sleqp_vec_norm_sq(const SleqpVec* vec)
 {
   double normsq = 0.;
 
@@ -369,7 +359,7 @@ sleqp_sparse_vector_norm_sq(const SleqpSparseVec* vec)
 }
 
 double
-sleqp_sparse_vector_inf_norm(const SleqpSparseVec* vec)
+sleqp_vec_inf_norm(const SleqpVec* vec)
 {
   double norminf = 0.;
 
@@ -384,24 +374,23 @@ sleqp_sparse_vector_inf_norm(const SleqpSparseVec* vec)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_add(const SleqpSparseVec* first,
-                        const SleqpSparseVec* second,
-                        const double eps,
-                        SleqpSparseVec* result)
+sleqp_vec_add(const SleqpVec* first,
+              const SleqpVec* second,
+              const double eps,
+              SleqpVec* result)
 {
-  SLEQP_CALL(
-    sleqp_sparse_vector_add_scaled(first, second, 1., 1., eps, result));
+  SLEQP_CALL(sleqp_vec_add_scaled(first, second, 1., 1., eps, result));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
-                               const SleqpSparseVec* second,
-                               const double first_factor,
-                               const double second_factor,
-                               const double eps,
-                               SleqpSparseVec* result)
+sleqp_vec_add_scaled(const SleqpVec* first,
+                     const SleqpVec* second,
+                     const double first_factor,
+                     const double second_factor,
+                     const double eps,
+                     SleqpVec* result)
 {
   assert(first->dim == second->dim);
 
@@ -411,11 +400,11 @@ sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
   assert(first != result);
   assert(second != result);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(result));
+  SLEQP_CALL(sleqp_vec_clear(result));
 
-  SLEQP_CALL(sleqp_sparse_vector_resize(result, first->dim));
+  SLEQP_CALL(sleqp_vec_resize(result, first->dim));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(result, first->nnz + second->nnz));
+  SLEQP_CALL(sleqp_vec_reserve(result, first->nnz + second->nnz));
 
   int k_first = 0, k_second = 0;
 
@@ -451,14 +440,14 @@ sleqp_sparse_vector_add_scaled(const SleqpSparseVec* first,
       continue;
     }
 
-    SLEQP_CALL(sleqp_sparse_vector_push(result, i_combined, value));
+    SLEQP_CALL(sleqp_vec_push(result, i_combined, value));
   }
 
   return SLEQP_OKAY;
 }
 
 double*
-sleqp_sparse_vector_at(const SleqpSparseVec* vec, int index)
+sleqp_vec_at(const SleqpVec* vec, int index)
 {
   assert(index < vec->dim);
 
@@ -474,17 +463,15 @@ sleqp_sparse_vector_at(const SleqpSparseVec* vec, int index)
 }
 
 double
-sleqp_sparse_vector_value_at(const SleqpSparseVec* vec, int index)
+sleqp_vec_value_at(const SleqpVec* vec, int index)
 {
-  const double* ptr = sleqp_sparse_vector_at(vec, index);
+  const double* ptr = sleqp_vec_at(vec, index);
 
   return ptr ? (*ptr) : 0.;
 }
 
 bool
-sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
-                             const SleqpSparseVec* lb,
-                             const SleqpSparseVec* ub)
+sleqp_vec_is_boxed(const SleqpVec* x, const SleqpVec* lb, const SleqpVec* ub)
 {
   const int dim = x->dim;
 
@@ -541,11 +528,11 @@ sleqp_sparse_vector_is_boxed(const SleqpSparseVec* x,
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_clip(const SleqpSparseVec* x,
-                         const SleqpSparseVec* lb,
-                         const SleqpSparseVec* ub,
-                         const double eps,
-                         SleqpSparseVec* xclip)
+sleqp_vec_clip(const SleqpVec* x,
+               const SleqpVec* lb,
+               const SleqpVec* ub,
+               const double eps,
+               SleqpVec* xclip)
 {
   const int dim = x->dim;
 
@@ -557,7 +544,7 @@ sleqp_sparse_vector_clip(const SleqpSparseVec* x,
   assert(ub->dim == dim);
   assert(xclip->dim == dim);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(xclip));
+  SLEQP_CALL(sleqp_vec_clear(xclip));
 
   {
     int nnz = SLEQP_MAX(lb->nnz, x->nnz);
@@ -565,7 +552,7 @@ sleqp_sparse_vector_clip(const SleqpSparseVec* x,
 
     nnz = SLEQP_MIN(nnz, dim);
 
-    SLEQP_CALL(sleqp_sparse_vector_reserve(xclip, nnz));
+    SLEQP_CALL(sleqp_vec_reserve(xclip, nnz));
   }
 
   int k_x = 0, k_lb = 0, k_ub = 0;
@@ -598,7 +585,7 @@ sleqp_sparse_vector_clip(const SleqpSparseVec* x,
 
     if (!sleqp_is_zero(x_val, eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(xclip, i_combined, x_val));
+      SLEQP_CALL(sleqp_vec_push(xclip, i_combined, x_val));
     }
 
     if (valid_x)
@@ -617,22 +604,22 @@ sleqp_sparse_vector_clip(const SleqpSparseVec* x,
     }
   }
 
-  assert(sleqp_sparse_vector_is_boxed(xclip, lb, ub));
+  assert(sleqp_vec_is_boxed(xclip, lb, ub));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_remove_entries(const SleqpSparseVec* source,
-                                   SleqpSparseVec* target,
-                                   const int* entry_indices,
-                                   int num_entries)
+sleqp_vec_remove_entries(const SleqpVec* source,
+                         SleqpVec* target,
+                         const int* entry_indices,
+                         int num_entries)
 {
-  SLEQP_CALL(sleqp_sparse_vector_clear(target));
+  SLEQP_CALL(sleqp_vec_clear(target));
 
   assert(source->dim == target->dim + num_entries);
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(target, source->nnz));
+  SLEQP_CALL(sleqp_vec_reserve(target, source->nnz));
 
   int k_f    = 0;
   int offset = 0;
@@ -653,14 +640,14 @@ sleqp_sparse_vector_remove_entries(const SleqpSparseVec* source,
       continue;
     }
 
-    SLEQP_CALL(sleqp_sparse_vector_push(target, i - offset, v));
+    SLEQP_CALL(sleqp_vec_push(target, i - offset, v));
   }
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec, FILE* output)
+sleqp_vec_fprintf(const SleqpVec* vec, FILE* output)
 {
   fprintf(output,
           "Sparse vector, dimension: %d, entries: %d\n",
@@ -676,7 +663,7 @@ sleqp_sparse_vector_fprintf(const SleqpSparseVec* vec, FILE* output)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_dump(const SleqpSparseVec* vec, FILE* output)
+sleqp_vec_dump(const SleqpVec* vec, FILE* output)
 {
   int k = 0;
 
@@ -703,7 +690,7 @@ sleqp_sparse_vector_dump(const SleqpSparseVec* vec, FILE* output)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_dump_to_file(const SleqpSparseVec* vec, const char* name)
+sleqp_vec_dump_to_file(const SleqpVec* vec, const char* name)
 {
   FILE* output = fopen(name, "w");
 
@@ -714,7 +701,7 @@ sleqp_sparse_vector_dump_to_file(const SleqpSparseVec* vec, const char* name)
                 name);
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_dump(vec, output));
+  SLEQP_CALL(sleqp_vec_dump(vec, output));
 
   fclose(output);
 
@@ -722,7 +709,7 @@ sleqp_sparse_vector_dump_to_file(const SleqpSparseVec* vec, const char* name)
 }
 
 bool
-sleqp_sparse_vector_is_valid(const SleqpSparseVec* vec)
+sleqp_vec_is_valid(const SleqpVec* vec)
 {
   if (vec->nnz > vec->nnz_max || vec->nnz < 0)
   {
@@ -759,7 +746,7 @@ sleqp_sparse_vector_is_valid(const SleqpSparseVec* vec)
 }
 
 bool
-sleqp_sparse_vector_is_finite(const SleqpSparseVec* vec)
+sleqp_vec_is_finite(const SleqpVec* vec)
 {
   for (int k = 0; k < vec->nnz - 1; ++k)
   {
@@ -773,9 +760,9 @@ sleqp_sparse_vector_is_finite(const SleqpSparseVec* vec)
 }
 
 SLEQP_RETCODE
-sleqp_sparse_vector_free(SleqpSparseVec** vstar)
+sleqp_vec_free(SleqpVec** vstar)
 {
-  SleqpSparseVec* vec = *vstar;
+  SleqpVec* vec = *vstar;
 
   if (!vec)
   {

@@ -1,7 +1,7 @@
 #cython: language_level=3
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals(csleqp.SleqpFunc* func,
-                                              csleqp.SleqpSparseVec* residual,
+                                              csleqp.SleqpVec* residual,
                                               void* func_data):
   try:
     func_obj = (<object> func_data)
@@ -17,7 +17,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals_nogil(csleqp.SleqpFunc* func,
-                                                    csleqp.SleqpSparseVec* residual,
+                                                    csleqp.SleqpVec* residual,
                                                     void* func_data) nogil:
   with gil:
     return sleqp_lsq_residuals(func,
@@ -26,8 +26,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals_nogil(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(csleqp.SleqpFunc* func,
-                                                const csleqp.SleqpSparseVec* forward_direction,
-                                                csleqp.SleqpSparseVec* product,
+                                                const csleqp.SleqpVec* forward_direction,
+                                                csleqp.SleqpVec* product,
                                                 void* func_data):
   try:
       func_obj = (<object> func_data)
@@ -48,8 +48,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward_nogil(csleqp.SleqpFunc* func,
-                                                      const csleqp.SleqpSparseVec* forward_direction,
-                                                      csleqp.SleqpSparseVec* product,
+                                                      const csleqp.SleqpVec* forward_direction,
+                                                      csleqp.SleqpVec* product,
                                                       void* func_data) nogil:
   with gil:
     return sleqp_lsq_jac_forward(func,
@@ -59,8 +59,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward_nogil(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(csleqp.SleqpFunc* func,
-                                                const csleqp.SleqpSparseVec* adjoint_direction,
-                                                csleqp.SleqpSparseVec* product,
+                                                const csleqp.SleqpVec* adjoint_direction,
+                                                csleqp.SleqpVec* product,
                                                 void* func_data):
   try:
       func_obj = (<object> func_data)
@@ -83,8 +83,8 @@ cdef object lsq_funcs = weakref.WeakSet()
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint_nogil(csleqp.SleqpFunc* func,
-                                                      const csleqp.SleqpSparseVec* adjoint_direction,
-                                                      csleqp.SleqpSparseVec* product,
+                                                      const csleqp.SleqpVec* adjoint_direction,
+                                                      csleqp.SleqpVec* product,
                                                       void* func_data) nogil:
   with gil:
     return sleqp_lsq_jac_adjoint(func,

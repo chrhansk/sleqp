@@ -23,16 +23,16 @@ sq(double v)
 
 SleqpFunc* rosenbrock_func;
 
-SleqpSparseVec* rosenbrock_var_lb;
-SleqpSparseVec* rosenbrock_var_ub;
-SleqpSparseVec* rosenbrock_cons_lb;
-SleqpSparseVec* rosenbrock_cons_ub;
-SleqpSparseVec* rosenbrock_initial;
-SleqpSparseVec* rosenbrock_optimal;
+SleqpVec* rosenbrock_var_lb;
+SleqpVec* rosenbrock_var_ub;
+SleqpVec* rosenbrock_cons_lb;
+SleqpVec* rosenbrock_cons_ub;
+SleqpVec* rosenbrock_initial;
+SleqpVec* rosenbrock_optimal;
 
 SLEQP_RETCODE
 rosenbrock_set(SleqpFunc* func,
-               SleqpSparseVec* x,
+               SleqpVec* x,
                SLEQP_VALUE_REASON reason,
                bool* reject,
                int* obj_grad_nnz,
@@ -80,7 +80,7 @@ rosenbrock_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 SLEQP_RETCODE
-rosenbrock_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+rosenbrock_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   RosenbrockData* data = (RosenbrockData*)func_data;
 
@@ -99,9 +99,9 @@ rosenbrock_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 
   double grady = -2. * b * (xsq - y);
 
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, gradx));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 0, gradx));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, grady));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 1, grady));
 
   return SLEQP_OKAY;
 }
@@ -109,9 +109,9 @@ rosenbrock_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 SLEQP_RETCODE
 rosenbrock_hess_prod(SleqpFunc* func,
                      const double* obj_dual,
-                     const SleqpSparseVec* direction,
-                     const SleqpSparseVec* cons_duals,
-                     SleqpSparseVec* product,
+                     const SleqpVec* direction,
+                     const SleqpVec* cons_duals,
+                     SleqpVec* product,
                      void* func_data)
 {
   RosenbrockData* data = (RosenbrockData*)func_data;
@@ -125,21 +125,19 @@ rosenbrock_hess_prod(SleqpFunc* func,
 
   double d[2];
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, d));
+  SLEQP_CALL(sleqp_vec_to_raw(direction, d));
 
   if (obj_dual)
   {
-    SLEQP_CALL(sleqp_sparse_vector_reserve(product, 2));
+    SLEQP_CALL(sleqp_vec_reserve(product, 2));
 
-    SLEQP_CALL(sleqp_sparse_vector_push(
-      product,
-      0,
-      (8. * b * xsq + 4. * b * (xsq - y) + 2.) * d[0] - (4. * b * x) * d[1]));
+    SLEQP_CALL(sleqp_vec_push(product,
+                              0,
+                              (8. * b * xsq + 4. * b * (xsq - y) + 2.) * d[0]
+                                - (4. * b * x) * d[1]));
 
     SLEQP_CALL(
-      sleqp_sparse_vector_push(product,
-                               1,
-                               (-4. * b * x) * d[0] + (2. * b) * d[1]));
+      sleqp_vec_push(product, 1, (-4. * b * x) * d[0] + (2. * b) * d[1]));
   }
 
   return SLEQP_OKAY;
@@ -159,12 +157,12 @@ rosenbrock_free(void* data)
 
 void
 rosenbrock_create(SleqpFunc** fstar,
-                  SleqpSparseVec** var_lbstar,
-                  SleqpSparseVec** var_ubstar,
-                  SleqpSparseVec** cons_lbstar,
-                  SleqpSparseVec** cons_ubstar,
-                  SleqpSparseVec** init_star,
-                  SleqpSparseVec** opt_star)
+                  SleqpVec** var_lbstar,
+                  SleqpVec** var_ubstar,
+                  SleqpVec** cons_lbstar,
+                  SleqpVec** cons_ubstar,
+                  SleqpVec** init_star,
+                  SleqpVec** opt_star)
 {
   RosenbrockData* func_data;
 
@@ -191,26 +189,26 @@ rosenbrock_create(SleqpFunc** fstar,
                                 rosenbrock_num_constraints,
                                 func_data));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(var_lbstar, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(var_lbstar, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(*var_lbstar, 0, -inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(*var_lbstar, 1, -inf));
+  ASSERT_CALL(sleqp_vec_push(*var_lbstar, 0, -inf));
+  ASSERT_CALL(sleqp_vec_push(*var_lbstar, 1, -inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create(var_ubstar, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(var_ubstar, 2, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(*var_ubstar, 0, inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(*var_ubstar, 1, inf));
+  ASSERT_CALL(sleqp_vec_push(*var_ubstar, 0, inf));
+  ASSERT_CALL(sleqp_vec_push(*var_ubstar, 1, inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(cons_lbstar, 0));
+  ASSERT_CALL(sleqp_vec_create_empty(cons_lbstar, 0));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(cons_ubstar, 0));
+  ASSERT_CALL(sleqp_vec_create_empty(cons_ubstar, 0));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(init_star, 2));
+  ASSERT_CALL(sleqp_vec_create_empty(init_star, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(opt_star, 2));
+  ASSERT_CALL(sleqp_vec_create_full(opt_star, 2));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(*opt_star, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(*opt_star, 1, 1.));
+  ASSERT_CALL(sleqp_vec_push(*opt_star, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(*opt_star, 1, 1.));
 }
 
 void
@@ -228,17 +226,17 @@ rosenbrock_setup()
 void
 rosenbrock_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_optimal));
+  ASSERT_CALL(sleqp_vec_free(&rosenbrock_optimal));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_initial));
+  ASSERT_CALL(sleqp_vec_free(&rosenbrock_initial));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&rosenbrock_cons_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&rosenbrock_cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_var_ub));
+  ASSERT_CALL(sleqp_vec_free(&rosenbrock_var_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&rosenbrock_var_lb));
+  ASSERT_CALL(sleqp_vec_free(&rosenbrock_var_lb));
 
   ASSERT_CALL(sleqp_func_release(&rosenbrock_func));
 }

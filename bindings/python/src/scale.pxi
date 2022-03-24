@@ -19,7 +19,7 @@ class Array(np.ndarray):
 cdef class Scaling:
   cdef dict __dict__
   cdef csleqp.SleqpScaling* scaling
-  cdef csleqp.SleqpSparseVec* gradient
+  cdef csleqp.SleqpVec* gradient
   cdef csleqp.SleqpSparseMatrix* cons_jac
 
   def __cinit__(self,
@@ -32,7 +32,7 @@ cdef class Scaling:
                                             num_vars,
                                             num_cons))
 
-    csleqp_call(csleqp.sleqp_sparse_vector_create_empty(&self.gradient,
+    csleqp_call(csleqp.sleqp_vec_create_empty(&self.gradient,
                                                         num_vars))
 
     csleqp_call(csleqp.sleqp_sparse_matrix_create(&self.cons_jac,
@@ -50,7 +50,7 @@ cdef class Scaling:
 
   def __dealloc__(self):
     csleqp_call(csleqp.sleqp_sparse_matrix_release(&self.cons_jac))
-    csleqp_call(csleqp.sleqp_sparse_vector_free(&self.gradient))
+    csleqp_call(csleqp.sleqp_vec_free(&self.gradient))
     csleqp_call(csleqp.sleqp_scaling_release(&self.scaling))
 
   def __str__(self):

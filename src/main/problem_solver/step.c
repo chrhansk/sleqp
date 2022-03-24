@@ -41,11 +41,9 @@ sleqp_problem_solver_set_func_value(SleqpProblemSolver* solver,
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_reserve(sleqp_iterate_obj_grad(iterate), obj_grad_nnz));
+  SLEQP_CALL(sleqp_vec_reserve(sleqp_iterate_obj_grad(iterate), obj_grad_nnz));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_reserve(sleqp_iterate_cons_val(iterate), cons_val_nnz));
+  SLEQP_CALL(sleqp_vec_reserve(sleqp_iterate_cons_val(iterate), cons_val_nnz));
 
   SLEQP_CALL(
     sleqp_sparse_matrix_reserve(sleqp_iterate_cons_jac(iterate), cons_jac_nnz));
@@ -76,7 +74,7 @@ sleqp_problem_solver_accept_step(SleqpProblemSolver* solver)
 
   // SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
-  // SleqpSparseVec* multipliers =
+  // SleqpVec* multipliers =
   // sleqp_trial_point_solver_get_multipliers(trial_point_solver);
 
   SLEQP_CALL(

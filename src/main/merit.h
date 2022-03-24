@@ -63,7 +63,7 @@ sleqp_merit_func(SleqpMerit* merit,
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_merit_linear(SleqpMerit* merit,
                    SleqpIterate* iterate,
-                   const SleqpSparseVec* direction,
+                   const SleqpVec* direction,
                    double penalty_parameter,
                    double* merit_value);
 
@@ -90,8 +90,8 @@ SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_merit_quadratic(SleqpMerit* merit,
                       SleqpIterate* iterate,
                       const double* obj_dual,
-                      const SleqpSparseVec* direction,
-                      const SleqpSparseVec* cons_duals,
+                      const SleqpVec* direction,
+                      const SleqpVec* cons_duals,
                       double penalty_parameter,
                       double* merit_value);
 

@@ -13,7 +13,7 @@ sleqp_problem_has_nonlinear_cons(SleqpProblem* problem);
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_set_value(SleqpProblem* problem,
-                        SleqpSparseVec* x,
+                        SleqpVec* x,
                         SLEQP_VALUE_REASON reason,
                         bool* reject,
                         int* obj_grad_nnz,
@@ -24,8 +24,8 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_eval(SleqpProblem* problem,
                    double* obj_val,
-                   SleqpSparseVec* obj_grad,
-                   SleqpSparseVec* cons_val,
+                   SleqpVec* obj_grad,
+                   SleqpVec* cons_val,
                    SleqpSparseMatrix* cons_jac);
 
 SLEQP_NODISCARD
@@ -34,11 +34,11 @@ sleqp_problem_obj_val(SleqpProblem* problem, double* obj_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_problem_obj_grad(SleqpProblem* problem, SleqpSparseVec* obj_grad);
+sleqp_problem_obj_grad(SleqpProblem* problem, SleqpVec* obj_grad);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_problem_cons_val(SleqpProblem* problem, SleqpSparseVec* cons_val);
+sleqp_problem_cons_val(SleqpProblem* problem, SleqpVec* cons_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -48,16 +48,16 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_hess_prod(SleqpProblem* problem,
                         const double* obj_dual,
-                        const SleqpSparseVec* direction,
-                        const SleqpSparseVec* cons_duals,
-                        SleqpSparseVec* product);
+                        const SleqpVec* direction,
+                        const SleqpVec* cons_duals,
+                        SleqpVec* product);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_hess_bilinear(SleqpProblem* problem,
                             const double* obj_dual,
-                            const SleqpSparseVec* direction,
-                            const SleqpSparseVec* cons_duals,
+                            const SleqpVec* direction,
+                            const SleqpVec* cons_duals,
                             double* bilinear_prod);
 
 bool

@@ -12,22 +12,22 @@ typedef struct
   SleqpDualEstimation* estimation_lsq;
   SleqpDualEstimation* estimation_lp;
 
-  SleqpSparseVec* cons_dual_lsq;
-  SleqpSparseVec* vars_dual_lsq;
+  SleqpVec* cons_dual_lsq;
+  SleqpVec* vars_dual_lsq;
 
-  SleqpSparseVec* cons_dual_lp;
-  SleqpSparseVec* vars_dual_lp;
+  SleqpVec* cons_dual_lp;
+  SleqpVec* vars_dual_lp;
 
 } EstimationData;
 
 static SLEQP_RETCODE
-merge(const SleqpSparseVec* dual_lsq,
+merge(const SleqpVec* dual_lsq,
       int num_active,
-      const SleqpSparseVec* dual_lp,
-      SleqpSparseVec* dual)
+      const SleqpVec* dual_lp,
+      SleqpVec* dual)
 {
-  SLEQP_CALL(sleqp_sparse_vector_clear(dual));
-  SLEQP_CALL(sleqp_sparse_vector_reserve(dual, num_active));
+  SLEQP_CALL(sleqp_vec_clear(dual));
+  SLEQP_CALL(sleqp_vec_reserve(dual, num_active));
 
   const int dim = dual_lsq->dim;
 
@@ -54,12 +54,12 @@ merge(const SleqpSparseVec* dual_lsq,
     if (i_lsq <= i_lp)
     {
       assert(dual_lsq->data[k_lsq] != 0.);
-      SLEQP_CALL(sleqp_sparse_vector_push(dual, i_lsq, dual_lsq->data[k_lsq]));
+      SLEQP_CALL(sleqp_vec_push(dual, i_lsq, dual_lsq->data[k_lsq]));
     }
     else
     {
       assert(dual_lp->data[k_lp] != 0.);
-      SLEQP_CALL(sleqp_sparse_vector_push(dual, i_lp, dual_lp->data[k_lp]));
+      SLEQP_CALL(sleqp_vec_push(dual, i_lp, dual_lp->data[k_lp]));
     }
 
     if (i == i_lsq)
@@ -78,13 +78,13 @@ merge(const SleqpSparseVec* dual_lsq,
 static SLEQP_RETCODE
 copy_or_merge(bool clipped,
               int num_active,
-              SleqpSparseVec* dual_lsq,
-              SleqpSparseVec* dual_lp,
-              SleqpSparseVec* dual)
+              SleqpVec* dual_lsq,
+              SleqpVec* dual_lp,
+              SleqpVec* dual)
 {
   if (!clipped)
   {
-    return sleqp_sparse_vector_copy(dual_lsq, dual);
+    return sleqp_vec_copy(dual_lsq, dual);
   }
 
   return merge(dual_lsq, num_active, dual_lp, dual);
@@ -92,8 +92,8 @@ copy_or_merge(bool clipped,
 
 static SLEQP_RETCODE
 estimate_duals(const SleqpIterate* iterate,
-               SleqpSparseVec* cons_dual,
-               SleqpSparseVec* vars_dual,
+               SleqpVec* cons_dual,
+               SleqpVec* vars_dual,
                void* data)
 {
   EstimationData* estimation_data = (EstimationData*)data;
@@ -144,11 +144,11 @@ estimation_free(void* data)
 {
   EstimationData* estimation_data = (EstimationData*)data;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&estimation_data->vars_dual_lp));
-  SLEQP_CALL(sleqp_sparse_vector_free(&estimation_data->cons_dual_lp));
+  SLEQP_CALL(sleqp_vec_free(&estimation_data->vars_dual_lp));
+  SLEQP_CALL(sleqp_vec_free(&estimation_data->cons_dual_lp));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&estimation_data->vars_dual_lsq));
-  SLEQP_CALL(sleqp_sparse_vector_free(&estimation_data->cons_dual_lsq));
+  SLEQP_CALL(sleqp_vec_free(&estimation_data->vars_dual_lsq));
+  SLEQP_CALL(sleqp_vec_free(&estimation_data->cons_dual_lsq));
 
   SLEQP_CALL(sleqp_dual_estimation_release(&(estimation_data->estimation_lp)));
 
@@ -181,17 +181,13 @@ estimation_data_create(EstimationData** star,
   SLEQP_CALL(
     sleqp_dual_estimation_lp_create(&estimation_data->estimation_lp, cauchy));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&estimation_data->cons_dual_lsq,
-                                              num_cons));
+  SLEQP_CALL(sleqp_vec_create_empty(&estimation_data->cons_dual_lsq, num_cons));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&estimation_data->vars_dual_lsq,
-                                              num_vars));
+  SLEQP_CALL(sleqp_vec_create_empty(&estimation_data->vars_dual_lsq, num_vars));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&estimation_data->cons_dual_lp, num_cons));
+  SLEQP_CALL(sleqp_vec_create_empty(&estimation_data->cons_dual_lp, num_cons));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&estimation_data->vars_dual_lp, num_vars));
+  SLEQP_CALL(sleqp_vec_create_empty(&estimation_data->vars_dual_lp, num_vars));
 
   return SLEQP_OKAY;
 }

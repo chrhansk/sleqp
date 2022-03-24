@@ -178,7 +178,7 @@ sleqp_mumps_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_solve(void* factorization_data, const SleqpSparseVec* rhs)
+sleqp_mumps_solve(void* factorization_data, const SleqpVec* rhs)
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)factorization_data;
 
@@ -186,7 +186,7 @@ sleqp_mumps_solve(void* factorization_data, const SleqpSparseVec* rhs)
 
   assert(rhs->dim == dim);
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(rhs, sleqp_mumps_data->rhs_sol));
+  SLEQP_CALL(sleqp_vec_to_raw(rhs, sleqp_mumps_data->rhs_sol));
 
   sleqp_mumps_data->id.rhs  = sleqp_mumps_data->rhs_sol;
   sleqp_mumps_data->id.nrhs = 1;
@@ -201,17 +201,17 @@ sleqp_mumps_solve(void* factorization_data, const SleqpSparseVec* rhs)
 
 static SLEQP_RETCODE
 sleqp_mumps_solution(void* factorization_data,
-                     SleqpSparseVec* sol,
+                     SleqpVec* sol,
                      int begin,
                      int end,
                      double zero_eps)
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)factorization_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
-                                          sleqp_mumps_data->rhs_sol + begin,
-                                          end - begin,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(sol,
+                                sleqp_mumps_data->rhs_sol + begin,
+                                end - begin,
+                                zero_eps));
 
   return SLEQP_OKAY;
 }

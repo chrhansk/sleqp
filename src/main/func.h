@@ -61,7 +61,7 @@ typedef enum
  **/
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_set_value(SleqpFunc* func,
-                     SleqpSparseVec* x,
+                     SleqpVec* x,
                      SLEQP_VALUE_REASON reason,
                      bool* reject,
                      int* obj_grad_nnz,
@@ -81,18 +81,18 @@ sleqp_func_set_value(SleqpFunc* func,
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_eval(SleqpFunc* func,
                 double* obj,
-                SleqpSparseVec* obj_grad,
-                SleqpSparseVec* cons_val,
+                SleqpVec* obj_grad,
+                SleqpVec* cons_val,
                 SleqpSparseMatrix* cons_jac);
 
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_obj_val(SleqpFunc* func, double* obj);
 
 SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad);
+sleqp_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad);
 
 SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val);
+sleqp_func_cons_val(SleqpFunc* func, SleqpVec* cons_val);
 
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac);
@@ -200,9 +200,9 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_func_hess_prod(SleqpFunc* func,
                      const double* obj_dual,
-                     const SleqpSparseVec* direction,
-                     const SleqpSparseVec* cons_duals,
-                     SleqpSparseVec* product);
+                     const SleqpVec* direction,
+                     const SleqpVec* cons_duals,
+                     SleqpVec* product);
 
 /**
  * Evaluates the bilinear product of the Hessian of the Lagrangian of the given
@@ -219,8 +219,8 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_func_hess_bilinear(SleqpFunc* func,
                          const double* obj_dual,
-                         const SleqpSparseVec* direction,
-                         const SleqpSparseVec* cons_duals,
+                         const SleqpVec* direction,
+                         const SleqpVec* cons_duals,
                          double* bilinear_prod);
 
 #endif /* SLEQP_FUNC_H */

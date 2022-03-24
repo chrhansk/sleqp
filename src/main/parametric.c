@@ -19,9 +19,9 @@ struct SleqpParametricSolver
   double exact_violation;
 
   double* cache;
-  SleqpSparseVec* jacobian_product;
-  SleqpSparseVec* combined_cons_val;
-  SleqpSparseVec* last_hessian_direction;
+  SleqpVec* jacobian_product;
+  SleqpVec* combined_cons_val;
+  SleqpVec* last_hessian_direction;
 
   double trust_radius_increase;
   double trust_radius_decrease;
@@ -61,14 +61,14 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
 
   SLEQP_CALL(sleqp_alloc_array(&solver->cache, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->jacobian_product,
-                                              num_constraints));
+  SLEQP_CALL(
+    sleqp_vec_create_empty(&solver->jacobian_product, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->combined_cons_val,
-                                              num_constraints));
+  SLEQP_CALL(
+    sleqp_vec_create_empty(&solver->combined_cons_val, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->last_hessian_direction,
-                                              num_variables));
+  SLEQP_CALL(
+    sleqp_vec_create_empty(&solver->last_hessian_direction, num_variables));
 
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
     = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY);
@@ -102,9 +102,9 @@ sleqp_parametric_solver_set_penalty(SleqpParametricSolver* solver,
 static SLEQP_RETCODE
 has_sufficient_decrease(SleqpParametricSolver* solver,
                         SleqpIterate* iterate,
-                        const SleqpSparseVec* direction,
-                        SleqpSparseVec* hessian_direction,
-                        const SleqpSparseVec* multipliers,
+                        const SleqpVec* direction,
+                        SleqpVec* hessian_direction,
+                        const SleqpVec* multipliers,
                         double* quadratic_merit,
                         bool* sufficient_decrease)
 {
@@ -124,23 +124,22 @@ has_sufficient_decrease(SleqpParametricSolver* solver,
 
   const double penalty_parameter = solver->penalty_parameter;
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(sleqp_iterate_obj_grad(iterate),
-                                     direction,
-                                     &objective_dot));
+  SLEQP_CALL(
+    sleqp_vec_dot(sleqp_iterate_obj_grad(iterate), direction, &objective_dot));
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
                                                 direction,
                                                 solver->cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(solver->jacobian_product,
-                                          solver->cache,
-                                          num_constraints,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(solver->jacobian_product,
+                                solver->cache,
+                                num_constraints,
+                                zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_cons_val(iterate),
-                                     solver->jacobian_product,
-                                     zero_eps,
-                                     solver->combined_cons_val));
+  SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
+                           solver->jacobian_product,
+                           zero_eps,
+                           solver->combined_cons_val));
 
   SLEQP_CALL(sleqp_violation_one_norm(problem,
                                       solver->combined_cons_val,
@@ -152,8 +151,7 @@ has_sufficient_decrease(SleqpParametricSolver* solver,
                                      multipliers,
                                      hessian_direction));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_dot(direction, hessian_direction, &hessian_product));
+  SLEQP_CALL(sleqp_vec_dot(direction, hessian_direction, &hessian_product));
 
   *sufficient_decrease
     = ((penalty_parameter * (exact_violation - linear_violation)
@@ -172,9 +170,9 @@ SLEQP_RETCODE
 search_forward(SleqpParametricSolver* solver,
                SleqpIterate* iterate,
                SleqpCauchy* cauchy_data,
-               SleqpSparseVec* cauchy_direction,
-               SleqpSparseVec* cauchy_hessian_direction,
-               const SleqpSparseVec* multipliers,
+               SleqpVec* cauchy_direction,
+               SleqpVec* cauchy_hessian_direction,
+               const SleqpVec* multipliers,
                double* trust_radius,
                double* quadratic_merit)
 {
@@ -188,8 +186,8 @@ search_forward(SleqpParametricSolver* solver,
 
   double last_quadratic_merit = *quadratic_merit;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(cauchy_hessian_direction,
-                                      solver->last_hessian_direction));
+  SLEQP_CALL(
+    sleqp_vec_copy(cauchy_hessian_direction, solver->last_hessian_direction));
 
   for (int i = 0; i < solver->max_num_resolves; ++i)
   {
@@ -221,9 +219,9 @@ search_forward(SleqpParametricSolver* solver,
 
       double hessian_dot;
 
-      SLEQP_CALL(sleqp_sparse_vector_dot(cauchy_direction,
-                                         cauchy_hessian_direction,
-                                         &hessian_dot));
+      SLEQP_CALL(sleqp_vec_dot(cauchy_direction,
+                               cauchy_hessian_direction,
+                               &hessian_dot));
 
       *quadratic_merit += .5 * hessian_dot;
     }
@@ -253,16 +251,16 @@ search_forward(SleqpParametricSolver* solver,
 
       SLEQP_CALL(sleqp_cauchy_get_direction(cauchy_data, cauchy_direction));
 
-      SLEQP_CALL(sleqp_sparse_vector_copy(solver->last_hessian_direction,
-                                          cauchy_hessian_direction));
+      SLEQP_CALL(sleqp_vec_copy(solver->last_hessian_direction,
+                                cauchy_hessian_direction));
 
       break;
     }
 
     last_quadratic_merit = *quadratic_merit;
 
-    SLEQP_CALL(sleqp_sparse_vector_copy(cauchy_hessian_direction,
-                                        solver->last_hessian_direction));
+    SLEQP_CALL(
+      sleqp_vec_copy(cauchy_hessian_direction, solver->last_hessian_direction));
   }
 
   return SLEQP_OKAY;
@@ -272,9 +270,9 @@ SLEQP_RETCODE
 search_backtracking(SleqpParametricSolver* solver,
                     SleqpIterate* iterate,
                     SleqpCauchy* cauchy_data,
-                    SleqpSparseVec* cauchy_direction,
-                    SleqpSparseVec* cauchy_hessian_direction,
-                    const SleqpSparseVec* multipliers,
+                    SleqpVec* cauchy_direction,
+                    SleqpVec* cauchy_hessian_direction,
+                    const SleqpVec* multipliers,
                     double* trust_radius,
                     double* quadratic_merit)
 {
@@ -299,7 +297,7 @@ search_backtracking(SleqpParametricSolver* solver,
     {
       const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
-      const double step_norm = sleqp_sparse_vector_inf_norm(cauchy_direction);
+      const double step_norm = sleqp_vec_inf_norm(cauchy_direction);
 
       SLEQP_NUM_ASSERT_PARAM(eps);
       SLEQP_NUM_ASSERT_PARAM(step_norm);
@@ -351,9 +349,9 @@ SLEQP_RETCODE
 sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
                               SleqpIterate* iterate,
                               SleqpCauchy* cauchy_data,
-                              SleqpSparseVec* cauchy_direction,
-                              SleqpSparseVec* cauchy_hessian_direction,
-                              const SleqpSparseVec* multipliers,
+                              SleqpVec* cauchy_direction,
+                              SleqpVec* cauchy_hessian_direction,
+                              const SleqpVec* multipliers,
                               double* trust_radius,
                               double* quadratic_merit_value)
 {
@@ -413,7 +411,7 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
   {
     const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
-    const double step_norm = sleqp_sparse_vector_inf_norm(cauchy_direction);
+    const double step_norm = sleqp_vec_inf_norm(cauchy_direction);
 
     SLEQP_NUM_ASSERT_PARAM(eps);
     SLEQP_NUM_ASSERT_PARAM(step_norm);
@@ -438,11 +436,11 @@ parametric_solver_free(SleqpParametricSolver** star)
 {
   SleqpParametricSolver* solver = *star;
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->last_hessian_direction));
+  SLEQP_CALL(sleqp_vec_free(&solver->last_hessian_direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->combined_cons_val));
+  SLEQP_CALL(sleqp_vec_free(&solver->combined_cons_val));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->jacobian_product));
+  SLEQP_CALL(sleqp_vec_free(&solver->jacobian_product));
 
   SLEQP_CALL(sleqp_linesearch_release(&solver->linesearch));
 

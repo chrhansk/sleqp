@@ -12,26 +12,26 @@ const int linear_lsq_num_constraints = 0;
 const int linear_lsq_num_residuals   = LINEAR_LSQ_NUM_RESIDUALS;
 
 SleqpSparseMatrix* linear_lsq_matrix;
-SleqpSparseVec* linear_lsq_rhs;
+SleqpVec* linear_lsq_rhs;
 
 SleqpParams* linear_lsq_params;
 SleqpFunc* linear_lsq_func;
 
-SleqpSparseVec* linear_lsq_var_lb;
-SleqpSparseVec* linear_lsq_var_ub;
-SleqpSparseVec* linear_lsq_cons_lb;
-SleqpSparseVec* linear_lsq_cons_ub;
-SleqpSparseVec* linear_lsq_initial;
-SleqpSparseVec* linear_lsq_optimal;
+SleqpVec* linear_lsq_var_lb;
+SleqpVec* linear_lsq_var_ub;
+SleqpVec* linear_lsq_cons_lb;
+SleqpVec* linear_lsq_cons_ub;
+SleqpVec* linear_lsq_initial;
+SleqpVec* linear_lsq_optimal;
 
-static SleqpSparseVec* linear_lsq_current;
-static SleqpSparseVec* linear_lsq_forward;
+static SleqpVec* linear_lsq_current;
+static SleqpVec* linear_lsq_forward;
 
 double dense_cache_forward[LINEAR_LSQ_NUM_RESIDUALS];
 
 static SLEQP_RETCODE
 func_set(SleqpFunc* func,
-         SleqpSparseVec* value,
+         SleqpVec* value,
          SLEQP_VALUE_REASON reason,
          bool* reject,
          int* obj_grad_nnz,
@@ -39,7 +39,7 @@ func_set(SleqpFunc* func,
          int* cons_jac_nnz,
          void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_copy(value, linear_lsq_current));
+  SLEQP_CALL(sleqp_vec_copy(value, linear_lsq_current));
 
   *obj_grad_nnz = linear_lsq_num_variables;
 
@@ -47,7 +47,7 @@ func_set(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-lsq_residuals(SleqpFunc* func, SleqpSparseVec* residual, void* func_data)
+lsq_residuals(SleqpFunc* func, SleqpVec* residual, void* func_data)
 {
   const double zero_eps
     = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
@@ -56,25 +56,25 @@ lsq_residuals(SleqpFunc* func, SleqpSparseVec* residual, void* func_data)
                                                 linear_lsq_current,
                                                 dense_cache_forward));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(linear_lsq_forward,
-                                          dense_cache_forward,
-                                          linear_lsq_num_residuals,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(linear_lsq_forward,
+                                dense_cache_forward,
+                                linear_lsq_num_residuals,
+                                zero_eps));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(linear_lsq_forward,
-                                            linear_lsq_rhs,
-                                            1.,
-                                            -1.,
-                                            zero_eps,
-                                            residual));
+  SLEQP_CALL(sleqp_vec_add_scaled(linear_lsq_forward,
+                                  linear_lsq_rhs,
+                                  1.,
+                                  -1.,
+                                  zero_eps,
+                                  residual));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 lsq_jac_forward(SleqpFunc* func,
-                const SleqpSparseVec* forward_direction,
-                SleqpSparseVec* product,
+                const SleqpVec* forward_direction,
+                SleqpVec* product,
                 void* func_data)
 {
   const double zero_eps
@@ -84,18 +84,18 @@ lsq_jac_forward(SleqpFunc* func,
                                                 forward_direction,
                                                 dense_cache_forward));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(product,
-                                          dense_cache_forward,
-                                          linear_lsq_num_residuals,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_vec_from_raw(product,
+                                dense_cache_forward,
+                                linear_lsq_num_residuals,
+                                zero_eps));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 lsq_jac_adjoint(SleqpFunc* func,
-                const SleqpSparseVec* adjoint_direction,
-                SleqpSparseVec* product,
+                const SleqpVec* adjoint_direction,
+                SleqpVec* product,
                 void* func_data)
 {
   const double zero_eps
@@ -133,68 +133,65 @@ linear_lsq_setup()
     ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 2, 1, 2.));
   }
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&linear_lsq_rhs, linear_lsq_num_residuals));
+  ASSERT_CALL(sleqp_vec_create_full(&linear_lsq_rhs, linear_lsq_num_residuals));
 
   {
     double values[] = {6., 0., 0.};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(linear_lsq_rhs,
-                                             values,
-                                             linear_lsq_num_residuals,
-                                             0.));
+    ASSERT_CALL(
+      sleqp_vec_from_raw(linear_lsq_rhs, values, linear_lsq_num_residuals, 0.));
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&linear_lsq_var_lb,
-                                              linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_vec_create_full(&linear_lsq_var_lb, linear_lsq_num_variables));
 
   {
     double values[] = {-inf, -inf, -inf};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(linear_lsq_var_lb,
-                                             values,
-                                             linear_lsq_num_variables,
-                                             0.));
+    ASSERT_CALL(sleqp_vec_from_raw(linear_lsq_var_lb,
+                                   values,
+                                   linear_lsq_num_variables,
+                                   0.));
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&linear_lsq_var_ub,
-                                              linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_vec_create_full(&linear_lsq_var_ub, linear_lsq_num_variables));
 
   {
     double values[] = {inf, inf, inf};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(linear_lsq_var_ub,
-                                             values,
-                                             linear_lsq_num_variables,
-                                             0.));
+    ASSERT_CALL(sleqp_vec_from_raw(linear_lsq_var_ub,
+                                   values,
+                                   linear_lsq_num_variables,
+                                   0.));
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&linear_lsq_cons_lb,
-                                               linear_lsq_num_constraints));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&linear_lsq_cons_lb, linear_lsq_num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&linear_lsq_cons_ub,
-                                               linear_lsq_num_constraints));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&linear_lsq_cons_ub, linear_lsq_num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&linear_lsq_initial,
-                                               linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&linear_lsq_initial, linear_lsq_num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&linear_lsq_optimal,
-                                               linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&linear_lsq_optimal, linear_lsq_num_variables));
 
   {
     double values[] = {5., -3.};
 
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(linear_lsq_optimal,
-                                             values,
-                                             linear_lsq_num_variables,
-                                             0.));
+    ASSERT_CALL(sleqp_vec_from_raw(linear_lsq_optimal,
+                                   values,
+                                   linear_lsq_num_variables,
+                                   0.));
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&linear_lsq_current,
-                                               linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&linear_lsq_current, linear_lsq_num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&linear_lsq_forward,
-                                               linear_lsq_num_residuals));
+  ASSERT_CALL(
+    sleqp_vec_create_empty(&linear_lsq_forward, linear_lsq_num_residuals));
 
   ASSERT_CALL(sleqp_params_create(&linear_lsq_params));
 
@@ -223,20 +220,20 @@ linear_lsq_teardown()
 
   ASSERT_CALL(sleqp_params_release(&linear_lsq_params));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_current));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_current));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_forward));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_forward));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_optimal));
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_initial));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_optimal));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_initial));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_cons_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_var_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_var_lb));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_var_ub));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_var_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linear_lsq_rhs));
+  ASSERT_CALL(sleqp_vec_free(&linear_lsq_rhs));
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&linear_lsq_matrix));
 }

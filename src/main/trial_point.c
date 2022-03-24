@@ -203,35 +203,29 @@ sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
   const int num_variables   = sleqp_problem_num_vars(solver->problem);
   const int num_constraints = sleqp_problem_num_cons(solver->problem);
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->cauchy_direction, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->cauchy_direction, num_variables));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->cauchy_step, num_variables));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->cauchy_step, num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->cauchy_hessian_step,
-                                              num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->estimation_residuals,
-                                              num_variables));
+    sleqp_vec_create_empty(&solver->cauchy_hessian_step, num_variables));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->newton_step, num_variables));
+    sleqp_vec_create_empty(&solver->estimation_residuals, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->newton_hessian_step,
-                                              num_variables));
-
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->soc_step, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->newton_step, num_variables));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->trial_step, num_variables));
+    sleqp_vec_create_empty(&solver->newton_hessian_step, num_variables));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->soc_step, num_variables));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->trial_step, num_variables));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->multipliers, num_constraints));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->multipliers, num_constraints));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->initial_trial_point,
-                                              num_variables));
+    sleqp_vec_create_empty(&solver->initial_trial_point, num_variables));
 
   SLEQP_CALL(sleqp_merit_create(&solver->merit, problem, params));
 
@@ -349,25 +343,25 @@ sleqp_trial_point_solver_penalty_info(SleqpTrialPointSolver* solver,
   return SLEQP_OKAY;
 }
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_trial_point_solver_multipliers(SleqpTrialPointSolver* solver)
 {
   return solver->multipliers;
 }
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_trial_point_solver_cauchy_step(SleqpTrialPointSolver* solver)
 {
   return solver->cauchy_step;
 }
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_trial_point_solver_trial_step(SleqpTrialPointSolver* solver)
 {
   return solver->trial_step;
 }
 
-SleqpSparseVec*
+SleqpVec*
 sleqp_trial_point_solver_soc_step(SleqpTrialPointSolver* solver)
 {
   return solver->soc_step;
@@ -387,7 +381,7 @@ sleqp_trial_point_solver_rayleigh(SleqpTrialPointSolver* solver,
 
 static SLEQP_RETCODE
 compute_trial_iterate_from_direction(SleqpTrialPointSolver* solver,
-                                     const SleqpSparseVec* direction,
+                                     const SleqpVec* direction,
                                      SleqpIterate* trial_iterate)
 {
   SleqpProblem* problem = solver->problem;
@@ -397,16 +391,16 @@ compute_trial_iterate_from_direction(SleqpTrialPointSolver* solver,
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_add(sleqp_iterate_primal(iterate),
-                                     direction,
-                                     zero_eps,
-                                     solver->initial_trial_point));
+  SLEQP_CALL(sleqp_vec_add(sleqp_iterate_primal(iterate),
+                           direction,
+                           zero_eps,
+                           solver->initial_trial_point));
 
-  SLEQP_CALL(sleqp_sparse_vector_clip(solver->initial_trial_point,
-                                      sleqp_problem_vars_lb(problem),
-                                      sleqp_problem_vars_ub(problem),
-                                      zero_eps,
-                                      sleqp_iterate_primal(trial_iterate)));
+  SLEQP_CALL(sleqp_vec_clip(solver->initial_trial_point,
+                            sleqp_problem_vars_lb(problem),
+                            sleqp_problem_vars_ub(problem),
+                            zero_eps,
+                            sleqp_iterate_primal(trial_iterate)));
 
   return SLEQP_OKAY;
 }
@@ -429,7 +423,7 @@ compute_trial_point_simple(SleqpTrialPointSolver* solver,
                                                           quadratic_model,
                                                           full_step));
 
-  const SleqpSparseVec* trial_step = solver->cauchy_step;
+  const SleqpVec* trial_step = solver->cauchy_step;
 
   // Compute merit value
   {
@@ -444,9 +438,8 @@ compute_trial_point_simple(SleqpTrialPointSolver* solver,
   {
     double hessian_prod;
 
-    SLEQP_CALL(sleqp_sparse_vector_dot(trial_step,
-                                       solver->cauchy_hessian_step,
-                                       &hessian_prod));
+    SLEQP_CALL(
+      sleqp_vec_dot(trial_step, solver->cauchy_hessian_step, &hessian_prod));
 
     (*cauchy_merit_value) += .5 * hessian_prod;
 
@@ -473,7 +466,7 @@ compute_trial_point_simple(SleqpTrialPointSolver* solver,
 #endif
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(solver->cauchy_step, solver->trial_step));
+  SLEQP_CALL(sleqp_vec_copy(solver->cauchy_step, solver->trial_step));
 
   SLEQP_CALL(compute_trial_iterate_from_direction(solver,
                                                   solver->trial_step,
@@ -640,9 +633,9 @@ evaluate_iterate(SleqpTrialPointSolver* solver,
 {
   double obj_val;
 
-  SleqpSparseVec* obj_grad    = sleqp_iterate_obj_grad(iterate);
+  SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
   SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  SleqpSparseVec* cons_val    = sleqp_iterate_cons_val(iterate);
+  SleqpVec* cons_val          = sleqp_iterate_cons_val(iterate);
 
   SLEQP_CALL(
     sleqp_problem_eval(problem, &obj_val, obj_grad, cons_val, cons_jac));
@@ -931,16 +924,16 @@ trial_point_solver_free(SleqpTrialPointSolver** star)
 
   SLEQP_CALL(sleqp_merit_release(&solver->merit));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->initial_trial_point));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->multipliers));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->trial_step));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->soc_step));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->newton_hessian_step));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->newton_step));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->estimation_residuals));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_hessian_step));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_step));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->cauchy_direction));
+  SLEQP_CALL(sleqp_vec_free(&solver->initial_trial_point));
+  SLEQP_CALL(sleqp_vec_free(&solver->multipliers));
+  SLEQP_CALL(sleqp_vec_free(&solver->trial_step));
+  SLEQP_CALL(sleqp_vec_free(&solver->soc_step));
+  SLEQP_CALL(sleqp_vec_free(&solver->newton_hessian_step));
+  SLEQP_CALL(sleqp_vec_free(&solver->newton_step));
+  SLEQP_CALL(sleqp_vec_free(&solver->estimation_residuals));
+  SLEQP_CALL(sleqp_vec_free(&solver->cauchy_hessian_step));
+  SLEQP_CALL(sleqp_vec_free(&solver->cauchy_step));
+  SLEQP_CALL(sleqp_vec_free(&solver->cauchy_direction));
 
   SLEQP_CALL(sleqp_options_release(&solver->options));
 

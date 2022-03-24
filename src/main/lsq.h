@@ -12,17 +12,17 @@ int
 sleqp_lsq_func_num_residuals(SleqpFunc* func);
 
 SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_lsq_func_residuals(SleqpFunc* func, SleqpSparseVec* residuals);
+sleqp_lsq_func_residuals(SleqpFunc* func, SleqpVec* residuals);
 
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_lsq_func_jac_forward(SleqpFunc* func,
-                           const SleqpSparseVec* forward_direction,
-                           SleqpSparseVec* product);
+                           const SleqpVec* forward_direction,
+                           SleqpVec* product);
 
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_lsq_func_jac_adjoint(SleqpFunc* func,
-                           const SleqpSparseVec* adjoint_direction,
-                           SleqpSparseVec* product);
+                           const SleqpVec* adjoint_direction,
+                           SleqpVec* product);
 
 void*
 sleqp_lsq_func_get_data(SleqpFunc* func);

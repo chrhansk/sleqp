@@ -33,9 +33,9 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_tr_solver_solve(SleqpTRSolver* solver,
                       SleqpAugJac* jacobian,
-                      const SleqpSparseVec* multipliers,
-                      const SleqpSparseVec* gradient,
-                      SleqpSparseVec* newton_step,
+                      const SleqpVec* multipliers,
+                      const SleqpVec* gradient,
+                      SleqpVec* newton_step,
                       double trust_radius,
                       double* tr_dual);
 

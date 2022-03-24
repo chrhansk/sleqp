@@ -42,19 +42,18 @@ sleqp_restoration_problem_create(SleqpProblem** star,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_restoration_problem_transform(SleqpProblem* problem,
-                                    const SleqpSparseVec* primal,
-                                    const SleqpSparseVec* cons_val,
-                                    SleqpSparseVec* result);
+                                    const SleqpVec* primal,
+                                    const SleqpVec* cons_val,
+                                    SleqpVec* result);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_restoration_func_cons_val(SleqpFunc* restoration_func,
-                                SleqpSparseVec** star);
+sleqp_restoration_func_cons_val(SleqpFunc* restoration_func, SleqpVec** star);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_restoration_problem_restore(SleqpProblem* problem,
-                                  const SleqpSparseVec* input,
-                                  SleqpSparseVec* result);
+                                  const SleqpVec* input,
+                                  SleqpVec* result);
 
 #endif /* RESTORATION_H */

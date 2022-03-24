@@ -19,28 +19,28 @@ static int num_constraints;
 
 SleqpFunc* fixed_var_func;
 
-SleqpSparseVec* value;
-SleqpSparseVec* grad;
+SleqpVec* value;
+SleqpVec* grad;
 
-SleqpSparseVec* value;
-SleqpSparseVec* fixed_value;
+SleqpVec* value;
+SleqpVec* fixed_value;
 
-SleqpSparseVec* grad;
-SleqpSparseVec* fixed_grad;
+SleqpVec* grad;
+SleqpVec* fixed_grad;
 
-SleqpSparseVec* cons_val;
-SleqpSparseVec* fixed_cons_val;
+SleqpVec* cons_val;
+SleqpVec* fixed_cons_val;
 
 SleqpSparseMatrix* cons_jac;
 SleqpSparseMatrix* fixed_cons_jac;
 
-SleqpSparseVec* direction;
-SleqpSparseVec* fixed_direction;
+SleqpVec* direction;
+SleqpVec* fixed_direction;
 
-SleqpSparseVec* product;
-SleqpSparseVec* fixed_product;
+SleqpVec* product;
+SleqpVec* fixed_product;
 
-SleqpSparseVec* cons_duals;
+SleqpVec* cons_duals;
 
 void
 setup()
@@ -64,25 +64,22 @@ setup()
                                           fixed_indices,
                                           fixed_values));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&value, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&value, num_variables));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&fixed_value, num_variables - num_fixed));
+  ASSERT_CALL(sleqp_vec_create_full(&fixed_value, num_variables - num_fixed));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&grad, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&grad, num_variables));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&fixed_grad, num_variables - num_fixed));
+  ASSERT_CALL(sleqp_vec_create_full(&fixed_grad, num_variables - num_fixed));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(fixed_value, 0, 2.));
+  ASSERT_CALL(sleqp_vec_push(fixed_value, 0, 2.));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(value, 0, 1.));
-  ASSERT_CALL(sleqp_sparse_vector_push(value, 1, 2.));
+  ASSERT_CALL(sleqp_vec_push(value, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(value, 1, 2.));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&cons_val, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_full(&cons_val, num_constraints));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&fixed_cons_val, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_full(&fixed_cons_val, num_constraints));
 
   ASSERT_CALL(
     sleqp_sparse_matrix_create(&cons_jac, num_constraints, num_variables, 0));
@@ -92,52 +89,51 @@ setup()
                                          num_variables - num_fixed,
                                          0));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&direction, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&direction, num_variables));
 
   // This value should be stripped during evaluation
-  ASSERT_CALL(sleqp_sparse_vector_push(direction, 0, 10.));
-  ASSERT_CALL(sleqp_sparse_vector_push(direction, 1, 1.));
-
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&fixed_direction,
-                                              num_variables - num_fixed));
-
-  ASSERT_CALL(sleqp_sparse_vector_push(fixed_direction, 0, 1.));
-
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&product, num_variables));
+  ASSERT_CALL(sleqp_vec_push(direction, 0, 10.));
+  ASSERT_CALL(sleqp_vec_push(direction, 1, 1.));
 
   ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&fixed_product, num_variables - num_fixed));
+    sleqp_vec_create_full(&fixed_direction, num_variables - num_fixed));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&cons_duals, num_constraints));
+  ASSERT_CALL(sleqp_vec_push(fixed_direction, 0, 1.));
+
+  ASSERT_CALL(sleqp_vec_create_full(&product, num_variables));
+
+  ASSERT_CALL(sleqp_vec_create_full(&fixed_product, num_variables - num_fixed));
+
+  ASSERT_CALL(sleqp_vec_create_full(&cons_duals, num_constraints));
 
   for (int i = 0; i < num_constraints; ++i)
   {
-    ASSERT_CALL(sleqp_sparse_vector_push(cons_duals, i, 1.));
+    ASSERT_CALL(sleqp_vec_push(cons_duals, i, 1.));
   }
 }
 
 void
 teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_duals));
+  ASSERT_CALL(sleqp_vec_free(&cons_duals));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_product));
-  ASSERT_CALL(sleqp_sparse_vector_free(&product));
+  ASSERT_CALL(sleqp_vec_free(&fixed_product));
+  ASSERT_CALL(sleqp_vec_free(&product));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_direction));
-  ASSERT_CALL(sleqp_sparse_vector_free(&direction));
+  ASSERT_CALL(sleqp_vec_free(&fixed_direction));
+  ASSERT_CALL(sleqp_vec_free(&direction));
 
   ASSERT_CALL(sleqp_sparse_matrix_release(&fixed_cons_jac));
   ASSERT_CALL(sleqp_sparse_matrix_release(&cons_jac));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_cons_val));
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_val));
+  ASSERT_CALL(sleqp_vec_free(&fixed_cons_val));
+  ASSERT_CALL(sleqp_vec_free(&cons_val));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_grad));
-  ASSERT_CALL(sleqp_sparse_vector_free(&grad));
+  ASSERT_CALL(sleqp_vec_free(&fixed_grad));
+  ASSERT_CALL(sleqp_vec_free(&grad));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_value));
-  ASSERT_CALL(sleqp_sparse_vector_free(&value));
+  ASSERT_CALL(sleqp_vec_free(&fixed_value));
+  ASSERT_CALL(sleqp_vec_free(&value));
 
   ASSERT_CALL(sleqp_func_release(&fixed_var_func));
 
@@ -207,8 +203,7 @@ START_TEST(test_obj_grad)
 
   ASSERT_CALL(sleqp_func_obj_grad(quadconsfunc, grad));
 
-  ck_assert(sleqp_sparse_vector_value_at(fixed_grad, 0)
-            == sleqp_sparse_vector_value_at(grad, 1));
+  ck_assert(sleqp_vec_value_at(fixed_grad, 0) == sleqp_vec_value_at(grad, 1));
 }
 END_TEST
 
@@ -240,8 +235,8 @@ START_TEST(test_cons_val)
 
   for (int i = 0; i < num_constraints; ++i)
   {
-    ck_assert(sleqp_sparse_vector_value_at(cons_val, i)
-              == sleqp_sparse_vector_value_at(fixed_cons_val, i));
+    ck_assert(sleqp_vec_value_at(cons_val, i)
+              == sleqp_vec_value_at(fixed_cons_val, i));
   }
 }
 END_TEST
@@ -317,8 +312,8 @@ START_TEST(test_hess_prod)
   ASSERT_CALL(
     sleqp_func_hess_prod(quadconsfunc, &one, direction, cons_duals, product));
 
-  ck_assert(sleqp_sparse_vector_value_at(fixed_product, 0)
-            == sleqp_sparse_vector_value_at(product, 1));
+  ck_assert(sleqp_vec_value_at(fixed_product, 0)
+            == sleqp_vec_value_at(product, 1));
 }
 END_TEST
 

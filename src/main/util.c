@@ -35,13 +35,13 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
     sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Function is not allowed to raise");
   }
 
-  SleqpSparseVec* obj_grad    = sleqp_iterate_obj_grad(iterate);
+  SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
   SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  SleqpSparseVec* cons_val    = sleqp_iterate_cons_val(iterate);
+  SleqpVec* cons_val          = sleqp_iterate_cons_val(iterate);
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(obj_grad, obj_grad_nnz));
+  SLEQP_CALL(sleqp_vec_reserve(obj_grad, obj_grad_nnz));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(cons_val, cons_val_nnz));
+  SLEQP_CALL(sleqp_vec_reserve(cons_val, cons_val_nnz));
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac_nnz));
 
@@ -58,7 +58,7 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
 SLEQP_RETCODE
 sleqp_direction_in_working_set(SleqpProblem* problem,
                                const SleqpIterate* iterate,
-                               const SleqpSparseVec* direction,
+                               const SleqpVec* direction,
                                double* cache,
                                double eps,
                                bool* in_working_set)
@@ -69,12 +69,12 @@ sleqp_direction_in_working_set(SleqpProblem* problem,
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(cons_jac, direction, cache));
 
-  const SleqpSparseVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpSparseVec* ub = sleqp_problem_cons_ub(problem);
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
 
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  SleqpSparseVec* c = sleqp_iterate_cons_val(iterate);
+  SleqpVec* c = sleqp_iterate_cons_val(iterate);
 
   const int dim = lb->dim;
 
@@ -132,10 +132,10 @@ sleqp_direction_in_working_set(SleqpProblem* problem,
 }
 
 SLEQP_RETCODE
-sleqp_max_step_length(const SleqpSparseVec* x,
-                      const SleqpSparseVec* d,
-                      const SleqpSparseVec* l,
-                      const SleqpSparseVec* u,
+sleqp_max_step_length(const SleqpVec* x,
+                      const SleqpVec* d,
+                      const SleqpVec* l,
+                      const SleqpVec* u,
                       double* max_step_length)
 {
   const int dim = x->dim;

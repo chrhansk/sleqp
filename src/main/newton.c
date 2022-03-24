@@ -32,14 +32,14 @@ typedef struct
   SleqpAugJac* aug_jac;
   double penalty_parameter;
 
-  SleqpSparseVec* gradient;
+  SleqpVec* gradient;
 
-  SleqpSparseVec* initial_hessian_product;
-  SleqpSparseVec* jacobian_product;
+  SleqpVec* initial_hessian_product;
+  SleqpVec* jacobian_product;
 
-  SleqpSparseVec* sparse_cache;
-  SleqpSparseVec* tr_step;
-  SleqpSparseVec* tr_hessian_product;
+  SleqpVec* sparse_cache;
+  SleqpVec* tr_step;
+  SleqpVec* tr_hessian_product;
 
   double* dense_cache;
 
@@ -78,22 +78,19 @@ newton_solver_create(NewtonSolver** star,
   SLEQP_CALL(sleqp_options_capture(options));
   solver->options = options;
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->gradient, num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->initial_hessian_product,
-                                              num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->gradient, num_variables));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->jacobian_product, num_variables));
+    sleqp_vec_create_empty(&solver->initial_hessian_product, num_variables));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->jacobian_product, num_variables));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->sparse_cache, num_variables));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->tr_step, num_variables));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&solver->sparse_cache, num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->tr_step, num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&solver->tr_hessian_product,
-                                              num_variables));
+    sleqp_vec_create_empty(&solver->tr_hessian_product, num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
                                SLEQP_MAX(num_variables, num_constraints)));
@@ -199,70 +196,64 @@ newton_solver_set_iterate(SleqpIterate* iterate,
 }
 
 static SLEQP_RETCODE
-newton_solver_add_violated_multipliers(SleqpSparseVec* multipliers, void* data)
+newton_solver_add_violated_multipliers(SleqpVec* multipliers, void* data)
 {
   NewtonSolver* solver = (NewtonSolver*)data;
 
   assert(solver->iterate);
 
-  SleqpSparseVec* cons_dual = sleqp_iterate_cons_dual(solver->iterate);
+  SleqpVec* cons_dual = sleqp_iterate_cons_dual(solver->iterate);
 
-  SleqpSparseVec* violated_cons_mult
+  SleqpVec* violated_cons_mult
     = sleqp_working_step_get_violated_cons_multipliers(solver->working_step);
 
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(cons_dual,
-                                            violated_cons_mult,
-                                            1.,
-                                            solver->penalty_parameter,
-                                            zero_eps,
-                                            multipliers));
+  SLEQP_CALL(sleqp_vec_add_scaled(cons_dual,
+                                  violated_cons_mult,
+                                  1.,
+                                  solver->penalty_parameter,
+                                  zero_eps,
+                                  multipliers));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-projection_residuum(NewtonSolver* solver,
-                    SleqpSparseVec* tr_step,
-                    double* residuum)
+projection_residuum(NewtonSolver* solver, SleqpVec* tr_step, double* residuum)
 {
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
   SleqpAugJac* jacobian = solver->aug_jac;
 
-  SleqpSparseVec* sparse_cache = solver->sparse_cache;
-  SleqpSparseVec* residuals    = solver->tr_hessian_product;
+  SleqpVec* sparse_cache = solver->sparse_cache;
+  SleqpVec* residuals    = solver->tr_hessian_product;
 
   SLEQP_CALL(sleqp_aug_jac_projection(jacobian, tr_step, sparse_cache, NULL));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sparse_cache,
-                                            tr_step,
-                                            1.,
-                                            -1.,
-                                            zero_eps,
-                                            residuals));
+  SLEQP_CALL(
+    sleqp_vec_add_scaled(sparse_cache, tr_step, 1., -1., zero_eps, residuals));
 
-  *residuum = sleqp_sparse_vector_inf_norm(residuals);
+  *residuum = sleqp_vec_inf_norm(residuals);
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 stationarity_residuum(NewtonSolver* solver,
-                      const SleqpSparseVec* multipliers,
-                      const SleqpSparseVec* gradient,
-                      SleqpSparseVec* tr_step,
+                      const SleqpVec* multipliers,
+                      const SleqpVec* gradient,
+                      SleqpVec* tr_step,
                       double tr_dual,
                       double* residuum)
 {
   SleqpProblem* problem = solver->problem;
 
-  SleqpAugJac* jacobian        = solver->aug_jac;
-  SleqpSparseVec* sparse_cache = solver->sparse_cache;
-  SleqpSparseVec* tr_prod      = solver->tr_hessian_product;
+  SleqpAugJac* jacobian  = solver->aug_jac;
+  SleqpVec* sparse_cache = solver->sparse_cache;
+  SleqpVec* tr_prod      = solver->tr_hessian_product;
 
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
@@ -272,32 +263,31 @@ stationarity_residuum(NewtonSolver* solver,
   SLEQP_CALL(
     sleqp_problem_hess_prod(problem, &one, tr_step, multipliers, tr_prod));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_add(tr_prod, gradient, zero_eps, sparse_cache));
+  SLEQP_CALL(sleqp_vec_add(tr_prod, gradient, zero_eps, sparse_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sparse_cache,
-                                            tr_step,
-                                            1.,
-                                            tr_dual,
-                                            zero_eps,
-                                            tr_prod));
+  SLEQP_CALL(sleqp_vec_add_scaled(sparse_cache,
+                                  tr_step,
+                                  1.,
+                                  tr_dual,
+                                  zero_eps,
+                                  tr_prod));
 
   SLEQP_CALL(sleqp_aug_jac_projection(jacobian, tr_prod, sparse_cache, NULL));
 
-  (*residuum) = sleqp_sparse_vector_inf_norm(sparse_cache);
+  (*residuum) = sleqp_vec_inf_norm(sparse_cache);
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 print_residuals(NewtonSolver* solver,
-                const SleqpSparseVec* multipliers,
-                const SleqpSparseVec* gradient,
-                SleqpSparseVec* tr_step,
+                const SleqpVec* multipliers,
+                const SleqpVec* gradient,
+                SleqpVec* tr_step,
                 double trust_radius,
                 double tr_dual)
 {
-  const double step_norm  = sleqp_sparse_vector_norm(tr_step);
+  const double step_norm  = sleqp_vec_norm(tr_step);
   const double radius_res = SLEQP_MAX(step_norm - trust_radius, 0.);
 
   double proj_res = 0.;
@@ -366,7 +356,7 @@ check_spectrum(NewtonSolver* solver)
 // EQP Hessian with the initial solution, the objective
 // function gradient and the violated multipliers
 static SLEQP_RETCODE
-compute_gradient(NewtonSolver* solver, const SleqpSparseVec* multipliers)
+compute_gradient(NewtonSolver* solver, const SleqpVec* multipliers)
 {
   assert(solver->iterate);
 
@@ -379,14 +369,13 @@ compute_gradient(NewtonSolver* solver, const SleqpSparseVec* multipliers)
   const double penalty_parameter = solver->penalty_parameter;
 
   SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  SleqpSparseVec* obj_grad    = sleqp_iterate_obj_grad(iterate);
+  SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
 
   double one = 1.;
 
-  SleqpSparseVec* initial_step
-    = sleqp_working_step_get_step(solver->working_step);
+  SleqpVec* initial_step = sleqp_working_step_get_step(solver->working_step);
 
-  SleqpSparseVec* violated_cons_mult
+  SleqpVec* violated_cons_mult
     = sleqp_working_step_get_violated_cons_multipliers(solver->working_step);
 
   SLEQP_CALL(sleqp_problem_hess_prod(problem,
@@ -395,10 +384,10 @@ compute_gradient(NewtonSolver* solver, const SleqpSparseVec* multipliers)
                                      multipliers,
                                      solver->initial_hessian_product));
 
-  SLEQP_CALL(sleqp_sparse_vector_add(solver->initial_hessian_product,
-                                     obj_grad,
-                                     zero_eps,
-                                     solver->sparse_cache));
+  SLEQP_CALL(sleqp_vec_add(solver->initial_hessian_product,
+                           obj_grad,
+                           zero_eps,
+                           solver->sparse_cache));
 
   SLEQP_CALL(
     sleqp_sparse_matrix_trans_vector_product(cons_jac,
@@ -406,20 +395,20 @@ compute_gradient(NewtonSolver* solver, const SleqpSparseVec* multipliers)
                                              zero_eps,
                                              solver->jacobian_product));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(solver->sparse_cache,
-                                            solver->jacobian_product,
-                                            1.,
-                                            penalty_parameter,
-                                            zero_eps,
-                                            solver->gradient));
+  SLEQP_CALL(sleqp_vec_add_scaled(solver->sparse_cache,
+                                  solver->jacobian_product,
+                                  1.,
+                                  penalty_parameter,
+                                  zero_eps,
+                                  solver->gradient));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 newton_objective(NewtonSolver* solver,
-                 const SleqpSparseVec* multipliers,
-                 const SleqpSparseVec* direction,
+                 const SleqpVec* multipliers,
+                 const SleqpVec* direction,
                  double* objective)
 {
   assert(solver->iterate);
@@ -436,17 +425,16 @@ newton_objective(NewtonSolver* solver,
                                          multipliers,
                                          &bilinear_product));
 
-  SleqpSparseVec* obj_grad = sleqp_iterate_obj_grad(iterate);
+  SleqpVec* obj_grad = sleqp_iterate_obj_grad(iterate);
 
   double obj_inner_prod = 0.;
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(direction, obj_grad, &obj_inner_prod));
+  SLEQP_CALL(sleqp_vec_dot(direction, obj_grad, &obj_inner_prod));
 
   double cons_inner_prod = 0.;
 
-  SLEQP_CALL(sleqp_sparse_vector_dot(direction,
-                                     solver->jacobian_product,
-                                     &cons_inner_prod));
+  SLEQP_CALL(
+    sleqp_vec_dot(direction, solver->jacobian_product, &cons_inner_prod));
 
   const double offset
     = sleqp_working_step_get_objective_offset(solver->working_step,
@@ -460,8 +448,8 @@ newton_objective(NewtonSolver* solver,
 
 static SLEQP_RETCODE
 print_objective(NewtonSolver* solver,
-                const SleqpSparseVec* multipliers,
-                SleqpSparseVec* newton_step)
+                const SleqpVec* multipliers,
+                SleqpVec* newton_step)
 {
   double objective;
 
@@ -473,8 +461,8 @@ print_objective(NewtonSolver* solver,
 }
 
 static SLEQP_RETCODE
-newton_solver_compute_step(const SleqpSparseVec* multipliers,
-                           SleqpSparseVec* newton_step,
+newton_solver_compute_step(const SleqpVec* multipliers,
+                           SleqpVec* newton_step,
                            void* data)
 {
   NewtonSolver* solver = (NewtonSolver*)data;
@@ -483,7 +471,7 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  SleqpSparseVec* tr_step = solver->tr_step;
+  SleqpVec* tr_step = solver->tr_step;
 
   SleqpAugJac* jacobian = solver->aug_jac;
   double tr_dual        = 0.;
@@ -496,13 +484,12 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
   const double reduced_trust_radius
     = sleqp_working_step_get_reduced_trust_radius(solver->working_step);
 
-  SleqpSparseVec* initial_step
-    = sleqp_working_step_get_step(solver->working_step);
+  SleqpVec* initial_step = sleqp_working_step_get_step(solver->working_step);
 
   // in this case the only feasible solution is the zero vector
   if (sleqp_is_zero(reduced_trust_radius, zero_eps))
   {
-    SLEQP_CALL(sleqp_sparse_vector_copy(initial_step, newton_step));
+    SLEQP_CALL(sleqp_vec_copy(initial_step, newton_step));
 
     return SLEQP_OKAY;
   }
@@ -530,8 +517,7 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
 
   SLEQP_CALL(check_spectrum(solver));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_add(tr_step, initial_step, zero_eps, newton_step));
+  SLEQP_CALL(sleqp_vec_add(tr_step, initial_step, zero_eps, newton_step));
 
   SLEQP_CALL(print_objective(solver, multipliers, newton_step));
 
@@ -549,7 +535,7 @@ newton_solver_compute_step(const SleqpSparseVec* multipliers,
   {
     double direction_dot;
 
-    SLEQP_CALL(sleqp_sparse_vector_dot(tr_step, initial_step, &direction_dot));
+    SLEQP_CALL(sleqp_vec_dot(tr_step, initial_step, &direction_dot));
 
     sleqp_assert_is_zero(direction_dot, eps);
   }
@@ -597,14 +583,14 @@ newton_solver_free(void* data)
 
   sleqp_free(&solver->dense_cache);
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->tr_hessian_product));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->tr_step));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->sparse_cache));
+  SLEQP_CALL(sleqp_vec_free(&solver->tr_hessian_product));
+  SLEQP_CALL(sleqp_vec_free(&solver->tr_step));
+  SLEQP_CALL(sleqp_vec_free(&solver->sparse_cache));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->jacobian_product));
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->initial_hessian_product));
+  SLEQP_CALL(sleqp_vec_free(&solver->jacobian_product));
+  SLEQP_CALL(sleqp_vec_free(&solver->initial_hessian_product));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&solver->gradient));
+  SLEQP_CALL(sleqp_vec_free(&solver->gradient));
 
   SLEQP_CALL(sleqp_aug_jac_release(&solver->aug_jac));
   SLEQP_CALL(sleqp_iterate_release(&solver->iterate));

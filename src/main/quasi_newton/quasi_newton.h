@@ -24,7 +24,7 @@ SLEQP_RETCODE
 sleqp_quasi_newton_push(SleqpQuasiNewton* quasi_newton,
                         const SleqpIterate* old_iterate,
                         const SleqpIterate* new_iterate,
-                        const SleqpSparseVec* multipliers);
+                        const SleqpVec* multipliers);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -33,8 +33,8 @@ sleqp_quasi_newton_reset(SleqpQuasiNewton* quasi_newton);
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_quasi_newton_hess_prod(SleqpQuasiNewton* quasi_newton,
-                             const SleqpSparseVec* direction,
-                             SleqpSparseVec* product);
+                             const SleqpVec* direction,
+                             SleqpVec* product);
 
 SleqpTimer*
 sleqp_quasi_newton_update_timer(SleqpQuasiNewton* quasi_newton);

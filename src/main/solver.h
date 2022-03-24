@@ -57,8 +57,8 @@ struct SleqpSolver
 
   SleqpScaling* scaling_data;
 
-  SleqpSparseVec* scaled_primal;
-  SleqpSparseVec* primal;
+  SleqpVec* scaled_primal;
+  SleqpVec* primal;
 
   SleqpProblem* scaled_problem;
 
@@ -81,7 +81,7 @@ struct SleqpSolver
 
   SLEQP_SOLVER_PHASE solver_phase;
 
-  SleqpSparseVec* restoration_primal;
+  SleqpVec* restoration_primal;
 
   SleqpTimer* elapsed_timer;
 

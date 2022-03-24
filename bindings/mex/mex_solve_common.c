@@ -209,10 +209,9 @@ accepted_iterate(SleqpSolver* solver, SleqpIterate* iterate, void* data)
 {
   CallbackData* callback_data = (CallbackData*)data;
 
-  SleqpSparseVec* primal = sleqp_iterate_primal(iterate);
+  SleqpVec* primal = sleqp_iterate_primal(iterate);
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_to_raw(primal, mxGetPr(callback_data->primal)));
+  SLEQP_CALL(sleqp_vec_to_raw(primal, mxGetPr(callback_data->primal)));
 
   mxArray* rhs[]
     = {callback_data->callbacks.accepted_iterate, callback_data->primal};
@@ -298,7 +297,7 @@ mex_solve(mxArray** sol_star,
   SleqpParams* params;
   SleqpProblem* problem;
   SleqpSolver* solver;
-  SleqpSparseVec* initial;
+  SleqpVec* initial;
 
   CallbackData callback_data = (CallbackData){0};
 
@@ -330,7 +329,7 @@ mex_solve(mxArray** sol_star,
 
   SLEQP_CALL(destroy_callback_data(&callback_data));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&initial));
+  SLEQP_CALL(sleqp_vec_free(&initial));
   SLEQP_CALL(sleqp_solver_release(&solver));
   SLEQP_CALL(sleqp_problem_release(&problem));
 

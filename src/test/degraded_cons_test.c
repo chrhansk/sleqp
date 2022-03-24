@@ -30,7 +30,7 @@ sq(double x)
 
 SLEQP_RETCODE
 degraded_set(SleqpFunc* func,
-             SleqpSparseVec* x,
+             SleqpVec* x,
              SLEQP_VALUE_REASON reason,
              bool* reject,
              int* obj_grad_nnz,
@@ -38,7 +38,7 @@ degraded_set(SleqpFunc* func,
              int* cons_jac_nnz,
              void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(x, values));
+  SLEQP_CALL(sleqp_vec_to_raw(x, values));
 
   *obj_grad_nnz = 2;
 
@@ -54,10 +54,10 @@ degraded_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 SLEQP_RETCODE
-degraded_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+degraded_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, values[0] - target[0]));
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, values[1] - target[1]));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 0, values[0] - target[0]));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 1, values[1] - target[1]));
 
   return SLEQP_OKAY;
 }
@@ -65,21 +65,21 @@ degraded_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 SLEQP_RETCODE
 degraded_hess_prod(SleqpFunc* func,
                    const double* obj_dual,
-                   const SleqpSparseVec* direction,
-                   const SleqpSparseVec* cons_duals,
-                   SleqpSparseVec* product,
+                   const SleqpVec* direction,
+                   const SleqpVec* cons_duals,
+                   SleqpVec* product,
                    void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_reserve(product, DEGRADED_NUM_VARS));
+  SLEQP_CALL(sleqp_vec_reserve(product, DEGRADED_NUM_VARS));
 
   if (obj_dual)
   {
-    SLEQP_CALL(sleqp_sparse_vector_copy(direction, product));
-    SLEQP_CALL(sleqp_sparse_vector_scale(product, *obj_dual));
+    SLEQP_CALL(sleqp_vec_copy(direction, product));
+    SLEQP_CALL(sleqp_vec_scale(product, *obj_dual));
   }
   else
   {
-    SLEQP_CALL(sleqp_sparse_vector_clear(product));
+    SLEQP_CALL(sleqp_vec_clear(product));
   }
 
   return SLEQP_OKAY;
@@ -107,14 +107,14 @@ degraded_func_create(SleqpFunc** fstar)
 
 SLEQP_RETCODE
 linear_cons_create(SleqpSparseMatrix** cstar,
-                   SleqpSparseVec** lbstar,
-                   SleqpSparseVec** ubstar,
+                   SleqpVec** lbstar,
+                   SleqpVec** ubstar,
                    bool swapped)
 {
   const double inf = sleqp_infinity();
 
-  SLEQP_CALL(sleqp_sparse_vector_create_full(lbstar, DEGRADED_NUM_LINEAR));
-  SLEQP_CALL(sleqp_sparse_vector_create_full(ubstar, DEGRADED_NUM_LINEAR));
+  SLEQP_CALL(sleqp_vec_create_full(lbstar, DEGRADED_NUM_LINEAR));
+  SLEQP_CALL(sleqp_vec_create_full(ubstar, DEGRADED_NUM_LINEAR));
 
   const int nnz = DEGRADED_NUM_LINEAR * DEGRADED_NUM_VARS;
 
@@ -123,26 +123,26 @@ linear_cons_create(SleqpSparseMatrix** cstar,
                                         DEGRADED_NUM_VARS,
                                         nnz));
 
-  SleqpSparseVec* linear_lb        = *lbstar;
-  SleqpSparseVec* linear_ub        = *ubstar;
+  SleqpVec* linear_lb              = *lbstar;
+  SleqpVec* linear_ub              = *ubstar;
   SleqpSparseMatrix* linear_coeffs = *cstar;
 
   if (swapped)
   {
-    SLEQP_CALL(sleqp_sparse_vector_push(linear_lb, 0, 2.));
-    SLEQP_CALL(sleqp_sparse_vector_push(linear_lb, 1, -6.));
-    SLEQP_CALL(sleqp_sparse_vector_push(linear_lb, 2, -2.));
+    SLEQP_CALL(sleqp_vec_push(linear_lb, 0, 2.));
+    SLEQP_CALL(sleqp_vec_push(linear_lb, 1, -6.));
+    SLEQP_CALL(sleqp_vec_push(linear_lb, 2, -2.));
   }
   else
   {
-    SLEQP_CALL(sleqp_sparse_vector_push(linear_lb, 0, -2.));
-    SLEQP_CALL(sleqp_sparse_vector_push(linear_lb, 1, -6.));
-    SLEQP_CALL(sleqp_sparse_vector_push(linear_lb, 2, 2.));
+    SLEQP_CALL(sleqp_vec_push(linear_lb, 0, -2.));
+    SLEQP_CALL(sleqp_vec_push(linear_lb, 1, -6.));
+    SLEQP_CALL(sleqp_vec_push(linear_lb, 2, 2.));
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_push(linear_ub, 0, inf));
-  SLEQP_CALL(sleqp_sparse_vector_push(linear_ub, 1, inf));
-  SLEQP_CALL(sleqp_sparse_vector_push(linear_ub, 2, inf));
+  SLEQP_CALL(sleqp_vec_push(linear_ub, 0, inf));
+  SLEQP_CALL(sleqp_vec_push(linear_ub, 1, inf));
+  SLEQP_CALL(sleqp_vec_push(linear_ub, 2, inf));
 
   if (swapped)
   {
@@ -177,29 +177,29 @@ degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
 {
   SleqpFunc* func;
 
-  SleqpSparseVec* var_lb;
-  SleqpSparseVec* var_ub;
+  SleqpVec* var_lb;
+  SleqpVec* var_ub;
 
-  SleqpSparseVec* cons_bounds;
+  SleqpVec* cons_bounds;
 
-  SleqpSparseVec* linear_lb;
-  SleqpSparseVec* linear_ub;
+  SleqpVec* linear_lb;
+  SleqpVec* linear_ub;
   SleqpSparseMatrix* linear_coeffs;
 
   const double inf = sleqp_infinity();
 
   SLEQP_CALL(degraded_func_create(&func));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_full(&var_lb, DEGRADED_NUM_VARS));
-  SLEQP_CALL(sleqp_sparse_vector_create_full(&var_ub, DEGRADED_NUM_VARS));
+  SLEQP_CALL(sleqp_vec_create_full(&var_lb, DEGRADED_NUM_VARS));
+  SLEQP_CALL(sleqp_vec_create_full(&var_ub, DEGRADED_NUM_VARS));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(var_lb, 0, -inf));
-  SLEQP_CALL(sleqp_sparse_vector_push(var_lb, 1, -inf));
+  SLEQP_CALL(sleqp_vec_push(var_lb, 0, -inf));
+  SLEQP_CALL(sleqp_vec_push(var_lb, 1, -inf));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(var_ub, 0, inf));
-  SLEQP_CALL(sleqp_sparse_vector_push(var_ub, 1, inf));
+  SLEQP_CALL(sleqp_vec_push(var_ub, 0, inf));
+  SLEQP_CALL(sleqp_vec_push(var_ub, 1, inf));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&cons_bounds, 0.));
+  SLEQP_CALL(sleqp_vec_create_empty(&cons_bounds, 0.));
 
   SLEQP_CALL(
     linear_cons_create(&linear_coeffs, &linear_lb, &linear_ub, swapped));
@@ -216,13 +216,13 @@ degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
                                   linear_ub));
 
   SLEQP_CALL(sleqp_sparse_matrix_release(&linear_coeffs));
-  SLEQP_CALL(sleqp_sparse_vector_free(&linear_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&linear_lb));
+  SLEQP_CALL(sleqp_vec_free(&linear_ub));
+  SLEQP_CALL(sleqp_vec_free(&linear_lb));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cons_bounds));
+  SLEQP_CALL(sleqp_vec_free(&cons_bounds));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_ub));
-  SLEQP_CALL(sleqp_sparse_vector_free(&var_lb));
+  SLEQP_CALL(sleqp_vec_free(&var_ub));
+  SLEQP_CALL(sleqp_vec_free(&var_lb));
 
   SLEQP_CALL(sleqp_func_release(&func));
 
@@ -231,7 +231,7 @@ degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
 
 SleqpParams* params;
 SleqpOptions* options;
-SleqpSparseVec* initial;
+SleqpVec* initial;
 
 void
 degraded_setup()
@@ -245,16 +245,16 @@ degraded_setup()
     SLEQP_OPTION_ENUM_DERIV_CHECK,
     SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&initial, DEGRADED_NUM_VARS));
+  ASSERT_CALL(sleqp_vec_create_full(&initial, DEGRADED_NUM_VARS));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(initial, 0, 0.));
-  ASSERT_CALL(sleqp_sparse_vector_push(initial, 1, 0.));
+  ASSERT_CALL(sleqp_vec_push(initial, 0, 0.));
+  ASSERT_CALL(sleqp_vec_push(initial, 1, 0.));
 }
 
 void
 degraded_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&initial));
+  ASSERT_CALL(sleqp_vec_free(&initial));
 
   ASSERT_CALL(sleqp_options_release(&options));
 

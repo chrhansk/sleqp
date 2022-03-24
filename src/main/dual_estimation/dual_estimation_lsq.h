@@ -14,8 +14,8 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_estimate_duals_lsq(SleqpDualEstimation* estimation,
                          const SleqpIterate* iterate,
-                         SleqpSparseVec* cons_dual,
-                         SleqpSparseVec* vars_dual,
+                         SleqpVec* cons_dual,
+                         SleqpVec* vars_dual,
                          int* num_clipped_vars,
                          int* num_clipped_cons);
 

@@ -72,13 +72,13 @@ START_TEST(test_nominal_scale)
   ASSERT_CALL(
     sleqp_scaling_set_var_weights_from_nominal(scaling, nominal_values));
 
-  SleqpSparseVec* primal = sleqp_iterate_primal(iterate);
+  SleqpVec* primal = sleqp_iterate_primal(iterate);
 
-  ASSERT_CALL(sleqp_sparse_vector_clear(primal));
+  ASSERT_CALL(sleqp_vec_clear(primal));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(primal, 0, nominal_values[0] - 1e-5));
+  ASSERT_CALL(sleqp_vec_push(primal, 0, nominal_values[0] - 1e-5));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(primal, 1, nominal_values[1] - 1e-5));
+  ASSERT_CALL(sleqp_vec_push(primal, 1, nominal_values[1] - 1e-5));
 
   ASSERT_CALL(sleqp_scale_iterate(scaling, iterate, false));
 
@@ -153,15 +153,12 @@ START_TEST(test_nominal_scale_cons_vals)
   const int num_constraints = 2.;
   const double eps          = sleqp_params_value(params, SLEQP_PARAM_EPS);
 
-  SleqpSparseVec* cons_vals;
+  SleqpVec* cons_vals;
+
+  ASSERT_CALL(sleqp_vec_create(&cons_vals, num_constraints, num_constraints));
 
   ASSERT_CALL(
-    sleqp_sparse_vector_create(&cons_vals, num_constraints, num_constraints));
-
-  ASSERT_CALL(sleqp_sparse_vector_from_raw(cons_vals,
-                                           nominal_cons_vals,
-                                           num_constraints,
-                                           eps));
+    sleqp_vec_from_raw(cons_vals, nominal_cons_vals, num_constraints, eps));
 
   ASSERT_CALL(
     sleqp_scaling_set_cons_weights_from_nominal(scaling, nominal_cons_vals));
@@ -175,47 +172,43 @@ START_TEST(test_nominal_scale_cons_vals)
     ck_assert(sleqp_is_geq(value, .5, eps));
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_vals));
+  ASSERT_CALL(sleqp_vec_free(&cons_vals));
 }
 END_TEST
 
 START_TEST(test_obj_grad_inverse)
 {
-  SleqpSparseVec* obj_grad;
+  SleqpVec* obj_grad;
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&obj_grad, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&obj_grad, 2, 2));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_copy(sleqp_iterate_obj_grad(iterate), obj_grad));
+  ASSERT_CALL(sleqp_vec_copy(sleqp_iterate_obj_grad(iterate), obj_grad));
 
   ASSERT_CALL(sleqp_scale_obj_grad(scaling, obj_grad));
 
   ASSERT_CALL(sleqp_unscale_obj_grad(scaling, obj_grad));
 
-  ck_assert(
-    sleqp_sparse_vector_eq(sleqp_iterate_obj_grad(iterate), obj_grad, 0.));
+  ck_assert(sleqp_vec_eq(sleqp_iterate_obj_grad(iterate), obj_grad, 0.));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&obj_grad));
+  ASSERT_CALL(sleqp_vec_free(&obj_grad));
 }
 END_TEST
 
 START_TEST(test_cons_val_inverse)
 {
-  SleqpSparseVec* cons_val;
+  SleqpVec* cons_val;
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&cons_val, 2, 2));
+  ASSERT_CALL(sleqp_vec_create(&cons_val, 2, 2));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_copy(sleqp_iterate_cons_val(iterate), cons_val));
+  ASSERT_CALL(sleqp_vec_copy(sleqp_iterate_cons_val(iterate), cons_val));
 
   ASSERT_CALL(sleqp_scale_cons_val(scaling, cons_val));
 
   ASSERT_CALL(sleqp_unscale_cons_val(scaling, cons_val));
 
-  ck_assert(
-    sleqp_sparse_vector_eq(sleqp_iterate_cons_val(iterate), cons_val, 0.));
+  ck_assert(sleqp_vec_eq(sleqp_iterate_cons_val(iterate), cons_val, 0.));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_val));
+  ASSERT_CALL(sleqp_vec_free(&cons_val));
 }
 END_TEST
 

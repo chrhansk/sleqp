@@ -15,23 +15,22 @@ double fixed_values[] = {1.};
 
 SleqpFunc* fixed_var_func;
 
-SleqpSparseVec* fixed_initial;
+SleqpVec* fixed_initial;
 
 void
 setup()
 {
   dyn_rosenbrock_setup();
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&fixed_initial,
+  ASSERT_CALL(sleqp_vec_create_full(&fixed_initial,
                                     rosenbrock_num_variables - num_fixed));
 
   const double fixed_value
-    = sleqp_sparse_vector_value_at(rosenbrock_initial, fixed_indices[0]);
+    = sleqp_vec_value_at(rosenbrock_initial, fixed_indices[0]);
 
   fixed_values[0] = fixed_value;
 
-  ASSERT_CALL(sleqp_sparse_vector_push(fixed_initial, 0, fixed_value));
+  ASSERT_CALL(sleqp_vec_push(fixed_initial, 0, fixed_value));
 
   ASSERT_CALL(sleqp_fixed_var_dyn_func_create(&fixed_var_func,
                                               dyn_rosenbrock_func,
@@ -47,7 +46,7 @@ setup()
 void
 teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&fixed_initial));
+  ASSERT_CALL(sleqp_vec_free(&fixed_initial));
 
   ASSERT_CALL(sleqp_func_release(&fixed_var_func));
 

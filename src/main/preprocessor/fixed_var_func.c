@@ -16,12 +16,12 @@ typedef struct FixedVarFuncData
 
   SleqpFunc* func;
 
-  SleqpSparseVec* values;
+  SleqpVec* values;
 
-  SleqpSparseVec* grad;
+  SleqpVec* grad;
 
-  SleqpSparseVec* direction;
-  SleqpSparseVec* product;
+  SleqpVec* direction;
+  SleqpVec* product;
 
   SleqpSparseMatrix* jacobian;
 
@@ -29,7 +29,7 @@ typedef struct FixedVarFuncData
 
 static SLEQP_RETCODE
 fixed_var_func_set(SleqpFunc* func,
-                   SleqpSparseVec* value,
+                   SleqpVec* value,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
                    int* obj_grad_nnz,
@@ -53,7 +53,7 @@ fixed_var_func_set(SleqpFunc* func,
                                   cons_val_nnz,
                                   cons_jac_nnz));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(func_data->grad, *obj_grad_nnz));
+  SLEQP_CALL(sleqp_vec_reserve(func_data->grad, *obj_grad_nnz));
 
   SLEQP_CALL(sleqp_sparse_matrix_reserve(func_data->jacobian, *cons_jac_nnz));
 
@@ -69,22 +69,22 @@ fixed_var_obj_val(SleqpFunc* func, double* obj_val, void* data)
 }
 
 static SLEQP_RETCODE
-fixed_var_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
+fixed_var_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
   SLEQP_CALL(sleqp_func_obj_grad(func_data->func, func_data->grad));
 
-  SLEQP_CALL(sleqp_sparse_vector_remove_entries(func_data->grad,
-                                                obj_grad,
-                                                func_data->fixed_indices,
-                                                func_data->num_fixed));
+  SLEQP_CALL(sleqp_vec_remove_entries(func_data->grad,
+                                      obj_grad,
+                                      func_data->fixed_indices,
+                                      func_data->num_fixed));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-fixed_var_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* data)
+fixed_var_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
@@ -109,9 +109,9 @@ fixed_var_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
 static SLEQP_RETCODE
 fixed_var_hess_prod(SleqpFunc* func,
                     const double* obj_dual,
-                    const SleqpSparseVec* direction,
-                    const SleqpSparseVec* cons_duals,
-                    SleqpSparseVec* product,
+                    const SleqpVec* direction,
+                    const SleqpVec* cons_duals,
+                    SleqpVec* product,
                     void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
@@ -127,10 +127,10 @@ fixed_var_hess_prod(SleqpFunc* func,
                                   cons_duals,
                                   func_data->product));
 
-  SLEQP_CALL(sleqp_sparse_vector_remove_entries(func_data->product,
-                                                product,
-                                                func_data->fixed_indices,
-                                                func_data->num_fixed));
+  SLEQP_CALL(sleqp_vec_remove_entries(func_data->product,
+                                      product,
+                                      func_data->fixed_indices,
+                                      func_data->num_fixed));
 
   return SLEQP_OKAY;
 }
@@ -142,13 +142,13 @@ fixed_func_free(void* data)
 
   SLEQP_CALL(sleqp_sparse_matrix_release(&func_data->jacobian));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&func_data->product));
+  SLEQP_CALL(sleqp_vec_free(&func_data->product));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&func_data->direction));
+  SLEQP_CALL(sleqp_vec_free(&func_data->direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&func_data->grad));
+  SLEQP_CALL(sleqp_vec_free(&func_data->grad));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&func_data->values));
+  SLEQP_CALL(sleqp_vec_free(&func_data->values));
 
   SLEQP_CALL(sleqp_func_release(&func_data->func));
 
@@ -208,7 +208,7 @@ create_fixed_var_hess_struct(const SleqpHessStruct* source,
 }
 
 static SLEQP_RETCODE
-fixed_lsq_func_residuals(SleqpFunc* func, SleqpSparseVec* residuals, void* data)
+fixed_lsq_func_residuals(SleqpFunc* func, SleqpVec* residuals, void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
@@ -217,8 +217,8 @@ fixed_lsq_func_residuals(SleqpFunc* func, SleqpSparseVec* residuals, void* data)
 
 static SLEQP_RETCODE
 fixed_lsq_func_jac_forward(SleqpFunc* func,
-                           const SleqpSparseVec* forward_direction,
-                           SleqpSparseVec* product,
+                           const SleqpVec* forward_direction,
+                           SleqpVec* product,
                            void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
@@ -236,22 +236,22 @@ fixed_lsq_func_jac_forward(SleqpFunc* func,
 
 static SLEQP_RETCODE
 fixed_lsq_func_jac_adjoint(SleqpFunc* func,
-                           const SleqpSparseVec* adjoint_direction,
-                           SleqpSparseVec* product,
+                           const SleqpVec* adjoint_direction,
+                           SleqpVec* product,
                            void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
-  SleqpSparseVec* full_product = func_data->direction;
+  SleqpVec* full_product = func_data->direction;
 
   SLEQP_CALL(sleqp_lsq_func_jac_adjoint(func_data->func,
                                         adjoint_direction,
                                         full_product));
 
-  SLEQP_CALL(sleqp_sparse_vector_remove_entries(full_product,
-                                                product,
-                                                func_data->fixed_indices,
-                                                func_data->num_fixed));
+  SLEQP_CALL(sleqp_vec_remove_entries(full_product,
+                                      product,
+                                      func_data->fixed_indices,
+                                      func_data->num_fixed));
 
   return SLEQP_OKAY;
 }
@@ -269,7 +269,7 @@ fixed_dyn_obj_val(SleqpFunc* func, double accuracy, double* obj_val, void* data)
 static SLEQP_RETCODE
 fixed_dyn_func_cons_val(SleqpFunc* func,
                         double accuracy,
-                        SleqpSparseVec* cons_val,
+                        SleqpVec* cons_val,
                         void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
@@ -332,16 +332,13 @@ create_fixed_var_func_data(FixedVarFuncData** star,
 
   SLEQP_CALL(sleqp_func_capture(func));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_full(&func_data->values, num_variables));
+  SLEQP_CALL(sleqp_vec_create_full(&func_data->values, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_create_full(&func_data->grad, num_variables));
+  SLEQP_CALL(sleqp_vec_create_full(&func_data->grad, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_full(&func_data->direction, num_variables));
+  SLEQP_CALL(sleqp_vec_create_full(&func_data->direction, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_full(&func_data->product, num_variables));
+  SLEQP_CALL(sleqp_vec_create_full(&func_data->product, num_variables));
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&func_data->jacobian,
                                         num_constraints,

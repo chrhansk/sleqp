@@ -38,12 +38,12 @@ sleqp_factorization_set_matrix(SleqpFactorization* factorization,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_factorization_solve(SleqpFactorization* factorization,
-                          const SleqpSparseVec* rhs);
+                          const SleqpVec* rhs);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_factorization_solution(SleqpFactorization* factorization,
-                             SleqpSparseVec* sol,
+                             SleqpVec* sol,
                              int begin,
                              int end,
                              double zero_eps);

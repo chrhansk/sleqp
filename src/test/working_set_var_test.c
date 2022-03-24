@@ -43,7 +43,7 @@ working_set_var_setup()
 
 START_TEST(test_inactive)
 {
-  SleqpSparseVec* primal = sleqp_iterate_primal(iterate);
+  SleqpVec* primal = sleqp_iterate_primal(iterate);
 
   primal->data[0] = 1.5;
   primal->data[1] = 2.5;
@@ -71,7 +71,7 @@ END_TEST
 
 START_TEST(test_active)
 {
-  SleqpSparseVec* primal = sleqp_iterate_primal(iterate);
+  SleqpVec* primal = sleqp_iterate_primal(iterate);
 
   primal->data[0] = 1.5;
   primal->data[1] = 2.5;
@@ -101,7 +101,7 @@ END_TEST
 
 START_TEST(test_first_active)
 {
-  SleqpSparseVec* primal = sleqp_iterate_primal(iterate);
+  SleqpVec* primal = sleqp_iterate_primal(iterate);
 
   primal->data[0] = 1.;
   primal->data[1] = 2.5;

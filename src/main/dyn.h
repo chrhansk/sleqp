@@ -13,8 +13,6 @@ SLEQP_RETCODE
 sleqp_dyn_func_obj_val(SleqpFunc* func, double accuracy, double* obj_val);
 
 SLEQP_RETCODE
-sleqp_dyn_func_cons_val(SleqpFunc* func,
-                        double accuracy,
-                        SleqpSparseVec* cons_val);
+sleqp_dyn_func_cons_val(SleqpFunc* func, double accuracy, SleqpVec* cons_val);
 
 #endif /* SLEQP_DYN_H */

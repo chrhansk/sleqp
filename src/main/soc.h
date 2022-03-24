@@ -26,25 +26,25 @@ sleqp_soc_compute_correction(SleqpSOC* soc_data,
                              SleqpAugJac* augmented_jacobian,
                              const SleqpIterate* iterate,
                              const SleqpIterate* trial_iterate,
-                             SleqpSparseVec* soc_direction);
+                             SleqpVec* soc_direction);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_soc_compute_step(SleqpSOC* soc_data,
                        SleqpAugJac* augmented_jacobian,
                        const SleqpIterate* iterate,
-                       const SleqpSparseVec* trial_step,
+                       const SleqpVec* trial_step,
                        const SleqpIterate* trial_iterate,
-                       SleqpSparseVec* soc_step);
+                       SleqpVec* soc_step);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
                               SleqpAugJac* augmented_jacobian,
                               const SleqpIterate* iterate,
-                              const SleqpSparseVec* trial_step,
+                              const SleqpVec* trial_step,
                               const SleqpIterate* trial_iterate,
-                              SleqpSparseVec* soc_trial_point,
+                              SleqpVec* soc_trial_point,
                               double* soc_step_norm);
 
 SLEQP_NODISCARD

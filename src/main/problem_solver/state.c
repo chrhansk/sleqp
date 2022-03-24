@@ -82,12 +82,12 @@ sleqp_problem_solver_get_int_state(const SleqpProblemSolver* solver,
 SLEQP_RETCODE
 sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solver,
                                    SLEQP_SOLVER_STATE_VEC value,
-                                   SleqpSparseVec* result)
+                                   SleqpVec* result)
 {
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpSparseVec* cons_val = sleqp_iterate_cons_val(solver->iterate);
+  SleqpVec* cons_val = sleqp_iterate_cons_val(solver->iterate);
 
   switch (value)
   {

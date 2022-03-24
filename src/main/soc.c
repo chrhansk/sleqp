@@ -14,13 +14,13 @@ struct SleqpSOC
   SleqpProblem* problem;
   SleqpParams* params;
 
-  SleqpSparseVec* upper_diff;
-  SleqpSparseVec* lower_diff;
+  SleqpVec* upper_diff;
+  SleqpVec* lower_diff;
 
-  SleqpSparseVec* soc_direction;
-  SleqpSparseVec* soc_corrected_direction;
+  SleqpVec* soc_direction;
+  SleqpVec* soc_corrected_direction;
 
-  SleqpSparseVec* rhs;
+  SleqpVec* rhs;
 };
 
 SLEQP_RETCODE
@@ -44,20 +44,16 @@ sleqp_soc_data_create(SleqpSOC** star,
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&soc_data->upper_diff, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&soc_data->upper_diff, num_constraints));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&soc_data->lower_diff, num_constraints));
+
+  SLEQP_CALL(sleqp_vec_create_empty(&soc_data->soc_direction, num_variables));
 
   SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&soc_data->lower_diff, num_constraints));
+    sleqp_vec_create_empty(&soc_data->soc_corrected_direction, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&soc_data->soc_direction, num_variables));
-
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&soc_data->soc_corrected_direction,
-                                     num_variables));
-
-  SLEQP_CALL(sleqp_sparse_vector_create_empty(&soc_data->rhs, 0));
+  SLEQP_CALL(sleqp_vec_create_empty(&soc_data->rhs, 0));
 
   return SLEQP_OKAY;
 }
@@ -76,31 +72,31 @@ add_variable_entries(SleqpSOC* soc_data,
   const double zero_eps
     = sleqp_params_value(soc_data->params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpSparseVec* lower_diff = soc_data->lower_diff;
-  SleqpSparseVec* upper_diff = soc_data->upper_diff;
+  SleqpVec* lower_diff = soc_data->lower_diff;
+  SleqpVec* upper_diff = soc_data->upper_diff;
 
-  SleqpSparseVec* rhs          = soc_data->rhs;
+  SleqpVec* rhs                = soc_data->rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->lower_diff));
-  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->lower_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_clear(soc_data->lower_diff));
+  SLEQP_CALL(sleqp_vec_resize(soc_data->lower_diff, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->upper_diff));
-  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->upper_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_clear(soc_data->upper_diff));
+  SLEQP_CALL(sleqp_vec_resize(soc_data->upper_diff, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_primal(trial_iterate),
-                                            sleqp_problem_vars_lb(problem),
-                                            -1.,
-                                            1.,
-                                            zero_eps,
-                                            lower_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_primal(trial_iterate),
+                                  sleqp_problem_vars_lb(problem),
+                                  -1.,
+                                  1.,
+                                  zero_eps,
+                                  lower_diff));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(sleqp_iterate_primal(trial_iterate),
-                                            sleqp_problem_vars_ub(problem),
-                                            -1.,
-                                            1.,
-                                            zero_eps,
-                                            upper_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_primal(trial_iterate),
+                                  sleqp_problem_vars_ub(problem),
+                                  -1.,
+                                  1.,
+                                  zero_eps,
+                                  upper_diff));
 
   int k_ld = 0., k_ud = 0.;
 
@@ -134,17 +130,17 @@ add_variable_entries(SleqpSOC* soc_data,
 
     if (variable_state == SLEQP_ACTIVE_UPPER && !sleqp_is_zero(udval, eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, udval));
+      SLEQP_CALL(sleqp_vec_push(rhs, variable_index, udval));
     }
     else if (variable_state == SLEQP_ACTIVE_LOWER && !sleqp_is_zero(ldval, eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, ldval));
+      SLEQP_CALL(sleqp_vec_push(rhs, variable_index, ldval));
     }
     else if (variable_state == SLEQP_ACTIVE_BOTH)
     {
       sleqp_assert_is_eq(ldval, udval, eps);
 
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, variable_index, udval));
+      SLEQP_CALL(sleqp_vec_push(rhs, variable_index, udval));
     }
   }
 
@@ -165,33 +161,31 @@ add_constraint_entries(SleqpSOC* soc_data,
   const double zero_eps
     = sleqp_params_value(soc_data->params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpSparseVec* lower_diff = soc_data->lower_diff;
-  SleqpSparseVec* upper_diff = soc_data->upper_diff;
+  SleqpVec* lower_diff = soc_data->lower_diff;
+  SleqpVec* upper_diff = soc_data->upper_diff;
 
-  SleqpSparseVec* rhs          = soc_data->rhs;
+  SleqpVec* rhs                = soc_data->rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->lower_diff));
-  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->lower_diff, num_constraints));
+  SLEQP_CALL(sleqp_vec_clear(soc_data->lower_diff));
+  SLEQP_CALL(sleqp_vec_resize(soc_data->lower_diff, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(soc_data->upper_diff));
-  SLEQP_CALL(sleqp_sparse_vector_resize(soc_data->upper_diff, num_constraints));
+  SLEQP_CALL(sleqp_vec_clear(soc_data->upper_diff));
+  SLEQP_CALL(sleqp_vec_resize(soc_data->upper_diff, num_constraints));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_add_scaled(sleqp_iterate_cons_val(trial_iterate),
-                                   sleqp_problem_cons_lb(problem),
-                                   -1.,
-                                   1.,
-                                   zero_eps,
-                                   lower_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_cons_val(trial_iterate),
+                                  sleqp_problem_cons_lb(problem),
+                                  -1.,
+                                  1.,
+                                  zero_eps,
+                                  lower_diff));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_add_scaled(sleqp_iterate_cons_val(trial_iterate),
-                                   sleqp_problem_cons_ub(problem),
-                                   -1.,
-                                   1.,
-                                   zero_eps,
-                                   upper_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_cons_val(trial_iterate),
+                                  sleqp_problem_cons_ub(problem),
+                                  -1.,
+                                  1.,
+                                  zero_eps,
+                                  upper_diff));
 
   int k_ld = 0., k_ud = 0.;
 
@@ -225,18 +219,18 @@ add_constraint_entries(SleqpSOC* soc_data,
 
     if (constraint_state == SLEQP_ACTIVE_UPPER && !sleqp_is_zero(udval, eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, udval));
+      SLEQP_CALL(sleqp_vec_push(rhs, constraint_index, udval));
     }
     else if (constraint_state == SLEQP_ACTIVE_LOWER
              && !sleqp_is_zero(ldval, eps))
     {
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, ldval));
+      SLEQP_CALL(sleqp_vec_push(rhs, constraint_index, ldval));
     }
     else if (constraint_state == SLEQP_ACTIVE_BOTH)
     {
       sleqp_assert_is_eq(ldval, udval, eps);
 
-      SLEQP_CALL(sleqp_sparse_vector_push(rhs, constraint_index, udval));
+      SLEQP_CALL(sleqp_vec_push(rhs, constraint_index, udval));
     }
   }
 
@@ -248,18 +242,18 @@ sleqp_soc_compute_correction(SleqpSOC* soc_data,
                              SleqpAugJac* aug_jac,
                              const SleqpIterate* iterate,
                              const SleqpIterate* trial_iterate,
-                             SleqpSparseVec* soc_direction)
+                             SleqpVec* soc_direction)
 {
-  SleqpSparseVec* rhs          = soc_data->rhs;
+  SleqpVec* rhs                = soc_data->rhs;
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   const int working_set_size = sleqp_working_set_size(working_set);
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(rhs));
+  SLEQP_CALL(sleqp_vec_clear(rhs));
 
-  SLEQP_CALL(sleqp_sparse_vector_resize(rhs, working_set_size));
+  SLEQP_CALL(sleqp_vec_resize(rhs, working_set_size));
 
-  SLEQP_CALL(sleqp_sparse_vector_reserve(rhs, working_set_size));
+  SLEQP_CALL(sleqp_vec_reserve(rhs, working_set_size));
 
   SLEQP_CALL(add_variable_entries(soc_data, iterate, trial_iterate));
   SLEQP_CALL(add_constraint_entries(soc_data, iterate, trial_iterate));
@@ -273,15 +267,15 @@ SLEQP_RETCODE
 sleqp_soc_compute_step(SleqpSOC* soc_data,
                        SleqpAugJac* aug_jac,
                        const SleqpIterate* iterate,
-                       const SleqpSparseVec* trial_step,
+                       const SleqpVec* trial_step,
                        const SleqpIterate* trial_iterate,
-                       SleqpSparseVec* soc_step)
+                       SleqpVec* soc_step)
 {
   assert(trial_step != soc_step);
 
   SleqpProblem* problem = soc_data->problem;
 
-  SleqpSparseVec* trial_point = sleqp_iterate_primal(trial_iterate);
+  SleqpVec* trial_point = sleqp_iterate_primal(trial_iterate);
 
   const double zero_eps
     = sleqp_params_value(soc_data->params, SLEQP_PARAM_ZERO_EPS);
@@ -300,12 +294,12 @@ sleqp_soc_compute_step(SleqpSOC* soc_data,
                                    sleqp_problem_vars_ub(problem),
                                    &max_step_length));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_step,
-                                            soc_data->soc_direction,
-                                            1.,
-                                            max_step_length,
-                                            zero_eps,
-                                            soc_step));
+  SLEQP_CALL(sleqp_vec_add_scaled(trial_step,
+                                  soc_data->soc_direction,
+                                  1.,
+                                  max_step_length,
+                                  zero_eps,
+                                  soc_step));
 
   return SLEQP_OKAY;
 }
@@ -314,15 +308,15 @@ SLEQP_RETCODE
 sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
                               SleqpAugJac* aug_jac,
                               const SleqpIterate* iterate,
-                              const SleqpSparseVec* trial_step,
+                              const SleqpVec* trial_step,
                               const SleqpIterate* trial_iterate,
-                              SleqpSparseVec* soc_trial_point,
+                              SleqpVec* soc_trial_point,
                               double* soc_step_norm)
 {
   SleqpProblem* problem = soc_data->problem;
 
-  SleqpSparseVec* current_point = sleqp_iterate_primal(iterate);
-  SleqpSparseVec* trial_point   = sleqp_iterate_primal(trial_iterate);
+  SleqpVec* current_point = sleqp_iterate_primal(iterate);
+  SleqpVec* trial_point   = sleqp_iterate_primal(trial_iterate);
 
   const double zero_eps
     = sleqp_params_value(soc_data->params, SLEQP_PARAM_ZERO_EPS);
@@ -341,22 +335,21 @@ sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
                                    sleqp_problem_vars_ub(problem),
                                    &max_step_length));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(trial_step,
-                                            soc_data->soc_direction,
-                                            1.,
-                                            max_step_length,
-                                            zero_eps,
-                                            soc_data->soc_corrected_direction));
+  SLEQP_CALL(sleqp_vec_add_scaled(trial_step,
+                                  soc_data->soc_direction,
+                                  1.,
+                                  max_step_length,
+                                  zero_eps,
+                                  soc_data->soc_corrected_direction));
 
-  (*soc_step_norm)
-    = sleqp_sparse_vector_norm(soc_data->soc_corrected_direction);
+  (*soc_step_norm) = sleqp_vec_norm(soc_data->soc_corrected_direction);
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(current_point,
-                                            soc_data->soc_corrected_direction,
-                                            1.,
-                                            1.,
-                                            zero_eps,
-                                            soc_trial_point));
+  SLEQP_CALL(sleqp_vec_add_scaled(current_point,
+                                  soc_data->soc_corrected_direction,
+                                  1.,
+                                  1.,
+                                  zero_eps,
+                                  soc_trial_point));
 
   return SLEQP_OKAY;
 }
@@ -371,13 +364,13 @@ soc_data_free(SleqpSOC** star)
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->rhs));
+  SLEQP_CALL(sleqp_vec_free(&soc_data->rhs));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->soc_corrected_direction));
-  SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->soc_direction));
+  SLEQP_CALL(sleqp_vec_free(&soc_data->soc_corrected_direction));
+  SLEQP_CALL(sleqp_vec_free(&soc_data->soc_direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->lower_diff));
-  SLEQP_CALL(sleqp_sparse_vector_free(&soc_data->upper_diff));
+  SLEQP_CALL(sleqp_vec_free(&soc_data->lower_diff));
+  SLEQP_CALL(sleqp_vec_free(&soc_data->upper_diff));
 
   SLEQP_CALL(sleqp_params_release(&soc_data->params));
 

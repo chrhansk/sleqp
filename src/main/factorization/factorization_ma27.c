@@ -451,14 +451,14 @@ ma27_solve(MA27Data* ma27_data)
 }
 
 static SLEQP_RETCODE
-ma27_data_solve(void* factorization_data, const SleqpSparseVec* rhs)
+ma27_data_solve(void* factorization_data, const SleqpVec* rhs)
 {
   MA27Data* ma27_data   = (MA27Data*)factorization_data;
   HSLMatrix* hsl_matrix = &(ma27_data->matrix);
 
   assert(rhs->dim == hsl_matrix->dim);
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(rhs, ma27_data->rhs_sol));
+  SLEQP_CALL(sleqp_vec_to_raw(rhs, ma27_data->rhs_sol));
 
   SLEQP_CALL(ma27_solve(ma27_data));
 
@@ -467,17 +467,15 @@ ma27_data_solve(void* factorization_data, const SleqpSparseVec* rhs)
 
 static SLEQP_RETCODE
 ma27_data_solution(void* factorization_data,
-                   SleqpSparseVec* sol,
+                   SleqpVec* sol,
                    int begin,
                    int end,
                    double zero_eps)
 {
   MA27Data* ma27_data = (MA27Data*)factorization_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
-                                          ma27_data->rhs_sol + begin,
-                                          end - begin,
-                                          zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_from_raw(sol, ma27_data->rhs_sol + begin, end - begin, zero_eps));
 
   return SLEQP_OKAY;
 }

@@ -12,11 +12,11 @@ typedef struct
   SleqpIterate* iterate;
   double trust_radius;
 
-  SleqpSparseVec* lower_diff;
-  SleqpSparseVec* upper_diff;
+  SleqpVec* lower_diff;
+  SleqpVec* upper_diff;
 
-  SleqpSparseVec* direction;
-  SleqpSparseVec* duals;
+  SleqpVec* direction;
+  SleqpVec* duals;
 
   SLEQP_ACTIVE_STATE* var_states;
 
@@ -33,8 +33,8 @@ compute_fixed_vars(CauchyData* cauchy_data)
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  const SleqpSparseVec* var_lb = sleqp_problem_vars_lb(problem);
-  const SleqpSparseVec* var_ub = sleqp_problem_vars_ub(problem);
+  const SleqpVec* var_lb = sleqp_problem_vars_lb(problem);
+  const SleqpVec* var_ub = sleqp_problem_vars_ub(problem);
 
   int k_l = 0, k_u = 0;
 
@@ -76,28 +76,28 @@ compute_diffs(CauchyData* cauchy_data)
   SleqpProblem* problem = cauchy_data->problem;
   SleqpIterate* iterate = cauchy_data->iterate;
 
-  const SleqpSparseVec* var_lb = sleqp_problem_vars_lb(problem);
-  const SleqpSparseVec* var_ub = sleqp_problem_vars_ub(problem);
-  SleqpSparseVec* primal       = sleqp_iterate_primal(iterate);
+  const SleqpVec* var_lb = sleqp_problem_vars_lb(problem);
+  const SleqpVec* var_ub = sleqp_problem_vars_ub(problem);
+  SleqpVec* primal       = sleqp_iterate_primal(iterate);
 
-  assert(sleqp_sparse_vector_is_boxed(primal, var_lb, var_ub));
+  assert(sleqp_vec_is_boxed(primal, var_lb, var_ub));
 
   const double zero_eps
     = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(var_lb,
-                                            primal,
-                                            1.,
-                                            -1.,
-                                            zero_eps,
-                                            cauchy_data->lower_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(var_lb,
+                                  primal,
+                                  1.,
+                                  -1.,
+                                  zero_eps,
+                                  cauchy_data->lower_diff));
 
-  SLEQP_CALL(sleqp_sparse_vector_add_scaled(var_ub,
-                                            primal,
-                                            1.,
-                                            -1.,
-                                            zero_eps,
-                                            cauchy_data->upper_diff));
+  SLEQP_CALL(sleqp_vec_add_scaled(var_ub,
+                                  primal,
+                                  1.,
+                                  -1.,
+                                  zero_eps,
+                                  cauchy_data->upper_diff));
 
   return SLEQP_OKAY;
 }
@@ -133,7 +133,7 @@ box_constrained_cauchy_set_trust_radius(double trust_radius, void* data)
 }
 
 static SLEQP_RETCODE
-box_constrained_cauchy_solve(SleqpSparseVec* gradient,
+box_constrained_cauchy_solve(SleqpVec* gradient,
                              double penalty,
                              SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
                              void* data)
@@ -145,15 +145,15 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
   const int num_variables   = sleqp_problem_num_vars(problem);
   const double trust_radius = cauchy_data->trust_radius;
 
-  SLEQP_CALL(sleqp_sparse_vector_clear(cauchy_data->direction));
-  SLEQP_CALL(sleqp_sparse_vector_clear(cauchy_data->duals));
+  SLEQP_CALL(sleqp_vec_clear(cauchy_data->direction));
+  SLEQP_CALL(sleqp_vec_clear(cauchy_data->duals));
 
-  const SleqpSparseVec* ld   = cauchy_data->lower_diff;
-  const SleqpSparseVec* ud   = cauchy_data->upper_diff;
-  const SleqpSparseVec* grad = sleqp_iterate_obj_grad(iterate);
+  const SleqpVec* ld   = cauchy_data->lower_diff;
+  const SleqpVec* ud   = cauchy_data->upper_diff;
+  const SleqpVec* grad = sleqp_iterate_obj_grad(iterate);
 
-  SleqpSparseVec* direction = cauchy_data->direction;
-  SleqpSparseVec* duals     = cauchy_data->duals;
+  SleqpVec* direction = cauchy_data->direction;
+  SleqpVec* duals     = cauchy_data->duals;
 
   double* objective = &(cauchy_data->objective);
   bool* fixed_vars  = cauchy_data->fixed_vars;
@@ -193,7 +193,7 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
       {
         cauchy_data->var_states[j] = SLEQP_INACTIVE;
 
-        SLEQP_CALL(sleqp_sparse_vector_push(direction, j, trust_radius));
+        SLEQP_CALL(sleqp_vec_push(direction, j, trust_radius));
 
         (*objective) += trust_radius * g_val;
       }
@@ -202,9 +202,9 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
         cauchy_data->var_states[j]
           = (fixed_vars[j]) ? SLEQP_ACTIVE_BOTH : SLEQP_ACTIVE_UPPER;
 
-        SLEQP_CALL(sleqp_sparse_vector_push(direction, j, u_val));
+        SLEQP_CALL(sleqp_vec_push(direction, j, u_val));
 
-        SLEQP_CALL(sleqp_sparse_vector_push(duals, j, ng_val));
+        SLEQP_CALL(sleqp_vec_push(duals, j, ng_val));
 
         (*objective) += u_val * g_val;
       }
@@ -215,7 +215,7 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
       {
         cauchy_data->var_states[j] = SLEQP_INACTIVE;
 
-        SLEQP_CALL(sleqp_sparse_vector_push(direction, j, -trust_radius));
+        SLEQP_CALL(sleqp_vec_push(direction, j, -trust_radius));
 
         (*objective) += (-trust_radius) * g_val;
       }
@@ -224,9 +224,9 @@ box_constrained_cauchy_solve(SleqpSparseVec* gradient,
         cauchy_data->var_states[j]
           = (fixed_vars[j]) ? SLEQP_ACTIVE_BOTH : SLEQP_ACTIVE_LOWER;
 
-        SLEQP_CALL(sleqp_sparse_vector_push(direction, j, l_val));
+        SLEQP_CALL(sleqp_vec_push(direction, j, l_val));
 
-        SLEQP_CALL(sleqp_sparse_vector_push(duals, j, ng_val));
+        SLEQP_CALL(sleqp_vec_push(duals, j, ng_val));
 
         (*objective) += l_val * g_val;
       }
@@ -271,11 +271,11 @@ box_constrained_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-box_constrained_cauchy_get_direction(SleqpSparseVec* direction, void* data)
+box_constrained_cauchy_get_direction(SleqpVec* direction, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(cauchy_data->direction, direction));
+  SLEQP_CALL(sleqp_vec_copy(cauchy_data->direction, direction));
 
   return SLEQP_OKAY;
 }
@@ -290,13 +290,13 @@ box_constrained_cauchy_locally_infeasible(bool* locally_infeasible, void* data)
 
 static SLEQP_RETCODE
 box_constrained_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
-                                      SleqpSparseVec* cons_dual,
-                                      SleqpSparseVec* vars_dual,
+                                      SleqpVec* cons_dual,
+                                      SleqpVec* vars_dual,
                                       void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(sleqp_sparse_vector_copy(cauchy_data->duals, vars_dual));
+  SLEQP_CALL(sleqp_vec_copy(cauchy_data->duals, vars_dual));
 
   return SLEQP_OKAY;
 }
@@ -341,13 +341,13 @@ box_constrained_cauchy_free(void* data)
 
   sleqp_free(&cauchy_data->var_states);
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cauchy_data->duals));
+  SLEQP_CALL(sleqp_vec_free(&cauchy_data->duals));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cauchy_data->direction));
+  SLEQP_CALL(sleqp_vec_free(&cauchy_data->direction));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cauchy_data->upper_diff));
+  SLEQP_CALL(sleqp_vec_free(&cauchy_data->upper_diff));
 
-  SLEQP_CALL(sleqp_sparse_vector_free(&cauchy_data->lower_diff));
+  SLEQP_CALL(sleqp_vec_free(&cauchy_data->lower_diff));
 
   SLEQP_CALL(sleqp_iterate_release(&cauchy_data->iterate));
 
@@ -385,17 +385,13 @@ cauchy_data_create(CauchyData** star,
 
   cauchy_data->trust_radius = SLEQP_NONE;
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&cauchy_data->lower_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&cauchy_data->lower_diff, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_empty(&cauchy_data->upper_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&cauchy_data->upper_diff, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_full(&cauchy_data->direction, num_variables));
+  SLEQP_CALL(sleqp_vec_create_full(&cauchy_data->direction, num_variables));
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_create_full(&cauchy_data->duals, num_variables));
+  SLEQP_CALL(sleqp_vec_create_full(&cauchy_data->duals, num_variables));
 
   SLEQP_CALL(sleqp_alloc_array(&cauchy_data->var_states, num_variables));
 

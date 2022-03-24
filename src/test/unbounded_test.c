@@ -14,16 +14,16 @@ const int num_constraints = 0;
 
 SleqpFunc* unbounded_func;
 
-SleqpSparseVec* unbounded_initial;
+SleqpVec* unbounded_initial;
 
-SleqpSparseVec* unbounded_var_lb;
-SleqpSparseVec* unbounded_var_ub;
-SleqpSparseVec* unbounded_cons_lb;
-SleqpSparseVec* unbounded_cons_ub;
+SleqpVec* unbounded_var_lb;
+SleqpVec* unbounded_var_ub;
+SleqpVec* unbounded_cons_lb;
+SleqpVec* unbounded_cons_ub;
 
 static SLEQP_RETCODE
 unbounded_set(SleqpFunc* func,
-              SleqpSparseVec* x,
+              SleqpVec* x,
               SLEQP_VALUE_REASON reason,
               bool* reject,
               int* obj_grad_nnz,
@@ -32,7 +32,7 @@ unbounded_set(SleqpFunc* func,
               void* func_data)
 {
   assert(x->dim == 1);
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(x, &v));
+  SLEQP_CALL(sleqp_vec_to_raw(x, &v));
 
   (*obj_grad_nnz) = 1;
   (*cons_val_nnz) = 1;
@@ -50,9 +50,9 @@ unbounded_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-unbounded_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+unbounded_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 1.));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 0, 1.));
 
   return SLEQP_OKAY;
 }
@@ -60,12 +60,12 @@ unbounded_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 static SLEQP_RETCODE
 unbounded_hess_prod(SleqpFunc* func,
                     const double* obj_dual,
-                    const SleqpSparseVec* direction,
-                    const SleqpSparseVec* cons_duals,
-                    SleqpSparseVec* product,
+                    const SleqpVec* direction,
+                    const SleqpVec* cons_duals,
+                    SleqpVec* product,
                     void* func_data)
 {
-  SLEQP_CALL(sleqp_sparse_vector_clear(product));
+  SLEQP_CALL(sleqp_vec_clear(product));
 
   return SLEQP_OKAY;
 }
@@ -89,32 +89,27 @@ unbounded_setup()
                                 num_constraints,
                                 NULL));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&unbounded_initial, num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&unbounded_initial, num_variables));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&unbounded_var_lb, num_variables));
-  ASSERT_CALL(sleqp_sparse_vector_push(unbounded_var_lb, 0, -inf));
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&unbounded_var_ub, num_variables));
-  ASSERT_CALL(sleqp_sparse_vector_push(unbounded_var_ub, 0, inf));
+  ASSERT_CALL(sleqp_vec_create_full(&unbounded_var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_push(unbounded_var_lb, 0, -inf));
+  ASSERT_CALL(sleqp_vec_create_full(&unbounded_var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_push(unbounded_var_ub, 0, inf));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&unbounded_cons_lb, num_constraints));
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_empty(&unbounded_cons_ub, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_empty(&unbounded_cons_lb, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_empty(&unbounded_cons_ub, num_constraints));
 }
 
 void
 unbounded_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_vector_free(&unbounded_cons_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&unbounded_cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&unbounded_cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&unbounded_cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&unbounded_var_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&unbounded_var_lb));
+  ASSERT_CALL(sleqp_vec_free(&unbounded_var_ub));
+  ASSERT_CALL(sleqp_vec_free(&unbounded_var_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&unbounded_initial));
+  ASSERT_CALL(sleqp_vec_free(&unbounded_initial));
 
   ASSERT_CALL(sleqp_func_release(&unbounded_func));
 }

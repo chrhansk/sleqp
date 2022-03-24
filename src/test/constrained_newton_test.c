@@ -21,11 +21,11 @@ static const int num_constraints = 1;
 
 SleqpFunc* linquadfunc;
 
-SleqpSparseVec* linquadfunc_var_lb;
-SleqpSparseVec* linquadfunc_var_ub;
-SleqpSparseVec* linquadfunc_cons_lb;
-SleqpSparseVec* linquadfunc_cons_ub;
-SleqpSparseVec* linquadfunc_x;
+SleqpVec* linquadfunc_var_lb;
+SleqpVec* linquadfunc_var_ub;
+SleqpVec* linquadfunc_cons_lb;
+SleqpVec* linquadfunc_cons_ub;
+SleqpVec* linquadfunc_x;
 
 SleqpParams* params;
 SleqpProblem* problem;
@@ -46,7 +46,7 @@ square(double v)
 
 SLEQP_RETCODE
 linquadfunc_set(SleqpFunc* func,
-                SleqpSparseVec* x,
+                SleqpVec* x,
                 SLEQP_VALUE_REASON reason,
                 bool* reject,
                 int* obj_grad_nnz,
@@ -86,7 +86,7 @@ linquadfunc_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 SLEQP_RETCODE
-linquadfunc_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+linquadfunc_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   LinQuadFuncData* data = (LinQuadFuncData*)func_data;
 
@@ -95,19 +95,19 @@ linquadfunc_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
 
   obj_grad->nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 0, 2. * data->x[0]));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 0, 2. * data->x[0]));
 
-  SLEQP_CALL(sleqp_sparse_vector_push(obj_grad, 1, 2. * data->x[1]));
+  SLEQP_CALL(sleqp_vec_push(obj_grad, 1, 2. * data->x[1]));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-linquadfunc_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
+linquadfunc_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 {
   LinQuadFuncData* data = (LinQuadFuncData*)func_data;
 
-  SLEQP_CALL(sleqp_sparse_vector_push(cons_val, 0, data->x[1]));
+  SLEQP_CALL(sleqp_vec_push(cons_val, 0, data->x[1]));
 
   return SLEQP_OKAY;
 }
@@ -130,18 +130,18 @@ linquadfunc_cons_jac(SleqpFunc* func,
 SLEQP_RETCODE
 linquadfunc_hess_prod(SleqpFunc* func,
                       const double* obj_dual,
-                      const SleqpSparseVec* direction,
-                      const SleqpSparseVec* cons_duals,
-                      SleqpSparseVec* result,
+                      const SleqpVec* direction,
+                      const SleqpVec* cons_duals,
+                      SleqpVec* result,
                       void* func_data)
 {
   if (obj_dual)
   {
     double total_value = 2. * (*obj_dual);
 
-    SLEQP_CALL(sleqp_sparse_vector_copy(direction, result));
+    SLEQP_CALL(sleqp_vec_copy(direction, result));
 
-    SLEQP_CALL(sleqp_sparse_vector_scale(result, total_value));
+    SLEQP_CALL(sleqp_vec_scale(result, total_value));
   }
 
   return SLEQP_OKAY;
@@ -172,33 +172,29 @@ newton_setup()
 
   double inf = sleqp_infinity();
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&linquadfunc_var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&linquadfunc_var_lb, num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_var_lb, 0, -inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_var_lb, 1, -inf));
+  ASSERT_CALL(sleqp_vec_push(linquadfunc_var_lb, 0, -inf));
+  ASSERT_CALL(sleqp_vec_push(linquadfunc_var_lb, 1, -inf));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&linquadfunc_var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&linquadfunc_var_ub, num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_var_ub, 0, inf));
-  ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_var_ub, 1, inf));
+  ASSERT_CALL(sleqp_vec_push(linquadfunc_var_ub, 0, inf));
+  ASSERT_CALL(sleqp_vec_push(linquadfunc_var_ub, 1, inf));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&linquadfunc_cons_lb, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_full(&linquadfunc_cons_lb, num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_cons_lb, 0, 2.));
+  ASSERT_CALL(sleqp_vec_push(linquadfunc_cons_lb, 0, 2.));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_create_full(&linquadfunc_cons_ub, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_full(&linquadfunc_cons_ub, num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_cons_ub, 0, inf));
+  ASSERT_CALL(sleqp_vec_push(linquadfunc_cons_ub, 0, inf));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&linquadfunc_x, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&linquadfunc_x, num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_x, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(linquadfunc_x, 0, 1.));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(linquadfunc_x, 1, 2.));
+  ASSERT_CALL(sleqp_vec_push(linquadfunc_x, 1, 2.));
 
   ASSERT_CALL(sleqp_params_create(&params));
 
@@ -225,8 +221,8 @@ newton_setup()
 
 START_TEST(newton_constrained_step)
 {
-  SleqpSparseVec* actual_step;
-  SleqpSparseVec* expected_step;
+  SleqpVec* actual_step;
+  SleqpVec* expected_step;
 
   SleqpParams* params;
   SleqpOptions* options;
@@ -242,10 +238,10 @@ START_TEST(newton_constrained_step)
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  ASSERT_CALL(sleqp_sparse_vector_create(&actual_step, num_variables, 0));
-  ASSERT_CALL(sleqp_sparse_vector_create(&expected_step, num_variables, 1));
+  ASSERT_CALL(sleqp_vec_create(&actual_step, num_variables, 0));
+  ASSERT_CALL(sleqp_vec_create(&expected_step, num_variables, 1));
 
-  ASSERT_CALL(sleqp_sparse_vector_push(expected_step, 0, -1.));
+  ASSERT_CALL(sleqp_vec_push(expected_step, 0, -1.));
 
   ASSERT_CALL(sleqp_params_create(&params));
 
@@ -278,7 +274,7 @@ START_TEST(newton_constrained_step)
 
   const double tolerance = 1e-8;
 
-  ck_assert(sleqp_sparse_vector_eq(actual_step, expected_step, tolerance));
+  ck_assert(sleqp_vec_eq(actual_step, expected_step, tolerance));
 
   ASSERT_CALL(sleqp_eqp_solver_release(&newton_solver));
 
@@ -292,9 +288,9 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_params_release(&params));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&expected_step));
+  ASSERT_CALL(sleqp_vec_free(&expected_step));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&actual_step));
+  ASSERT_CALL(sleqp_vec_free(&actual_step));
 }
 END_TEST
 
@@ -307,15 +303,15 @@ newton_teardown()
 
   ASSERT_CALL(sleqp_params_release(&params));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linquadfunc_x));
+  ASSERT_CALL(sleqp_vec_free(&linquadfunc_x));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linquadfunc_cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&linquadfunc_cons_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linquadfunc_cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&linquadfunc_cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linquadfunc_var_ub));
+  ASSERT_CALL(sleqp_vec_free(&linquadfunc_var_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&linquadfunc_var_lb));
+  ASSERT_CALL(sleqp_vec_free(&linquadfunc_var_lb));
 
   ASSERT_CALL(sleqp_func_release(&linquadfunc));
 

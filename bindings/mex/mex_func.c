@@ -61,7 +61,7 @@ typedef struct
 
 static SLEQP_RETCODE
 mex_func_set(SleqpFunc* func,
-             SleqpSparseVec* x,
+             SleqpVec* x,
              SLEQP_VALUE_REASON reason,
              bool* reject,
              int* obj_grad_nnz,
@@ -75,7 +75,7 @@ mex_func_set(SleqpFunc* func,
   *cons_val_nnz = 0;
   *cons_jac_nnz = 0;
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(x, mxGetPr(func_data->primal)));
+  SLEQP_CALL(sleqp_vec_to_raw(x, mxGetPr(func_data->primal)));
 
   return SLEQP_OKAY;
 }
@@ -95,7 +95,7 @@ mex_func_obj_val(SleqpFunc* func, double* obj_val, void* data)
 }
 
 static SLEQP_RETCODE
-mex_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
+mex_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* data)
 {
   FuncData* func_data = (FuncData*)data;
 
@@ -107,7 +107,7 @@ mex_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* data)
 }
 
 static SLEQP_RETCODE
-mex_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* data)
+mex_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* data)
 {
   FuncData* func_data = (FuncData*)data;
 
@@ -176,11 +176,10 @@ hess_prod(const mxArray* hessian, const double* direction, double* product)
 
 static SLEQP_RETCODE
 hess_prod_direct(FuncData* func_data,
-                 const SleqpSparseVec* direction,
-                 SleqpSparseVec* result)
+                 const SleqpVec* direction,
+                 SleqpVec* result)
 {
-  SLEQP_CALL(
-    sleqp_sparse_vector_to_raw(direction, mxGetPr(func_data->hess_dir)));
+  SLEQP_CALL(sleqp_vec_to_raw(direction, mxGetPr(func_data->hess_dir)));
 
   mxArray* rhs[] = {func_data->callbacks.hess,
                     func_data->primal,
@@ -198,8 +197,8 @@ hess_prod_direct(FuncData* func_data,
 static SLEQP_RETCODE
 hess_prod_matrix(SleqpFunc* func,
                  FuncData* func_data,
-                 const SleqpSparseVec* direction,
-                 SleqpSparseVec* result)
+                 const SleqpVec* direction,
+                 SleqpVec* result)
 {
   const double zero_eps
     = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
@@ -223,14 +222,12 @@ hess_prod_matrix(SleqpFunc* func,
   assert(mxGetM(lhs) == num_vars);
   assert(mxGetN(lhs) == num_vars);
 
-  SLEQP_CALL(sleqp_sparse_vector_to_raw(direction, func_data->direction));
+  SLEQP_CALL(sleqp_vec_to_raw(direction, func_data->direction));
 
   SLEQP_CALL(hess_prod(lhs, func_data->direction, func_data->product));
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(result,
-                                          func_data->product,
-                                          num_vars,
-                                          zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_from_raw(result, func_data->product, num_vars, zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -238,15 +235,14 @@ hess_prod_matrix(SleqpFunc* func,
 static SLEQP_RETCODE
 mex_func_hess_prod(SleqpFunc* func,
                    const double* obj_dual,
-                   const SleqpSparseVec* direction,
-                   const SleqpSparseVec* cons_duals,
-                   SleqpSparseVec* result,
+                   const SleqpVec* direction,
+                   const SleqpVec* cons_duals,
+                   SleqpVec* result,
                    void* data)
 {
   FuncData* func_data = (FuncData*)data;
 
-  SLEQP_CALL(
-    sleqp_sparse_vector_to_raw(cons_duals, mxGetPr(func_data->cons_dual)));
+  SLEQP_CALL(sleqp_vec_to_raw(cons_duals, mxGetPr(func_data->cons_dual)));
 
   if (obj_dual)
   {

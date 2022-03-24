@@ -41,10 +41,10 @@ sleqp_lsqr_solver_resize(SleqpLSQRSolver* solver,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
-                        const SleqpSparseVec* rhs,
+                        const SleqpVec* rhs,
                         double rel_tol,
                         double trust_radius,
-                        SleqpSparseVec* sol);
+                        SleqpVec* sol);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

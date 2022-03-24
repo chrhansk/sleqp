@@ -12,14 +12,12 @@ typedef SLEQP_RETCODE (*SLEQP_EQP_SET_ITERATE)(SleqpIterate* iterate,
 typedef SLEQP_RETCODE (*SLEQP_EQP_SET_TIME_LIMIT)(double time_limit,
                                                   void* eqp_data);
 
-typedef SLEQP_RETCODE (*SLEQP_EQP_ADD_VIOLATED_MULTIPLIERS)(
-  SleqpSparseVec* multipliers,
-  void* eqp_data);
+typedef SLEQP_RETCODE (
+  *SLEQP_EQP_ADD_VIOLATED_MULTIPLIERS)(SleqpVec* multipliers, void* eqp_data);
 
-typedef SLEQP_RETCODE (*SLEQP_EQP_COMPUTE_STEP)(
-  const SleqpSparseVec* multipliers,
-  SleqpSparseVec* newton_step,
-  void* eqp_data);
+typedef SLEQP_RETCODE (*SLEQP_EQP_COMPUTE_STEP)(const SleqpVec* multipliers,
+                                                SleqpVec* newton_step,
+                                                void* eqp_data);
 
 typedef SLEQP_RETCODE (*SLEQP_EQP_CURRENT_RAYLEIGH)(double* min_rayleigh,
                                                     double* max_rayleigh,

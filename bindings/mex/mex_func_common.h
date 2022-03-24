@@ -61,7 +61,7 @@ SLEQP_RETCODE
 mex_eval_into_sparse_vec(int nrhs,
                          mxArray** rhs,
                          SleqpParams* params,
-                         SleqpSparseVec* vec);
+                         SleqpVec* vec);
 
 SLEQP_RETCODE
 mex_eval_into_sparse_matrix(int nrhs,

@@ -64,7 +64,7 @@ set(COMMON_SRC
   solver/solve.c
   solver/state.c
   sparse/sparse_matrix.c
-  sparse/sparse_vec.c
+  sparse/vec.c
   step/step_rule.c
   step/step_rule_direct.c
   step/step_rule_minstep.c

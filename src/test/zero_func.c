@@ -4,7 +4,7 @@
 
 static SLEQP_RETCODE
 zero_func_set(SleqpFunc* func,
-              SleqpSparseVec* x,
+              SleqpVec* x,
               SLEQP_VALUE_REASON reason,
               bool* reject,
               int* obj_grad_nnz,
@@ -28,13 +28,13 @@ zero_func_obj_val(SleqpFunc* func, double* obj_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-zero_func_obj_grad(SleqpFunc* func, SleqpSparseVec* obj_grad, void* func_data)
+zero_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 {
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-zero_func_cons_val(SleqpFunc* func, SleqpSparseVec* cons_val, void* func_data)
+zero_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 {
   return SLEQP_OKAY;
 }
@@ -50,26 +50,24 @@ zero_func_cons_jac(SleqpFunc* func,
 static SLEQP_RETCODE
 zero_func_hess_prod(SleqpFunc* func,
                     const double* obj_dual,
-                    const SleqpSparseVec* direction,
-                    const SleqpSparseVec* cons_duals,
-                    SleqpSparseVec* result,
+                    const SleqpVec* direction,
+                    const SleqpVec* cons_duals,
+                    SleqpVec* result,
                     void* func_data)
 {
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-zero_lsq_func_residuals(SleqpFunc* func,
-                        SleqpSparseVec* residual,
-                        void* func_data)
+zero_lsq_func_residuals(SleqpFunc* func, SleqpVec* residual, void* func_data)
 {
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 zero_lsq_func_jac_forward(SleqpFunc* func,
-                          const SleqpSparseVec* forward_direction,
-                          SleqpSparseVec* product,
+                          const SleqpVec* forward_direction,
+                          SleqpVec* product,
                           void* func_data)
 {
   return SLEQP_OKAY;
@@ -77,8 +75,8 @@ zero_lsq_func_jac_forward(SleqpFunc* func,
 
 static SLEQP_RETCODE
 zero_lsq_func_jac_adjoint(SleqpFunc* func,
-                          const SleqpSparseVec* adjoint_direction,
-                          SleqpSparseVec* product,
+                          const SleqpVec* adjoint_direction,
+                          SleqpVec* product,
                           void* func_data)
 {
   return SLEQP_OKAY;

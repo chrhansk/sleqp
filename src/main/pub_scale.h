@@ -129,7 +129,7 @@ sleqp_scaling_cons_weights(SleqpScaling* scaling);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_obj_scaling_from_grad(SleqpScaling* scaling,
-                            SleqpSparseVec* gradient,
+                            SleqpVec* gradient,
                             double eps);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE

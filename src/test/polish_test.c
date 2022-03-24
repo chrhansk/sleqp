@@ -16,15 +16,15 @@ SleqpFunc* func;
 
 SleqpParams* params;
 
-SleqpSparseVec* var_lb;
-SleqpSparseVec* var_ub;
+SleqpVec* var_lb;
+SleqpVec* var_ub;
 
-SleqpSparseVec* cons_lb;
-SleqpSparseVec* cons_ub;
+SleqpVec* cons_lb;
+SleqpVec* cons_ub;
 
 SleqpProblem* problem;
 
-SleqpSparseVec* primal;
+SleqpVec* primal;
 
 SleqpIterate* iterate;
 
@@ -39,24 +39,22 @@ polish_setup()
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&var_lb, num_variables));
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&var_ub, num_variables));
+  ASSERT_CALL(sleqp_vec_create_empty(&var_lb, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&var_ub, num_variables));
 
   {
     double ub[] = {2., 2., 2.};
 
-    ASSERT_CALL(
-      sleqp_sparse_vector_from_raw(var_ub, ub, num_variables, zero_eps));
+    ASSERT_CALL(sleqp_vec_from_raw(var_ub, ub, num_variables, zero_eps));
   }
 
-  ASSERT_CALL(sleqp_sparse_vector_create_empty(&cons_lb, num_constraints));
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&cons_ub, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
+  ASSERT_CALL(sleqp_vec_create_full(&cons_ub, num_constraints));
 
   {
     double ub[] = {2., 2., 2.};
 
-    ASSERT_CALL(
-      sleqp_sparse_vector_from_raw(cons_ub, ub, num_constraints, zero_eps));
+    ASSERT_CALL(sleqp_vec_from_raw(cons_ub, ub, num_constraints, zero_eps));
   }
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
@@ -67,32 +65,31 @@ polish_setup()
                                           cons_lb,
                                           cons_ub));
 
-  ASSERT_CALL(sleqp_sparse_vector_create_full(&primal, num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&primal, num_variables));
 
   double values[] = {0., 1., 2.};
 
   {
-    ASSERT_CALL(
-      sleqp_sparse_vector_from_raw(primal, values, num_variables, zero_eps));
+    ASSERT_CALL(sleqp_vec_from_raw(primal, values, num_variables, zero_eps));
   }
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, primal));
 
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  ASSERT_CALL(sleqp_sparse_vector_reserve(sleqp_iterate_vars_dual(iterate),
-                                          num_variables));
+  ASSERT_CALL(
+    sleqp_vec_reserve(sleqp_iterate_vars_dual(iterate), num_variables));
 
-  ASSERT_CALL(sleqp_sparse_vector_reserve(sleqp_iterate_cons_dual(iterate),
-                                          num_constraints));
+  ASSERT_CALL(
+    sleqp_vec_reserve(sleqp_iterate_cons_dual(iterate), num_constraints));
 
   ASSERT_CALL(sleqp_working_set_reset(working_set));
 
   {
-    ASSERT_CALL(sleqp_sparse_vector_from_raw(sleqp_iterate_cons_val(iterate),
-                                             values,
-                                             num_constraints,
-                                             zero_eps));
+    ASSERT_CALL(sleqp_vec_from_raw(sleqp_iterate_cons_val(iterate),
+                                   values,
+                                   num_constraints,
+                                   zero_eps));
   }
 
   ASSERT_CALL(sleqp_polishing_create(&polishing, problem, params));
@@ -105,15 +102,15 @@ polish_teardown()
 
   ASSERT_CALL(sleqp_iterate_release(&iterate));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&primal));
+  ASSERT_CALL(sleqp_vec_free(&primal));
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&cons_lb));
+  ASSERT_CALL(sleqp_vec_free(&cons_ub));
+  ASSERT_CALL(sleqp_vec_free(&cons_lb));
 
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_ub));
-  ASSERT_CALL(sleqp_sparse_vector_free(&var_lb));
+  ASSERT_CALL(sleqp_vec_free(&var_ub));
+  ASSERT_CALL(sleqp_vec_free(&var_lb));
 
   ASSERT_CALL(sleqp_params_release(&params));
 
@@ -150,8 +147,7 @@ START_TEST(test_polish_zero_dual_vars)
 
   ASSERT_CALL(sleqp_working_set_add_var(working_set, 2, SLEQP_ACTIVE_UPPER));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_push(sleqp_iterate_vars_dual(iterate), 0, -1.));
+  ASSERT_CALL(sleqp_vec_push(sleqp_iterate_vars_dual(iterate), 0, -1.));
 
   ASSERT_CALL(
     sleqp_polishing_polish(polishing, iterate, SLEQP_POLISHING_ZERO_DUAL));
@@ -198,8 +194,7 @@ START_TEST(test_polish_zero_dual_cons)
 
   ASSERT_CALL(sleqp_working_set_add_cons(working_set, 2, SLEQP_ACTIVE_UPPER));
 
-  ASSERT_CALL(
-    sleqp_sparse_vector_push(sleqp_iterate_cons_dual(iterate), 0, -1.));
+  ASSERT_CALL(sleqp_vec_push(sleqp_iterate_cons_dual(iterate), 0, -1.));
 
   ASSERT_CALL(
     sleqp_polishing_polish(polishing, iterate, SLEQP_POLISHING_ZERO_DUAL));

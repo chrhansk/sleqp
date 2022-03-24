@@ -174,7 +174,7 @@ umfpack_factorization_set_matrix(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-set_cache(double* cache, const SleqpSparseVec* vec)
+set_cache(double* cache, const SleqpVec* vec)
 {
   for (int k = 0; k < vec->nnz; ++k)
   {
@@ -185,7 +185,7 @@ set_cache(double* cache, const SleqpSparseVec* vec)
 }
 
 static SLEQP_RETCODE
-reset_cache(double* cache, const SleqpSparseVec* vec)
+reset_cache(double* cache, const SleqpVec* vec)
 {
   for (int k = 0; k < vec->nnz; ++k)
   {
@@ -196,7 +196,7 @@ reset_cache(double* cache, const SleqpSparseVec* vec)
 }
 
 static SLEQP_RETCODE
-umfpack_factorization_solve(void* factorization_data, const SleqpSparseVec* rhs)
+umfpack_factorization_solve(void* factorization_data, const SleqpVec* rhs)
 {
   UmfpackData* umfpack = (UmfpackData*)factorization_data;
 
@@ -234,7 +234,7 @@ umfpack_factorization_condition_estimate(void* factorization_data,
 
 static SLEQP_RETCODE
 umfpack_factorization_solution(void* factorization_data,
-                               SleqpSparseVec* sol,
+                               SleqpVec* sol,
                                int begin,
                                int end,
                                double zero_eps)
@@ -243,10 +243,8 @@ umfpack_factorization_solution(void* factorization_data,
 
   assert(begin <= end);
 
-  SLEQP_CALL(sleqp_sparse_vector_from_raw(sol,
-                                          umfpack->solution + begin,
-                                          end - begin,
-                                          zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_from_raw(sol, umfpack->solution + begin, end - begin, zero_eps));
 
   return SLEQP_OKAY;
 }
