@@ -176,10 +176,10 @@ restoration_lsq_jac_forward(SleqpFunc* func,
                                                 func_data->var_forward,
                                                 func_data->forward_cache));
 
-  SLEQP_CALL(sleqp_vec_from_raw(func_data->forward_product,
-                                func_data->forward_cache,
-                                num_constraints,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(func_data->forward_product,
+                                    func_data->forward_cache,
+                                    num_constraints,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_add_scaled(func_data->forward_product,
                                   func_data->cons_forward,

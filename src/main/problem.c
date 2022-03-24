@@ -539,17 +539,17 @@ sleqp_problem_cons_val(SleqpProblem* problem, SleqpVec* cons_val)
 
   if (problem->num_general_constraints == 0)
   {
-    return sleqp_vec_from_raw(cons_val,
-                              problem->dense_cache,
-                              problem->num_linear_constraints,
-                              zero_eps);
+    return sleqp_vec_set_from_raw(cons_val,
+                                  problem->dense_cache,
+                                  problem->num_linear_constraints,
+                                  zero_eps);
   }
   else
   {
-    SLEQP_CALL(sleqp_vec_from_raw(problem->linear_cons_val,
-                                  problem->dense_cache,
-                                  problem->num_linear_constraints,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(problem->linear_cons_val,
+                                      problem->dense_cache,
+                                      problem->num_linear_constraints,
+                                      zero_eps));
 
     SLEQP_CALL(sleqp_func_cons_val(problem->func, problem->general_cons_val));
 

@@ -648,10 +648,10 @@ ma57_solution(void* factorization_data,
 
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
 
-  SLEQP_CALL(sleqp_vec_from_raw(sol,
-                                ma57_workspace->rhs_sol + begin,
-                                end - begin,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sol,
+                                    ma57_workspace->rhs_sol + begin,
+                                    end - begin,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }

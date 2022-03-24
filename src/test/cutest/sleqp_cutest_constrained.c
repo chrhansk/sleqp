@@ -249,10 +249,10 @@ cutest_cons_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
     data->obj_grad[col] = val;
   }
 
-  SLEQP_CALL(sleqp_vec_from_raw(obj_grad,
-                                data->obj_grad,
-                                data->num_variables,
-                                data->zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(obj_grad,
+                                    data->obj_grad,
+                                    data->num_variables,
+                                    data->zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -276,8 +276,10 @@ cutest_cons_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 
   SLEQP_CUTEST_CHECK_STATUS(status);
 
-  SLEQP_CALL(
-    sleqp_vec_from_raw(cons_val, data->cons_vals, num_general, data->zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(cons_val,
+                                    data->cons_vals,
+                                    num_general,
+                                    data->zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -387,10 +389,10 @@ sleqp_cutest_eval_linear(SleqpFunc* func, SleqpVec* linear)
 
   SLEQP_CUTEST_CHECK_STATUS(status);
 
-  SLEQP_CALL(sleqp_vec_from_raw(linear,
-                                data->cons_vals + num_general,
-                                data->num_linear,
-                                data->zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(linear,
+                                    data->cons_vals + num_general,
+                                    data->num_linear,
+                                    data->zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -548,10 +550,10 @@ cutest_cons_func_hess_product(SleqpFunc* func,
     data->goth = cutest_true;
   }
 
-  SLEQP_CALL(sleqp_vec_from_raw(product,
-                                data->hessian_product,
-                                data->num_variables,
-                                data->zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(product,
+                                    data->hessian_product,
+                                    data->num_variables,
+                                    data->zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -601,10 +603,10 @@ adjust_for_linear_offset(SleqpParams* params,
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_vec_from_raw(sparse_cache,
-                                data->cons_lb + num_general,
-                                num_linear,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sparse_cache,
+                                    data->cons_lb + num_general,
+                                    num_linear,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_add_scaled(sparse_cache,
                                   linear_offset,
@@ -613,10 +615,10 @@ adjust_for_linear_offset(SleqpParams* params,
                                   zero_eps,
                                   linear_lb));
 
-  SLEQP_CALL(sleqp_vec_from_raw(sparse_cache,
-                                data->cons_ub + num_general,
-                                num_linear,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sparse_cache,
+                                    data->cons_ub + num_general,
+                                    num_linear,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_add_scaled(sparse_cache,
                                   linear_offset,
@@ -650,13 +652,14 @@ compute_linear_offset(SleqpFunc* func,
   SLEQP_CALL(sleqp_vec_create_empty(&product, num_linear));
   SLEQP_CALL(sleqp_alloc_array(&raw_product, num_linear));
 
-  SLEQP_CALL(sleqp_vec_from_raw(x, data->x, num_variables, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(x, data->x, num_variables, zero_eps));
 
   SLEQP_CALL(sleqp_cutest_eval_linear(func, linear));
 
   SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_coeffs, x, raw_product));
 
-  SLEQP_CALL(sleqp_vec_from_raw(product, raw_product, num_linear, zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_set_from_raw(product, raw_product, num_linear, zero_eps));
 
   SLEQP_CALL(
     sleqp_vec_add_scaled(linear, product, 1., -1., zero_eps, linear_offset));
@@ -709,11 +712,15 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(sleqp_vec_create_empty(&linear_offset, num_linear));
 
-  SLEQP_CALL(sleqp_vec_from_raw(var_lb, data->var_lb, num_variables, zero_eps));
-  SLEQP_CALL(sleqp_vec_from_raw(var_ub, data->var_ub, num_variables, zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_set_from_raw(var_lb, data->var_lb, num_variables, zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_set_from_raw(var_ub, data->var_ub, num_variables, zero_eps));
 
-  SLEQP_CALL(sleqp_vec_from_raw(cons_lb, data->cons_lb, num_general, zero_eps));
-  SLEQP_CALL(sleqp_vec_from_raw(cons_ub, data->cons_ub, num_general, zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_set_from_raw(cons_lb, data->cons_lb, num_general, zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_set_from_raw(cons_ub, data->cons_ub, num_general, zero_eps));
 
   SLEQP_CALL(
     sleqp_sparse_matrix_create(&linear_coeffs, num_linear, num_variables, 0));

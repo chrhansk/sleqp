@@ -131,10 +131,10 @@ has_sufficient_decrease(SleqpParametricSolver* solver,
                                                 direction,
                                                 solver->cache));
 
-  SLEQP_CALL(sleqp_vec_from_raw(solver->jacobian_product,
-                                solver->cache,
-                                num_constraints,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(solver->jacobian_product,
+                                    solver->cache,
+                                    num_constraints,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
                            solver->jacobian_product,

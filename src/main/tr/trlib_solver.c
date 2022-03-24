@@ -410,10 +410,10 @@ trlib_loop(SolverData* data,
     }
     case TRLIB_CLA_RETRANSF:
     {
-      SLEQP_CALL(sleqp_vec_from_raw(data->h,
-                                    fwork + data->trlib_h_pointer,
-                                    iter + 1,
-                                    zero_eps));
+      SLEQP_CALL(sleqp_vec_set_from_raw(data->h,
+                                        fwork + data->trlib_h_pointer,
+                                        iter + 1,
+                                        zero_eps));
 
       SLEQP_CALL(
         sleqp_vec_resize(data->h, sleqp_sparse_matrix_num_cols(data->Q)));
@@ -422,10 +422,10 @@ trlib_loop(SolverData* data,
                                                     data->h,
                                                     data->dense_cache));
 
-      SLEQP_CALL(sleqp_vec_from_raw(data->s,
-                                    data->dense_cache,
-                                    num_variables,
-                                    zero_eps));
+      SLEQP_CALL(sleqp_vec_set_from_raw(data->s,
+                                        data->dense_cache,
+                                        num_variables,
+                                        zero_eps));
 
       break;
     }

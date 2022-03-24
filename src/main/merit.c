@@ -105,10 +105,10 @@ sleqp_merit_linear(SleqpMerit* merit,
                                                 direction,
                                                 merit->dense_cache));
 
-  SLEQP_CALL(sleqp_vec_from_raw(merit->jac_dot_sparse,
-                                merit->dense_cache,
-                                num_constraints,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(merit->jac_dot_sparse,
+                                    merit->dense_cache,
+                                    num_constraints,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_add(merit->jac_dot_sparse,
                            sleqp_iterate_cons_val(iterate),

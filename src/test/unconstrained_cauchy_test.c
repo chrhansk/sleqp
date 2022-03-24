@@ -57,13 +57,14 @@ unconstrained_setup()
 
   double primal_vals[] = {1., 1.};
 
-  ASSERT_CALL(sleqp_vec_from_raw(primal, primal_vals, num_variables, zero_eps));
+  ASSERT_CALL(
+    sleqp_vec_set_from_raw(primal, primal_vals, num_variables, zero_eps));
 
   ASSERT_CALL(sleqp_vec_create_full(&grad, num_variables));
 
   double grad_vals[] = {1., -1.};
 
-  ASSERT_CALL(sleqp_vec_from_raw(grad, grad_vals, num_variables, zero_eps));
+  ASSERT_CALL(sleqp_vec_set_from_raw(grad, grad_vals, num_variables, zero_eps));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,

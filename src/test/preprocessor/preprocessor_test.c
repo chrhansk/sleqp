@@ -117,10 +117,10 @@ START_TEST(test_fixed_var_linear_trans)
   double var_ub[] = {var_value, inf};
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(rosenbrock_var_lb, var_lb, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(rosenbrock_var_lb, var_lb, num_variables, zero_eps));
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(rosenbrock_var_ub, var_ub, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(rosenbrock_var_ub, var_ub, num_variables, zero_eps));
 
   ASSERT_CALL(sleqp_sparse_matrix_create(&linear_coeffs,
                                          num_linear,
@@ -326,10 +326,10 @@ START_TEST(test_forcing_constraint)
   double var_ub[] = {1., 0.};
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(rosenbrock_var_lb, var_lb, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(rosenbrock_var_lb, var_lb, num_variables, zero_eps));
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(rosenbrock_var_ub, var_ub, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(rosenbrock_var_ub, var_ub, num_variables, zero_eps));
 
   ASSERT_CALL(sleqp_vec_push(linear_lb, 0, 1.));
 
@@ -400,7 +400,7 @@ START_TEST(test_dominated_row)
     1.,
     1,
   };
-  ASSERT_CALL(sleqp_vec_from_raw(rosenbrock_var_ub, var_ub, 2, zero_eps));
+  ASSERT_CALL(sleqp_vec_set_from_raw(rosenbrock_var_ub, var_ub, 2, zero_eps));
 
   ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_coeffs, 0));
 
@@ -856,10 +856,10 @@ START_TEST(test_restore_forcing_constraint)
   double var_ub[] = {1., 0.};
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(rosenbrock_var_lb, var_lb, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(rosenbrock_var_lb, var_lb, num_variables, zero_eps));
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(rosenbrock_var_ub, var_ub, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(rosenbrock_var_ub, var_ub, num_variables, zero_eps));
 
   ASSERT_CALL(sleqp_vec_push(linear_lb, 0, 1.));
 
@@ -1019,10 +1019,10 @@ START_TEST(test_remove_bounds)
   double var_ub[] = {8., 8.};
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(rosenbrock_var_lb, var_lb, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(rosenbrock_var_lb, var_lb, num_variables, zero_eps));
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(rosenbrock_var_ub, var_ub, num_variables, zero_eps));
+    sleqp_vec_set_from_raw(rosenbrock_var_ub, var_ub, num_variables, zero_eps));
 
   ASSERT_CALL(
     sleqp_sparse_matrix_create(&linear_coeffs, num_linear, num_variables, 2));

@@ -129,8 +129,10 @@ sleqp_ampl_problem_create(SleqpProblem** star,
   SLEQP_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
   SLEQP_CALL(sleqp_vec_create_empty(&cons_ub, num_constraints));
 
-  SLEQP_CALL(sleqp_vec_from_raw(var_lb, data->var_lb, num_variables, zero_eps));
-  SLEQP_CALL(sleqp_vec_from_raw(var_ub, data->var_ub, num_variables, zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_set_from_raw(var_lb, data->var_lb, num_variables, zero_eps));
+  SLEQP_CALL(
+    sleqp_vec_set_from_raw(var_ub, data->var_ub, num_variables, zero_eps));
 
   const int num_linear = n_con - nlc;
 
@@ -158,13 +160,19 @@ sleqp_ampl_problem_create(SleqpProblem** star,
     general_lb->dim = nlc;
     general_ub->dim = nlc;
 
-    SLEQP_CALL(sleqp_vec_from_raw(general_lb, data->cons_lb, nlc, zero_eps));
-    SLEQP_CALL(sleqp_vec_from_raw(general_ub, data->cons_ub, nlc, zero_eps));
+    SLEQP_CALL(
+      sleqp_vec_set_from_raw(general_lb, data->cons_lb, nlc, zero_eps));
+    SLEQP_CALL(
+      sleqp_vec_set_from_raw(general_ub, data->cons_ub, nlc, zero_eps));
 
-    SLEQP_CALL(
-      sleqp_vec_from_raw(linear_lb, data->cons_lb + nlc, num_linear, zero_eps));
-    SLEQP_CALL(
-      sleqp_vec_from_raw(linear_ub, data->cons_ub + nlc, num_linear, zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(linear_lb,
+                                      data->cons_lb + nlc,
+                                      num_linear,
+                                      zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(linear_ub,
+                                      data->cons_ub + nlc,
+                                      num_linear,
+                                      zero_eps));
 
     SLEQP_CALL(sleqp_problem_create(star,
                                     func,
@@ -184,10 +192,14 @@ sleqp_ampl_problem_create(SleqpProblem** star,
   }
   else
   {
-    SLEQP_CALL(
-      sleqp_vec_from_raw(cons_lb, data->cons_lb, num_constraints, zero_eps));
-    SLEQP_CALL(
-      sleqp_vec_from_raw(cons_ub, data->cons_ub, num_constraints, zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(cons_lb,
+                                      data->cons_lb,
+                                      num_constraints,
+                                      zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(cons_ub,
+                                      data->cons_ub,
+                                      num_constraints,
+                                      zero_eps));
 
     SLEQP_CALL(sleqp_problem_create_simple(star,
                                            func,

@@ -1069,10 +1069,10 @@ standard_cauchy_get_direction(SleqpVec* direction, void* data)
 
   const int num_variables = sleqp_problem_num_vars(cauchy_data->problem);
 
-  SLEQP_CALL(sleqp_vec_from_raw(direction,
-                                cauchy_data->primal_values,
-                                num_variables,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(direction,
+                                    cauchy_data->primal_values,
+                                    num_variables,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -1292,10 +1292,10 @@ standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
                                   cauchy_data->vars_dual,
                                   NULL));
 
-    SLEQP_CALL(sleqp_vec_from_raw(vars_dual,
-                                  cauchy_data->vars_dual,
-                                  vars_dual->dim,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(vars_dual,
+                                      cauchy_data->vars_dual,
+                                      vars_dual->dim,
+                                      zero_eps));
 
     // Note: We rescale here since sign conventions vary...
     SLEQP_CALL(sleqp_vec_scale(vars_dual, -1.));
@@ -1314,10 +1314,10 @@ standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
                                   NULL,
                                   cauchy_data->vars_dual));
 
-    SLEQP_CALL(sleqp_vec_from_raw(cons_dual,
-                                  cauchy_data->vars_dual,
-                                  cons_dual->dim,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(cons_dual,
+                                      cauchy_data->vars_dual,
+                                      cons_dual->dim,
+                                      zero_eps));
 
     // Note: We rescale here since sign conventions vary...
     SLEQP_CALL(sleqp_vec_scale(cons_dual, -1.));

@@ -86,7 +86,7 @@ ampl_main(int argc, char* argv[])
 
   SleqpVec* x;
   SLEQP_CALL(sleqp_vec_create(&x, n_var, 0));
-  SLEQP_CALL(sleqp_vec_from_raw(x, data->x, n_var, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(x, data->x, n_var, zero_eps));
 
   SLEQP_CALL(sleqp_solver_create(&solver, problem, params, options, x, NULL));
 

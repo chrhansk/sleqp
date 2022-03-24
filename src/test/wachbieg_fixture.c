@@ -165,8 +165,10 @@ wachbieg_setup()
   {
     double values[3] = {-inf, 0., 0.};
 
-    ASSERT_CALL(
-      sleqp_vec_from_raw(wachbieg_var_lb, values, wachbieg_num_variables, 0.));
+    ASSERT_CALL(sleqp_vec_set_from_raw(wachbieg_var_lb,
+                                       values,
+                                       wachbieg_num_variables,
+                                       0.));
   }
 
   ASSERT_CALL(sleqp_vec_create_full(&wachbieg_var_ub, wachbieg_num_variables));
@@ -174,8 +176,10 @@ wachbieg_setup()
   {
     double values[3] = {inf, inf, inf};
 
-    ASSERT_CALL(
-      sleqp_vec_from_raw(wachbieg_var_ub, values, wachbieg_num_variables, 0.));
+    ASSERT_CALL(sleqp_vec_set_from_raw(wachbieg_var_ub,
+                                       values,
+                                       wachbieg_num_variables,
+                                       0.));
   }
 
   ASSERT_CALL(
@@ -189,8 +193,10 @@ wachbieg_setup()
   {
     double values[3] = {-2., 1., 1.};
 
-    ASSERT_CALL(
-      sleqp_vec_from_raw(wachbieg_initial, values, wachbieg_num_variables, 0.));
+    ASSERT_CALL(sleqp_vec_set_from_raw(wachbieg_initial,
+                                       values,
+                                       wachbieg_num_variables,
+                                       0.));
   }
 
   ASSERT_CALL(sleqp_vec_create_full(&wachbieg_optimal, wachbieg_num_variables));
@@ -201,8 +207,10 @@ wachbieg_setup()
   {
     double values[3] = {1., 0., .5};
 
-    ASSERT_CALL(
-      sleqp_vec_from_raw(wachbieg_optimal, values, wachbieg_num_variables, 0.));
+    ASSERT_CALL(sleqp_vec_set_from_raw(wachbieg_optimal,
+                                       values,
+                                       wachbieg_num_variables,
+                                       0.));
   }
 }
 

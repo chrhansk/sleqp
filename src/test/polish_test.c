@@ -45,7 +45,7 @@ polish_setup()
   {
     double ub[] = {2., 2., 2.};
 
-    ASSERT_CALL(sleqp_vec_from_raw(var_ub, ub, num_variables, zero_eps));
+    ASSERT_CALL(sleqp_vec_set_from_raw(var_ub, ub, num_variables, zero_eps));
   }
 
   ASSERT_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
@@ -54,7 +54,7 @@ polish_setup()
   {
     double ub[] = {2., 2., 2.};
 
-    ASSERT_CALL(sleqp_vec_from_raw(cons_ub, ub, num_constraints, zero_eps));
+    ASSERT_CALL(sleqp_vec_set_from_raw(cons_ub, ub, num_constraints, zero_eps));
   }
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
@@ -70,7 +70,8 @@ polish_setup()
   double values[] = {0., 1., 2.};
 
   {
-    ASSERT_CALL(sleqp_vec_from_raw(primal, values, num_variables, zero_eps));
+    ASSERT_CALL(
+      sleqp_vec_set_from_raw(primal, values, num_variables, zero_eps));
   }
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, primal));
@@ -86,10 +87,10 @@ polish_setup()
   ASSERT_CALL(sleqp_working_set_reset(working_set));
 
   {
-    ASSERT_CALL(sleqp_vec_from_raw(sleqp_iterate_cons_val(iterate),
-                                   values,
-                                   num_constraints,
-                                   zero_eps));
+    ASSERT_CALL(sleqp_vec_set_from_raw(sleqp_iterate_cons_val(iterate),
+                                       values,
+                                       num_constraints,
+                                       zero_eps));
   }
 
   ASSERT_CALL(sleqp_polishing_create(&polishing, problem, params));

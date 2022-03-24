@@ -208,10 +208,10 @@ sleqp_mumps_solution(void* factorization_data,
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)factorization_data;
 
-  SLEQP_CALL(sleqp_vec_from_raw(sol,
-                                sleqp_mumps_data->rhs_sol + begin,
-                                end - begin,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sol,
+                                    sleqp_mumps_data->rhs_sol + begin,
+                                    end - begin,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }

@@ -264,10 +264,10 @@ ampl_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 
   SLEQP_AMPL_ERROR_CHECK(data->nerror);
 
-  SLEQP_CALL(sleqp_vec_from_raw(obj_grad,
-                                data->obj_grad,
-                                data->ampl_data->num_variables,
-                                data->zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(obj_grad,
+                                    data->obj_grad,
+                                    data->ampl_data->num_variables,
+                                    data->zero_eps));
 
   if (data->inverted_obj)
   {
@@ -295,10 +295,10 @@ ampl_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 
   const int num_general = ampl_data->num_constraints - ampl_data->num_linear;
 
-  SLEQP_CALL(sleqp_vec_from_raw(cons_val,
-                                ampl_data->cons_val,
-                                num_general,
-                                data->zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(cons_val,
+                                    ampl_data->cons_val,
+                                    num_general,
+                                    data->zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -409,10 +409,10 @@ ampl_func_hess_product(SleqpFunc* func,
          &objective_dual,
          data->multipliers);
 
-  SLEQP_CALL(sleqp_vec_from_raw(product,
-                                data->hessian_product,
-                                data->ampl_data->num_variables,
-                                data->zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(product,
+                                    data->hessian_product,
+                                    data->ampl_data->num_variables,
+                                    data->zero_eps));
 
   if (data->inverted_obj)
   {

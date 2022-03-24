@@ -441,10 +441,10 @@ compute_violated_multipliers(SleqpWorkingStep* step, SleqpIterate* iterate)
                                                   step->initial_step,
                                                   step->dense_cache));
 
-    SLEQP_CALL(sleqp_vec_from_raw(step->sparse_cache,
-                                  step->dense_cache,
-                                  num_constraints,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(step->sparse_cache,
+                                      step->dense_cache,
+                                      num_constraints,
+                                      zero_eps));
 
     SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
                              step->sparse_cache,

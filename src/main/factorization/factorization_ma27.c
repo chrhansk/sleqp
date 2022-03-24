@@ -474,8 +474,10 @@ ma27_data_solution(void* factorization_data,
 {
   MA27Data* ma27_data = (MA27Data*)factorization_data;
 
-  SLEQP_CALL(
-    sleqp_vec_from_raw(sol, ma27_data->rhs_sol + begin, end - begin, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sol,
+                                    ma27_data->rhs_sol + begin,
+                                    end - begin,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }

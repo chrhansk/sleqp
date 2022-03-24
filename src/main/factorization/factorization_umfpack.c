@@ -243,8 +243,10 @@ umfpack_factorization_solution(void* factorization_data,
 
   assert(begin <= end);
 
-  SLEQP_CALL(
-    sleqp_vec_from_raw(sol, umfpack->solution + begin, end - begin, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sol,
+                                    umfpack->solution + begin,
+                                    end - begin,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }

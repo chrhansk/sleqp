@@ -216,15 +216,15 @@ store_duals(const SleqpRestoration* restoration, SleqpIterate* original)
   const double zero_eps
     = sleqp_params_value(restoration->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_vec_from_raw(sleqp_iterate_vars_dual(original),
-                                restoration->var_dual,
-                                num_variables,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sleqp_iterate_vars_dual(original),
+                                    restoration->var_dual,
+                                    num_variables,
+                                    zero_eps));
 
-  SLEQP_CALL(sleqp_vec_from_raw(sleqp_iterate_cons_dual(original),
-                                restoration->cons_dual,
-                                num_constraints,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(sleqp_iterate_cons_dual(original),
+                                    restoration->cons_dual,
+                                    num_constraints,
+                                    zero_eps));
 
   return SLEQP_OKAY;
 }

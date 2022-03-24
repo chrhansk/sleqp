@@ -490,7 +490,7 @@ sleqp_iterate_stationarity_residuals(SleqpProblem* problem,
 
   SLEQP_CALL(write_stationarity_resiudals_to_cache(iterate, problem, cache));
 
-  SLEQP_CALL(sleqp_vec_from_raw(residuals, cache, num_variables, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(residuals, cache, num_variables, zero_eps));
 
   return SLEQP_OKAY;
 }

@@ -243,10 +243,10 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
                                          direction,
                                          linesearch->prod_cache));
 
-    SLEQP_CALL(sleqp_vec_from_raw(jacobian_product,
-                                  linesearch->prod_cache,
-                                  num_constraints,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(jacobian_product,
+                                      linesearch->prod_cache,
+                                      num_constraints,
+                                      zero_eps));
   }
 
   const double eta
@@ -463,20 +463,20 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
                                          cauchy_step,
                                          linesearch->prod_cache));
 
-    SLEQP_CALL(sleqp_vec_from_raw(linesearch->cauchy_jacobian_prod,
-                                  linesearch->prod_cache,
-                                  num_constraints,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(linesearch->cauchy_jacobian_prod,
+                                      linesearch->prod_cache,
+                                      num_constraints,
+                                      zero_eps));
 
     SLEQP_CALL(
       sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
                                          newton_step,
                                          linesearch->prod_cache));
 
-    SLEQP_CALL(sleqp_vec_from_raw(linesearch->newton_jacobian_prod,
-                                  linesearch->prod_cache,
-                                  num_constraints,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(linesearch->newton_jacobian_prod,
+                                      linesearch->prod_cache,
+                                      num_constraints,
+                                      zero_eps));
   }
 
   // Compute initial scalar products for the linear merit function
@@ -918,10 +918,10 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
                                          cauchy_step,
                                          linesearch->prod_cache));
 
-    SLEQP_CALL(sleqp_vec_from_raw(linesearch->cauchy_jacobian_prod,
-                                  linesearch->prod_cache,
-                                  num_constraints,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(linesearch->cauchy_jacobian_prod,
+                                      linesearch->prod_cache,
+                                      num_constraints,
+                                      zero_eps));
 
     SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
                              linesearch->cauchy_jacobian_prod,
@@ -943,10 +943,10 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
                                          linesearch->cauchy_newton_direction,
                                          linesearch->prod_cache));
 
-    SLEQP_CALL(sleqp_vec_from_raw(linesearch->cauchy_newton_jacobian_prod,
-                                  linesearch->prod_cache,
-                                  num_constraints,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(linesearch->cauchy_newton_jacobian_prod,
+                                      linesearch->prod_cache,
+                                      num_constraints,
+                                      zero_eps));
   }
 
   double offset = 0.;

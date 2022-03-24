@@ -246,10 +246,10 @@ compute_cons_rhs(GaussNewtonSolver* solver)
                                                 initial_step,
                                                 solver->dense_cache));
 
-  SLEQP_CALL(sleqp_vec_from_raw(solver->sparse_cache,
-                                solver->dense_cache,
-                                num_constraints,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(solver->sparse_cache,
+                                    solver->dense_cache,
+                                    num_constraints,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_add(cons_val,
                            solver->sparse_cache,
@@ -458,10 +458,10 @@ forward_product(const SleqpVec* direction, SleqpVec* product, void* data)
                                        solver->forward.projected_direction,
                                        solver->dense_cache));
 
-  SLEQP_CALL(sleqp_vec_from_raw(solver->forward.scaled_cons_product,
-                                solver->dense_cache,
-                                solver->num_violated_cons,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(solver->forward.scaled_cons_product,
+                                    solver->dense_cache,
+                                    solver->num_violated_cons,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_concat(solver->forward.lsq_product,
                               solver->forward.scaled_cons_product,

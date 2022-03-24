@@ -184,8 +184,8 @@ sleqp_cutest_run(const char* filename,
 
   SLEQP_CALL(sleqp_vec_create(&x, CUTEst_nvar, 0));
 
-  // SLEQP_CALL(sleqp_vec_from_raw(x, sol, CUTEst_nvar, zero_eps));
-  SLEQP_CALL(sleqp_vec_from_raw(x, cutest_data->x, CUTEst_nvar, zero_eps));
+  // SLEQP_CALL(sleqp_vec_set_from_raw(x, sol, CUTEst_nvar, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(x, cutest_data->x, CUTEst_nvar, zero_eps));
 
   if (CUTest_constrained)
   {

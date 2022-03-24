@@ -100,7 +100,7 @@ mex_eval_into_sparse_vec(int nrhs,
     return SLEQP_ERROR;
   }
 
-  SLEQP_CALL(sleqp_vec_from_raw(vec, mxGetPr(lhs), vec->dim, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(vec, mxGetPr(lhs), vec->dim, zero_eps));
 
   return SLEQP_OKAY;
 }

@@ -136,7 +136,7 @@ START_TEST(test_unconstrained_start_high)
     double values[] = {20., 20.};
 
     ASSERT_CALL(
-      sleqp_vec_from_raw(initial, values, linear_lsq_num_variables, 0.));
+      sleqp_vec_set_from_raw(initial, values, linear_lsq_num_variables, 0.));
   }
 
   compute_point(initial, point);
@@ -154,7 +154,7 @@ START_TEST(test_unconstrained_start_low)
     double values[] = {-10., -10.};
 
     ASSERT_CALL(
-      sleqp_vec_from_raw(initial, values, linear_lsq_num_variables, 0.));
+      sleqp_vec_set_from_raw(initial, values, linear_lsq_num_variables, 0.));
   }
 
   compute_point(initial, point);
@@ -264,7 +264,7 @@ START_TEST(test_constrained_start_high)
     double values[] = {20., 20.};
 
     ASSERT_CALL(
-      sleqp_vec_from_raw(initial, values, linear_lsq_num_variables, 0.));
+      sleqp_vec_set_from_raw(initial, values, linear_lsq_num_variables, 0.));
   }
 
   compute_point(initial, point);
@@ -281,7 +281,7 @@ START_TEST(test_constrained_start_low)
     double values[] = {-10., -10.};
 
     ASSERT_CALL(
-      sleqp_vec_from_raw(initial, values, linear_lsq_num_variables, 0.));
+      sleqp_vec_set_from_raw(initial, values, linear_lsq_num_variables, 0.));
   }
 
   compute_point(initial, point);

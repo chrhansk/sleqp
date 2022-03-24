@@ -227,7 +227,7 @@ hess_prod_matrix(SleqpFunc* func,
   SLEQP_CALL(hess_prod(lhs, func_data->direction, func_data->product));
 
   SLEQP_CALL(
-    sleqp_vec_from_raw(result, func_data->product, num_vars, zero_eps));
+    sleqp_vec_set_from_raw(result, func_data->product, num_vars, zero_eps));
 
   return SLEQP_OKAY;
 }

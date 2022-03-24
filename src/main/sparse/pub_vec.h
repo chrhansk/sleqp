@@ -81,7 +81,7 @@ sleqp_vec_push(SleqpVec* vec, int idx, double value);
  * @param[in]     zero_eps    The numerical tolerance
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_vec_from_raw(SleqpVec* vec, double* values, int dim, double zero_eps);
+sleqp_vec_set_from_raw(SleqpVec* vec, double* values, int dim, double zero_eps);
 
 /**
  * Fills the given vector with the given value

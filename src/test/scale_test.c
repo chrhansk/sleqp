@@ -158,7 +158,7 @@ START_TEST(test_nominal_scale_cons_vals)
   ASSERT_CALL(sleqp_vec_create(&cons_vals, num_constraints, num_constraints));
 
   ASSERT_CALL(
-    sleqp_vec_from_raw(cons_vals, nominal_cons_vals, num_constraints, eps));
+    sleqp_vec_set_from_raw(cons_vals, nominal_cons_vals, num_constraints, eps));
 
   ASSERT_CALL(
     sleqp_scaling_set_cons_weights_from_nominal(scaling, nominal_cons_vals));

@@ -349,10 +349,10 @@ create_transformed_var_lb(SleqpTransformation* transformation)
       = SLEQP_MAX(transformation->dense_cache[j], converted_bounds[k].var_lb);
   }
 
-  SLEQP_CALL(sleqp_vec_from_raw(transformation->sparse_cache,
-                                transformation->dense_cache,
-                                num_variables,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(transformation->sparse_cache,
+                                    transformation->dense_cache,
+                                    num_variables,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_remove_entries(transformation->sparse_cache,
                                       transformation->transformed_var_lb,
@@ -420,10 +420,10 @@ create_transformed_var_ub(SleqpTransformation* transformation)
       = SLEQP_MIN(transformation->dense_cache[j], converted_bounds[k].var_ub);
   }
 
-  SLEQP_CALL(sleqp_vec_from_raw(transformation->sparse_cache,
-                                transformation->dense_cache,
-                                num_variables,
-                                zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(transformation->sparse_cache,
+                                    transformation->dense_cache,
+                                    num_variables,
+                                    zero_eps));
 
   SLEQP_CALL(sleqp_vec_remove_entries(transformation->sparse_cache,
                                       transformation->transformed_var_ub,
@@ -477,10 +477,10 @@ transform_linear_constraints(SleqpTransformation* transformation)
                                          transformation->fixed_variable_values,
                                          transformation->dense_cache));
 
-    SLEQP_CALL(sleqp_vec_from_raw(transformation->sparse_cache,
-                                  transformation->dense_cache,
-                                  num_linear,
-                                  zero_eps));
+    SLEQP_CALL(sleqp_vec_set_from_raw(transformation->sparse_cache,
+                                      transformation->dense_cache,
+                                      num_linear,
+                                      zero_eps));
 
     SLEQP_CALL(sleqp_vec_add_scaled(sleqp_problem_linear_lb(problem),
                                     transformation->sparse_cache,
