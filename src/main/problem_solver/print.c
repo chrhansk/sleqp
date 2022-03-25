@@ -210,6 +210,8 @@ sleqp_problem_solver_print_stats(const SleqpProblemSolver* solver)
 
   sleqp_log_info("%30s: %5d", "Rejected steps", solver->num_rejected_steps);
 
+  sleqp_log_info("%30s: %5d", "Failed EQP steps", solver->num_failed_eqp_steps);
+
   const double elapsed_seconds = sleqp_timer_get_ttl(solver->elapsed_timer);
 
   SLEQP_CALL(

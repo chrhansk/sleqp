@@ -172,6 +172,7 @@ SLEQP_RETCODE
 sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
                                              SleqpIterate* trial_iterate,
                                              double* trial_merit_value,
+                                             bool* failed_eqp_step,
                                              bool* full_step,
                                              bool* reject);
 
