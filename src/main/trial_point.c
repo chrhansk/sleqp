@@ -479,6 +479,7 @@ static SLEQP_RETCODE
 compute_trial_point_newton(SleqpTrialPointSolver* solver,
                            SleqpIterate* trial_iterate,
                            double* trial_merit_value,
+                           bool* failed_eqp_step,
                            bool* full_step)
 {
   SleqpProblem* problem = solver->problem;
@@ -549,6 +550,8 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
                                              &step_length,
                                              trial_merit_value));
     }
+
+    *(failed_eqp_step) = (step_length == 0.);
   }
 
 #if !defined(NDEBUG)
@@ -582,6 +585,7 @@ static SLEQP_RETCODE
 compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
                                   SleqpIterate* trial_iterate,
                                   double* trial_merit_value,
+                                  bool* failed_eqp_step,
                                   bool* full_step)
 {
   const SleqpOptions* options = solver->options;
@@ -599,6 +603,7 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
     SLEQP_CALL(compute_trial_point_newton(solver,
                                           trial_iterate,
                                           trial_merit_value,
+                                          failed_eqp_step,
                                           full_step));
   }
   else
@@ -700,9 +705,11 @@ solver_refine_step(SleqpTrialPointSolver* solver,
 
     if (perform_newton_step)
     {
+      bool failed_eqp_step;
       SLEQP_CALL(compute_trial_point_newton(solver,
                                             trial_iterate,
                                             model_trial_value,
+                                            &failed_eqp_step,
                                             full_step));
     }
     else
@@ -722,11 +729,13 @@ static SLEQP_RETCODE
 compute_trial_point_dynamic(SleqpTrialPointSolver* solver,
                             SleqpIterate* trial_iterate,
                             double* trial_merit_value,
+                            bool* failed_eqp_step,
                             bool* full_step)
 {
   SLEQP_CALL(compute_trial_point_deterministic(solver,
                                                trial_iterate,
                                                trial_merit_value,
+                                               failed_eqp_step,
                                                full_step));
 
   SLEQP_CALL(
@@ -743,6 +752,7 @@ SLEQP_RETCODE
 sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
                                              SleqpIterate* trial_iterate,
                                              double* trial_merit_value,
+                                             bool* failed_eqp_step,
                                              bool* full_step,
                                              bool* reject)
 {
@@ -754,6 +764,7 @@ sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
 
   SleqpFunc* func = sleqp_problem_func(problem);
 
+  *failed_eqp_step = false;
   // TODO: enable manual rejects
   *reject = false;
 
@@ -764,6 +775,7 @@ sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
     SLEQP_CALL(compute_trial_point_dynamic(solver,
                                            trial_iterate,
                                            trial_merit_value,
+                                           failed_eqp_step,
                                            full_step));
 
     return SLEQP_OKAY;
@@ -773,6 +785,7 @@ sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
     SLEQP_CALL(compute_trial_point_deterministic(solver,
                                                  trial_iterate,
                                                  trial_merit_value,
+                                                 failed_eqp_step,
                                                  full_step));
   }
 

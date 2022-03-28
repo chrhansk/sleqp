@@ -126,6 +126,7 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   solver->num_accepted_steps     = 0;
   solver->num_soc_accepted_steps = 0;
   solver->num_rejected_steps     = 0;
+  solver->num_failed_eqp_steps   = 0;
   solver->last_step_type         = SLEQP_STEPTYPE_NONE;
 
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));

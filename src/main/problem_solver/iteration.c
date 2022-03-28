@@ -377,12 +377,17 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
     return SLEQP_OKAY;
   }
 
+  bool failed_eqp_step;
+
   // Step computation
   SLEQP_CALL(sleqp_trial_point_solver_compute_trial_point(trial_point_solver,
                                                           trial_iterate,
                                                           &model_trial_value,
+                                                          &failed_eqp_step,
                                                           &full_cauchy_step,
                                                           &reject_step));
+
+  solver->num_failed_eqp_steps += failed_eqp_step;
 
   if (sleqp_trial_point_solver_locally_infeasible(trial_point_solver)
       && solver->abort_on_local_infeasibility)

@@ -64,6 +64,7 @@ struct SleqpProblemSolver
   int num_accepted_steps;
   int num_soc_accepted_steps;
   int num_rejected_steps;
+  int num_failed_eqp_steps;
 
   int num_feasible_steps;
   int num_global_penalty_resets;
