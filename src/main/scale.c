@@ -537,7 +537,7 @@ sleqp_unscale_cons_duals(SleqpScaling* scaling, SleqpVec* scaled_cons_duals)
 {
   SLEQP_CALL(apply_scaling(scaled_cons_duals,
                            scaling->cons_weights,
-                           (-1) * scaling->obj_weight));
+                           scaling->obj_weight));
 
   return SLEQP_OKAY;
 }

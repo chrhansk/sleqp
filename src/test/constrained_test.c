@@ -43,6 +43,50 @@ constrained_test_teardown()
   constrained_teardown();
 }
 
+double
+stat_res(SleqpProblem* problem, SleqpIterate* iterate)
+{
+  const int num_vars = sleqp_problem_num_vars(problem);
+
+  double* residuals;
+  SleqpVec* product;
+
+  ASSERT_CALL(sleqp_alloc_array(&residuals, num_vars));
+  ASSERT_CALL(sleqp_vec_create_full(&product, num_vars));
+
+  double stat_res = 0.;
+
+  ASSERT_CALL(sleqp_vec_to_raw(sleqp_iterate_obj_grad(iterate), residuals));
+
+  ASSERT_CALL(
+    sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_cons_jac(iterate),
+                                             sleqp_iterate_cons_dual(iterate),
+                                             0.,
+                                             product));
+
+  for (int k = 0; k < product->nnz; ++k)
+  {
+    residuals[product->indices[k]] += product->data[k];
+  }
+
+  SleqpVec* vars_dual = sleqp_iterate_vars_dual(iterate);
+
+  for (int k = 0; k < vars_dual->nnz; ++k)
+  {
+    residuals[vars_dual->indices[k]] += vars_dual->data[k];
+  }
+
+  for (int i = 0; i < num_vars; ++i)
+  {
+    stat_res = SLEQP_MAX(stat_res, residuals[i]);
+  }
+
+  ASSERT_CALL(sleqp_vec_free(&product));
+  sleqp_free(&residuals);
+
+  return stat_res;
+}
+
 void
 solve_and_release_solver(SleqpSolver* solver)
 {
@@ -58,6 +102,8 @@ solve_and_release_solver(SleqpSolver* solver)
   SleqpVec* actual_solution = sleqp_iterate_primal(iterate);
 
   ck_assert(sleqp_vec_eq(actual_solution, constrained_optimal, 1e-6));
+
+  ck_assert_double_le(stat_res(problem, iterate), 1e-6);
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 }
@@ -246,6 +292,8 @@ START_TEST(test_scaled_solve)
     SLEQP_OPTION_ENUM_DERIV_CHECK,
     SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
+  ASSERT_CALL(sleqp_params_set_value(params, SLEQP_PARAM_STAT_TOL, 1e-7));
+
   SleqpSolver* solver;
 
   SleqpScaling* scaling;
@@ -259,8 +307,8 @@ START_TEST(test_scaled_solve)
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -5));
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, 5));
 
-  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 0, -1));
-  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 1, 2));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 0, -10));
+  ASSERT_CALL(sleqp_scaling_set_cons_weight(scaling, 1, 10));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -280,6 +328,8 @@ START_TEST(test_scaled_sr1_solve)
   ASSERT_CALL(sleqp_options_set_enum_value(options,
                                            SLEQP_OPTION_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
+
+  ASSERT_CALL(sleqp_params_set_value(params, SLEQP_PARAM_STAT_TOL, 1e-7));
 
   SleqpSolver* solver;
 
@@ -319,6 +369,8 @@ START_TEST(test_scaled_bfgs_solve)
   ASSERT_CALL(sleqp_options_set_enum_value(options,
                                            SLEQP_OPTION_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
+
+  ASSERT_CALL(sleqp_params_set_value(params, SLEQP_PARAM_STAT_TOL, 1e-7));
 
   SleqpSolver* solver;
 
