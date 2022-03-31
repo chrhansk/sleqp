@@ -1,6 +1,7 @@
 #include "solver.h"
 
 #include "log.h"
+#include "lsq.h"
 
 SLEQP_RETCODE
 sleqp_solver_print_stats(SleqpSolver* solver, double violation)
@@ -34,7 +35,18 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
 
   const bool with_hessian = !(solver->quasi_newton);
 
-  const double elapsed_seconds = sleqp_timer_get_ttl(solver->elapsed_timer);
+  double elapsed_seconds = sleqp_timer_get_ttl(solver->elapsed_timer);
+
+  SleqpTimer* preprocessing_timer = NULL;
+
+  if (solver->preprocessor)
+  {
+    preprocessing_timer = sleqp_preprocessor_get_timer(solver->preprocessor);
+
+    double preprocessing_seconds = sleqp_timer_get_ttl(preprocessing_timer);
+
+    elapsed_seconds += preprocessing_seconds;
+  }
 
   sleqp_log_info(SLEQP_FORMAT_BOLD "%30s: %s" SLEQP_FORMAT_RESET,
                  "Solution status",
@@ -77,17 +89,43 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
 
   sleqp_log_info("%30s: %5d", "Iterations", sleqp_solver_iterations(solver));
 
+  sleqp_log_info("%30s: %8.2fs", "Solving time", elapsed_seconds);
+
+  if (preprocessing_timer)
+  {
+    SLEQP_CALL(sleqp_timer_display(preprocessing_timer,
+                                   "Preprocessing",
+                                   elapsed_seconds));
+  }
+
   SLEQP_CALL(sleqp_timer_display(sleqp_func_get_set_timer(original_func),
                                  "Setting function values",
                                  elapsed_seconds));
 
-  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_val_timer(original_func),
-                                 "Objective evaluations",
-                                 elapsed_seconds));
+  if (sleqp_func_get_type(original_func) == SLEQP_FUNC_TYPE_LSQ)
+  {
+    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_residual_timer(original_func),
+                                   "Residual evaluations",
+                                   elapsed_seconds));
 
-  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_grad_timer(original_func),
-                                 "Gradient evaluations",
-                                 elapsed_seconds));
+    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_forward_timer(original_func),
+                                   "Residual forward sweeps",
+                                   elapsed_seconds));
+
+    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_adjoint_timer(original_func),
+                                   "Residual adjoint sweeps",
+                                   elapsed_seconds));
+  }
+  else
+  {
+    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_val_timer(original_func),
+                                   "Objective evaluations",
+                                   elapsed_seconds));
+
+    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_grad_timer(original_func),
+                                   "Gradient evaluations",
+                                   elapsed_seconds));
+  }
 
   SLEQP_CALL(sleqp_timer_display(sleqp_func_get_cons_val_timer(original_func),
                                  "Constraint evaluations",
@@ -129,13 +167,10 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
     SLEQP_CALL(
       sleqp_problem_solver_print_stats(solver->restoration_problem_solver));
   }
-
   else
   {
     SLEQP_CALL(sleqp_problem_solver_print_stats(solver->problem_solver));
   }
-
-  sleqp_log_info("%30s: %8.2fs", "Solving time", elapsed_seconds);
 
   return SLEQP_OKAY;
 }
