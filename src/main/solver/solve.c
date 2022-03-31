@@ -228,8 +228,6 @@ sleqp_solver_solve(SleqpSolver* solver,
 
   SLEQP_CALL(run_solving_loop(solver, max_num_iterations, time_limit));
 
-  SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
-
   SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
 
   double violation;
@@ -252,6 +250,8 @@ sleqp_solver_solve(SleqpSolver* solver,
                        SLEQP_FINISHED,
                        solver,
                        solver->original_iterate);
+
+  SLEQP_CALL(sleqp_timer_stop(solver->elapsed_timer));
 
   SLEQP_CALL(sleqp_solver_print_stats(solver, violation));
 
