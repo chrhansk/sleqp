@@ -6,6 +6,7 @@
 #include "cmp.h"
 #include "log.h"
 #include "mem.h"
+#include "timer.h"
 #include "util.h"
 
 #include "preprocessor/fixed_var_func.h"
@@ -25,6 +26,8 @@ typedef struct
 struct SleqpPreprocessor
 {
   int refcount;
+
+  SleqpTimer* timer;
 
   SleqpParams* params;
   SleqpProblem* original_problem;
@@ -643,6 +646,8 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   preprocessor->refcount = 1;
 
+  SLEQP_CALL(sleqp_timer_create(&preprocessor->timer));
+
   preprocessor->params = params;
   SLEQP_CALL(sleqp_params_capture(preprocessor->params));
 
@@ -693,6 +698,8 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
   SLEQP_CALL(
     sleqp_vec_to_raw(sleqp_problem_vars_ub(problem), preprocessor->var_ub));
 
+  SLEQP_CALL(sleqp_timer_start(preprocessor->timer));
+
   SLEQP_CALL(fix_variables_by_bounds(preprocessor));
 
   SLEQP_CALL(remove_redundant_constraints(preprocessor));
@@ -712,6 +719,8 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
                                       preprocessor->preprocessing_state,
                                       preprocessor->transformed_problem,
                                       params));
+
+  SLEQP_CALL(sleqp_timer_stop(preprocessor->timer));
 
   SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
@@ -777,6 +786,12 @@ sleqp_preprocessor_transform_primal(SleqpPreprocessor* preprocessor,
   return SLEQP_OKAY;
 }
 
+SleqpTimer*
+sleqp_preprocessor_get_timer(SleqpPreprocessor* preprocessor)
+{
+  return preprocessor->timer;
+}
+
 SLEQP_RETCODE
 sleqp_preprocessor_restore_iterate(SleqpPreprocessor* preprocessor,
                                    const SleqpIterate* transformed_iterate,
@@ -831,6 +846,8 @@ preprocessor_free(SleqpPreprocessor** star)
   SLEQP_CALL(sleqp_problem_release(&preprocessor->original_problem));
 
   SLEQP_CALL(sleqp_params_release(&preprocessor->params));
+
+  SLEQP_CALL(sleqp_timer_free(&preprocessor->timer));
 
   sleqp_free(star);
 
