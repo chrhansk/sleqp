@@ -28,6 +28,9 @@ sleqp_preprocessor_transform_primal(SleqpPreprocessor* preprocessor,
                                     const SleqpVec* source,
                                     SleqpVec* target);
 
+SleqpTimer*
+sleqp_preprocessor_get_timer(SleqpPreprocessor* preprocessor);
+
 SLEQP_RETCODE
 sleqp_preprocessor_restore_iterate(SleqpPreprocessor* preprocessor,
                                    const SleqpIterate* transformed_iterate,

@@ -27,6 +27,10 @@ typedef struct SleqpLSQData
   SleqpVec* lsq_grad;
   SleqpVec* lsq_hess_prod;
 
+  SleqpTimer* residual_timer;
+  SleqpTimer* forward_timer;
+  SleqpTimer* adjoint_timer;
+
   double zero_eps;
 
   void* func_data;
@@ -68,11 +72,15 @@ compute_lsq_residual(SleqpFunc* func, SleqpLSQData* lsq_data)
   {
     SLEQP_CALL(sleqp_vec_clear(lsq_data->lsq_residual));
 
+    SLEQP_CALL(sleqp_timer_start(lsq_data->residual_timer));
+
     SLEQP_FUNC_CALL(lsq_data->callbacks.lsq_residuals(func,
                                                       lsq_data->lsq_residual,
                                                       lsq_data->func_data),
                     sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
                     "Error evaluating least squares residuals");
+
+    SLEQP_CALL(sleqp_timer_stop(lsq_data->residual_timer));
 
     lsq_data->has_lsq_residual = true;
   }
@@ -228,6 +236,10 @@ lsq_func_free(void* func_data)
     SLEQP_CALL(lsq_data->callbacks.func_free(lsq_data->func_data));
   }
 
+  SLEQP_CALL(sleqp_timer_free(&lsq_data->adjoint_timer));
+  SLEQP_CALL(sleqp_timer_free(&lsq_data->forward_timer));
+  SLEQP_CALL(sleqp_timer_free(&lsq_data->residual_timer));
+
   SLEQP_CALL(sleqp_vec_free(&lsq_data->lsq_hess_prod));
 
   SLEQP_CALL(sleqp_vec_free(&lsq_data->lsq_grad));
@@ -273,6 +285,10 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_vec_create_empty(&data->lsq_grad, num_variables));
 
   SLEQP_CALL(sleqp_vec_create_empty(&data->lsq_hess_prod, num_variables));
+
+  SLEQP_CALL(sleqp_timer_create(&data->residual_timer));
+  SLEQP_CALL(sleqp_timer_create(&data->forward_timer));
+  SLEQP_CALL(sleqp_timer_create(&data->adjoint_timer));
 
   data->zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
@@ -363,12 +379,16 @@ sleqp_lsq_func_jac_forward(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_vec_clear(product));
 
+  SLEQP_CALL(sleqp_timer_start(lsq_data->forward_timer));
+
   SLEQP_FUNC_CALL(lsq_data->callbacks.lsq_jac_forward(func,
                                                       forward_direction,
                                                       product,
                                                       lsq_data->func_data),
                   sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
                   "Error evaluating forward Jacobian product");
+
+  SLEQP_CALL(sleqp_timer_stop(lsq_data->forward_timer));
 
   return SLEQP_OKAY;
 }
@@ -390,6 +410,8 @@ sleqp_lsq_func_jac_adjoint(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_vec_clear(product));
 
+  SLEQP_CALL(sleqp_timer_start(lsq_data->adjoint_timer));
+
   SLEQP_FUNC_CALL(lsq_data->callbacks.lsq_jac_adjoint(func,
                                                       adjoint_direction,
                                                       product,
@@ -397,7 +419,45 @@ sleqp_lsq_func_jac_adjoint(SleqpFunc* func,
                   sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
                   "Error evaluating adjoint Jacobian product");
 
+  SLEQP_CALL(sleqp_timer_stop(lsq_data->adjoint_timer));
+
   return SLEQP_OKAY;
+}
+
+SleqpTimer*
+sleqp_lsq_func_residual_timer(SleqpFunc* func)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
+
+  return lsq_data->residual_timer;
+}
+
+SleqpTimer*
+sleqp_lsq_func_adjoint_timer(SleqpFunc* func)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
+
+  return lsq_data->adjoint_timer;
+}
+
+SleqpTimer*
+sleqp_lsq_func_forward_timer(SleqpFunc* func)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
+
+  return lsq_data->forward_timer;
 }
 
 SLEQP_RETCODE

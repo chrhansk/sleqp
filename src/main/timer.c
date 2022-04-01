@@ -166,19 +166,41 @@ sleqp_timer_display(SleqpTimer* timer,
 {
   char buffer[BUF_SIZE];
 
-  const int num_runs      = sleqp_timer_get_num_runs(timer);
+  const int num_runs = sleqp_timer_get_num_runs(timer);
+
   const double avg_time   = sleqp_timer_get_avg(timer);
   const double total_time = sleqp_timer_get_ttl(timer);
-  const double percent    = (total_time / total_elapsed) * 100.;
 
-  snprintf(buffer,
-           BUF_SIZE,
-           "%30s: %5d (%.6fs avg, %8.2fs total = %6.2f%%)",
-           description,
-           num_runs,
-           avg_time,
-           total_time,
-           percent);
+  if (num_runs == 0)
+  {
+    snprintf(buffer, BUF_SIZE, "%30s: %5d", description, num_runs);
+  }
+  else
+  {
+    const double percent = (total_time / total_elapsed) * 100.;
+
+    if (num_runs == 1)
+    {
+      snprintf(buffer,
+               BUF_SIZE,
+               "%30s: %5d (%.6fs = %6.2f%%)",
+               description,
+               num_runs,
+               total_time,
+               percent);
+    }
+    else
+    {
+      snprintf(buffer,
+               BUF_SIZE,
+               "%30s: %5d (%.6fs avg, %8.2fs total = %6.2f%%)",
+               description,
+               num_runs,
+               avg_time,
+               total_time,
+               percent);
+    }
+  }
 
   sleqp_log_info("%s", buffer);
 
