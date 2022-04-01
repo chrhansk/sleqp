@@ -402,8 +402,9 @@ sleqp_scale_linear_coeffs(SleqpScaling* scaling,
 SLEQP_RETCODE
 sleqp_scale_cons_duals(SleqpScaling* scaling, SleqpVec* cons_duals)
 {
-  SLEQP_CALL(
-    apply_unscaling(cons_duals, scaling->cons_weights, scaling->obj_weight));
+  SLEQP_CALL(apply_unscaling(cons_duals,
+                             scaling->cons_weights,
+                             (-1) * scaling->obj_weight));
 
   return SLEQP_OKAY;
 }
@@ -411,8 +412,9 @@ sleqp_scale_cons_duals(SleqpScaling* scaling, SleqpVec* cons_duals)
 SLEQP_RETCODE
 sleqp_scale_var_duals(SleqpScaling* scaling, SleqpVec* var_duals)
 {
-  SLEQP_CALL(
-    apply_unscaling(var_duals, scaling->var_weights, scaling->obj_weight));
+  SLEQP_CALL(apply_unscaling(var_duals,
+                             scaling->var_weights,
+                             (-1) * scaling->obj_weight));
 
   return SLEQP_OKAY;
 }
