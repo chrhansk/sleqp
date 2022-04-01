@@ -1,8 +1,15 @@
 #include <check.h>
 #include <stdlib.h>
 
+#include "iterate.h"
 #include "lp/lpi.h"
+#include "pub_iterate.h"
+#include "pub_mem.h"
+#include "pub_problem.h"
 #include "scale.h"
+#include "sparse/pub_sparse_matrix.h"
+#include "sparse/pub_vec.h"
+#include "sparse/sparse_matrix.h"
 #include "util.h"
 
 #include "test_common.h"
@@ -48,6 +55,24 @@ scaling_setup()
 
   ASSERT_CALL(
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_INIT, NULL));
+
+  SleqpVec* cons_dual = sleqp_iterate_cons_dual(iterate);
+
+  ASSERT_CALL(sleqp_vec_reserve(cons_dual, num_constraints));
+
+  for (int i = 0; i < cons_dual->dim; ++i)
+  {
+    ASSERT_CALL(sleqp_vec_push(cons_dual, i, 3. * i + 1.));
+  }
+
+  SleqpVec* vars_dual = sleqp_iterate_vars_dual(iterate);
+
+  ASSERT_CALL(sleqp_vec_reserve(vars_dual, num_variables));
+
+  for (int i = 0; i < vars_dual->dim; ++i)
+  {
+    ASSERT_CALL(sleqp_vec_push(vars_dual, i, -2. * i + 1.));
+  }
 }
 
 START_TEST(test_nominal_large)
@@ -232,6 +257,157 @@ START_TEST(test_cons_jac_inverse)
 }
 END_TEST
 
+START_TEST(test_cons_dual_inverse)
+{
+  const int num_cons = sleqp_problem_num_cons(problem);
+
+  SleqpVec* cons_duals;
+
+  ASSERT_CALL(sleqp_vec_create_full(&cons_duals, num_cons));
+  ASSERT_CALL(sleqp_vec_copy(sleqp_iterate_cons_dual(iterate), cons_duals));
+
+  ASSERT_CALL(sleqp_scale_cons_duals(scaling, cons_duals));
+
+  ASSERT_CALL(sleqp_unscale_cons_duals(scaling, cons_duals));
+
+  ck_assert(sleqp_vec_eq(cons_duals, sleqp_iterate_cons_dual(iterate), 0.));
+
+  ASSERT_CALL(sleqp_vec_free(&cons_duals));
+}
+END_TEST
+
+START_TEST(test_vars_dual_inverse)
+{
+  const int num_vars = sleqp_problem_num_vars(problem);
+
+  SleqpVec* vars_duals;
+
+  ASSERT_CALL(sleqp_vec_create_full(&vars_duals, num_vars));
+  ASSERT_CALL(sleqp_vec_copy(sleqp_iterate_vars_dual(iterate), vars_duals));
+
+  ASSERT_CALL(sleqp_scale_var_duals(scaling, vars_duals));
+
+  ASSERT_CALL(sleqp_unscale_var_duals(scaling, vars_duals));
+
+  ck_assert(sleqp_vec_eq(vars_duals, sleqp_iterate_vars_dual(iterate), 0.));
+
+  ASSERT_CALL(sleqp_vec_free(&vars_duals));
+}
+END_TEST
+
+START_TEST(test_stationarity)
+{
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
+
+  ck_assert_int_eq(num_vars, num_cons);
+
+  SleqpIterate* scaled_iterate;
+
+  ASSERT_CALL(sleqp_iterate_create(&scaled_iterate, problem, quadconsfunc_x));
+
+  SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
+  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpVec* cons_dual         = sleqp_iterate_cons_dual(iterate);
+  SleqpVec* vars_dual         = sleqp_iterate_vars_dual(iterate);
+
+  {
+    ASSERT_CALL(sleqp_vec_clear(obj_grad));
+    ASSERT_CALL(sleqp_vec_reserve(obj_grad, num_vars));
+
+    for (int i = 0; i < num_vars; ++i)
+    {
+      ASSERT_CALL(sleqp_vec_push(obj_grad, i, 3. * i + 1.));
+    }
+  }
+
+  {
+    ASSERT_CALL(sleqp_sparse_matrix_clear(cons_jac));
+    ASSERT_CALL(sleqp_sparse_matrix_reserve(cons_jac, num_vars));
+
+    for (int i = 0; i < num_vars; ++i)
+    {
+      ASSERT_CALL(sleqp_sparse_matrix_push(cons_jac, i, i, 2 * i - 1));
+
+      if ((i + 1) < num_vars)
+      {
+        ASSERT_CALL(sleqp_sparse_matrix_push_column(cons_jac, i + 1));
+      }
+    }
+  }
+
+  {
+    ASSERT_CALL(sleqp_vec_clear(cons_dual));
+    ASSERT_CALL(sleqp_vec_reserve(cons_dual, num_vars));
+
+    for (int i = 0; i < num_vars; ++i)
+    {
+      ASSERT_CALL(sleqp_vec_push(cons_dual, i, 4. * i + 3.));
+    }
+  }
+
+  {
+    ASSERT_CALL(sleqp_vec_clear(vars_dual));
+    ASSERT_CALL(sleqp_vec_reserve(vars_dual, num_vars));
+
+    for (int i = 0; i < num_vars; ++i)
+    {
+      const double obj_grad_val  = sleqp_vec_value_at(obj_grad, i);
+      const double cons_dual_val = sleqp_vec_value_at(cons_dual, i);
+      const double cons_jac_val  = sleqp_sparse_matrix_value_at(cons_jac, i, i);
+
+      const double vars_dual_val
+        = -(obj_grad_val + cons_dual_val * cons_jac_val);
+
+      ASSERT_CALL(sleqp_vec_push(vars_dual, i, vars_dual_val));
+    }
+  }
+
+  double* cache;
+
+  ASSERT_CALL(sleqp_alloc_array(&cache, num_vars));
+
+  double stationarity_residuum;
+
+  ASSERT_CALL(sleqp_iterate_stationarity_residuum(problem,
+                                                  iterate,
+                                                  cache,
+                                                  &stationarity_residuum));
+
+  ck_assert_double_eq(stationarity_residuum, 0.);
+
+  {
+    ASSERT_CALL(sleqp_iterate_copy(iterate, scaled_iterate));
+
+    ASSERT_CALL(sleqp_scale_iterate(scaling, scaled_iterate, false));
+
+    ASSERT_CALL(sleqp_iterate_stationarity_residuum(problem,
+                                                    scaled_iterate,
+                                                    cache,
+                                                    &stationarity_residuum));
+
+    ck_assert_double_eq(stationarity_residuum, 0.);
+  }
+
+  {
+    ASSERT_CALL(sleqp_iterate_copy(iterate, scaled_iterate));
+
+    ASSERT_CALL(sleqp_unscale_iterate(scaling, scaled_iterate, false));
+
+    ASSERT_CALL(sleqp_iterate_stationarity_residuum(problem,
+                                                    scaled_iterate,
+                                                    cache,
+                                                    &stationarity_residuum));
+
+    ck_assert_double_eq(stationarity_residuum, 0.);
+  }
+
+  sleqp_free(&cache);
+
+  ASSERT_CALL(sleqp_iterate_release(&scaled_iterate));
+}
+END_TEST
+
 void
 scaling_teardown()
 {
@@ -274,6 +450,9 @@ scaling_test_suite()
   tcase_add_test(tc_scale_inv, test_obj_grad_inverse);
   tcase_add_test(tc_scale_inv, test_cons_val_inverse);
   tcase_add_test(tc_scale_inv, test_cons_jac_inverse);
+  tcase_add_test(tc_scale_inv, test_cons_dual_inverse);
+  tcase_add_test(tc_scale_inv, test_vars_dual_inverse);
+  tcase_add_test(tc_scale_inv, test_stationarity);
 
   suite_add_tcase(suite, tc_nominal);
 
