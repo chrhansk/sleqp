@@ -41,8 +41,8 @@ START_TEST(test_log_msg)
 {
   sleqp_log_set_level(SLEQP_LOG_ERROR);
 
-  sleqp_log_error(error_message);
-  sleqp_log_info(info_message);
+  sleqp_log_error("%s", error_message);
+  sleqp_log_info("%s", info_message);
 
   ck_assert(handler_called);
 
@@ -68,8 +68,8 @@ START_TEST(test_silent)
 {
   sleqp_log_set_level(SLEQP_LOG_SILENT);
 
-  sleqp_log_error(error_message);
-  sleqp_log_info(info_message);
+  sleqp_log_error("%s", error_message);
+  sleqp_log_info("%s", info_message);
 
   ck_assert(!handler_called);
 }
