@@ -776,23 +776,41 @@ sleqp_restoration_restore_iterate(SleqpRestoration* restoration,
 
   assert(sleqp_working_set_valid(sleqp_iterate_working_set(original)));
 
-  // This is only true if the working set of the transformed iterate is
-  // supporting the respective duals as well.
-  /*
   bool supports_cons_dual;
-  SLEQP_CALL(sleqp_working_set_supports_cons_dual(sleqp_iterate_get_working_set(original),
-                                                  sleqp_iterate_get_cons_dual(original),
-                                                  &supports_cons_dual));
+  bool supports_original_cons_dual;
 
-  assert(supports_cons_dual);
+  SLEQP_CALL(
+    sleqp_working_set_supports_cons_dual(sleqp_iterate_working_set(transformed),
+                                         sleqp_iterate_cons_dual(transformed),
+                                         &supports_cons_dual));
+
+  SLEQP_CALL(
+    sleqp_working_set_supports_cons_dual(sleqp_iterate_working_set(original),
+                                         sleqp_iterate_cons_dual(original),
+                                         &supports_original_cons_dual));
+
+  if (supports_cons_dual)
+  {
+    assert(supports_original_cons_dual);
+  }
 
   bool supports_vars_dual;
-  SLEQP_CALL(sleqp_working_set_supports_vars_dual(sleqp_iterate_get_working_set(original),
-                                                  sleqp_iterate_get_vars_dual(original),
-                                                  &supports_vars_dual));
+  bool supports_original_vars_dual;
 
-  assert(supports_vars_dual);
-  */
+  SLEQP_CALL(
+    sleqp_working_set_supports_vars_dual(sleqp_iterate_working_set(transformed),
+                                         sleqp_iterate_vars_dual(transformed),
+                                         &supports_vars_dual));
+
+  SLEQP_CALL(
+    sleqp_working_set_supports_vars_dual(sleqp_iterate_working_set(original),
+                                         sleqp_iterate_vars_dual(original),
+                                         &supports_original_vars_dual));
+
+  if (supports_vars_dual)
+  {
+    assert(supports_original_vars_dual);
+  }
 
 #endif
 
