@@ -2,6 +2,7 @@
 
 #include "cmp.h"
 #include "error.h"
+#include "iterate.h"
 #include "log.h"
 #include "mem.h"
 #include "problem.h"
@@ -54,17 +55,10 @@ restore_iterate(SleqpDerivChecker* deriv_checker, SleqpIterate* iterate)
 
   bool reject = false;
 
-  int obl_grad_nnz = 0;
-  int cons_val_nnz = 0;
-  int cons_jac_nnz = 0;
-
   SLEQP_CALL(sleqp_problem_set_value(problem,
                                      sleqp_iterate_primal(iterate),
                                      SLEQP_VALUE_REASON_CHECKING_DERIV,
-                                     &reject,
-                                     &obl_grad_nnz,
-                                     &cons_val_nnz,
-                                     &cons_jac_nnz));
+                                     &reject));
 
   if (reject)
   {
@@ -81,26 +75,12 @@ set_check_iterate(SleqpDerivChecker* deriv_checker, bool* reject)
   SleqpIterate* check_iterate = deriv_checker->check_iterate;
   SleqpProblem* problem       = deriv_checker->problem;
 
-  int obj_grad_nnz = 0;
-  int cons_val_nnz = 0;
-  int cons_jac_nnz = 0;
-
   SLEQP_CALL(sleqp_problem_set_value(problem,
                                      sleqp_iterate_primal(check_iterate),
                                      SLEQP_VALUE_REASON_CHECKING_DERIV,
-                                     reject,
-                                     &obj_grad_nnz,
-                                     &cons_val_nnz,
-                                     &cons_jac_nnz));
+                                     reject));
 
-  SLEQP_CALL(
-    sleqp_vec_reserve(sleqp_iterate_obj_grad(check_iterate), obj_grad_nnz));
-
-  SLEQP_CALL(
-    sleqp_vec_reserve(sleqp_iterate_cons_val(check_iterate), cons_val_nnz));
-
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(sleqp_iterate_cons_jac(check_iterate),
-                                         cons_jac_nnz));
+  SLEQP_CALL(sleqp_iterate_reserve(check_iterate, problem));
 
   return SLEQP_OKAY;
 }

@@ -32,9 +32,6 @@ fixed_var_func_set(SleqpFunc* func,
                    SleqpVec* value,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
-                   int* obj_grad_nnz,
-                   int* cons_val_nnz,
-                   int* cons_jac_nnz,
                    void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
@@ -45,17 +42,61 @@ fixed_var_func_set(SleqpFunc* func,
                                                func_data->fixed_indices,
                                                func_data->fixed_values));
 
-  SLEQP_CALL(sleqp_func_set_value(func_data->func,
-                                  func_data->values,
-                                  reason,
-                                  reject,
-                                  obj_grad_nnz,
-                                  cons_val_nnz,
-                                  cons_jac_nnz));
+  SLEQP_CALL(
+    sleqp_func_set_value(func_data->func, func_data->values, reason, reject));
 
-  SLEQP_CALL(sleqp_vec_reserve(func_data->grad, *obj_grad_nnz));
+  return SLEQP_OKAY;
+}
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(func_data->jacobian, *cons_jac_nnz));
+static SLEQP_RETCODE
+fixed_var_func_nonzeros(SleqpFunc* func,
+                        int* obj_grad_nnz,
+                        int* cons_val_nnz,
+                        int* cons_jac_nnz,
+                        int* hess_prod_nnz,
+                        void* data)
+{
+  const int num_vars = sleqp_func_num_vars(func);
+  const int num_cons = sleqp_func_num_cons(func);
+
+  FixedVarFuncData* func_data = (FixedVarFuncData*)data;
+
+  const int num_orig_vars = sleqp_func_num_vars(func_data->func);
+
+  SLEQP_CALL(sleqp_func_nonzeros(func_data->func,
+                                 obj_grad_nnz,
+                                 cons_val_nnz,
+                                 cons_jac_nnz,
+                                 hess_prod_nnz));
+
+  if (*obj_grad_nnz != SLEQP_NONE)
+  {
+    SLEQP_CALL(sleqp_vec_reserve(func_data->grad, *obj_grad_nnz));
+  }
+  else
+  {
+    SLEQP_CALL(sleqp_vec_reserve(func_data->grad, num_orig_vars));
+  }
+
+  if (*cons_jac_nnz != SLEQP_NONE)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_reserve(func_data->jacobian, *cons_jac_nnz));
+  }
+  else
+  {
+    const int jac_nnz = num_orig_vars * num_cons;
+    SLEQP_CALL(sleqp_sparse_matrix_reserve(func_data->jacobian, jac_nnz));
+  }
+
+  if (*obj_grad_nnz != SLEQP_NONE)
+  {
+    *obj_grad_nnz = SLEQP_MIN(num_vars, *obj_grad_nnz);
+  }
+
+  if (*hess_prod_nnz != SLEQP_NONE)
+  {
+    *hess_prod_nnz = SLEQP_MIN(num_vars, *hess_prod_nnz);
+  }
 
   return SLEQP_OKAY;
 }
@@ -235,6 +276,39 @@ fixed_lsq_func_jac_forward(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
+fixed_lsq_func_nonzeros(SleqpFunc* func,
+                        int* residual_nnz,
+                        int* jac_fwd_nnz,
+                        int* jac_adj_nnz,
+                        int* cons_val_nnz,
+                        int* cons_jac_nnz,
+                        void* data)
+{
+  FixedVarFuncData* func_data = (FixedVarFuncData*)data;
+
+  const int num_variables = sleqp_func_num_vars(func);
+
+  SLEQP_CALL(sleqp_lsq_func_nonzeros(func_data->func,
+                                     residual_nnz,
+                                     jac_fwd_nnz,
+                                     jac_adj_nnz,
+                                     cons_val_nnz,
+                                     cons_jac_nnz));
+
+  if (*cons_jac_nnz != SLEQP_NONE)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_reserve(func_data->jacobian, *cons_jac_nnz));
+  }
+
+  if (*jac_adj_nnz != SLEQP_NONE)
+  {
+    *jac_adj_nnz = SLEQP_MIN(num_variables, *jac_adj_nnz);
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 fixed_lsq_func_jac_adjoint(SleqpFunc* func,
                            const SleqpVec* adjoint_direction,
                            SleqpVec* product,
@@ -372,6 +446,7 @@ sleqp_fixed_var_func_create(SleqpFunc** star,
                                         fixed_values));
 
   SleqpFuncCallbacks callbacks = {.set_value = fixed_var_func_set,
+                                  .nonzeros  = fixed_var_func_nonzeros,
                                   .obj_val   = fixed_var_obj_val,
                                   .obj_grad  = fixed_var_obj_grad,
                                   .cons_val  = fixed_var_cons_val,
@@ -428,6 +503,7 @@ sleqp_fixed_var_lsq_func_create(SleqpFunc** star,
                                         fixed_values));
 
   SleqpLSQCallbacks callbacks = {.set_value       = fixed_var_func_set,
+                                 .lsq_nonzeros    = fixed_lsq_func_nonzeros,
                                  .lsq_residuals   = fixed_lsq_func_residuals,
                                  .lsq_jac_forward = fixed_lsq_func_jac_forward,
                                  .lsq_jac_adjoint = fixed_lsq_func_jac_adjoint,

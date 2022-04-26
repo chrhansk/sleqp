@@ -34,14 +34,9 @@ func_set(SleqpFunc* func,
          SleqpVec* value,
          SLEQP_VALUE_REASON reason,
          bool* reject,
-         int* obj_grad_nnz,
-         int* cons_val_nnz,
-         int* cons_jac_nnz,
          void* func_data)
 {
   SLEQP_CALL(sleqp_vec_copy(value, linear_lsq_current));
-
-  *obj_grad_nnz = linear_lsq_num_variables;
 
   return SLEQP_OKAY;
 }

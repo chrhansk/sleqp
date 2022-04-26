@@ -1,7 +1,11 @@
 #include <check.h>
 #include <stdlib.h>
 
+#include "func.h"
+#include "pub_types.h"
 #include "quadcons_fixture.h"
+#include "sparse/pub_sparse_matrix.h"
+#include "sparse/pub_vec.h"
 #include "test_common.h"
 
 #include "mem.h"
@@ -81,13 +85,16 @@ setup()
 
   ASSERT_CALL(sleqp_vec_create_full(&fixed_cons_val, num_constraints));
 
-  ASSERT_CALL(
-    sleqp_sparse_matrix_create(&cons_jac, num_constraints, num_variables, 0));
-
-  ASSERT_CALL(sleqp_sparse_matrix_create(&fixed_cons_jac,
+  ASSERT_CALL(sleqp_sparse_matrix_create(&cons_jac,
                                          num_constraints,
-                                         num_variables - num_fixed,
-                                         0));
+                                         num_variables,
+                                         num_variables * num_constraints));
+
+  ASSERT_CALL(
+    sleqp_sparse_matrix_create(&fixed_cons_jac,
+                               num_constraints,
+                               num_variables - num_fixed,
+                               (num_variables - num_fixed) * num_constraints));
 
   ASSERT_CALL(sleqp_vec_create_full(&direction, num_variables));
 
@@ -147,15 +154,10 @@ START_TEST(test_func_eval)
 {
   bool reject;
 
-  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
-
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   double fixed_obj_val;
 
@@ -164,10 +166,7 @@ START_TEST(test_func_eval)
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   double obj_val;
 
@@ -179,27 +178,19 @@ END_TEST
 
 START_TEST(test_obj_grad)
 {
-  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
-
   bool reject;
 
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   ASSERT_CALL(sleqp_func_obj_grad(fixed_var_func, fixed_grad));
 
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   ASSERT_CALL(sleqp_func_obj_grad(quadconsfunc, grad));
 
@@ -209,27 +200,19 @@ END_TEST
 
 START_TEST(test_cons_val)
 {
-  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
-
   bool reject;
 
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   ASSERT_CALL(sleqp_func_cons_val(fixed_var_func, fixed_cons_val));
 
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   ASSERT_CALL(sleqp_func_cons_val(quadconsfunc, cons_val));
 
@@ -243,31 +226,30 @@ END_TEST
 
 START_TEST(test_cons_jac)
 {
-  int obl_grad_nnz, cons_val_nnz, cons_jac_nnz;
-
   bool reject;
 
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obl_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
-  ASSERT_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac_nnz));
+  int obj_grad_nnz  = SLEQP_NONE;
+  int cons_val_nnz  = SLEQP_NONE;
+  int cons_jac_nnz  = SLEQP_NONE;
+  int hess_prod_nnz = SLEQP_NONE;
+
+  ASSERT_CALL(sleqp_func_nonzeros(fixed_var_func,
+                                  &obj_grad_nnz,
+                                  &cons_val_nnz,
+                                  &cons_jac_nnz,
+                                  &hess_prod_nnz));
 
   ASSERT_CALL(sleqp_func_cons_jac(fixed_var_func, fixed_cons_jac));
 
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obl_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
-
-  ASSERT_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac_nnz));
+                                   &reject));
 
   ASSERT_CALL(sleqp_func_cons_jac(quadconsfunc, cons_jac));
 
@@ -281,17 +263,12 @@ END_TEST
 
 START_TEST(test_hess_prod)
 {
-  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
-
   bool reject;
 
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   const double one = 1.;
 
@@ -304,10 +281,7 @@ START_TEST(test_hess_prod)
   ASSERT_CALL(sleqp_func_set_value(quadconsfunc,
                                    value,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   ASSERT_CALL(
     sleqp_func_hess_prod(quadconsfunc, &one, direction, cons_duals, product));

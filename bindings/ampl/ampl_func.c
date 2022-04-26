@@ -194,9 +194,6 @@ ampl_func_set(SleqpFunc* func,
               SleqpVec* x,
               SLEQP_VALUE_REASON reason,
               bool* reject,
-              int* obj_grad_nnz,
-              int* cons_val_nnz,
-              int* cons_jac_nnz,
               void* func_data)
 {
   AmplFuncData* data = (AmplFuncData*)func_data;
@@ -218,8 +215,19 @@ ampl_func_set(SleqpFunc* func,
     data->cached = false;
   }
 
-  *obj_grad_nnz = data->ampl_data->num_variables;
-  *cons_val_nnz = data->ampl_data->num_constraints;
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+ampl_func_nonzeros(SleqpFunc* func,
+                   int* obj_grad_nnz,
+                   int* cons_val_nnz,
+                   int* cons_jac_nnz,
+                   int* hess_prod_nnz,
+                   void* func_data)
+{
+  AmplFuncData* data = (AmplFuncData*)func_data;
+
   *cons_jac_nnz = data->ampl_data->jac_nnz;
 
   return SLEQP_OKAY;
@@ -439,6 +447,7 @@ sleqp_ampl_func_create(SleqpFunc** star,
 
   SleqpFuncCallbacks callbacks
     = {.set_value = ampl_func_set,
+       .nonzeros  = ampl_func_nonzeros,
        .obj_val   = ampl_obj_val,
        .obj_grad  = ampl_obj_grad,
        .cons_val  = ampl_data->is_constrained ? ampl_cons_val : NULL,

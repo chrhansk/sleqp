@@ -18,6 +18,31 @@
  **/
 
 /**
+ * Queries the number of nonzeros of the function at the
+ * current primal point.
+ *
+ * @param[in]     func            The function
+ * @param[out]    residual_nnz    The number of nonzeros of the residuals
+ *\f$r(x)\f$
+ * @param[out]    jac_fwd_nnz     The number of nonzeros of
+ *\f$J_r(x)d\f$
+ * @param[out]    jac_adj_nnz     The number of nonzeros of
+ *\f$d^{T}J_r(x)\f$
+ * @param[out]    cons_val_nnz    The number of nonzeros of the constraint
+ *function \f$ c(x) \f$
+ * @param[out]    cons_jac_nnz    The number of nonzeros of the constraint
+ *Jacobian \f$ J_c(x) \f$
+ * @param[out]    cons_jac_nnz    The number of nonzeros of Hessian products
+ **/
+typedef SLEQP_RETCODE (*SLEQP_LSQ_NONZEROS)(SleqpFunc* func,
+                                            int* residual_nnz,
+                                            int* jac_fwd_nnz,
+                                            int* jac_adj_nnz,
+                                            int* cons_val_nnz,
+                                            int* cons_jac_nnz,
+                                            void* func_data);
+
+/**
  * Evaluates the residual.
  * \f[
  *    r(x)
@@ -69,6 +94,7 @@ typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_ADJOINT)(
 typedef struct
 {
   SLEQP_FUNC_SET set_value;
+  SLEQP_LSQ_NONZEROS lsq_nonzeros;
   SLEQP_LSQ_RESIDUALS lsq_residuals;
   SLEQP_LSQ_JAC_FORWARD lsq_jac_forward;
   SLEQP_LSQ_JAC_ADJOINT lsq_jac_adjoint;

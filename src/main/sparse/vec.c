@@ -143,6 +143,8 @@ sleqp_vec_clear(SleqpVec* vec)
 SLEQP_RETCODE
 sleqp_vec_reserve(SleqpVec* vec, int nnz_max)
 {
+  assert(nnz_max >= 0);
+
   if (vec->nnz_max >= nnz_max)
   {
     return SLEQP_OKAY;
@@ -159,6 +161,8 @@ sleqp_vec_reserve(SleqpVec* vec, int nnz_max)
 SLEQP_RETCODE
 sleqp_vec_resize(SleqpVec* vec, int dim)
 {
+  assert(dim >= 0);
+
   if (dim < vec->dim)
   {
     while (vec->nnz > 0 && vec->indices[vec->nnz - 1] >= dim)

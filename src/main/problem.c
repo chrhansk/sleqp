@@ -8,6 +8,7 @@
 #include "fail.h"
 #include "mem.h"
 
+#include "sparse/pub_sparse_matrix.h"
 #include "sparse/sparse_matrix.h"
 
 typedef struct SleqpProblem
@@ -449,33 +450,46 @@ SLEQP_RETCODE
 sleqp_problem_set_value(SleqpProblem* problem,
                         SleqpVec* x,
                         SLEQP_VALUE_REASON reason,
-                        bool* reject,
-                        int* obj_grad_nnz,
-                        int* cons_val_nnz,
-                        int* cons_jac_nnz)
+                        bool* reject)
 {
-  SLEQP_CALL(sleqp_func_set_value(problem->func,
-                                  x,
-                                  reason,
-                                  reject,
-                                  obj_grad_nnz,
-                                  cons_val_nnz,
-                                  cons_jac_nnz));
+  SLEQP_CALL(sleqp_func_set_value(problem->func, x, reason, reject));
 
   if (problem->primal)
   {
     SLEQP_CALL(sleqp_vec_copy(x, problem->primal));
   }
 
-  if (problem->general_cons_jac)
+  return SLEQP_OKAY;
+}
+
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_problem_nonzeros(SleqpProblem* problem,
+                       int* obj_grad_nnz,
+                       int* cons_val_nnz,
+                       int* cons_jac_nnz,
+                       int* hess_prod_nnz)
+{
+  SLEQP_CALL(sleqp_func_nonzeros(sleqp_problem_func(problem),
+                                 obj_grad_nnz,
+                                 cons_val_nnz,
+                                 cons_jac_nnz,
+                                 hess_prod_nnz));
+
+  if (problem->general_cons_jac && (*cons_jac_nnz != SLEQP_NONE))
   {
     SLEQP_CALL(
       sleqp_sparse_matrix_reserve(problem->general_cons_jac, *cons_jac_nnz));
   }
 
-  (*cons_jac_nnz) += sleqp_sparse_matrix_nnz(problem->linear_coeffs);
+  if (*cons_val_nnz != SLEQP_NONE)
+  {
+    (*cons_val_nnz) += problem->num_linear_constraints;
+  }
 
-  (*cons_val_nnz) += problem->num_linear_constraints;
+  if (*cons_jac_nnz != SLEQP_NONE)
+  {
+    (*cons_jac_nnz) += sleqp_sparse_matrix_nnz(problem->linear_coeffs);
+  }
 
   return SLEQP_OKAY;
 }

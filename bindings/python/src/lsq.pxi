@@ -1,5 +1,53 @@
 #cython: language_level=3
 
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_nonzeros(csleqp.SleqpFunc* func,
+                                             int* residual_nnz,
+                                             int* jac_fwd_nnz,
+                                             int* jac_adj_nnz,
+                                             int* cons_val_nnz,
+                                             int* cons_jac_nnz,
+                                             void* func_data):
+
+  try:
+    func_obj = (<object> func_data)
+
+    def try_call(f):
+      try:
+        return f()
+      except AttributeError:
+        return csleqp.SLEQP_NONE
+
+    residual_nnz[0] = try_call(lambda : func_obj.residual_nnz())
+    jac_fwd_nnz[0] = try_call(lambda : func_obj.jac_fwd_nnz())
+    jac_adj_nnz[0] = try_call(lambda : func_obj.jac_adj_nnz())
+    cons_val_nnz[0] = try_call(lambda : func_obj.cons_val_nnz())
+    cons_jac_nnz[0] = try_call(lambda : func_obj.cons_jac_nnz())
+
+  except BaseException as exception:
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
+
+  return csleqp.SLEQP_OKAY
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_lsq_nonzeros_nogil(csleqp.SleqpFunc* func,
+                                                   int* residual_nnz,
+                                                   int* jac_fwd_nnz,
+                                                   int* jac_adj_nnz,
+                                                   int* cons_val_nnz,
+                                                   int* cons_jac_nnz,
+                                                   void* func_data) nogil:
+
+  with gil:
+    return sleqp_lsq_nonzeros(func,
+                              residual_nnz,
+                              jac_fwd_nnz,
+                              jac_adj_nnz,
+                              cons_val_nnz,
+                              cons_jac_nnz,
+                              func_data)
+
+
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals(csleqp.SleqpFunc* func,
                                               csleqp.SleqpVec* residual,
                                               void* func_data):
@@ -96,6 +144,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint_nogil(csleqp.SleqpFunc* func,
 cdef set_lsq_func_callbacks(csleqp.SleqpLSQCallbacks* callbacks):
   if release_gil:
     callbacks.set_value            = &sleqp_func_set_nogil
+    callbacks.lsq_nonzeros         = &sleqp_lsq_nonzeros_nogil
     callbacks.lsq_residuals        = &sleqp_lsq_residuals_nogil
     callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward_nogil
     callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint_nogil
@@ -103,6 +152,7 @@ cdef set_lsq_func_callbacks(csleqp.SleqpLSQCallbacks* callbacks):
     callbacks.cons_jac             = &sleqp_func_cons_jac_nogil
   else:
     callbacks.set_value            = &sleqp_func_set
+    callbacks.lsq_nonzeros         = &sleqp_lsq_nonzeros
     callbacks.lsq_residuals        = &sleqp_lsq_residuals
     callbacks.lsq_jac_forward      = &sleqp_lsq_jac_forward
     callbacks.lsq_jac_adjoint      = &sleqp_lsq_jac_adjoint

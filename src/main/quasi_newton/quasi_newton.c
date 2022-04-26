@@ -21,20 +21,11 @@ quasi_newton_func_set_value(SleqpFunc* func,
                             SleqpVec* x,
                             SLEQP_VALUE_REASON reason,
                             bool* reject,
-                            int* obj_grad_nnz,
-                            int* cons_val_nnz,
-                            int* cons_jac_nnz,
                             void* func_data)
 {
   SleqpQuasiNewton* quasi_newton = (SleqpQuasiNewton*)func_data;
 
-  SLEQP_CALL(sleqp_func_set_value(quasi_newton->func,
-                                  x,
-                                  reason,
-                                  reject,
-                                  obj_grad_nnz,
-                                  cons_val_nnz,
-                                  cons_jac_nnz));
+  SLEQP_CALL(sleqp_func_set_value(quasi_newton->func, x, reason, reject));
 
   return SLEQP_OKAY;
 }

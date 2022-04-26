@@ -36,16 +36,11 @@ log_rosenbrock_set(SleqpFunc* func,
                    SleqpVec* v,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
-                   int* obj_grad_nnz,
-                   int* cons_val_nnz,
-                   int* cons_jac_nnz,
                    void* func_data)
 {
   x     = sleqp_vec_value_at(v, 0);
   y     = sleqp_vec_value_at(v, 1);
   inner = eval();
-
-  *obj_grad_nnz = 2;
 
   return SLEQP_OKAY;
 }

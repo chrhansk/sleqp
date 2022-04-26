@@ -33,6 +33,7 @@ typedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_CONS_VAL)(SleqpFunc* func,
 typedef struct
 {
   SLEQP_FUNC_SET set_value;
+  SLEQP_FUNC_NONZEROS nonzeros;
   SLEQP_DYN_FUNC_OBJ_VAL obj_val;
   SLEQP_FUNC_OBJ_GRAD obj_grad;
   SLEQP_DYN_FUNC_CONS_VAL cons_val;

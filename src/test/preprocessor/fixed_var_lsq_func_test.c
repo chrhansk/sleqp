@@ -72,25 +72,17 @@ setup()
 
   bool reject;
 
-  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
-
   ASSERT_CALL(sleqp_func_set_value(rosenbrock_lsq_func,
                                    rosenbrock_initial,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   assert(!reject);
 
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_initial,
                                    SLEQP_VALUE_REASON_NONE,
-                                   &reject,
-                                   &obj_grad_nnz,
-                                   &cons_val_nnz,
-                                   &cons_jac_nnz));
+                                   &reject));
 
   assert(!reject);
 }

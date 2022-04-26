@@ -59,6 +59,8 @@ sleqp_sparse_matrix_create(SleqpSparseMatrix** mstar,
 SLEQP_RETCODE
 sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix, int nnz)
 {
+  assert(nnz >= 0);
+
   if (matrix->nnz_max >= nnz)
   {
     return SLEQP_OKAY;
@@ -77,6 +79,9 @@ sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
                            int num_rows,
                            int num_cols)
 {
+  assert(num_rows >= 0);
+  assert(num_cols >= 0);
+
   if (matrix->num_cols < num_cols)
   {
     SLEQP_CALL(sleqp_realloc(&matrix->cols, num_cols + 1));

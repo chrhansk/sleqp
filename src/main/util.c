@@ -12,19 +12,12 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
                        SLEQP_VALUE_REASON reason,
                        bool* reject)
 {
-  int obj_grad_nnz = 0;
-  int cons_val_nnz = 0;
-  int cons_jac_nnz = 0;
-
   bool manual_reject = false;
 
   SLEQP_CALL(sleqp_problem_set_value(problem,
                                      sleqp_iterate_primal(iterate),
                                      reason,
-                                     &manual_reject,
-                                     &obj_grad_nnz,
-                                     &cons_val_nnz,
-                                     &cons_jac_nnz));
+                                     &manual_reject));
 
   if (reject)
   {
@@ -35,15 +28,11 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
     sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Function is not allowed to raise");
   }
 
+  SLEQP_CALL(sleqp_iterate_reserve(iterate, problem));
+
   SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
   SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
   SleqpVec* cons_val          = sleqp_iterate_cons_val(iterate);
-
-  SLEQP_CALL(sleqp_vec_reserve(obj_grad, obj_grad_nnz));
-
-  SLEQP_CALL(sleqp_vec_reserve(cons_val, cons_val_nnz));
-
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, cons_jac_nnz));
 
   double obj_val;
 

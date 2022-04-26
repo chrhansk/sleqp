@@ -44,15 +44,8 @@ wachbieg_set(SleqpFunc* func,
              SleqpVec* x,
              SLEQP_VALUE_REASON reason,
              bool* reject,
-             int* obj_grad_nnz,
-             int* cons_val_nnz,
-             int* cons_jac_nnz,
              void* func_data)
 {
-  *obj_grad_nnz = wachbieg_num_variables;
-  *cons_val_nnz = wachbieg_num_constraints;
-  *cons_jac_nnz = wachbieg_jac_nnz;
-
   wachbieg_data.x[0] = 0;
   wachbieg_data.x[1] = 0;
   wachbieg_data.x[2] = 0;
@@ -65,6 +58,21 @@ wachbieg_set(SleqpFunc* func,
 
     ++k_x;
   }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+wachbieg_nonzeros(SleqpFunc* func,
+                  int* obj_grad_nnz,
+                  int* cons_val_nnz,
+                  int* cons_jac_nnz,
+                  int* hess_prod_nnz,
+                  void* func_data)
+{
+  *obj_grad_nnz = wachbieg_num_variables;
+  *cons_val_nnz = wachbieg_num_constraints;
+  *cons_jac_nnz = wachbieg_jac_nnz;
 
   return SLEQP_OKAY;
 }
@@ -147,6 +155,7 @@ wachbieg_setup()
   const double inf = sleqp_infinity();
 
   SleqpFuncCallbacks callbacks = {.set_value = wachbieg_set,
+                                  .nonzeros  = wachbieg_nonzeros,
                                   .obj_val   = wachbieg_obj_val,
                                   .obj_grad  = wachbieg_obj_grad,
                                   .cons_val  = wachbieg_cons_val,

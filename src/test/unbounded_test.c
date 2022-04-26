@@ -26,17 +26,10 @@ unbounded_set(SleqpFunc* func,
               SleqpVec* x,
               SLEQP_VALUE_REASON reason,
               bool* reject,
-              int* obj_grad_nnz,
-              int* cons_val_nnz,
-              int* cons_jac_nnz,
               void* func_data)
 {
   assert(x->dim == 1);
   SLEQP_CALL(sleqp_vec_to_raw(x, &v));
-
-  (*obj_grad_nnz) = 1;
-  (*cons_val_nnz) = 1;
-  (*cons_jac_nnz) = 1;
 
   return SLEQP_OKAY;
 }

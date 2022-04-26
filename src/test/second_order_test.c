@@ -35,18 +35,11 @@ func_set(SleqpFunc* func,
          SleqpVec* x,
          SLEQP_VALUE_REASON reason,
          bool* reject,
-         int* obj_grad_nnz,
-         int* cons_val_nnz,
-         int* cons_jac_nnz,
          void* func_data)
 {
   FuncData* data = (FuncData*)func_data;
 
   SLEQP_CALL(sleqp_vec_to_raw(x, data->values));
-
-  *obj_grad_nnz = num_variables;
-  *cons_val_nnz = num_constraints;
-  *cons_jac_nnz = num_constraints * num_variables;
 
   return SLEQP_OKAY;
 }
