@@ -1,5 +1,27 @@
 # SLEQP
 
+## Introduction
+
+SLEQP is a software package for large-scale [nonlinear optimization](https://en.wikipedia.org/wiki/Nonlinear_programming).
+It is designed to find (local) solutions of mathematical optimization problems of the form
+
+```
+   min     f(x)
+  x ∈ Rⁿ
+
+s.t.         l ≤ c(x) ≤ u
+           x_l ≤  x   ≤ x_u
+```
+
+where ```f: Rⁿ --> R``` is the optimization objective, and ```c: Rⁿ --> Rᵐ```
+are optimization constraints.
+
+The vectors `l, u ∈ Rⁿ` denote the lower and upper bounds on the
+variables, while the vectors `x_l, x_u ∈ Rᵐ` are bounds on the
+nonlinear constraints. The functions `f(x)` and `c(x)` can be
+nonlinear and nonconvex, but should be twice continuously
+differentiable.
+
 ## Dependencies
 
 For the solution of the linear programming problem, one of the
