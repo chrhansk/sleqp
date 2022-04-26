@@ -17,3 +17,5 @@ CTestTestfile.cmake
 build*/
 debug/
 release/
+
+.cache/

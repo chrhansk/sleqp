@@ -22,11 +22,6 @@ class Func:
   def set_value(self, values, reason):
     self.values[:] = values
 
-  def ob_val(self):
-    # No additional function value beside lsq residuals
-    return 0.
-
-
   def lsq_residuals(self):
     x0 = self.values[0]
     x1 = self.values[1]
@@ -56,20 +51,12 @@ class Func:
     return np.array([-1.*d0 - 2*math.sqrt(self.b)*x0*d1,
                      math.sqrt(self.b)*(d1)])
 
-  def obj_grad(self):
-    return np.zeros((num_variables,))
-
-
   def cons_vals(self):
     return np.zeros((num_constraints,))
 
 
   def cons_jac(self):
     return np.zeros((num_constraints, num_variables))
-
-
-  def hess_prod(self, obj_dual, direction, cons_dual):
-    return np.zeros((num_variables,))
 
 
 class LSQTest(unittest.TestCase):
