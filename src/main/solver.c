@@ -241,14 +241,20 @@ on_problem_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
                                        multipliers));
   }
 
-  // TODO: make restoration more efficient
-  SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
+  SLEQP_SOLVER_EVENT event = SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE;
 
-  SLEQP_CALLBACK_EVENT(solver->callback_handlers,
-                       SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
-                       SLEQP_ACCEPTED_ITERATE,
-                       solver,
-                       trial_iterate);
+  SleqpCallbackHandler* handler = solver->callback_handlers[event];
+
+  if (sleqp_callback_handler_size(handler) != 0)
+  {
+    SLEQP_CALL(sleqp_solver_restore_original_iterate(solver));
+
+    SLEQP_CALLBACK_EVENT(solver->callback_handlers,
+                         SLEQP_SOLVER_EVENT_ACCEPTED_ITERATE,
+                         SLEQP_ACCEPTED_ITERATE,
+                         solver,
+                         trial_iterate);
+  }
 
   return SLEQP_OKAY;
 }
