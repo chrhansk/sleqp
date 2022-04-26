@@ -4,6 +4,7 @@
 #include "pub_iterate.h"
 
 #include "params.h"
+#include "pub_types.h"
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -65,6 +66,10 @@ sleqp_iterate_get_violated_constraints(SleqpProblem* problem,
                                        int* violated_constraints,
                                        int* num_violated_constraints,
                                        double feas_eps);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_iterate_reserve(SleqpIterate* iterate, SleqpProblem* problem);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

@@ -81,16 +81,10 @@ START_TEST(test_overflow)
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
-  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
   bool reject;
 
-  SLEQP_RETCODE retcode = sleqp_func_set_value(func,
-                                               point,
-                                               SLEQP_VALUE_REASON_NONE,
-                                               &reject,
-                                               &obj_grad_nnz,
-                                               &cons_val_nnz,
-                                               &cons_jac_nnz);
+  SLEQP_RETCODE retcode
+    = sleqp_func_set_value(func, point, SLEQP_VALUE_REASON_NONE, &reject);
 
   ASSERT_CALL(sleqp_vec_free(&point));
 
@@ -111,17 +105,10 @@ START_TEST(test_underflow_warning)
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
-  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
-
   bool reject;
 
-  SLEQP_RETCODE retcode = sleqp_func_set_value(func,
-                                               point,
-                                               SLEQP_VALUE_REASON_NONE,
-                                               &reject,
-                                               &obj_grad_nnz,
-                                               &cons_val_nnz,
-                                               &cons_jac_nnz);
+  SLEQP_RETCODE retcode
+    = sleqp_func_set_value(func, point, SLEQP_VALUE_REASON_NONE, &reject);
 
   ASSERT_CALL(sleqp_vec_free(&point));
 
@@ -145,17 +132,10 @@ START_TEST(test_underflow_error)
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
-  int obj_grad_nnz, cons_val_nnz, cons_jac_nnz;
-
   bool reject;
 
-  SLEQP_RETCODE retcode = sleqp_func_set_value(func,
-                                               point,
-                                               SLEQP_VALUE_REASON_NONE,
-                                               &reject,
-                                               &obj_grad_nnz,
-                                               &cons_val_nnz,
-                                               &cons_jac_nnz);
+  SLEQP_RETCODE retcode
+    = sleqp_func_set_value(func, point, SLEQP_VALUE_REASON_NONE, &reject);
 
   ASSERT_CALL(sleqp_vec_free(&point));
 

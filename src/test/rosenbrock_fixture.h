@@ -23,9 +23,6 @@ rosenbrock_set(SleqpFunc* func,
                SleqpVec* x,
                SLEQP_VALUE_REASON reason,
                bool* reject,
-               int* obj_grad_nnz,
-               int* cons_val_nnz,
-               int* cons_jac_nnz,
                void* func_data);
 
 SLEQP_RETCODE

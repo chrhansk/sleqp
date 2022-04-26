@@ -68,9 +68,6 @@ restoration_func_set(SleqpFunc* func,
                      SleqpVec* value,
                      SLEQP_VALUE_REASON reason,
                      bool* reject,
-                     int* obj_grad_nnz,
-                     int* cons_val_nnz,
-                     int* cons_jac_nnz,
                      void* data)
 {
   FuncData* func_data = (FuncData*)data;
@@ -83,24 +80,53 @@ restoration_func_set(SleqpFunc* func,
   func_data->has_cons_val = false;
   func_data->has_cons_jac = false;
 
-  int restoration_obj_grad_nnz;
-  int restoration_cons_val_nnz;
-  int restoration_cons_jac_nnz;
-
   SLEQP_CALL(sleqp_problem_set_value(func_data->problem,
                                      func_data->var_primal,
                                      reason,
-                                     reject,
-                                     &restoration_obj_grad_nnz,
-                                     &restoration_cons_val_nnz,
-                                     &restoration_cons_jac_nnz));
+                                     reject));
 
-  SLEQP_CALL(sleqp_vec_reserve(func_data->cons_val, restoration_cons_val_nnz));
+  return SLEQP_OKAY;
+}
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_reserve(func_data->cons_jac, restoration_cons_jac_nnz));
+static SLEQP_RETCODE
+restoration_func_nonzeros(SleqpFunc* func,
+                          int* residual_nnz,
+                          int* jac_fwd_nnz,
+                          int* jac_adj_nnz,
+                          int* cons_val_nnz,
+                          int* cons_jac_nnz,
+                          void* data)
+{
+  *residual_nnz = SLEQP_NONE;
+  *jac_fwd_nnz  = SLEQP_NONE;
+  *jac_adj_nnz  = SLEQP_NONE;
 
-  *obj_grad_nnz = sleqp_func_num_vars(func);
+  FuncData* func_data = (FuncData*)data;
+
+  int problem_obj_grad_nnz  = SLEQP_NONE;
+  int problem_cons_val_nnz  = SLEQP_NONE;
+  int problem_cons_jac_nnz  = SLEQP_NONE;
+  int problem_hess_prod_nnz = SLEQP_NONE;
+
+  SLEQP_CALL(sleqp_problem_nonzeros(func_data->problem,
+                                    &problem_obj_grad_nnz,
+                                    &problem_cons_val_nnz,
+                                    &problem_cons_jac_nnz,
+                                    &problem_hess_prod_nnz));
+
+  if (problem_cons_val_nnz != SLEQP_NONE)
+  {
+    *residual_nnz = problem_cons_val_nnz;
+
+    SLEQP_CALL(sleqp_vec_reserve(func_data->cons_val, problem_cons_val_nnz));
+  }
+
+  if (problem_cons_jac_nnz != SLEQP_NONE)
+  {
+    SLEQP_CALL(
+      sleqp_sparse_matrix_reserve(func_data->cons_jac, problem_cons_jac_nnz));
+  }
+
   *cons_val_nnz = 0;
   *cons_jac_nnz = 0;
 
@@ -326,6 +352,7 @@ restoration_func_create(SleqpFunc** star,
                         SleqpProblem* problem)
 {
   SleqpLSQCallbacks callbacks = {.set_value       = restoration_func_set,
+                                 .lsq_nonzeros    = restoration_func_nonzeros,
                                  .lsq_residuals   = restoration_lsq_residuals,
                                  .lsq_jac_forward = restoration_lsq_jac_forward,
                                  .lsq_jac_adjoint = restoration_lsq_jac_adjoint,

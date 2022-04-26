@@ -7,9 +7,6 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
                                          csleqp.SleqpVec* x,
                                          csleqp.SLEQP_VALUE_REASON reason,
                                          csleqp.bool* reject,
-                                         int* obj_grad_nnz,
-                                         int* cons_val_nnz,
-                                         int* cons_jac_nnz,
                                          void* func_data):
 
   try:
@@ -31,10 +28,6 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
       except AttributeError:
         return 0
 
-    obj_grad_nnz[0] = try_call(lambda : func_obj.obj_grad_nnz())
-    cons_val_nnz[0] = try_call(lambda : func_obj.cons_val_nnz())
-    cons_jac_nnz[0] = try_call(lambda : func_obj.cons_jac_nnz())
-
   except BaseException as exception:
     store_func_exc(func_obj, exception)
     return csleqp.SLEQP_ERROR
@@ -46,19 +39,56 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpFunc* func,
                                                csleqp.SleqpVec* x,
                                                csleqp.SLEQP_VALUE_REASON reason,
                                                csleqp.bool* reject,
-                                               int* obj_grad_nnz,
-                                               int* cons_val_nnz,
-                                               int* cons_jac_nnz,
                                                void* func_data) nogil:
   with gil:
     return sleqp_func_set(func,
                           x,
                           reason,
                           reject,
-                          obj_grad_nnz,
-                          cons_val_nnz,
-                          cons_jac_nnz,
                           func_data)
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_nonzeros(csleqp.SleqpFunc* func,
+                                              int* obj_grad_nnz,
+                                              int* cons_val_nnz,
+                                              int* cons_jac_nnz,
+                                              int* hess_prod_nnz,
+                                              void* func_data):
+
+  try:
+    func_obj = (<object> func_data)
+
+    def try_call(f):
+      try:
+        return f()
+      except AttributeError:
+        return csleqp.SLEQP_NONE
+
+    obj_grad_nnz[0] = try_call(lambda : func_obj.obj_grad_nnz())
+    cons_val_nnz[0] = try_call(lambda : func_obj.cons_val_nnz())
+    cons_jac_nnz[0] = try_call(lambda : func_obj.cons_jac_nnz())
+    hess_prod_nnz[0] = try_call(lambda : func_obj.hess_prod_nnz())
+
+  except BaseException as exception:
+    store_func_exc(func_obj, exception)
+    return csleqp.SLEQP_ERROR
+
+  return csleqp.SLEQP_OKAY
+
+
+cdef csleqp.SLEQP_RETCODE sleqp_func_nonzeros_nogil(csleqp.SleqpFunc* func,
+                                                    int* obj_grad_nnz,
+                                                    int* cons_val_nnz,
+                                                    int* cons_jac_nnz,
+                                                    int* hess_prod_nnz,
+                                                    void* func_data) nogil:
+  with gil:
+    return sleqp_func_nonzeros(func,
+                               obj_grad_nnz,
+                               cons_val_nnz,
+                               cons_jac_nnz,
+                               hess_prod_nnz,
+                               func_data)
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val(csleqp.SleqpFunc* func,
@@ -258,6 +288,7 @@ cdef object funcs = weakref.WeakSet()
 cdef set_func_callbacks(csleqp.SleqpFuncCallbacks* callbacks):
   if release_gil:
     callbacks[0].set_value = &sleqp_func_set_nogil
+    callbacks[0].nonzeros  = &sleqp_func_nonzeros_nogil
     callbacks[0].obj_val   = &sleqp_func_obj_val_nogil
     callbacks[0].obj_grad  = &sleqp_func_obj_grad_nogil
     callbacks[0].cons_val  = &sleqp_func_cons_val_nogil
@@ -265,6 +296,7 @@ cdef set_func_callbacks(csleqp.SleqpFuncCallbacks* callbacks):
     callbacks[0].hess_prod = &sleqp_func_hess_product_nogil
   else:
     callbacks[0].set_value = &sleqp_func_set
+    callbacks[0].nonzeros  = &sleqp_func_nonzeros
     callbacks[0].obj_val   = &sleqp_func_obj_val
     callbacks[0].obj_grad  = &sleqp_func_obj_grad
     callbacks[0].cons_val  = &sleqp_func_cons_val

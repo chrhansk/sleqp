@@ -15,23 +15,44 @@ dyn_func_set_value(SleqpFunc* func,
                    SleqpVec* value,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
-                   int* obj_grad_nnz,
-                   int* cons_val_nnz,
-                   int* cons_jac_nnz,
                    void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
 
-  SLEQP_FUNC_CALL(data->callbacks.set_value(func,
-                                            value,
-                                            reason,
-                                            reject,
-                                            obj_grad_nnz,
-                                            cons_val_nnz,
-                                            cons_jac_nnz,
-                                            data->func_data),
-                  sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
-                  SLEQP_FUNC_ERROR_SET_VALUE);
+  SLEQP_FUNC_CALL(
+    data->callbacks.set_value(func, value, reason, reject, data->func_data),
+    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+    SLEQP_FUNC_ERROR_SET_VALUE);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+dyn_func_nonzeros(SleqpFunc* func,
+                  int* obj_grad_nnz,
+                  int* cons_val_nnz,
+                  int* cons_jac_nnz,
+                  int* hess_prod_nnz,
+                  void* func_data)
+{
+  *obj_grad_nnz  = SLEQP_NONE;
+  *cons_val_nnz  = SLEQP_NONE;
+  *cons_jac_nnz  = SLEQP_NONE;
+  *hess_prod_nnz = SLEQP_NONE;
+
+  DynFuncData* data = (DynFuncData*)func_data;
+
+  if (data->callbacks.nonzeros)
+  {
+    SLEQP_FUNC_CALL(data->callbacks.nonzeros(func,
+                                             obj_grad_nnz,
+                                             cons_val_nnz,
+                                             cons_jac_nnz,
+                                             hess_prod_nnz,
+                                             data->func_data),
+                    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+                    SLEQP_FUNC_ERROR_NONZEROS);
+  }
 
   return SLEQP_OKAY;
 }
@@ -147,6 +168,7 @@ sleqp_dyn_func_create(SleqpFunc** fstar,
   data->func_data = func_data;
 
   SleqpFuncCallbacks func_callbacks = {.set_value = dyn_func_set_value,
+                                       .nonzeros  = dyn_func_nonzeros,
                                        .obj_val   = dyn_func_obj_val,
                                        .obj_grad  = dyn_func_obj_grad,
                                        .cons_val  = dyn_func_cons_val,

@@ -34,9 +34,6 @@ scaled_func_set_value(SleqpFunc* func,
                       SleqpVec* scaled_value,
                       SLEQP_VALUE_REASON reason,
                       bool* reject,
-                      int* obj_grad_nnz,
-                      int* cons_val_nnz,
-                      int* cons_jac_nnz,
                       void* func_data)
 {
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
@@ -63,10 +60,26 @@ scaled_func_set_value(SleqpFunc* func,
   SLEQP_CALL(sleqp_func_set_value(problem_scaling->func,
                                   problem_scaling->unscaled_value,
                                   reason,
-                                  reject,
-                                  obj_grad_nnz,
-                                  cons_val_nnz,
-                                  cons_jac_nnz));
+                                  reject));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+scaled_func_nonzeros(SleqpFunc* func,
+                     int* obj_grad_nnz,
+                     int* cons_val_nnz,
+                     int* cons_jac_nnz,
+                     int* hess_prod_nnz,
+                     void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
+
+  SLEQP_CALL(sleqp_func_nonzeros(problem_scaling->func,
+                                 obj_grad_nnz,
+                                 cons_val_nnz,
+                                 cons_jac_nnz,
+                                 hess_prod_nnz));
 
   return SLEQP_OKAY;
 }
@@ -177,6 +190,27 @@ scaled_func_hess_prod(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
+scaled_lsq_func_nonzeros(SleqpFunc* func,
+                         int* residual_nnz,
+                         int* jac_fwd_nnz,
+                         int* jac_adj_nnz,
+                         int* cons_val_nnz,
+                         int* cons_jac_nnz,
+                         void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
+
+  SLEQP_CALL(sleqp_lsq_func_nonzeros(problem_scaling->func,
+                                     residual_nnz,
+                                     jac_fwd_nnz,
+                                     jac_adj_nnz,
+                                     cons_val_nnz,
+                                     cons_jac_nnz));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 scaled_lsq_func_residuals(SleqpFunc* func, SleqpVec* residuals, void* func_data)
 {
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
@@ -250,6 +284,7 @@ func_create(SleqpProblemScaling* problem_scaling)
   const int num_constraints = sleqp_problem_num_cons(problem);
 
   SleqpFuncCallbacks callbacks = {.set_value = scaled_func_set_value,
+                                  .nonzeros  = scaled_func_nonzeros,
                                   .obj_val   = scaled_func_obj_val,
                                   .obj_grad  = scaled_func_obj_grad,
                                   .cons_val  = scaled_func_cons_val,
@@ -287,6 +322,7 @@ lsq_func_create(SleqpProblemScaling* problem_scaling)
   const int num_constraints = sleqp_problem_num_cons(problem);
 
   SleqpLSQCallbacks callbacks = {.set_value       = scaled_func_set_value,
+                                 .lsq_nonzeros    = scaled_lsq_func_nonzeros,
                                  .lsq_residuals   = scaled_lsq_func_residuals,
                                  .lsq_jac_forward = scaled_lsq_func_jac_forward,
                                  .lsq_jac_adjoint = scaled_lsq_func_jac_adjoint,

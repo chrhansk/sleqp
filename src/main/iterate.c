@@ -6,6 +6,7 @@
 #include "fail.h"
 #include "feas.h"
 #include "mem.h"
+#include "pub_types.h"
 #include "working_set.h"
 
 struct SleqpIterate
@@ -561,6 +562,47 @@ sleqp_iterate_is_optimal(SleqpIterate* iterate,
   }
 
   return true;
+}
+
+SLEQP_RETCODE
+sleqp_iterate_reserve(SleqpIterate* iterate, SleqpProblem* problem)
+{
+  int obj_grad_nnz  = SLEQP_NONE;
+  int cons_val_nnz  = SLEQP_NONE;
+  int cons_jac_nnz  = SLEQP_NONE;
+  int hess_prod_nnz = SLEQP_NONE;
+
+  SLEQP_CALL(sleqp_problem_nonzeros(problem,
+                                    &obj_grad_nnz,
+                                    &cons_val_nnz,
+                                    &cons_jac_nnz,
+                                    &hess_prod_nnz));
+
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
+
+  if (obj_grad_nnz == SLEQP_NONE)
+  {
+    obj_grad_nnz = num_vars;
+  }
+
+  if (cons_val_nnz == SLEQP_NONE)
+  {
+    cons_val_nnz = num_cons;
+  }
+
+  if (cons_jac_nnz == SLEQP_NONE)
+  {
+    cons_jac_nnz = num_vars * num_cons;
+  }
+
+  SLEQP_CALL(sleqp_vec_reserve(sleqp_iterate_obj_grad(iterate), obj_grad_nnz));
+  SLEQP_CALL(sleqp_vec_reserve(sleqp_iterate_cons_val(iterate), cons_val_nnz));
+
+  SLEQP_CALL(
+    sleqp_sparse_matrix_reserve(sleqp_iterate_cons_jac(iterate), cons_jac_nnz));
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE

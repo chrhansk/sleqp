@@ -10,19 +10,12 @@ sleqp_problem_solver_set_func_value(SleqpProblemSolver* solver,
 {
   SleqpProblem* problem = solver->problem;
 
-  int obj_grad_nnz = 0;
-  int cons_val_nnz = 0;
-  int cons_jac_nnz = 0;
-
   bool manual_reject = false;
 
   SLEQP_CALL(sleqp_problem_set_value(problem,
                                      sleqp_iterate_primal(iterate),
                                      reason,
-                                     &manual_reject,
-                                     &obj_grad_nnz,
-                                     &cons_val_nnz,
-                                     &cons_jac_nnz));
+                                     &manual_reject));
 
   if (reject)
   {
@@ -41,12 +34,7 @@ sleqp_problem_solver_set_func_value(SleqpProblemSolver* solver,
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_vec_reserve(sleqp_iterate_obj_grad(iterate), obj_grad_nnz));
-
-  SLEQP_CALL(sleqp_vec_reserve(sleqp_iterate_cons_val(iterate), cons_val_nnz));
-
-  SLEQP_CALL(
-    sleqp_sparse_matrix_reserve(sleqp_iterate_cons_jac(iterate), cons_jac_nnz));
+  SLEQP_CALL(sleqp_iterate_reserve(iterate, problem));
 
   return SLEQP_OKAY;
 }

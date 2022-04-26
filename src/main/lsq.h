@@ -13,6 +13,14 @@ int
 sleqp_lsq_func_num_residuals(SleqpFunc* func);
 
 SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_lsq_func_nonzeros(SleqpFunc* func,
+                        int* residual_nnz,
+                        int* jac_fwd_nnz,
+                        int* jac_adj_nnz,
+                        int* cons_val_nnz,
+                        int* cons_jac_nnz);
+
+SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_lsq_func_residuals(SleqpFunc* func, SleqpVec* residuals);
 
 SLEQP_NODISCARD SLEQP_RETCODE

@@ -7,6 +7,7 @@
 #include "func.h"
 #include "log.h"
 #include "mem.h"
+#include "sparse/pub_vec.h"
 #include "sparse/sparse_matrix.h"
 
 typedef struct SleqpLSQData
@@ -42,25 +43,71 @@ lsq_func_set_value(SleqpFunc* func,
                    SleqpVec* x,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
-                   int* obj_grad_nnz,
-                   int* cons_val_nnz,
-                   int* cons_jac_nnz,
                    void* func_data)
 {
   SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
 
-  SLEQP_FUNC_CALL(lsq_data->callbacks.set_value(func,
-                                                x,
-                                                reason,
-                                                reject,
-                                                obj_grad_nnz,
-                                                cons_val_nnz,
-                                                cons_jac_nnz,
-                                                lsq_data->func_data),
-                  sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
-                  "Error setting function value");
+  SLEQP_FUNC_CALL(
+    lsq_data->callbacks.set_value(func, x, reason, reject, lsq_data->func_data),
+    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+    "Error setting function value");
 
   lsq_data->has_lsq_residual = false;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+lsq_func_nonzeros(SleqpFunc* func,
+                  int* obj_grad_nnz,
+                  int* cons_val_nnz,
+                  int* cons_jac_nnz,
+                  int* hess_prod_nnz,
+                  void* func_data)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
+
+  int residual_nnz = SLEQP_NONE;
+  int jac_fwd_nnz  = SLEQP_NONE;
+  int jac_adj_nnz  = SLEQP_NONE;
+  *cons_val_nnz    = SLEQP_NONE;
+  *cons_jac_nnz    = SLEQP_NONE;
+
+  SLEQP_CALL(sleqp_lsq_func_nonzeros(func,
+                                     &residual_nnz,
+                                     &jac_fwd_nnz,
+                                     &jac_adj_nnz,
+                                     cons_val_nnz,
+                                     cons_jac_nnz));
+
+  if (residual_nnz != SLEQP_NONE)
+  {
+    SLEQP_CALL(sleqp_vec_reserve(lsq_data->lsq_residual, residual_nnz));
+  }
+
+  if (jac_fwd_nnz != SLEQP_NONE)
+  {
+    SLEQP_CALL(sleqp_vec_reserve(lsq_data->lsq_forward, jac_fwd_nnz));
+    SLEQP_CALL(sleqp_vec_reserve(lsq_data->lsq_hess_prod, jac_fwd_nnz));
+  }
+
+  if (jac_adj_nnz != SLEQP_NONE)
+  {
+    SLEQP_CALL(sleqp_vec_reserve(lsq_data->lsq_grad, jac_adj_nnz));
+  }
+
+  if (jac_adj_nnz != SLEQP_NONE)
+  {
+    *obj_grad_nnz = jac_adj_nnz;
+  }
+
+  if (jac_fwd_nnz != SLEQP_NONE)
+  {
+    *hess_prod_nnz = jac_fwd_nnz;
+  }
 
   return SLEQP_OKAY;
 }
@@ -263,6 +310,8 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
                       SleqpParams* params,
                       void* func_data)
 {
+  assert(lm_factor >= 0.);
+
   SleqpLSQData* data = NULL;
 
   SLEQP_CALL(sleqp_malloc(&data));
@@ -286,6 +335,11 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
 
   SLEQP_CALL(sleqp_vec_create_empty(&data->lsq_hess_prod, num_variables));
 
+  if (lm_factor != 0.)
+  {
+    SLEQP_CALL(sleqp_vec_reserve(data->lsq_hess_prod, num_variables));
+  }
+
   SLEQP_CALL(sleqp_timer_create(&data->residual_timer));
   SLEQP_CALL(sleqp_timer_create(&data->forward_timer));
   SLEQP_CALL(sleqp_timer_create(&data->adjoint_timer));
@@ -295,6 +349,7 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
   data->func_data = func_data;
 
   SleqpFuncCallbacks func_callbacks = {.set_value = lsq_func_set_value,
+                                       .nonzeros  = lsq_func_nonzeros,
                                        .obj_val   = lsq_func_obj_val,
                                        .obj_grad  = lsq_func_obj_grad,
                                        .cons_val  = lsq_func_cons_val,
@@ -316,6 +371,42 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_func_flags_add(func, flags));
 
   SLEQP_CALL(sleqp_func_set_type(func, SLEQP_FUNC_TYPE_LSQ));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_lsq_func_nonzeros(SleqpFunc* func,
+                        int* residual_nnz,
+                        int* jac_fwd_nnz,
+                        int* jac_adj_nnz,
+                        int* cons_val_nnz,
+                        int* cons_jac_nnz)
+{
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_LSQ);
+  void* func_data = sleqp_func_get_data(func);
+  assert(func_data);
+
+  SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
+
+  *residual_nnz = SLEQP_NONE;
+  *jac_fwd_nnz  = SLEQP_NONE;
+  *jac_adj_nnz  = SLEQP_NONE;
+  *cons_val_nnz = SLEQP_NONE;
+  *cons_jac_nnz = SLEQP_NONE;
+
+  if (lsq_data->callbacks.lsq_nonzeros)
+  {
+    SLEQP_FUNC_CALL(lsq_data->callbacks.lsq_nonzeros(func,
+                                                     residual_nnz,
+                                                     jac_fwd_nnz,
+                                                     jac_adj_nnz,
+                                                     cons_val_nnz,
+                                                     cons_jac_nnz,
+                                                     lsq_data->func_data),
+                    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+                    "Error querying LSQ function nonzeros");
+  }
 
   return SLEQP_OKAY;
 }

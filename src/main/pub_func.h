@@ -37,22 +37,35 @@ typedef enum
  * @param[in]     value           The value
  * @param[in]     reason          The reason for setting \f$ x \f$
  * @param[out]    reject          Whether to manually reject the step
- * @param[out]    obj_grad_nnz    The number of nonzeros of the objective
- *gradient \f$ \nabla f(x) \f$
- * @param[out]    cons_val_nnz    The number of nonzeros of the constraint
- *function \f$ c(x) \f$
- * @param[out]    cons_jac_nnz    The number of nonzeros of the constraint
- *Jacobian \f$ J_c(x) \f$
  * @param[in,out] func_data       The function data
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
                                         SleqpVec* value,
                                         SLEQP_VALUE_REASON reason,
                                         bool* reject,
-                                        int* obj_grad_nnz,
-                                        int* cons_val_nnz,
-                                        int* cons_jac_nnz,
                                         void* func_data);
+
+/**
+ * Queries the number of nonzeros of the function at the
+ * current primal point
+ *
+ * @param[in]     func            The function
+ * @param[out]    obj_grad_nnz    The number of nonzeros of the objective
+ *gradient \f$ \nabla f(x) \f$
+ * @param[out]    cons_val_nnz    The number of nonzeros of the constraint
+ *function \f$ c(x) \f$
+ * @param[out]    cons_jac_nnz    The number of nonzeros of the constraint
+ *Jacobian \f$ J_c(x) \f$
+ * @param[out]    cons_jac_nnz    The number of nonzeros of Hessian products
+ * \f$ \nabla_{xx} L(x, \lambda) \f$
+ * @param[in,out] func_data       The function data
+ **/
+typedef SLEQP_RETCODE (*SLEQP_FUNC_NONZEROS)(SleqpFunc* func,
+                                             int* obj_grad_nnz,
+                                             int* cons_val_nnz,
+                                             int* cons_jac_nnz,
+                                             int* hess_prod_nnz,
+                                             void* func_data);
 
 /**
  * Evaluates the objective at the current primal point
@@ -140,6 +153,7 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_FREE)(void* func_data);
 typedef struct
 {
   SLEQP_FUNC_SET set_value;
+  SLEQP_FUNC_NONZEROS nonzeros;
   SLEQP_FUNC_OBJ_VAL obj_val;
   SLEQP_FUNC_OBJ_GRAD obj_grad;
   SLEQP_FUNC_CONS_VAL cons_val;

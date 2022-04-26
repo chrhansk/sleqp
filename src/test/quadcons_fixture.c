@@ -32,15 +32,8 @@ quadconsfunc_set(SleqpFunc* func,
                  SleqpVec* x,
                  SLEQP_VALUE_REASON reason,
                  bool* reject,
-                 int* obj_grad_nnz,
-                 int* cons_val_nnz,
-                 int* cons_jac_nnz,
                  void* func_data)
 {
-  *obj_grad_nnz = 2;
-  *cons_val_nnz = 2;
-  *cons_jac_nnz = 4;
-
   SquareFuncData* data = (SquareFuncData*)func_data;
 
   data->x[0] = 0;

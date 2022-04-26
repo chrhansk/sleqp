@@ -33,14 +33,9 @@ degraded_set(SleqpFunc* func,
              SleqpVec* x,
              SLEQP_VALUE_REASON reason,
              bool* reject,
-             int* obj_grad_nnz,
-             int* cons_val_nnz,
-             int* cons_jac_nnz,
              void* func_data)
 {
   SLEQP_CALL(sleqp_vec_to_raw(x, values));
-
-  *obj_grad_nnz = 2;
 
   return SLEQP_OKAY;
 }

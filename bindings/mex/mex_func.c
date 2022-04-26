@@ -5,6 +5,7 @@
 
 #include "mex_fields.h"
 #include "mex_func_common.h"
+#include "sleqp/pub_types.h"
 
 static void
 print_array(mxArray* array)
@@ -64,16 +65,9 @@ mex_func_set(SleqpFunc* func,
              SleqpVec* x,
              SLEQP_VALUE_REASON reason,
              bool* reject,
-             int* obj_grad_nnz,
-             int* cons_val_nnz,
-             int* cons_jac_nnz,
              void* data)
 {
   FuncData* func_data = (FuncData*)data;
-
-  *obj_grad_nnz = 0;
-  *cons_val_nnz = 0;
-  *cons_jac_nnz = 0;
 
   SLEQP_CALL(sleqp_vec_to_raw(x, mxGetPr(func_data->primal)));
 

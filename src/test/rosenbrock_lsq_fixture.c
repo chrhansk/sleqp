@@ -36,15 +36,8 @@ rosenbrock_lsq_set(SleqpFunc* func,
                    SleqpVec* x,
                    SLEQP_VALUE_REASON reason,
                    bool* reject,
-                   int* obj_grad_nnz,
-                   int* cons_val_nnz,
-                   int* cons_jac_nnz,
                    void* func_data)
 {
-  *obj_grad_nnz = 2;
-  *cons_val_nnz = 0;
-  *cons_jac_nnz = 0;
-
   RosenbrockData* data = (RosenbrockData*)func_data;
 
   SLEQP_CALL(sleqp_vec_to_raw(x, data->x));
@@ -52,7 +45,22 @@ rosenbrock_lsq_set(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
+rosenbrock_lsq_nonzeros(SleqpFunc* func,
+                        int* residual_nnz,
+                        int* jac_fwd_nnz,
+                        int* jac_adj_nnz,
+                        int* cons_val_nnz,
+                        int* cons_jac_nnz,
+                        void* func_data)
+{
+  *cons_val_nnz = 0;
+  *cons_jac_nnz = 0;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 rosenbrock_lsq_eval(SleqpFunc* func, SleqpVec* residual, void* func_data)
 {
   assert(residual->dim == num_residuals);
@@ -74,7 +82,7 @@ rosenbrock_lsq_eval(SleqpFunc* func, SleqpVec* residual, void* func_data)
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 rosenbrock_lsq_jac_forward(SleqpFunc* func,
                            const SleqpVec* forward_direction,
                            SleqpVec* product,
@@ -103,7 +111,7 @@ rosenbrock_lsq_jac_forward(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_RETCODE
+static SLEQP_RETCODE
 rosenbrock_lsq_jac_adjoint(SleqpFunc* func,
                            const SleqpVec* adjoint_direction,
                            SleqpVec* product,
@@ -146,6 +154,7 @@ rosenbrock_lsq_setup()
   rosenbrock_func_data->b = 100.;
 
   SleqpLSQCallbacks callbacks = {.set_value       = rosenbrock_lsq_set,
+                                 .lsq_nonzeros    = rosenbrock_lsq_nonzeros,
                                  .lsq_residuals   = rosenbrock_lsq_eval,
                                  .lsq_jac_forward = rosenbrock_lsq_jac_forward,
                                  .lsq_jac_adjoint = rosenbrock_lsq_jac_adjoint,

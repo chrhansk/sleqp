@@ -308,10 +308,14 @@ cdef extern from "sleqp.h":
                                            SleqpVec* x,
                                            SLEQP_VALUE_REASON reason,
                                            bool* reject,
-                                           int* obj_grad_nnz,
-                                           int* cons_val_nnz,
-                                           int* cons_jac_nnz,
                                            void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_FUNC_NONZEROS)(SleqpFunc* func,
+                                                int* obj_grad_nnz,
+                                                int* cons_val_nnz,
+                                                int* cons_jac_nnz,
+                                                int* hess_prod_nnz,
+                                                void* func_data);
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_VAL)(SleqpFunc* func,
                                                double* func_val,
@@ -340,6 +344,7 @@ cdef extern from "sleqp.h":
 
   ctypedef struct SleqpFuncCallbacks:
     SLEQP_FUNC_SET       set_value
+    SLEQP_FUNC_NONZEROS  nonzeros
     SLEQP_FUNC_OBJ_VAL   obj_val
     SLEQP_FUNC_OBJ_GRAD  obj_grad
     SLEQP_FUNC_CONS_VAL  cons_val
@@ -439,6 +444,14 @@ cdef extern from "sleqp.h":
 
   # LSQ
 
+  ctypedef SLEQP_RETCODE (*SLEQP_LSQ_NONZEROS)(SleqpFunc* func,
+                                               int* residual_nnz,
+                                               int* jac_fwd_nnz,
+                                               int* jac_adj_nnz,
+                                               int* cons_val_nnz,
+                                               int* cons_jac_nnz,
+                                               void* func_data);
+
   ctypedef SLEQP_RETCODE (*SLEQP_LSQ_RESIDUALS)(SleqpFunc* func,
                                                 SleqpVec* residual,
                                                 void* func_data)
@@ -455,6 +468,7 @@ cdef extern from "sleqp.h":
 
   ctypedef struct SleqpLSQCallbacks:
     SLEQP_FUNC_SET        set_value,
+    SLEQP_LSQ_NONZEROS    lsq_nonzeros
     SLEQP_LSQ_RESIDUALS   lsq_residuals,
     SLEQP_LSQ_JAC_FORWARD lsq_jac_forward,
     SLEQP_LSQ_JAC_ADJOINT lsq_jac_adjoint,

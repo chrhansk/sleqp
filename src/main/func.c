@@ -80,10 +80,7 @@ SLEQP_RETCODE
 sleqp_func_set_value(SleqpFunc* func,
                      SleqpVec* x,
                      SLEQP_VALUE_REASON reason,
-                     bool* reject,
-                     int* obj_grad_nnz,
-                     int* cons_val_nnz,
-                     int* cons_jac_nnz)
+                     bool* reject)
 {
   assert(sleqp_vec_is_valid(x));
   assert(sleqp_vec_is_finite(x));
@@ -92,18 +89,39 @@ sleqp_func_set_value(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_timer_start(func->set_timer));
 
-  SLEQP_FUNC_CALL(func->callbacks.set_value(func,
-                                            x,
-                                            reason,
-                                            reject,
-                                            obj_grad_nnz,
-                                            cons_val_nnz,
-                                            cons_jac_nnz,
-                                            func->data),
-                  sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
-                  SLEQP_FUNC_ERROR_SET_VALUE);
+  SLEQP_FUNC_CALL(
+    func->callbacks.set_value(func, x, reason, reject, func->data),
+    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+    SLEQP_FUNC_ERROR_SET_VALUE);
 
   SLEQP_CALL(sleqp_timer_stop(func->set_timer));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_func_nonzeros(SleqpFunc* func,
+                    int* obj_grad_nnz,
+                    int* cons_val_nnz,
+                    int* cons_jac_nnz,
+                    int* hess_prod_nnz)
+{
+  *obj_grad_nnz  = SLEQP_NONE;
+  *cons_val_nnz  = SLEQP_NONE;
+  *cons_jac_nnz  = SLEQP_NONE;
+  *hess_prod_nnz = SLEQP_NONE;
+
+  if (func->callbacks.nonzeros)
+  {
+    SLEQP_FUNC_CALL(func->callbacks.nonzeros(func,
+                                             obj_grad_nnz,
+                                             cons_val_nnz,
+                                             cons_jac_nnz,
+                                             hess_prod_nnz,
+                                             func->data),
+                    sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
+                    SLEQP_FUNC_ERROR_NONZEROS);
+  }
 
   return SLEQP_OKAY;
 }

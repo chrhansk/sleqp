@@ -9,6 +9,7 @@
 #include "pub_func.h"
 
 #include "hess_struct.h"
+#include "pub_types.h"
 #include "timer.h"
 
 #include <assert.h>
@@ -39,6 +40,7 @@ typedef enum
   } while (false)
 
 #define SLEQP_FUNC_ERROR_SET_VALUE "Error setting function value"
+#define SLEQP_FUNC_ERROR_NONZEROS "Error querying function nonzeros"
 #define SLEQP_FUNC_ERROR_OBJ_VAL "Error evaluating objective"
 #define SLEQP_FUNC_ERROR_OBJ_GRAD "Error evaluating objective gradient"
 #define SLEQP_FUNC_ERROR_CONS_VAL "Error evaluating constraints"
@@ -63,18 +65,22 @@ SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_set_value(SleqpFunc* func,
                      SleqpVec* x,
                      SLEQP_VALUE_REASON reason,
-                     bool* reject,
-                     int* obj_grad_nnz,
-                     int* cons_val_nnz,
-                     int* cons_jac_nnz);
+                     bool* reject);
+
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_func_nonzeros(SleqpFunc* func,
+                    int* obj_grad_nnz,
+                    int* cons_val_nnz,
+                    int* cons_jac_nnz,
+                    int* hess_prod_nnz);
 
 /**
  * Evaluates the function and its gradient at the current input vector
  *
  * @param[in]     func            The function
  * @param[out]    obj_grad        The objective gradient \f$ \nabla f(x) \f$
- * @param[out]    cons_val        The value of the constraint function \f$ c(x)
- *\f$
+ * @param[out]    cons_val        The value of the constraint function \f$
+ *c(x) \f$
  * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
  * @param[in,out] func_data       The function data
  **/

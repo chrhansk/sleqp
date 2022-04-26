@@ -15,10 +15,14 @@ SLEQP_RETCODE
 sleqp_problem_set_value(SleqpProblem* problem,
                         SleqpVec* x,
                         SLEQP_VALUE_REASON reason,
-                        bool* reject,
-                        int* obj_grad_nnz,
-                        int* cons_val_nnz,
-                        int* cons_jac_nnz);
+                        bool* reject);
+
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_problem_nonzeros(SleqpProblem* problem,
+                       int* obj_grad_nnz,
+                       int* cons_val_nnz,
+                       int* cons_jac_nnz,
+                       int* hess_prod_nnz);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
