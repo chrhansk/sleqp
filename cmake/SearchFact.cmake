@@ -39,6 +39,11 @@ add_factorization(
   DEPS_DEBIAN "libumfpack5 (>= 5.2)")
 
 add_factorization(
+  NAME "SPQR"
+  SOURCES factorization_spqr.c
+  DEPS_DEBIAN "libspqr2")
+
+add_factorization(
   NAME "MUMPS"
   SOURCES factorization_mumps.c
   DEPS_DEBIAN "libmumps-5.1.2")

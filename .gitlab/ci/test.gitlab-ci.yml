@@ -19,6 +19,7 @@ test_fact:
           - MA57
           - MA86
           - MA97
+          - SPQR
 
 test_lps:
   extends: .test
