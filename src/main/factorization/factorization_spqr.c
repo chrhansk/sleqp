@@ -4,8 +4,7 @@
 #include <assert.h>
 
 #include <SuiteSparseQR_C.h>
-#include <cholmod_check.h>
-#include <cholmod_core.h>
+#include <cholmod.h>
 
 #include "defs.h"
 #include "error.h"
