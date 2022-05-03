@@ -44,6 +44,10 @@ add_factorization(
   DEPS_DEBIAN "libspqr2")
 
 add_factorization(
+  NAME "CHOLMOD"
+  SOURCES factorization_cholmod.c)
+
+add_factorization(
   NAME "MUMPS"
   SOURCES factorization_mumps.c
   DEPS_DEBIAN "libmumps-5.1.2")

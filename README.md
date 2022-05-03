@@ -33,6 +33,7 @@ following linear programming libraries is required:
 
 For factorizations, one of the following factorization libraries is required:
 
+* [CHOLMOD](http://faculty.cse.tamu.edu/davis/suitesparse.html)
 * [Umfpack](http://faculty.cse.tamu.edu/davis/suitesparse.html)
 * [MUMPS](http://mumps.enseeiht.fr/)
 * [MA27](https://www.hsl.rl.ac.uk/archive/specs/ma27.pdf)
