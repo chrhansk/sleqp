@@ -22,6 +22,31 @@ struct SleqpTimer
   double last_elapsed;
 };
 
+typedef enum
+{
+  Day = 0,
+  Hour,
+  Minute,
+  Second,
+  Milli,
+  Micro,
+  NumUnits
+} TimeUnit;
+
+typedef struct
+{
+  const double factor;
+  const char* suffix;
+} TimeConversion;
+
+static const TimeConversion conversions[NumUnits]
+  = {[Day]    = {.factor = 1 / 24., .suffix = "d"},
+     [Hour]   = {.factor = 1 / 60., .suffix = "h"},
+     [Minute] = {.factor = 1 / 60., .suffix = "min"},
+     [Second] = {.factor = 1., .suffix = "s"},
+     [Milli]  = {.factor = 1000., .suffix = "ms"},
+     [Micro]  = {.factor = 1000., .suffix = "\xc2\xb5s"}};
+
 SLEQP_RETCODE
 sleqp_timer_create(SleqpTimer** star)
 {
@@ -159,6 +184,67 @@ sleqp_timer_get_num_runs(SleqpTimer* timer)
   return timer->num_runs;
 }
 
+static SLEQP_RETCODE
+round_up_time(double* time, const char** suffix)
+{
+  for (int idx = Second; idx >= 0; --idx)
+  {
+    const TimeConversion* conversion = conversions + idx;
+
+    const double next_time = (*time) * conversion->factor;
+
+    if (next_time >= 1.)
+    {
+      *time   = next_time;
+      *suffix = conversion->suffix;
+    }
+    else
+    {
+      break;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+round_down_time(double* time, const char** suffix)
+{
+  for (int idx = Second; idx < NumUnits; ++idx)
+  {
+    if (*time >= 1.)
+    {
+      break;
+    }
+
+    const TimeConversion* conversion = conversions + idx;
+
+    *time *= conversion->factor;
+    *suffix = conversion->suffix;
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+round_time(double* time, const char** suffix)
+{
+  if (*time == 0.)
+  {
+    *suffix = conversions[Second].suffix;
+    return SLEQP_OKAY;
+  }
+
+  if (*time >= 1.)
+  {
+    return round_up_time(time, suffix);
+  }
+  else
+  {
+    return round_down_time(time, suffix);
+  }
+}
+
 SLEQP_RETCODE
 sleqp_timer_display(SleqpTimer* timer,
                     const char* description,
@@ -168,8 +254,8 @@ sleqp_timer_display(SleqpTimer* timer,
 
   const int num_runs = sleqp_timer_get_num_runs(timer);
 
-  const double avg_time   = sleqp_timer_get_avg(timer);
-  const double total_time = sleqp_timer_get_ttl(timer);
+  double avg_time   = sleqp_timer_get_avg(timer);
+  double total_time = sleqp_timer_get_ttl(timer);
 
   if (num_runs == 0)
   {
@@ -179,25 +265,34 @@ sleqp_timer_display(SleqpTimer* timer,
   {
     const double percent = (total_time / total_elapsed) * 100.;
 
+    const char* total_suffix = NULL;
+    SLEQP_CALL(round_time(&total_time, &total_suffix));
+
     if (num_runs == 1)
     {
       snprintf(buffer,
                BUF_SIZE,
-               "%30s: %5d (%.6fs = %6.2f%%)",
+               "%30s: %5d (%6.2f%s = %6.2f%%)",
                description,
                num_runs,
                total_time,
+               total_suffix,
                percent);
     }
     else
     {
+      const char* avg_suffix = NULL;
+      SLEQP_CALL(round_time(&avg_time, &avg_suffix));
+
       snprintf(buffer,
                BUF_SIZE,
-               "%30s: %5d (%.6fs avg, %8.2fs total = %6.2f%%)",
+               "%30s: %5d (%6.2f%s avg, %8.2f%s total = %6.2f%%)",
                description,
                num_runs,
                avg_time,
+               avg_suffix,
                total_time,
+               total_suffix,
                percent);
     }
   }
