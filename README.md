@@ -2,22 +2,23 @@
 
 ## Introduction
 
-SLEQP is a software package for large-scale [nonlinear optimization](https://en.wikipedia.org/wiki/Nonlinear_programming).
+SLEQP is a software package for
+large-scale [nonlinear optimization](https://en.wikipedia.org/wiki/Nonlinear_programming).
 It is designed to find (local) solutions of mathematical optimization problems of the form
 
 ```
    min     f(x)
-  x ∈ Rⁿ
+  x ∈ ℝⁿ
 
 s.t.         l ≤ c(x) ≤ u
            x_l ≤  x   ≤ x_u
 ```
 
-where ```f: Rⁿ --> R``` is the optimization objective, and ```c: Rⁿ --> Rᵐ```
+where ```f: ℝⁿ --> ℝ``` is the optimization objective, and ```c: ℝⁿ --> ℝᵐ```
 are optimization constraints.
 
-The vectors `l, u ∈ Rⁿ` denote the lower and upper bounds on the
-variables, while the vectors `x_l, x_u ∈ Rᵐ` are bounds on the
+The vectors `l, u ∈ ℝᵐ` denote the lower and upper bounds on the
+variables, while the vectors `x_l, x_u ∈ ℝⁿ` are bounds on the
 nonlinear constraints. The functions `f(x)` and `c(x)` can be
 nonlinear and nonconvex, but should be twice continuously
 differentiable.
@@ -39,6 +40,7 @@ For factorizations, one of the following factorization libraries is required:
 * [MA57](https://www.hsl.rl.ac.uk/archive/specs/ma57.pdf)
 * [MA86](https://www.hsl.rl.ac.uk/ipopt/)
 * [MA97](https://www.hsl.rl.ac.uk/ipopt/)
+* [SPQR](http://faculty.cse.tamu.edu/davis/suitesparse.html)
 
 Additional dependencies:
 * [trlib](https://github.com/felixlen/trlib) for nonconvex trust region QP solving
