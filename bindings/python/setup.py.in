@@ -6,14 +6,19 @@ import subprocess
 
 import numpy
 
+project_description = '@PROJECT_DESCRIPTION@'
+long_description = '@PROJECT_LONG_DESCRIPTION@'
 project_name = '@PROJECT_NAME@'
 project_version = '@PROJECT_VERSION@'
+license_file ='LICENSE.txt'
+maintainer_name = '@PROJECT_MAINTAINER_NAME@'
+maintainer_email = '@PROJECT_MAINTAINER_EMAIL@'
 
 try:
-  from local_config import local_libdirs, local_include_dirs
+    from local_config import local_libdirs, local_include_dirs
 except ImportError:
-  local_libdirs = []
-  local_include_dirs = []
+    local_libdirs = []
+    local_include_dirs = []
 
 
 def pkgconfig(name):
@@ -39,9 +44,11 @@ def pkgconfig(name):
 
 pkgconfig_args = pkgconfig(project_name)
 
+
 def cythonize(*args, **kwargs):
     from Cython.Build import cythonize
     return cythonize(*args, **kwargs)
+
 
 extensions = [
     Extension("sleqp.sleqp",
@@ -51,7 +58,7 @@ extensions = [
               extra_link_args=pkgconfig_args['libs'],
               library_dirs=local_libdirs + pkgconfig_args['libdirs'],
               extra_compile_args=pkgconfig_args['cflags']
-    )]
+              )]
 
 requirements = []
 
@@ -61,6 +68,11 @@ with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(name=project_name,
+      author=maintainer_name,
+      author_email=maintainer_email,
+      description=(project_description),
+      license_file=license_file,
+      long_description=long_description,
       version=project_version,
       ext_modules=cythonize(extensions),
       packages=find_packages(exclude=["tests"]),
