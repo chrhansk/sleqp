@@ -3,7 +3,6 @@
 #include <assert.h>
 #include <math.h>
 #include <string.h>
-#include <threads.h>
 
 #include "cmp.h"
 #include "defs.h"
@@ -20,7 +19,7 @@
 
 #define SOLVER_INFO_BUF_SIZE 400
 
-thread_local char solver_info[SOLVER_INFO_BUF_SIZE];
+_Thread_local char solver_info[SOLVER_INFO_BUF_SIZE];
 
 static SLEQP_RETCODE
 solver_convert_primal(SleqpSolver* solver,

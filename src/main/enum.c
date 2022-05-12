@@ -3,7 +3,6 @@
 #include "cmp.h"
 
 #include <string.h>
-#include <threads.h>
 
 static bool
 enum_member(const SleqpEnum* enum_struct, int value)
