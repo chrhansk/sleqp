@@ -1,3 +1,6 @@
+[tox]
+envlist = py-{34,38,39,310}
+
 [testenv]
 deps =
      -r{toxinidir}/requirements.txt
