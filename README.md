@@ -18,10 +18,9 @@ where ```f: ℝⁿ --> ℝ``` is the optimization objective, and ```c: ℝⁿ --
 are optimization constraints.
 
 The vectors `l, u ∈ ℝᵐ` denote the lower and upper bounds on the
-variables, while the vectors `x_l, x_u ∈ ℝⁿ` are bounds on the
-nonlinear constraints. The functions `f(x)` and `c(x)` can be
-nonlinear and nonconvex, but should be twice continuously
-differentiable.
+nonlinear constraints, while the vectors `x_l, x_u ∈ ℝⁿ` are bounds on
+the variables. The functions `f(x)` and `c(x)` can be nonlinear and
+nonconvex, but should be twice continuously differentiable.
 
 ## Dependencies
 
