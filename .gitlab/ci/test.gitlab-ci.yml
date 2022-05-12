@@ -101,7 +101,7 @@ test_python:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_UNIT_TESTS=Off
       -DSLEQP_ENABLE_PYTHON=On
       -DSLEQP_FACT=$DEFAULT_FACT
       -DSLEQP_LPS=$DEFAULT_LPS
