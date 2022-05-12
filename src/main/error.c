@@ -1,12 +1,11 @@
 #include "error.h"
 
 #include <stdarg.h>
-#include <threads.h>
 
 #define ERROR_MSG_SIZE 2048
 
-static thread_local char error_msg[ERROR_MSG_SIZE];
-static thread_local SLEQP_ERROR_TYPE etype;
+static _Thread_local char error_msg[ERROR_MSG_SIZE];
+static _Thread_local SLEQP_ERROR_TYPE etype;
 
 const char*
 sleqp_error_msg()
