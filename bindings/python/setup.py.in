@@ -10,7 +10,7 @@ project_description = '@PROJECT_DESCRIPTION@'
 long_description = '@PROJECT_LONG_DESCRIPTION@'
 project_name = '@PROJECT_NAME@'
 project_version = '@PROJECT_VERSION@'
-license_file ='LICENSE.txt'
+license_file = 'LICENSE.txt'
 maintainer_name = '@PROJECT_MAINTAINER_NAME@'
 maintainer_email = '@PROJECT_MAINTAINER_EMAIL@'
 
@@ -24,7 +24,9 @@ except ImportError:
 def pkgconfig(name):
 
     def pkgconfig_get(flags):
-        res = subprocess.run(['pkg-config', flags, name], capture_output=True)
+        res = subprocess.run(['pkg-config', flags, name],
+                             stdout=subprocess.PIPE,
+                             check=True)
 
         return res.stdout.decode().strip().split()
 
