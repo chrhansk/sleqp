@@ -17,8 +17,10 @@ if(PythonInterp_FOUND AND PythonLibs_FOUND)
 
   add_python_project(
     PROJECT_NAME "sleqp"
+    EXTRA_ARGS "SLEQP_LOCAL_BUILD=1"
+    EXTRA_INCDIR "${SLEQP_LOCAL_HEADER_DIR}"
+    EXTRA_LIBDIR "${SLEQP_LIBRARY_DIR}"
     CONFIG_FILES
-    "local_config.py.in"
     "setup.py.in"
     "tox.ini.in"
     "docs/conf.py.in"

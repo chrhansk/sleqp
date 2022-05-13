@@ -15,20 +15,13 @@ license_file = 'LICENSE.txt'
 maintainer_name = '@PROJECT_MAINTAINER_NAME@'
 maintainer_email = '@PROJECT_MAINTAINER_EMAIL@'
 
-local_build = True
+local_env = os.getenv('SLEQP_LOCAL_BUILD')
+local_build = (local_env is not None)
 
 ldflags = []
 cflags = []
 lib_dirs = []
 include_dirs = []
-
-try:
-    from local_config import local_libdirs, local_include_dirs
-    lib_dirs += local_libdirs
-    include_dirs += local_include_dirs
-except ImportError:
-    local_env = os.getenv('SLEQP_LOCAL_BUILD')
-    local_build = (local_env is not None)
 
 
 def pkgconfig(name):
