@@ -22,7 +22,7 @@ package_wheel:
     - build
   script:
     - cd build
-    - make python_sleqp_bdist_wheel
+    - make sleqp_python_bdist_wheel
   dependencies:
     - build
   artifacts:
@@ -37,7 +37,7 @@ package_sdist:
     - build
   script:
     - cd build
-    - make python_sleqp_sdist
+    - make sleqp_python_sdist
   dependencies:
     - build
   artifacts:

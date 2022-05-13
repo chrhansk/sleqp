@@ -24,11 +24,11 @@ if(PythonInterp_FOUND AND PythonLibs_FOUND)
     "docs/conf.py.in"
     PROJECT_COMPONENT "python")
 
-  add_dependencies(python_sleqp sleqp_local_headers sleqp)
+  add_dependencies(sleqp_python sleqp_local_headers sleqp)
 
-  add_dependencies(build_tests python_sleqp)
+  add_dependencies(build_tests sleqp_python)
 
-  add_dependencies(doc python_sleqp_doc)
+  add_dependencies(doc sleqp_python_doc)
 
 else()
   message(STATUS "Could not find python, extension will not be built")

@@ -16,15 +16,13 @@ function(add_python_project)
 
   set(PROJECT_NAME "${ARGS_PROJECT_NAME}")
 
-  set(TARGET_NAME "python_${PROJECT_NAME}")
+  set(TARGET_NAME "${PROJECT_NAME}_python")
 
   set(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
   set(DOC_DIR "${PROJECT_DIR}/docs")
 
-  set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
-
-  set(DOC_TARGET "python_${PROJECT_NAME}_doc")
+  set(DOC_TARGET "${TARGET_NAME}_doc")
 
   set(PYTHON_CFLAGS "")
 
@@ -59,30 +57,18 @@ function(add_python_project)
 
   endif()
 
-  add_custom_command(
-    TARGET ${TARGET_NAME}
-    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} build build_ext --inplace
-    WORKING_DIRECTORY ${PROJECT_DIR})
-
   add_custom_target("${TARGET_NAME}_sdist")
 
   add_custom_command(
     TARGET "${TARGET_NAME}_sdist"
-    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} sdist --formats=gztar
-    WORKING_DIRECTORY ${PROJECT_DIR})
-
-  add_custom_target("${TARGET_NAME}_bdist")
-
-  add_custom_command(
-    TARGET "${TARGET_NAME}_bdist"
-    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist
+    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} -m build -s
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   add_custom_target("${TARGET_NAME}_bdist_wheel")
 
   add_custom_command(
     TARGET "${TARGET_NAME}_bdist_wheel"
-    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} -m build -w
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   if(ENABLE_UNIT_TESTS)

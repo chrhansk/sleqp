@@ -45,8 +45,7 @@ Additional dependencies:
 * [trlib](https://github.com/felixlen/trlib) for nonconvex trust region QP solving
 
 Optional dependencies for the python bindings:
-* [Python](https://www.python.org/) itself, including `setuptools`, `numpy`, and `scipy`
-* [Cython](https://cython.org/) to build the extension
+* [Python](https://www.python.org/) itself, including `python-build`
 
 Optional dependencies for the mex bindings:
 * [MATLAB](https://www.mathworks.com/products/matlab.html), *or*
