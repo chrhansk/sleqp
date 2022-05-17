@@ -68,9 +68,6 @@ cutest_uncons_func_set(SleqpFunc* func,
                        SleqpVec* x,
                        SLEQP_VALUE_REASON reason,
                        bool* reject,
-                       int* obj_grad_nnz,
-                       int* cons_val_nnz,
-                       int* cons_jac_nnz,
                        void* func_data)
 {
   CUTestUnconsFuncData* data = (CUTestUnconsFuncData*)func_data;
@@ -78,11 +75,6 @@ cutest_uncons_func_set(SleqpFunc* func,
   SLEQP_CALL(sleqp_vec_to_raw(x, data->x));
 
   data->goth = cutest_false;
-
-  *obj_grad_nnz = data->num_variables;
-
-  *cons_val_nnz = 0;
-  *cons_jac_nnz = 0;
 
   return SLEQP_OKAY;
 }
