@@ -83,7 +83,7 @@ typedef struct SleqpLpiHIGHS
   {                                                                            \
     int highs_ret_status = (x);                                                \
                                                                                \
-    if (highs_ret_status != HighsStatuskOk)                                    \
+    if (highs_ret_status == HighsStatuskError)                                 \
     {                                                                          \
       sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
                   "Caught HiGHS error <%d>",                                   \

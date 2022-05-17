@@ -152,9 +152,6 @@ cutest_cons_func_set(SleqpFunc* func,
                      SleqpVec* x,
                      SLEQP_VALUE_REASON reason,
                      bool* reject,
-                     int* obj_grad_nnz,
-                     int* cons_val_nnz,
-                     int* cons_jac_nnz,
                      void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
@@ -163,9 +160,18 @@ cutest_cons_func_set(SleqpFunc* func,
 
   data->goth = cutest_false;
 
-  *obj_grad_nnz = data->num_variables;
+  return SLEQP_OKAY;
+}
 
-  *cons_val_nnz = data->num_constraints;
+static SLEQP_RETCODE
+cutest_cons_func_nonzeros(SleqpFunc* func,
+                          int* obj_grad_nnz,
+                          int* cons_val_nnz,
+                          int* cons_jac_nnz,
+                          int* hess_prod_nnz,
+                          void* func_data)
+{
+  CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
 
   *cons_jac_nnz = data->jac_nnz_max;
 
@@ -576,6 +582,7 @@ sleqp_cutest_cons_func_create(SleqpFunc** star,
                                      params));
 
   SleqpFuncCallbacks callbacks = {.set_value = cutest_cons_func_set,
+                                  .nonzeros  = cutest_cons_func_nonzeros,
                                   .obj_val   = cutest_cons_func_obj_val,
                                   .obj_grad  = cutest_cons_func_obj_grad,
                                   .cons_val  = cutest_cons_cons_val,
