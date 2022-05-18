@@ -37,15 +37,18 @@ typedef struct
 {
   const double factor;
   const char* suffix;
+  int len;
 } TimeConversion;
 
+const int suffix_format_len = 3;
+
 static const TimeConversion conversions[NumUnits]
-  = {[Day]    = {.factor = 1 / 24., .suffix = "d"},
-     [Hour]   = {.factor = 1 / 60., .suffix = "h"},
-     [Minute] = {.factor = 1 / 60., .suffix = "min"},
-     [Second] = {.factor = 1., .suffix = "s"},
-     [Milli]  = {.factor = 1000., .suffix = "ms"},
-     [Micro]  = {.factor = 1000., .suffix = "\xc2\xb5s"}};
+  = {[Day]    = {.factor = 1 / 24., .suffix = "d", .len = 1},
+     [Hour]   = {.factor = 1 / 60., .suffix = "h", .len = 1},
+     [Minute] = {.factor = 1 / 60., .suffix = "min", .len = 3},
+     [Second] = {.factor = 1., .suffix = "s", .len = 1},
+     [Milli]  = {.factor = 1000., .suffix = "ms", .len = 2},
+     [Micro]  = {.factor = 1000., .suffix = "\xc2\xb5s", .len = 2}};
 
 SLEQP_RETCODE
 sleqp_timer_create(SleqpTimer** star)
@@ -185,7 +188,7 @@ sleqp_timer_get_num_runs(SleqpTimer* timer)
 }
 
 static SLEQP_RETCODE
-round_up_time(double* time, const char** suffix)
+round_up_time(double* time, const char** suffix, int* len)
 {
   for (int idx = Second; idx >= 0; --idx)
   {
@@ -197,6 +200,7 @@ round_up_time(double* time, const char** suffix)
     {
       *time   = next_time;
       *suffix = conversion->suffix;
+      *len    = conversion->len;
     }
     else
     {
@@ -208,7 +212,7 @@ round_up_time(double* time, const char** suffix)
 }
 
 static SLEQP_RETCODE
-round_down_time(double* time, const char** suffix)
+round_down_time(double* time, const char** suffix, int* len)
 {
   for (int idx = Second; idx < NumUnits; ++idx)
   {
@@ -221,13 +225,14 @@ round_down_time(double* time, const char** suffix)
 
     *time *= conversion->factor;
     *suffix = conversion->suffix;
+    *len    = conversion->len;
   }
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-round_time(double* time, const char** suffix)
+round_time(double* time, const char** suffix, int* len)
 {
   if (*time == 0.)
   {
@@ -237,11 +242,11 @@ round_time(double* time, const char** suffix)
 
   if (*time >= 1.)
   {
-    return round_up_time(time, suffix);
+    return round_up_time(time, suffix, len);
   }
   else
   {
-    return round_down_time(time, suffix);
+    return round_down_time(time, suffix, len);
   }
 }
 
@@ -266,32 +271,40 @@ sleqp_timer_display(SleqpTimer* timer,
     const double percent = (total_time / total_elapsed) * 100.;
 
     const char* total_suffix = NULL;
-    SLEQP_CALL(round_time(&total_time, &total_suffix));
+    int total_len;
+    SLEQP_CALL(round_time(&total_time, &total_suffix, &total_len));
 
     if (num_runs == 1)
     {
       snprintf(buffer,
                BUF_SIZE,
-               "%30s: %5d (%6.2f%s = %6.2f%%)",
+               "%30s: %5d (%6.2f %*s%s = %6.2f%%)",
                description,
                num_runs,
                total_time,
+               suffix_format_len - total_len,
+               "",
                total_suffix,
                percent);
     }
     else
     {
       const char* avg_suffix = NULL;
-      SLEQP_CALL(round_time(&avg_time, &avg_suffix));
+      int avg_len;
+      SLEQP_CALL(round_time(&avg_time, &avg_suffix, &avg_len));
 
       snprintf(buffer,
                BUF_SIZE,
-               "%30s: %5d (%6.2f%s avg, %8.2f%s total = %6.2f%%)",
+               "%30s: %5d (%6.2f %*s%s avg, %8.2f %*s%s total = %6.2f%%)",
                description,
                num_runs,
                avg_time,
+               suffix_format_len - avg_len,
+               "",
                avg_suffix,
                total_time,
+               suffix_format_len - total_len,
+               "",
                total_suffix,
                percent);
     }
