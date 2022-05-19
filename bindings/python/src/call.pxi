@@ -24,8 +24,10 @@ cdef object _exception_map = {
 cdef _get_exception():
   cdef csleqp.SLEQP_ERROR_TYPE error_type = csleqp.sleqp_error_type()
   cdef const char* error_msg = csleqp.sleqp_error_msg()
+  msg = error_msg.decode('UTF-8')
   if error_type in _exception_map:
-    return _exception_map[error_type]
+    exception = _exception_map[error_type]
+    return exception(msg)
   return Exception(error_msg.decode('UTF-8'))
 
 cdef _raise_exception():
