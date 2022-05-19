@@ -827,7 +827,7 @@ standard_cauchy_solve(SleqpVec* gradient,
     if (resolve)
     {
       sleqp_log_debug("Resolving reduced problem");
-      switch_to_reduced_problem(cauchy_data);
+      SLEQP_CALL(switch_to_reduced_problem(cauchy_data));
     }
   }
 
