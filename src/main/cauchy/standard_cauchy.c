@@ -525,8 +525,6 @@ switch_to_reduced_problem(CauchyData* cauchy_data)
   SLEQP_CALL(sleqp_lpi_set_objective(cauchy_data->reduced_interface,
                                      cauchy_data->objective));
 
-  SLEQP_CALL(sleqp_lpi_set_coeffs(cauchy_data->reduced_interface, cons_jac));
-
   const double* lower_slack_values = cauchy_data->primal_values + num_variables;
   const double* upper_slack_values = lower_slack_values + num_constraints;
 
@@ -544,6 +542,8 @@ switch_to_reduced_problem(CauchyData* cauchy_data)
                                   cauchy_data->cons_ub,
                                   cauchy_data->vars_lb,
                                   cauchy_data->vars_ub));
+
+  SLEQP_CALL(sleqp_lpi_set_coeffs(cauchy_data->reduced_interface, cons_jac));
 
   SLEQP_CALL(sleqp_lpi_set_time_limit(cauchy_data->reduced_interface,
                                       cauchy_data->time_limit));
@@ -630,6 +630,9 @@ needs_reduced_resolve(CauchyData* cauchy_data, bool* resolve)
 
   int k_lb = 0, k_ub = 0;
 
+  bool needs_resolve = false;
+  bool feasible      = true;
+
   for (int i = 0; i < num_constraints; ++i)
   {
     while (k_lb < lb->nnz && lb->indices[k_lb] < i)
@@ -666,15 +669,22 @@ needs_reduced_resolve(CauchyData* cauchy_data, bool* resolve)
     const bool zero_slacks  = (lower_slack == 0) && (upper_slack == 0.);
     const bool nonzero_dual = (cons_dual[i] != 0.);
 
+    if (!zero_slacks)
+    {
+      feasible = false;
+      break;
+    }
+
     // A constraint which is tight in the linearization with
     // a nonzero dual variable in the LP is *not* included
     // in the working set.
     if (zero_slacks && nonzero_dual)
     {
-      *resolve = true;
-      break;
+      needs_resolve = true;
     }
   }
+
+  *resolve = (feasible && needs_resolve);
 
   return SLEQP_OKAY;
 }
