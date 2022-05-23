@@ -11,7 +11,7 @@ typedef struct
 } AugJacData;
 
 static SLEQP_RETCODE
-aug_jac_set_iterate(SleqpIterate* iterate, void* data)
+box_constrained_set_iterate(SleqpIterate* iterate, void* data)
 {
   AugJacData* jacobian = (AugJacData*)data;
 
@@ -25,7 +25,9 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-aug_jac_min_norm_solution(const SleqpVec* rhs, SleqpVec* sol, void* data)
+box_constrained_min_norm_solution(const SleqpVec* rhs,
+                                  SleqpVec* sol,
+                                  void* data)
 {
   AugJacData* jacobian         = (AugJacData*)data;
   SleqpIterate* iterate        = jacobian->iterate;
@@ -36,24 +38,22 @@ aug_jac_min_norm_solution(const SleqpVec* rhs, SleqpVec* sol, void* data)
 
   for (int k = 0; k < rhs->nnz; ++k)
   {
-    const int j        = rhs->indices[k];
+    const int i        = rhs->indices[k];
     const double value = rhs->data[k];
-    const int index    = sleqp_working_set_var_index(working_set, j);
 
-    if (index == SLEQP_NONE)
-    {
-      SLEQP_CALL(sleqp_vec_push(sol, j, value));
-    }
+    const int j = sleqp_working_set_content(working_set, i);
+
+    SLEQP_CALL(sleqp_vec_push(sol, j, value));
   }
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-aug_jac_projection(const SleqpVec* rhs,
-                   SleqpVec* primal_sol,
-                   SleqpVec* dual_sol,
-                   void* data)
+box_constrained_projection(const SleqpVec* rhs,
+                           SleqpVec* primal_sol,
+                           SleqpVec* dual_sol,
+                           void* data)
 {
   AugJacData* jacobian         = (AugJacData*)data;
   SleqpIterate* iterate        = jacobian->iterate;
@@ -97,7 +97,7 @@ aug_jac_projection(const SleqpVec* rhs,
 }
 
 static SLEQP_RETCODE
-aug_jac_condition(bool* exact, double* condition, void* data)
+box_constrained_condition(bool* exact, double* condition, void* data)
 {
   *exact     = true;
   *condition = 1.;
@@ -106,7 +106,7 @@ aug_jac_condition(bool* exact, double* condition, void* data)
 }
 
 static SLEQP_RETCODE
-aug_jac_free(void* data)
+box_constrained_free(void* data)
 {
   AugJacData* jacobian = (AugJacData*)data;
 
@@ -118,7 +118,7 @@ aug_jac_free(void* data)
 }
 
 static SLEQP_RETCODE
-aug_jac_data_create(AugJacData** star)
+box_constrained_data_create(AugJacData** star)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -134,14 +134,14 @@ sleqp_box_constrained_aug_jac_create(SleqpAugJac** star, SleqpProblem* problem)
 {
   AugJacData* aug_jac_data;
 
-  SLEQP_CALL(aug_jac_data_create(&aug_jac_data));
+  SLEQP_CALL(box_constrained_data_create(&aug_jac_data));
 
   SleqpAugJacCallbacks callbacks
-    = {.set_iterate       = aug_jac_set_iterate,
-       .min_norm_solution = aug_jac_min_norm_solution,
-       .projection        = aug_jac_projection,
-       .condition         = aug_jac_condition,
-       .free              = aug_jac_free};
+    = {.set_iterate       = box_constrained_set_iterate,
+       .min_norm_solution = box_constrained_min_norm_solution,
+       .projection        = box_constrained_projection,
+       .condition         = box_constrained_condition,
+       .free              = box_constrained_free};
 
   SLEQP_CALL(
     sleqp_aug_jac_create(star, problem, &callbacks, (void*)aug_jac_data));
