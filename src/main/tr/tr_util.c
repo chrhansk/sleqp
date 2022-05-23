@@ -29,6 +29,8 @@ sleqp_tr_compute_bdry_sol(const SleqpVec* previous,
   const double d_norm_sq = d_norm * d_norm;
   const double p_norm_sq = p_norm * p_norm;
 
+  sleqp_assert_is_leq(p_norm, radius, eps);
+
   assert(d_norm_sq > 0.);
 
   const double squared_rad = radius * radius;

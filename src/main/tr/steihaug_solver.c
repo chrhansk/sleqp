@@ -10,10 +10,13 @@
 
 #include <math.h>
 
+#include "aug_jac/aug_jac.h"
 #include "cmp.h"
 #include "fail.h"
+#include "log.h"
 #include "mem.h"
-
+#include "params.h"
+#include "sparse/pub_vec.h"
 #include "tr/tr_util.h"
 
 static const double tolerance_factor = 1e-2;
@@ -65,6 +68,60 @@ steihaug_solver_free(void** star)
 
   return SLEQP_OKAY;
 }
+
+#if !defined(NDEBUG)
+
+static SLEQP_RETCODE
+check_projection(SleqpSteihaugSolver* solver,
+                 SleqpAugJac* jacobian,
+                 SleqpVec* step)
+{
+  SleqpVec* sparse_cache = solver->sparse_cache;
+
+  assert(step != sparse_cache);
+
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
+  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, step, sparse_cache, NULL));
+
+  sleqp_num_assert(sleqp_vec_eq(step, sparse_cache, eps));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+check_trust_radius(SleqpSteihaugSolver* solver,
+                   double trust_radius,
+                   SleqpVec* step)
+{
+  SleqpVec* sparse_cache = solver->sparse_cache;
+
+  assert(step != sparse_cache);
+
+  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
+  sleqp_assert_is_leq(sleqp_vec_norm(step), trust_radius, eps);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+check_direction(SleqpSteihaugSolver* solver,
+                SleqpAugJac* jacobian,
+                double trust_radius,
+                SleqpVec* step)
+{
+  SLEQP_CALL(check_projection(solver, jacobian, step));
+  SLEQP_CALL(check_trust_radius(solver, trust_radius, step));
+
+  return SLEQP_OKAY;
+}
+
+#endif
 
 static SLEQP_RETCODE
 steihaug_collect_rayleigh(SleqpSteihaugSolver* solver,
@@ -197,6 +254,10 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
       break;
     }
 
+#if !defined(NDEBUG)
+    SLEQP_CALL(check_projection(solver, jacobian, solver->d));
+#endif
+
     // if |r_{j+1}^T * g_{j+1}| < eps_k:
     if (fabs(r_dot_g) < rel_tol_sq)
     {
@@ -205,6 +266,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 
       // return p_k = z_{j+1}
       SLEQP_CALL(sleqp_vec_copy(solver->z, newton_step));
+
       break;
     }
 
@@ -299,6 +361,10 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
       sleqp_log_debug("CG solver found boundary solution after %d iterations",
                       iteration);
 
+#if !defined(NDEBUG)
+      SLEQP_CALL(check_direction(solver, jacobian, trust_radius, newton_step));
+#endif
+
       break;
     }
 
@@ -319,6 +385,10 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
     // set g_{j+1} = P[r_{j+1}]
     SLEQP_CALL(sleqp_aug_jac_projection(jacobian, solver->r, solver->g, NULL));
 
+#if !defined(NDEBUG)
+    SLEQP_CALL(check_projection(solver, jacobian, solver->g));
+#endif
+
     // set beta_{j+1} = r_{j+1}^T * g_{j+1} / r_j^T * g_j
     beta = 1. / r_dot_g;
     SLEQP_CALL(sleqp_vec_dot(solver->r, solver->g, &r_dot_g));
@@ -333,6 +403,11 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
                                     solver->sparse_cache));
 
     SLEQP_CALL(sleqp_vec_copy(solver->sparse_cache, solver->d));
+
+#if !defined(NDEBUG)
+    SLEQP_CALL(check_projection(solver, jacobian, solver->g));
+    SLEQP_CALL(check_projection(solver, jacobian, solver->d));
+#endif
   }
   // end loop
 
