@@ -119,7 +119,7 @@ START_TEST(test_large_trust_region)
   ASSERT_CALL(
     sleqp_cauchy_solve(cauchy, grad, 1., SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy, iterate));
+  ASSERT_CALL(sleqp_cauchy_working_set(cauchy, iterate));
 
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
@@ -129,7 +129,7 @@ START_TEST(test_large_trust_region)
   ck_assert_int_eq(sleqp_working_set_var_state(working_set, 1),
                    SLEQP_ACTIVE_UPPER);
 
-  ASSERT_CALL(sleqp_cauchy_get_direction(cauchy, direction));
+  ASSERT_CALL(sleqp_cauchy_lp_step(cauchy, direction));
 
   ck_assert_int_eq(sleqp_vec_value_at(direction, 0), -1.);
 
@@ -139,7 +139,7 @@ START_TEST(test_large_trust_region)
 
   double actual_objective;
 
-  ASSERT_CALL(sleqp_cauchy_get_objective_value(cauchy, &actual_objective));
+  ASSERT_CALL(sleqp_cauchy_obj_val(cauchy, &actual_objective));
 
   double inner_product;
 
@@ -172,7 +172,7 @@ START_TEST(test_small_trust_region)
   ASSERT_CALL(
     sleqp_cauchy_solve(cauchy, grad, 1., SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy, iterate));
+  ASSERT_CALL(sleqp_cauchy_working_set(cauchy, iterate));
 
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
@@ -180,7 +180,7 @@ START_TEST(test_small_trust_region)
 
   ck_assert_int_eq(sleqp_working_set_var_state(working_set, 1), SLEQP_INACTIVE);
 
-  ASSERT_CALL(sleqp_cauchy_get_direction(cauchy, direction));
+  ASSERT_CALL(sleqp_cauchy_lp_step(cauchy, direction));
 
   ck_assert_int_eq(sleqp_vec_value_at(direction, 0), -trust_radius);
 
@@ -190,7 +190,7 @@ START_TEST(test_small_trust_region)
 
   double actual_objective;
 
-  ASSERT_CALL(sleqp_cauchy_get_objective_value(cauchy, &actual_objective));
+  ASSERT_CALL(sleqp_cauchy_obj_val(cauchy, &actual_objective));
 
   double inner_product;
 

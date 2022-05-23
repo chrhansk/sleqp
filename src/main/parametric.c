@@ -185,7 +185,7 @@ search_forward(SleqpParametricSolver* solver,
                                   penalty_parameter,
                                   SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-    SLEQP_CALL(sleqp_cauchy_get_direction(cauchy_data, direction_primal));
+    SLEQP_CALL(sleqp_cauchy_lp_step(cauchy_data, direction_primal));
 
     {
       *quadratic_merit = 0.;
@@ -273,7 +273,7 @@ search_backtracking(SleqpParametricSolver* solver,
                                   penalty_parameter,
                                   SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-    SLEQP_CALL(sleqp_cauchy_get_direction(cauchy_data, direction_primal));
+    SLEQP_CALL(sleqp_cauchy_lp_step(cauchy_data, direction_primal));
 
     const double zero_eps
       = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
@@ -337,7 +337,7 @@ SLEQP_RETCODE
 sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
                               SleqpIterate* iterate,
                               SleqpCauchy* cauchy_data,
-                              const SleqpVec* cauchy_step,
+                              const SleqpVec* lp_step,
                               const SleqpVec* multipliers,
                               SleqpDirection* cauchy_direction,
                               double* trust_radius,
@@ -345,7 +345,7 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
 {
   {
     SleqpVec* direction_primal = sleqp_direction_primal(cauchy_direction);
-    SLEQP_CALL(sleqp_vec_copy(cauchy_step, direction_primal));
+    SLEQP_CALL(sleqp_vec_copy(lp_step, direction_primal));
 
     const double zero_eps
       = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);

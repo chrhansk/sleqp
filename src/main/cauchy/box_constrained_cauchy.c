@@ -237,7 +237,7 @@ box_constrained_cauchy_solve(SleqpVec* gradient,
 }
 
 static SLEQP_RETCODE
-box_constrained_cauchy_get_objective_value(double* objective_value, void* data)
+box_constrained_cauchy_obj_val(double* objective_value, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
@@ -247,7 +247,7 @@ box_constrained_cauchy_get_objective_value(double* objective_value, void* data)
 }
 
 static SLEQP_RETCODE
-box_constrained_cauchy_get_working_set(SleqpIterate* iterate, void* data)
+box_constrained_cauchy_working_set(SleqpIterate* iterate, void* data)
 {
   CauchyData* cauchy_data      = (CauchyData*)data;
   SleqpProblem* problem        = cauchy_data->problem;
@@ -271,7 +271,7 @@ box_constrained_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-box_constrained_cauchy_get_direction(SleqpVec* direction, void* data)
+box_constrained_cauchy_lp_step(SleqpVec* direction, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
@@ -302,7 +302,7 @@ box_constrained_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
 }
 
 static SLEQP_RETCODE
-box_constrained_cauchy_get_violation(double* violation, void* data)
+box_constrained_cauchy_violation(double* violation, void* data)
 {
   *violation = 0.;
 
@@ -316,9 +316,9 @@ box_constrained_cauchy_set_time_limit(double time_limit, void* data)
 }
 
 static SLEQP_RETCODE
-box_constrained_cauchy_get_basis_condition(bool* exact,
-                                           double* condition,
-                                           void* data)
+box_constrained_cauchy_basis_condition(bool* exact,
+                                       double* condition,
+                                       void* data)
 {
   *condition = 1.;
   *exact     = true;
@@ -412,19 +412,19 @@ sleqp_box_constrained_cauchy_create(SleqpCauchy** star,
   SLEQP_CALL(cauchy_data_create(&cauchy_data, problem, params));
 
   SleqpCauchyCallbacks callbacks
-    = {.set_iterate         = box_constrained_cauchy_set_iterate,
-       .set_trust_radius    = box_constrained_cauchy_set_trust_radius,
-       .solve               = box_constrained_cauchy_solve,
-       .get_objective_value = box_constrained_cauchy_get_objective_value,
-       .get_working_set     = box_constrained_cauchy_get_working_set,
-       .get_direction       = box_constrained_cauchy_get_direction,
-       .locally_infeasible  = box_constrained_cauchy_locally_infeasible,
-       .estimate_duals      = box_constrained_cauchy_estimate_duals,
-       .get_violation       = box_constrained_cauchy_get_violation,
-       .set_time_limit      = box_constrained_cauchy_set_time_limit,
-       .get_basis_condition = box_constrained_cauchy_get_basis_condition,
-       .print_stats         = box_constrained_cauchy_print_stats,
-       .free                = box_constrained_cauchy_free};
+    = {.set_iterate        = box_constrained_cauchy_set_iterate,
+       .set_trust_radius   = box_constrained_cauchy_set_trust_radius,
+       .solve              = box_constrained_cauchy_solve,
+       .obj_val            = box_constrained_cauchy_obj_val,
+       .working_set        = box_constrained_cauchy_working_set,
+       .lp_step            = box_constrained_cauchy_lp_step,
+       .locally_infeasible = box_constrained_cauchy_locally_infeasible,
+       .estimate_duals     = box_constrained_cauchy_estimate_duals,
+       .violation          = box_constrained_cauchy_violation,
+       .set_time_limit     = box_constrained_cauchy_set_time_limit,
+       .basis_condition    = box_constrained_cauchy_basis_condition,
+       .print_stats        = box_constrained_cauchy_print_stats,
+       .free               = box_constrained_cauchy_free};
 
   SLEQP_CALL(sleqp_cauchy_create(star, &callbacks, (void*)cauchy_data));
 

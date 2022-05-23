@@ -112,9 +112,9 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
 
   sleqp_log_debug("Criticality bound: %g", criticality_bound);
 
-  SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data, solver->lp_step));
+  SLEQP_CALL(sleqp_cauchy_lp_step(solver->cauchy_data, solver->lp_step));
 
-  SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data, iterate));
+  SLEQP_CALL(sleqp_cauchy_working_set(solver->cauchy_data, iterate));
 
   const double original_penalty = solver->penalty_parameter;
 
@@ -127,10 +127,9 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
 
   if (original_penalty != solver->penalty_parameter)
   {
-    SLEQP_CALL(
-      sleqp_cauchy_get_direction(solver->cauchy_data, solver->lp_step));
+    SLEQP_CALL(sleqp_cauchy_lp_step(solver->cauchy_data, solver->lp_step));
 
-    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data, iterate));
+    SLEQP_CALL(sleqp_cauchy_working_set(solver->cauchy_data, iterate));
   }
 
   return SLEQP_OKAY;
@@ -174,7 +173,7 @@ compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
   SLEQP_CALL(sleqp_working_set_copy(sleqp_iterate_working_set(iterate),
                                     solver->parametric_original_working_set));
 
-  SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data, iterate));
+  SLEQP_CALL(sleqp_cauchy_working_set(solver->cauchy_data, iterate));
 
   // Reconstruct the augmented Jacobian if required
   if (!sleqp_working_set_eq(solver->parametric_original_working_set,

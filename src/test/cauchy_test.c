@@ -195,7 +195,7 @@ START_TEST(test_unconstrained_cauchy_direction)
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, direction));
+  ASSERT_CALL(sleqp_cauchy_lp_step(cauchy_data, direction));
 
   ck_assert_int_eq(direction->dim, 2);
 

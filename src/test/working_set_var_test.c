@@ -62,7 +62,7 @@ START_TEST(test_inactive)
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
+  ASSERT_CALL(sleqp_cauchy_working_set(cauchy_data, iterate));
 
   ck_assert_int_eq(sleqp_working_set_var_state(working_set, 0), SLEQP_INACTIVE);
   ck_assert_int_eq(sleqp_working_set_var_state(working_set, 1), SLEQP_INACTIVE);
@@ -90,7 +90,7 @@ START_TEST(test_active)
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
+  ASSERT_CALL(sleqp_cauchy_working_set(cauchy_data, iterate));
 
   ck_assert_int_eq(sleqp_working_set_var_state(working_set, 0),
                    SLEQP_ACTIVE_LOWER);
@@ -120,7 +120,7 @@ START_TEST(test_first_active)
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
+  ASSERT_CALL(sleqp_cauchy_working_set(cauchy_data, iterate));
 
   ck_assert_int_eq(sleqp_working_set_var_state(working_set, 0),
                    SLEQP_ACTIVE_LOWER);

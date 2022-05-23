@@ -62,7 +62,7 @@ START_TEST(test_working_set)
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
+  ASSERT_CALL(sleqp_cauchy_working_set(cauchy_data, iterate));
 
   ck_assert_int_eq(sleqp_working_set_cons_state(working_set, 0),
                    SLEQP_INACTIVE);
@@ -88,9 +88,9 @@ START_TEST(test_dual_variable)
                                  penalty_parameter,
                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
 
-  ASSERT_CALL(sleqp_cauchy_get_working_set(cauchy_data, iterate));
+  ASSERT_CALL(sleqp_cauchy_working_set(cauchy_data, iterate));
 
-  ASSERT_CALL(sleqp_cauchy_get_direction(cauchy_data, cauchy_direction));
+  ASSERT_CALL(sleqp_cauchy_lp_step(cauchy_data, cauchy_direction));
 
   ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
 
