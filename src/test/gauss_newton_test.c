@@ -2,8 +2,10 @@
 #include <stdlib.h>
 
 #include "cmp.h"
+#include "direction.h"
 #include "gauss_newton.h"
 #include "problem.h"
+#include "sparse/pub_vec.h"
 #include "util.h"
 #include "working_step.h"
 
@@ -24,7 +26,8 @@ SleqpIterate* iterate;
 
 SleqpAugJac* aug_jac;
 
-SleqpVec* direction;
+SleqpDirection* direction;
+SleqpVec* cons_dual;
 SleqpVec* point;
 SleqpVec* initial;
 
@@ -57,7 +60,9 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac, problem));
 
-  ASSERT_CALL(sleqp_vec_create_empty(&direction, linear_lsq_num_variables));
+  ASSERT_CALL(sleqp_direction_create(&direction, problem, linear_lsq_params));
+
+  ASSERT_CALL(sleqp_vec_create_empty(&cons_dual, linear_lsq_num_constraints));
 
   ASSERT_CALL(sleqp_vec_create_empty(&point, linear_lsq_num_variables));
 
@@ -71,7 +76,9 @@ unconstrained_teardown()
 
   ASSERT_CALL(sleqp_vec_free(&point));
 
-  ASSERT_CALL(sleqp_vec_free(&direction));
+  ASSERT_CALL(sleqp_vec_free(&cons_dual));
+
+  ASSERT_CALL(sleqp_direction_release(&direction));
 
   ASSERT_CALL(sleqp_aug_jac_release(&aug_jac));
 
@@ -110,10 +117,13 @@ compute_point(const SleqpVec* initial, SleqpVec* point)
                                            trust_radius,
                                            penalty_parameter));
 
-  ASSERT_CALL(
-    sleqp_eqp_solver_compute_step(gauss_newton_solver, NULL, direction));
+  ASSERT_CALL(sleqp_eqp_solver_compute_direction(gauss_newton_solver,
+                                                 cons_dual,
+                                                 direction));
 
-  ASSERT_CALL(sleqp_vec_add(initial, direction, zero_eps, point));
+  SleqpVec* step = sleqp_direction_primal(direction);
+
+  ASSERT_CALL(sleqp_vec_add(initial, step, zero_eps, point));
 }
 
 // LSQR direction should point to optimum
@@ -177,10 +187,13 @@ START_TEST(test_unconstrained_small)
                                            trust_radius,
                                            penalty_parameter));
 
-  ASSERT_CALL(
-    sleqp_eqp_solver_compute_step(gauss_newton_solver, NULL, direction));
+  ASSERT_CALL(sleqp_eqp_solver_compute_direction(gauss_newton_solver,
+                                                 cons_dual,
+                                                 direction));
 
-  ck_assert(sleqp_is_eq(sleqp_vec_norm(direction), trust_radius, eps));
+  SleqpVec* step = sleqp_direction_primal(direction);
+
+  ck_assert(sleqp_is_eq(sleqp_vec_norm(step), trust_radius, eps));
 }
 END_TEST
 
@@ -223,7 +236,9 @@ constrained_setup()
 
   ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac, problem));
 
-  ASSERT_CALL(sleqp_vec_create_empty(&direction, linear_lsq_num_variables));
+  ASSERT_CALL(sleqp_direction_create(&direction, problem, linear_lsq_params));
+
+  ASSERT_CALL(sleqp_vec_create_empty(&cons_dual, linear_lsq_num_constraints));
 
   ASSERT_CALL(sleqp_vec_create_empty(&point, linear_lsq_num_variables));
 
@@ -237,7 +252,9 @@ constrained_teardown()
 
   ASSERT_CALL(sleqp_vec_free(&point));
 
-  ASSERT_CALL(sleqp_vec_free(&direction));
+  ASSERT_CALL(sleqp_vec_free(&cons_dual));
+
+  ASSERT_CALL(sleqp_direction_release(&direction));
 
   ASSERT_CALL(sleqp_aug_jac_release(&aug_jac));
 

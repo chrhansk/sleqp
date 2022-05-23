@@ -3,11 +3,13 @@
 #include <math.h>
 
 #include "cmp.h"
+#include "direction.h"
 #include "fail.h"
 #include "feas.h"
 #include "log.h"
 #include "lsq.h"
 #include "mem.h"
+#include "sparse/pub_vec.h"
 #include "util.h"
 #include "working_step.h"
 
@@ -560,20 +562,29 @@ solve_lsqr(GaussNewtonSolver* solver)
 }
 
 static SLEQP_RETCODE
-gauss_newton_solver_compute_step(const SleqpVec* multipliers,
-                                 SleqpVec* step,
-                                 void* data)
+gauss_newton_solver_compute_direction(const SleqpVec* multipliers,
+                                      SleqpDirection* direction,
+                                      void* data)
 {
   GaussNewtonSolver* solver = (GaussNewtonSolver*)data;
 
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
+  SleqpVec* step = sleqp_direction_primal(direction);
+
   SleqpVec* initial_step = sleqp_working_step_get_step(solver->working_step);
 
   SLEQP_CALL(solve_lsqr(solver));
 
   SLEQP_CALL(sleqp_vec_add(initial_step, solver->sol, zero_eps, step));
+
+  SLEQP_CALL(sleqp_direction_reset(direction,
+                                   solver->problem,
+                                   solver->iterate,
+                                   multipliers,
+                                   solver->dense_cache,
+                                   zero_eps));
 
 #ifndef NDEBUG
 
@@ -686,7 +697,7 @@ sleqp_gauss_newton_solver_create(SleqpEQPSolver** star,
     = {.set_iterate              = gauss_newton_solver_set_iterate,
        .set_time_limit           = gauss_newton_set_time_limit,
        .add_violated_multipliers = gauss_newton_add_violated_multipliers,
-       .compute_step             = gauss_newton_solver_compute_step,
+       .compute_direction        = gauss_newton_solver_compute_direction,
        .current_rayleigh         = gauss_newton_current_rayleigh,
        .free                     = gauss_newton_solver_free};
 

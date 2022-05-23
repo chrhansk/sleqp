@@ -4,6 +4,7 @@
 #include <trlib.h>
 
 #include "cmp.h"
+#include "direction.h"
 #include "fail.h"
 #include "feas.h"
 #include "iterate.h"
@@ -461,9 +462,9 @@ print_objective(NewtonSolver* solver,
 }
 
 static SLEQP_RETCODE
-newton_solver_compute_step(const SleqpVec* multipliers,
-                           SleqpVec* newton_step,
-                           void* data)
+newton_solver_compute_direction(const SleqpVec* multipliers,
+                                SleqpDirection* newton_direction,
+                                void* data)
 {
   NewtonSolver* solver = (NewtonSolver*)data;
   assert(solver->iterate);
@@ -475,6 +476,8 @@ newton_solver_compute_step(const SleqpVec* multipliers,
 
   SleqpAugJac* jacobian = solver->aug_jac;
   double tr_dual        = 0.;
+
+  SleqpVec* newton_step = sleqp_direction_primal(newton_direction);
 
   const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
@@ -527,6 +530,13 @@ newton_solver_compute_step(const SleqpVec* multipliers,
                              tr_step,
                              reduced_trust_radius,
                              tr_dual));
+
+  SLEQP_CALL(sleqp_direction_reset(newton_direction,
+                                   solver->problem,
+                                   solver->iterate,
+                                   multipliers,
+                                   solver->dense_cache,
+                                   zero_eps));
 
 #if !defined(NDEBUG)
 
@@ -618,7 +628,7 @@ sleqp_newton_solver_create(SleqpEQPSolver** star,
     = {.set_iterate              = newton_solver_set_iterate,
        .set_time_limit           = newton_solver_set_time_limit,
        .add_violated_multipliers = newton_solver_add_violated_multipliers,
-       .compute_step             = newton_solver_compute_step,
+       .compute_direction        = newton_solver_compute_direction,
        .current_rayleigh         = newton_solver_current_rayleigh,
        .free                     = newton_solver_free};
 

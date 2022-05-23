@@ -1,6 +1,7 @@
 #ifndef SLEQP_TRIAL_POINT_H
 #define SLEQP_TRIAL_POINT_H
 
+#include "direction.h"
 #include "dual_estimation/dual_estimation.h"
 #include "eqp.h"
 #include "iterate.h"
@@ -24,19 +25,16 @@ typedef struct
   SleqpParams* params;
   SleqpOptions* options;
 
-  SleqpVec* cauchy_direction;
+  SleqpVec* lp_step;
 
-  SleqpVec* cauchy_step;
-  SleqpVec* cauchy_hessian_step;
-
+  SleqpDirection* cauchy_direction;
   SleqpVec* estimation_residuals;
 
-  SleqpVec* newton_step;
-  SleqpVec* newton_hessian_step;
+  SleqpDirection* newton_direction;
 
-  SleqpVec* soc_step;
+  SleqpDirection* soc_direction;
 
-  SleqpVec* trial_step;
+  SleqpDirection* trial_direction;
 
   SleqpVec* multipliers;
 

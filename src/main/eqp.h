@@ -1,6 +1,7 @@
 #ifndef SLEQP_EQP_H
 #define SLEQP_EQP_H
 
+#include "direction.h"
 #include "eqp_types.h"
 #include "timer.h"
 
@@ -34,9 +35,9 @@ sleqp_eqp_solver_add_violated_multipliers(SleqpEQPSolver* solver,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_eqp_solver_compute_step(SleqpEQPSolver* solver,
-                              const SleqpVec* multipliers,
-                              SleqpVec* newton_step);
+sleqp_eqp_solver_compute_direction(SleqpEQPSolver* solver,
+                                   const SleqpVec* multipliers,
+                                   SleqpDirection* newton_direction);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

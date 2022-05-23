@@ -10,6 +10,7 @@ set(COMMON_SRC
   cauchy/unconstrained_cauchy.c
   cmp.c
   deriv_check.c
+  direction.c
   dual_estimation/dual_estimation.c
   dual_estimation/dual_estimation_lp.c
   dual_estimation/dual_estimation_lsq.c

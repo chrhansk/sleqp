@@ -6,6 +6,7 @@
  * @brief Definition of linesearch functions.
  **/
 
+#include "direction.h"
 #include "merit.h"
 #include "timer.h"
 
@@ -62,9 +63,7 @@ sleqp_linesearch_set_iterate(SleqpLineSearch* linesearch,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
-                             SleqpVec* direction,
-                             const SleqpVec* multipliers,
-                             SleqpVec* hessian_direction,
+                             SleqpDirection* direction,
                              bool* full_step,
                              double* quadratic_merit_value);
 
@@ -93,26 +92,22 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
-                            const SleqpVec* cauchy_step,
-                            const SleqpVec* cauchy_hessian_step,
+                            const SleqpDirection* cauchy_direction,
                             const double cauchy_quadratic_merit_value,
-                            const SleqpVec* newton_step,
-                            const SleqpVec* newton_hessian_step,
+                            const SleqpDirection* newton_direction,
                             const SleqpVec* multipliers,
-                            SleqpVec* trial_step,
+                            SleqpDirection* trial_direction,
                             double* step_length,
                             double* trial_quadratic_merit_value);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
-                                  const SleqpVec* cauchy_step,
-                                  const SleqpVec* cauchy_hessian_step,
+                                  const SleqpDirection* cauchy_direction,
                                   const double cauchy_quadratic_merit_value,
-                                  const SleqpVec* newton_step,
-                                  const SleqpVec* newton_hessian_step,
+                                  const SleqpDirection* newton_direction,
                                   const SleqpVec* multipliers,
-                                  SleqpVec* trial_step,
+                                  SleqpDirection* trial_direction,
                                   double* step_length,
                                   double* trial_quadratic_merit_value);
 
