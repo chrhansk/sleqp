@@ -845,7 +845,7 @@ standard_cauchy_solve(SleqpVec* gradient,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_objective_value(double* objective_value, void* data)
+standard_cauchy_obj_val(double* objective_value, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
@@ -1038,7 +1038,7 @@ get_simple_working_set(CauchyData* cauchy_data, SleqpIterate* iterate)
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_working_set(SleqpIterate* iterate, void* data)
+standard_cauchy_working_set(SleqpIterate* iterate, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
@@ -1068,7 +1068,7 @@ standard_cauchy_get_working_set(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_direction(SleqpVec* direction, void* data)
+standard_cauchy_lp_step(SleqpVec* direction, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
@@ -1342,7 +1342,7 @@ standard_cauchy_estimate_duals(const SleqpWorkingSet* working_set,
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_violation(double* violation, void* data)
+standard_cauchy_violation(double* violation, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
@@ -1375,7 +1375,7 @@ standard_cauchy_set_time_limit(double time_limit, void* data)
 }
 
 static SLEQP_RETCODE
-standard_cauchy_get_basis_condition(bool* exact, double* condition, void* data)
+standard_cauchy_basis_condition(bool* exact, double* condition, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
@@ -1453,19 +1453,19 @@ sleqp_standard_cauchy_create(SleqpCauchy** star,
   SLEQP_CALL(cauchy_data_create(&cauchy_data, problem, params, options));
 
   SleqpCauchyCallbacks callbacks
-    = {.set_iterate         = standard_cauchy_set_iterate,
-       .set_trust_radius    = standard_cauchy_set_trust_radius,
-       .solve               = standard_cauchy_solve,
-       .get_objective_value = standard_cauchy_get_objective_value,
-       .get_working_set     = standard_cauchy_get_working_set,
-       .get_direction       = standard_cauchy_get_direction,
-       .locally_infeasible  = standard_cauchy_locally_infeasible,
-       .estimate_duals      = standard_cauchy_estimate_duals,
-       .get_violation       = standard_cauchy_get_violation,
-       .set_time_limit      = standard_cauchy_set_time_limit,
-       .get_basis_condition = standard_cauchy_get_basis_condition,
-       .print_stats         = standard_cauchy_print_stats,
-       .free                = standard_cauchy_free};
+    = {.set_iterate        = standard_cauchy_set_iterate,
+       .set_trust_radius   = standard_cauchy_set_trust_radius,
+       .solve              = standard_cauchy_solve,
+       .obj_val            = standard_cauchy_obj_val,
+       .working_set        = standard_cauchy_working_set,
+       .lp_step            = standard_cauchy_lp_step,
+       .locally_infeasible = standard_cauchy_locally_infeasible,
+       .estimate_duals     = standard_cauchy_estimate_duals,
+       .violation          = standard_cauchy_violation,
+       .set_time_limit     = standard_cauchy_set_time_limit,
+       .basis_condition    = standard_cauchy_basis_condition,
+       .print_stats        = standard_cauchy_print_stats,
+       .free               = standard_cauchy_free};
 
   SLEQP_CALL(sleqp_cauchy_create(star, &callbacks, (void*)cauchy_data));
 

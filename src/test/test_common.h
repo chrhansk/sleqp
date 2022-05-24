@@ -3,14 +3,18 @@
 
 #include <check.h>
 
+#include "error.h"
 #include "log.h"
 #include "types.h"
 
 #define ASSERT_CALL(x)                                                         \
   do                                                                           \
   {                                                                            \
-    SLEQP_RETCODE _retcode_ = (x);                                             \
-    ck_assert_int_eq(_retcode_, SLEQP_OKAY);                                   \
+    SLEQP_RETCODE retcode = (x);                                               \
+    if (retcode != SLEQP_OKAY)                                                 \
+    {                                                                          \
+      ck_abort_msg("%s", sleqp_error_msg());                                   \
+    }                                                                          \
   } while (0)
 
 int

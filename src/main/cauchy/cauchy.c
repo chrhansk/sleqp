@@ -63,22 +63,21 @@ sleqp_cauchy_solve(SleqpCauchy* cauchy,
 }
 
 SLEQP_RETCODE
-sleqp_cauchy_get_objective_value(SleqpCauchy* cauchy, double* objective_value)
+sleqp_cauchy_obj_val(SleqpCauchy* cauchy, double* objective_value)
 {
-  return cauchy->callbacks.get_objective_value(objective_value,
-                                               cauchy->cauchy_data);
+  return cauchy->callbacks.obj_val(objective_value, cauchy->cauchy_data);
 }
 
 SLEQP_RETCODE
-sleqp_cauchy_get_working_set(SleqpCauchy* cauchy, SleqpIterate* iterate)
+sleqp_cauchy_working_set(SleqpCauchy* cauchy, SleqpIterate* iterate)
 {
-  return cauchy->callbacks.get_working_set(iterate, cauchy->cauchy_data);
+  return cauchy->callbacks.working_set(iterate, cauchy->cauchy_data);
 }
 
 SLEQP_RETCODE
-sleqp_cauchy_get_direction(SleqpCauchy* cauchy, SleqpVec* direction)
+sleqp_cauchy_lp_step(SleqpCauchy* cauchy, SleqpVec* direction)
 {
-  return cauchy->callbacks.get_direction(direction, cauchy->cauchy_data);
+  return cauchy->callbacks.lp_step(direction, cauchy->cauchy_data);
 }
 
 SLEQP_RETCODE
@@ -101,9 +100,9 @@ sleqp_cauchy_estimate_duals(SleqpCauchy* cauchy,
 }
 
 SLEQP_RETCODE
-sleqp_cauchy_get_violation(SleqpCauchy* cauchy, double* violation)
+sleqp_cauchy_violation(SleqpCauchy* cauchy, double* violation)
 {
-  return cauchy->callbacks.get_violation(violation, cauchy->cauchy_data);
+  return cauchy->callbacks.violation(violation, cauchy->cauchy_data);
 }
 
 SLEQP_RETCODE
@@ -113,13 +112,13 @@ sleqp_cauchy_set_time_limit(SleqpCauchy* cauchy, double time_limit)
 }
 
 SLEQP_RETCODE
-sleqp_cauchy_get_basis_condition(SleqpCauchy* cauchy,
-                                 bool* exact,
-                                 double* condition)
+sleqp_cauchy_basis_condition(SleqpCauchy* cauchy,
+                             bool* exact,
+                             double* condition)
 {
-  return cauchy->callbacks.get_basis_condition(exact,
-                                               condition,
-                                               cauchy->cauchy_data);
+  return cauchy->callbacks.basis_condition(exact,
+                                           condition,
+                                           cauchy->cauchy_data);
 }
 
 SLEQP_RETCODE
@@ -135,7 +134,7 @@ sleqp_cauchy_compute_criticality_bound(SleqpCauchy* cauchy,
 {
   double objective_value;
 
-  SLEQP_CALL(sleqp_cauchy_get_objective_value(cauchy, &objective_value));
+  SLEQP_CALL(sleqp_cauchy_obj_val(cauchy, &objective_value));
 
   const double reduction = merit_value - objective_value;
 

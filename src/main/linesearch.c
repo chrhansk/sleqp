@@ -1,9 +1,11 @@
 #include "linesearch.h"
 
 #include "cmp.h"
+#include "direction.h"
 #include "fail.h"
 #include "feas.h"
 #include "mem.h"
+#include "sparse/pub_vec.h"
 #include "util.h"
 
 #define LINESEARCH_MAX_IT 10000
@@ -44,13 +46,9 @@ struct SleqpLineSearch
   double penalty_parameter;
   double trust_radius;
 
-  double* prod_cache;
-
   SleqpVec* cauchy_point;
 
-  SleqpVec* cauchy_jacobian_prod;
   SleqpVec* cauchy_newton_jacobian_prod;
-  SleqpVec* newton_jacobian_prod;
   SleqpVec* cauchy_cons_val;
 
   SleqpVec* cauchy_violation;
@@ -61,7 +59,8 @@ struct SleqpLineSearch
 
   SleqpVec* violated_multipliers;
 
-  SleqpVec* test_direction;
+  SleqpDirection* test_direction;
+  double* cache;
 
   int num_breakpoints;
   int max_num_breakpoints;
@@ -98,18 +97,10 @@ sleqp_linesearch_create(SleqpLineSearch** star,
 
   linesearch->merit = merit;
 
-  SLEQP_CALL(sleqp_alloc_array(&linesearch->prod_cache, num_constraints));
-
   SLEQP_CALL(sleqp_vec_create_empty(&linesearch->cauchy_point, num_variables));
-
-  SLEQP_CALL(
-    sleqp_vec_create_empty(&linesearch->cauchy_jacobian_prod, num_constraints));
 
   SLEQP_CALL(sleqp_vec_create_empty(&linesearch->cauchy_newton_jacobian_prod,
                                     num_constraints));
-
-  SLEQP_CALL(
-    sleqp_vec_create_empty(&linesearch->newton_jacobian_prod, num_constraints));
 
   SLEQP_CALL(
     sleqp_vec_create_empty(&linesearch->cauchy_cons_val, num_constraints));
@@ -127,7 +118,10 @@ sleqp_linesearch_create(SleqpLineSearch** star,
     sleqp_vec_create_empty(&linesearch->violated_multipliers, num_constraints));
 
   SLEQP_CALL(
-    sleqp_vec_create_empty(&linesearch->test_direction, num_variables));
+    sleqp_direction_create(&linesearch->test_direction, problem, params));
+
+  SLEQP_CALL(sleqp_alloc_array(&linesearch->cache,
+                               SLEQP_MAX(num_variables, num_constraints)));
 
   SLEQP_CALL(sleqp_timer_create(&linesearch->timer));
 
@@ -156,22 +150,15 @@ sleqp_linesearch_set_iterate(SleqpLineSearch* linesearch,
 
 SLEQP_RETCODE
 sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
-                             SleqpVec* direction,
-                             const SleqpVec* multipliers,
-                             SleqpVec* hessian_direction,
+                             SleqpDirection* direction,
                              bool* full_step,
                              double* quadratic_merit_value)
 {
-  SleqpProblem* problem  = linesearch->problem;
-  SleqpMerit* merit_data = linesearch->merit;
-
-  const int num_constraints = sleqp_problem_num_cons(problem);
+  SleqpProblem* problem = linesearch->problem;
 
   SleqpIterate* iterate          = linesearch->iterate;
   const double penalty_parameter = linesearch->penalty_parameter;
   const double trust_radius      = linesearch->trust_radius;
-
-  const double one = 1.;
 
   const double eps = sleqp_params_value(linesearch->params, SLEQP_PARAM_EPS);
 
@@ -182,25 +169,13 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
 
   double exact_violation;
 
+  SleqpVec* direction_primal   = sleqp_direction_primal(direction);
+  SleqpVec* direction_cons_jac = sleqp_direction_cons_jac(direction);
+  SleqpVec* direction_hess     = sleqp_direction_hess(direction);
+
   SLEQP_CALL(sleqp_violation_one_norm(problem,
                                       sleqp_iterate_cons_val(iterate),
                                       &exact_violation));
-
-#if !defined(NDEBUG)
-
-  // Check Hessian product
-  {
-    SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &one,
-                                       direction,
-                                       multipliers,
-                                       linesearch->test_direction));
-
-    sleqp_num_assert(
-      sleqp_vec_eq(hessian_direction, linesearch->test_direction, eps));
-  }
-
-#endif
 
   (*full_step)             = true;
   (*quadratic_merit_value) = 0.;
@@ -210,15 +185,16 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
 
   double hessian_product;
 
-  SLEQP_CALL(sleqp_vec_dot(direction, hessian_direction, &hessian_product));
+  SLEQP_CALL(sleqp_vec_dot(direction_primal, direction_hess, &hessian_product));
 
   double objective_dot;
-  SleqpVec* jacobian_product = linesearch->cauchy_jacobian_prod;
+
+  objective_dot = *sleqp_direction_obj_grad(direction);
 
   double delta = 1.;
 
   {
-    double direction_norm = sleqp_vec_norm(direction);
+    double direction_norm = sleqp_vec_norm(direction_primal);
 
     double direction_factor = trust_radius / direction_norm;
 
@@ -227,26 +203,10 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
       delta = direction_factor;
 
       hessian_product *= (delta * delta);
+      objective_dot *= delta;
 
-      SLEQP_CALL(sleqp_vec_scale(direction, delta));
+      SLEQP_CALL(sleqp_vec_scale(direction_cons_jac, delta));
     }
-  }
-
-  // prepare initial products
-  {
-    SLEQP_CALL(sleqp_vec_dot(sleqp_iterate_obj_grad(iterate),
-                             direction,
-                             &objective_dot));
-
-    SLEQP_CALL(
-      sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
-                                         direction,
-                                         linesearch->prod_cache));
-
-    SLEQP_CALL(sleqp_vec_set_from_raw(jacobian_product,
-                                      linesearch->prod_cache,
-                                      num_constraints,
-                                      zero_eps));
   }
 
   const double eta
@@ -261,6 +221,8 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
   sleqp_log_debug("Beginning Cauchy line search, exact merit value: %f",
                   exact_merit_value);
 
+  bool zero_direction = false;
+
   for (iteration = 0; iteration < LINESEARCH_MAX_IT; ++iteration)
   {
     double linear_merit_value = 0.;
@@ -270,7 +232,7 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
       linear_merit_value += sleqp_iterate_obj_val(iterate) + objective_dot;
 
       SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
-                               jacobian_product,
+                               direction_cons_jac,
                                zero_eps,
                                linesearch->combined_cons_val));
 
@@ -293,40 +255,6 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
                     linear_merit_value,
                     *quadratic_merit_value);
 
-#if !defined(NDEBUG)
-
-    {
-      {
-        double actual_linear_merit_value;
-
-        SLEQP_CALL(sleqp_merit_linear(merit_data,
-                                      iterate,
-                                      direction,
-                                      penalty_parameter,
-                                      &actual_linear_merit_value));
-
-        sleqp_assert_is_eq(linear_merit_value, actual_linear_merit_value, eps);
-      }
-
-      {
-        double actual_quadratic_merit_value;
-
-        SLEQP_CALL(sleqp_merit_quadratic(merit_data,
-                                         iterate,
-                                         &one,
-                                         direction,
-                                         multipliers,
-                                         penalty_parameter,
-                                         &actual_quadratic_merit_value));
-
-        sleqp_assert_is_eq((*quadratic_merit_value),
-                           actual_quadratic_merit_value,
-                           eps);
-      }
-    }
-
-#endif
-
     // check condition
     // This is a numerically more sensible version of the condition
     // ((exact_merit_value - (*quadratic_merit_value)) >= eta*(exact_merit_value
@@ -340,13 +268,11 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
     }
 
     // update products
-    SLEQP_CALL(sleqp_vec_scale(direction, tau));
-
     hessian_product *= (tau * tau);
 
     objective_dot *= tau;
 
-    SLEQP_CALL(sleqp_vec_scale(jacobian_product, tau));
+    SLEQP_CALL(sleqp_vec_scale(direction_cons_jac, tau));
 
     delta *= tau;
 
@@ -354,15 +280,25 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
 
     if (sleqp_is_zero(delta, eps))
     {
-      SLEQP_CALL(sleqp_vec_clear(direction));
-      delta = 0.;
+      zero_direction = true;
+      delta          = 0.;
       break;
     }
   }
 
-  SLEQP_CALL(sleqp_vec_scale(hessian_direction, delta));
-
   assert(iteration != LINESEARCH_MAX_IT);
+
+  if (zero_direction)
+  {
+    SLEQP_CALL(sleqp_direction_set_zero(direction));
+  }
+  else
+  {
+    SLEQP_CALL(sleqp_vec_scale(direction_primal, delta));
+    SLEQP_CALL(sleqp_vec_scale(direction_hess, delta));
+
+    *sleqp_direction_obj_grad(direction) = objective_dot;
+  }
 
   sleqp_log_debug("Cauchy line search terminated after %d iterations (step "
                   "length: %f, quadratic merit: %f)",
@@ -370,7 +306,7 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
                   delta,
                   (*quadratic_merit_value));
 
-  sleqp_assert_is_leq(sleqp_vec_norm(direction), trust_radius, eps);
+  sleqp_assert_is_leq(sleqp_vec_norm(direction_primal), trust_radius, eps);
 
   SLEQP_CALL(sleqp_timer_stop(linesearch->timer));
 
@@ -379,13 +315,11 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
 
 SLEQP_RETCODE
 sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
-                            const SleqpVec* cauchy_step,
-                            const SleqpVec* cauchy_hessian_step,
+                            const SleqpDirection* cauchy_direction,
                             const double cauchy_quadratic_merit_value,
-                            const SleqpVec* newton_step,
-                            const SleqpVec* newton_hessian_step,
+                            const SleqpDirection* newton_direction,
                             const SleqpVec* multipliers,
-                            SleqpVec* trial_step,
+                            SleqpDirection* trial_direction,
                             double* step_length,
                             double* trial_quadratic_merit_value)
 {
@@ -394,14 +328,21 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
   SleqpIterate* iterate          = linesearch->iterate;
   const double penalty_parameter = linesearch->penalty_parameter;
 
-  const int num_constraints = sleqp_problem_num_cons(problem);
-
   const double eps = sleqp_params_value(linesearch->params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
   const double zero_eps
     = sleqp_params_value(linesearch->params, SLEQP_PARAM_ZERO_EPS);
+
+  SleqpVec* cauchy_step = sleqp_direction_primal(cauchy_direction);
+  SleqpVec* newton_step = sleqp_direction_primal(newton_direction);
+
+  SleqpVec* cauchy_hessian_step = sleqp_direction_hess(cauchy_direction);
+  SleqpVec* newton_hessian_step = sleqp_direction_hess(newton_direction);
+
+  SleqpVec* cauchy_cons_jac = sleqp_direction_cons_jac(cauchy_direction);
+  SleqpVec* newton_cons_jac = sleqp_direction_cons_jac(newton_direction);
 
   SLEQP_CALL(sleqp_timer_start(linesearch->timer));
 
@@ -413,70 +354,6 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
                                     -1.,
                                     zero_eps,
                                     linesearch->cauchy_newton_direction));
-  }
-
-#if !defined(NDEBUG)
-
-  // Check merit and hessian products
-  {
-    double obj_dual = 1.;
-
-    double actual_quadratic_merit;
-
-    SLEQP_CALL(sleqp_merit_quadratic(merit_data,
-                                     iterate,
-                                     &obj_dual,
-                                     cauchy_step,
-                                     multipliers,
-                                     penalty_parameter,
-                                     &actual_quadratic_merit));
-
-    sleqp_assert_is_eq(cauchy_quadratic_merit_value,
-                       actual_quadratic_merit,
-                       eps);
-
-    SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &obj_dual,
-                                       cauchy_step,
-                                       multipliers,
-                                       linesearch->test_direction));
-
-    sleqp_num_assert(
-      sleqp_vec_eq(cauchy_hessian_step, linesearch->test_direction, eps));
-
-    SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &obj_dual,
-                                       newton_step,
-                                       multipliers,
-                                       linesearch->test_direction));
-
-    sleqp_num_assert(
-      sleqp_vec_eq(newton_hessian_step, linesearch->test_direction, eps));
-  }
-
-#endif
-
-  // Compute Jacobian products
-  {
-    SLEQP_CALL(
-      sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
-                                         cauchy_step,
-                                         linesearch->prod_cache));
-
-    SLEQP_CALL(sleqp_vec_set_from_raw(linesearch->cauchy_jacobian_prod,
-                                      linesearch->prod_cache,
-                                      num_constraints,
-                                      zero_eps));
-
-    SLEQP_CALL(
-      sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
-                                         newton_step,
-                                         linesearch->prod_cache));
-
-    SLEQP_CALL(sleqp_vec_set_from_raw(linesearch->newton_jacobian_prod,
-                                      linesearch->prod_cache,
-                                      num_constraints,
-                                      zero_eps));
   }
 
   // Compute initial scalar products for the linear merit function
@@ -543,7 +420,7 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
   // compute merit gradient products
   {
     SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
-                             linesearch->cauchy_jacobian_prod,
+                             cauchy_cons_jac,
                              zero_eps,
                              linesearch->cauchy_cons_val));
 
@@ -557,14 +434,14 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
     double jacobian_dot;
 
     SLEQP_CALL(sleqp_vec_dot(linesearch->violated_multipliers,
-                             linesearch->cauchy_jacobian_prod,
+                             cauchy_cons_jac,
                              &jacobian_dot));
 
     double quadratic_merit_gradient_cauchy
       = cauchy_gradient_dot + jacobian_dot + cauchy_cauchy_product;
 
     SLEQP_CALL(sleqp_vec_dot(linesearch->violated_multipliers,
-                             linesearch->newton_jacobian_prod,
+                             newton_cons_jac,
                              &jacobian_dot));
 
     double quadratic_merit_gradient_newton
@@ -579,7 +456,7 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
     (*step_length)                 = 0.;
     (*trial_quadratic_merit_value) = cauchy_quadratic_merit_value;
 
-    SLEQP_CALL(sleqp_vec_copy(cauchy_step, trial_step));
+    SLEQP_CALL(sleqp_direction_set_zero(trial_direction));
 
     SLEQP_CALL(sleqp_timer_stop(linesearch->timer));
 
@@ -603,14 +480,14 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
                             + ((alpha)*newton_gradient_dot);
 
       SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_cons_val(iterate),
-                                      linesearch->cauchy_jacobian_prod,
+                                      cauchy_cons_jac,
                                       1.,
                                       (1. - alpha),
                                       zero_eps,
                                       linesearch->cauchy_cons_val));
 
       SLEQP_CALL(sleqp_vec_add_scaled(linesearch->cauchy_cons_val,
-                                      linesearch->newton_jacobian_prod,
+                                      newton_cons_jac,
                                       1.,
                                       alpha,
                                       zero_eps,
@@ -642,12 +519,21 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
 #if !defined(NDEBUG)
 
     {
+      SleqpVec* test_step = sleqp_direction_primal(linesearch->test_direction);
+
       SLEQP_CALL(sleqp_vec_add_scaled(cauchy_step,
                                       newton_step,
                                       1. - alpha,
                                       alpha,
                                       zero_eps,
-                                      linesearch->test_direction));
+                                      test_step));
+
+      SLEQP_CALL(sleqp_direction_reset(linesearch->test_direction,
+                                       problem,
+                                       iterate,
+                                       multipliers,
+                                       linesearch->cache,
+                                       zero_eps));
     }
 
     {
@@ -664,15 +550,11 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
 
     // Check quadratic merit
     {
-      double one = 1.;
-
       double actual_quadratic_merit;
 
       SLEQP_CALL(sleqp_merit_quadratic(merit_data,
                                        iterate,
-                                       &one,
                                        linesearch->test_direction,
-                                       multipliers,
                                        penalty_parameter,
                                        &actual_quadratic_merit));
 
@@ -698,12 +580,12 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
       (*step_length)                 = alpha;
       (*trial_quadratic_merit_value) = quadratic_merit_value;
 
-      SLEQP_CALL(sleqp_vec_add_scaled(cauchy_step,
-                                      newton_step,
-                                      1. - alpha,
-                                      alpha,
-                                      zero_eps,
-                                      trial_step));
+      SLEQP_CALL(sleqp_direction_add_scaled(cauchy_direction,
+                                            newton_direction,
+                                            1. - alpha,
+                                            alpha,
+                                            zero_eps,
+                                            trial_direction));
 
       break;
     }
@@ -719,7 +601,7 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
       (*step_length)                 = 0.;
       (*trial_quadratic_merit_value) = cauchy_quadratic_merit_value;
 
-      SLEQP_CALL(sleqp_vec_copy(cauchy_step, trial_step));
+      SLEQP_CALL(sleqp_direction_copy(cauchy_direction, trial_direction));
 
       break;
     }
@@ -887,17 +769,14 @@ compute_breakpoints(SleqpLineSearch* linesearch,
 
 SLEQP_RETCODE
 sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
-                                  const SleqpVec* cauchy_step,
-                                  const SleqpVec* cauchy_hessian_step,
+                                  const SleqpDirection* cauchy_direction,
                                   const double cauchy_quadratic_merit_value,
-                                  const SleqpVec* newton_step,
-                                  const SleqpVec* newton_hessian_step,
+                                  const SleqpDirection* newton_direction,
                                   const SleqpVec* multipliers,
-                                  SleqpVec* trial_step,
+                                  SleqpDirection* trial_direction,
                                   double* step_length,
                                   double* trial_quadratic_merit_value)
 {
-  SleqpProblem* problem = linesearch->problem;
   SleqpIterate* iterate = linesearch->iterate;
 
   const double zero_eps
@@ -909,22 +788,19 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
 
   const double penalty_parameter = linesearch->penalty_parameter;
 
-  const int num_constraints = sleqp_problem_num_cons(problem);
+  SleqpVec* cauchy_step = sleqp_direction_primal(cauchy_direction);
+  SleqpVec* newton_step = sleqp_direction_primal(newton_direction);
+
+  SleqpVec* cauchy_hessian_step = sleqp_direction_hess(cauchy_direction);
+  SleqpVec* newton_hessian_step = sleqp_direction_hess(newton_direction);
+
+  SleqpVec* cauchy_cons_jac = sleqp_direction_cons_jac(cauchy_direction);
+  SleqpVec* newton_cons_jac = sleqp_direction_cons_jac(newton_direction);
 
   // Compute Cauchy constraint values
   {
-    SLEQP_CALL(
-      sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
-                                         cauchy_step,
-                                         linesearch->prod_cache));
-
-    SLEQP_CALL(sleqp_vec_set_from_raw(linesearch->cauchy_jacobian_prod,
-                                      linesearch->prod_cache,
-                                      num_constraints,
-                                      zero_eps));
-
     SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
-                             linesearch->cauchy_jacobian_prod,
+                             cauchy_cons_jac,
                              zero_eps,
                              linesearch->cauchy_cons_val));
   }
@@ -938,15 +814,12 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
                                     zero_eps,
                                     linesearch->cauchy_newton_direction));
 
-    SLEQP_CALL(
-      sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
-                                         linesearch->cauchy_newton_direction,
-                                         linesearch->prod_cache));
-
-    SLEQP_CALL(sleqp_vec_set_from_raw(linesearch->cauchy_newton_jacobian_prod,
-                                      linesearch->prod_cache,
-                                      num_constraints,
-                                      zero_eps));
+    SLEQP_CALL(sleqp_vec_add_scaled(newton_cons_jac,
+                                    cauchy_cons_jac,
+                                    1.,
+                                    -1.,
+                                    zero_eps,
+                                    linesearch->cauchy_newton_jacobian_prod));
   }
 
   double offset = 0.;
@@ -1027,7 +900,6 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
 
 #if !defined(NDEBUG)
   {
-    const double one             = 1.;
     const double alpha           = last_point;
     const double quadratic_value = offset + .5 * alpha * quadratic_term * alpha;
 
@@ -1035,18 +907,16 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
 
     double actual_quadratic_merit_value;
 
-    SLEQP_CALL(sleqp_vec_add_scaled(cauchy_step,
-                                    newton_step,
-                                    1. - alpha,
-                                    alpha,
-                                    zero_eps,
-                                    linesearch->test_direction));
+    SLEQP_CALL(sleqp_direction_add_scaled(cauchy_direction,
+                                          newton_direction,
+                                          1. - alpha,
+                                          alpha,
+                                          zero_eps,
+                                          linesearch->test_direction));
 
     SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit,
                                      iterate,
-                                     &one,
                                      linesearch->test_direction,
-                                     multipliers,
                                      penalty_parameter,
                                      &actual_quadratic_merit_value));
 
@@ -1088,22 +958,18 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
 
 #if !defined(NDEBUG)
       {
-        const double one = 1.;
-
         double actual_quadratic_merit_value;
 
-        SLEQP_CALL(sleqp_vec_add_scaled(cauchy_step,
-                                        newton_step,
-                                        1. - alpha,
-                                        alpha,
-                                        zero_eps,
-                                        linesearch->test_direction));
+        SLEQP_CALL(sleqp_direction_add_scaled(cauchy_direction,
+                                              newton_direction,
+                                              1. - alpha,
+                                              alpha,
+                                              zero_eps,
+                                              linesearch->test_direction));
 
         SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit,
                                          iterate,
-                                         &one,
                                          linesearch->test_direction,
-                                         multipliers,
                                          penalty_parameter,
                                          &actual_quadratic_merit_value));
 
@@ -1124,12 +990,12 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
     last_point = current_point;
   }
 
-  SLEQP_CALL(sleqp_vec_add_scaled(cauchy_step,
-                                  newton_step,
-                                  1. - min_alpha,
-                                  min_alpha,
-                                  zero_eps,
-                                  trial_step));
+  SLEQP_CALL(sleqp_direction_add_scaled(cauchy_direction,
+                                        newton_direction,
+                                        1. - min_alpha,
+                                        min_alpha,
+                                        zero_eps,
+                                        trial_direction));
 
   *step_length                 = min_alpha;
   *trial_quadratic_merit_value = min_value;
@@ -1138,15 +1004,11 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
 
   // Check quadratic merit
   {
-    double one = 1.;
-
     double actual_quadratic_merit;
 
     SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit,
                                      iterate,
-                                     &one,
-                                     trial_step,
-                                     multipliers,
+                                     trial_direction,
                                      penalty_parameter,
                                      &actual_quadratic_merit));
 
@@ -1174,7 +1036,8 @@ linesearch_free(SleqpLineSearch** star)
 
   sleqp_free(&linesearch->breakpoints);
 
-  SLEQP_CALL(sleqp_vec_free(&linesearch->test_direction));
+  SLEQP_CALL(sleqp_direction_release(&linesearch->test_direction));
+  sleqp_free(&linesearch->cache);
 
   SLEQP_CALL(sleqp_vec_free(&linesearch->violated_multipliers));
   SLEQP_CALL(sleqp_vec_free(&linesearch->cauchy_newton_direction));
@@ -1182,11 +1045,8 @@ linesearch_free(SleqpLineSearch** star)
   SLEQP_CALL(sleqp_vec_free(&linesearch->combined_cons_val));
   SLEQP_CALL(sleqp_vec_free(&linesearch->cauchy_violation));
   SLEQP_CALL(sleqp_vec_free(&linesearch->cauchy_cons_val));
-  SLEQP_CALL(sleqp_vec_free(&linesearch->newton_jacobian_prod));
   SLEQP_CALL(sleqp_vec_free(&linesearch->cauchy_newton_jacobian_prod));
-  SLEQP_CALL(sleqp_vec_free(&linesearch->cauchy_jacobian_prod));
   SLEQP_CALL(sleqp_vec_free(&linesearch->cauchy_point));
-  sleqp_free(&linesearch->prod_cache);
 
   SLEQP_CALL(sleqp_merit_release(&linesearch->merit));
 

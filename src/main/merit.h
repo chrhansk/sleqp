@@ -6,6 +6,7 @@
  * @brief Definition of merit functions.
  **/
 
+#include "direction.h"
 #include "func.h"
 #include "iterate.h"
 #include "params.h"
@@ -63,7 +64,7 @@ sleqp_merit_func(SleqpMerit* merit,
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_merit_linear(SleqpMerit* merit,
                    SleqpIterate* iterate,
-                   const SleqpVec* direction,
+                   SleqpDirection* direction,
                    double penalty_parameter,
                    double* merit_value);
 
@@ -89,9 +90,7 @@ sleqp_merit_linear(SleqpMerit* merit,
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_merit_quadratic(SleqpMerit* merit,
                       SleqpIterate* iterate,
-                      const double* obj_dual,
-                      const SleqpVec* direction,
-                      const SleqpVec* cons_duals,
+                      SleqpDirection* direction,
                       double penalty_parameter,
                       double* merit_value);
 

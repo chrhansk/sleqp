@@ -72,15 +72,15 @@ sleqp_eqp_solver_add_violated_multipliers(SleqpEQPSolver* solver,
 }
 
 SLEQP_RETCODE
-sleqp_eqp_solver_compute_step(SleqpEQPSolver* solver,
-                              const SleqpVec* multipliers,
-                              SleqpVec* newton_step)
+sleqp_eqp_solver_compute_direction(SleqpEQPSolver* solver,
+                                   const SleqpVec* multipliers,
+                                   SleqpDirection* newton_direction)
 {
   SLEQP_CALL(sleqp_timer_start(solver->timer));
 
-  SLEQP_RETCODE status = solver->callbacks.compute_step(multipliers,
-                                                        newton_step,
-                                                        solver->eqp_data);
+  SLEQP_RETCODE status = solver->callbacks.compute_direction(multipliers,
+                                                             newton_direction,
+                                                             solver->eqp_data);
 
   SLEQP_CALL(sleqp_timer_stop(solver->timer));
 

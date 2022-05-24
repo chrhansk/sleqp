@@ -3,6 +3,7 @@
 
 #include "cmp.h"
 #include "defs.h"
+#include "error.h"
 #include "log.h"
 #include "types.h"
 
@@ -77,10 +78,7 @@
     if (!sleqp_is_eq(x, y, eps))                                               \
     {                                                                          \
       sleqp_log_assert_fail_msg(                                               \
-        __FILE__,                                                              \
-        __LINE__,                                                              \
-        __PRETTY_FUNCTION__,                                                   \
-        "%s (= %.14f) == %s (= %.14f) [tolerance: %.14f]",                     \
+        "%s (= %.14f) == %s (= %.14f) [tolerance: %g]",                        \
         #x,                                                                    \
         x,                                                                     \
         #y,                                                                    \
@@ -94,16 +92,12 @@
   {                                                                            \
     if (!sleqp_is_lt(x, y, eps))                                               \
     {                                                                          \
-      sleqp_log_assert_fail_msg(                                               \
-        __FILE__,                                                              \
-        __LINE__,                                                              \
-        __PRETTY_FUNCTION__,                                                   \
-        "%s (= %.14f) < %s (= %.14f) [tolerance: %.14f]",                      \
-        #x,                                                                    \
-        x,                                                                     \
-        #y,                                                                    \
-        y,                                                                     \
-        eps);                                                                  \
+      sleqp_log_assert_fail_msg("%s (= %.14f) < %s (= %.14f) [tolerance: %g]", \
+                                #x,                                            \
+                                x,                                             \
+                                #y,                                            \
+                                y,                                             \
+                                eps);                                          \
     }                                                                          \
   } while (false)
 
@@ -112,16 +106,12 @@
   {                                                                            \
     if (!sleqp_is_gt(x, y, eps))                                               \
     {                                                                          \
-      sleqp_log_assert_fail_msg(                                               \
-        __FILE__,                                                              \
-        __LINE__,                                                              \
-        __PRETTY_FUNCTION__,                                                   \
-        "%s (= %.14f) > %s (= %.14f) [tolerance: %.14f]",                      \
-        #x,                                                                    \
-        x,                                                                     \
-        #y,                                                                    \
-        y,                                                                     \
-        eps);                                                                  \
+      sleqp_log_assert_fail_msg("%s (= %.14f) > %s (= %.14f) [tolerance: %g]", \
+                                #x,                                            \
+                                x,                                             \
+                                #y,                                            \
+                                y,                                             \
+                                eps);                                          \
     }                                                                          \
   } while (false)
 
@@ -131,10 +121,7 @@
     if (!sleqp_is_leq(x, y, eps))                                              \
     {                                                                          \
       sleqp_log_assert_fail_msg(                                               \
-        __FILE__,                                                              \
-        __LINE__,                                                              \
-        __PRETTY_FUNCTION__,                                                   \
-        "%s (= %.14f) <= %s (= %.14f) [tolerance: %.14f]",                     \
+        "%s (= %.14f) <= %s (= %.14f) [tolerance: %g]",                        \
         #x,                                                                    \
         x,                                                                     \
         #y,                                                                    \
@@ -149,10 +136,7 @@
     if (!sleqp_is_geq(x, y, eps))                                              \
     {                                                                          \
       sleqp_log_assert_fail_msg(                                               \
-        __FILE__,                                                              \
-        __LINE__,                                                              \
-        __PRETTY_FUNCTION__,                                                   \
-        "%s (= %.14f) >= %s (= %.14f) [tolerance: %.14f]",                     \
+        "%s (= %.14f) >= %s (= %.14f) [tolerance: %g]",                        \
         #x,                                                                    \
         x,                                                                     \
         #y,                                                                    \
@@ -166,10 +150,7 @@
   {                                                                            \
     if (!sleqp_is_neg(x, eps))                                                 \
     {                                                                          \
-      sleqp_log_assert_fail_msg(__FILE__,                                      \
-                                __LINE__,                                      \
-                                __PRETTY_FUNCTION__,                           \
-                                "%s (= %.14f) < 0 [tolerance: %.14f]",         \
+      sleqp_log_assert_fail_msg("%s (= %.14f) < 0 [tolerance: %g]",            \
                                 #x,                                            \
                                 x,                                             \
                                 eps);                                          \
@@ -181,10 +162,7 @@
   {                                                                            \
     if (!sleqp_is_pos(x, eps))                                                 \
     {                                                                          \
-      sleqp_log_assert_fail_msg(__FILE__,                                      \
-                                __LINE__,                                      \
-                                __PRETTY_FUNCTION__,                           \
-                                "%s (= %.14f) > 0 [tolerance: %.14f]",         \
+      sleqp_log_assert_fail_msg("%s (= %.14f) > 0 [tolerance: %g]",            \
                                 #x,                                            \
                                 x,                                             \
                                 eps);                                          \
@@ -196,10 +174,7 @@
   {                                                                            \
     if (!sleqp_is_zero(x, eps))                                                \
     {                                                                          \
-      sleqp_log_assert_fail_msg(__FILE__,                                      \
-                                __LINE__,                                      \
-                                __PRETTY_FUNCTION__,                           \
-                                "%s (= %.14f) = 0 [tolerance: %.14f]",         \
+      sleqp_log_assert_fail_msg("%s (= %.14f) = 0 [tolerance: %g]",            \
                                 #x,                                            \
                                 x,                                             \
                                 eps);                                          \

@@ -342,7 +342,7 @@ compute_initial_direction(SleqpWorkingStep* step,
 
     SLEQP_CALL(sleqp_direction_in_working_set(problem,
                                               iterate,
-                                              step->initial_step,
+                                              step->initial_direction,
                                               step->dense_cache,
                                               eps,
                                               &in_working_set));

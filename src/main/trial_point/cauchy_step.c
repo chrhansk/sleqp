@@ -1,3 +1,8 @@
+#include "direction.h"
+#include "pub_iterate.h"
+#include "pub_types.h"
+#include "sparse/pub_sparse_matrix.h"
+#include "sparse/pub_vec.h"
 #include "trial_point.h"
 
 #include "cmp.h"
@@ -107,10 +112,9 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
 
   sleqp_log_debug("Criticality bound: %g", criticality_bound);
 
-  SLEQP_CALL(
-    sleqp_cauchy_get_direction(solver->cauchy_data, solver->cauchy_direction));
+  SLEQP_CALL(sleqp_cauchy_lp_step(solver->cauchy_data, solver->lp_step));
 
-  SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data, iterate));
+  SLEQP_CALL(sleqp_cauchy_working_set(solver->cauchy_data, iterate));
 
   const double original_penalty = solver->penalty_parameter;
 
@@ -123,10 +127,9 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
 
   if (original_penalty != solver->penalty_parameter)
   {
-    SLEQP_CALL(sleqp_cauchy_get_direction(solver->cauchy_data,
-                                          solver->cauchy_direction));
+    SLEQP_CALL(sleqp_cauchy_lp_step(solver->cauchy_data, solver->lp_step));
 
-    SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data, iterate));
+    SLEQP_CALL(sleqp_cauchy_working_set(solver->cauchy_data, iterate));
   }
 
   return SLEQP_OKAY;
@@ -138,10 +141,6 @@ compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
                                bool* full_step)
 {
   SleqpIterate* iterate = solver->iterate;
-
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
-
-  SLEQP_NUM_ASSERT_PARAM(eps);
 
   {
     SLEQP_CALL(compute_cauchy_direction(solver));
@@ -164,9 +163,9 @@ compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
     SLEQP_CALL(sleqp_parametric_solver_solve(solver->parametric_solver,
                                              iterate,
                                              solver->cauchy_data,
-                                             solver->cauchy_step,
-                                             solver->cauchy_hessian_step,
+                                             solver->lp_step,
                                              solver->multipliers,
+                                             solver->cauchy_direction,
                                              &(solver->lp_trust_radius),
                                              cauchy_merit_value));
   }
@@ -174,7 +173,7 @@ compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
   SLEQP_CALL(sleqp_working_set_copy(sleqp_iterate_working_set(iterate),
                                     solver->parametric_original_working_set));
 
-  SLEQP_CALL(sleqp_cauchy_get_working_set(solver->cauchy_data, iterate));
+  SLEQP_CALL(sleqp_cauchy_working_set(solver->cauchy_data, iterate));
 
   // Reconstruct the augmented Jacobian if required
   if (!sleqp_working_set_eq(solver->parametric_original_working_set,
@@ -194,26 +193,6 @@ compute_cauchy_step_parametric(SleqpTrialPointSolver* solver,
                                           solver->trust_radius,
                                           solver->penalty_parameter));
 
-#if !defined(NDEBUG)
-
-  {
-    double actual_quadratic_merit_value;
-
-    double obj_dual = 1.;
-
-    SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
-                                     iterate,
-                                     &obj_dual,
-                                     solver->cauchy_step,
-                                     solver->multipliers,
-                                     solver->penalty_parameter,
-                                     &actual_quadratic_merit_value));
-
-    sleqp_assert_is_eq(*cauchy_merit_value, actual_quadratic_merit_value, eps);
-  }
-
-#endif
-
   (*full_step) = true;
 
   return SLEQP_OKAY;
@@ -231,8 +210,6 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
   const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
-
-  const double one = 1.;
 
   // compute Cauchy direction / step and dual estimation
   {
@@ -255,7 +232,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 
       SLEQP_CALL(sleqp_direction_in_working_set(problem,
                                                 iterate,
-                                                solver->cauchy_direction,
+                                                solver->lp_step,
                                                 solver->dense_cache,
                                                 eps,
                                                 &in_working_set));
@@ -265,7 +242,19 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 
 #endif
 
-    SLEQP_CALL(sleqp_vec_copy(solver->cauchy_direction, solver->cauchy_step));
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(
+      sleqp_vec_copy(solver->lp_step,
+                     sleqp_direction_primal(solver->cauchy_direction)));
+
+    SLEQP_CALL(sleqp_direction_reset(solver->cauchy_direction,
+                                     problem,
+                                     iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps));
 
     if (!quadratic_model)
     {
@@ -274,21 +263,13 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
       return SLEQP_OKAY;
     }
 
-    SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &one,
-                                       solver->cauchy_direction,
-                                       solver->multipliers,
-                                       solver->cauchy_hessian_step));
-
     SLEQP_CALL(sleqp_linesearch_set_iterate(solver->linesearch,
                                             iterate,
                                             solver->penalty_parameter,
                                             solver->trust_radius));
 
     SLEQP_CALL(sleqp_linesearch_cauchy_step(solver->linesearch,
-                                            solver->cauchy_step,
-                                            solver->multipliers,
-                                            solver->cauchy_hessian_step,
+                                            solver->cauchy_direction,
                                             full_step,
                                             cauchy_merit_value));
 
@@ -297,13 +278,9 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
     {
       double actual_quadratic_merit_value, exact_iterate_value;
 
-      double func_dual = 1.;
-
       SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
                                        iterate,
-                                       &func_dual,
-                                       solver->cauchy_step,
-                                       solver->multipliers,
+                                       solver->cauchy_direction,
                                        solver->penalty_parameter,
                                        &actual_quadratic_merit_value));
 

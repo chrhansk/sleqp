@@ -4,10 +4,12 @@
 #include "aug_jac/standard_aug_jac.h"
 #include "cauchy/standard_cauchy.h"
 #include "cmp.h"
+#include "direction.h"
 #include "dual_estimation/dual_estimation.h"
 #include "factorization/factorization.h"
 #include "mem.h"
 #include "newton.h"
+#include "pub_types.h"
 #include "util.h"
 #include "working_step.h"
 
@@ -73,7 +75,7 @@ START_TEST(newton_wide_step)
   SleqpEQPSolver* newton_solver;
 
   SleqpVec* expected_step;
-  SleqpVec* actual_step;
+  SleqpDirection* actual_direction;
 
   SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
@@ -85,7 +87,8 @@ START_TEST(newton_wide_step)
   ASSERT_CALL(sleqp_vec_push(expected_step, 0, -1.));
   ASSERT_CALL(sleqp_vec_push(expected_step, 1, -2.));
 
-  ASSERT_CALL(sleqp_vec_create(&actual_step, num_variables, 0));
+  // ASSERT_CALL(sleqp_vec_create(&actual_step, num_variables, 0));
+  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, params));
 
   double penalty_parameter = 1.;
   double trust_radius      = 10.;
@@ -115,9 +118,12 @@ START_TEST(newton_wide_step)
   // we use the default (empty) active set for the Newton step,
   // trust region size should be large to ensure that
   // the solution is that of the unrestricted step
-  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
-                                            sleqp_iterate_cons_dual(iterate),
-                                            actual_step));
+  ASSERT_CALL(
+    sleqp_eqp_solver_compute_direction(newton_solver,
+                                       sleqp_iterate_cons_dual(iterate),
+                                       actual_direction));
+
+  SleqpVec* actual_step = sleqp_direction_primal(actual_direction);
 
   ck_assert(sleqp_vec_eq(expected_step, actual_step, tolerance));
 
@@ -129,7 +135,7 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_factorization_release(&factorization));
 
-  ASSERT_CALL(sleqp_vec_free(&actual_step));
+  ASSERT_CALL(sleqp_direction_release(&actual_direction));
 
   ASSERT_CALL(sleqp_vec_free(&expected_step));
 }
@@ -141,7 +147,9 @@ START_TEST(newton_small_step)
   SleqpEQPSolver* newton_solver;
 
   SleqpVec* expected_step;
-  SleqpVec* actual_step;
+  SleqpDirection* actual_direction;
+
+  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, params));
 
   SleqpFactorization* factorization;
   SleqpAugJac* jacobian;
@@ -152,8 +160,6 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_vec_push(expected_step, 0, -0.44721359549995793));
   ASSERT_CALL(sleqp_vec_push(expected_step, 1, -0.89442719099991586));
-
-  ASSERT_CALL(sleqp_vec_create(&actual_step, num_variables, 0));
 
   double penalty_parameter = 1.;
   double trust_radius      = 1.;
@@ -183,9 +189,12 @@ START_TEST(newton_small_step)
   // we use the default (empty) active set for the Newton step,
   // trust region size should be so small that
   // the solution is on the boundary of the feasible set
-  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
-                                            sleqp_iterate_cons_dual(iterate),
-                                            actual_step));
+  ASSERT_CALL(
+    sleqp_eqp_solver_compute_direction(newton_solver,
+                                       sleqp_iterate_cons_dual(iterate),
+                                       actual_direction));
+
+  SleqpVec* actual_step = sleqp_direction_primal(actual_direction);
 
   ck_assert(sleqp_vec_eq(expected_step, actual_step, tolerance));
 
@@ -197,7 +206,7 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_factorization_release(&factorization));
 
-  ASSERT_CALL(sleqp_vec_free(&actual_step));
+  ASSERT_CALL(sleqp_direction_release(&actual_direction));
 
   ASSERT_CALL(sleqp_vec_free(&expected_step));
 }

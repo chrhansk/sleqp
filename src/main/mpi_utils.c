@@ -2,7 +2,9 @@
 
 #include <mpi.h>
 
+#include "error.h"
 #include "log.h"
+#include "pub_types.h"
 
 #define SLEQP_MPI_CALL(x)                                                      \
   do                                                                           \
@@ -10,8 +12,7 @@
     const int _status = (x);                                                   \
     if (_status != MPI_SUCCESS)                                                \
     {                                                                          \
-      sleqp_log_error("MPI error in function %s", __func__);                   \
-      return SLEQP_INTERNAL_ERROR;                                             \
+      sleqp_raise(SLEQP_INTERNAL_ERROR, "MPI error in function %s", __func__); \
     }                                                                          \
   } while (0)
 

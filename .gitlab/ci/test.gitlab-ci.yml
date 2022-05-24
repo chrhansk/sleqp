@@ -53,6 +53,20 @@ test_coverage:
       -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test_coverage
 
+test_num_asserts:
+  extends: .test
+  script:
+    - cd build
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_ENABLE_NUM_ASSERTS=On
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
+    - make build_tests test
+
 # Excluding python tests since they are built by tox
 # Excluding problem scaling tests since valgrind messes with floating point exceptions
 test_memcheck:

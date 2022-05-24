@@ -1,9 +1,11 @@
 #include "merit.h"
 
 #include "cmp.h"
+#include "direction.h"
 #include "feas.h"
 #include "log.h"
 #include "mem.h"
+#include "sparse/pub_vec.h"
 #include "util.h"
 
 struct SleqpMeritData
@@ -13,10 +15,8 @@ struct SleqpMeritData
   SleqpProblem* problem;
   SleqpParams* params;
 
-  double* dense_cache;
   int cache_size;
 
-  SleqpVec* jac_dot_sparse;
   SleqpVec* combined_cons_val;
 
   SleqpVec* multipliers;
@@ -44,10 +44,6 @@ sleqp_merit_create(SleqpMerit** star,
   merit->params = params;
 
   merit->cache_size = SLEQP_MAX(num_constraints, num_variables);
-
-  SLEQP_CALL(sleqp_alloc_array(&merit->dense_cache, merit->cache_size));
-
-  SLEQP_CALL(sleqp_vec_create_empty(&merit->jac_dot_sparse, num_constraints));
 
   SLEQP_CALL(
     sleqp_vec_create_empty(&merit->combined_cons_val, num_constraints));
@@ -83,34 +79,22 @@ sleqp_merit_func(SleqpMerit* merit,
 SLEQP_RETCODE
 sleqp_merit_linear(SleqpMerit* merit,
                    SleqpIterate* iterate,
-                   const SleqpVec* direction,
+                   SleqpDirection* direction,
                    double penalty_parameter,
                    double* merit_value)
 {
   SleqpProblem* problem = merit->problem;
 
-  const int num_constraints = sleqp_problem_num_cons(problem);
-
   const double zero_eps
     = sleqp_params_value(merit->params, SLEQP_PARAM_ZERO_EPS);
 
-  double objective_dot;
-
-  SLEQP_CALL(
-    sleqp_vec_dot(sleqp_iterate_obj_grad(iterate), direction, &objective_dot));
+  double objective_dot = *sleqp_direction_obj_grad(direction);
 
   (*merit_value) = sleqp_iterate_obj_val(iterate) + objective_dot;
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
-                                                direction,
-                                                merit->dense_cache));
+  SleqpVec* direction_jac = sleqp_direction_cons_jac(direction);
 
-  SLEQP_CALL(sleqp_vec_set_from_raw(merit->jac_dot_sparse,
-                                    merit->dense_cache,
-                                    num_constraints,
-                                    zero_eps));
-
-  SLEQP_CALL(sleqp_vec_add(merit->jac_dot_sparse,
+  SLEQP_CALL(sleqp_vec_add(direction_jac,
                            sleqp_iterate_cons_val(iterate),
                            zero_eps,
                            merit->combined_cons_val));
@@ -129,14 +113,10 @@ sleqp_merit_linear(SleqpMerit* merit,
 SLEQP_RETCODE
 sleqp_merit_quadratic(SleqpMerit* merit,
                       SleqpIterate* iterate,
-                      const double* obj_dual,
-                      const SleqpVec* direction,
-                      const SleqpVec* cons_duals,
+                      SleqpDirection* direction,
                       double penalty_parameter,
                       double* merit_value)
 {
-  SleqpProblem* problem = merit->problem;
-
   double linear_merit_value;
 
   SLEQP_CALL(sleqp_merit_linear(merit,
@@ -147,11 +127,9 @@ sleqp_merit_quadratic(SleqpMerit* merit,
 
   double bilinear_product;
 
-  SLEQP_CALL(sleqp_problem_hess_bilinear(problem,
-                                         obj_dual,
-                                         direction,
-                                         cons_duals,
-                                         &bilinear_product));
+  SLEQP_CALL(sleqp_vec_dot(sleqp_direction_primal(direction),
+                           sleqp_direction_hess(direction),
+                           &bilinear_product));
 
   (*merit_value) = linear_merit_value + (0.5 * bilinear_product);
 
@@ -173,10 +151,6 @@ merit_free(SleqpMerit** star)
   SLEQP_CALL(sleqp_vec_free(&merit->multipliers));
 
   SLEQP_CALL(sleqp_vec_free(&merit->combined_cons_val));
-
-  SLEQP_CALL(sleqp_vec_free(&merit->jac_dot_sparse));
-
-  sleqp_free(&merit->dense_cache);
 
   SLEQP_CALL(sleqp_params_release(&merit->params));
 

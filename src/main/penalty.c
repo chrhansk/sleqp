@@ -24,7 +24,7 @@ sleqp_update_penalty(SleqpProblem* problem,
 
   double current_violation;
 
-  SLEQP_CALL(sleqp_cauchy_get_violation(cauchy_data, &current_violation));
+  SLEQP_CALL(sleqp_cauchy_violation(cauchy_data, &current_violation));
 
   current_violation /= num_constraints;
 
@@ -59,7 +59,7 @@ sleqp_update_penalty(SleqpProblem* problem,
 
   double inf_violation;
 
-  SLEQP_CALL(sleqp_cauchy_get_violation(cauchy_data, &inf_violation));
+  SLEQP_CALL(sleqp_cauchy_violation(cauchy_data, &inf_violation));
 
   inf_violation /= num_constraints;
 
@@ -86,7 +86,7 @@ sleqp_update_penalty(SleqpProblem* problem,
 
       double next_violation;
 
-      SLEQP_CALL(sleqp_cauchy_get_violation(cauchy_data, &next_violation));
+      SLEQP_CALL(sleqp_cauchy_violation(cauchy_data, &next_violation));
 
       next_violation /= num_constraints;
 
@@ -135,7 +135,7 @@ sleqp_update_penalty(SleqpProblem* problem,
 
       double next_violation;
 
-      SLEQP_CALL(sleqp_cauchy_get_violation(cauchy_data, &next_violation));
+      SLEQP_CALL(sleqp_cauchy_violation(cauchy_data, &next_violation));
 
       next_violation /= num_constraints;
 

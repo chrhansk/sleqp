@@ -122,7 +122,9 @@ sleqp_working_set_var_index(const SleqpWorkingSet* working_set, int index);
 
 /**
  * Returns the content of the working set at the given working set index,
- * which must be at least zero and less than @ref sleqp_working_set_size
+ * which must be at least zero and less than @ref sleqp_working_set_size.
+ * If the returned index is less than the number of variables, it corresponds
+ * to a variable. Otherwise, index - num_variables corresponds to a constraint.
  *
  * @param[in]  working_set           The working set
  * @param[in]  index                 The working set index

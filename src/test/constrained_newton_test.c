@@ -1,6 +1,7 @@
 #include <check.h>
 #include <stdlib.h>
 
+#include "direction.h"
 #include "test_common.h"
 
 #include "cmp.h"
@@ -210,8 +211,9 @@ newton_setup()
 
 START_TEST(newton_constrained_step)
 {
-  SleqpVec* actual_step;
   SleqpVec* expected_step;
+
+  SleqpDirection* actual_direction;
 
   SleqpParams* params;
   SleqpOptions* options;
@@ -227,7 +229,6 @@ START_TEST(newton_constrained_step)
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  ASSERT_CALL(sleqp_vec_create(&actual_step, num_variables, 0));
   ASSERT_CALL(sleqp_vec_create(&expected_step, num_variables, 1));
 
   ASSERT_CALL(sleqp_vec_push(expected_step, 0, -1.));
@@ -235,6 +236,10 @@ START_TEST(newton_constrained_step)
   ASSERT_CALL(sleqp_params_create(&params));
 
   ASSERT_CALL(sleqp_options_create(&options));
+
+  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, params));
+
+  SleqpVec* actual_step = sleqp_direction_primal(actual_direction);
 
   ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
 
@@ -257,9 +262,10 @@ START_TEST(newton_constrained_step)
                                            trust_radius,
                                            penalty_parameter));
 
-  ASSERT_CALL(sleqp_eqp_solver_compute_step(newton_solver,
-                                            sleqp_iterate_cons_dual(iterate),
-                                            actual_step));
+  ASSERT_CALL(
+    sleqp_eqp_solver_compute_direction(newton_solver,
+                                       sleqp_iterate_cons_dual(iterate),
+                                       actual_direction));
 
   const double tolerance = 1e-8;
 
@@ -273,13 +279,13 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_factorization_release(&factorization));
 
+  ASSERT_CALL(sleqp_direction_release(&actual_direction));
+
   ASSERT_CALL(sleqp_options_release(&options));
 
   ASSERT_CALL(sleqp_params_release(&params));
 
   ASSERT_CALL(sleqp_vec_free(&expected_step));
-
-  ASSERT_CALL(sleqp_vec_free(&actual_step));
 }
 END_TEST
 
