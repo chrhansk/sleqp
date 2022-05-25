@@ -273,6 +273,7 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 }
+END_TEST
 
 START_TEST(test_solve_swapped)
 {
@@ -292,6 +293,7 @@ START_TEST(test_solve_swapped)
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 }
+END_TEST
 
 Suite*
 degraded_test_suite()

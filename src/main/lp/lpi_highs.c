@@ -137,9 +137,8 @@ highs_create_problem(void** star,
 
     if (num_threads != SLEQP_NONE)
     {
-      SLEQP_HIGHS_CALL(
-        Highs_setIntOptionValue(highs, "highs_max_threads", num_threads),
-        highs);
+      SLEQP_HIGHS_CALL(Highs_setIntOptionValue(highs, "threads", num_threads),
+                       highs);
     }
   }
 
