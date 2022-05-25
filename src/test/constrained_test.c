@@ -103,7 +103,7 @@ solve_and_release_solver(SleqpSolver* solver)
 
   ck_assert(sleqp_vec_eq(actual_solution, constrained_optimal, 1e-6));
 
-  ck_assert_double_le(stat_res(problem, iterate), 1e-6);
+  ck_assert(sleqp_is_zero(stat_res(problem, iterate), 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 }
