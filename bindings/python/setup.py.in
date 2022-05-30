@@ -57,7 +57,7 @@ if not(local_build):
 
 extensions = [
     Extension("sleqp.sleqp",
-              ['src/sleqp.pyx'],
+              ['src/extension/sleqp.pyx'],
               include_dirs=[numpy.get_include()] + include_dirs,
               libraries=[project_name],
               extra_link_args=ldflags,
@@ -78,7 +78,8 @@ setup(name=project_name,
       long_description=long_description,
       version=project_version,
       ext_modules=extensions,
-      packages=find_packages(exclude=["tests"]),
+      packages=find_packages(where="src", exclude=["tests"]),
+      package_dir={"": "src"},
       install_requires=requirements,
       setup_requires=['wheel'],
       classifiers=[
