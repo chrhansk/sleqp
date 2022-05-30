@@ -220,6 +220,12 @@ sleqp_lpi_basis_condition_estimate(SleqpLPi* lp_interface,
                                                           condition);
 }
 
+SLEQP_RETCODE
+sleqp_lpi_write(SleqpLPi* lp_interface, const char* filename)
+{
+  return lp_interface->callbacks.write(lp_interface->lp_data, filename);
+}
+
 static SLEQP_RETCODE
 lpi_free(SleqpLPi** lp_star)
 {

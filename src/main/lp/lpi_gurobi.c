@@ -613,6 +613,7 @@ sleqp_lpi_gurobi_create(SleqpLPi** lp_star,
        .vars_stats               = gurobi_vars_stats,
        .cons_stats               = gurobi_cons_stats,
        .basis_condition_estimate = gurobi_basis_condition_estimate,
+       .write                    = gurobi_write,
        .free_problem             = gurobi_free};
 
   return sleqp_lpi_create(lp_star,

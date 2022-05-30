@@ -719,6 +719,7 @@ sleqp_lpi_highs_create(SleqpLPi** lp_star,
        .vars_stats               = highs_vars_stats,
        .cons_stats               = highs_cons_stats,
        .basis_condition_estimate = highs_basis_condition_estimate,
+       .write                    = highs_write,
        .free_problem             = highs_free};
 
   return sleqp_lpi_create(lp_star,
