@@ -10,21 +10,19 @@ function(add_python_project)
   cmake_parse_arguments(
     PARSE_ARGV 0 ARGS
     ""
-    "PROJECT_NAME;PROJECT_COMPONENT"
+    "PROJECT_NAME;PROJECT_COMPONENT;EXTRA_ARGS;EXTRA_INCDIR;EXTRA_LIBDIR"
     "CONFIG_FILES"
     )
 
   set(PROJECT_NAME "${ARGS_PROJECT_NAME}")
 
-  set(TARGET_NAME "python_${PROJECT_NAME}")
+  set(TARGET_NAME "${PROJECT_NAME}_python")
 
   set(PROJECT_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
   set(DOC_DIR "${PROJECT_DIR}/docs")
 
-  set(SETUP_PY "${CMAKE_CURRENT_SOURCE_DIR}/setup.py")
-
-  set(DOC_TARGET "python_${PROJECT_NAME}_doc")
+  set(DOC_TARGET "${TARGET_NAME}_doc")
 
   set(PYTHON_CFLAGS "")
 
@@ -43,6 +41,10 @@ function(add_python_project)
     set(PYTHON_CFLAGS "${CMAKE_C_FLAGS_${CMAKE_BUILD_TYPE}}")
   endif()
 
+  set(PYTHON_CFLAGS "${PYTHON_CFLAGS} -I${ARGS_EXTRA_INCDIR}")
+  set(EXTRA_ARGS ${ARGS_EXTRA_ARGS})
+  set(PYTHON_LDFLAGS "-L${ARGS_EXTRA_LIBDIR}")
+
   add_custom_target(${TARGET_NAME} ALL)
 
   add_custom_target(${DOC_TARGET})
@@ -59,35 +61,23 @@ function(add_python_project)
 
   endif()
 
-  add_custom_command(
-    TARGET ${TARGET_NAME}
-    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} build build_ext --inplace
-    WORKING_DIRECTORY ${PROJECT_DIR})
-
   add_custom_target("${TARGET_NAME}_sdist")
 
   add_custom_command(
     TARGET "${TARGET_NAME}_sdist"
-    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} sdist --formats=gztar
-    WORKING_DIRECTORY ${PROJECT_DIR})
-
-  add_custom_target("${TARGET_NAME}_bdist")
-
-  add_custom_command(
-    TARGET "${TARGET_NAME}_bdist"
-    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist
+    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${PYTHON_EXECUTABLE} -m build -s
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   add_custom_target("${TARGET_NAME}_bdist_wheel")
 
   add_custom_command(
     TARGET "${TARGET_NAME}_bdist_wheel"
-    COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} ${PYTHON_EXECUTABLE} ${SETUP_PY} bdist_wheel
+    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${PYTHON_EXECUTABLE} -m build -w
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   if(ENABLE_UNIT_TESTS)
     add_test(NAME "${TARGET_NAME}_tests"
-      COMMAND ${CMAKE_COMMAND} -E env CFLAGS=${PYTHON_CFLAGS} "${TOX}"
+      COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LD_LIBRARY_PATH=${ARGS_EXTRA_LIBDIR}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${TOX}
       WORKING_DIRECTORY "${PROJECT_DIR}")
   endif()
 

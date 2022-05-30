@@ -1,5 +1,3 @@
 include requirements.txt
 recursive-include src *.pyx *.pxd *.pxi
-recursive-include src *.c *.h
-
-exclude local_config.py local_config.py.in
+recursive-include src *.c

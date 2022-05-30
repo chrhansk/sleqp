@@ -1,6 +1,5 @@
 from setuptools import setup, find_packages
 from setuptools.extension import Extension
-from setuptools import Distribution
 
 import os
 import subprocess
@@ -15,20 +14,13 @@ license_file = 'LICENSE.txt'
 maintainer_name = '@PROJECT_MAINTAINER_NAME@'
 maintainer_email = '@PROJECT_MAINTAINER_EMAIL@'
 
-local_build = True
+local_env = os.getenv('SLEQP_LOCAL_BUILD')
+local_build = (local_env is not None)
 
 ldflags = []
 cflags = []
 lib_dirs = []
 include_dirs = []
-
-try:
-    from local_config import local_libdirs, local_include_dirs
-    lib_dirs += local_libdirs
-    include_dirs += local_include_dirs
-except ImportError:
-    local_env = os.getenv('SLEQP_LOCAL_BUILD')
-    local_build = (local_env is not None)
 
 
 def pkgconfig(name):
@@ -63,14 +55,9 @@ if not(local_build):
     include_dirs += pkgconfig_args['includes']
 
 
-def cythonize(*args, **kwargs):
-    from Cython.Build import cythonize
-    return cythonize(*args, **kwargs)
-
-
 extensions = [
     Extension("sleqp.sleqp",
-              ['src/sleqp.pyx'],
+              ['src/extension/sleqp.pyx'],
               include_dirs=[numpy.get_include()] + include_dirs,
               libraries=[project_name],
               extra_link_args=ldflags,
@@ -79,8 +66,6 @@ extensions = [
               )]
 
 requirements = []
-
-Distribution().fetch_build_eggs(['Cython'])
 
 with open('requirements.txt') as f:
     requirements = f.read().splitlines()
@@ -92,8 +77,9 @@ setup(name=project_name,
       license_file=license_file,
       long_description=long_description,
       version=project_version,
-      ext_modules=cythonize(extensions),
-      packages=find_packages(exclude=["tests"]),
+      ext_modules=extensions,
+      packages=find_packages(where="src", exclude=["tests"]),
+      package_dir={"": "src"},
       install_requires=requirements,
       setup_requires=['wheel'],
       classifiers=[
