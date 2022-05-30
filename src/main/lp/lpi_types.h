@@ -93,6 +93,8 @@ typedef SLEQP_RETCODE (*SLEQP_LPI_BASIS_CONDITION_ESTIMATE)(void* lp_data,
                                                             bool* exact,
                                                             double* condition);
 
+typedef SLEQP_RETCODE (*SLEQP_LPI_WRITE)(void* lp_data, const char* filename);
+
 typedef SLEQP_RETCODE (*SLEQP_LPI_FREE)(void** lp_data);
 
 typedef struct
@@ -110,6 +112,7 @@ typedef struct
   SLEQP_LPI_VARS_STATS vars_stats;
   SLEQP_LPI_CONS_STATS cons_stats;
   SLEQP_LPI_BASIS_CONDITION_ESTIMATE basis_condition_estimate;
+  SLEQP_LPI_WRITE write;
   SLEQP_LPI_FREE free_problem;
 } SleqpLPiCallbacks;
 

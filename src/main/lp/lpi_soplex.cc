@@ -590,6 +590,7 @@ extern "C"
          .vars_stats               = soplex_vars_stats,
          .cons_stats               = soplex_cons_stats,
          .basis_condition_estimate = soplex_basis_condition_estimate,
+         .write                    = soplex_write,
          .free_problem             = soplex_free};
 
     return sleqp_lpi_create(lp_star,

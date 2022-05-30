@@ -12,6 +12,7 @@
  **/
 
 #include "lpi_types.h"
+#include "pub_types.h"
 #include "timer.h"
 #include "types.h"
 
@@ -104,6 +105,10 @@ SLEQP_RETCODE
 sleqp_lpi_basis_condition_estimate(SleqpLPi* lp_interface,
                                    bool* exact,
                                    double* condition);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_lpi_write(SleqpLPi* lp_interface, const char* filename);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
