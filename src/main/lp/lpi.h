@@ -71,6 +71,13 @@ sleqp_lpi_set_time_limit(SleqpLPi* lp_interface, double time_limit);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
+sleqp_lpi_set_basis(SleqpLPi* lp_interface,
+                    int index,
+                    const SLEQP_BASESTAT* var_stats,
+                    const SLEQP_BASESTAT* cons_stats);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
 sleqp_lpi_save_basis(SleqpLPi* lp_interface, int index);
 
 SLEQP_NODISCARD

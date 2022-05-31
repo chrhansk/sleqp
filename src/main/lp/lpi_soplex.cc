@@ -371,6 +371,87 @@ soplex_set_objective(void* lp_data,
   return SLEQP_OKAY;
 }
 
+static SLEQP_BASESTAT
+basestat_for(soplex::SPxSolver::VarStatus status)
+{
+  switch (status)
+  {
+  case soplex::SPxSolver::ON_LOWER:
+    return SLEQP_BASESTAT_LOWER;
+  case soplex::SPxSolver::ON_UPPER:
+    return SLEQP_BASESTAT_UPPER;
+  case soplex::SPxSolver::ZERO:
+    return SLEQP_BASESTAT_ZERO;
+  case soplex::SPxSolver::FIXED:
+    return SLEQP_BASESTAT_UPPER;
+  case soplex::SPxSolver::BASIC:
+    return SLEQP_BASESTAT_BASIC;
+  default:
+    break;
+  }
+
+  // Invalid basis status reported by Soplex
+  assert(false);
+
+  return SLEQP_BASESTAT_ZERO;
+}
+
+static soplex::SPxSolver::VarStatus
+basestat_from(SLEQP_BASESTAT status)
+{
+  switch (status)
+  {
+  case SLEQP_BASESTAT_LOWER:
+    return soplex::SPxSolver::ON_LOWER;
+  case SLEQP_BASESTAT_UPPER:
+    return soplex::SPxSolver::ON_UPPER;
+  case SLEQP_BASESTAT_ZERO:
+    return soplex::SPxSolver::ZERO;
+  case SLEQP_BASESTAT_BASIC:
+    return soplex::SPxSolver::BASIC;
+  default:
+    break;
+  }
+
+  // Invalid basis status reported by Soplex
+  assert(false);
+
+  return soplex::SPxSolver::BASIC;
+}
+
+static SLEQP_RETCODE
+soplex_set_basis(void* lp_data,
+                 int index,
+                 const SLEQP_BASESTAT* col_stats,
+                 const SLEQP_BASESTAT* row_stats)
+{
+  SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
+  soplex::SoPlex& soplex = *(spx->soplex);
+
+  assert(index >= 0);
+
+  unsigned int uindex = index;
+
+  while (uindex >= spx->bases.size())
+  {
+    spx->bases.push_back(SoPlexBasis(spx->num_cols, spx->num_rows));
+  }
+
+  SoPlexBasis& basis = spx->bases[index];
+
+  for(int j = 0; j < spx->num_cols; ++j)
+  {
+    basis.basis_cols[j] = basestat_from(col_stats[j]);
+  }
+
+  for(int i = 0; i < spx->num_rows; ++i)
+  {
+    basis.basis_rows[i] = basestat_from(row_stats[i]);
+  }
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE
 soplex_save_basis(void* lp_data, int index)
 {
@@ -462,31 +543,6 @@ soplex_dual_sol(void* lp_data,
   }
 
   return SLEQP_OKAY;
-}
-
-static SLEQP_BASESTAT
-basestat_for(soplex::SPxSolver::VarStatus status)
-{
-  switch (status)
-  {
-  case soplex::SPxSolver::ON_LOWER:
-    return SLEQP_BASESTAT_LOWER;
-  case soplex::SPxSolver::ON_UPPER:
-    return SLEQP_BASESTAT_UPPER;
-  case soplex::SPxSolver::ZERO:
-    return SLEQP_BASESTAT_ZERO;
-  case soplex::SPxSolver::FIXED:
-    return SLEQP_BASESTAT_UPPER;
-  case soplex::SPxSolver::BASIC:
-    return SLEQP_BASESTAT_BASIC;
-  default:
-    break;
-  }
-
-  // Invalid basis status reported by Soplex
-  assert(false);
-
-  return SLEQP_BASESTAT_ZERO;
 }
 
 static SLEQP_RETCODE
@@ -581,8 +637,9 @@ extern "C"
          .solve                    = soplex_solve,
          .status                   = soplex_status,
          .set_bounds               = soplex_set_bounds,
-         .set_coefficients         = soplex_set_coefficients,
-         .set_objective            = soplex_set_objective,
+         .set_coeffs               = soplex_set_coefficients,
+         .set_obj                  = soplex_set_objective,
+         .set_basis                = soplex_set_basis,
          .save_basis               = soplex_save_basis,
          .restore_basis            = soplex_restore_basis,
          .primal_sol               = soplex_primal_sol,

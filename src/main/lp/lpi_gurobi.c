@@ -7,6 +7,7 @@
 #include "defs.h"
 #include "error.h"
 #include "log.h"
+#include "lp/lpi_types.h"
 #include "mem.h"
 
 /*
@@ -107,6 +108,12 @@ gurobi_create_problem(void** star,
                      env);
     }
   }
+
+  // Tighter tolerances prevent errors in Cauchy resolves,
+  // for instance for the "CHANNEL" instance
+  // TODO: Find a better way to set LP tolerances in general
+  SLEQP_GRB_CALL(GRBsetdblparam(env, GRB_DBL_PAR_FEASIBILITYTOL, 1e-9), env);
+  SLEQP_GRB_CALL(GRBsetdblparam(env, GRB_DBL_PAR_OPTIMALITYTOL, 1e-9), env);
 
   SLEQP_GRB_CALL(GRBnewmodel(env,
                              &lp_interface->model,
@@ -321,6 +328,101 @@ gurobi_reserve_bases(SleqpLpiGRB* lp_interface, int size)
   return SLEQP_OKAY;
 }
 
+static SLEQP_BASESTAT
+basestat_for(int stat)
+{
+  switch (stat)
+  {
+  case GRB_BASIC:
+    return SLEQP_BASESTAT_BASIC;
+    break;
+  case GRB_NONBASIC_LOWER:
+    return SLEQP_BASESTAT_LOWER;
+    break;
+  case GRB_NONBASIC_UPPER:
+    return SLEQP_BASESTAT_UPPER;
+    break;
+  case GRB_SUPERBASIC:
+    sleqp_log_error("Encountered a super-basic variable");
+  }
+
+  assert(false);
+
+  return SLEQP_BASESTAT_BASIC;
+}
+
+static int
+basestat_from(SLEQP_BASESTAT stat)
+{
+  switch (stat)
+  {
+  case SLEQP_BASESTAT_BASIC:
+    return GRB_BASIC;
+    break;
+  case SLEQP_BASESTAT_LOWER:
+    return GRB_NONBASIC_LOWER;
+    break;
+  case SLEQP_BASESTAT_UPPER:
+  case SLEQP_BASESTAT_ZERO:
+    return GRB_NONBASIC_UPPER;
+    break;
+  }
+
+  assert(false);
+
+  return SLEQP_BASESTAT_BASIC;
+}
+
+static SLEQP_RETCODE
+gurobi_set_basis(void* lp_data,
+                 int index,
+                 const SLEQP_BASESTAT* col_stats,
+                 const SLEQP_BASESTAT* row_stats)
+{
+  SleqpLpiGRB* lp_interface = lp_data;
+
+  assert(index >= 0);
+
+  SLEQP_CALL(gurobi_reserve_bases(lp_interface, index + 1));
+
+  int* vbase = lp_interface->vbases[index];
+  int* cbase = lp_interface->cbases[index];
+
+  // Variables
+  for (int j = 0; j < lp_interface->num_cols; ++j)
+  {
+    vbase[j] = basestat_from(col_stats[j]);
+  }
+
+  int* row_basis   = cbase;
+  int* slack_basis = vbase + lp_interface->num_cols;
+
+  for (int i = 0; i < lp_interface->num_rows; ++i)
+  {
+    switch (row_stats[i])
+    {
+    case SLEQP_BASESTAT_LOWER:
+      row_basis[i]   = SLEQP_BASESTAT_LOWER;
+      slack_basis[i] = SLEQP_BASESTAT_LOWER;
+      break;
+    case SLEQP_BASESTAT_UPPER:
+      row_basis[i]   = SLEQP_BASESTAT_LOWER;
+      slack_basis[i] = SLEQP_BASESTAT_UPPER;
+      break;
+    case SLEQP_BASESTAT_ZERO:
+      row_basis[i]   = SLEQP_BASESTAT_LOWER;
+      slack_basis[i] = SLEQP_BASESTAT_UPPER;
+      break;
+    case SLEQP_BASESTAT_BASIC:
+      row_basis[i]   = SLEQP_BASESTAT_BASIC;
+      slack_basis[i] = SLEQP_BASESTAT_BASIC;
+      break;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE
 gurobi_save_basis(void* lp_data, int index)
 {
@@ -457,22 +559,7 @@ gurobi_vars_stats(void* lp_data,
 
   for (int j = 0; j < num_cols; ++j)
   {
-    switch (lp_interface->col_basis[j])
-    {
-    case GRB_BASIC:
-      variable_stats[j] = SLEQP_BASESTAT_BASIC;
-      break;
-    case GRB_NONBASIC_LOWER:
-      variable_stats[j] = SLEQP_BASESTAT_LOWER;
-      break;
-    case GRB_NONBASIC_UPPER:
-      variable_stats[j] = SLEQP_BASESTAT_UPPER;
-      break;
-    case GRB_SUPERBASIC:
-      sleqp_log_error("Encountered a super-basic variable");
-    default:
-      assert(false);
-    }
+    variable_stats[j] = basestat_for(lp_interface->col_basis[j]);
   }
 
   return SLEQP_OKAY;
@@ -523,6 +610,9 @@ gurobi_cons_stats(void* lp_data,
       constraint_stats[i] = SLEQP_BASESTAT_UPPER;
       break;
     case GRB_SUPERBASIC:
+      // This can happen when using a barrier method which
+      // does not yield basic solutions (but it should
+      // cross over to a basic solution afterwards)
       sleqp_raise(SLEQP_INTERNAL_ERROR, "Encountered a super-basic constraint");
     default:
       assert(false);
@@ -604,8 +694,9 @@ sleqp_lpi_gurobi_create(SleqpLPi** lp_star,
        .solve                    = gurobi_solve,
        .status                   = gurobi_status,
        .set_bounds               = gurobi_set_bounds,
-       .set_coefficients         = gurobi_set_coefficients,
-       .set_objective            = gurobi_set_objective,
+       .set_coeffs               = gurobi_set_coefficients,
+       .set_obj                  = gurobi_set_objective,
+       .set_basis                = gurobi_set_basis,
        .save_basis               = gurobi_save_basis,
        .restore_basis            = gurobi_restore_basis,
        .primal_sol               = gurobi_primal_sol,
