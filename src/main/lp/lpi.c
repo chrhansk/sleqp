@@ -129,19 +129,19 @@ sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
 SLEQP_RETCODE
 sleqp_lpi_set_coeffs(SleqpLPi* lp_interface, SleqpSparseMatrix* coeff_matrix)
 {
-  return lp_interface->callbacks.set_coefficients(lp_interface->lp_data,
-                                                  lp_interface->num_variables,
-                                                  lp_interface->num_constraints,
-                                                  coeff_matrix);
+  return lp_interface->callbacks.set_coeffs(lp_interface->lp_data,
+                                            lp_interface->num_variables,
+                                            lp_interface->num_constraints,
+                                            coeff_matrix);
 }
 
 SLEQP_RETCODE
 sleqp_lpi_set_objective(SleqpLPi* lp_interface, double* objective)
 {
-  return lp_interface->callbacks.set_objective(lp_interface->lp_data,
-                                               lp_interface->num_variables,
-                                               lp_interface->num_constraints,
-                                               objective);
+  return lp_interface->callbacks.set_obj(lp_interface->lp_data,
+                                         lp_interface->num_variables,
+                                         lp_interface->num_constraints,
+                                         objective);
 }
 
 SLEQP_RETCODE
@@ -150,6 +150,18 @@ sleqp_lpi_set_time_limit(SleqpLPi* lp_interface, double time_limit)
   lp_interface->time_limit = time_limit;
 
   return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_lpi_set_basis(SleqpLPi* lp_interface,
+                    int index,
+                    const SLEQP_BASESTAT* var_stats,
+                    const SLEQP_BASESTAT* cons_stats)
+{
+  return lp_interface->callbacks.set_basis(lp_interface->lp_data,
+                                           index,
+                                           var_stats,
+                                           cons_stats);
 }
 
 SLEQP_RETCODE

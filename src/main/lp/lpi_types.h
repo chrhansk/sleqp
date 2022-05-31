@@ -52,16 +52,20 @@ typedef SLEQP_RETCODE (*SLEQP_LPI_SET_BOUNDS)(void* lp_data,
                                               double* vars_lb,
                                               double* vars_ub);
 
-typedef SLEQP_RETCODE (*SLEQP_LPI_SET_COEFFICIENTS)(
-  void* lp_data,
-  int num_variables,
-  int num_constraints,
-  SleqpSparseMatrix* cons_matrix);
+typedef SLEQP_RETCODE (*SLEQP_LPI_SET_COEFFS)(void* lp_data,
+                                              int num_variables,
+                                              int num_constraints,
+                                              SleqpSparseMatrix* cons_matrix);
 
-typedef SLEQP_RETCODE (*SLEQP_LPI_SET_OBJECTIVE)(void* lp_data,
-                                                 int num_variables,
-                                                 int num_constraints,
-                                                 double* objective);
+typedef SLEQP_RETCODE (*SLEQP_LPI_SET_OBJ)(void* lp_data,
+                                           int num_variables,
+                                           int num_constraints,
+                                           double* objective);
+
+typedef SLEQP_RETCODE (*SLEQP_LPI_SET_BASIS)(void* lp_data,
+                                             int index,
+                                             const SLEQP_BASESTAT* var_stats,
+                                             const SLEQP_BASESTAT* cons_stats);
 
 typedef SLEQP_RETCODE (*SLEQP_LPI_SAVE_BASIS)(void* lp_data, int index);
 
@@ -82,12 +86,12 @@ typedef SLEQP_RETCODE (*SLEQP_LPI_DUAL_SOL)(void* lp_data,
 typedef SLEQP_RETCODE (*SLEQP_LPI_VARS_STATS)(void* lp_data,
                                               int num_variables,
                                               int num_constraints,
-                                              SLEQP_BASESTAT* variable_stats);
+                                              SLEQP_BASESTAT* var_stats);
 
 typedef SLEQP_RETCODE (*SLEQP_LPI_CONS_STATS)(void* lp_data,
                                               int num_variables,
                                               int num_constraints,
-                                              SLEQP_BASESTAT* constraintstats);
+                                              SLEQP_BASESTAT* cons_stats);
 
 typedef SLEQP_RETCODE (*SLEQP_LPI_BASIS_CONDITION_ESTIMATE)(void* lp_data,
                                                             bool* exact,
@@ -103,8 +107,9 @@ typedef struct
   SLEQP_LPI_SOLVE solve;
   SLEQP_LPI_STATUS status;
   SLEQP_LPI_SET_BOUNDS set_bounds;
-  SLEQP_LPI_SET_COEFFICIENTS set_coefficients;
-  SLEQP_LPI_SET_OBJECTIVE set_objective;
+  SLEQP_LPI_SET_COEFFS set_coeffs;
+  SLEQP_LPI_SET_OBJ set_obj;
+  SLEQP_LPI_SET_BASIS set_basis;
   SLEQP_LPI_SAVE_BASIS save_basis;
   SLEQP_LPI_RESTORE_BASIS restore_basis;
   SLEQP_LPI_PRIMAL_SOL primal_sol;

@@ -10,6 +10,7 @@
 #include "error.h"
 #include "log.h"
 #include "mem.h"
+#include "pub_types.h"
 
 #define HIGHS_LOWER 0
 #define HIGHS_BASIC 1
@@ -480,6 +481,86 @@ highs_reserve_bases(SleqpLpiHIGHS* lp_interface, int size)
   return SLEQP_OKAY;
 }
 
+static SLEQP_BASESTAT
+basestat_for(int status)
+{
+  switch (status)
+  {
+  case HIGHS_BASIC:
+    return SLEQP_BASESTAT_BASIC;
+  case HIGHS_LOWER:
+    return SLEQP_BASESTAT_LOWER;
+  case HIGHS_UPPER:
+    return SLEQP_BASESTAT_UPPER;
+  case HIGHS_ZERO:
+    return SLEQP_BASESTAT_ZERO;
+  case HIGHS_NONBASIC:
+    sleqp_log_error("Encountered an unspecific non-basic variable");
+    break;
+  default:
+    break;
+  }
+
+  // Invalid basis status reported
+  assert(false);
+
+  return SLEQP_BASESTAT_ZERO;
+}
+
+static int
+basestat_from(SLEQP_BASESTAT status)
+{
+  switch (status)
+  {
+  case SLEQP_BASESTAT_BASIC:
+    return HIGHS_BASIC;
+  case SLEQP_BASESTAT_LOWER:
+    return HIGHS_LOWER;
+  case SLEQP_BASESTAT_UPPER:
+    return HIGHS_UPPER;
+  case SLEQP_BASESTAT_ZERO:
+    return HIGHS_ZERO;
+  default:
+    break;
+  }
+
+  // Invalid basis status reported
+  assert(false);
+
+  return HIGHS_BASIC;
+}
+
+static SLEQP_RETCODE
+highs_set_basis(void* lp_data,
+                int index,
+                const SLEQP_BASESTAT* col_stats,
+                const SLEQP_BASESTAT* row_stats)
+{
+  SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
+  void* highs                 = lp_interface->highs;
+
+  assert(index >= 0);
+
+  SLEQP_CALL(highs_reserve_bases(lp_interface, index + 1));
+
+  int* vbase = lp_interface->vbases[index];
+  int* cbase = lp_interface->cbases[index];
+
+  SLEQP_HIGHS_CALL(Highs_setBasis(highs, vbase, cbase), highs);
+
+  for (int j = 0; j < lp_interface->num_cols; ++j)
+  {
+    cbase[j] = basestat_from(col_stats[j]);
+  }
+
+  for (int i = 0; i < lp_interface->num_rows; ++i)
+  {
+    vbase[i] = basestat_from(row_stats[i]);
+  }
+
+  return SLEQP_OKAY;
+}
+
 static SLEQP_RETCODE
 highs_save_basis(void* lp_data, int index)
 {
@@ -573,32 +654,6 @@ highs_dual_sol(void* lp_data,
                    highs);
 
   return SLEQP_OKAY;
-}
-
-static SLEQP_BASESTAT
-basestat_for(int status)
-{
-  switch (status)
-  {
-  case HIGHS_BASIC:
-    return SLEQP_BASESTAT_BASIC;
-  case HIGHS_LOWER:
-    return SLEQP_BASESTAT_LOWER;
-  case HIGHS_UPPER:
-    return SLEQP_BASESTAT_UPPER;
-  case HIGHS_ZERO:
-    return SLEQP_BASESTAT_ZERO;
-  case HIGHS_NONBASIC:
-    sleqp_log_error("Encountered an unspecific non-basic variable");
-    break;
-  default:
-    break;
-  }
-
-  // Invalid basis status reported
-  assert(false);
-
-  return SLEQP_BASESTAT_ZERO;
 }
 
 static SLEQP_RETCODE
@@ -710,8 +765,9 @@ sleqp_lpi_highs_create(SleqpLPi** lp_star,
        .solve                    = highs_solve,
        .status                   = highs_status,
        .set_bounds               = highs_set_bounds,
-       .set_coefficients         = highs_set_coeffs,
-       .set_objective            = highs_set_objective,
+       .set_coeffs               = highs_set_coeffs,
+       .set_obj                  = highs_set_objective,
+       .set_basis                = highs_set_basis,
        .save_basis               = highs_save_basis,
        .restore_basis            = highs_restore_basis,
        .primal_sol               = highs_primal_sol,
