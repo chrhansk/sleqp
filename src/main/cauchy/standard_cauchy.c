@@ -47,6 +47,8 @@ typedef struct
   SleqpLPi* default_interface;
   SleqpLPi* reduced_interface;
 
+  SLEQP_BASESTAT* reduced_cons_stats;
+
   double* objective;
   double* cons_lb;
   double* cons_ub;
@@ -522,6 +524,37 @@ switch_to_reduced_problem(CauchyData* cauchy_data)
                                         cauchy_data->options));
   }
 
+  if (!cauchy_data->reduced_cons_stats)
+  {
+    SLEQP_CALL(
+      sleqp_alloc_array(&cauchy_data->reduced_cons_stats, num_constraints));
+  }
+
+  SLEQP_BASESTAT* lower_slack_stats = cauchy_data->var_stats + num_variables;
+  SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_constraints;
+
+  for (int i = 0; i < num_constraints; ++i)
+  {
+    const SLEQP_BASESTAT cons_stat = cauchy_data->cons_stats[i];
+
+    cauchy_data->reduced_cons_stats[i] = SLEQP_BASESTAT_BASIC;
+
+    if (cons_stat == SLEQP_BASESTAT_BASIC)
+    {
+      continue;
+    }
+
+    bool zero_slack = lower_slack_stats[i] == SLEQP_BASESTAT_LOWER
+                      && upper_slack_stats[i] == SLEQP_BASESTAT_LOWER;
+
+    if (zero_slack)
+    {
+      cauchy_data->reduced_cons_stats[i] = cons_stat;
+    }
+  }
+
+  SLEQP_CALL(cauchy_fetch_components(cauchy_data, BASE_STATS | PRIMAL_VALS));
+
   SLEQP_CALL(sleqp_lpi_set_objective(cauchy_data->reduced_interface,
                                      cauchy_data->objective));
 
@@ -548,7 +581,13 @@ switch_to_reduced_problem(CauchyData* cauchy_data)
   SLEQP_CALL(sleqp_lpi_set_time_limit(cauchy_data->reduced_interface,
                                       cauchy_data->time_limit));
 
-  // TODO: Warm-start with basis adapted from current one
+  SLEQP_CALL(sleqp_lpi_set_basis(cauchy_data->reduced_interface,
+                                 0,
+                                 cauchy_data->var_stats,
+                                 cauchy_data->reduced_cons_stats));
+
+  SLEQP_CALL(sleqp_lpi_restore_basis(cauchy_data->reduced_interface, 0));
+
   SLEQP_CALL(sleqp_lpi_solve(cauchy_data->reduced_interface));
 
   SLEQP_LP_STATUS status = sleqp_lpi_status(cauchy_data->reduced_interface);
@@ -1423,6 +1462,8 @@ standard_cauchy_free(void* star)
   sleqp_free(&cauchy_data->cons_lb);
 
   sleqp_free(&cauchy_data->objective);
+
+  sleqp_free(&cauchy_data->reduced_cons_stats);
 
   SLEQP_CALL(sleqp_lpi_release(&cauchy_data->reduced_interface));
   SLEQP_CALL(sleqp_lpi_release(&cauchy_data->default_interface));
