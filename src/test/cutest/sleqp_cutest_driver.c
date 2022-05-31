@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "cmp.h"
@@ -10,6 +11,8 @@
 #include "mem.h"
 #include "options.h"
 
+#include "pub_error.h"
+#include "pub_types.h"
 #include "sleqp_cutest_constrained.h"
 #include "sleqp_cutest_data.h"
 #include "sleqp_cutest_types.h"
@@ -107,10 +110,10 @@ report_result(SleqpSolver* solver,
   return SLEQP_OKAY;
 }
 
-int
-sleqp_cutest_run(const char* filename,
-                 const char* probname,
-                 const SleqpCutestOptions* cutest_options)
+static SLEQP_RETCODE
+cutest_run_internal(const char* filename,
+                    const char* probname,
+                    const SleqpCutestOptions* cutest_options)
 {
   integer funit = 42;    /* FORTRAN unit number for OUTSDIF.d */
   integer ierr;          /* Exit flag from OPEN and CLOSE */
@@ -241,7 +244,9 @@ sleqp_cutest_run(const char* filename,
   }
   else
   {
-    sleqp_log_error("Failed to solve problem %s", probname);
+    sleqp_log_error("Failed to solve problem %s: %s",
+                    probname,
+                    sleqp_error_msg());
     success = false;
   }
 
@@ -271,6 +276,25 @@ sleqp_cutest_run(const char* filename,
     fclose(output);
   }
 
-  return success ? EXIT_SUCCESS : EXIT_FAILURE;
-  // return !(success);
+  return SLEQP_OKAY;
+}
+
+int
+sleqp_cutest_run(const char* filename,
+                 const char* probname,
+                 const SleqpCutestOptions* cutest_options)
+{
+  SLEQP_RETCODE retcode
+    = cutest_run_internal(filename, probname, cutest_options);
+
+  if (retcode == SLEQP_OKAY)
+  {
+    return EXIT_SUCCESS;
+  }
+
+  sleqp_log_error("Failed to solve problem %s: %s",
+                  probname,
+                  sleqp_error_msg());
+
+  return EXIT_FAILURE;
 }
