@@ -109,6 +109,12 @@ gurobi_create_problem(void** star,
     }
   }
 
+  // Tighter tolerances prevent errors in Cauchy resolves,
+  // for instance for the "CHANNEL" instance
+  // TODO: Find a better way to set LP tolerances in general
+  SLEQP_GRB_CALL(GRBsetdblparam(env, GRB_DBL_PAR_FEASIBILITYTOL, 1e-9), env);
+  SLEQP_GRB_CALL(GRBsetdblparam(env, GRB_DBL_PAR_OPTIMALITYTOL, 1e-9), env);
+
   SLEQP_GRB_CALL(GRBnewmodel(env,
                              &lp_interface->model,
                              "",
