@@ -269,6 +269,11 @@ sleqp_trial_point_solver_set_iterate(SleqpTrialPointSolver* solver,
   SLEQP_CALL(sleqp_iterate_capture(iterate));
   solver->iterate = iterate;
 
+  SLEQP_CALL(sleqp_merit_func(solver->merit,
+                              iterate,
+                              solver->penalty_parameter,
+                              &solver->current_merit_value));
+
   return SLEQP_OKAY;
 }
 
@@ -313,6 +318,13 @@ sleqp_trial_point_solver_set_penalty(SleqpTrialPointSolver* solver,
   assert(penalty_parameter > 0.);
 
   solver->penalty_parameter = penalty_parameter;
+
+  SleqpIterate* iterate = solver->iterate;
+
+  SLEQP_CALL(sleqp_merit_func(solver->merit,
+                              iterate,
+                              solver->penalty_parameter,
+                              &solver->current_merit_value));
 
   return SLEQP_OKAY;
 }
