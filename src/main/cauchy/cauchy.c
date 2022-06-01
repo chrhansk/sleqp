@@ -1,7 +1,9 @@
 #include "cauchy.h"
 
 #include "cmp.h"
+#include "feas.h"
 #include "mem.h"
+#include "pub_iterate.h"
 
 struct SleqpCauchy
 {
@@ -37,6 +39,8 @@ sleqp_cauchy_set_iterate(SleqpCauchy* cauchy,
                          SleqpIterate* iterate,
                          double trust_radius)
 {
+  cauchy->trust_radius = trust_radius;
+
   return cauchy->callbacks.set_iterate(iterate,
                                        trust_radius,
                                        cauchy->cauchy_data);
@@ -56,6 +60,8 @@ sleqp_cauchy_solve(SleqpCauchy* cauchy,
                    double penalty,
                    SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
 {
+  assert(cauchy->trust_radius != SLEQP_NONE);
+
   return cauchy->callbacks.solve(gradient,
                                  penalty,
                                  objective_type,
