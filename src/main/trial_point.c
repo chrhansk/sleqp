@@ -421,12 +421,6 @@ compute_trial_point_simple(SleqpTrialPointSolver* solver,
                            bool quadratic_model,
                            bool* full_step)
 {
-  SleqpIterate* iterate = solver->iterate;
-
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
-
-  SLEQP_NUM_ASSERT_PARAM(eps);
-
   SLEQP_CALL(sleqp_trial_point_solver_compute_cauchy_step(solver,
                                                           cauchy_merit_value,
                                                           quadratic_model,
@@ -452,24 +446,6 @@ compute_trial_point_simple(SleqpTrialPointSolver* solver,
                              &hessian_prod));
 
     (*cauchy_merit_value) += .5 * hessian_prod;
-
-#if !defined(NDEBUG)
-
-    {
-      double actual_quadratic_merit_value;
-
-      SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
-                                       iterate,
-                                       solver->cauchy_direction,
-                                       solver->penalty_parameter,
-                                       &actual_quadratic_merit_value));
-
-      sleqp_assert_is_eq(*cauchy_merit_value,
-                         actual_quadratic_merit_value,
-                         eps);
-    }
-
-#endif
   }
 
   SLEQP_CALL(
@@ -492,14 +468,10 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
 {
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
-
   SleqpTimer* timer = solver->elapsed_timer;
   double time_limit = solver->time_limit;
 
   double remaining_time = sleqp_timer_remaining_time(timer, time_limit);
-
-  SLEQP_NUM_ASSERT_PARAM(eps);
 
   double cauchy_merit_value;
 
@@ -587,39 +559,6 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
     *(failed_eqp_step) = (step_length == 0.);
   }
 
-#if !defined(NDEBUG)
-
-  {
-    bool direction_valid;
-
-    const double zero_eps
-      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
-
-    SLEQP_CALL(sleqp_direction_check(solver->trial_direction,
-                                     solver->problem,
-                                     iterate,
-                                     solver->multipliers,
-                                     solver->dense_cache,
-                                     zero_eps,
-                                     &direction_valid));
-
-    sleqp_num_assert(direction_valid);
-  }
-
-  {
-    double actual_quadratic_merit_value;
-
-    SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
-                                     iterate,
-                                     solver->trial_direction,
-                                     solver->penalty_parameter,
-                                     &actual_quadratic_merit_value));
-
-    sleqp_assert_is_eq(*trial_merit_value, actual_quadratic_merit_value, eps);
-  }
-
-#endif
-
   SLEQP_CALL(compute_trial_iterate_from_step(
     solver,
     sleqp_direction_primal(solver->trial_direction),
@@ -662,26 +601,26 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
                                           full_step));
   }
 
-#ifdef NDEBUG
+#ifndef NDEBUG
 
   {
     double actual_merit_value = 0.;
 
     if (quadratic_model)
     {
-      SLEQP_CALL(sleqp_merit_linear(solver->merit,
-                                    solver->iterate,
-                                    solver->trial_iterate,
-                                    solver->penalty_parameter,
-                                    &cctual_merit_value));
+      SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
+                                       solver->iterate,
+                                       solver->trial_direction,
+                                       solver->penalty_parameter,
+                                       &actual_merit_value));
     }
     else
     {
-      SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
-                                       solver->iterate,
-                                       solver->trial_iterate,
-                                       solver->penalty_parameter,
-                                       &cctual_merit_value));
+      SLEQP_CALL(sleqp_merit_linear(solver->merit,
+                                    solver->iterate,
+                                    solver->trial_direction,
+                                    solver->penalty_parameter,
+                                    &actual_merit_value));
     }
 
     const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
@@ -689,6 +628,23 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
     SLEQP_NUM_ASSERT_PARAM(eps);
 
     sleqp_assert_is_eq(*trial_merit_value, actual_merit_value, eps);
+  }
+
+  {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(solver->trial_direction,
+                                     solver->problem,
+                                     solver->iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
   }
 
 #endif
