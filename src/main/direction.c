@@ -1,6 +1,10 @@
 #include "direction.h"
 
+#include "cmp.h"
 #include "mem.h"
+#include "problem.h"
+#include "pub_iterate.h"
+#include "pub_problem.h"
 #include "pub_types.h"
 #include "sparse/pub_vec.h"
 #include "sparse/sparse_matrix.h"
@@ -76,6 +80,72 @@ sleqp_direction_reset(SleqpDirection* direction,
                                      direction_primal,
                                      multipliers,
                                      direction_hess));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_direction_check(const SleqpDirection* direction,
+                      SleqpProblem* problem,
+                      const SleqpIterate* iterate,
+                      const SleqpVec* multipliers,
+                      double* cache,
+                      double zero_eps,
+                      bool* valid)
+{
+  *valid = true;
+  double objective_dot;
+
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
+
+  SLEQP_CALL(sleqp_vec_dot(direction->primal,
+                           sleqp_iterate_obj_grad(iterate),
+                           &objective_dot));
+
+  if (!sleqp_is_eq(objective_dot, direction->obj_grad, 1e-6))
+  {
+    *valid = false;
+    return SLEQP_OKAY;
+  }
+
+  SleqpVec* cons_dir;
+
+  SLEQP_CALL(sleqp_vec_create_full(&cons_dir, num_cons));
+
+  SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
+                                                direction->primal,
+                                                cache));
+
+  SLEQP_CALL(sleqp_vec_set_from_raw(cons_dir, cache, num_cons, zero_eps));
+
+  if (!sleqp_vec_eq(cons_dir, direction->cons_jac, 1e-6))
+  {
+    *valid = false;
+    return SLEQP_OKAY;
+  }
+
+  const double one = 1.;
+
+  SleqpVec* hess_dir;
+
+  SLEQP_CALL(sleqp_vec_create_full(&hess_dir, num_vars));
+
+  SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                     &one,
+                                     direction->primal,
+                                     multipliers,
+                                     hess_dir));
+
+  if (!sleqp_vec_eq(hess_dir, direction->hess, 1e-6))
+  {
+    *valid = false;
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(sleqp_vec_free(&hess_dir));
+
+  SLEQP_CALL(sleqp_vec_free(&cons_dir));
 
   return SLEQP_OKAY;
 }

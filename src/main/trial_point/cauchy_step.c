@@ -3,6 +3,7 @@
 #include "fail.h"
 #include "feas.h"
 #include "iterate.h"
+#include "merit.h"
 #include "params.h"
 #include "penalty.h"
 #include "pub_iterate.h"
@@ -99,17 +100,6 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
     = sleqp_options_bool_value(solver->options,
                                SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE);
 
-  SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
-                                      iterate,
-                                      solver->lp_trust_radius));
-
-  SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
-                                sleqp_iterate_obj_grad(iterate),
-                                solver->penalty_parameter,
-                                SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
-
-  double criticality_bound;
-
 #ifndef NDEBUG
 
   {
@@ -124,6 +114,17 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
   }
 
 #endif
+
+  SLEQP_CALL(sleqp_cauchy_set_iterate(solver->cauchy_data,
+                                      iterate,
+                                      solver->lp_trust_radius));
+
+  SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
+                                sleqp_iterate_obj_grad(iterate),
+                                solver->penalty_parameter,
+                                SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+
+  double criticality_bound;
 
   SLEQP_CALL(sleqp_cauchy_compute_criticality_bound(solver->cauchy_data,
                                                     solver->current_merit_value,
@@ -162,6 +163,11 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
     SLEQP_CALL(sleqp_cauchy_lp_step(solver->cauchy_data, solver->lp_step));
 
     SLEQP_CALL(sleqp_cauchy_working_set(solver->cauchy_data, iterate));
+
+    SLEQP_CALL(sleqp_merit_func(solver->merit,
+                                iterate,
+                                solver->penalty_parameter,
+                                &solver->current_merit_value));
   }
 
   return SLEQP_OKAY;
@@ -260,13 +266,18 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 #if !defined(NDEBUG)
 
     {
+      const double feas_eps
+        = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+
       bool in_working_set = false;
+
+      SLEQP_NUM_ASSERT_PARAM(feas_eps);
 
       SLEQP_CALL(sleqp_direction_in_working_set(problem,
                                                 iterate,
                                                 solver->lp_step,
                                                 solver->dense_cache,
-                                                eps,
+                                                feas_eps,
                                                 &in_working_set));
 
       sleqp_num_assert(in_working_set);
@@ -287,6 +298,26 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
                                      solver->multipliers,
                                      solver->dense_cache,
                                      zero_eps));
+
+#ifndef NDEBUG
+
+    {
+      double merit_value = 0.;
+
+      const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+
+      SLEQP_NUM_ASSERT_PARAM(eps);
+
+      SLEQP_CALL(sleqp_merit_linear(solver->merit,
+                                    iterate,
+                                    solver->cauchy_direction,
+                                    solver->penalty_parameter,
+                                    &merit_value));
+
+      sleqp_assert_is_geq(solver->current_merit_value, merit_value, eps);
+    }
+
+#endif
 
     if (!quadratic_model)
     {
@@ -329,6 +360,20 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
       // exact iterate value. The Cauchy step should
       // be at least as good
       sleqp_assert_is_leq(*cauchy_merit_value, exact_iterate_value, eps);
+    }
+
+    {
+      bool direction_valid;
+
+      SLEQP_CALL(sleqp_direction_check(solver->cauchy_direction,
+                                       problem,
+                                       iterate,
+                                       solver->multipliers,
+                                       solver->dense_cache,
+                                       zero_eps,
+                                       &direction_valid));
+
+      sleqp_num_assert(direction_valid);
     }
 
 #endif

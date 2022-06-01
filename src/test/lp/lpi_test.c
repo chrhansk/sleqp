@@ -148,7 +148,7 @@ lpi_suite()
 
   tcase_add_checked_fixture(tc_solve, lpi_setup, lpi_teardown);
 
-  // tcase_add_test(tc_solve, test_solve);
+  tcase_add_test(tc_solve, test_solve);
   tcase_add_test(tc_solve, test_basis_roundtrip);
 
   suite_add_tcase(suite, tc_solve);

@@ -426,7 +426,6 @@ soplex_set_basis(void* lp_data,
                  const SLEQP_BASESTAT* row_stats)
 {
   SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
-  soplex::SoPlex& soplex = *(spx->soplex);
 
   assert(index >= 0);
 

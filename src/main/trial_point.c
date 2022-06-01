@@ -515,6 +515,44 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
                                                 solver->multipliers,
                                                 solver->newton_direction));
 
+#ifndef NDEBUG
+
+  {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(solver->cauchy_direction,
+                                     solver->problem,
+                                     iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
+  }
+
+  {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(solver->newton_direction,
+                                     solver->problem,
+                                     iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
+  }
+
+#endif
+
   {
     SLEQP_LINESEARCH lineserach
       = sleqp_options_enum_value(solver->options, SLEQP_OPTION_ENUM_LINESEARCH);
@@ -550,6 +588,23 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
   }
 
 #if !defined(NDEBUG)
+
+  {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(solver->trial_direction,
+                                     solver->problem,
+                                     iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
+  }
 
   {
     double actual_quadratic_merit_value;
@@ -606,6 +661,37 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
                                           quadratic_model,
                                           full_step));
   }
+
+#ifdef NDEBUG
+
+  {
+    double actual_merit_value = 0.;
+
+    if (quadratic_model)
+    {
+      SLEQP_CALL(sleqp_merit_linear(solver->merit,
+                                    solver->iterate,
+                                    solver->trial_iterate,
+                                    solver->penalty_parameter,
+                                    &cctual_merit_value));
+    }
+    else
+    {
+      SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
+                                       solver->iterate,
+                                       solver->trial_iterate,
+                                       solver->penalty_parameter,
+                                       &cctual_merit_value));
+    }
+
+    const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+
+    SLEQP_NUM_ASSERT_PARAM(eps);
+
+    sleqp_assert_is_eq(*trial_merit_value, actual_merit_value, eps);
+  }
+
+#endif
 
   return SLEQP_OKAY;
 }
@@ -796,15 +882,15 @@ compute_trial_point_soc_deterministic(SleqpTrialPointSolver* solver,
 
   *reject = false;
 
-  SleqpVec* soc_step = sleqp_direction_primal(solver->soc_direction);
+  SleqpVec* trial_step = sleqp_direction_primal(solver->trial_direction);
+  SleqpVec* soc_step   = sleqp_direction_primal(solver->soc_direction);
 
-  SLEQP_CALL(
-    sleqp_soc_compute_step(solver->soc_data,
-                           solver->aug_jac,
-                           iterate,
-                           sleqp_direction_primal(solver->trial_direction),
-                           trial_iterate,
-                           soc_step));
+  SLEQP_CALL(sleqp_soc_compute_step(solver->soc_data,
+                                    solver->aug_jac,
+                                    iterate,
+                                    trial_step,
+                                    trial_iterate,
+                                    soc_step));
 
   SLEQP_CALL(compute_trial_iterate_from_step(solver, soc_step, trial_iterate));
 
