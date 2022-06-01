@@ -1,13 +1,17 @@
+#include "cmp.h"
 #include "direction.h"
+#include "fail.h"
+#include "feas.h"
+#include "iterate.h"
+#include "params.h"
+#include "penalty.h"
 #include "pub_iterate.h"
-#include "pub_types.h"
+#include "pub_params.h"
+#include "trial_point.h"
+#include "types.h"
+
 #include "sparse/pub_sparse_matrix.h"
 #include "sparse/pub_vec.h"
-#include "trial_point.h"
-
-#include "cmp.h"
-#include "fail.h"
-#include "penalty.h"
 
 const double allowed_dual_factor = 1000.;
 const double allowed_dual_offset = 1.;
@@ -106,9 +110,37 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
 
   double criticality_bound;
 
+#ifndef NDEBUG
+
+  {
+    double current_merit_value = 0.;
+
+    SLEQP_CALL(sleqp_merit_func(solver->merit,
+                                iterate,
+                                solver->penalty_parameter,
+                                &current_merit_value));
+
+    assert(current_merit_value == solver->current_merit_value);
+  }
+
+#endif
+
   SLEQP_CALL(sleqp_cauchy_compute_criticality_bound(solver->cauchy_data,
                                                     solver->current_merit_value,
                                                     &criticality_bound));
+
+#ifndef NDEBUG
+
+  {
+    const double stat_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_STAT_TOL);
+
+    SLEQP_NUM_ASSERT_PARAM(stat_eps);
+
+    sleqp_assert_is_geq(criticality_bound, 0., stat_eps);
+  }
+
+#endif
 
   sleqp_log_debug("Criticality bound: %g", criticality_bound);
 
