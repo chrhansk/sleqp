@@ -49,8 +49,8 @@ typedef struct SleqpLpiHIGHS
   int num_rows;
 
   int num_bases;
-  int** vbases;
-  int** cbases;
+  int** row_bases;
+  int** col_bases;
 
   int* col_basis;
   int* row_basis;
@@ -465,15 +465,15 @@ highs_reserve_bases(SleqpLpiHIGHS* lp_interface, int size)
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_realloc(&lp_interface->vbases, size));
-  SLEQP_CALL(sleqp_realloc(&lp_interface->cbases, size));
+  SLEQP_CALL(sleqp_realloc(&lp_interface->row_bases, size));
+  SLEQP_CALL(sleqp_realloc(&lp_interface->col_bases, size));
 
   for (int j = lp_interface->num_bases; j < size; ++j)
   {
     SLEQP_CALL(
-      sleqp_alloc_array(&lp_interface->vbases[j], lp_interface->num_cols));
+      sleqp_alloc_array(&lp_interface->row_bases[j], lp_interface->num_rows));
     SLEQP_CALL(
-      sleqp_alloc_array(&lp_interface->cbases[j], lp_interface->num_rows));
+      sleqp_alloc_array(&lp_interface->col_bases[j], lp_interface->num_cols));
   }
 
   lp_interface->num_bases = size;
@@ -537,25 +537,22 @@ highs_set_basis(void* lp_data,
                 const SLEQP_BASESTAT* row_stats)
 {
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
-  void* highs                 = lp_interface->highs;
 
   assert(index >= 0);
 
   SLEQP_CALL(highs_reserve_bases(lp_interface, index + 1));
 
-  int* vbase = lp_interface->vbases[index];
-  int* cbase = lp_interface->cbases[index];
-
-  SLEQP_HIGHS_CALL(Highs_setBasis(highs, vbase, cbase), highs);
+  int* row_base = lp_interface->row_bases[index];
+  int* col_base = lp_interface->col_bases[index];
 
   for (int j = 0; j < lp_interface->num_cols; ++j)
   {
-    cbase[j] = basestat_from(col_stats[j]);
+    col_base[j] = basestat_from(col_stats[j]);
   }
 
   for (int i = 0; i < lp_interface->num_rows; ++i)
   {
-    vbase[i] = basestat_from(row_stats[i]);
+    row_base[i] = basestat_from(row_stats[i]);
   }
 
   return SLEQP_OKAY;
@@ -572,8 +569,8 @@ highs_save_basis(void* lp_data, int index)
   SLEQP_CALL(highs_reserve_bases(lp_interface, index + 1));
 
   SLEQP_HIGHS_CALL(Highs_getBasis(highs,
-                                  lp_interface->vbases[index],
-                                  lp_interface->cbases[index]),
+                                  lp_interface->col_bases[index],
+                                  lp_interface->row_bases[index]),
                    highs);
 
   return SLEQP_OKAY;
@@ -589,8 +586,8 @@ highs_restore_basis(void* lp_data, int index)
   assert(index < lp_interface->num_bases);
 
   SLEQP_HIGHS_CALL(Highs_setBasis(highs,
-                                  lp_interface->vbases[index],
-                                  lp_interface->cbases[index]),
+                                  lp_interface->col_bases[index],
+                                  lp_interface->row_bases[index]),
                    highs);
 
   return SLEQP_OKAY;
@@ -736,12 +733,12 @@ highs_free(void** star)
 
   for (int i = 0; i < lp_interface->num_bases; ++i)
   {
-    sleqp_free(&lp_interface->vbases[i]);
-    sleqp_free(&lp_interface->cbases[i]);
+    sleqp_free(&lp_interface->row_bases[i]);
+    sleqp_free(&lp_interface->col_bases[i]);
   }
 
-  sleqp_free(&lp_interface->vbases);
-  sleqp_free(&lp_interface->cbases);
+  sleqp_free(&lp_interface->row_bases);
+  sleqp_free(&lp_interface->col_bases);
 
   if (lp_interface->highs)
   {
