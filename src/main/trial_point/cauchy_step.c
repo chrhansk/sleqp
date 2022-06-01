@@ -260,13 +260,16 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 #if !defined(NDEBUG)
 
     {
+      const double feas_eps
+        = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+
       bool in_working_set = false;
 
       SLEQP_CALL(sleqp_direction_in_working_set(problem,
                                                 iterate,
                                                 solver->lp_step,
                                                 solver->dense_cache,
-                                                eps,
+                                                feas_eps,
                                                 &in_working_set));
 
       sleqp_num_assert(in_working_set);

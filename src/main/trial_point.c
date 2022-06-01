@@ -662,6 +662,37 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
                                           full_step));
   }
 
+#ifdef NDEBUG
+
+  {
+    double actual_merit_value = 0.;
+
+    if (quadratic_model)
+    {
+      SLEQP_CALL(sleqp_merit_linear(solver->merit,
+                                    solver->iterate,
+                                    solver->trial_iterate,
+                                    solver->penalty_parameter,
+                                    &cctual_merit_value));
+    }
+    else
+    {
+      SLEQP_CALL(sleqp_merit_quadratic(solver->merit,
+                                       solver->iterate,
+                                       solver->trial_iterate,
+                                       solver->penalty_parameter,
+                                       &cctual_merit_value));
+    }
+
+    const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+
+    SLEQP_NUM_ASSERT_PARAM(eps);
+
+    sleqp_assert_is_eq(*trial_merit_value, actual_merit_value, eps);
+  }
+
+#endif
+
   return SLEQP_OKAY;
 }
 
