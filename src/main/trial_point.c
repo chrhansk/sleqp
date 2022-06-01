@@ -882,15 +882,15 @@ compute_trial_point_soc_deterministic(SleqpTrialPointSolver* solver,
 
   *reject = false;
 
-  SleqpVec* soc_step = sleqp_direction_primal(solver->soc_direction);
+  SleqpVec* trial_step = sleqp_direction_primal(solver->trial_direction);
+  SleqpVec* soc_step   = sleqp_direction_primal(solver->soc_direction);
 
-  SLEQP_CALL(
-    sleqp_soc_compute_step(solver->soc_data,
-                           solver->aug_jac,
-                           iterate,
-                           sleqp_direction_primal(solver->trial_direction),
-                           trial_iterate,
-                           soc_step));
+  SLEQP_CALL(sleqp_soc_compute_step(solver->soc_data,
+                                    solver->aug_jac,
+                                    iterate,
+                                    trial_step,
+                                    trial_iterate,
+                                    soc_step));
 
   SLEQP_CALL(compute_trial_iterate_from_step(solver, soc_step, trial_iterate));
 
