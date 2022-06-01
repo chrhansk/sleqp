@@ -515,6 +515,44 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
                                                 solver->multipliers,
                                                 solver->newton_direction));
 
+#ifndef NDEBUG
+
+  {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(solver->cauchy_direction,
+                                     solver->problem,
+                                     iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
+  }
+
+  {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(solver->newton_direction,
+                                     solver->problem,
+                                     iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
+  }
+
+#endif
+
   {
     SLEQP_LINESEARCH lineserach
       = sleqp_options_enum_value(solver->options, SLEQP_OPTION_ENUM_LINESEARCH);
@@ -550,6 +588,23 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
   }
 
 #if !defined(NDEBUG)
+
+  {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(solver->trial_direction,
+                                     solver->problem,
+                                     iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
+  }
 
   {
     double actual_quadratic_merit_value;

@@ -331,6 +331,20 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
       sleqp_assert_is_leq(*cauchy_merit_value, exact_iterate_value, eps);
     }
 
+    {
+      bool direction_valid;
+
+      SLEQP_CALL(sleqp_direction_check(solver->cauchy_direction,
+                                       problem,
+                                       iterate,
+                                       solver->multipliers,
+                                       solver->dense_cache,
+                                       zero_eps,
+                                       &direction_valid));
+
+      sleqp_num_assert(direction_valid);
+    }
+
 #endif
   }
 

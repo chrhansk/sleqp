@@ -24,6 +24,15 @@ sleqp_direction_reset(SleqpDirection* direction,
                       double* cache,
                       double zero_eps);
 
+SLEQP_RETCODE
+sleqp_direction_check(const SleqpDirection* direction,
+                      SleqpProblem* problem,
+                      const SleqpIterate* iterate,
+                      const SleqpVec* multipliers,
+                      double* cache,
+                      double zero_eps,
+                      bool* valid);
+
 SleqpVec*
 sleqp_direction_primal(const SleqpDirection* direction);
 
