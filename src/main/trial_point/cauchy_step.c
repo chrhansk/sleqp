@@ -306,6 +306,8 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 
       const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
+      SLEQP_NUM_ASSERT_PARAM(eps);
+
       SLEQP_CALL(sleqp_merit_linear(solver->merit,
                                     iterate,
                                     solver->cauchy_direction,
