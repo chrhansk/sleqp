@@ -37,9 +37,13 @@ if(HIGHS_INCLUDE_DIR)
     string(REGEX REPLACE "^#define HIGHS_VERSION_PATCH +([0-9]+)" "\\1" PATCH ${HIGHS_PATCH})
 
     file(STRINGS "${HIGHS_CONFIG_HEADER}" HIGHS_GITHASH REGEX "^#define HIGHS_GITHASH \"+[a-z0-9\-]+\"")
-    string(REGEX REPLACE "^#define HIGHS_GITHASH \"+([a-z0-9\-]+)\"" "\\1" GITHASH ${HIGHS_GITHASH})
 
-    set(HIGHS_VERSION "${MAJOR}.${MINOR}.${PATCH} [${GITHASH}]")
+    if(HIGHS_GITHASH)
+      string(REGEX REPLACE "^#define HIGHS_GITHASH \"+([a-z0-9\-]+)\"" "\\1" GITHASH ${HIGHS_GITHASH})
+      set(HIGHS_VERSION "${MAJOR}.${MINOR}.${PATCH} [${GITHASH}]")
+    else()
+      set(HIGHS_VERSION "${MAJOR}.${MINOR}.${PATCH}")
+    endif()
 
     mark_as_advanced(HIGHS_CONFIG_HEADER)
   endif()
