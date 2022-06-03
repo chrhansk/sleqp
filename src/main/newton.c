@@ -494,6 +494,13 @@ newton_solver_compute_direction(const SleqpVec* multipliers,
   {
     SLEQP_CALL(sleqp_vec_copy(initial_step, newton_step));
 
+    SLEQP_CALL(sleqp_direction_reset(newton_direction,
+                                     solver->problem,
+                                     solver->iterate,
+                                     multipliers,
+                                     solver->dense_cache,
+                                     zero_eps));
+
     return SLEQP_OKAY;
   }
 

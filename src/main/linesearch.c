@@ -357,17 +357,9 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
   }
 
   // Compute initial scalar products for the linear merit function
-  double cauchy_gradient_dot;
+  double cauchy_gradient_dot = *sleqp_direction_obj_grad(cauchy_direction);
 
-  SLEQP_CALL(sleqp_vec_dot(sleqp_iterate_obj_grad(iterate),
-                           cauchy_step,
-                           &cauchy_gradient_dot));
-
-  double newton_gradient_dot;
-
-  SLEQP_CALL(sleqp_vec_dot(sleqp_iterate_obj_grad(iterate),
-                           newton_step,
-                           &newton_gradient_dot));
+  double newton_gradient_dot = *sleqp_direction_obj_grad(newton_direction);
 
   // Compute initial scalar products for the quadratic merit function
   double cauchy_cauchy_product;
@@ -456,7 +448,7 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
     (*step_length)                 = 0.;
     (*trial_quadratic_merit_value) = cauchy_quadratic_merit_value;
 
-    SLEQP_CALL(sleqp_direction_set_zero(trial_direction));
+    SLEQP_CALL(sleqp_direction_copy(cauchy_direction, trial_direction));
 
     SLEQP_CALL(sleqp_timer_stop(linesearch->timer));
 
@@ -608,6 +600,37 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
   }
 
   SLEQP_CALL(sleqp_timer_stop(linesearch->timer));
+
+#ifndef NDEBUG
+
+  {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(linesearch->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(trial_direction,
+                                     linesearch->problem,
+                                     linesearch->iterate,
+                                     multipliers,
+                                     linesearch->cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
+
+    double actual_merit_value;
+
+    SLEQP_CALL(sleqp_merit_quadratic(linesearch->merit,
+                                     linesearch->iterate,
+                                     trial_direction,
+                                     linesearch->penalty_parameter,
+                                     &actual_merit_value));
+
+    sleqp_assert_is_eq(actual_merit_value, *trial_quadratic_merit_value, eps);
+  }
+
+#endif
 
   assert(iteration != LINESEARCH_MAX_IT);
 

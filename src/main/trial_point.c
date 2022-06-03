@@ -559,6 +559,13 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
     *(failed_eqp_step) = (step_length == 0.);
   }
 
+#ifndef NDEBUG
+  if (*failed_eqp_step)
+  {
+    assert(*trial_merit_value == cauchy_merit_value);
+  }
+#endif
+
   SLEQP_CALL(compute_trial_iterate_from_step(
     solver,
     sleqp_direction_primal(solver->trial_direction),
@@ -604,6 +611,23 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
 #ifndef NDEBUG
 
   {
+    bool direction_valid;
+
+    const double zero_eps
+      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(sleqp_direction_check(solver->trial_direction,
+                                     solver->problem,
+                                     solver->iterate,
+                                     solver->multipliers,
+                                     solver->dense_cache,
+                                     zero_eps,
+                                     &direction_valid));
+
+    sleqp_num_assert(direction_valid);
+  }
+
+  {
     double actual_merit_value = 0.;
 
     if (quadratic_model)
@@ -628,23 +652,6 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
     SLEQP_NUM_ASSERT_PARAM(eps);
 
     sleqp_assert_is_eq(*trial_merit_value, actual_merit_value, eps);
-  }
-
-  {
-    bool direction_valid;
-
-    const double zero_eps
-      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
-
-    SLEQP_CALL(sleqp_direction_check(solver->trial_direction,
-                                     solver->problem,
-                                     solver->iterate,
-                                     solver->multipliers,
-                                     solver->dense_cache,
-                                     zero_eps,
-                                     &direction_valid));
-
-    sleqp_num_assert(direction_valid);
   }
 
 #endif

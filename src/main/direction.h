@@ -37,7 +37,7 @@ SleqpVec*
 sleqp_direction_primal(const SleqpDirection* direction);
 
 double*
-sleqp_direction_obj_grad(SleqpDirection* direction);
+sleqp_direction_obj_grad(const SleqpDirection* direction);
 
 SleqpVec*
 sleqp_direction_cons_jac(const SleqpDirection* direction);
