@@ -13,7 +13,7 @@
 find_path(HIGHS_INCLUDE_DIR
   NAMES Highs.h
   PATHS ${HIGHS_ROOT}
-  PATH_SUFFIXES include)
+  PATH_SUFFIXES include highs)
 
 # TODO: Find a better way to get the correct version
 find_library(HIGHS_LIBRARY
