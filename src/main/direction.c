@@ -157,9 +157,9 @@ sleqp_direction_primal(const SleqpDirection* direction)
 }
 
 double*
-sleqp_direction_obj_grad(SleqpDirection* direction)
+sleqp_direction_obj_grad(const SleqpDirection* direction)
 {
-  return &direction->obj_grad;
+  return (double*)&(direction->obj_grad);
 }
 
 SleqpVec*
