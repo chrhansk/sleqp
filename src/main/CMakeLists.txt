@@ -1,6 +1,7 @@
 set(COMMON_SRC
   aug_jac/aug_jac.c
   aug_jac/box_constrained_aug_jac.c
+  aug_jac/reduced_aug_jac.c
   aug_jac/standard_aug_jac.c
   aug_jac/unconstrained_aug_jac.c
   callback_handler.c

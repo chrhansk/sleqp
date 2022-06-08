@@ -346,7 +346,6 @@ cholmod_data_create(CHOLMODData** star)
 
   cholmod_data->common.error_handler = report_error;
   cholmod_data->common.dtype         = CHOLMOD_DOUBLE;
-  cholmod_data->common.supernodal    = CHOLMOD_SIMPLICIAL;
 
   cholmod_data->num_cols = SLEQP_NONE;
   cholmod_data->num_rows = SLEQP_NONE;
@@ -375,6 +374,7 @@ sleqp_factorization_cholmod_create(SleqpFactorization** star,
                                         SLEQP_FACT_CHOLMOD_VERSION,
                                         params,
                                         &callbacks,
+                                        SLEQP_FACTORIZATION_PSD,
                                         (void*)cholmod_data));
 
   return SLEQP_OKAY;

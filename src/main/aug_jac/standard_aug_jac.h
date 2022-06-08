@@ -7,6 +7,18 @@
 #include "params.h"
 #include "problem.h"
 
+/**
+ * Create a standard augmented Jacobian operating
+ * on the system
+ *
+ * \f[
+ * \pmatrix{
+ * I & A_W^T \\
+ * A_W & 0
+ * }
+ * \f]
+ *
+ **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_standard_aug_jac_create(SleqpAugJac** star,
