@@ -258,7 +258,7 @@ sleqp_soc_compute_correction(SleqpSOC* soc_data,
   SLEQP_CALL(add_variable_entries(soc_data, iterate, trial_iterate));
   SLEQP_CALL(add_constraint_entries(soc_data, iterate, trial_iterate));
 
-  SLEQP_CALL(sleqp_aug_jac_min_norm_solution(aug_jac, rhs, soc_direction));
+  SLEQP_CALL(sleqp_aug_jac_solve_min_norm(aug_jac, rhs, soc_direction));
 
   return SLEQP_OKAY;
 }

@@ -6,14 +6,17 @@
 typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_SET_ITERATE)(SleqpIterate* iterate,
                                                    void* aug_jac);
 
-typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_MIN_NORM_SOLUTION)(const SleqpVec* rhs,
+typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_SOLVE_MIN_NORM)(const SleqpVec* rhs,
+                                                      SleqpVec* sol,
+                                                      void* aug_jac);
+
+typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_SOLVE_LSQ)(const SleqpVec* rhs,
+                                                 SleqpVec* sol,
+                                                 void* aug_jac);
+
+typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_PROJECT_NULLSPACE)(const SleqpVec* rhs,
                                                          SleqpVec* sol,
                                                          void* aug_jac);
-
-typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_PROJECTION)(const SleqpVec* rhs,
-                                                  SleqpVec* primal_sol,
-                                                  SleqpVec* dual_sol,
-                                                  void* aug_jac);
 
 typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_CONDITION)(bool* exact,
                                                  double* condition,
@@ -24,8 +27,9 @@ typedef SLEQP_RETCODE (*SLEQP_AUG_JAC_FREE)(void* aug_jac);
 typedef struct
 {
   SLEQP_AUG_JAC_SET_ITERATE set_iterate;
-  SLEQP_AUG_JAC_MIN_NORM_SOLUTION min_norm_solution;
-  SLEQP_AUG_JAC_PROJECTION projection;
+  SLEQP_AUG_JAC_SOLVE_MIN_NORM solve_min_norm;
+  SLEQP_AUG_JAC_SOLVE_LSQ solve_lsq;
+  SLEQP_AUG_JAC_PROJECT_NULLSPACE project_nullspace;
   SLEQP_AUG_JAC_CONDITION condition;
   SLEQP_AUG_JAC_FREE free;
 } SleqpAugJacCallbacks;

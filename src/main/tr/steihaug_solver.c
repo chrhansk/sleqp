@@ -84,7 +84,7 @@ check_projection(SleqpSteihaugSolver* solver,
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, step, sparse_cache, NULL));
+  SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, step, sparse_cache));
 
   sleqp_num_assert(sleqp_vec_eq(step, sparse_cache, eps));
 
@@ -216,7 +216,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
   SLEQP_CALL(sleqp_vec_copy(gradient, solver->r));
 
   // set g0 = P[r0]
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, solver->r, solver->g, NULL));
+  SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, solver->r, solver->g));
 
   // set d0 = -P[r0] = - P[nabla f_k] = -g0
   SLEQP_CALL(sleqp_vec_copy(solver->g, solver->d));
@@ -383,7 +383,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
     SLEQP_CALL(sleqp_vec_copy(solver->sparse_cache, solver->r));
 
     // set g_{j+1} = P[r_{j+1}]
-    SLEQP_CALL(sleqp_aug_jac_projection(jacobian, solver->r, solver->g, NULL));
+    SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, solver->r, solver->g));
 
 #if !defined(NDEBUG)
     SLEQP_CALL(check_projection(solver, jacobian, solver->g));

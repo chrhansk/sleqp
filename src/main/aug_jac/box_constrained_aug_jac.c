@@ -25,9 +25,7 @@ box_constrained_set_iterate(SleqpIterate* iterate, void* data)
 }
 
 static SLEQP_RETCODE
-box_constrained_min_norm_solution(const SleqpVec* rhs,
-                                  SleqpVec* sol,
-                                  void* data)
+box_constrained_solve_min_norm(const SleqpVec* rhs, SleqpVec* sol, void* data)
 {
   AugJacData* jacobian         = (AugJacData*)data;
   SleqpIterate* iterate        = jacobian->iterate;
@@ -50,26 +48,41 @@ box_constrained_min_norm_solution(const SleqpVec* rhs,
 }
 
 static SLEQP_RETCODE
-box_constrained_projection(const SleqpVec* rhs,
-                           SleqpVec* primal_sol,
-                           SleqpVec* dual_sol,
-                           void* data)
+box_constrained_solve_lsq(const SleqpVec* rhs, SleqpVec* sol, void* data)
 {
   AugJacData* jacobian         = (AugJacData*)data;
   SleqpIterate* iterate        = jacobian->iterate;
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
-  if (primal_sol)
+  SLEQP_CALL(sleqp_vec_clear(sol));
+  SLEQP_CALL(sleqp_vec_reserve(sol, rhs->nnz));
+
+  for (int k = 0; k < rhs->nnz; ++k)
   {
-    SLEQP_CALL(sleqp_vec_clear(primal_sol));
-    SLEQP_CALL(sleqp_vec_reserve(primal_sol, rhs->nnz));
+    const int j        = rhs->indices[k];
+    const double value = rhs->data[k];
+    const int index    = sleqp_working_set_var_index(working_set, j);
+
+    if (index != SLEQP_NONE)
+    {
+      SLEQP_CALL(sleqp_vec_push(sol, index, value));
+    }
   }
 
-  if (dual_sol)
-  {
-    SLEQP_CALL(sleqp_vec_clear(dual_sol));
-    SLEQP_CALL(sleqp_vec_reserve(dual_sol, rhs->nnz));
-  }
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+box_constrained_project_nullspace(const SleqpVec* rhs,
+                                  SleqpVec* sol,
+                                  void* data)
+{
+  AugJacData* jacobian         = (AugJacData*)data;
+  SleqpIterate* iterate        = jacobian->iterate;
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
+
+  SLEQP_CALL(sleqp_vec_clear(sol));
+  SLEQP_CALL(sleqp_vec_reserve(sol, rhs->nnz));
 
   for (int k = 0; k < rhs->nnz; ++k)
   {
@@ -79,17 +92,7 @@ box_constrained_projection(const SleqpVec* rhs,
 
     if (index == SLEQP_NONE)
     {
-      if (primal_sol)
-      {
-        SLEQP_CALL(sleqp_vec_push(primal_sol, j, value));
-      }
-    }
-    else
-    {
-      if (dual_sol)
-      {
-        SLEQP_CALL(sleqp_vec_push(dual_sol, index, value));
-      }
+      SLEQP_CALL(sleqp_vec_push(sol, j, value));
     }
   }
 
@@ -138,8 +141,9 @@ sleqp_box_constrained_aug_jac_create(SleqpAugJac** star, SleqpProblem* problem)
 
   SleqpAugJacCallbacks callbacks
     = {.set_iterate       = box_constrained_set_iterate,
-       .min_norm_solution = box_constrained_min_norm_solution,
-       .projection        = box_constrained_projection,
+       .solve_min_norm    = box_constrained_solve_min_norm,
+       .solve_lsq         = box_constrained_solve_lsq,
+       .project_nullspace = box_constrained_project_nullspace,
        .condition         = box_constrained_condition,
        .free              = box_constrained_free};
 

@@ -446,10 +446,10 @@ forward_product(const SleqpVec* direction, SleqpVec* product, void* data)
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_aug_jac_projection(solver->jacobian,
-                                      direction,
-                                      solver->forward.projected_direction,
-                                      NULL));
+  SLEQP_CALL(
+    sleqp_aug_jac_project_nullspace(solver->jacobian,
+                                    direction,
+                                    solver->forward.projected_direction));
 
   SLEQP_CALL(sleqp_lsq_func_jac_forward(func,
                                         solver->forward.projected_direction,
@@ -531,10 +531,9 @@ adjoint_product(const SleqpVec* direction, SleqpVec* product, void* data)
                            zero_eps,
                            solver->adjoint.product));
 
-  SLEQP_CALL(sleqp_aug_jac_projection(solver->jacobian,
-                                      solver->adjoint.product,
-                                      product,
-                                      NULL));
+  SLEQP_CALL(sleqp_aug_jac_project_nullspace(solver->jacobian,
+                                             solver->adjoint.product,
+                                             product));
 
   return SLEQP_OKAY;
 }

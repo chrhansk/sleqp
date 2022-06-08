@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "aug_jac/aug_jac.h"
 #include "mem.h"
 
 typedef struct
@@ -24,6 +25,7 @@ estimate_duals_internal(const SleqpIterate* iterate,
                         int* num_clipped_cons)
 {
   EstimationData* estimation_data = (EstimationData*)data;
+  SleqpAugJac* aug_jac            = estimation_data->aug_jac;
 
   SleqpProblem* problem        = estimation_data->problem;
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
@@ -40,10 +42,7 @@ estimate_duals_internal(const SleqpIterate* iterate,
   SLEQP_CALL(sleqp_vec_copy(grad, neg_grad));
   SLEQP_CALL(sleqp_vec_scale(neg_grad, -1.));
 
-  SLEQP_CALL(sleqp_aug_jac_projection(estimation_data->aug_jac,
-                                      neg_grad,
-                                      NULL,
-                                      dual_sol));
+  SLEQP_CALL(sleqp_aug_jac_solve_lsq(aug_jac, neg_grad, dual_sol));
 
   *num_clipped_vars = 0;
   *num_clipped_cons = 0;

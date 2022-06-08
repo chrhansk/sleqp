@@ -55,15 +55,15 @@ sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac, SleqpIterate* iterate)
 }
 
 SLEQP_RETCODE
-sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
-                                const SleqpVec* rhs,
-                                SleqpVec* sol)
+sleqp_aug_jac_solve_min_norm(SleqpAugJac* aug_jac,
+                             const SleqpVec* rhs,
+                             SleqpVec* sol)
 {
   assert(sol->dim == sleqp_problem_num_vars(aug_jac->problem));
 
   SLEQP_CALL(sleqp_timer_start(aug_jac->solution_timer));
 
-  SLEQP_CALL(aug_jac->callbacks.min_norm_solution(rhs, sol, aug_jac->data));
+  SLEQP_CALL(aug_jac->callbacks.solve_min_norm(rhs, sol, aug_jac->data));
 
   SLEQP_CALL(sleqp_timer_stop(aug_jac->solution_timer));
 
@@ -71,24 +71,19 @@ sleqp_aug_jac_min_norm_solution(SleqpAugJac* aug_jac,
 }
 
 SLEQP_RETCODE
-sleqp_aug_jac_projection(SleqpAugJac* aug_jac,
-                         const SleqpVec* rhs,
-                         SleqpVec* primal_sol,
-                         SleqpVec* dual_sol)
+sleqp_aug_jac_solve_lsq(SleqpAugJac* aug_jac,
+                        const SleqpVec* rhs,
+                        SleqpVec* sol)
 {
-  if (primal_sol)
-  {
-    assert(primal_sol->dim == sleqp_problem_num_vars(aug_jac->problem));
-  }
+  return aug_jac->callbacks.solve_lsq(rhs, sol, aug_jac->data);
+}
 
-  SLEQP_CALL(sleqp_timer_start(aug_jac->solution_timer));
-
-  SLEQP_CALL(
-    aug_jac->callbacks.projection(rhs, primal_sol, dual_sol, aug_jac->data));
-
-  SLEQP_CALL(sleqp_timer_stop(aug_jac->solution_timer));
-
-  return SLEQP_OKAY;
+SLEQP_RETCODE
+sleqp_aug_jac_project_nullspace(SleqpAugJac* aug_jac,
+                                const SleqpVec* rhs,
+                                SleqpVec* sol)
+{
+  return aug_jac->callbacks.project_nullspace(rhs, sol, aug_jac->data);
 }
 
 SLEQP_RETCODE

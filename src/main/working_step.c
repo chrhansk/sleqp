@@ -325,9 +325,9 @@ compute_initial_direction(SleqpWorkingStep* step,
 {
   SLEQP_CALL(compute_initial_rhs(step, iterate, jacobian));
 
-  SLEQP_CALL(sleqp_aug_jac_min_norm_solution(jacobian,
-                                             step->initial_rhs,
-                                             step->initial_direction));
+  SLEQP_CALL(sleqp_aug_jac_solve_min_norm(jacobian,
+                                          step->initial_rhs,
+                                          step->initial_direction));
 
 #if !defined(NDEBUG)
 
