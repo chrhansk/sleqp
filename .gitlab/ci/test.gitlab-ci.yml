@@ -13,6 +13,7 @@ test_fact:
   parallel:
     matrix:
       - FACT:
+          - CHOLMOD
           - Umfpack
           - MUMPS
           - MA27
