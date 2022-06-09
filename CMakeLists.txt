@@ -175,6 +175,7 @@ if(SLEQP_GENERATE_COVERAGE)
   enable_coverage()
 
   add_test_coverage_target(NAME "test_coverage"
+    OUTPUT "${PROJECT_BINARY_DIR}/coverage.xml"
     DEPENDS build_tests
     EXCLUDE ${TEST_DIR})
 endif()

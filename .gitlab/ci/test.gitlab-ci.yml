@@ -53,6 +53,12 @@ test_coverage:
       -DSLEQP_FACT=$DEFAULT_FACT
       -DSLEQP_LPS=$DEFAULT_LPS
     - make build_tests test_coverage
+  coverage: /^\s*lines:\s*\d+.\d+\%/
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/coverage.xml
 
 test_num_asserts:
   extends: .test
