@@ -3,11 +3,11 @@
 #include "direction.h"
 #include "dyn.h"
 #include "error.h"
-#include "factorization/factorization.h"
 #include "fail.h"
 #include "gauss_newton.h"
 #include "mem.h"
 #include "newton.h"
+#include "options.h"
 #include "soc.h"
 
 #include "aug_jac/box_constrained_aug_jac.h"
@@ -22,6 +22,8 @@
 #include "dual_estimation/dual_estimation_lp.h"
 #include "dual_estimation/dual_estimation_lsq.h"
 #include "dual_estimation/dual_estimation_mixed.h"
+
+#include "factorization/factorization.h"
 
 static SLEQP_RETCODE
 create_dual_estimation(SleqpTrialPointSolver* solver)
@@ -60,6 +62,7 @@ create_aug_jac(SleqpTrialPointSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpParams* params   = solver->params;
+  SleqpOptions* options = solver->options;
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
@@ -78,10 +81,13 @@ create_aug_jac(SleqpTrialPointSolver* solver)
     SLEQP_CALL(
       sleqp_factorization_create_default(&solver->factorization, params));
 
-    bool requires_psd = (sleqp_factorization_flags(solver->factorization)
-                         & SLEQP_FACTORIZATION_PSD);
+    const bool requires_psd = (sleqp_factorization_flags(solver->factorization)
+                               & SLEQP_FACTORIZATION_PSD);
 
-    if (requires_psd)
+    const bool want_psd
+      = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_REDUCED_AUG_JAC);
+
+    if (requires_psd || want_psd)
     {
       SLEQP_CALL(sleqp_reduced_aug_jac_create(&solver->aug_jac,
                                               problem,

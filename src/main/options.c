@@ -8,10 +8,12 @@
 #include "error.h"
 #include "log.h"
 #include "mem.h"
+#include "pub_options.h"
 #include "types.h"
 
 #define PERFORM_NEWTON_DEFAULT true
 #define GLOBAL_PENALTY_RESETS_DEFAULT true
+#define REDUCED_AUG_JAC_DEFAULT false
 #define PERFORM_SOC_DEFAULT true
 #define USE_QUADRATIC_MODEL_DEFAULT true
 #define ALWAYS_WARM_START_LP_DEFAULT true
@@ -152,6 +154,9 @@ OptionInfo bool_option_info[SLEQP_NUM_BOOL_OPTIONS]
      [SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS]
      = {.name = "global_penalty_resets",
         .desc = "Whether or not to perform global penalty resets"},
+     [SLEQP_OPTION_BOOL_REDUCED_AUG_JAC]
+     = {.name = "reduced_aug_jac",
+        .desc = "Whether or not to solve the reduced augmented Jacobian"},
      [SLEQP_OPTION_BOOL_PERFORM_SOC]
      = {.name = "perform_soc",
         .desc = "Whether or not to perform a second-order correction"},
@@ -218,6 +223,7 @@ sleqp_options_create(SleqpOptions** star)
     .bool_values = {
       [SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]   = PERFORM_NEWTON_DEFAULT,
       [SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS] = GLOBAL_PENALTY_RESETS_DEFAULT,
+      [SLEQP_OPTION_BOOL_REDUCED_AUG_JAC]       = REDUCED_AUG_JAC_DEFAULT,
       [SLEQP_OPTION_BOOL_PERFORM_SOC]           = PERFORM_SOC_DEFAULT,
       [SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL]   = USE_QUADRATIC_MODEL_DEFAULT,
       [SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP]  = ALWAYS_WARM_START_LP_DEFAULT,

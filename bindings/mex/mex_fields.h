@@ -92,6 +92,8 @@
 #define MEX_NUM_THREADS "num_threads"
 
 #define MEX_PERFORM_NEWTON_STEP "perform_newton_step"
+#define MEX_GLOBAL_PENALTY_RESETS "global_penalty_resets"
+#define MEX_REDUCED_AUG_JAC "reduced_aug_jac"
 #define MEX_PERFORM_SOC "perform_soc"
 #define MEX_USE_QUADRATIC_MODEL "use_quadratic_model"
 #define MEX_ALWAYS_WARM_START_LP "always_warm_start_lp"
