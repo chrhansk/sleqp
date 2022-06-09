@@ -232,7 +232,7 @@ projection_residuum(NewtonSolver* solver, SleqpVec* tr_step, double* residuum)
   SleqpVec* sparse_cache = solver->sparse_cache;
   SleqpVec* residuals    = solver->tr_hessian_product;
 
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, tr_step, sparse_cache, NULL));
+  SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, tr_step, sparse_cache));
 
   SLEQP_CALL(
     sleqp_vec_add_scaled(sparse_cache, tr_step, 1., -1., zero_eps, residuals));
@@ -273,7 +273,7 @@ stationarity_residuum(NewtonSolver* solver,
                                   zero_eps,
                                   tr_prod));
 
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, tr_prod, sparse_cache, NULL));
+  SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, tr_prod, sparse_cache));
 
   (*residuum) = sleqp_vec_inf_norm(sparse_cache);
 

@@ -18,36 +18,26 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* aug_jac)
 }
 
 static SLEQP_RETCODE
-aug_jac_min_norm_solution(const SleqpVec* rhs, SleqpVec* sol, void* aug_jac)
+aug_jac_solve_min_norm(const SleqpVec* rhs, SleqpVec* sol, void* aug_jac)
 {
   assert(rhs->dim == 0);
-
   SLEQP_CALL(sleqp_vec_clear(sol));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-aug_jac_projection(const SleqpVec* rhs,
-                   SleqpVec* primal_sol,
-                   SleqpVec* dual_sol,
-                   void* aug_jac)
+aug_jac_project_nullspace(const SleqpVec* rhs, SleqpVec* sol, void* aug_jac)
 {
+  SLEQP_CALL(sleqp_vec_copy(rhs, sol));
 
-#ifndef DEBUG
+  return SLEQP_OKAY;
+}
 
-  if (dual_sol)
-  {
-    assert(dual_sol->dim == 0);
-  }
-
-#endif
-
-  if (primal_sol)
-  {
-    SLEQP_CALL(sleqp_vec_copy(rhs, primal_sol));
-  }
-
+static SLEQP_RETCODE
+aug_jac_solve_lsq(const SleqpVec* rhs, SleqpVec* sol, void* aug_jac)
+{
+  assert(sol->dim == 0);
   return SLEQP_OKAY;
 }
 
@@ -65,8 +55,9 @@ sleqp_unconstrained_aug_jac_create(SleqpAugJac** star, SleqpProblem* problem)
 {
   SleqpAugJacCallbacks callbacks
     = {.set_iterate       = aug_jac_set_iterate,
-       .min_norm_solution = aug_jac_min_norm_solution,
-       .projection        = aug_jac_projection,
+       .solve_min_norm    = aug_jac_solve_min_norm,
+       .solve_lsq         = aug_jac_solve_lsq,
+       .project_nullspace = aug_jac_project_nullspace,
        .condition         = aug_jac_condition,
        .free              = NULL};
 

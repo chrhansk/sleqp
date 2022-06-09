@@ -205,7 +205,7 @@ check_optimality(SolverData* data,
 
   SLEQP_CALL(sleqp_vec_add(gradient, data->Hp, zero_eps, data->g));
 
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->g, data->v, NULL));
+  SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, data->g, data->v));
 
   const double vnorm = sleqp_vec_norm(data->v);
 
@@ -371,7 +371,7 @@ trlib_loop(SolverData* data,
 
       SLEQP_CALL(sleqp_vec_clear(data->gm));
 
-      SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->g, data->v, NULL));
+      SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, data->g, data->v));
 
       SLEQP_CALL(sleqp_vec_copy(data->v, data->p));
 
@@ -472,7 +472,7 @@ trlib_loop(SolverData* data,
 
         SLEQP_CALL(sleqp_vec_copy(data->sparse_cache, data->g));
 
-        SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->g, data->v, NULL));
+        SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, data->g, data->v));
 
         g_dot_g = sleqp_vec_norm_sq(data->g);
 
@@ -500,7 +500,7 @@ trlib_loop(SolverData* data,
 
         SLEQP_CALL(sleqp_vec_copy(data->s, data->g));
 
-        SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->g, data->v, NULL));
+        SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, data->g, data->v));
 
         SLEQP_CALL(sleqp_vec_dot(data->v, data->g, &v_dot_g));
       }
@@ -526,7 +526,7 @@ trlib_loop(SolverData* data,
                                       data->h_lhs));
 
       SLEQP_CALL(
-        sleqp_aug_jac_projection(jacobian, data->l, data->sparse_cache, NULL));
+        sleqp_aug_jac_project_nullspace(jacobian, data->l, data->sparse_cache));
 
       SLEQP_CALL(sleqp_vec_add_scaled(data->sparse_cache,
                                       data->s,
@@ -700,7 +700,7 @@ trlib_solve(SleqpAugJac* jacobian,
 
   // We may loose some orthogonality in the process, reproject to
   // be sure
-  SLEQP_CALL(sleqp_aug_jac_projection(jacobian, data->s, newton_step, NULL));
+  SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, data->s, newton_step));
 
   // check optimality
 

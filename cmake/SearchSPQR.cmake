@@ -1,11 +1,8 @@
-# Umfpack lib usually requires linking to a BLAS library.
-# It is up to the user of this module to find a BLAS and link to it.
-#
 # Once done, this will define
 #
-#  UMFPACK_INCLUDE_DIRS   - where to find umfpack.h, etc.
-#  UMFPACK_LIBRARIES      - List of libraries when using Umfpack.
-#  UMFPACK_FOUND          - True if Umfpack found.
+#  SPQR_INCLUDE_DIRS   - where to find SuiteSparseQR_C.h, etc.
+#  SPQR_LIBRARIES      - List of libraries when using SPQR.
+#  SPQR_FOUND          - True if SPQR found.
 
 function(extract_define file name result)
   file(STRINGS "${file}"

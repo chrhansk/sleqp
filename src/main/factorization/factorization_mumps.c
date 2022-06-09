@@ -267,6 +267,7 @@ sleqp_factorization_mumps_create(SleqpFactorization** star, SleqpParams* params)
                                         SLEQP_FACT_MUMPS_VERSION,
                                         params,
                                         &callbacks,
+                                        SLEQP_FACTORIZATION_NONE,
                                         (void*)sleqp_mumps_data));
 
   return SLEQP_OKAY;

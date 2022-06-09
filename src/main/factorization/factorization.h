@@ -6,6 +6,12 @@
 #include "timer.h"
 #include "types.h"
 
+typedef enum
+{
+  SLEQP_FACTORIZATION_NONE = 0,
+  SLEQP_FACTORIZATION_PSD  = (1 << 0)
+} SLEQP_FACTORIZATION_FLAGS;
+
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_factorization_create(SleqpFactorization** star,
@@ -13,6 +19,7 @@ sleqp_factorization_create(SleqpFactorization** star,
                            const char* version,
                            SleqpParams* params,
                            SleqpFactorizationCallbacks* callbacks,
+                           SLEQP_FACTORIZATION_FLAGS flags,
                            void* factorization_data);
 
 const char*
@@ -23,17 +30,20 @@ sleqp_factorization_version(SleqpFactorization* factorization);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
+sleqp_factorization_set_matrix(SleqpFactorization* factorization,
+                               SleqpSparseMatrix* matrix);
+
+SLEQP_FACTORIZATION_FLAGS
+sleqp_factorization_flags(SleqpFactorization* factorization);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
 sleqp_factorization_create_default(SleqpFactorization** star,
                                    SleqpParams* params);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_factorization_capture(SleqpFactorization* factorization);
-
-SLEQP_NODISCARD
-SLEQP_RETCODE
-sleqp_factorization_set_matrix(SleqpFactorization* factorization,
-                               SleqpSparseMatrix* matrix);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

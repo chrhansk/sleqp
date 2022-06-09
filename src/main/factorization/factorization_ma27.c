@@ -402,7 +402,6 @@ ma27_solve(MA27Data* ma27_data)
   MA27ControlInfo* control_info = &(ma27_data->control_info);
 
   const int32_t dim         = hsl_matrix->dim;
-  const int32_t total_nnz   = hsl_matrix->nnz;
   const int32_t factor_size = ma27_factor->factor_size;
   const int32_t nsteps      = ma27_state->nsteps;
 
@@ -486,8 +485,6 @@ static SLEQP_RETCODE
 ma27_data_condition_estimate(void* factorization_data,
                              double* condition_estimate)
 {
-  MA27Data* ma27_data = (MA27Data*)factorization_data;
-
   (*condition_estimate) = SLEQP_NONE;
 
   return SLEQP_OKAY;
@@ -564,6 +561,7 @@ sleqp_factorization_ma27_create(SleqpFactorization** star, SleqpParams* params)
                                         SLEQP_FACT_MA27_VERSION,
                                         params,
                                         &callbacks,
+                                        SLEQP_FACTORIZATION_NONE,
                                         (void*)ma27_data));
 
   return SLEQP_OKAY;

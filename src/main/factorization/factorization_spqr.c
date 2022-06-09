@@ -4,8 +4,7 @@
 #include <assert.h>
 
 #include <SuiteSparseQR_C.h>
-#include <cholmod_check.h>
-#include <cholmod_core.h>
+#include <cholmod.h>
 
 #include "defs.h"
 #include "error.h"
@@ -341,6 +340,7 @@ sleqp_factorization_spqr_create(SleqpFactorization** star, SleqpParams* params)
                                         SLEQP_FACT_SPQR_VERSION,
                                         params,
                                         &callbacks,
+                                        SLEQP_FACTORIZATION_NONE,
                                         (void*)spqr_data));
 
   return SLEQP_OKAY;
