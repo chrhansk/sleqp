@@ -6,6 +6,7 @@
 #include "eqp.h"
 #include "iterate.h"
 #include "linesearch.h"
+#include "measure.h"
 #include "merit.h"
 #include "options.h"
 #include "parametric.h"
@@ -141,8 +142,8 @@ sleqp_trial_point_solver_multipliers(SleqpTrialPointSolver* solver);
 SleqpVec*
 sleqp_trial_point_solver_cauchy_step(SleqpTrialPointSolver* solver);
 
-SleqpVec*
-sleqp_trial_point_solver_trial_step(SleqpTrialPointSolver* solver);
+SleqpDirection*
+sleqp_trial_point_solver_trial_direction(SleqpTrialPointSolver* solver);
 
 SleqpVec*
 sleqp_trial_point_solver_soc_step(SleqpTrialPointSolver* solver);

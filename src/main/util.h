@@ -38,4 +38,8 @@ sleqp_max_step_length(const SleqpVec* x,
                       const SleqpVec* var_ub,
                       double* max_step_length);
 
+double
+sleqp_reduction_ratio(const double exact_reduction,
+                      const double model_reduction);
+
 #endif /* SLEQP_UTIL_H */

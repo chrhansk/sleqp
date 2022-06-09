@@ -21,6 +21,8 @@ struct SleqpProblemSolver
 
   SLEQP_SOLVER_PHASE solver_phase;
 
+  SleqpMeasure* measure;
+
   double* dense_cache;
 
   SleqpVec* primal_diff;

@@ -62,8 +62,4 @@ sleqp_step_rule_create_default(SleqpStepRule** star,
                                SleqpParams* params,
                                const SleqpOptions* options);
 
-double
-sleqp_step_rule_reduction_ratio(const double exact_reduction,
-                                const double model_reduction);
-
 #endif /* SLEQP_STEP_RULE_H */

@@ -1,11 +1,7 @@
-include_directories(${CHECK_INCLUDE_DIR})
-
 include_directories(
   "${CMAKE_SOURCE_DIR}/src/main"
   "${CMAKE_SOURCE_DIR}/src/test"
   "${CMAKE_BINARY_DIR}/sleqp")
-
-include_directories(${CHECK_INCLUDE_DIRS})
 
 set(TEST_COMMON_SRC
   test_common.c
@@ -46,7 +42,10 @@ function(add_unit_test TEST_NAME)
 
   target_compile_options(${BASE_NAME} PRIVATE ${CHECK_CFLAGS})
 
-  target_include_directories(${BASE_NAME} PRIVATE ${SLEQP_LOCAL_HEADER_DIR})
+  target_include_directories(${BASE_NAME}
+    PRIVATE
+    ${CHECK_INCLUDE_DIRS}
+    ${SLEQP_LOCAL_HEADER_DIR})
 
   add_dependencies(build_tests ${BASE_NAME})
 
