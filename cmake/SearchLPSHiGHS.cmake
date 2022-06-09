@@ -10,18 +10,30 @@
 # A maintainer may set HIGHS_ROOT to a highs installation root to tell
 # this module where to look.
 
-find_path(HIGHS_INCLUDE_DIR
-  NAMES Highs.h
-  PATHS ${HIGHS_ROOT}
-  PATH_SUFFIXES include highs)
+if(PKG_CONFIG_FOUND)
+  pkg_check_modules(HIGHS highs)
+endif()
 
-# TODO: Find a better way to get the correct version
-find_library(HIGHS_LIBRARY
-  NAMES highs
-  PATHS ${HIGHS_ROOT}
-  PATH_SUFFIXES lib)
+if(NOT HIGHS_FOUND)
+  find_path(HIGHS_INCLUDE_DIRS
+    NAMES Highs.h
+    PATHS ${HIGHS_ROOT}
+    PATH_SUFFIXES include highs)
 
-if(HIGHS_INCLUDE_DIR)
+  find_library(HIGHS_LIBRARIES
+    NAMES highs
+    PATHS ${HIGHS_ROOT}
+    PATH_SUFFIXES lib)
+endif()
+
+if(NOT HIGHS_INCLUDE_DIRS)
+  find_path(HIGHS_INCLUDE_DIRS
+    NAMES Highs.h
+    PATHS ${HIGHS_ROOT}
+    PATH_SUFFIXES include highs)
+endif()
+
+if(HIGHS_INCLUDE_DIRS)
   find_file(HIGHS_CONFIG_HEADER
     NAMES "HConfig.h"
     PATHS ${HIGHS_INCLUDE_DIR})
@@ -49,12 +61,11 @@ if(HIGHS_INCLUDE_DIR)
   endif()
 endif()
 
-set(HIGHS_INCLUDE_DIRS ${HIGHS_INCLUDE_DIR})
-set(HIGHS_LIBRARIES ${HIGHS_LIBRARY})
+if(NOT HIGHS_FOUND)
+  find_package_handle_standard_args(HiGHS
+    FOUND_VAR HIGHS_FOUND
+    REQUIRED_VARS HIGHS_INCLUDE_DIRS HIGHS_LIBRARIES
+    VERSION_VAR HIGHS_VERSION)
+endif()
 
-find_package_handle_standard_args(HiGHS
-  FOUND_VAR HIGHS_FOUND
-  REQUIRED_VARS HIGHS_INCLUDE_DIR HIGHS_LIBRARY
-  VERSION_VAR HIGHS_VERSION)
-
-mark_as_advanced(HIGHS_INCLUDE_DIR HIGHS_INCLUDE_DIRS HIGHS_LIBRARIES HIGHS_LIBRARY)
+mark_as_advanced(HIGHS_INCLUDE_DIRS HIGHS_LIBRARIES)
