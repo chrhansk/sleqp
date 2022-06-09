@@ -4,18 +4,18 @@
 #include "log.h"
 
 #define HEADER_FORMAT                                                          \
-  "%10s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | "  \
+  "%10s |%20s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | "  \
   "%18s"
 
 #define LINE_FORMAT                                                            \
   SLEQP_FORMAT_BOLD                                                            \
-  "%10s " SLEQP_FORMAT_RESET                                                   \
-  "|%14e |%14e |%14e |%14e |%14e |%14e |%14s |%14e |%14e |%14e |%14e | %18s"
+  "%10s " SLEQP_FORMAT_RESET "|%20.10e |%14e |%14e |%14e |%14e |%14e |%14s "   \
+                             "|%14e |%14e |%14e |%14e | %18s"
 
 #define INITIAL_LINE_FORMAT                                                    \
   SLEQP_FORMAT_BOLD                                                            \
-  "%10s " SLEQP_FORMAT_RESET                                                   \
-  "|%14e |%14e |%14e |%14s |%14s |%14e |%14s |%14s |%14s |%14s |%14s | %18s"
+  "%10s " SLEQP_FORMAT_RESET "|%20.10e |%14e |%14e |%14s |%14s |%14e |%14s "   \
+                             "|%14s |%14s |%14s |%14s | %18s"
 
 #define DEFAULT_BUF_SIZE 1024
 

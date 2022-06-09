@@ -94,7 +94,7 @@ macro(find_factorization)
 
   message(STATUS "Finding factorization library ${ARGS_NAME}")
 
-  include("Search${ARGS_NAME}")
+  include("SearchFact${ARGS_NAME}")
 
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
 

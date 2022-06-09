@@ -4,8 +4,6 @@
 #  CoinHSL_LIBRARIES      - List of libraries when using Umfpack.
 #  CoinHSL_FOUND          - True if CoinHSL found.
 
-find_package(PkgConfig)
-
 if(PKG_CONFIG_FOUND)
   pkg_check_modules(CoinHSL coinhsl)
 endif()
