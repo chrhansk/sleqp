@@ -128,6 +128,25 @@ START_TEST(test_solve)
 }
 END_TEST
 
+START_TEST(test_solve_reduced)
+{
+  SleqpSolver* solver;
+
+  ASSERT_CALL(sleqp_options_set_bool_value(options,
+                                           SLEQP_OPTION_BOOL_REDUCED_AUG_JAC,
+                                           true));
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  options,
+                                  constrained_initial,
+                                  NULL));
+
+  solve_and_release_solver(solver);
+}
+END_TEST
+
 START_TEST(test_exact_linesearch)
 {
   SleqpSolver* solver;
@@ -504,6 +523,8 @@ constrained_test_suite()
                             constrained_test_teardown);
 
   tcase_add_test(tc_cons, test_solve);
+
+  tcase_add_test(tc_cons, test_solve_reduced);
 
   tcase_add_test(tc_cons, test_exact_linesearch);
 
