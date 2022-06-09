@@ -308,6 +308,7 @@ sleqp_factorization_umfpack_create(SleqpFactorization** star,
                                         SLEQP_FACT_UMFPACK_VERSION,
                                         params,
                                         &callbacks,
+                                        SLEQP_FACTORIZATION_NONE,
                                         (void*)umfpack_data));
 
   return SLEQP_OKAY;

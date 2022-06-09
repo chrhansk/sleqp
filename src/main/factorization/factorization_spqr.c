@@ -340,6 +340,7 @@ sleqp_factorization_spqr_create(SleqpFactorization** star, SleqpParams* params)
                                         SLEQP_FACT_SPQR_VERSION,
                                         params,
                                         &callbacks,
+                                        SLEQP_FACTORIZATION_NONE,
                                         (void*)spqr_data));
 
   return SLEQP_OKAY;

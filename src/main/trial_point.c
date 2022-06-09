@@ -3,6 +3,7 @@
 #include "direction.h"
 #include "dyn.h"
 #include "error.h"
+#include "factorization/factorization.h"
 #include "fail.h"
 #include "gauss_newton.h"
 #include "mem.h"
@@ -10,6 +11,7 @@
 #include "soc.h"
 
 #include "aug_jac/box_constrained_aug_jac.h"
+#include "aug_jac/reduced_aug_jac.h"
 #include "aug_jac/standard_aug_jac.h"
 #include "aug_jac/unconstrained_aug_jac.h"
 
@@ -76,10 +78,23 @@ create_aug_jac(SleqpTrialPointSolver* solver)
     SLEQP_CALL(
       sleqp_factorization_create_default(&solver->factorization, params));
 
-    SLEQP_CALL(sleqp_standard_aug_jac_create(&solver->aug_jac,
-                                             problem,
-                                             params,
-                                             solver->factorization));
+    bool requires_psd = (sleqp_factorization_flags(solver->factorization)
+                         & SLEQP_FACTORIZATION_PSD);
+
+    if (requires_psd)
+    {
+      SLEQP_CALL(sleqp_reduced_aug_jac_create(&solver->aug_jac,
+                                              problem,
+                                              params,
+                                              solver->factorization));
+    }
+    else
+    {
+      SLEQP_CALL(sleqp_standard_aug_jac_create(&solver->aug_jac,
+                                               problem,
+                                               params,
+                                               solver->factorization));
+    }
   }
 
   return SLEQP_OKAY;

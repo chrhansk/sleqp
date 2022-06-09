@@ -13,6 +13,7 @@ struct SleqpFactorization
   char* version;
 
   SleqpFactorizationCallbacks callbacks;
+  SLEQP_FACTORIZATION_FLAGS flags;
   void* factorization_data;
 };
 
@@ -22,6 +23,7 @@ sleqp_factorization_create(SleqpFactorization** star,
                            const char* version,
                            SleqpParams* params,
                            SleqpFactorizationCallbacks* callbacks,
+                           SLEQP_FACTORIZATION_FLAGS flags,
                            void* factorization_data)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -35,6 +37,7 @@ sleqp_factorization_create(SleqpFactorization** star,
 
   factorization->refcount           = 1;
   factorization->callbacks          = *callbacks;
+  factorization->flags              = flags;
   factorization->factorization_data = factorization_data;
 
   return SLEQP_OKAY;
@@ -61,6 +64,12 @@ sleqp_factorization_set_matrix(SleqpFactorization* factorization,
                                         matrix));
 
   return SLEQP_OKAY;
+}
+
+SLEQP_FACTORIZATION_FLAGS
+sleqp_factorization_flags(SleqpFactorization* factorization)
+{
+  return factorization->flags;
 }
 
 SLEQP_RETCODE
