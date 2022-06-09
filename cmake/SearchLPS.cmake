@@ -66,7 +66,7 @@ macro(find_lp_solver)
 
   message(STATUS "Finding LP solver ${ARGS_NAME}")
 
-  include("Search${ARGS_NAME}")
+  include("SearchLPS${ARGS_NAME}")
 
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
 

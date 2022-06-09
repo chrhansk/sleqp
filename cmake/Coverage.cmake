@@ -56,8 +56,6 @@ function(add_test_coverage_target)
     list(APPEND GCOVR_OUTPUT_ARGS "${Coverage_OUTPUT}")
   endif()
 
-  message(STATUS "${GCOVR} --print-summary --root ${BASEDIR} ${GCOVR_EXCLUDE_ARGS} ${GCOVR_OUTPUT_ARGS}")
-
   add_custom_target(${Coverage_NAME}
     COMMAND ctest
     COMMAND ${GCOVR} --xml --print-summary --root ${BASEDIR} ${GCOVR_EXCLUDE_ARGS} ${GCOVR_OUTPUT_ARGS}
