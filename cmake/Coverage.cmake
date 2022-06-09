@@ -31,7 +31,7 @@ endfunction()
 function(add_test_coverage_target)
 
   set(options "")
-  set(oneValueArgs BASE_DIRECTORY NAME)
+  set(oneValueArgs BASE_DIRECTORY NAME OUTPUT)
   set(multiValueArgs EXCLUDE DEPENDS)
 
   cmake_parse_arguments(Coverage "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -49,9 +49,18 @@ function(add_test_coverage_target)
     list(APPEND GCOVR_EXCLUDE_ARGS "${EXCLUDE}")
   endforeach()
 
+  set(GCOVR_OUTPUT_ARGS "")
+
+  if(Coverage_OUTPUT)
+    list(APPEND GCOVR_OUTPUT_ARGS "--output")
+    list(APPEND GCOVR_OUTPUT_ARGS "${Coverage_OUTPUT}")
+  endif()
+
+  message(STATUS "${GCOVR} --print-summary --root ${BASEDIR} ${GCOVR_EXCLUDE_ARGS} ${GCOVR_OUTPUT_ARGS}")
+
   add_custom_target(${Coverage_NAME}
     COMMAND ctest
-    COMMAND ${GCOVR} --root ${BASEDIR} ${GCOVR_EXCLUDE_ARGS}
+    COMMAND ${GCOVR} --xml --print-summary --root ${BASEDIR} ${GCOVR_EXCLUDE_ARGS} ${GCOVR_OUTPUT_ARGS}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     DEPENDS ${Coverage_DEPENDS})
 endfunction()
