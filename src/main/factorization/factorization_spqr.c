@@ -26,8 +26,7 @@ typedef struct SPQRData
   cholmod_dense* sol;
   cholmod_dense* rhs;
 
-  int num_rows;
-  int num_cols;
+  int size;
 
 } SPQRData;
 
@@ -73,33 +72,31 @@ spqr_error_string(int status, const char** message)
   } while (false)
 
 static SLEQP_RETCODE
-update_shape(SPQRData* spqr, int num_rows, int num_cols, int nnz_max)
+update_shape(SPQRData* spqr, int size, int nnz_max)
 {
   cholmod_common* common = &(spqr->common);
 
-  if (num_rows != spqr->num_rows)
+  if (size != spqr->size)
   {
     cholmod_l_free_dense(&spqr->rhs, common);
 
-    spqr->rhs
-      = cholmod_l_allocate_dense(num_rows, 1, num_rows, CHOLMOD_REAL, common);
+    spqr->rhs = cholmod_l_allocate_dense(size, 1, size, CHOLMOD_REAL, common);
 
     SPQR_ERROR_CHECK(common);
 
-    for (int i = 0; i < num_rows; ++i)
+    for (int i = 0; i < size; ++i)
     {
       ((double*)spqr->rhs->x)[i] = 0.;
     }
   }
 
-  if ((!spqr->sparse) || (num_cols != spqr->num_cols)
-      || (num_rows != spqr->num_rows))
+  if ((!spqr->sparse) || (size != spqr->size))
   {
     cholmod_l_free_sparse(&spqr->sparse, common);
 
     spqr->sparse
-      = cholmod_l_allocate_sparse(num_rows,
-                                  num_cols,
+      = cholmod_l_allocate_sparse(size,
+                                  size,
                                   nnz_max,
                                   true, // sorted
                                   true, // packed
@@ -119,8 +116,7 @@ update_shape(SPQRData* spqr, int num_rows, int num_cols, int nnz_max)
     }
   }
 
-  spqr->num_cols = num_cols;
-  spqr->num_rows = num_rows;
+  spqr->size = size;
 
   return SLEQP_OKAY;
 }
@@ -137,7 +133,9 @@ spqr_factorization_set_matrix(void* factorization_data,
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int nnz      = sleqp_sparse_matrix_nnz(matrix);
 
-  SLEQP_CALL(update_shape(spqr, num_rows, num_cols, nnz));
+  assert(num_rows == num_cols);
+
+  SLEQP_CALL(update_shape(spqr, num_rows, nnz));
 
   assert(spqr->rhs);
   assert(spqr->rhs->dtype == CHOLMOD_DOUBLE);
@@ -313,9 +311,7 @@ spqr_data_create(SPQRData** star)
 
   spqr->common.error_handler = report_error;
   spqr->common.dtype         = CHOLMOD_DOUBLE;
-
-  spqr->num_cols = SLEQP_NONE;
-  spqr->num_rows = SLEQP_NONE;
+  spqr->size                 = SLEQP_NONE;
 
   return SLEQP_OKAY;
 }
