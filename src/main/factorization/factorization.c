@@ -59,6 +59,15 @@ SLEQP_RETCODE
 sleqp_factorization_set_matrix(SleqpFactorization* factorization,
                                SleqpSparseMatrix* matrix)
 {
+#ifdef NDEBUG
+  {
+    if (factorization->flags & SLEQP_FACTORIZATION_LOWER)
+    {
+      assert(sleqp_sparse_matrix_is_lower(matrix));
+    }
+  }
+#endif
+
   SLEQP_CALL(
     factorization->callbacks.set_matrix(factorization->factorization_data,
                                         matrix));

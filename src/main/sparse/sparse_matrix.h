@@ -77,6 +77,9 @@ SLEQP_RETCODE
 sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
                               SleqpSparseMatrix* target);
 
+bool
+sleqp_sparse_matrix_is_lower(const SleqpSparseMatrix* matrix);
+
 /**
  * Returns whether all entries of the given matrices are equal to
  * within the specified tolerance

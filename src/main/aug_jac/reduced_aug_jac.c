@@ -377,6 +377,8 @@ compute_matrix_lower(AugJacData* jacobian, int num_active_vars)
     }
   }
 
+  assert(sleqp_sparse_matrix_is_lower(matrix));
+
   return SLEQP_OKAY;
 }
 

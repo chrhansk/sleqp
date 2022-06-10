@@ -228,6 +228,8 @@ fill_aug_jac(AugJacData* jacobian, SleqpIterate* iterate, bool lower_only)
     {
       SLEQP_CALL(sleqp_sparse_matrix_push_column(augmented_matrix, j));
     }
+
+    assert(sleqp_sparse_matrix_is_lower(augmented_matrix));
   }
   // else: push columns!
 

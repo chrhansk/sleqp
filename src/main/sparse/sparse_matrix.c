@@ -469,6 +469,25 @@ sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
 }
 
 bool
+sleqp_sparse_matrix_is_lower(const SleqpSparseMatrix* matrix)
+{
+  for (int col = 0; col < matrix->num_cols; ++col)
+  {
+    for (int index = matrix->cols[col]; index < matrix->cols[col + 1]; ++index)
+    {
+      const int row = matrix->rows[index];
+
+      if (row < col)
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+bool
 sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
                        const SleqpSparseMatrix* second,
                        double eps)
