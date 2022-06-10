@@ -48,7 +48,7 @@ typedef struct
 
   SleqpDualEstimation* estimation_data;
 
-  SleqpFactorization* factorization;
+  SleqpFact* factorization;
 
   SleqpAugJac* aug_jac;
 

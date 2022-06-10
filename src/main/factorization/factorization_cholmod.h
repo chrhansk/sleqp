@@ -13,7 +13,6 @@
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_cholmod_create(SleqpFactorization** star,
-                                   SleqpParams* params);
+sleqp_fact_cholmod_create(SleqpFact** star, SleqpParams* params);
 
 #endif /* SLEQP_FACTORIZATION_CHOLMOD_H */

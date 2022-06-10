@@ -313,7 +313,7 @@ ma86_data_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_factorization_ma86_create(SleqpFactorization** star, SleqpParams* params)
+sleqp_fact_ma86_create(SleqpFact** star, SleqpParams* params)
 {
   SleqpFactorizationCallbacks callbacks
     = {.set_matrix         = ma86_data_set_matrix,
@@ -326,22 +326,21 @@ sleqp_factorization_ma86_create(SleqpFactorization** star, SleqpParams* params)
 
   SLEQP_CALL(ma86_data_create(&ma86_data));
 
-  SLEQP_CALL(sleqp_factorization_create(star,
-                                        SLEQP_FACT_MA86_NAME,
-                                        SLEQP_FACT_MA86_VERSION,
-                                        params,
-                                        &callbacks,
-                                        SLEQP_FACTORIZATION_LOWER,
-                                        (void*)ma86_data));
+  SLEQP_CALL(sleqp_fact_create(star,
+                               SLEQP_FACT_MA86_NAME,
+                               SLEQP_FACT_MA86_VERSION,
+                               params,
+                               &callbacks,
+                               SLEQP_FACT_FLAGS_LOWER,
+                               (void*)ma86_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_create_default(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_factorization_ma86_create(star, params));
+  SLEQP_CALL(sleqp_fact_ma86_create(star, params));
 
   return SLEQP_OKAY;
 }

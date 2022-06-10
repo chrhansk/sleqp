@@ -24,6 +24,6 @@ SLEQP_RETCODE
 sleqp_standard_aug_jac_create(SleqpAugJac** star,
                               SleqpProblem* problem,
                               SleqpParams* params,
-                              SleqpFactorization* factorization);
+                              SleqpFact* factorization);
 
 #endif /* SLEQP_STANDARD_AUG_JAC_H */

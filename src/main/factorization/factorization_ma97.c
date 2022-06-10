@@ -393,7 +393,7 @@ ma97_data_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_factorization_ma97_create(SleqpFactorization** star, SleqpParams* params)
+sleqp_fact_ma97_create(SleqpFact** star, SleqpParams* params)
 {
   SleqpFactorizationCallbacks callbacks
     = {.set_matrix         = ma97_data_set_matrix,
@@ -406,22 +406,21 @@ sleqp_factorization_ma97_create(SleqpFactorization** star, SleqpParams* params)
 
   SLEQP_CALL(ma97_data_create(&ma97_data));
 
-  SLEQP_CALL(sleqp_factorization_create(star,
-                                        SLEQP_FACT_MA97_NAME,
-                                        SLEQP_FACT_MA97_VERSION,
-                                        params,
-                                        &callbacks,
-                                        SLEQP_FACTORIZATION_LOWER,
-                                        (void*)ma97_data));
+  SLEQP_CALL(sleqp_fact_create(star,
+                               SLEQP_FACT_MA97_NAME,
+                               SLEQP_FACT_MA97_VERSION,
+                               params,
+                               &callbacks,
+                               SLEQP_FACT_FLAGS_LOWER,
+                               (void*)ma97_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_create_default(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_factorization_ma97_create(star, params));
+  SLEQP_CALL(sleqp_fact_ma97_create(star, params));
 
   return SLEQP_OKAY;
 }

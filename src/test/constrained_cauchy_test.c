@@ -75,7 +75,7 @@ START_TEST(test_dual_variable)
 {
   SleqpVec* cons_dual = sleqp_iterate_cons_dual(iterate);
 
-  SleqpFactorization* factorization;
+  SleqpFact* factorization;
   SleqpAugJac* jacobian;
   SleqpDualEstimation* estimation_data;
 
@@ -92,7 +92,7 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_cauchy_lp_step(cauchy_data, cauchy_direction));
 
-  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&factorization, params));
 
   ASSERT_CALL(
     sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
@@ -118,7 +118,7 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_fact_release(&factorization));
 }
 END_TEST
 

@@ -20,7 +20,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpIterate* iterate;
   SleqpCauchy* cauchy_data;
   SleqpWorkingSet* working_set;
-  SleqpFactorization* factorization;
+  SleqpFact* factorization;
   SleqpAugJac* aug_jac;
 
   SleqpDualEstimation* estimation_data;
@@ -49,7 +49,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_working_set_create(&working_set, problem));
 
-  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&factorization, params));
 
   ASSERT_CALL(
     sleqp_standard_aug_jac_create(&aug_jac, problem, params, factorization));
@@ -92,7 +92,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_aug_jac_release(&aug_jac));
 
-  ASSERT_CALL(sleqp_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_fact_release(&factorization));
 
   ASSERT_CALL(sleqp_working_set_release(&working_set));
 

@@ -7,6 +7,6 @@
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_ma86_create(SleqpFactorization** star, SleqpParams* params);
+sleqp_fact_ma86_create(SleqpFact** star, SleqpParams* params);
 
 #endif /* SLEQP_FACTORIZATION_MA86_H */

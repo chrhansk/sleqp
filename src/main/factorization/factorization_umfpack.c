@@ -1,5 +1,6 @@
 #include "factorization_umfpack.h"
 
+#include "factorization/factorization.h"
 #include "fail.h"
 #include <assert.h>
 
@@ -288,8 +289,7 @@ umfpack_data_create(UmfpackData** star)
 }
 
 SLEQP_RETCODE
-sleqp_factorization_umfpack_create(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_umfpack_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
@@ -303,22 +303,21 @@ sleqp_factorization_umfpack_create(SleqpFactorization** star,
 
   SLEQP_CALL(umfpack_data_create(&umfpack_data));
 
-  SLEQP_CALL(sleqp_factorization_create(star,
-                                        SLEQP_FACT_UMFPACK_NAME,
-                                        SLEQP_FACT_UMFPACK_VERSION,
-                                        params,
-                                        &callbacks,
-                                        SLEQP_FACTORIZATION_NONE,
-                                        (void*)umfpack_data));
+  SLEQP_CALL(sleqp_fact_create(star,
+                               SLEQP_FACT_UMFPACK_NAME,
+                               SLEQP_FACT_UMFPACK_VERSION,
+                               params,
+                               &callbacks,
+                               SLEQP_FACT_FLAGS_NONE,
+                               (void*)umfpack_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_create_default(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_factorization_umfpack_create(star, params));
+  SLEQP_CALL(sleqp_fact_umfpack_create(star, params));
 
   return SLEQP_OKAY;
 }

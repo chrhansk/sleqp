@@ -221,7 +221,7 @@ START_TEST(newton_constrained_step)
   SleqpWorkingStep* working_step;
   SleqpEQPSolver* newton_solver;
 
-  SleqpFactorization* factorization;
+  SleqpFact* factorization;
   SleqpAugJac* jacobian;
 
   double penalty_parameter = 1.;
@@ -241,7 +241,7 @@ START_TEST(newton_constrained_step)
 
   SleqpVec* actual_step = sleqp_direction_primal(actual_direction);
 
-  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&factorization, params));
 
   ASSERT_CALL(
     sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
@@ -277,7 +277,7 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_fact_release(&factorization));
 
   ASSERT_CALL(sleqp_direction_release(&actual_direction));
 

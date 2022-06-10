@@ -13,7 +13,6 @@
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_umfpack_create(SleqpFactorization** star,
-                                   SleqpParams* params);
+sleqp_fact_umfpack_create(SleqpFact** star, SleqpParams* params);
 
 #endif /* SLEQP_FACTORIZATION_UMFPACK_H */

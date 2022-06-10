@@ -78,11 +78,10 @@ create_aug_jac(SleqpTrialPointSolver* solver)
   {
     // create sparse factorization
 
-    SLEQP_CALL(
-      sleqp_factorization_create_default(&solver->factorization, params));
+    SLEQP_CALL(sleqp_fact_create_default(&solver->factorization, params));
 
-    const bool requires_psd = (sleqp_factorization_flags(solver->factorization)
-                               & SLEQP_FACTORIZATION_PSD);
+    const bool requires_psd
+      = (sleqp_fact_flags(solver->factorization) & SLEQP_FACT_FLAGS_PSD);
 
     const bool want_psd
       = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_REDUCED_AUG_JAC);
@@ -1000,7 +999,7 @@ trial_point_solver_free(SleqpTrialPointSolver** star)
 
   SLEQP_CALL(sleqp_aug_jac_release(&solver->aug_jac));
 
-  SLEQP_CALL(sleqp_factorization_release(&solver->factorization));
+  SLEQP_CALL(sleqp_fact_release(&solver->factorization));
 
   SLEQP_CALL(sleqp_dual_estimation_release(&solver->estimation_data));
 

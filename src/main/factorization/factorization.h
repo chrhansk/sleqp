@@ -8,10 +8,10 @@
 
 typedef enum
 {
-  SLEQP_FACTORIZATION_NONE  = 0,        /** Nothing **/
-  SLEQP_FACTORIZATION_PSD   = (1 << 0), /** Requires positive definiteness **/
-  SLEQP_FACTORIZATION_LOWER = (1 << 1)  /** Pass only lower triangular part **/
-} SLEQP_FACTORIZATION_FLAGS;
+  SLEQP_FACT_FLAGS_NONE  = 0,        /** Nothing **/
+  SLEQP_FACT_FLAGS_PSD   = (1 << 0), /** Requires positive definiteness **/
+  SLEQP_FACT_FLAGS_LOWER = (1 << 1)  /** Pass only lower triangular part **/
+} SLEQP_FACT_FLAGS;
 
 /**
  * Creates a new factorization. Factorizations are used to solve the
@@ -20,61 +20,53 @@ typedef enum
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_create(SleqpFactorization** star,
-                           const char* name,
-                           const char* version,
-                           SleqpParams* params,
-                           SleqpFactorizationCallbacks* callbacks,
-                           SLEQP_FACTORIZATION_FLAGS flags,
-                           void* factorization_data);
+sleqp_fact_create(SleqpFact** star,
+                  const char* name,
+                  const char* version,
+                  SleqpParams* params,
+                  SleqpFactorizationCallbacks* callbacks,
+                  SLEQP_FACT_FLAGS flags,
+                  void* factorization_data);
 
 const char*
-sleqp_factorization_name(SleqpFactorization* factorization);
+sleqp_fact_name(SleqpFact* factorization);
 
 const char*
-sleqp_factorization_version(SleqpFactorization* factorization);
+sleqp_factorization_version(SleqpFact* factorization);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_set_matrix(SleqpFactorization* factorization,
-                               SleqpSparseMatrix* matrix);
+sleqp_fact_set_matrix(SleqpFact* factorization, SleqpSparseMatrix* matrix);
 
-SLEQP_FACTORIZATION_FLAGS
-sleqp_factorization_flags(SleqpFactorization* factorization);
-
-SLEQP_NODISCARD
-SLEQP_RETCODE
-sleqp_factorization_create_default(SleqpFactorization** star,
-                                   SleqpParams* params);
+SLEQP_FACT_FLAGS
+sleqp_fact_flags(SleqpFact* factorization);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_capture(SleqpFactorization* factorization);
+sleqp_fact_create_default(SleqpFact** star, SleqpParams* params);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_solve(SleqpFactorization* factorization,
-                          const SleqpVec* rhs);
+sleqp_fact_capture(SleqpFact* factorization);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_solution(SleqpFactorization* factorization,
-                             SleqpVec* sol,
-                             int begin,
-                             int end,
-                             double zero_eps);
+sleqp_fact_solve(SleqpFact* factorization, const SleqpVec* rhs);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_condition_estimate(SleqpFactorization* factorization,
-                                       double* condition_estimate);
+sleqp_fact_solution(SleqpFact* factorization,
+                    SleqpVec* sol,
+                    int begin,
+                    int end,
+                    double zero_eps);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_capture(SleqpFactorization* factorization);
+sleqp_fact_condition(SleqpFact* factorization, double* condition_estimate);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_release(SleqpFactorization** star);
+sleqp_fact_release(SleqpFact** star);
 
 #endif /* SLEQP_FACTORIZATION_H */

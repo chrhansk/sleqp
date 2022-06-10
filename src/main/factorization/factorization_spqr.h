@@ -13,6 +13,6 @@
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_factorization_spqr_create(SleqpFactorization** star, SleqpParams* params);
+sleqp_fact_spqr_create(SleqpFact** star, SleqpParams* params);
 
 #endif /* SLEQP_FACTORIZATION_SPQR_H */

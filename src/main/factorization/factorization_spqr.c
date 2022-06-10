@@ -317,7 +317,7 @@ spqr_data_create(SPQRData** star)
 }
 
 SLEQP_RETCODE
-sleqp_factorization_spqr_create(SleqpFactorization** star, SleqpParams* params)
+sleqp_fact_spqr_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
@@ -331,22 +331,21 @@ sleqp_factorization_spqr_create(SleqpFactorization** star, SleqpParams* params)
 
   SLEQP_CALL(spqr_data_create(&spqr_data));
 
-  SLEQP_CALL(sleqp_factorization_create(star,
-                                        SLEQP_FACT_SPQR_NAME,
-                                        SLEQP_FACT_SPQR_VERSION,
-                                        params,
-                                        &callbacks,
-                                        SLEQP_FACTORIZATION_NONE,
-                                        (void*)spqr_data));
+  SLEQP_CALL(sleqp_fact_create(star,
+                               SLEQP_FACT_SPQR_NAME,
+                               SLEQP_FACT_SPQR_VERSION,
+                               params,
+                               &callbacks,
+                               SLEQP_FACT_FLAGS_NONE,
+                               (void*)spqr_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_create_default(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_factorization_spqr_create(star, params));
+  SLEQP_CALL(sleqp_fact_spqr_create(star, params));
 
   return SLEQP_OKAY;
 }

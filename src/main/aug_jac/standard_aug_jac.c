@@ -20,7 +20,7 @@ typedef struct
   bool has_factorization;
 
   SleqpSparseMatrix* augmented_matrix;
-  SleqpFactorization* factorization;
+  SleqpFact* factorization;
 
   SleqpWorkingSet* working_set;
 
@@ -266,24 +266,23 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 
   jacobian->condition_estimate = SLEQP_NONE;
 
-  const bool lower_only = sleqp_factorization_flags(jacobian->factorization)
-                          & SLEQP_FACTORIZATION_LOWER;
+  const bool lower_only
+    = sleqp_fact_flags(jacobian->factorization) & SLEQP_FACT_FLAGS_LOWER;
 
   SLEQP_CALL(reserve_aug_jac(jacobian, iterate, lower_only));
   SLEQP_CALL(fill_aug_jac(jacobian, iterate, lower_only));
 
   SLEQP_CALL(sleqp_timer_start(jacobian->factorization_timer));
 
-  SLEQP_CALL(sleqp_factorization_set_matrix(jacobian->factorization,
-                                            jacobian->augmented_matrix));
+  SLEQP_CALL(
+    sleqp_fact_set_matrix(jacobian->factorization, jacobian->augmented_matrix));
 
   jacobian->has_factorization = true;
 
   SLEQP_CALL(sleqp_timer_stop(jacobian->factorization_timer));
 
-  SLEQP_CALL(
-    sleqp_factorization_condition_estimate(jacobian->factorization,
-                                           &jacobian->condition_estimate));
+  SLEQP_CALL(sleqp_fact_condition(jacobian->factorization,
+                                  &jacobian->condition_estimate));
 
   {
     SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
@@ -320,8 +319,8 @@ aug_jac_solve_min_norm(const SleqpVec* _rhs, SleqpVec* sol, void* data)
 
   SLEQP_CALL(sleqp_timer_start(jacobian->substitution_timer));
 
-  SleqpProblem* problem             = jacobian->problem;
-  SleqpFactorization* factorization = jacobian->factorization;
+  SleqpProblem* problem    = jacobian->problem;
+  SleqpFact* factorization = jacobian->factorization;
 
   const double zero_eps
     = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
@@ -337,13 +336,10 @@ aug_jac_solve_min_norm(const SleqpVec* _rhs, SleqpVec* sol, void* data)
     rhs->indices[k] += num_variables;
   }
 
-  SLEQP_CALL(sleqp_factorization_solve(factorization, rhs));
+  SLEQP_CALL(sleqp_fact_solve(factorization, rhs));
 
-  SLEQP_CALL(sleqp_factorization_solution(factorization,
-                                          sol,
-                                          0,
-                                          num_variables,
-                                          zero_eps));
+  SLEQP_CALL(
+    sleqp_fact_solution(factorization, sol, 0, num_variables, zero_eps));
 
   rhs->dim -= num_variables;
 
@@ -369,8 +365,8 @@ aug_jac_solve_lsq(const SleqpVec* _rhs, SleqpVec* sol, void* data)
 
   SLEQP_CALL(sleqp_timer_start(jacobian->substitution_timer));
 
-  SleqpProblem* problem             = jacobian->problem;
-  SleqpFactorization* factorization = jacobian->factorization;
+  SleqpProblem* problem    = jacobian->problem;
+  SleqpFact* factorization = jacobian->factorization;
 
   double zero_eps = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
@@ -383,15 +379,15 @@ aug_jac_solve_lsq(const SleqpVec* _rhs, SleqpVec* sol, void* data)
   // just add some zeros...
   SLEQP_CALL(sleqp_vec_resize(rhs, total_size));
 
-  SLEQP_CALL(sleqp_factorization_solve(factorization, rhs));
+  SLEQP_CALL(sleqp_fact_solve(factorization, rhs));
 
   assert(sol->dim == working_set_size);
 
-  SLEQP_CALL(sleqp_factorization_solution(factorization,
-                                          sol,
-                                          num_variables,
-                                          total_size,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_fact_solution(factorization,
+                                 sol,
+                                 num_variables,
+                                 total_size,
+                                 zero_eps));
 
   // erase the zeros
   SLEQP_CALL(sleqp_vec_resize(rhs, num_variables));
@@ -413,8 +409,8 @@ aug_jac_project_nullspace(const SleqpVec* _rhs, SleqpVec* sol, void* data)
 
   SLEQP_CALL(sleqp_timer_start(jacobian->substitution_timer));
 
-  SleqpProblem* problem             = jacobian->problem;
-  SleqpFactorization* factorization = jacobian->factorization;
+  SleqpProblem* problem    = jacobian->problem;
+  SleqpFact* factorization = jacobian->factorization;
 
   double zero_eps = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
@@ -427,15 +423,12 @@ aug_jac_project_nullspace(const SleqpVec* _rhs, SleqpVec* sol, void* data)
   // just add some zeros...
   SLEQP_CALL(sleqp_vec_resize(rhs, total_size));
 
-  SLEQP_CALL(sleqp_factorization_solve(factorization, rhs));
+  SLEQP_CALL(sleqp_fact_solve(factorization, rhs));
 
   assert(sol->dim == num_variables);
 
-  SLEQP_CALL(sleqp_factorization_solution(factorization,
-                                          sol,
-                                          0,
-                                          num_variables,
-                                          zero_eps));
+  SLEQP_CALL(
+    sleqp_fact_solution(factorization, sol, 0, num_variables, zero_eps));
 
   // erase the zeros
   SLEQP_CALL(sleqp_vec_resize(rhs, num_variables));
@@ -458,7 +451,7 @@ aug_jac_free(void* data)
 
   SLEQP_CALL(sleqp_working_set_release(&jacobian->working_set));
 
-  SLEQP_CALL(sleqp_factorization_release(&jacobian->factorization));
+  SLEQP_CALL(sleqp_fact_release(&jacobian->factorization));
 
   SLEQP_CALL(sleqp_sparse_matrix_release(&jacobian->augmented_matrix));
 
@@ -475,7 +468,7 @@ static SLEQP_RETCODE
 aug_jac_data_create(AugJacData** star,
                     SleqpProblem* problem,
                     SleqpParams* params,
-                    SleqpFactorization* factorization)
+                    SleqpFact* factorization)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -501,7 +494,7 @@ aug_jac_data_create(AugJacData** star,
 
   jacobian->has_factorization = false;
 
-  SLEQP_CALL(sleqp_factorization_capture(factorization));
+  SLEQP_CALL(sleqp_fact_capture(factorization));
   jacobian->factorization = factorization;
 
   const bool fixed_jacobian = !(sleqp_problem_has_nonlinear_cons(problem));
@@ -524,7 +517,7 @@ SLEQP_RETCODE
 sleqp_standard_aug_jac_create(SleqpAugJac** star,
                               SleqpProblem* problem,
                               SleqpParams* params,
-                              SleqpFactorization* factorization)
+                              SleqpFact* factorization)
 {
   AugJacData* aug_jac_data;
 

@@ -5,7 +5,7 @@
 #include "log.h"
 #include "mem.h"
 
-struct SleqpFactorization
+struct SleqpFact
 {
   int refcount;
 
@@ -13,24 +13,24 @@ struct SleqpFactorization
   char* version;
 
   SleqpFactorizationCallbacks callbacks;
-  SLEQP_FACTORIZATION_FLAGS flags;
+  SLEQP_FACT_FLAGS flags;
   void* factorization_data;
 };
 
 SLEQP_RETCODE
-sleqp_factorization_create(SleqpFactorization** star,
-                           const char* name,
-                           const char* version,
-                           SleqpParams* params,
-                           SleqpFactorizationCallbacks* callbacks,
-                           SLEQP_FACTORIZATION_FLAGS flags,
-                           void* factorization_data)
+sleqp_fact_create(SleqpFact** star,
+                  const char* name,
+                  const char* version,
+                  SleqpParams* params,
+                  SleqpFactorizationCallbacks* callbacks,
+                  SLEQP_FACT_FLAGS flags,
+                  void* factorization_data)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
-  SleqpFactorization* factorization = *star;
+  SleqpFact* factorization = *star;
 
-  *factorization = (SleqpFactorization){0};
+  *factorization = (SleqpFact){0};
 
   factorization->name    = strdup(name);
   factorization->version = strdup(version);
@@ -44,24 +44,23 @@ sleqp_factorization_create(SleqpFactorization** star,
 }
 
 const char*
-sleqp_factorization_name(SleqpFactorization* factorization)
+sleqp_fact_name(SleqpFact* factorization)
 {
   return factorization->name;
 }
 
 const char*
-sleqp_factorization_version(SleqpFactorization* factorization)
+sleqp_factorization_version(SleqpFact* factorization)
 {
   return factorization->version;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_set_matrix(SleqpFactorization* factorization,
-                               SleqpSparseMatrix* matrix)
+sleqp_fact_set_matrix(SleqpFact* factorization, SleqpSparseMatrix* matrix)
 {
 #ifdef NDEBUG
   {
-    if (factorization->flags & SLEQP_FACTORIZATION_LOWER)
+    if (factorization->flags & SLEQP_FACT_FLAGS_LOWER)
     {
       assert(sleqp_sparse_matrix_is_lower(matrix));
     }
@@ -75,15 +74,14 @@ sleqp_factorization_set_matrix(SleqpFactorization* factorization,
   return SLEQP_OKAY;
 }
 
-SLEQP_FACTORIZATION_FLAGS
-sleqp_factorization_flags(SleqpFactorization* factorization)
+SLEQP_FACT_FLAGS
+sleqp_fact_flags(SleqpFact* factorization)
 {
   return factorization->flags;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_solve(SleqpFactorization* factorization,
-                          const SleqpVec* rhs)
+sleqp_fact_solve(SleqpFact* factorization, const SleqpVec* rhs)
 {
   SLEQP_CALL(
     factorization->callbacks.solve(factorization->factorization_data, rhs));
@@ -92,11 +90,11 @@ sleqp_factorization_solve(SleqpFactorization* factorization,
 }
 
 SLEQP_RETCODE
-sleqp_factorization_solution(SleqpFactorization* factorization,
-                             SleqpVec* sol,
-                             int begin,
-                             int end,
-                             double zero_eps)
+sleqp_fact_solution(SleqpFact* factorization,
+                    SleqpVec* sol,
+                    int begin,
+                    int end,
+                    double zero_eps)
 {
   SLEQP_CALL(
     factorization->callbacks
@@ -106,8 +104,7 @@ sleqp_factorization_solution(SleqpFactorization* factorization,
 }
 
 SLEQP_RETCODE
-sleqp_factorization_condition_estimate(SleqpFactorization* factorization,
-                                       double* condition_estimate)
+sleqp_fact_condition(SleqpFact* factorization, double* condition_estimate)
 {
   SLEQP_CALL(factorization->callbacks.condition_estimate(
     factorization->factorization_data,
@@ -117,7 +114,7 @@ sleqp_factorization_condition_estimate(SleqpFactorization* factorization,
 }
 
 SLEQP_RETCODE
-sleqp_factorization_capture(SleqpFactorization* factorization)
+sleqp_fact_capture(SleqpFact* factorization)
 {
   ++(factorization->refcount);
 
@@ -125,9 +122,9 @@ sleqp_factorization_capture(SleqpFactorization* factorization)
 }
 
 static SLEQP_RETCODE
-factorization_free(SleqpFactorization** star)
+factorization_free(SleqpFact** star)
 {
-  SleqpFactorization* factorization = *star;
+  SleqpFact* factorization = *star;
 
   SLEQP_CALL(
     factorization->callbacks.free(&(factorization->factorization_data)));
@@ -141,9 +138,9 @@ factorization_free(SleqpFactorization** star)
 }
 
 SLEQP_RETCODE
-sleqp_factorization_release(SleqpFactorization** star)
+sleqp_fact_release(SleqpFact** star)
 {
-  SleqpFactorization* factorization = *star;
+  SleqpFact* factorization = *star;
 
   if (!factorization)
   {

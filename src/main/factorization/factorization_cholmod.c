@@ -15,7 +15,7 @@
 #include "pub_types.h"
 #include "sparse/pub_sparse_matrix.h"
 
-#define CHOLMOD_FLAGS (SLEQP_FACTORIZATION_PSD | SLEQP_FACTORIZATION_LOWER)
+#define CHOLMOD_FLAGS (SLEQP_FACT_FLAGS_PSD | SLEQP_FACT_FLAGS_LOWER)
 
 typedef struct SPQRData
 {
@@ -357,8 +357,7 @@ cholmod_data_create(CHOLMODData** star)
 }
 
 SLEQP_RETCODE
-sleqp_factorization_cholmod_create(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_cholmod_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
@@ -372,22 +371,21 @@ sleqp_factorization_cholmod_create(SleqpFactorization** star,
 
   SLEQP_CALL(cholmod_data_create(&cholmod_data));
 
-  SLEQP_CALL(sleqp_factorization_create(star,
-                                        SLEQP_FACT_CHOLMOD_NAME,
-                                        SLEQP_FACT_CHOLMOD_VERSION,
-                                        params,
-                                        &callbacks,
-                                        CHOLMOD_FLAGS,
-                                        (void*)cholmod_data));
+  SLEQP_CALL(sleqp_fact_create(star,
+                               SLEQP_FACT_CHOLMOD_NAME,
+                               SLEQP_FACT_CHOLMOD_VERSION,
+                               params,
+                               &callbacks,
+                               CHOLMOD_FLAGS,
+                               (void*)cholmod_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_create_default(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_factorization_cholmod_create(star, params));
+  SLEQP_CALL(sleqp_fact_cholmod_create(star, params));
 
   return SLEQP_OKAY;
 }
