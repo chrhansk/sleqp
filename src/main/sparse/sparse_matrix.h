@@ -72,11 +72,6 @@ sleqp_sparse_matrix_col(const SleqpSparseMatrix* matrix,
                         int col,
                         SleqpVec* vec);
 
-SLEQP_NODISCARD
-SLEQP_RETCODE
-sleqp_sparse_lower_triangular(const SleqpSparseMatrix* source,
-                              SleqpSparseMatrix* target);
-
 bool
 sleqp_sparse_matrix_is_lower(const SleqpSparseMatrix* matrix);
 
