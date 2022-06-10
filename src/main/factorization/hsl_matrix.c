@@ -50,7 +50,7 @@ hsl_matrix_set(HSLMatrix* hsl_matrix, SleqpSparseMatrix* matrix)
     const double entry = matrix_data[index];
 
     // Convert indices to be 1-based
-    if (row <= col)
+    if (row >= col)
     {
       hsl_data[hsl_pos] = entry;
       hsl_cols[hsl_pos] = col + 1;
