@@ -1,5 +1,6 @@
 #include "factorization_cholmod.h"
 
+#include "factorization/factorization.h"
 #include "fail.h"
 #include <assert.h>
 
@@ -13,6 +14,8 @@
 #include "pub_log.h"
 #include "pub_types.h"
 #include "sparse/pub_sparse_matrix.h"
+
+#define CHOLMOD_FLAGS (SLEQP_FACTORIZATION_PSD | SLEQP_FACTORIZATION_LOWER)
 
 typedef struct SPQRData
 {
@@ -374,7 +377,7 @@ sleqp_factorization_cholmod_create(SleqpFactorization** star,
                                         SLEQP_FACT_CHOLMOD_VERSION,
                                         params,
                                         &callbacks,
-                                        SLEQP_FACTORIZATION_PSD,
+                                        CHOLMOD_FLAGS,
                                         (void*)cholmod_data));
 
   return SLEQP_OKAY;

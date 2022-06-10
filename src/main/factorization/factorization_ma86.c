@@ -340,7 +340,7 @@ sleqp_factorization_ma86_create(SleqpFactorization** star, SleqpParams* params)
                                         SLEQP_FACT_MA86_VERSION,
                                         params,
                                         &callbacks,
-                                        SLEQP_FACTORIZATION_NONE,
+                                        SLEQP_FACTORIZATION_LOWER,
                                         (void*)ma86_data));
 
   return SLEQP_OKAY;

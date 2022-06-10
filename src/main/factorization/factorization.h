@@ -8,10 +8,16 @@
 
 typedef enum
 {
-  SLEQP_FACTORIZATION_NONE = 0,
-  SLEQP_FACTORIZATION_PSD  = (1 << 0)
+  SLEQP_FACTORIZATION_NONE  = 0,        /** Nothing **/
+  SLEQP_FACTORIZATION_PSD   = (1 << 0), /** Requires positive definiteness **/
+  SLEQP_FACTORIZATION_LOWER = (1 << 1)  /** Pass only lower triangular part **/
 } SLEQP_FACTORIZATION_FLAGS;
 
+/**
+ * Creates a new factorization. Factorizations are used to solve the
+ * *symmetric* (but possible indefinite) systems occuring during the
+ * optimization
+ **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_factorization_create(SleqpFactorization** star,

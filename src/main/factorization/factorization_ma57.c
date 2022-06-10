@@ -744,7 +744,7 @@ sleqp_factorization_ma57_create(SleqpFactorization** star, SleqpParams* params)
                                         SLEQP_FACT_MA57_VERSION,
                                         params,
                                         &callbacks,
-                                        SLEQP_FACTORIZATION_NONE,
+                                        SLEQP_FACTORIZATION_LOWER,
                                         (void*)ma57_data));
 
   return SLEQP_OKAY;

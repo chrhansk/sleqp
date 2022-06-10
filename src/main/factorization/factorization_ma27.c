@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "factorization/factorization.h"
 #include "hsl_ma27.h"
 #include "hsl_matrix.h"
 
@@ -561,7 +562,7 @@ sleqp_factorization_ma27_create(SleqpFactorization** star, SleqpParams* params)
                                         SLEQP_FACT_MA27_VERSION,
                                         params,
                                         &callbacks,
-                                        SLEQP_FACTORIZATION_NONE,
+                                        SLEQP_FACTORIZATION_LOWER,
                                         (void*)ma27_data));
 
   return SLEQP_OKAY;
