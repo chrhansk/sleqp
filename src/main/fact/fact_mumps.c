@@ -1,4 +1,4 @@
-#include "factorization_mumps.h"
+#include "fact_mumps.h"
 
 #include <assert.h>
 
@@ -153,9 +153,9 @@ matrix_fill(SleqpMUMPSData* sleqp_mumps_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
+sleqp_mumps_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
-  SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)factorization_data;
+  SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)fact_data;
 
   SLEQP_CALL(matrix_fill(sleqp_mumps_data, matrix));
 
@@ -178,9 +178,9 @@ sleqp_mumps_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_solve(void* factorization_data, const SleqpVec* rhs)
+sleqp_mumps_solve(void* fact_data, const SleqpVec* rhs)
 {
-  SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)factorization_data;
+  SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)fact_data;
 
   const int dim = sleqp_mumps_data->dim;
 
@@ -200,13 +200,13 @@ sleqp_mumps_solve(void* factorization_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_solution(void* factorization_data,
+sleqp_mumps_solution(void* fact_data,
                      SleqpVec* sol,
                      int begin,
                      int end,
                      double zero_eps)
 {
-  SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)factorization_data;
+  SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)fact_data;
 
   SLEQP_CALL(sleqp_vec_set_from_raw(sol,
                                     sleqp_mumps_data->rhs_sol + begin,
@@ -217,10 +217,9 @@ sleqp_mumps_solution(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_condition_estimate(void* factorization_data,
-                               double* condition_estimate)
+sleqp_mumps_condition_estimate(void* fact_data, double* condition_estimate)
 {
-  // SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*) factorization_data;
+  // SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*) fact_data;
 
   (*condition_estimate) = SLEQP_NONE;
 

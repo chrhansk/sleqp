@@ -20,7 +20,7 @@ set(COMMON_SRC
   enum.c
   eqp.c
   error.c
-  factorization/factorization.c
+  fact/fact.c
   feas.c
   func.c
   gauss_newton.c

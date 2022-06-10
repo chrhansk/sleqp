@@ -5,7 +5,7 @@
 #include "cauchy/standard_cauchy.h"
 #include "cmp.h"
 #include "dual_estimation/dual_estimation_lsq.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "mem.h"
 #include "test_common.h"
 #include "util.h"
@@ -20,7 +20,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   SleqpIterate* iterate;
   SleqpCauchy* cauchy_data;
   SleqpWorkingSet* working_set;
-  SleqpFact* factorization;
+  SleqpFact* fact;
   SleqpAugJac* aug_jac;
 
   SleqpDualEstimation* estimation_data;
@@ -49,10 +49,9 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_working_set_create(&working_set, problem));
 
-  ASSERT_CALL(sleqp_fact_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&fact, params));
 
-  ASSERT_CALL(
-    sleqp_standard_aug_jac_create(&aug_jac, problem, params, factorization));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&aug_jac, problem, params, fact));
 
   ASSERT_CALL(
     sleqp_dual_estimation_lsq_create(&estimation_data, problem, aug_jac));
@@ -92,7 +91,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_aug_jac_release(&aug_jac));
 
-  ASSERT_CALL(sleqp_fact_release(&factorization));
+  ASSERT_CALL(sleqp_fact_release(&fact));
 
   ASSERT_CALL(sleqp_working_set_release(&working_set));
 

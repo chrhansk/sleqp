@@ -1,4 +1,4 @@
-#include "factorization.h"
+#include "fact.h"
 
 #include <string.h>
 
@@ -14,7 +14,7 @@ struct SleqpFact
 
   SleqpFactorizationCallbacks callbacks;
   SLEQP_FACT_FLAGS flags;
-  void* factorization_data;
+  void* fact_data;
 };
 
 SLEQP_RETCODE
@@ -24,7 +24,7 @@ sleqp_fact_create(SleqpFact** star,
                   SleqpParams* params,
                   SleqpFactorizationCallbacks* callbacks,
                   SLEQP_FACT_FLAGS flags,
-                  void* factorization_data)
+                  void* fact_data)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -35,10 +35,10 @@ sleqp_fact_create(SleqpFact** star,
   factorization->name    = strdup(name);
   factorization->version = strdup(version);
 
-  factorization->refcount           = 1;
-  factorization->callbacks          = *callbacks;
-  factorization->flags              = flags;
-  factorization->factorization_data = factorization_data;
+  factorization->refcount  = 1;
+  factorization->callbacks = *callbacks;
+  factorization->flags     = flags;
+  factorization->fact_data = fact_data;
 
   return SLEQP_OKAY;
 }
@@ -68,8 +68,7 @@ sleqp_fact_set_matrix(SleqpFact* factorization, SleqpSparseMatrix* matrix)
 #endif
 
   SLEQP_CALL(
-    factorization->callbacks.set_matrix(factorization->factorization_data,
-                                        matrix));
+    factorization->callbacks.set_matrix(factorization->fact_data, matrix));
 
   return SLEQP_OKAY;
 }
@@ -83,8 +82,7 @@ sleqp_fact_flags(SleqpFact* factorization)
 SLEQP_RETCODE
 sleqp_fact_solve(SleqpFact* factorization, const SleqpVec* rhs)
 {
-  SLEQP_CALL(
-    factorization->callbacks.solve(factorization->factorization_data, rhs));
+  SLEQP_CALL(factorization->callbacks.solve(factorization->fact_data, rhs));
 
   return SLEQP_OKAY;
 }
@@ -96,9 +94,8 @@ sleqp_fact_solution(SleqpFact* factorization,
                     int end,
                     double zero_eps)
 {
-  SLEQP_CALL(
-    factorization->callbacks
-      .solution(factorization->factorization_data, sol, begin, end, zero_eps));
+  SLEQP_CALL(factorization->callbacks
+               .solution(factorization->fact_data, sol, begin, end, zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -106,9 +103,9 @@ sleqp_fact_solution(SleqpFact* factorization,
 SLEQP_RETCODE
 sleqp_fact_condition(SleqpFact* factorization, double* condition_estimate)
 {
-  SLEQP_CALL(factorization->callbacks.condition_estimate(
-    factorization->factorization_data,
-    condition_estimate));
+  SLEQP_CALL(
+    factorization->callbacks.condition_estimate(factorization->fact_data,
+                                                condition_estimate));
 
   return SLEQP_OKAY;
 }
@@ -126,8 +123,7 @@ factorization_free(SleqpFact** star)
 {
   SleqpFact* factorization = *star;
 
-  SLEQP_CALL(
-    factorization->callbacks.free(&(factorization->factorization_data)));
+  SLEQP_CALL(factorization->callbacks.free(&(factorization->fact_data)));
 
   sleqp_free(&factorization->version);
   sleqp_free(&factorization->name);

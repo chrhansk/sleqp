@@ -14,7 +14,7 @@
 #include "working_step.h"
 
 #include "cauchy/cauchy.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "lp/lpi.h"
 
 typedef struct
@@ -48,7 +48,7 @@ typedef struct
 
   SleqpDualEstimation* estimation_data;
 
-  SleqpFact* factorization;
+  SleqpFact* fact;
 
   SleqpAugJac* aug_jac;
 

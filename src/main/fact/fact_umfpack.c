@@ -1,6 +1,6 @@
-#include "factorization_umfpack.h"
+#include "fact_umfpack.h"
 
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "fail.h"
 #include <assert.h>
 
@@ -83,7 +83,7 @@ umfpack_get_error_string(int value, const char** message)
   } while (0)
 
 static SLEQP_RETCODE
-umfpack_factorization_free_factorizations(UmfpackData* umfpack)
+umfpack_fact_free_fact(UmfpackData* umfpack)
 {
   if (umfpack->numeric_factorization)
   {
@@ -103,10 +103,9 @@ umfpack_factorization_free_factorizations(UmfpackData* umfpack)
 }
 
 static SLEQP_RETCODE
-umfpack_factorization_set_matrix(void* factorization_data,
-                                 SleqpSparseMatrix* matrix)
+umfpack_fact_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
-  UmfpackData* umfpack = (UmfpackData*)factorization_data;
+  UmfpackData* umfpack = (UmfpackData*)fact_data;
 
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
@@ -128,7 +127,7 @@ umfpack_factorization_set_matrix(void* factorization_data,
   }
   */
 
-  SLEQP_CALL(umfpack_factorization_free_factorizations(umfpack));
+  SLEQP_CALL(umfpack_fact_free_fact(umfpack));
 
   assert(sleqp_sparse_matrix_is_quadratic(matrix));
 
@@ -197,9 +196,9 @@ reset_cache(double* cache, const SleqpVec* vec)
 }
 
 static SLEQP_RETCODE
-umfpack_factorization_solve(void* factorization_data, const SleqpVec* rhs)
+umfpack_fact_solve(void* fact_data, const SleqpVec* rhs)
 {
-  UmfpackData* umfpack = (UmfpackData*)factorization_data;
+  UmfpackData* umfpack = (UmfpackData*)fact_data;
 
   SleqpSparseMatrix* matrix = umfpack->matrix;
 
@@ -223,10 +222,9 @@ umfpack_factorization_solve(void* factorization_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-umfpack_factorization_condition_estimate(void* factorization_data,
-                                         double* condition_estimate)
+umfpack_fact_condition_estimate(void* fact_data, double* condition_estimate)
 {
-  UmfpackData* umfpack = (UmfpackData*)factorization_data;
+  UmfpackData* umfpack = (UmfpackData*)fact_data;
 
   *(condition_estimate) = 1. / (umfpack->info[UMFPACK_RCOND]);
 
@@ -234,13 +232,13 @@ umfpack_factorization_condition_estimate(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-umfpack_factorization_solution(void* factorization_data,
-                               SleqpVec* sol,
-                               int begin,
-                               int end,
-                               double zero_eps)
+umfpack_fact_solution(void* fact_data,
+                      SleqpVec* sol,
+                      int begin,
+                      int end,
+                      double zero_eps)
 {
-  UmfpackData* umfpack = (UmfpackData*)factorization_data;
+  UmfpackData* umfpack = (UmfpackData*)fact_data;
 
   assert(begin <= end);
 
@@ -253,7 +251,7 @@ umfpack_factorization_solution(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-umfpack_factorization_free(void** star)
+umfpack_fact_free(void** star)
 {
   UmfpackData* umfpack = (UmfpackData*)(*star);
 
@@ -265,7 +263,7 @@ umfpack_factorization_free(void** star)
   sleqp_free(&umfpack->rhs);
   sleqp_free(&umfpack->solution);
 
-  SLEQP_CALL(umfpack_factorization_free_factorizations(umfpack));
+  SLEQP_CALL(umfpack_fact_free_fact(umfpack));
 
   sleqp_free(&umfpack);
 
@@ -293,11 +291,11 @@ sleqp_fact_umfpack_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
-    = {.set_matrix         = umfpack_factorization_set_matrix,
-       .solve              = umfpack_factorization_solve,
-       .solution           = umfpack_factorization_solution,
-       .condition_estimate = umfpack_factorization_condition_estimate,
-       .free               = umfpack_factorization_free};
+    = {.set_matrix         = umfpack_fact_set_matrix,
+       .solve              = umfpack_fact_solve,
+       .solution           = umfpack_fact_solution,
+       .condition_estimate = umfpack_fact_condition_estimate,
+       .free               = umfpack_fact_free};
 
   UmfpackData* umfpack_data;
 

@@ -1,4 +1,4 @@
-#include "factorization_ma57.h"
+#include "fact_ma57.h"
 
 #include <assert.h>
 #include <string.h>
@@ -500,9 +500,9 @@ ma57_numeric(MA57Data* ma57_data)
 }
 
 static SLEQP_RETCODE
-ma57_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
+ma57_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
-  MA57Data* ma57_data = (MA57Data*)factorization_data;
+  MA57Data* ma57_data = (MA57Data*)fact_data;
 
   MA57ControlInfo* control_info = &(ma57_data->control_info);
   MA57Factor* ma57_factor       = &(ma57_data->factor);
@@ -589,9 +589,9 @@ ma57_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-ma57_solve(void* factorization_data, const SleqpVec* rhs)
+ma57_solve(void* fact_data, const SleqpVec* rhs)
 {
-  MA57Data* ma57_data = (MA57Data*)factorization_data;
+  MA57Data* ma57_data = (MA57Data*)fact_data;
 
   MA57ControlInfo* control_info = &(ma57_data->control_info);
   MA57Factor* ma57_factor       = &(ma57_data->factor);
@@ -638,13 +638,13 @@ ma57_solve(void* factorization_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-ma57_solution(void* factorization_data,
+ma57_solution(void* fact_data,
               SleqpVec* sol,
               int begin,
               int end,
               double zero_eps)
 {
-  MA57Data* ma57_data = (MA57Data*)factorization_data;
+  MA57Data* ma57_data = (MA57Data*)fact_data;
 
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
 
@@ -690,9 +690,9 @@ ma57_data_create(MA57Data** star)
 }
 
 static SLEQP_RETCODE
-ma57_condition_estimate(void* factorization_data, double* condition_estimate)
+ma57_condition_estimate(void* fact_data, double* condition_estimate)
 {
-  // MA57Data* ma57_data = (MA57Data*) factorization_data;
+  // MA57Data* ma57_data = (MA57Data*) fact_data;
 
   (*condition_estimate) = SLEQP_NONE;
 

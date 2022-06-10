@@ -1,4 +1,4 @@
-#include "factorization_ma97.h"
+#include "fact_ma97.h"
 
 #include <assert.h>
 
@@ -252,9 +252,9 @@ ma97_data_create(MA97Data** star)
 }
 
 static SLEQP_RETCODE
-ma97_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
+ma97_data_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
-  MA97Data* ma97_data = (MA97Data*)factorization_data;
+  MA97Data* ma97_data = (MA97Data*)fact_data;
 
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
@@ -322,9 +322,9 @@ ma97_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-ma97_data_solve(void* factorization_data, const SleqpVec* rhs)
+ma97_data_solve(void* fact_data, const SleqpVec* rhs)
 {
-  MA97Data* ma97_data = (MA97Data*)factorization_data;
+  MA97Data* ma97_data = (MA97Data*)fact_data;
 
   const int nrhs = 1;
   const int dim  = ma97_data->dim;
@@ -348,13 +348,13 @@ ma97_data_solve(void* factorization_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-ma97_data_solution(void* factorization_data,
+ma97_data_solution(void* fact_data,
                    SleqpVec* sol,
                    int begin,
                    int end,
                    double zero_eps)
 {
-  MA97Data* ma97_data = (MA97Data*)factorization_data;
+  MA97Data* ma97_data = (MA97Data*)fact_data;
 
   SLEQP_CALL(sleqp_vec_set_from_raw(sol,
                                     ma97_data->rhs_sol + begin,
@@ -365,10 +365,9 @@ ma97_data_solution(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-ma97_data_condition_estimate(void* factorization_data,
-                             double* condition_estimate)
+ma97_data_condition_estimate(void* fact_data, double* condition_estimate)
 {
-  // MA97Data* ma97_data = (MA97Data*) factorization_data;
+  // MA97Data* ma97_data = (MA97Data*) fact_data;
 
   (*condition_estimate) = SLEQP_NONE;
 

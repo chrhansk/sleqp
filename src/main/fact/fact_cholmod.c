@@ -1,6 +1,6 @@
-#include "factorization_cholmod.h"
+#include "fact_cholmod.h"
 
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "fail.h"
 #include <assert.h>
 
@@ -136,10 +136,9 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_set_matrix(void* factorization_data,
-                                 SleqpSparseMatrix* matrix)
+cholmod_factorization_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
-  CHOLMODData* cholmod_data = (CHOLMODData*)factorization_data;
+  CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
   cholmod_common* common = &(cholmod_data->common);
 
@@ -245,9 +244,9 @@ reset_cache(double* cache, const SleqpVec* vec)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_solve(void* factorization_data, const SleqpVec* rhs)
+cholmod_factorization_solve(void* fact_data, const SleqpVec* rhs)
 {
-  CHOLMODData* cholmod_data = (CHOLMODData*)factorization_data;
+  CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
   cholmod_common* common = &(cholmod_data->common);
 
@@ -274,10 +273,10 @@ cholmod_factorization_solve(void* factorization_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_condition_estimate(void* factorization_data,
+cholmod_factorization_condition_estimate(void* fact_data,
                                          double* condition_estimate)
 {
-  CHOLMODData* cholmod_data = (CHOLMODData*)factorization_data;
+  CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
   cholmod_common* common = &(cholmod_data->common);
 
@@ -289,13 +288,13 @@ cholmod_factorization_condition_estimate(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_solution(void* factorization_data,
+cholmod_factorization_solution(void* fact_data,
                                SleqpVec* sol,
                                int begin,
                                int end,
                                double zero_eps)
 {
-  CHOLMODData* cholmod_data = (CHOLMODData*)factorization_data;
+  CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
   assert(begin <= end);
 

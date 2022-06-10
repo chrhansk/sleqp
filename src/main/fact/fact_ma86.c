@@ -1,4 +1,4 @@
-#include "factorization_ma86.h"
+#include "fact_ma86.h"
 
 #include <assert.h>
 
@@ -172,9 +172,9 @@ ma86_data_create(MA86Data** star)
 }
 
 static SLEQP_RETCODE
-ma86_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
+ma86_data_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
-  MA86Data* ma86_data = (MA86Data*)factorization_data;
+  MA86Data* ma86_data = (MA86Data*)fact_data;
 
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
@@ -236,9 +236,9 @@ ma86_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-ma86_data_solve(void* factorization_data, const SleqpVec* rhs)
+ma86_data_solve(void* fact_data, const SleqpVec* rhs)
 {
-  MA86Data* ma86_data = (MA86Data*)factorization_data;
+  MA86Data* ma86_data = (MA86Data*)fact_data;
 
   const int job  = 0;
   const int nrhs = 1;
@@ -265,13 +265,13 @@ ma86_data_solve(void* factorization_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-ma86_data_solution(void* factorization_data,
+ma86_data_solution(void* fact_data,
                    SleqpVec* sol,
                    int begin,
                    int end,
                    double zero_eps)
 {
-  MA86Data* ma86_data = (MA86Data*)factorization_data;
+  MA86Data* ma86_data = (MA86Data*)fact_data;
 
   SLEQP_CALL(sleqp_vec_set_from_raw(sol,
                                     ma86_data->rhs_sol + begin,
@@ -282,10 +282,9 @@ ma86_data_solution(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-ma86_data_condition_estimate(void* factorization_data,
-                             double* condition_estimate)
+ma86_data_condition_estimate(void* fact_data, double* condition_estimate)
 {
-  // MA86Data* ma86_data = (MA86Data*) factorization_data;
+  // MA86Data* ma86_data = (MA86Data*) fact_data;
 
   (*condition_estimate) = SLEQP_NONE;
 

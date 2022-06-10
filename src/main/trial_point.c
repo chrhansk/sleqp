@@ -23,7 +23,7 @@
 #include "dual_estimation/dual_estimation_lsq.h"
 #include "dual_estimation/dual_estimation_mixed.h"
 
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 
 static SLEQP_RETCODE
 create_dual_estimation(SleqpTrialPointSolver* solver)
@@ -78,10 +78,10 @@ create_aug_jac(SleqpTrialPointSolver* solver)
   {
     // create sparse factorization
 
-    SLEQP_CALL(sleqp_fact_create_default(&solver->factorization, params));
+    SLEQP_CALL(sleqp_fact_create_default(&solver->fact, params));
 
     const bool requires_psd
-      = (sleqp_fact_flags(solver->factorization) & SLEQP_FACT_FLAGS_PSD);
+      = (sleqp_fact_flags(solver->fact) & SLEQP_FACT_FLAGS_PSD);
 
     const bool want_psd
       = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_REDUCED_AUG_JAC);
@@ -91,14 +91,14 @@ create_aug_jac(SleqpTrialPointSolver* solver)
       SLEQP_CALL(sleqp_reduced_aug_jac_create(&solver->aug_jac,
                                               problem,
                                               params,
-                                              solver->factorization));
+                                              solver->fact));
     }
     else
     {
       SLEQP_CALL(sleqp_standard_aug_jac_create(&solver->aug_jac,
                                                problem,
                                                params,
-                                               solver->factorization));
+                                               solver->fact));
     }
   }
 
@@ -999,7 +999,7 @@ trial_point_solver_free(SleqpTrialPointSolver** star)
 
   SLEQP_CALL(sleqp_aug_jac_release(&solver->aug_jac));
 
-  SLEQP_CALL(sleqp_fact_release(&solver->factorization));
+  SLEQP_CALL(sleqp_fact_release(&solver->fact));
 
   SLEQP_CALL(sleqp_dual_estimation_release(&solver->estimation_data));
 

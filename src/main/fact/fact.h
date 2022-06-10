@@ -1,7 +1,7 @@
-#ifndef SLEQP_FACTORIZATION_H
-#define SLEQP_FACTORIZATION_H
+#ifndef SLEQP_FACT_H
+#define SLEQP_FACT_H
 
-#include "factorization_types.h"
+#include "fact_types.h"
 #include "params.h"
 #include "timer.h"
 #include "types.h"
@@ -26,13 +26,13 @@ sleqp_fact_create(SleqpFact** star,
                   SleqpParams* params,
                   SleqpFactorizationCallbacks* callbacks,
                   SLEQP_FACT_FLAGS flags,
-                  void* factorization_data);
+                  void* fact_data);
 
 const char*
 sleqp_fact_name(SleqpFact* factorization);
 
 const char*
-sleqp_factorization_version(SleqpFact* factorization);
+sleqp_fact_version(SleqpFact* factorization);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -69,4 +69,4 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_fact_release(SleqpFact** star);
 
-#endif /* SLEQP_FACTORIZATION_H */
+#endif /* SLEQP_FACT_H */

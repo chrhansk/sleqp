@@ -2,7 +2,7 @@
 
 #include "aug_jac/aug_jac.h"
 #include "cmp.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "iterate.h"
 #include "mem.h"
 #include "problem.h"
@@ -14,7 +14,7 @@ typedef struct
   SleqpProblem* problem;
   SleqpParams* params;
 
-  SleqpFact* factorization;
+  SleqpFact* fact;
   bool has_factorization;
 
   // J^T*J
@@ -58,7 +58,7 @@ aug_jac_data_create(AugJacData** star,
   jacobian->params = params;
 
   SLEQP_CALL(sleqp_fact_capture(factorization));
-  jacobian->factorization     = factorization;
+  jacobian->fact              = factorization;
   jacobian->has_factorization = false;
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&jacobian->matrix, 0, 0, 0));
@@ -415,7 +415,7 @@ compute_matrix_general(AugJacData* jacobian)
 static SLEQP_RETCODE
 compute_matrix(AugJacData* jacobian, int num_active_vars)
 {
-  SleqpFact* factorization = jacobian->factorization;
+  SleqpFact* factorization = jacobian->fact;
 
   if (sleqp_fact_flags(factorization) & SLEQP_FACT_FLAGS_LOWER)
   {
@@ -470,7 +470,7 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 
   SLEQP_CALL(compute_matrix(jacobian, num_active_vars));
 
-  SLEQP_CALL(sleqp_fact_set_matrix(jacobian->factorization, jacobian->matrix));
+  SLEQP_CALL(sleqp_fact_set_matrix(jacobian->fact, jacobian->matrix));
   jacobian->has_factorization = true;
 
   return SLEQP_OKAY;
@@ -576,10 +576,9 @@ aug_jac_solve_min_norm(const SleqpVec* rhs, SleqpVec* sol, void* data)
   const double zero_eps
     = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_fact_solve(jacobian->factorization, rhs));
+  SLEQP_CALL(sleqp_fact_solve(jacobian->fact, rhs));
 
-  SLEQP_CALL(
-    sleqp_fact_solution(jacobian->factorization, product, 0, size, zero_eps));
+  SLEQP_CALL(sleqp_fact_solution(jacobian->fact, product, 0, size, zero_eps));
 
   SLEQP_CALL(compute_trans_product(jacobian, product));
 
@@ -602,10 +601,9 @@ aug_jac_solve_lsq(const SleqpVec* rhs, SleqpVec* sol, void* data)
 
   SLEQP_CALL(compute_product(jacobian, rhs, product));
 
-  SLEQP_CALL(sleqp_fact_solve(jacobian->factorization, product));
+  SLEQP_CALL(sleqp_fact_solve(jacobian->fact, product));
 
-  SLEQP_CALL(
-    sleqp_fact_solution(jacobian->factorization, sol, 0, size, zero_eps));
+  SLEQP_CALL(sleqp_fact_solution(jacobian->fact, sol, 0, size, zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -627,10 +625,9 @@ aug_jac_project_nullspace(const SleqpVec* rhs, SleqpVec* sol, void* data)
 
   SLEQP_CALL(compute_product(jacobian, rhs, product));
 
-  SLEQP_CALL(sleqp_fact_solve(jacobian->factorization, product));
+  SLEQP_CALL(sleqp_fact_solve(jacobian->fact, product));
 
-  SLEQP_CALL(
-    sleqp_fact_solution(jacobian->factorization, product, 0, size, zero_eps));
+  SLEQP_CALL(sleqp_fact_solution(jacobian->fact, product, 0, size, zero_eps));
 
   SLEQP_CALL(compute_trans_product(jacobian, product));
 
@@ -670,7 +667,7 @@ aug_jac_free(void* data)
   SLEQP_CALL(sleqp_vec_free(&jacobian->rhs));
   SLEQP_CALL(sleqp_sparse_matrix_release(&jacobian->matrix));
 
-  SLEQP_CALL(sleqp_fact_release(&jacobian->factorization));
+  SLEQP_CALL(sleqp_fact_release(&jacobian->fact));
 
   SLEQP_CALL(sleqp_params_release(&jacobian->params));
 

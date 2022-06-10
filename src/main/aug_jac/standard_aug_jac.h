@@ -2,7 +2,7 @@
 #define SLEQP_STANDARD_AUG_JAC_H
 
 #include "aug_jac.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "iterate.h"
 #include "params.h"
 #include "problem.h"
