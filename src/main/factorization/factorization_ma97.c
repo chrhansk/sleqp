@@ -216,8 +216,6 @@ typedef struct MA97Data
 
   void* akeep;
   void* fkeep;
-
-  SleqpSparseMatrix* matrix;
   double* rhs_sol;
 
 } MA97Data;
@@ -250,8 +248,6 @@ ma97_data_create(MA97Data** star)
 
   mc68_default_control(&(ma97_data->control_c));
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(&(ma97_data->matrix), 1, 1, 0));
-
   return SLEQP_OKAY;
 }
 
@@ -262,10 +258,6 @@ ma97_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
-
-  SLEQP_CALL(sleqp_sparse_matrix_resize(ma97_data->matrix, num_rows, num_cols));
-
-  SLEQP_CALL(sleqp_sparse_lower_triangular(matrix, ma97_data->matrix));
 
   assert(num_cols == num_rows);
 
@@ -282,9 +274,9 @@ ma97_data_set_matrix(void* factorization_data, SleqpSparseMatrix* matrix)
 
   ma97_data->dim = dim;
 
-  int* cols    = sleqp_sparse_matrix_cols(ma97_data->matrix);
-  int* rows    = sleqp_sparse_matrix_rows(ma97_data->matrix);
-  double* data = sleqp_sparse_matrix_data(ma97_data->matrix);
+  int* cols    = sleqp_sparse_matrix_cols(matrix);
+  int* rows    = sleqp_sparse_matrix_rows(matrix);
+  double* data = sleqp_sparse_matrix_data(matrix);
 
   mc68_order(MC68_ORDER_APX_MINDEG,
              dim,
@@ -392,8 +384,6 @@ ma97_data_free(void** star)
 
   sleqp_free(&(ma97_data->rhs_sol));
   sleqp_free(&(ma97_data->order));
-
-  SLEQP_CALL(sleqp_sparse_matrix_release(&(ma97_data->matrix)));
 
   sleqp_free(&ma97_data);
 
