@@ -6,12 +6,6 @@
 #include "iterate.h"
 #include "mem.h"
 #include "problem.h"
-#include "pub_mem.h"
-#include "pub_problem.h"
-#include "pub_types.h"
-#include "pub_working_set.h"
-#include "sparse/pub_sparse_matrix.h"
-#include "sparse/pub_vec.h"
 #include "sparse/sparse_matrix.h"
 #include "working_set.h"
 
