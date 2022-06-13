@@ -36,33 +36,25 @@ hsl_matrix_set(HSLMatrix* hsl_matrix, SleqpSparseMatrix* matrix)
   int32_t* hsl_rows = hsl_matrix->rows;
   int32_t* hsl_cols = hsl_matrix->cols;
 
-  int32_t hsl_pos = 0;
-  int32_t col     = 0;
+  for (int index = 0; index < matrix_nnz; ++index)
+  {
+    hsl_data[index] = matrix_data[index];
+  }
 
   for (int index = 0; index < matrix_nnz; ++index)
   {
-    while (index >= matrix_cols[col + 1])
-    {
-      ++col;
-    }
-
-    const int32_t row  = matrix_rows[index];
-    const double entry = matrix_data[index];
-
-    // Convert indices to be 1-based
-    if (row <= col)
-    {
-      hsl_data[hsl_pos] = entry;
-      hsl_cols[hsl_pos] = col + 1;
-      hsl_rows[hsl_pos] = row + 1;
-
-      ++hsl_pos;
-    }
-
-    // TODO: Skip the rest of the column
+    hsl_rows[index] = matrix_rows[index] + 1;
   }
 
-  hsl_matrix->nnz = hsl_pos;
+  for (int col = 0; col < num_cols; ++col)
+  {
+    for (int index = matrix_cols[col]; index < matrix_cols[col + 1]; ++index)
+    {
+      hsl_cols[index] = col + 1;
+    }
+  }
+
+  hsl_matrix->nnz = matrix_nnz;
 
   return SLEQP_OKAY;
 }

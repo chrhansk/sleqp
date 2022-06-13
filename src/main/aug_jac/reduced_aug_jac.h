@@ -2,7 +2,7 @@
 #define SLEQP_REDUCED_AUG_JAC_H
 
 #include "aug_jac.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "iterate.h"
 #include "params.h"
 #include "problem.h"
@@ -17,6 +17,6 @@ SLEQP_RETCODE
 sleqp_reduced_aug_jac_create(SleqpAugJac** star,
                              SleqpProblem* problem,
                              SleqpParams* params,
-                             SleqpFactorization* factorization);
+                             SleqpFact* factorization);
 
 #endif /* SLEQP_REDUCED_AUG_JAC_H */

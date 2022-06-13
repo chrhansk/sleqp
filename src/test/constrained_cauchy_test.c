@@ -5,7 +5,7 @@
 #include "cauchy/standard_cauchy.h"
 #include "cmp.h"
 #include "dual_estimation/dual_estimation_lsq.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "lp/lpi.h"
 #include "mem.h"
 #include "util.h"
@@ -75,7 +75,7 @@ START_TEST(test_dual_variable)
 {
   SleqpVec* cons_dual = sleqp_iterate_cons_dual(iterate);
 
-  SleqpFactorization* factorization;
+  SleqpFact* fact;
   SleqpAugJac* jacobian;
   SleqpDualEstimation* estimation_data;
 
@@ -92,10 +92,9 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_cauchy_lp_step(cauchy_data, cauchy_direction));
 
-  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&fact, params));
 
-  ASSERT_CALL(
-    sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, params, fact));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
@@ -118,7 +117,7 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_fact_release(&fact));
 }
 END_TEST
 

@@ -1,4 +1,4 @@
-set(FACTORIZATIONS "")
+set(FACTS "")
 
 set(SLEQP_FACT_FOUND FALSE)
 set(SLEQP_FACT_INCLUDE_DIRS "")
@@ -8,7 +8,7 @@ set(SLEQP_FACT_VERSION "")
 
 set(SLEQP_FACT_DEPS_DEBIAN "")
 
-macro(add_factorization)
+macro(add_fact)
 
   cmake_parse_arguments(
     ARGS                  # prefix of output variables
@@ -20,70 +20,70 @@ macro(add_factorization)
 
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
 
-  set(RESULT_SOURCE_NAME "${RESULT_NAME}_SOURCES")
+  set(RESULT_SOURCES "${RESULT_NAME}_SOURCES")
 
   set("${RESULT_NAME}_DEPS_DEBIAN" "${ARGS_DEPS_DEBIAN}")
 
-  set("${RESULT_SOURCE_NAME}" "")
+  set("${RESULT_SOURCES}" "${ARGS_SOURCES}")
 
-  foreach(SOURCE ${ARGS_SOURCES})
-    list(APPEND "${RESULT_SOURCE_NAME}" "factorization/${SOURCE}")
-  endforeach()
-
-  list(APPEND FACTORIZATIONS ${ARGS_NAME})
+  list(APPEND FACTS ${ARGS_NAME})
 endmacro()
 
-add_factorization(
+add_fact(
   NAME "Umfpack"
-  SOURCES factorization_umfpack.c
+  SOURCES fact/fact_umfpack.c
   DEPS_DEBIAN "libumfpack5 (>= 5.2)")
 
-add_factorization(
+add_fact(
   NAME "SPQR"
-  SOURCES factorization_spqr.c
+  SOURCES
+  fact/cholmod_helpers.c
+  fact/fact_spqr.c
   DEPS_DEBIAN "libspqr2")
 
-add_factorization(
+add_fact(
   NAME "CHOLMOD"
-  SOURCES factorization_cholmod.c)
+  SOURCES
+  fact/cholmod_helpers.c
+  fact/fact_cholmod.c)
 
-add_factorization(
+add_fact(
   NAME "MUMPS"
-  SOURCES factorization_mumps.c
+  SOURCES fact/fact_mumps.c
   DEPS_DEBIAN "libmumps-5.1.2")
 
-add_factorization(
+add_fact(
   NAME "MA27"
   SOURCES
-  factorization_ma27.c
-  hsl_matrix.c)
+  fact/fact_ma27.c
+  fact/hsl_matrix.c)
 
-add_factorization(
+add_fact(
   NAME "MA57"
   SOURCES
-  factorization_ma57.c
-  hsl_matrix.c)
+  fact/fact_ma57.c
+  fact/hsl_matrix.c)
 
-add_factorization(
+add_fact(
   NAME "MA86"
   SOURCES
-  factorization_ma86.c)
+  fact/fact_ma86.c)
 
-add_factorization(
+add_fact(
   NAME "MA97"
   SOURCES
-  factorization_ma97.c)
+  fact/fact_ma97.c)
 
-set(_SLEQP_FACTORIZATION_VALUES "")
+set(_SLEQP_FACT_VALUES "")
 
-foreach(FACTORIZATION ${FACTORIZATIONS})
-  string(TOUPPER "${FACTORIZATION}" RESULT_NAME)
-  list(APPEND _SLEQP_FACTORIZATION_VALUES "SLEQP_SOLVER_${RESULT_NAME}")
+foreach(FACT ${FACTS})
+  string(TOUPPER "${FACT}" RESULT_NAME)
+  list(APPEND _SLEQP_FACT_VALUES "SLEQP_SOLVER_${RESULT_NAME}")
 endforeach()
 
-string(REPLACE ";" ", " SLEQP_FACTORIZATION_VALUES "${_SLEQP_FACTORIZATION_VALUES}")
+string(REPLACE ";" ", " SLEQP_FACT_VALUES "${_SLEQP_FACT_VALUES}")
 
-macro(find_factorization)
+macro(find_fact)
   cmake_parse_arguments(
     ARGS       # prefix of output variables
     "REQUIRED" # list of names of the boolean arguments (only defined ones will be true)
@@ -112,16 +112,16 @@ macro(find_factorization)
 endmacro()
 
 if(SLEQP_FACT)
-  find_factorization(NAME ${SLEQP_FACT} REQUIRED)
+  find_fact(NAME ${SLEQP_FACT} REQUIRED)
 else()
   message(STATUS "Searching for factorization libraries")
 
-  foreach(FACTORIZATION ${FACTORIZATIONS})
+  foreach(FACT ${FACTS})
 
-    find_factorization(NAME ${FACTORIZATION})
+    find_fact(NAME ${FACT})
 
     if(${SLEQP_FACT_FOUND})
-      set(SLEQP_FACT ${FACTORIZATION} CACHE STRING "The factorization library used as a backend" FORCE)
+      set(SLEQP_FACT ${FACT} CACHE STRING "The factorization library used as a backend" FORCE)
       break()
     endif()
 

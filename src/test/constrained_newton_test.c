@@ -15,7 +15,7 @@
 #include "working_step.h"
 
 #include "aug_jac/standard_aug_jac.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 
 static const int num_variables   = 2;
 static const int num_constraints = 1;
@@ -221,7 +221,7 @@ START_TEST(newton_constrained_step)
   SleqpWorkingStep* working_step;
   SleqpEQPSolver* newton_solver;
 
-  SleqpFactorization* factorization;
+  SleqpFact* fact;
   SleqpAugJac* jacobian;
 
   double penalty_parameter = 1.;
@@ -241,10 +241,9 @@ START_TEST(newton_constrained_step)
 
   SleqpVec* actual_step = sleqp_direction_primal(actual_direction);
 
-  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&fact, params));
 
-  ASSERT_CALL(
-    sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, params, fact));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
@@ -277,7 +276,7 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_fact_release(&fact));
 
   ASSERT_CALL(sleqp_direction_release(&actual_direction));
 

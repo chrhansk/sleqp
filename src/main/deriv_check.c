@@ -762,6 +762,29 @@ sleqp_deriv_check_perform(SleqpDerivChecker* deriv_checker,
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
+  {
+    const bool first_order  = flags & SLEQP_DERIV_CHECK_FIRST;
+    const bool second_order = flags
+                              & (SLEQP_DERIV_CHECK_SECOND_SIMPLE
+                                 | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE);
+
+    if (first_order && second_order)
+    {
+      sleqp_log_debug("Checking first and second order derivatives");
+    }
+    else
+    {
+      if (first_order)
+      {
+        sleqp_log_debug("Checking first order derivatives");
+      }
+      else if (second_order)
+      {
+        sleqp_log_debug("Checking second order derivatives");
+      }
+    }
+  }
+
   for (int j = 0; j < num_variables; ++j)
   {
     SLEQP_CALL(eval_and_check_deriv(deriv_checker, iterate, flags, j));

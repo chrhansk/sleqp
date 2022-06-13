@@ -1,4 +1,4 @@
-#include "factorization_spqr.h"
+#include "fact_spqr.h"
 
 #include "fail.h"
 #include <assert.h>
@@ -6,13 +6,11 @@
 #include <SuiteSparseQR_C.h>
 #include <cholmod.h>
 
+#include "cholmod_helpers.h"
 #include "defs.h"
 #include "error.h"
 #include "log.h"
 #include "mem.h"
-#include "pub_log.h"
-#include "pub_types.h"
-#include "sparse/pub_sparse_matrix.h"
 
 typedef struct SPQRData
 {
@@ -26,80 +24,36 @@ typedef struct SPQRData
   cholmod_dense* sol;
   cholmod_dense* rhs;
 
-  int num_rows;
-  int num_cols;
+  int size;
 
 } SPQRData;
 
-static void
-report_error(int status, const char* file, int line, const char* message)
-{
-  sleqp_log_error("CHOLMOD error %s", message);
-}
-
 static SLEQP_RETCODE
-spqr_error_string(int status, const char** message)
-{
-  switch (status)
-  {
-  case CHOLMOD_NOT_INSTALLED:
-    (*message) = "method not installed";
-  case CHOLMOD_OUT_OF_MEMORY:
-    (*message) = "out of memory";
-  case CHOLMOD_TOO_LARGE:
-    (*message) = "integer overflow occured";
-  case CHOLMOD_INVALID:
-    (*message) = "invalid input";
-  case CHOLMOD_GPU_PROBLEM:
-    (*message) = "GPU fatal error";
-  default:
-    (*message) = "unknown error";
-  }
-
-  return SLEQP_OKAY;
-}
-
-#define SPQR_ERROR_CHECK(common)                                               \
-  do                                                                           \
-  {                                                                            \
-    if ((common)->status < 0)                                                  \
-    {                                                                          \
-      const char* message;                                                     \
-      SLEQP_CALL(spqr_error_string((common)->status, &message));               \
-      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
-                  "Encountered error in SPQR: %s",                             \
-                  message);                                                    \
-    }                                                                          \
-  } while (false)
-
-static SLEQP_RETCODE
-update_shape(SPQRData* spqr, int num_rows, int num_cols, int nnz_max)
+update_shape(SPQRData* spqr, int size, int nnz_max)
 {
   cholmod_common* common = &(spqr->common);
 
-  if (num_rows != spqr->num_rows)
+  if (size != spqr->size)
   {
     cholmod_l_free_dense(&spqr->rhs, common);
 
-    spqr->rhs
-      = cholmod_l_allocate_dense(num_rows, 1, num_rows, CHOLMOD_REAL, common);
+    spqr->rhs = cholmod_l_allocate_dense(size, 1, size, CHOLMOD_REAL, common);
 
-    SPQR_ERROR_CHECK(common);
+    SLEQP_CHOLMOD_ERROR_CHECK(common);
 
-    for (int i = 0; i < num_rows; ++i)
+    for (int i = 0; i < size; ++i)
     {
       ((double*)spqr->rhs->x)[i] = 0.;
     }
   }
 
-  if ((!spqr->sparse) || (num_cols != spqr->num_cols)
-      || (num_rows != spqr->num_rows))
+  if ((!spqr->sparse) || (size != spqr->size))
   {
     cholmod_l_free_sparse(&spqr->sparse, common);
 
     spqr->sparse
-      = cholmod_l_allocate_sparse(num_rows,
-                                  num_cols,
+      = cholmod_l_allocate_sparse(size,
+                                  size,
                                   nnz_max,
                                   true, // sorted
                                   true, // packed
@@ -107,7 +61,7 @@ update_shape(SPQRData* spqr, int num_rows, int num_cols, int nnz_max)
                                   CHOLMOD_REAL,
                                   common);
 
-    SPQR_ERROR_CHECK(common);
+    SLEQP_CHOLMOD_ERROR_CHECK(common);
   }
   else
   {
@@ -115,21 +69,19 @@ update_shape(SPQRData* spqr, int num_rows, int num_cols, int nnz_max)
     {
       cholmod_l_reallocate_sparse(nnz_max, spqr->sparse, common);
 
-      SPQR_ERROR_CHECK(common);
+      SLEQP_CHOLMOD_ERROR_CHECK(common);
     }
   }
 
-  spqr->num_cols = num_cols;
-  spqr->num_rows = num_rows;
+  spqr->size = size;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-spqr_factorization_set_matrix(void* factorization_data,
-                              SleqpSparseMatrix* matrix)
+spqr_factorization_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
-  SPQRData* spqr = (SPQRData*)factorization_data;
+  SPQRData* spqr = (SPQRData*)fact_data;
 
   cholmod_common* common = &(spqr->common);
 
@@ -137,7 +89,9 @@ spqr_factorization_set_matrix(void* factorization_data,
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int nnz      = sleqp_sparse_matrix_nnz(matrix);
 
-  SLEQP_CALL(update_shape(spqr, num_rows, num_cols, nnz));
+  assert(num_rows == num_cols);
+
+  SLEQP_CALL(update_shape(spqr, num_rows, nnz));
 
   assert(spqr->rhs);
   assert(spqr->rhs->dtype == CHOLMOD_DOUBLE);
@@ -173,12 +127,14 @@ spqr_factorization_set_matrix(void* factorization_data,
 
   assert(cholmod_l_check_sparse(spqr->sparse, common) >= 0);
 
+  // cholmod_l_write_sparse(stdout, spqr->sparse, NULL, NULL, common);
+
   spqr->factorization = SuiteSparseQR_C_factorize(SPQR_ORDERING_DEFAULT,
                                                   SPQR_DEFAULT_TOL,
                                                   spqr->sparse,
                                                   common);
 
-  SPQR_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
   return SLEQP_OKAY;
 }
@@ -206,9 +162,9 @@ reset_cache(double* cache, const SleqpVec* vec)
 }
 
 static SLEQP_RETCODE
-spqr_factorization_solve(void* factorization_data, const SleqpVec* rhs)
+spqr_factorization_solve(void* fact_data, const SleqpVec* rhs)
 {
-  SPQRData* spqr = (SPQRData*)factorization_data;
+  SPQRData* spqr = (SPQRData*)fact_data;
 
   cholmod_common* common = &(spqr->common);
 
@@ -225,13 +181,13 @@ spqr_factorization_solve(void* factorization_data, const SleqpVec* rhs)
   cholmod_dense* y
     = SuiteSparseQR_C_qmult(SPQR_QTX, spqr->factorization, spqr->rhs, common);
 
-  SPQR_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
   // X = R\(E*Y)
   spqr->sol
     = SuiteSparseQR_C_solve(SPQR_RETX_EQUALS_B, spqr->factorization, y, common);
 
-  SPQR_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
   cholmod_l_free_dense(&y, common);
 
@@ -244,7 +200,7 @@ spqr_factorization_solve(void* factorization_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-spqr_factorization_condition_estimate(void* factorization_data,
+spqr_factorization_condition_estimate(void* fact_data,
                                       double* condition_estimate)
 {
   (*condition_estimate) = SLEQP_NONE;
@@ -253,13 +209,13 @@ spqr_factorization_condition_estimate(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-spqr_factorization_solution(void* factorization_data,
+spqr_factorization_solution(void* fact_data,
                             SleqpVec* sol,
                             int begin,
                             int end,
                             double zero_eps)
 {
-  SPQRData* spqr = (SPQRData*)factorization_data;
+  SPQRData* spqr = (SPQRData*)fact_data;
 
   assert(begin <= end);
 
@@ -311,17 +267,15 @@ spqr_data_create(SPQRData** star)
 
   cholmod_l_start(&spqr->common);
 
-  spqr->common.error_handler = report_error;
+  spqr->common.error_handler = sleqp_cholmod_report_error;
   spqr->common.dtype         = CHOLMOD_DOUBLE;
-
-  spqr->num_cols = SLEQP_NONE;
-  spqr->num_rows = SLEQP_NONE;
+  spqr->size                 = SLEQP_NONE;
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_spqr_create(SleqpFactorization** star, SleqpParams* params)
+sleqp_fact_spqr_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
@@ -335,22 +289,21 @@ sleqp_factorization_spqr_create(SleqpFactorization** star, SleqpParams* params)
 
   SLEQP_CALL(spqr_data_create(&spqr_data));
 
-  SLEQP_CALL(sleqp_factorization_create(star,
-                                        SLEQP_FACT_SPQR_NAME,
-                                        SLEQP_FACT_SPQR_VERSION,
-                                        params,
-                                        &callbacks,
-                                        SLEQP_FACTORIZATION_NONE,
-                                        (void*)spqr_data));
+  SLEQP_CALL(sleqp_fact_create(star,
+                               SLEQP_FACT_SPQR_NAME,
+                               SLEQP_FACT_SPQR_VERSION,
+                               params,
+                               &callbacks,
+                               SLEQP_FACT_FLAGS_NONE,
+                               (void*)spqr_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_create_default(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_factorization_spqr_create(star, params));
+  SLEQP_CALL(sleqp_fact_spqr_create(star, params));
 
   return SLEQP_OKAY;
 }

@@ -2,16 +2,10 @@
 
 #include "aug_jac/aug_jac.h"
 #include "cmp.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "iterate.h"
 #include "mem.h"
 #include "problem.h"
-#include "pub_mem.h"
-#include "pub_problem.h"
-#include "pub_types.h"
-#include "pub_working_set.h"
-#include "sparse/pub_sparse_matrix.h"
-#include "sparse/pub_vec.h"
 #include "sparse/sparse_matrix.h"
 #include "working_set.h"
 
@@ -20,7 +14,7 @@ typedef struct
   SleqpProblem* problem;
   SleqpParams* params;
 
-  SleqpFactorization* factorization;
+  SleqpFact* fact;
   bool has_factorization;
 
   // J^T*J
@@ -49,7 +43,7 @@ static SLEQP_RETCODE
 aug_jac_data_create(AugJacData** star,
                     SleqpProblem* problem,
                     SleqpParams* params,
-                    SleqpFactorization* factorization)
+                    SleqpFact* factorization)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -63,8 +57,8 @@ aug_jac_data_create(AugJacData** star,
   SLEQP_CALL(sleqp_params_capture(params));
   jacobian->params = params;
 
-  SLEQP_CALL(sleqp_factorization_capture(factorization));
-  jacobian->factorization     = factorization;
+  SLEQP_CALL(sleqp_fact_capture(factorization));
+  jacobian->fact              = factorization;
   jacobian->has_factorization = false;
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&jacobian->matrix, 0, 0, 0));
@@ -265,7 +259,69 @@ fill_system(AugJacData* jacobian,
 }
 
 static SLEQP_RETCODE
-compute_matrix(AugJacData* jacobian)
+reserve_more_and_push(SleqpSparseMatrix* matrix, int row, int col, double value)
+{
+  const int nnz = sleqp_sparse_matrix_nnz(matrix);
+
+  if (nnz == sleqp_sparse_matrix_nnz_max(matrix))
+  {
+    const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+    const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
+
+    const int size = num_cols * num_rows;
+
+    const int next_nnz = SLEQP_MIN(size, 2 * nnz + 1);
+    SLEQP_CALL(sleqp_sparse_matrix_reserve(matrix, next_nnz));
+  }
+
+  SLEQP_CALL(sleqp_sparse_matrix_push(matrix, row, col, value));
+
+  return SLEQP_OKAY;
+}
+
+void
+compute_inner_product(const int* rows,
+                      const int* cols,
+                      const double* data,
+                      int row,
+                      int col,
+                      bool* nonzero,
+                      double* product)
+{
+  *nonzero = true;
+  *product = 0.;
+
+  int col_index = rows[col];
+  int row_index = rows[row];
+
+  const int col_bound = rows[col + 1];
+  const int row_bound = rows[row + 1];
+
+  while (col_index < col_bound && row_index < row_bound)
+  {
+    const int col_col = cols[col_index];
+    const int row_col = cols[row_index];
+
+    if (row_col < col_col)
+    {
+      ++row_index;
+    }
+    else if (row_col > col_col)
+    {
+      ++col_index;
+    }
+    else
+    {
+      (*nonzero) = true;
+      (*product) += data[row_index] * data[col_index];
+      ++row_index;
+      ++col_index;
+    }
+  }
+}
+
+static SLEQP_RETCODE
+compute_matrix_lower(AugJacData* jacobian, int num_active_vars)
 {
   const int size = jacobian->num_rows;
 
@@ -278,59 +334,96 @@ compute_matrix(AugJacData* jacobian)
   SLEQP_CALL(sleqp_sparse_matrix_clear(matrix));
   SLEQP_CALL(sleqp_sparse_matrix_resize(matrix, size, size));
 
-  // TODO: Make this faster by using symmetry,
-  // and computing diagonal elements more efficiently
+  for (int col = 0; col < size; ++col)
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_push_column(matrix, col));
+
+    // diagonal
+
+    if (col < num_active_vars)
+    {
+      SLEQP_CALL(reserve_more_and_push(matrix, col, col, 1.));
+    }
+    else
+    {
+      double product = 0.;
+
+      for (int col_index = rows[col]; col_index < rows[col + 1]; ++col_index)
+      {
+        product += data[col_index] * data[col_index];
+      }
+
+      SLEQP_CALL(reserve_more_and_push(matrix, col, col, product));
+    }
+
+    for (int row = col + 1; row < size; ++row)
+    {
+      double product;
+      bool nonzero;
+
+      compute_inner_product(rows, cols, data, row, col, &nonzero, &product);
+
+      // push product
+      if (nonzero)
+      {
+        SLEQP_CALL(reserve_more_and_push(matrix, row, col, product));
+      }
+    }
+  }
+
+  assert(sleqp_sparse_matrix_is_lower(matrix));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+compute_matrix_general(AugJacData* jacobian)
+{
+  const int size = jacobian->num_rows;
+
+  const int* rows    = jacobian->row_counts;
+  const int* cols    = jacobian->col_indices;
+  const double* data = jacobian->values;
+
+  SleqpSparseMatrix* matrix = jacobian->matrix;
+
+  SLEQP_CALL(sleqp_sparse_matrix_clear(matrix));
+  SLEQP_CALL(sleqp_sparse_matrix_resize(matrix, size, size));
+
   for (int col = 0; col < size; ++col)
   {
     SLEQP_CALL(sleqp_sparse_matrix_push_column(matrix, col));
 
     for (int row = 0; row < size; ++row)
     {
-      double product = 0.;
-      bool nonzero   = false;
+      double product;
+      bool nonzero;
 
-      int col_index = rows[col];
-      int row_index = rows[row];
-
-      const int col_bound = rows[col + 1];
-      const int row_bound = rows[row + 1];
-
-      while (col_index < col_bound && row_index < row_bound)
-      {
-        const int col_col = cols[col_index];
-        const int row_col = cols[row_index];
-
-        if (row_col < col_col)
-        {
-          ++row_index;
-        }
-        else if (row_col > col_col)
-        {
-          ++col_index;
-        }
-        else
-        {
-          nonzero = true;
-          product += data[row_index] * data[col_index];
-          ++row_index;
-          ++col_index;
-        }
-      }
+      compute_inner_product(rows, cols, data, row, col, &nonzero, &product);
 
       // push product
       if (nonzero)
       {
-        const int nnz = sleqp_sparse_matrix_nnz(matrix);
-
-        if (nnz == sleqp_sparse_matrix_nnz_max(matrix))
-        {
-          const int next_nnz = SLEQP_MIN(size * size, 2 * nnz + 1);
-          SLEQP_CALL(sleqp_sparse_matrix_reserve(matrix, next_nnz));
-        }
-
-        SLEQP_CALL(sleqp_sparse_matrix_push(matrix, row, col, product));
+        SLEQP_CALL(reserve_more_and_push(matrix, row, col, product));
       }
     }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+compute_matrix(AugJacData* jacobian, int num_active_vars)
+{
+  SleqpFact* factorization = jacobian->fact;
+
+  if (sleqp_fact_flags(factorization) & SLEQP_FACT_FLAGS_LOWER)
+  {
+    SLEQP_CALL(compute_matrix_lower(jacobian, num_active_vars));
+  }
+  else
+  {
+    SLEQP_CALL(compute_matrix_general(jacobian));
   }
 
   return SLEQP_OKAY;
@@ -343,6 +436,8 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
   SleqpSparseMatrix* cons_jac  = sleqp_iterate_cons_jac(iterate);
+
+  const int num_active_vars = sleqp_working_set_num_active_vars(working_set);
 
   // Do not recompute for linear problems & unchanged working set
   if (jacobian->working_set)
@@ -373,10 +468,9 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 
   SLEQP_CALL(fill_system(jacobian, cons_jac, working_set));
 
-  SLEQP_CALL(compute_matrix(jacobian));
+  SLEQP_CALL(compute_matrix(jacobian, num_active_vars));
 
-  SLEQP_CALL(
-    sleqp_factorization_set_matrix(jacobian->factorization, jacobian->matrix));
+  SLEQP_CALL(sleqp_fact_set_matrix(jacobian->fact, jacobian->matrix));
   jacobian->has_factorization = true;
 
   return SLEQP_OKAY;
@@ -482,13 +576,9 @@ aug_jac_solve_min_norm(const SleqpVec* rhs, SleqpVec* sol, void* data)
   const double zero_eps
     = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_factorization_solve(jacobian->factorization, rhs));
+  SLEQP_CALL(sleqp_fact_solve(jacobian->fact, rhs));
 
-  SLEQP_CALL(sleqp_factorization_solution(jacobian->factorization,
-                                          product,
-                                          0,
-                                          size,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_fact_solution(jacobian->fact, product, 0, size, zero_eps));
 
   SLEQP_CALL(compute_trans_product(jacobian, product));
 
@@ -511,13 +601,9 @@ aug_jac_solve_lsq(const SleqpVec* rhs, SleqpVec* sol, void* data)
 
   SLEQP_CALL(compute_product(jacobian, rhs, product));
 
-  SLEQP_CALL(sleqp_factorization_solve(jacobian->factorization, product));
+  SLEQP_CALL(sleqp_fact_solve(jacobian->fact, product));
 
-  SLEQP_CALL(sleqp_factorization_solution(jacobian->factorization,
-                                          sol,
-                                          0,
-                                          size,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_fact_solution(jacobian->fact, sol, 0, size, zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -539,13 +625,9 @@ aug_jac_project_nullspace(const SleqpVec* rhs, SleqpVec* sol, void* data)
 
   SLEQP_CALL(compute_product(jacobian, rhs, product));
 
-  SLEQP_CALL(sleqp_factorization_solve(jacobian->factorization, product));
+  SLEQP_CALL(sleqp_fact_solve(jacobian->fact, product));
 
-  SLEQP_CALL(sleqp_factorization_solution(jacobian->factorization,
-                                          product,
-                                          0,
-                                          size,
-                                          zero_eps));
+  SLEQP_CALL(sleqp_fact_solution(jacobian->fact, product, 0, size, zero_eps));
 
   SLEQP_CALL(compute_trans_product(jacobian, product));
 
@@ -585,7 +667,7 @@ aug_jac_free(void* data)
   SLEQP_CALL(sleqp_vec_free(&jacobian->rhs));
   SLEQP_CALL(sleqp_sparse_matrix_release(&jacobian->matrix));
 
-  SLEQP_CALL(sleqp_factorization_release(&jacobian->factorization));
+  SLEQP_CALL(sleqp_fact_release(&jacobian->fact));
 
   SLEQP_CALL(sleqp_params_release(&jacobian->params));
 
@@ -600,7 +682,7 @@ SLEQP_RETCODE
 sleqp_reduced_aug_jac_create(SleqpAugJac** star,
                              SleqpProblem* problem,
                              SleqpParams* params,
-                             SleqpFactorization* factorization)
+                             SleqpFact* factorization)
 {
   AugJacData* aug_jac_data;
 

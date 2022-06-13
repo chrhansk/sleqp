@@ -6,7 +6,7 @@
 #include "cmp.h"
 #include "direction.h"
 #include "dual_estimation/dual_estimation.h"
-#include "factorization/factorization.h"
+#include "fact/fact.h"
 #include "mem.h"
 #include "newton.h"
 #include "pub_types.h"
@@ -77,7 +77,7 @@ START_TEST(newton_wide_step)
   SleqpVec* expected_step;
   SleqpDirection* actual_direction;
 
-  SleqpFactorization* factorization;
+  SleqpFact* fact;
   SleqpAugJac* jacobian;
 
   const int num_variables = sleqp_problem_num_vars(problem);
@@ -93,11 +93,10 @@ START_TEST(newton_wide_step)
   double penalty_parameter = 1.;
   double trust_radius      = 10.;
 
-  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&fact, params));
 
   // create with empty active set
-  ASSERT_CALL(
-    sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, params, fact));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
@@ -133,7 +132,7 @@ START_TEST(newton_wide_step)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_fact_release(&fact));
 
   ASSERT_CALL(sleqp_direction_release(&actual_direction));
 
@@ -151,7 +150,7 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, params));
 
-  SleqpFactorization* factorization;
+  SleqpFact* factorization;
   SleqpAugJac* jacobian;
 
   const int num_variables = sleqp_problem_num_vars(problem);
@@ -164,7 +163,7 @@ START_TEST(newton_small_step)
   double penalty_parameter = 1.;
   double trust_radius      = 1.;
 
-  ASSERT_CALL(sleqp_factorization_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&factorization, params));
 
   // create with empty active set
   ASSERT_CALL(
@@ -204,7 +203,7 @@ START_TEST(newton_small_step)
 
   ASSERT_CALL(sleqp_aug_jac_release(&jacobian));
 
-  ASSERT_CALL(sleqp_factorization_release(&factorization));
+  ASSERT_CALL(sleqp_fact_release(&factorization));
 
   ASSERT_CALL(sleqp_direction_release(&actual_direction));
 

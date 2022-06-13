@@ -1,18 +1,19 @@
-#include "factorization_cholmod.h"
+#include "fact_cholmod.h"
 
+#include "fact/fact.h"
 #include "fail.h"
 #include <assert.h>
 
 #include <cholmod.h>
 #include <cholmod_core.h>
 
+#include "cholmod_helpers.h"
 #include "defs.h"
 #include "error.h"
 #include "log.h"
 #include "mem.h"
-#include "pub_log.h"
-#include "pub_types.h"
-#include "sparse/pub_sparse_matrix.h"
+
+#define CHOLMOD_FLAGS (SLEQP_FACT_FLAGS_PSD | SLEQP_FACT_FLAGS_LOWER)
 
 typedef struct SPQRData
 {
@@ -31,54 +32,6 @@ typedef struct SPQRData
 
 } CHOLMODData;
 
-static void
-report_error(int status, const char* file, int line, const char* message)
-{
-  if (status < 0)
-  {
-    sleqp_log_error("CHOLMOD: '%s'", message);
-  }
-  else
-  {
-    sleqp_log_warn("CHOLMOD: '%s'", message);
-  }
-}
-
-static SLEQP_RETCODE
-cholmod_error_string(int status, const char** message)
-{
-  switch (status)
-  {
-  case CHOLMOD_NOT_INSTALLED:
-    (*message) = "method not installed";
-  case CHOLMOD_OUT_OF_MEMORY:
-    (*message) = "out of memory";
-  case CHOLMOD_TOO_LARGE:
-    (*message) = "integer overflow occured";
-  case CHOLMOD_INVALID:
-    (*message) = "invalid input";
-  case CHOLMOD_GPU_PROBLEM:
-    (*message) = "GPU fatal error";
-  default:
-    (*message) = "unknown error";
-  }
-
-  return SLEQP_OKAY;
-}
-
-#define CHOLMOD_ERROR_CHECK(common)                                            \
-  do                                                                           \
-  {                                                                            \
-    if ((common)->status < 0)                                                  \
-    {                                                                          \
-      const char* message;                                                     \
-      SLEQP_CALL(cholmod_error_string((common)->status, &message));            \
-      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
-                  "Encountered error in SPQR: %s",                             \
-                  message);                                                    \
-    }                                                                          \
-  } while (false)
-
 static SLEQP_RETCODE
 update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
 {
@@ -91,7 +44,7 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
     cholmod_data->rhs
       = cholmod_l_allocate_dense(num_rows, 1, num_rows, CHOLMOD_REAL, common);
 
-    CHOLMOD_ERROR_CHECK(common);
+    SLEQP_CHOLMOD_ERROR_CHECK(common);
 
     for (int i = 0; i < num_rows; ++i)
     {
@@ -114,7 +67,7 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
                                   CHOLMOD_REAL,
                                   common);
 
-    CHOLMOD_ERROR_CHECK(common);
+    SLEQP_CHOLMOD_ERROR_CHECK(common);
   }
   else
   {
@@ -122,7 +75,7 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
     {
       cholmod_l_reallocate_sparse(nnz_max, cholmod_data->sparse, common);
 
-      CHOLMOD_ERROR_CHECK(common);
+      SLEQP_CHOLMOD_ERROR_CHECK(common);
     }
   }
 
@@ -133,10 +86,9 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_set_matrix(void* factorization_data,
-                                 SleqpSparseMatrix* matrix)
+cholmod_fact_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
-  CHOLMODData* cholmod_data = (CHOLMODData*)factorization_data;
+  CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
   cholmod_common* common = &(cholmod_data->common);
 
@@ -144,10 +96,7 @@ cholmod_factorization_set_matrix(void* factorization_data,
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int nnz      = sleqp_sparse_matrix_nnz(matrix);
 
-  int reduced_nnz = nnz / 2 + SLEQP_MIN(num_cols, num_rows);
-  reduced_nnz     = SLEQP_MIN(reduced_nnz, nnz);
-
-  SLEQP_CALL(update_shape(cholmod_data, num_rows, num_cols, reduced_nnz));
+  SLEQP_CALL(update_shape(cholmod_data, num_rows, num_cols, nnz));
 
   assert(cholmod_data->rhs);
   assert(cholmod_data->rhs->dtype == CHOLMOD_DOUBLE);
@@ -166,55 +115,31 @@ cholmod_factorization_set_matrix(void* factorization_data,
   SuiteSparse_long* rows = cholmod_data->sparse->i;
   double* data           = cholmod_data->sparse->x;
 
-  int mat_index = 0;
-  int col       = 0;
-
   for (int col = 0; col <= num_cols; ++col)
   {
-    cols[col] = 0;
+    cols[col] = mat_cols[col];
   }
 
   // extract lower triangular part
   for (int index = 0; index < nnz; ++index)
   {
-    while (index >= mat_cols[col + 1])
-    {
-      ++col;
-      cols[col + 1] = cols[col];
-    }
-
-    const int row      = mat_rows[index];
-    const double value = mat_data[index];
-
-    if (row < col)
-    {
-      continue;
-    }
-
-    data[mat_index] = value;
-    rows[mat_index] = row;
-    ++(cols[col + 1]);
-
-    ++mat_index;
+    data[index] = mat_data[index];
+    rows[index] = mat_rows[index];
   }
-
-  assert(mat_index <= reduced_nnz);
-
-  cols[num_cols] = mat_index;
 
   assert(cholmod_l_check_sparse(cholmod_data->sparse, common) >= 0);
 
-  CHOLMOD_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
   cholmod_data->factor = cholmod_l_analyze(cholmod_data->sparse, common);
 
-  CHOLMOD_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
   cholmod_l_factorize(cholmod_data->sparse, cholmod_data->factor, common);
 
-  CHOLMOD_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
-  cholmod_l_print_factor(cholmod_data->factor, "L", common);
+  // cholmod_l_print_factor(cholmod_data->factor, "L", common);
 
   return SLEQP_OKAY;
 }
@@ -242,9 +167,9 @@ reset_cache(double* cache, const SleqpVec* vec)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_solve(void* factorization_data, const SleqpVec* rhs)
+cholmod_fact_solve(void* fact_data, const SleqpVec* rhs)
 {
-  CHOLMODData* cholmod_data = (CHOLMODData*)factorization_data;
+  CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
   cholmod_common* common = &(cholmod_data->common);
 
@@ -271,10 +196,9 @@ cholmod_factorization_solve(void* factorization_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_condition_estimate(void* factorization_data,
-                                         double* condition_estimate)
+cholmod_fact_condition_estimate(void* fact_data, double* condition_estimate)
 {
-  CHOLMODData* cholmod_data = (CHOLMODData*)factorization_data;
+  CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
   cholmod_common* common = &(cholmod_data->common);
 
@@ -286,13 +210,13 @@ cholmod_factorization_condition_estimate(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_solution(void* factorization_data,
-                               SleqpVec* sol,
-                               int begin,
-                               int end,
-                               double zero_eps)
+cholmod_fact_solution(void* fact_data,
+                      SleqpVec* sol,
+                      int begin,
+                      int end,
+                      double zero_eps)
 {
-  CHOLMODData* cholmod_data = (CHOLMODData*)factorization_data;
+  CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
   assert(begin <= end);
 
@@ -305,7 +229,7 @@ cholmod_factorization_solution(void* factorization_data,
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_free(void** star)
+cholmod_fact_free(void** star)
 {
   CHOLMODData* cholmod_data = (CHOLMODData*)(*star);
 
@@ -344,7 +268,7 @@ cholmod_data_create(CHOLMODData** star)
 
   cholmod_l_start(&cholmod_data->common);
 
-  cholmod_data->common.error_handler = report_error;
+  cholmod_data->common.error_handler = sleqp_cholmod_report_error;
   cholmod_data->common.dtype         = CHOLMOD_DOUBLE;
 
   cholmod_data->num_cols = SLEQP_NONE;
@@ -354,37 +278,35 @@ cholmod_data_create(CHOLMODData** star)
 }
 
 SLEQP_RETCODE
-sleqp_factorization_cholmod_create(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_cholmod_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
-    = {.set_matrix         = cholmod_factorization_set_matrix,
-       .solve              = cholmod_factorization_solve,
-       .solution           = cholmod_factorization_solution,
-       .condition_estimate = cholmod_factorization_condition_estimate,
-       .free               = cholmod_factorization_free};
+    = {.set_matrix         = cholmod_fact_set_matrix,
+       .solve              = cholmod_fact_solve,
+       .solution           = cholmod_fact_solution,
+       .condition_estimate = cholmod_fact_condition_estimate,
+       .free               = cholmod_fact_free};
 
   CHOLMODData* cholmod_data;
 
   SLEQP_CALL(cholmod_data_create(&cholmod_data));
 
-  SLEQP_CALL(sleqp_factorization_create(star,
-                                        SLEQP_FACT_CHOLMOD_NAME,
-                                        SLEQP_FACT_CHOLMOD_VERSION,
-                                        params,
-                                        &callbacks,
-                                        SLEQP_FACTORIZATION_PSD,
-                                        (void*)cholmod_data));
+  SLEQP_CALL(sleqp_fact_create(star,
+                               SLEQP_FACT_CHOLMOD_NAME,
+                               SLEQP_FACT_CHOLMOD_VERSION,
+                               params,
+                               &callbacks,
+                               CHOLMOD_FLAGS,
+                               (void*)cholmod_data));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-sleqp_factorization_create_default(SleqpFactorization** star,
-                                   SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 {
-  SLEQP_CALL(sleqp_factorization_cholmod_create(star, params));
+  SLEQP_CALL(sleqp_fact_cholmod_create(star, params));
 
   return SLEQP_OKAY;
 }

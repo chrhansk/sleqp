@@ -2,7 +2,6 @@
 #define SLEQP_AUG_JAC_H
 
 #include "aug_jac_types.h"
-#include "pub_types.h"
 #include "timer.h"
 
 typedef struct SleqpAugJac SleqpAugJac;
