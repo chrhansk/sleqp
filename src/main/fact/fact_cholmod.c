@@ -136,7 +136,7 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
+cholmod_fact_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
   CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
@@ -146,10 +146,7 @@ cholmod_factorization_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int nnz      = sleqp_sparse_matrix_nnz(matrix);
 
-  int reduced_nnz = nnz / 2 + SLEQP_MIN(num_cols, num_rows);
-  reduced_nnz     = SLEQP_MIN(reduced_nnz, nnz);
-
-  SLEQP_CALL(update_shape(cholmod_data, num_rows, num_cols, reduced_nnz));
+  SLEQP_CALL(update_shape(cholmod_data, num_rows, num_cols, nnz));
 
   assert(cholmod_data->rhs);
   assert(cholmod_data->rhs->dtype == CHOLMOD_DOUBLE);
@@ -168,41 +165,17 @@ cholmod_factorization_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
   SuiteSparse_long* rows = cholmod_data->sparse->i;
   double* data           = cholmod_data->sparse->x;
 
-  int mat_index = 0;
-  int col       = 0;
-
   for (int col = 0; col <= num_cols; ++col)
   {
-    cols[col] = 0;
+    cols[col] = mat_cols[col];
   }
 
   // extract lower triangular part
   for (int index = 0; index < nnz; ++index)
   {
-    while (index >= mat_cols[col + 1])
-    {
-      ++col;
-      cols[col + 1] = cols[col];
-    }
-
-    const int row      = mat_rows[index];
-    const double value = mat_data[index];
-
-    if (row < col)
-    {
-      continue;
-    }
-
-    data[mat_index] = value;
-    rows[mat_index] = row;
-    ++(cols[col + 1]);
-
-    ++mat_index;
+    data[index] = mat_data[index];
+    rows[index] = mat_rows[index];
   }
-
-  assert(mat_index <= reduced_nnz);
-
-  cols[num_cols] = mat_index;
 
   assert(cholmod_l_check_sparse(cholmod_data->sparse, common) >= 0);
 
@@ -216,7 +189,7 @@ cholmod_factorization_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 
   CHOLMOD_ERROR_CHECK(common);
 
-  cholmod_l_print_factor(cholmod_data->factor, "L", common);
+  // cholmod_l_print_factor(cholmod_data->factor, "L", common);
 
   return SLEQP_OKAY;
 }
@@ -244,7 +217,7 @@ reset_cache(double* cache, const SleqpVec* vec)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_solve(void* fact_data, const SleqpVec* rhs)
+cholmod_fact_solve(void* fact_data, const SleqpVec* rhs)
 {
   CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
@@ -273,8 +246,7 @@ cholmod_factorization_solve(void* fact_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_condition_estimate(void* fact_data,
-                                         double* condition_estimate)
+cholmod_fact_condition_estimate(void* fact_data, double* condition_estimate)
 {
   CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
@@ -288,11 +260,11 @@ cholmod_factorization_condition_estimate(void* fact_data,
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_solution(void* fact_data,
-                               SleqpVec* sol,
-                               int begin,
-                               int end,
-                               double zero_eps)
+cholmod_fact_solution(void* fact_data,
+                      SleqpVec* sol,
+                      int begin,
+                      int end,
+                      double zero_eps)
 {
   CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
@@ -307,7 +279,7 @@ cholmod_factorization_solution(void* fact_data,
 }
 
 static SLEQP_RETCODE
-cholmod_factorization_free(void** star)
+cholmod_fact_free(void** star)
 {
   CHOLMODData* cholmod_data = (CHOLMODData*)(*star);
 
@@ -360,11 +332,11 @@ sleqp_fact_cholmod_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
-    = {.set_matrix         = cholmod_factorization_set_matrix,
-       .solve              = cholmod_factorization_solve,
-       .solution           = cholmod_factorization_solution,
-       .condition_estimate = cholmod_factorization_condition_estimate,
-       .free               = cholmod_factorization_free};
+    = {.set_matrix         = cholmod_fact_set_matrix,
+       .solve              = cholmod_fact_solve,
+       .solution           = cholmod_fact_solution,
+       .condition_estimate = cholmod_fact_condition_estimate,
+       .free               = cholmod_fact_free};
 
   CHOLMODData* cholmod_data;
 
