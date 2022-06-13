@@ -1,10 +1,10 @@
 #include "timer.h"
 
-#include <assert.h>
 #include <math.h>
 #include <time.h>
 
 #include "cmp.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

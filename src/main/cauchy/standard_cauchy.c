@@ -8,6 +8,7 @@
 #include "mem.h"
 #include "merit.h"
 #include "problem.h"
+#include "pub_log.h"
 #include "timer.h"
 
 typedef enum
@@ -719,6 +720,7 @@ needs_reduced_resolve(CauchyData* cauchy_data, bool* resolve)
     // in the working set.
     if (zero_slacks && nonzero_dual)
     {
+      sleqp_log_warn("LP requires resolves");
       needs_resolve = true;
     }
   }
@@ -843,7 +845,7 @@ standard_cauchy_solve(SleqpVec* gradient,
     sleqp_raise(SLEQP_INTERNAL_ERROR, "Invalid LP status: %d", status);
   }
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
   {
     bool valid_basis = false;
 

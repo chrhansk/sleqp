@@ -1,7 +1,6 @@
 #include "preprocessing.h"
 
 #include "fail.h"
-#include <assert.h>
 
 SLEQP_RETCODE
 sleqp_preprocessing_merge_entries(const SleqpVec* source,

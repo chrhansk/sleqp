@@ -100,7 +100,7 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
     = sleqp_options_bool_value(solver->options,
                                SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE);
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
 
   {
     double current_merit_value = 0.;
@@ -130,7 +130,7 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
                                                     solver->current_merit_value,
                                                     &criticality_bound));
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
 
   {
     const double stat_eps
@@ -263,7 +263,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 
     SLEQP_CALL(estimate_dual_values(solver, iterate));
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
 
     {
       const double feas_eps
@@ -299,7 +299,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
                                      solver->dense_cache,
                                      zero_eps));
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
 
     {
       double merit_value = 0.;
@@ -336,7 +336,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
                                             full_step,
                                             cauchy_merit_value));
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
 
     {
       double actual_quadratic_merit_value, exact_iterate_value;

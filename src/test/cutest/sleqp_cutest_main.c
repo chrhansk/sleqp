@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <errno.h>
 #include <getopt.h>
 #include <signal.h>
@@ -13,6 +12,7 @@
 #include <omp.h>
 #endif
 
+#include "fail.h"
 #include "log.h"
 #include "timer.h"
 #include "types.h"

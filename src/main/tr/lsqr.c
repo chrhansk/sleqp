@@ -1,9 +1,9 @@
 #include "lsqr.h"
 
-#include <assert.h>
 #include <math.h>
 
 #include "cmp.h"
+#include "fail.h"
 #include "mem.h"
 #include "timer.h"
 #include "tr_util.h"
@@ -266,7 +266,7 @@ sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
 
       SLEQP_CALL(sleqp_vec_copy(t, x));
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
       {
         double objective;
         double opt_res;

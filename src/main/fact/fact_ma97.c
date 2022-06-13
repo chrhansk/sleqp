@@ -1,11 +1,10 @@
 #include "fact_ma97.h"
 
-#include <assert.h>
-
 #include <hsl_ma97d.h>
 #include <hsl_mc68i.h>
 
 #include "defs.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

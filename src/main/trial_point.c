@@ -507,7 +507,7 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
                                                 solver->multipliers,
                                                 solver->newton_direction));
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
 
   {
     bool direction_valid;
@@ -579,7 +579,7 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
     *(failed_eqp_step) = (step_length == 0.);
   }
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
   if (*failed_eqp_step)
   {
     assert(*trial_merit_value == cauchy_merit_value);
@@ -628,7 +628,7 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
                                           full_step));
   }
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
 
   {
     bool direction_valid;

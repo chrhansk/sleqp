@@ -545,7 +545,7 @@ newton_solver_compute_direction(const SleqpVec* multipliers,
                                    solver->dense_cache,
                                    zero_eps));
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
 
   // Initial direction and trust region direction
   // must be orthogonal

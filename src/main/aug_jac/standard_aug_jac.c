@@ -1,7 +1,6 @@
 #include "standard_aug_jac.h"
 
-#include <assert.h>
-
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 #include "problem.h"

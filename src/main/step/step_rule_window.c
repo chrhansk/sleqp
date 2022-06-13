@@ -1,7 +1,5 @@
 #include "step_rule_window.h"
 
-#include <assert.h>
-
 #include "cmp.h"
 #include "fail.h"
 #include "log.h"

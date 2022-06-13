@@ -177,7 +177,7 @@ run_solving_loop(SleqpSolver* solver, int max_num_iterations, double time_limit)
       if (status == SLEQP_PROBLEM_SOLVER_STATUS_ABORT_MANUAL)
       {
         feasible = true;
-#ifndef NDEBUG
+#if SLEQP_DEBUG
         bool actually_feasible;
         SLEQP_CALL(check_feasibility(solver, &actually_feasible));
         assert(actually_feasible);

@@ -1,6 +1,8 @@
 #ifndef SLEQP_FAIL_H
 #define SLEQP_FAIL_H
 
+#include <assert.h>
+
 #include "cmp.h"
 #include "defs.h"
 #include "error.h"
@@ -31,6 +33,8 @@
 
 #if defined(NDEBUG)
 
+#define SLEQP_DEBUG 0
+
 #define sleqp_assert(...)                                                      \
   do                                                                           \
   {                                                                            \
@@ -41,6 +45,9 @@
   } while (false)
 
 #else
+
+#define SLEQP_DEBUG 1
+
 #define sleqp_assert(expr)                                                     \
   do                                                                           \
   {                                                                            \

@@ -1,11 +1,11 @@
 #include "lpi_gurobi.h"
 
-#include <assert.h>
 #include <gurobi_c.h>
 
 #include "cmp.h"
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "lp/lpi_types.h"
 #include "mem.h"

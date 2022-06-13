@@ -1,9 +1,9 @@
 #include "dual_estimation_lsq.h"
 
-#include <assert.h>
+#include "fail.h"
+#include "mem.h"
 
 #include "aug_jac/aug_jac.h"
-#include "mem.h"
 
 typedef struct
 {

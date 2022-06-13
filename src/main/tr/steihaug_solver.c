@@ -69,7 +69,7 @@ steihaug_solver_free(void** star)
   return SLEQP_OKAY;
 }
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
 
 static SLEQP_RETCODE
 check_projection(SleqpSteihaugSolver* solver,
@@ -254,7 +254,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
       break;
     }
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
     SLEQP_CALL(check_projection(solver, jacobian, solver->d));
 #endif
 
@@ -361,7 +361,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
       sleqp_log_debug("CG solver found boundary solution after %d iterations",
                       iteration);
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
       SLEQP_CALL(check_direction(solver, jacobian, trust_radius, newton_step));
 #endif
 
@@ -385,7 +385,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
     // set g_{j+1} = P[r_{j+1}]
     SLEQP_CALL(sleqp_aug_jac_project_nullspace(jacobian, solver->r, solver->g));
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
     SLEQP_CALL(check_projection(solver, jacobian, solver->g));
 #endif
 
@@ -404,7 +404,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 
     SLEQP_CALL(sleqp_vec_copy(solver->sparse_cache, solver->d));
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
     SLEQP_CALL(check_projection(solver, jacobian, solver->g));
     SLEQP_CALL(check_projection(solver, jacobian, solver->d));
 #endif

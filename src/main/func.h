@@ -8,11 +8,9 @@
 
 #include "pub_func.h"
 
+#include "fail.h"
 #include "hess_struct.h"
-#include "pub_types.h"
 #include "timer.h"
-
-#include <assert.h>
 
 typedef enum
 {

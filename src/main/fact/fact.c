@@ -1,8 +1,8 @@
 #include "fact.h"
 
-#include <assert.h>
 #include <string.h>
 
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 
@@ -59,7 +59,7 @@ sleqp_factorization_version(SleqpFact* factorization)
 SLEQP_RETCODE
 sleqp_fact_set_matrix(SleqpFact* factorization, SleqpSparseMatrix* matrix)
 {
-#ifdef NDEBUG
+#if SLEQP_DEBUG
   {
     if (factorization->flags & SLEQP_FACT_FLAGS_LOWER)
     {

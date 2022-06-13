@@ -1,14 +1,13 @@
 #include "options.h"
 
-#include <assert.h>
 #include <fenv.h>
 #include <math.h>
 
 #include "enum.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
-#include "pub_options.h"
 #include "types.h"
 
 #define PERFORM_NEWTON_DEFAULT true

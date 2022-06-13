@@ -1,8 +1,7 @@
 #include "polish.h"
 
-#include <assert.h>
-
 #include "cmp.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 #include "working_set.h"

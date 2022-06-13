@@ -1,17 +1,16 @@
 #include "fact_cholmod.h"
 
-#include "fact/fact.h"
-#include "fail.h"
-#include <assert.h>
-
 #include <cholmod.h>
 #include <cholmod_core.h>
 
 #include "cholmod_helpers.h"
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
+
+#include "fact/fact.h"
 
 #define CHOLMOD_FLAGS (SLEQP_FACT_FLAGS_PSD | SLEQP_FACT_FLAGS_LOWER)
 

@@ -1,12 +1,11 @@
-#include <assert.h>
-#include <stdlib.h>
-
 #include <check.h>
+#include <stdlib.h>
 
 #include "cauchy/cauchy.h"
 #include "cauchy/standard_cauchy.h"
 
 #include "cmp.h"
+#include "fail.h"
 #include "mem.h"
 #include "util.h"
 

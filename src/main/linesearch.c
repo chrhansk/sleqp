@@ -508,7 +508,7 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
       quadratic_merit_value = linear_merit_value + quadratic_term;
     }
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
 
     {
       SleqpVec* test_step = sleqp_direction_primal(linesearch->test_direction);
@@ -601,7 +601,7 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
 
   SLEQP_CALL(sleqp_timer_stop(linesearch->timer));
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
 
   {
     bool direction_valid;
@@ -921,7 +921,7 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
   double min_alpha  = 0.;
   double last_point = 0.;
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
   {
     const double alpha           = last_point;
     const double quadratic_value = offset + .5 * alpha * quadratic_term * alpha;
@@ -979,7 +979,7 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
       const double quadratic_value = offset + linear_term * (alpha - last_point)
                                      + .5 * alpha * quadratic_term * alpha;
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
       {
         double actual_quadratic_merit_value;
 
@@ -1023,7 +1023,7 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
   *step_length                 = min_alpha;
   *trial_quadratic_merit_value = min_value;
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
 
   // Check quadratic merit
   {

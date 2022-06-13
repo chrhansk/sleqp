@@ -1,8 +1,8 @@
 #include "sleqp_cutest_constrained.h"
 
-#include <assert.h>
 #include <stdlib.h>
 
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 #include "sparse/sparse_matrix.h"

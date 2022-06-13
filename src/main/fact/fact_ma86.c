@@ -1,12 +1,11 @@
 #include "fact_ma86.h"
 
-#include <assert.h>
-
 #include <hsl_ma86d.h>
 #include <hsl_mc68i.h>
 
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

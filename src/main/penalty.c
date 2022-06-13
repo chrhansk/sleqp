@@ -1,7 +1,6 @@
 #include "penalty.h"
 
-#include <assert.h>
-
+#include "fail.h"
 #include "log.h"
 
 const double penalty_increase    = 10.;
