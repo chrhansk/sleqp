@@ -20,30 +20,26 @@ macro(add_lp_solver)
 
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
 
-  set(RESULT_SOURCE_NAME "${RESULT_NAME}_SOURCES")
+  set(RESULT_SOURCES "${RESULT_NAME}_SOURCES")
 
   set("${RESULT_NAME}_DEPS_DEBIAN" "${ARGS_DEPS_DEBIAN}")
 
-  set("${RESULT_SOURCE_NAME}" "")
-
-  foreach(SOURCE ${ARGS_SOURCES})
-    list(APPEND "${RESULT_SOURCE_NAME}" "lp/${SOURCE}")
-  endforeach()
+  set("${RESULT_SOURCES}" "${ARGS_SOURCES}")
 
   list(APPEND LP_SOLVERS ${ARGS_NAME})
 endmacro()
 
 add_lp_solver(
   NAME "Gurobi"
-  SOURCES "lpi_gurobi.c")
+  SOURCES lp/lpi_gurobi.c)
 
 add_lp_solver(
   NAME "HiGHS"
-  SOURCES "lpi_highs.c")
+  SOURCES lp/lpi_highs.c)
 
 add_lp_solver(
   NAME "SoPlex"
-  SOURCES "lpi_soplex.cc"
+  SOURCES lp/lpi_soplex.cc
   DEPS_DEBIAN "scipoptsuite (>= 7.0.0)")
 
 set(_SLEQP_LP_SOLVER_VALUES "")

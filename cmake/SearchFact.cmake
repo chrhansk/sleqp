@@ -20,59 +20,55 @@ macro(add_fact)
 
   string(TOUPPER "${ARGS_NAME}" RESULT_NAME)
 
-  set(RESULT_SOURCE_NAME "${RESULT_NAME}_SOURCES")
+  set(RESULT_SOURCES "${RESULT_NAME}_SOURCES")
 
   set("${RESULT_NAME}_DEPS_DEBIAN" "${ARGS_DEPS_DEBIAN}")
 
-  set("${RESULT_SOURCE_NAME}" "")
-
-  foreach(SOURCE ${ARGS_SOURCES})
-    list(APPEND "${RESULT_SOURCE_NAME}" "fact/${SOURCE}")
-  endforeach()
+  set("${RESULT_SOURCES}" "${ARGS_SOURCES}")
 
   list(APPEND FACTS ${ARGS_NAME})
 endmacro()
 
 add_fact(
   NAME "Umfpack"
-  SOURCES fact_umfpack.c
+  SOURCES fact/fact_umfpack.c
   DEPS_DEBIAN "libumfpack5 (>= 5.2)")
 
 add_fact(
   NAME "SPQR"
-  SOURCES fact_spqr.c
+  SOURCES fact/fact_spqr.c
   DEPS_DEBIAN "libspqr2")
 
 add_fact(
   NAME "CHOLMOD"
-  SOURCES fact_cholmod.c)
+  SOURCES fact/fact_cholmod.c)
 
 add_fact(
   NAME "MUMPS"
-  SOURCES fact_mumps.c
+  SOURCES fact/fact_mumps.c
   DEPS_DEBIAN "libmumps-5.1.2")
 
 add_fact(
   NAME "MA27"
   SOURCES
-  fact_ma27.c
-  hsl_matrix.c)
+  fact/fact_ma27.c
+  fact/hsl_matrix.c)
 
 add_fact(
   NAME "MA57"
   SOURCES
-  fact_ma57.c
-  hsl_matrix.c)
+  fact/fact_ma57.c
+  fact/hsl_matrix.c)
 
 add_fact(
   NAME "MA86"
   SOURCES
-  fact_ma86.c)
+  fact/fact_ma86.c)
 
 add_fact(
   NAME "MA97"
   SOURCES
-  fact_ma97.c)
+  fact/fact_ma97.c)
 
 set(_SLEQP_FACT_VALUES "")
 
