@@ -285,7 +285,7 @@ search_backtracking(SleqpParametricSolver* solver,
                                      solver->cache,
                                      zero_eps));
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
     {
       const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 
@@ -406,7 +406,7 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
                                    quadratic_merit_value));
   }
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
   {
     const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
 

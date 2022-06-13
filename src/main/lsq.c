@@ -1,9 +1,9 @@
 #include "lsq.h"
 
-#include <assert.h>
 #include <math.h>
 
 #include "cmp.h"
+#include "fail.h"
 #include "func.h"
 #include "log.h"
 #include "mem.h"

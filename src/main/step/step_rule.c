@@ -1,14 +1,14 @@
 #include "step_rule.h"
 
-#include <assert.h>
 #include <float.h>
+
+#include "cmp.h"
+#include "fail.h"
+#include "mem.h"
 
 #include "step/step_rule_direct.h"
 #include "step/step_rule_minstep.h"
 #include "step/step_rule_window.h"
-
-#include "cmp.h"
-#include "mem.h"
 
 static const int window_size = 25;
 static const int step_count  = 2;

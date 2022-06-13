@@ -1,8 +1,8 @@
 #include "lpi.h"
 
-#include <assert.h>
 #include <string.h>
 
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

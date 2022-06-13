@@ -1,14 +1,12 @@
 #include "fact_spqr.h"
 
-#include "fail.h"
-#include <assert.h>
-
 #include <SuiteSparseQR_C.h>
 #include <cholmod.h>
 
 #include "cholmod_helpers.h"
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

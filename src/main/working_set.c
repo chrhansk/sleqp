@@ -1,7 +1,5 @@
 #include "working_set.h"
 
-#include <assert.h>
-
 #include "fail.h"
 #include "mem.h"
 

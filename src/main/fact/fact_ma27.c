@@ -1,7 +1,5 @@
 #include "fact_ma27.h"
 
-#include <assert.h>
-
 #include "fact/fact.h"
 #include "hsl_ma27.h"
 #include "hsl_matrix.h"
@@ -9,6 +7,7 @@
 #include "cmp.h"
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

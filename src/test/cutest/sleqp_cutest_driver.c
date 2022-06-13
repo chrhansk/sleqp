@@ -1,11 +1,11 @@
 #include "sleqp_cutest_driver.h"
 
-#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "cmp.h"
+#include "fail.h"
 #include "iterate.h"
 #include "log.h"
 #include "mem.h"

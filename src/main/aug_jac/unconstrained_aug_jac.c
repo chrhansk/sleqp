@@ -1,6 +1,6 @@
 #include "unconstrained_aug_jac.h"
 
-#include <assert.h>
+#include "fail.h"
 
 static SLEQP_RETCODE
 aug_jac_set_iterate(SleqpIterate* iterate, void* aug_jac)

@@ -1,7 +1,6 @@
 #include "box_constrained_aug_jac.h"
 
-#include <assert.h>
-
+#include "fail.h"
 #include "mem.h"
 #include "working_set.h"
 

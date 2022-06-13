@@ -1,8 +1,7 @@
 #include "params.h"
 
-#include <assert.h>
-
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

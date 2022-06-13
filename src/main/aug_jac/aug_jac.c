@@ -1,7 +1,6 @@
 #include "aug_jac.h"
 
-#include <assert.h>
-
+#include "fail.h"
 #include "mem.h"
 
 struct SleqpAugJac

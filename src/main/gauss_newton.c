@@ -585,7 +585,7 @@ gauss_newton_solver_compute_direction(const SleqpVec* multipliers,
                                    solver->dense_cache,
                                    zero_eps));
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
 
   if (sleqp_working_step_in_working_set(solver->working_step))
   {

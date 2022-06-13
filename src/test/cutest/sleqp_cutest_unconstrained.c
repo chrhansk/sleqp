@@ -1,7 +1,6 @@
 #include "sleqp_cutest_unconstrained.h"
 
-#include <assert.h>
-
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

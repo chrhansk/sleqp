@@ -1,6 +1,5 @@
 #include "bfgs.h"
 
-#include <assert.h>
 #include <math.h>
 
 #include "cmp.h"
@@ -533,7 +532,7 @@ bfgs_compute_products(BFGSBlock* block, const SleqpParams* params)
       SLEQP_CALL(bfgs_compute_sizing(block, val));
     }
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
     if (!is_damped)
     {
       // check that secant equation is satisfied

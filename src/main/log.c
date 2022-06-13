@@ -24,7 +24,7 @@ static struct LevelInfo const level_infos[SLEQP_NUM_LOG_LEVELS]
      {"info", SLEQP_FORMAT_GREEN},
      {"debug", SLEQP_FORMAT_BLUE}};
 
-#ifdef NDEBUG
+#if SLEQP_DEBUG
 static SLEQP_LOG_LEVEL level = SLEQP_LOG_INFO;
 #else
 static SLEQP_LOG_LEVEL level = SLEQP_LOG_DEBUG;

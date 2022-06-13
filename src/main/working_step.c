@@ -329,7 +329,7 @@ compute_initial_direction(SleqpWorkingStep* step,
                                           step->initial_rhs,
                                           step->initial_direction));
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
 
   // Initial direction must be in working set
   {

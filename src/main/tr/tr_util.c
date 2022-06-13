@@ -1,6 +1,5 @@
 #include "tr_util.h"
 
-#include <assert.h>
 #include <math.h>
 
 #include "cmp.h"

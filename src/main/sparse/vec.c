@@ -1,11 +1,11 @@
 #include "vec.h"
 
-#include <assert.h>
 #include <math.h>
 #include <stdlib.h>
 
 #include "cmp.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

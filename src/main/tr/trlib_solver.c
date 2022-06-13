@@ -709,7 +709,7 @@ trlib_solve(SleqpAugJac* jacobian,
 
   const bool converged_bdry = (ret == TRLIB_CLR_CONV_BOUND);
 
-#if !defined(NDEBUG)
+#if SLEQP_DEBUG
   if (solved_optimally)
   {
     bool tr_subproblem_is_optimal;

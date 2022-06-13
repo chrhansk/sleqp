@@ -1,6 +1,5 @@
 #include "lpi_highs.h"
 
-#include <assert.h>
 #include <math.h>
 
 #include <interfaces/highs_c_api.h>
@@ -8,6 +7,7 @@
 #include "cmp.h"
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 #include "pub_types.h"

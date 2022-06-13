@@ -1,15 +1,14 @@
 #include "fact_umfpack.h"
 
-#include "fact/fact.h"
-#include "fail.h"
-#include <assert.h>
-
 #include <umfpack.h>
 
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
+
+#include "fact/fact.h"
 
 typedef struct UmfpackData
 {

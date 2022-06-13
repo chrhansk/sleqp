@@ -1,9 +1,8 @@
 #include "util.h"
 
-#include <assert.h>
-
 #include "cmp.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 
 SLEQP_RETCODE

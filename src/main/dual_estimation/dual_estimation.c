@@ -41,7 +41,7 @@ sleqp_estimate_duals(SleqpDualEstimation* estimation,
                                                   vars_dual,
                                                   estimation->estimation_data));
 
-#ifndef NDEBUG
+#if SLEQP_DEBUG
 
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 

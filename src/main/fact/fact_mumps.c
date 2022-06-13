@@ -1,11 +1,10 @@
 #include "fact_mumps.h"
 
-#include <assert.h>
-
 #include <dmumps_c.h>
 
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 #include "mpi_utils.h"

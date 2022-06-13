@@ -1,6 +1,5 @@
 #include "fact_ma57.h"
 
-#include <assert.h>
 #include <string.h>
 
 #include "hsl_ma57.h"
@@ -9,6 +8,7 @@
 #include "cmp.h"
 #include "defs.h"
 #include "error.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

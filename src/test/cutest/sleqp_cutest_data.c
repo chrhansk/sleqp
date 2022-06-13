@@ -1,8 +1,7 @@
 #include "sleqp_cutest_data.h"
 
-#include <assert.h>
-
 #include "cmp.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

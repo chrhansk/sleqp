@@ -1,10 +1,9 @@
 #include "dual_estimation_mixed.h"
 
-#include <assert.h>
-
 #include "cmp.h"
 #include "dual_estimation_lp.h"
 #include "dual_estimation_lsq.h"
+#include "fail.h"
 #include "mem.h"
 
 typedef struct

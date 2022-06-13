@@ -1,8 +1,7 @@
 #include "callback_handler.h"
 
-#include <assert.h>
-
 #include "cmp.h"
+#include "fail.h"
 #include "log.h"
 #include "mem.h"
 

@@ -1,6 +1,5 @@
 #include "problem.h"
 
-#include <assert.h>
 #include <math.h>
 
 #include "cmp.h"
