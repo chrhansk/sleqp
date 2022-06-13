@@ -36,12 +36,16 @@ add_fact(
 
 add_fact(
   NAME "SPQR"
-  SOURCES fact/fact_spqr.c
+  SOURCES
+  fact/cholmod_helpers.c
+  fact/fact_spqr.c
   DEPS_DEBIAN "libspqr2")
 
 add_fact(
   NAME "CHOLMOD"
-  SOURCES fact/fact_cholmod.c)
+  SOURCES
+  fact/cholmod_helpers.c
+  fact/fact_cholmod.c)
 
 add_fact(
   NAME "MUMPS"

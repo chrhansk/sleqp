@@ -7,13 +7,11 @@
 #include <cholmod.h>
 #include <cholmod_core.h>
 
+#include "cholmod_helpers.h"
 #include "defs.h"
 #include "error.h"
 #include "log.h"
 #include "mem.h"
-#include "pub_log.h"
-#include "pub_types.h"
-#include "sparse/pub_sparse_matrix.h"
 
 #define CHOLMOD_FLAGS (SLEQP_FACT_FLAGS_PSD | SLEQP_FACT_FLAGS_LOWER)
 
@@ -34,54 +32,6 @@ typedef struct SPQRData
 
 } CHOLMODData;
 
-static void
-report_error(int status, const char* file, int line, const char* message)
-{
-  if (status < 0)
-  {
-    sleqp_log_error("CHOLMOD: '%s'", message);
-  }
-  else
-  {
-    sleqp_log_warn("CHOLMOD: '%s'", message);
-  }
-}
-
-static SLEQP_RETCODE
-cholmod_error_string(int status, const char** message)
-{
-  switch (status)
-  {
-  case CHOLMOD_NOT_INSTALLED:
-    (*message) = "method not installed";
-  case CHOLMOD_OUT_OF_MEMORY:
-    (*message) = "out of memory";
-  case CHOLMOD_TOO_LARGE:
-    (*message) = "integer overflow occured";
-  case CHOLMOD_INVALID:
-    (*message) = "invalid input";
-  case CHOLMOD_GPU_PROBLEM:
-    (*message) = "GPU fatal error";
-  default:
-    (*message) = "unknown error";
-  }
-
-  return SLEQP_OKAY;
-}
-
-#define CHOLMOD_ERROR_CHECK(common)                                            \
-  do                                                                           \
-  {                                                                            \
-    if ((common)->status < 0)                                                  \
-    {                                                                          \
-      const char* message;                                                     \
-      SLEQP_CALL(cholmod_error_string((common)->status, &message));            \
-      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
-                  "Encountered error in SPQR: %s",                             \
-                  message);                                                    \
-    }                                                                          \
-  } while (false)
-
 static SLEQP_RETCODE
 update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
 {
@@ -94,7 +44,7 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
     cholmod_data->rhs
       = cholmod_l_allocate_dense(num_rows, 1, num_rows, CHOLMOD_REAL, common);
 
-    CHOLMOD_ERROR_CHECK(common);
+    SLEQP_CHOLMOD_ERROR_CHECK(common);
 
     for (int i = 0; i < num_rows; ++i)
     {
@@ -117,7 +67,7 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
                                   CHOLMOD_REAL,
                                   common);
 
-    CHOLMOD_ERROR_CHECK(common);
+    SLEQP_CHOLMOD_ERROR_CHECK(common);
   }
   else
   {
@@ -125,7 +75,7 @@ update_shape(CHOLMODData* cholmod_data, int num_rows, int num_cols, int nnz_max)
     {
       cholmod_l_reallocate_sparse(nnz_max, cholmod_data->sparse, common);
 
-      CHOLMOD_ERROR_CHECK(common);
+      SLEQP_CHOLMOD_ERROR_CHECK(common);
     }
   }
 
@@ -179,15 +129,15 @@ cholmod_fact_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 
   assert(cholmod_l_check_sparse(cholmod_data->sparse, common) >= 0);
 
-  CHOLMOD_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
   cholmod_data->factor = cholmod_l_analyze(cholmod_data->sparse, common);
 
-  CHOLMOD_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
   cholmod_l_factorize(cholmod_data->sparse, cholmod_data->factor, common);
 
-  CHOLMOD_ERROR_CHECK(common);
+  SLEQP_CHOLMOD_ERROR_CHECK(common);
 
   // cholmod_l_print_factor(cholmod_data->factor, "L", common);
 
@@ -318,7 +268,7 @@ cholmod_data_create(CHOLMODData** star)
 
   cholmod_l_start(&cholmod_data->common);
 
-  cholmod_data->common.error_handler = report_error;
+  cholmod_data->common.error_handler = sleqp_cholmod_report_error;
   cholmod_data->common.dtype         = CHOLMOD_DOUBLE;
 
   cholmod_data->num_cols = SLEQP_NONE;
