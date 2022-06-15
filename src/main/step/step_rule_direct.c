@@ -1,6 +1,7 @@
 #include "step_rule_direct.h"
 
 #include "mem.h"
+#include "util.h"
 
 typedef struct
 {
@@ -20,8 +21,7 @@ step_rule_direct_apply(double iterate_merit,
   const double exact_reduction = iterate_merit - trial_exact_merit;
   const double model_reduction = iterate_merit - trial_model_merit;
 
-  *reduction_ratio
-    = sleqp_step_rule_reduction_ratio(exact_reduction, model_reduction);
+  *reduction_ratio = sleqp_reduction_ratio(exact_reduction, model_reduction);
 
   const double accepted_reduction
     = sleqp_params_value(step_rule->params, SLEQP_PARAM_ACCEPTED_REDUCTION);

@@ -34,6 +34,8 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
 
   solver->solver_phase = solver_phase;
 
+  SLEQP_CALL(sleqp_measure_create(&solver->measure, problem, params));
+
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
 
@@ -216,6 +218,8 @@ problem_solver_free(SleqpProblemSolver** star)
   SLEQP_CALL(sleqp_vec_free(&solver->primal_diff));
 
   sleqp_free(&solver->dense_cache);
+
+  SLEQP_CALL(sleqp_measure_release(&solver->measure));
 
   SLEQP_CALL(sleqp_options_release(&solver->options));
 

@@ -1,9 +1,13 @@
 #include "util.h"
 
+#include <float.h>
+
 #include "cmp.h"
 #include "error.h"
 #include "fail.h"
 #include "log.h"
+
+static const double eps_factor = 10.;
 
 SLEQP_RETCODE
 sleqp_set_and_evaluate(SleqpProblem* problem,
@@ -235,4 +239,23 @@ sleqp_max_step_length(const SleqpVec* x,
   assert((*max_step_length) >= 0.);
 
   return SLEQP_OKAY;
+}
+
+double
+sleqp_reduction_ratio(const double exact_reduction,
+                      const double model_reduction)
+{
+  const double eps = eps_factor * DBL_EPSILON;
+
+  const double corr_model_reduction = model_reduction - eps;
+  const double corr_exact_reduction = exact_reduction - eps;
+
+  // Safeguard against roundoff errors
+  if (SLEQP_ABS(corr_model_reduction) <= eps
+      && SLEQP_ABS(corr_exact_reduction) <= eps)
+  {
+    return 1.;
+  }
+
+  return corr_exact_reduction / corr_model_reduction;
 }

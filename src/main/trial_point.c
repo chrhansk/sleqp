@@ -384,10 +384,10 @@ sleqp_trial_point_solver_cauchy_step(SleqpTrialPointSolver* solver)
   return sleqp_direction_primal(solver->cauchy_direction);
 }
 
-SleqpVec*
-sleqp_trial_point_solver_trial_step(SleqpTrialPointSolver* solver)
+SleqpDirection*
+sleqp_trial_point_solver_trial_direction(SleqpTrialPointSolver* solver)
 {
-  return sleqp_direction_primal(solver->trial_direction);
+  return solver->trial_direction;
 }
 
 SleqpVec*
@@ -1016,6 +1016,7 @@ trial_point_solver_free(SleqpTrialPointSolver** star)
   SLEQP_CALL(sleqp_direction_release(&solver->soc_direction));
 
   SLEQP_CALL(sleqp_direction_release(&solver->newton_direction));
+
   SLEQP_CALL(sleqp_vec_free(&solver->estimation_residuals));
   SLEQP_CALL(sleqp_direction_release(&solver->cauchy_direction));
   SLEQP_CALL(sleqp_vec_free(&solver->lp_step));

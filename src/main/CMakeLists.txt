@@ -30,6 +30,7 @@ set(COMMON_SRC
   log.c
   lp/lpi.c
   lsq.c
+  measure.c
   merit.c
   newton.c
   options.c

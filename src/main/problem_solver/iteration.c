@@ -1,9 +1,11 @@
+#include "direction.h"
 #include "problem_solver.h"
 
 #include <math.h>
 
 #include "cmp.h"
 #include "fail.h"
+#include "trial_point.h"
 
 const int max_num_global_resets = 2;
 const int num_reset_steps       = 5;
@@ -168,8 +170,11 @@ update_trust_radii(SleqpProblemSolver* solver,
 
   SleqpVec* cauchy_step
     = sleqp_trial_point_solver_cauchy_step(trial_point_solver);
-  SleqpVec* trial_step
-    = sleqp_trial_point_solver_trial_step(trial_point_solver);
+
+  SleqpDirection* trial_direction
+    = sleqp_trial_point_solver_trial_direction(trial_point_solver);
+
+  SleqpVec* trial_step = sleqp_direction_primal(trial_direction);
 
   const SleqpOptions* options = solver->options;
 
@@ -311,22 +316,49 @@ check_for_optimality(SleqpProblemSolver* solver, SleqpIterate* iterate)
   return false;
 }
 
-static double
-percent_reduction(double current, double trial)
+static SLEQP_RETCODE
+report_trial_point(SleqpProblemSolver* solver)
 {
-  if (current == 0.)
+  if (sleqp_log_level() < SLEQP_LOG_DEBUG)
   {
-    return 0.;
+    return SLEQP_OKAY;
   }
 
-  double value = 100. * (current - trial) / current;
+  SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
-  if (current < 0.)
+  SleqpVec* multipliers
+    = sleqp_trial_point_solver_multipliers(trial_point_solver);
+
+  SleqpDirection* trial_direction
+    = sleqp_trial_point_solver_trial_direction(trial_point_solver);
+
+  SLEQP_CALL(sleqp_measure_set_iterates(solver->measure,
+                                        solver->iterate,
+                                        solver->trial_iterate,
+                                        trial_direction));
+
+  SLEQP_CALL(sleqp_measure_set_penalty_parameter(solver->measure,
+                                                 solver->penalty_parameter));
+
+  SleqpMeasure* measure = solver->measure;
+
+  SLEQP_CALL(sleqp_measure_report_trial_point(measure, multipliers));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+report_soc_trial_point(SleqpProblemSolver* solver)
+{
+  if (sleqp_log_level() < SLEQP_LOG_DEBUG)
   {
-    return -value;
+    return SLEQP_OKAY;
   }
 
-  return value;
+  SLEQP_CALL(sleqp_measure_report_soc_trial_point(solver->measure,
+                                                  solver->trial_iterate));
+
+  return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
@@ -401,8 +433,10 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 
   bool step_accepted = !reject_step;
 
-  SleqpVec* trial_step
-    = sleqp_trial_point_solver_trial_step(trial_point_solver);
+  SleqpDirection* trial_direction
+    = sleqp_trial_point_solver_trial_direction(trial_point_solver);
+
+  SleqpVec* trial_step = sleqp_direction_primal(trial_direction);
 
   const double trial_step_norm = sleqp_vec_norm(trial_step);
 
@@ -414,6 +448,8 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
   {
     SLEQP_CALL(evaluate_at_trial_iterate(solver, &reject_step));
 
+    SLEQP_CALL(report_trial_point(solver));
+
     step_accepted = !reject_step;
 
     if (step_accepted)
@@ -424,28 +460,12 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                                   solver->penalty_parameter,
                                   &exact_trial_value));
 
-      sleqp_log_debug("Current merit function value: %e", exact_iterate_value);
-
-      sleqp_log_debug(
-        "Model merit function value: %e, reduction: %g%%",
-        model_trial_value,
-        percent_reduction(exact_iterate_value, model_trial_value));
-
-      sleqp_log_debug(
-        "Exact merit function value: %e, reduction: %g%%",
-        exact_trial_value,
-        percent_reduction(exact_iterate_value, exact_trial_value));
-
       SLEQP_CALL(sleqp_step_rule_apply(solver->step_rule,
                                        exact_iterate_value,
                                        exact_trial_value,
                                        model_trial_value,
                                        &step_accepted,
                                        &reduction_ratio));
-
-      sleqp_log_debug("Reduction ratio: %e", reduction_ratio);
-
-      sleqp_log_debug("Trial step norm: %e", trial_step_norm);
     }
     else
     {
@@ -513,6 +533,8 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
       {
         SLEQP_CALL(evaluate_at_trial_iterate(solver, &reject_step));
 
+        SLEQP_CALL(report_soc_trial_point(solver));
+
         step_accepted = !reject_step;
 
         if (step_accepted)
@@ -530,11 +552,6 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                                            model_trial_value,
                                            &step_accepted,
                                            &reduction_ratio));
-
-          sleqp_log_debug(
-            "Exact merit function value: %e, reduction: %g%%",
-            soc_exact_trial_value,
-            percent_reduction(exact_iterate_value, soc_exact_trial_value));
 
           sleqp_log_debug("SOC Reduction ratio: %e", reduction_ratio);
         }
