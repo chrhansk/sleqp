@@ -121,6 +121,32 @@ check_direction(SleqpSteihaugSolver* solver,
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE
+check_residuals(SleqpSteihaugSolver* solver,
+                const SleqpVec* multipliers,
+                const SleqpVec* gradient)
+{
+  const double one = 1.;
+
+  SleqpProblem* problem = solver->problem;
+  SleqpParams* params   = solver->params;
+
+  const double eps      = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+
+  SLEQP_CALL(
+    sleqp_problem_hess_prod(problem, &one, solver->z, multipliers, solver->Bd));
+
+  SLEQP_CALL(
+    sleqp_vec_add(solver->Bd, gradient, zero_eps, solver->sparse_cache));
+
+  SLEQP_NUM_ASSERT_PARAM(eps);
+
+  sleqp_num_assert(sleqp_vec_eq(solver->sparse_cache, solver->r, eps));
+
+  return SLEQP_OKAY;
+}
+
 #endif
 
 static SLEQP_RETCODE
@@ -157,6 +183,45 @@ steihaug_solver_rayleigh(double* min_rayleigh,
 
   (*min_rayleigh) = solver->min_rayleigh;
   (*max_rayleigh) = solver->max_rayleigh;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+steihaug_tr_dual(SleqpSteihaugSolver* solver,
+                 const SleqpVec* multipliers,
+                 const SleqpVec* gradient,
+                 const SleqpVec* newton_step,
+                 double trust_radius,
+                 double* tr_dual)
+{
+  SleqpProblem* problem = solver->problem;
+
+  const double one = 1.;
+
+  SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                     &one,
+                                     newton_step,
+                                     multipliers,
+                                     solver->Bd));
+
+  double bidir_product;
+  double grad_product;
+
+  SLEQP_CALL(sleqp_vec_dot(newton_step, solver->Bd, &bidir_product));
+
+  SLEQP_CALL(sleqp_vec_dot(newton_step, gradient, &grad_product));
+
+  const double comb_product = bidir_product + grad_product;
+
+  if (comb_product < 0)
+  {
+    *tr_dual = (-comb_product) / (trust_radius * trust_radius);
+  }
+  else
+  {
+    *tr_dual = 0.;
+  }
 
   return SLEQP_OKAY;
 }
@@ -270,6 +335,14 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
       break;
     }
 
+#if SLEQP_DEBUG
+
+    {
+      SLEQP_CALL(check_residuals(solver, multipliers, gradient));
+    }
+
+#endif
+
     // compute B_k * d_j
     SLEQP_CALL(sleqp_problem_hess_prod(problem,
                                        &one,
@@ -364,6 +437,13 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 #if SLEQP_DEBUG
       SLEQP_CALL(check_direction(solver, jacobian, trust_radius, newton_step));
 #endif
+
+      SLEQP_CALL(steihaug_tr_dual(solver,
+                                  multipliers,
+                                  gradient,
+                                  newton_step,
+                                  trust_radius,
+                                  tr_dual));
 
       break;
     }
