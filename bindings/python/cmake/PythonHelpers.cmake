@@ -83,6 +83,19 @@ function(add_python_project)
 
   set(INSTALL_SCRIPT_NAME "${CMAKE_CURRENT_BINARY_DIR}/python_install_${PROJECT_NAME}.cmake")
 
+  string(REPLACE " "
+       "\\ " _CFLAGS
+       ${PYTHON_CFLAGS})
+
+  string(REPLACE " "
+    "\\ " _LDFLAGS
+    ${PYTHON_LDFLAGS})
+
+  set(INSTALL_ENV
+    CFLAGS=${_CFLAGS}
+    LDFLAGS=${_LDFLAGS}
+    ${EXTRA_ARGS})
+
   configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/python_install.cmake.in"
     "${INSTALL_SCRIPT_NAME}"
     @ONLY)
