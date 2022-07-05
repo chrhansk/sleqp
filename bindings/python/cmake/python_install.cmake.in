@@ -11,13 +11,17 @@ macro(debug_message)
    "/usr/bin/bash" "-c" "echo '${ARGN}'")
 endmacro()
 
+set(INSTALL_ENV @INSTALL_ENV@)
+
 # debug_message("DESTDIR=${ENV_DESTDIR}, PREFIX=${CMAKE_INSTALL_PREFIX}")
 
-# debug_message("Executing \"@PYTHON_EXECUTABLE@\" setup.py install --root=\"${ROOT_DIR}\" in @PROJECT_DIR@")
-# --root=${ROOT_DIR}
+# debug_message("INSTALL_ENV=${INSTALL_ENV}")
 
-debug_message("Executing \"@PYTHON_EXECUTABLE@\"  -m pip install --root=\"${ROOT_DIR}\" . in @PROJECT_DIR@")
+# debug_message("Executing \"@PYTHON_EXECUTABLE@\"  -m pip install --no-deps --root=\"${ROOT_DIR}\" . in @PROJECT_DIR@")
 
 execute_process(COMMAND
-  "@PYTHON_EXECUTABLE@" -m pip install --root=${ROOT_DIR} .
-  WORKING_DIRECTORY "@PROJECT_DIR@")
+  ${CMAKE_COMMAND} -E env ${INSTALL_ENV} @PYTHON_EXECUTABLE@ -m pip install --no-deps --ignore-installed --root=${ROOT_DIR} .
+  WORKING_DIRECTORY "@PROJECT_DIR@"
+  # TODO: Add for cmake >= 3.19
+  # COMMAND_ERROR_IS_FATAL ANY
+)
