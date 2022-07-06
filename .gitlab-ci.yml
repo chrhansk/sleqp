@@ -5,13 +5,16 @@ stages:
   - build
   - package
   - postpackage
+  - release
   - downstream
 
 include:
   - local: /.gitlab/ci/variables.gitlab-ci.yml
   - local: /.gitlab/ci/template.gitlab-ci.yml
+  - local: /.gitlab/ci/rules.gitlab-ci.yml
   - local: /.gitlab/ci/test.gitlab-ci.yml
   - local: /.gitlab/ci/build.gitlab-ci.yml
   - local: /.gitlab/ci/package.gitlab-ci.yml
   - local: /.gitlab/ci/postpackage.gitlab-ci.yml
+  - local: /.gitlab/ci/release.gitlab-ci.yml
   - local: /.gitlab/ci/downstream.gitlab-ci.yml

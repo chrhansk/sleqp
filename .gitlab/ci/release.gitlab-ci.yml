@@ -1,0 +1,9 @@
+create_release:
+  extends:
+    - .release
+  dependencies:
+    - build
+    - package
+    - package_sdist
+  script:
+    - .gitlab/scripts/create_release.sh
