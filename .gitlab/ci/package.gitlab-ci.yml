@@ -1,7 +1,5 @@
 package:
-  stage: package
-  only:
-    - master
+  extends: .package
   dependencies:
     - build
   script:
@@ -15,9 +13,7 @@ package:
       - build/*.bz2
 
 package_wheel:
-  stage: package
-  only:
-    - master
+  extends: .package
   dependencies:
     - build
   script:
@@ -30,9 +26,7 @@ package_wheel:
       - bindings/python/dist/*.whl
 
 package_sdist:
-  stage: package
-  only:
-    - master
+  extends: .package
   dependencies:
     - build
   script:
@@ -45,9 +39,7 @@ package_sdist:
       - bindings/python/dist/*.tar.gz
 
 package_octave:
-  stage: package
-  only:
-    - master
+  extends: .package
   script:
     - cd build
     - make sleqp_octave_package

@@ -9,9 +9,19 @@
 
 .test_install:
   stage: postpackage
-  only:
-    - master
+  extends:
+    - .rules:default-or-release-branch
   before_script:
     - cd build
     - apt -y install ./*.deb
     - cd $CI_PROJECT_DIR
+
+.package:
+  stage: package
+  extends:
+    - .rules:default-or-release-branch
+
+.release:
+  stage: release
+  extends:
+    - .rules:release-branch

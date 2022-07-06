@@ -1,0 +1,14 @@
+.if-default-branch: &if-default-branch
+  if: '$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH'
+
+.if-release-branch: &if-release-branch
+  if: '$CI_COMMIT_REF_NAME =~ /^releases/'
+
+.rules:release-branch:
+  rules:
+    - <<: *if-release-branch
+
+.rules:default-or-release-branch:
+  rules:
+    - <<: *if-default-branch
+    - <<: *if-release-branch

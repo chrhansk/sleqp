@@ -1,7 +1,7 @@
 build:
+  extends:
+    - .rules:default-or-release-branch
   stage: build
-  only:
-    - master
   script:
     - mkdir -p build
     - cd build
