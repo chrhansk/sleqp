@@ -2,7 +2,7 @@
   if: '$CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH'
 
 .if-release-branch: &if-release-branch
-  if: '$CI_COMMIT_REF_NAME =~ /^releases/'
+  if: '$CI_COMMIT_REF_NAME =~ /^releases/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
 
 .rules:release-branch:
   rules:
