@@ -8,9 +8,11 @@ build:
     - >-
       cmake ..
       -DCMAKE_INSTALL_PREFIX="/usr"
-      -DCMAKE_BUILD_TYPE="Release"
+      -DCMAKE_BUILD_TYPE="RelWithDebInfo"
       -DSLEQP_ENABLE_UNIT_TESTS=Off
       -DSLEQP_ENABLE_PYTHON=On
+      -DSLEQP_ENABLE_AMPL=On
+      -DSLEQP_ENABLE_OCTAVE_MEX=On
       -DSLEQP_FACT=$DEFAULT_FACT
       -DSLEQP_LPS=$DEFAULT_LPS
       -DSLEQP_ENABLE_OCTAVE_MEX=On

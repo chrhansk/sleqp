@@ -19,7 +19,7 @@ set(MATLAB_SOURCES
   sleqp/solve.m
   sleqp/solve_lsq.m)
 
-set(MATLAB_TESTS
+set(MEX_TESTS
   tests/test_callback.m
   tests/test_hess_prod.m
   tests/test_solve.m
@@ -93,7 +93,7 @@ if(SLEQP_ENABLE_OCTAVE_MEX)
 
   add_dependencies(build_tests sleqp_mex)
 
-  foreach(MATLAB_TEST ${MATLAB_TESTS})
+  foreach(MATLAB_TEST ${MEX_TESTS})
     get_filename_component(TEST_NAME ${MATLAB_TEST} NAME_WE)
 
     add_test(
@@ -124,6 +124,7 @@ if(SLEQP_ENABLE_OCTAVE_MEX)
     )
 
   add_dependencies(sleqp_octave_package sleqp_octave_ext)
+  add_dependencies(sleqp_octave_package sleqp_mex)
 
   add_custom_command(
     TARGET sleqp_octave_package
@@ -156,7 +157,7 @@ if(SLEQP_ENABLE_MATLAB_MEX)
     PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${SLEQP_MEX_OUTPUT_DIR})
 
-  foreach(MATLAB_TEST ${MATLAB_TESTS})
+  foreach(MATLAB_TEST ${MEX_TESTS})
     get_filename_component(TEST_NAME ${MATLAB_TEST} NAME_WE)
     add_test(
       NAME "matlab_${TEST_NAME}"

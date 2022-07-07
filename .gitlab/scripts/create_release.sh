@@ -87,6 +87,15 @@ for file in bindings/python/dist/*.tar.*; do
   fi
 done
 
+for file in build/sleqp_octave*.tar.gz; do
+  link_name=$(upload_file ${file} "octave_mex")
+  if [ "${link_names}" != "" ]; then
+     link_names="${link_names}, ${link_name}"
+  else
+    link_names="${link_name}"
+  fi
+done
+
 body=$(cat <<EOF
 {
   "name": "Release ${VERSION}",
