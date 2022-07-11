@@ -48,7 +48,7 @@ static const TimeConversion conversions[NumUnits]
      [Minute] = {.factor = 1 / 60., .suffix = "min", .len = 3},
      [Second] = {.factor = 1., .suffix = "s", .len = 1},
      [Milli]  = {.factor = 1000., .suffix = "ms", .len = 2},
-     [Micro]  = {.factor = 1000., .suffix = "\xc2\xb5s", .len = 2}};
+     [Micro]  = {.factor = 1000., .suffix = SLEQP_SYMBOL_MU "s", .len = 2}};
 
 SLEQP_RETCODE
 sleqp_timer_create(SleqpTimer** star)

@@ -34,4 +34,9 @@
 
 #endif
 
+// mu
+#define SLEQP_SYMBOL_MU "\xc2\xb5"
+// plus/minus
+#define SLEQP_SYMBOL_PM "\xc2\xb1"
+
 #endif /* SLEQP_LOG_H */

@@ -83,6 +83,8 @@ typedef struct
 
   double time_limit;
 
+  double* cons_weights;
+
 } SleqpTrialPointSolver;
 
 SLEQP_NODISCARD
@@ -127,6 +129,10 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_trial_point_solver_penalty(SleqpTrialPointSolver* solver,
                                  double* penalty_parameter);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_trial_point_solver_update_cons_weights(SleqpTrialPointSolver* solver);
 
 bool
 sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver);

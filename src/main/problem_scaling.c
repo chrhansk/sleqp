@@ -1,6 +1,7 @@
 #include "problem_scaling.h"
 
 #include "cmp.h"
+#include "dyn.h"
 #include "error.h"
 #include "func.h"
 #include "log.h"
@@ -26,6 +27,7 @@ struct SleqpProblemScaling
 
   SleqpVec* scaled_direction;
 
+  double* scaled_cons_weights;
   SleqpVec* scaled_cons_duals;
 };
 
@@ -276,6 +278,72 @@ scaled_lsq_func_jac_adjoint(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
+scaled_dyn_func_eval(SleqpFunc* func,
+                     double* obj_val,
+                     SleqpVec* cons_val,
+                     double* error,
+                     void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
+  SleqpScaling* scaling                = problem_scaling->scaling;
+
+  SLEQP_CALL(
+    sleqp_dyn_func_eval(problem_scaling->func, obj_val, cons_val, error));
+
+  SLEQP_CALL(sleqp_scale_cons_val(scaling, cons_val));
+  (*obj_val) = sleqp_scale_obj_val(scaling, (*obj_val));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+scaled_dyn_func_set_error_bound(SleqpFunc* func,
+                                double error_bound,
+                                void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
+
+  SLEQP_CALL(
+    sleqp_dyn_func_set_error_bound(problem_scaling->func, error_bound));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+scaled_dyn_func_set_obj_weight(SleqpFunc* func,
+                               double obj_weight,
+                               void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
+  SleqpScaling* scaling                = problem_scaling->scaling;
+
+  const double scaled_obj_weight = sleqp_scale_obj_weight(scaling, obj_weight);
+
+  SLEQP_CALL(
+    sleqp_dyn_func_set_obj_weight(problem_scaling->func, scaled_obj_weight));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+scaled_dyn_func_set_cons_weights(SleqpFunc* func,
+                                 const double* cons_weights,
+                                 void* func_data)
+{
+  SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
+  SleqpScaling* scaling                = problem_scaling->scaling;
+  double* scaled_cons_weights          = problem_scaling->scaled_cons_weights;
+
+  SLEQP_CALL(
+    sleqp_scale_cons_weights(scaling, cons_weights, scaled_cons_weights));
+
+  SLEQP_CALL(sleqp_dyn_func_set_cons_weights(problem_scaling->func,
+                                             scaled_cons_weights));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 func_create(SleqpProblemScaling* problem_scaling)
 {
   SleqpProblem* problem = problem_scaling->problem;
@@ -349,6 +417,38 @@ lsq_func_create(SleqpProblemScaling* problem_scaling)
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE
+dyn_func_create(SleqpProblemScaling* problem_scaling)
+{
+  SleqpProblem* problem = problem_scaling->problem;
+
+  const int num_variables   = sleqp_problem_num_vars(problem);
+  const int num_constraints = sleqp_problem_num_cons(problem);
+
+  SleqpDynFuncCallbacks callbacks
+    = {.set_value        = scaled_func_set_value,
+       .nonzeros         = scaled_func_nonzeros,
+       .set_error_bound  = scaled_dyn_func_set_error_bound,
+       .set_obj_weight   = scaled_dyn_func_set_obj_weight,
+       .set_cons_weights = scaled_dyn_func_set_cons_weights,
+       .eval             = scaled_dyn_func_eval,
+       .obj_grad         = scaled_func_obj_grad,
+       .cons_jac         = scaled_func_cons_jac,
+       .hess_prod        = scaled_func_hess_prod,
+       .func_free        = NULL};
+
+  SLEQP_CALL(sleqp_dyn_func_create(&(problem_scaling->scaled_func),
+                                   &callbacks,
+                                   num_variables,
+                                   num_constraints,
+                                   problem_scaling));
+
+  SLEQP_CALL(
+    sleqp_func_flags_add(problem_scaling->scaled_func, SLEQP_FUNC_INTERNAL));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE
 sleqp_problem_scaling_create(SleqpProblemScaling** star,
                              SleqpScaling* scaling,
@@ -407,6 +507,11 @@ sleqp_problem_scaling_create(SleqpProblemScaling** star,
     break;
   case SLEQP_FUNC_TYPE_LSQ:
     SLEQP_CALL(lsq_func_create(problem_scaling));
+    break;
+  case SLEQP_FUNC_TYPE_DYNAMIC:
+    SLEQP_CALL(dyn_func_create(problem_scaling));
+    SLEQP_CALL(sleqp_alloc_array(&problem_scaling->scaled_cons_weights,
+                                 num_constraints));
     break;
   }
 
@@ -528,6 +633,8 @@ problem_scaling_free(SleqpProblemScaling** star)
   }
 
   SLEQP_CALL(sleqp_vec_free(&(problem_scaling->scaled_cons_duals)));
+
+  sleqp_free(&problem_scaling->scaled_cons_weights);
 
   SLEQP_CALL(sleqp_vec_free(&(problem_scaling->scaled_direction)));
 

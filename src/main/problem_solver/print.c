@@ -1,34 +1,37 @@
+#include <stdio.h>
+
+#include "dyn.h"
+#include "feas.h"
+#include "func.h"
+#include "log.h"
 #include "problem_solver.h"
 
-#include "feas.h"
-#include "log.h"
-
 #define HEADER_FORMAT                                                          \
-  "%10s |%20s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | "  \
+  "%10s |%s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s |%14s | "          \
   "%18s"
 
 #define LINE_FORMAT                                                            \
   SLEQP_FORMAT_BOLD                                                            \
-  "%10s " SLEQP_FORMAT_RESET "|%20.10e |%14e |%14e |%14e |%14e |%14e |%14s "   \
-                             "|%14e |%14e |%14e |%14e | %18s"
+  "%10s " SLEQP_FORMAT_RESET "|%s |%14e |%14e |%14e |%14e |%14s "              \
+  "|%14e |%14e |%14e |%14e | %18s"
 
 #define INITIAL_LINE_FORMAT                                                    \
   SLEQP_FORMAT_BOLD                                                            \
-  "%10s " SLEQP_FORMAT_RESET "|%20.10e |%14e |%14e |%14s |%14s |%14e |%14s "   \
-                             "|%14s |%14s |%14s |%14s | %18s"
+  "%10s " SLEQP_FORMAT_RESET "|%s |%14e |%14s |%14s |%14e |%14s "              \
+  "|%14s |%14s |%14s |%14s | %18s"
 
 #define DEFAULT_BUF_SIZE 1024
 
 static SLEQP_RETCODE
-print_iteration(SleqpProblemSolver* solver, char* buf, int buf_size)
+print_iteration(SleqpProblemSolver* solver, char* buf)
 {
   if (solver->solver_phase == SLEQP_SOLVER_PHASE_OPTIMIZATION)
   {
-    snprintf(buf, buf_size, "%d", solver->iteration);
+    snprintf(buf, DEFAULT_BUF_SIZE, "%d", solver->iteration);
   }
   else
   {
-    snprintf(buf, buf_size, "R %d", solver->iteration);
+    snprintf(buf, DEFAULT_BUF_SIZE, "R %d", solver->iteration);
   }
 
   return SLEQP_OKAY;
@@ -37,10 +40,23 @@ print_iteration(SleqpProblemSolver* solver, char* buf, int buf_size)
 SLEQP_RETCODE
 sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
 {
+  const char* iter_obj = NULL;
+
+  SleqpProblem* problem = solver->problem;
+  SleqpFunc* func       = sleqp_problem_func(problem);
+
+  if (sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC)
+  {
+    iter_obj = "                           Merit val";
+  }
+  else
+  {
+    iter_obj = "          Merit  val |       Obj val";
+  }
+
   sleqp_log_info(HEADER_FORMAT,
                  "Iteration",
-                 "Obj val",
-                 "Merit val",
+                 iter_obj,
                  "Feas res",
                  "Slack res",
                  "Stat res",
@@ -59,17 +75,49 @@ sleqp_problem_solver_print_header(SleqpProblemSolver* solver)
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE
+print_obj_merit(SleqpProblemSolver* solver, char* buffer)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpFunc* func       = sleqp_problem_func(problem);
+
+  if (sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC)
+  {
+    double error_estimate;
+    SLEQP_CALL(sleqp_dyn_func_error_estimate(func, &error_estimate));
+
+    snprintf(buffer,
+             DEFAULT_BUF_SIZE,
+             "%20.10e " SLEQP_SYMBOL_PM "%14e",
+             solver->current_merit_value,
+             error_estimate);
+  }
+  else
+  {
+    const double obj_val = sleqp_iterate_obj_val(solver->iterate);
+    snprintf(buffer,
+             DEFAULT_BUF_SIZE,
+             "%20.10e |%14e",
+             solver->current_merit_value,
+             obj_val);
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE
 sleqp_problem_solver_print_initial_line(SleqpProblemSolver* solver)
 {
   char iteration_buf[DEFAULT_BUF_SIZE];
+  char obj_merit_buf[DEFAULT_BUF_SIZE];
 
-  SLEQP_CALL(print_iteration(solver, iteration_buf, DEFAULT_BUF_SIZE));
+  SLEQP_CALL(print_iteration(solver, iteration_buf));
+
+  SLEQP_CALL(print_obj_merit(solver, obj_merit_buf));
 
   sleqp_log_info(INITIAL_LINE_FORMAT,
                  iteration_buf,
-                 sleqp_iterate_obj_val(solver->iterate),
-                 solver->current_merit_value,
+                 obj_merit_buf,
                  solver->feas_res,
                  "",
                  "",
@@ -152,10 +200,12 @@ sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
        [SLEQP_STEPTYPE_REJECTED]      = "Rejected"};
 
   char working_set_buf[DEFAULT_BUF_SIZE];
-
+  char obj_merit_buf[DEFAULT_BUF_SIZE];
   char iteration_buf[DEFAULT_BUF_SIZE];
 
-  SLEQP_CALL(print_iteration(solver, iteration_buf, DEFAULT_BUF_SIZE));
+  SLEQP_CALL(print_iteration(solver, iteration_buf));
+
+  SLEQP_CALL(print_obj_merit(solver, obj_merit_buf));
 
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(solver->iterate);
 
@@ -177,8 +227,7 @@ sleqp_problem_solver_print_line(SleqpProblemSolver* solver)
 
   sleqp_log_info(LINE_FORMAT,
                  iteration_buf,
-                 sleqp_iterate_obj_val(solver->iterate),
-                 solver->current_merit_value,
+                 obj_merit_buf,
                  solver->feas_res,
                  solver->slack_res,
                  solver->stat_res,

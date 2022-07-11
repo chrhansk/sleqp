@@ -15,6 +15,9 @@ double
 sleqp_scale_obj_val(SleqpScaling* scaling, double obj_val);
 
 double
+sleqp_scale_obj_weight(SleqpScaling* scaling, double obj_weight);
+
+double
 sleqp_scale_lsq_obj_val(SleqpScaling* scaling, double obj_val);
 
 SLEQP_RETCODE
@@ -35,6 +38,12 @@ sleqp_scale_obj_grad(SleqpScaling* scaling, SleqpVec* obj_grad);
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_scale_cons_val(SleqpScaling* scaling, SleqpVec* cons_val);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_scale_cons_weights(SleqpScaling* scaling,
+                         const double* cons_weights,
+                         double* scaled_weights);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

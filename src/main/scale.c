@@ -266,6 +266,12 @@ sleqp_scale_obj_val(SleqpScaling* scaling, double obj_val)
 }
 
 double
+sleqp_scale_obj_weight(SleqpScaling* scaling, double obj_weight)
+{
+  return ldexp(obj_weight, (-1) * scaling->obj_weight);
+}
+
+double
 sleqp_scale_lsq_obj_val(SleqpScaling* scaling, double obj_val)
 {
   return ldexp(obj_val, (-1) * 2 * scaling->obj_weight);
@@ -313,6 +319,22 @@ SLEQP_RETCODE
 sleqp_scale_cons_val(SleqpScaling* scaling, SleqpVec* cons_val)
 {
   SLEQP_CALL(apply_scaling(cons_val, scaling->cons_weights, 0));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_scale_cons_weights(SleqpScaling* scaling,
+                         const double* cons_weights,
+                         double* scaled_weights)
+{
+  const int num_cons = scaling->num_constraints;
+  const int* scales  = scaling->cons_weights;
+
+  for (int i = 0; i < num_cons; ++i)
+  {
+    scaled_weights[i] = ldexp(cons_weights[i], -1 * scales[i]);
+  }
 
   return SLEQP_OKAY;
 }
