@@ -22,12 +22,6 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
     else:
       reject[0] = False
 
-    def try_call(f):
-      try:
-        return f()
-      except AttributeError:
-        return 0
-
   except BaseException as exception:
     store_func_exc(func_obj, exception)
     return csleqp.SLEQP_ERROR
@@ -225,12 +219,12 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac_nogil(csleqp.SleqpFunc* func,
                                func_data)
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
-                                                  const double* obj_dual,
-                                                  const csleqp.SleqpVec* direction,
-                                                  const csleqp.SleqpVec* cons_dual,
-                                                  csleqp.SleqpVec* product,
-                                                  void* func_data):
+cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod(csleqp.SleqpFunc* func,
+                                               const double* obj_dual,
+                                               const csleqp.SleqpVec* direction,
+                                               const csleqp.SleqpVec* cons_dual,
+                                               csleqp.SleqpVec* product,
+                                               void* func_data):
 
   cdef int num_vars
 
@@ -263,19 +257,19 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product(csleqp.SleqpFunc* func,
   return csleqp.SLEQP_OKAY
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_hess_product_nogil(csleqp.SleqpFunc* func,
-                                                        const double* obj_dual,
-                                                        const csleqp.SleqpVec* direction,
-                                                        const csleqp.SleqpVec* cons_dual,
-                                                        csleqp.SleqpVec* product,
-                                                        void* func_data) nogil:
+cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod_nogil(csleqp.SleqpFunc* func,
+                                                     const double* obj_dual,
+                                                     const csleqp.SleqpVec* direction,
+                                                     const csleqp.SleqpVec* cons_dual,
+                                                     csleqp.SleqpVec* product,
+                                                     void* func_data) nogil:
   with gil:
-    return sleqp_func_hess_product(func,
-                                   obj_dual,
-                                   direction,
-                                   cons_dual,
-                                   product,
-                                   func_data)
+    return sleqp_func_hess_prod(func,
+                                obj_dual,
+                                direction,
+                                cons_dual,
+                                product,
+                                func_data)
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_free(void* func_data):
@@ -293,7 +287,7 @@ cdef set_func_callbacks(csleqp.SleqpFuncCallbacks* callbacks):
     callbacks[0].obj_grad  = &sleqp_func_obj_grad_nogil
     callbacks[0].cons_val  = &sleqp_func_cons_val_nogil
     callbacks[0].cons_jac  = &sleqp_func_cons_jac_nogil
-    callbacks[0].hess_prod = &sleqp_func_hess_product_nogil
+    callbacks[0].hess_prod = &sleqp_func_hess_prod_nogil
   else:
     callbacks[0].set_value = &sleqp_func_set
     callbacks[0].nonzeros  = &sleqp_func_nonzeros
@@ -301,7 +295,7 @@ cdef set_func_callbacks(csleqp.SleqpFuncCallbacks* callbacks):
     callbacks[0].obj_grad  = &sleqp_func_obj_grad
     callbacks[0].cons_val  = &sleqp_func_cons_val
     callbacks[0].cons_jac  = &sleqp_func_cons_jac
-    callbacks[0].hess_prod = &sleqp_func_hess_product
+    callbacks[0].hess_prod = &sleqp_func_hess_prod
 
   callbacks.func_free = &sleqp_func_free
 

@@ -495,6 +495,47 @@ cdef extern from "sleqp.h":
   SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
                                              SleqpLSQCallbacks* callbacks)
 
+  # Dynamic
+
+  ctypedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_EVAL)(SleqpFunc* func,
+                                                double* obj_val,
+                                                SleqpVec* cons_val,
+                                                double* error,
+                                                void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_SET_ERROR_BOUND)(SleqpFunc* func,
+                                                           double error_bound,
+                                                           void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_SET_OBJ_WEIGHT)(SleqpFunc* func,
+                                                          double obj_weight,
+                                                          void* func_data)
+
+  ctypedef SLEQP_RETCODE (*SLEQP_DYN_FUNC_SET_CONS_WEIGHTS)(SleqpFunc* func,
+                                                            const double* cons_weights,
+                                                            void* func_data)
+
+  ctypedef struct SleqpDynFuncCallbacks:
+    SLEQP_FUNC_SET set_value,
+    SLEQP_FUNC_NONZEROS nonzeros,
+    SLEQP_DYN_FUNC_SET_ERROR_BOUND set_error_bound,
+    SLEQP_DYN_FUNC_SET_OBJ_WEIGHT set_obj_weight,
+    SLEQP_DYN_FUNC_SET_CONS_WEIGHTS set_cons_weights,
+    SLEQP_DYN_FUNC_EVAL eval,
+    SLEQP_FUNC_OBJ_GRAD obj_grad,
+    SLEQP_FUNC_CONS_JAC cons_jac,
+    SLEQP_FUNC_HESS_PROD hess_prod,
+    SLEQP_FUNC_FREE func_free
+
+  SLEQP_RETCODE sleqp_dyn_func_create(SleqpFunc** fstar,
+                                      SleqpDynFuncCallbacks* callbacks,
+                                      int num_variables,
+                                      int num_constraints,
+                                      void* func_data)
+
+  SLEQP_RETCODE sleqp_dyn_func_set_callbacks(SleqpFunc* func,
+                                             SleqpDynFuncCallbacks* callbacks)
+
   # Scaling
 
   SLEQP_RETCODE sleqp_scaling_create(SleqpScaling** scaling,

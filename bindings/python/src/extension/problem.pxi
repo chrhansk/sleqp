@@ -268,6 +268,7 @@ cdef class Problem:
   def _get_problem(self):
     return self.problem
 
+
 cdef class LSQProblem:
   cdef dict __dict__
 
@@ -310,7 +311,10 @@ cdef class LSQProblem:
                                      var_lb,
                                      var_ub,
                                      cons_lb,
-                                     cons_ub)
+                                     cons_ub,
+                                     properties.get('linear_coeffs', None),
+                                     properties.get('linear_lb', None),
+                                     properties.get('linear_ub', None))
 
       self.funcref.set_func(cfunc)
       lsq_funcs.add(self.funcref)
@@ -318,6 +322,94 @@ cdef class LSQProblem:
     finally:
       csleqp_call(csleqp.sleqp_func_release(&cfunc))
 
+    try:
+      func.set_hessian_struct(self.hess_struct)
+    except AttributeError:
+      pass
+
+  @property
+  def func(self):
+      return self._func
+
+  @property
+  def num_vars(self) -> int:
+    return self.problem.num_vars
+
+  @property
+  def num_cons(self) -> int:
+    return self.problem.num_cons
+
+  @property
+  def var_lb(self) -> np.array:
+    return self.problem.var_lb
+
+  @property
+  def var_ub(self) -> np.array:
+    return self.problem.var_ub
+
+  @property
+  def cons_lb(self) -> np.array:
+    return self.problem.cons_lb
+
+  @property
+  def cons_ub(self) -> np.array:
+    return self.problem.cons_ub
+
+  @property
+  def hess_struct(self) -> HessianStruct:
+    return self.problem.hess_struct
+
+  def _get_problem(self):
+    return self.problem
+
+
+cdef class DynProblem:
+  cdef dict __dict__
+
+  cdef _Problem problem
+  cdef _Func funcref
+
+  cdef object _func
+
+  def __cinit__(self,
+                object func,
+                Params params,
+                np.ndarray var_lb,
+                np.ndarray var_ub,
+                np.ndarray cons_lb,
+                np.ndarray cons_ub,
+                **properties):
+    cdef int num_vars = var_lb.shape[0]
+    cdef int num_cons = cons_lb.shape[0]
+    cdef csleqp.SleqpFunc* cfunc
+
+    self.funcref = _Func()
+
+    csleqp_call(create_dyn_func(&cfunc,
+                                func,
+                                num_vars,
+                                num_cons))
+
+    assert cfunc != NULL
+    self._func = func
+
+    try:
+      self.problem = _Problem.create(cfunc,
+                                     params.params,
+                                     var_lb,
+                                     var_ub,
+                                     cons_lb,
+                                     cons_ub,
+                                     properties.get('linear_coeffs', None),
+                                     properties.get('linear_lb', None),
+                                     properties.get('linear_ub', None))
+
+      self.funcref.set_func(cfunc)
+      dyn_funcs.add(self.funcref)
+
+      pass
+    finally:
+      csleqp_call(csleqp.sleqp_func_release(&cfunc))
     try:
       func.set_hessian_struct(self.hess_struct)
     except AttributeError:
