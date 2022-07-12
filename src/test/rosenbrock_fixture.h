@@ -6,8 +6,8 @@
 
 #include "test_common.h"
 
-extern const int rosenbrock_num_variables;
-extern const int rosenbrock_num_constraints;
+extern const int rosenbrock_num_vars;
+extern const int rosenbrock_num_cons;
 
 extern SleqpFunc* rosenbrock_func;
 
@@ -16,7 +16,7 @@ extern SleqpVec* rosenbrock_var_ub;
 extern SleqpVec* rosenbrock_cons_lb;
 extern SleqpVec* rosenbrock_cons_ub;
 extern SleqpVec* rosenbrock_initial;
-extern SleqpVec* rosenbrock_optimal;
+extern SleqpVec* rosenbrock_optimum;
 
 SLEQP_RETCODE
 rosenbrock_set(SleqpFunc* func,

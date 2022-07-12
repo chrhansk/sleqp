@@ -5,8 +5,8 @@
 #include "cmp.h"
 #include "mem.h"
 
-const int rosenbrock_num_variables   = 2;
-const int rosenbrock_num_constraints = 0;
+const int rosenbrock_num_vars = 2;
+const int rosenbrock_num_cons = 0;
 
 typedef struct RosenbrockData
 {
@@ -28,7 +28,7 @@ SleqpVec* rosenbrock_var_ub;
 SleqpVec* rosenbrock_cons_lb;
 SleqpVec* rosenbrock_cons_ub;
 SleqpVec* rosenbrock_initial;
-SleqpVec* rosenbrock_optimal;
+SleqpVec* rosenbrock_optimum;
 
 SLEQP_RETCODE
 rosenbrock_set(SleqpFunc* func,
@@ -178,8 +178,8 @@ rosenbrock_create(SleqpFunc** fstar,
 
   ASSERT_CALL(sleqp_func_create(fstar,
                                 &callbacks,
-                                rosenbrock_num_variables,
-                                rosenbrock_num_constraints,
+                                rosenbrock_num_vars,
+                                rosenbrock_num_cons,
                                 func_data));
 
   ASSERT_CALL(sleqp_vec_create_full(var_lbstar, 2));
@@ -207,13 +207,13 @@ rosenbrock_setup()
                     &rosenbrock_cons_lb,
                     &rosenbrock_cons_ub,
                     &rosenbrock_initial,
-                    &rosenbrock_optimal);
+                    &rosenbrock_optimum);
 }
 
 void
 rosenbrock_teardown()
 {
-  ASSERT_CALL(sleqp_vec_free(&rosenbrock_optimal));
+  ASSERT_CALL(sleqp_vec_free(&rosenbrock_optimum));
 
   ASSERT_CALL(sleqp_vec_free(&rosenbrock_initial));
 

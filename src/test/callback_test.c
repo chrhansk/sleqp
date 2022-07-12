@@ -70,7 +70,7 @@ accepted_iterate(SleqpSolver* solver, SleqpIterate* iterate, void* data)
 
   assert(solution->dim == 2);
 
-  if (sleqp_vec_eq(solution, rosenbrock_optimal, 1e-6))
+  if (sleqp_vec_eq(solution, rosenbrock_optimum, 1e-6))
   {
     callback_data->accepted_optimal_sol = true;
   }

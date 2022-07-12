@@ -14,7 +14,7 @@ extern SleqpVec* constrained_var_ub;
 extern SleqpVec* constrained_cons_lb;
 extern SleqpVec* constrained_cons_ub;
 extern SleqpVec* constrained_initial;
-extern SleqpVec* constrained_optimal;
+extern SleqpVec* constrained_optimum;
 
 extern SleqpFunc* constrained_func;
 

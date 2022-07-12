@@ -22,8 +22,8 @@ setup()
 {
   dyn_rosenbrock_setup();
 
-  ASSERT_CALL(sleqp_vec_create_full(&fixed_initial,
-                                    rosenbrock_num_variables - num_fixed));
+  ASSERT_CALL(
+    sleqp_vec_create_full(&fixed_initial, rosenbrock_num_vars - num_fixed));
 
   const double fixed_value
     = sleqp_vec_value_at(rosenbrock_initial, fixed_indices[0]);

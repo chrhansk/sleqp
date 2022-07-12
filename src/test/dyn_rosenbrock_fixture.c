@@ -155,8 +155,8 @@ dyn_rosenbrock_setup()
 
   ASSERT_CALL(sleqp_dyn_func_create(&dyn_rosenbrock_func,
                                     &callbacks,
-                                    rosenbrock_num_variables,
-                                    rosenbrock_num_constraints,
+                                    rosenbrock_num_vars,
+                                    rosenbrock_num_cons,
                                     func_data));
 }
 
