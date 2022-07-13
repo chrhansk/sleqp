@@ -69,7 +69,7 @@ curl --fail                                                    \
 
 link_names=""
 
-for file in build/*.deb; do
+for file in build/*.{d,}deb; do
   link_name=$(upload_file ${file} "debian")
   if [ "${link_names}" != "" ]; then
      link_names="${link_names}, ${link_name}"
