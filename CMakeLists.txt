@@ -133,10 +133,6 @@ if(UNIX AND NOT APPLE)
   list(APPEND SLEQP_DEPENDENCIES rt)
 endif()
 
-# Documentation
-
-find_package(Doxygen)
-
 add_custom_target(doc)
 
 # Config files
@@ -188,6 +184,14 @@ endif()
 add_subdirectory(src)
 
 add_subdirectory(bindings)
+
+# Documentation
+
+find_package(Doxygen)
+
+if(DOXYGEN_FOUND)
+  add_subdirectory(doc)
+endif()
 
 # Coverage
 

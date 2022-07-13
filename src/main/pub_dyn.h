@@ -7,6 +7,8 @@
  * @file pub_dyn.h
  * @brief Definition of dynamic functions.
  *
+ * @defgroup dynamic Dynamic nonlinear functions
+ *
  * Dynamic functions extend the evaluation of the objective and constraints
  * to include limited accuracy. Specifically, the original objective
  * \f$ f(x) \f$ is replaced by a counterpart \f$ f(x; \epsilon) \f$
@@ -27,7 +29,7 @@
  * \f]
  *
  * is subject to a limited accuracy (where \f$ w^{f} > 0 \f$
- * and \f$ w^{c} \in \mathbb{R}^{m}_{> 0} \f$ ). Specifically,
+ * and \f$ w^{c} \in \R^{m}_{> 0} \f$ ). Specifically,
  * \f$ \Pi(x, w^{f}, w^{c}) \f$ is replaced by
  * \f$ \Pi(x, w^{f}, w^{c}; \epsilon^{f}, \epsilon^{c}) \f$
  * given by
@@ -40,13 +42,13 @@
  *      + \max(l_i - c_i(x; \epsilon^{c}_i), 0) \right) \f]
  *
  * where \f$ \epsilon^{f} > 0 \f$
- * and \f$ \epsilon^{c} \in \mathbb{R}^{m}_{> 0} \f$.
+ * and \f$ \epsilon^{c} \in \R^{m}_{> 0} \f$.
  **/
 
 /**
  * Evaluates the dynamic function at the current input vector. Given
  * the current error bound \f$ \epsilon > 0 \f$ and weights
- * \f$ w^{f} > 0 \f$ and \f$ w^{c} \in \mathbb{R}^{m}_{> 0} \f$,
+ * \f$ w^{f} > 0 \f$ and \f$ w^{c} \in \R^{m}_{> 0} \f$,
  * the evaluation should satisfy
  *
  * \f[ \hat{\epsilon} := |\Pi(x, w^{f}, w^{c})

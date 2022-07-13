@@ -1,14 +1,29 @@
 #ifndef SLEQP_PUB_ERROR_H
 #define SLEQP_PUB_ERROR_H
 
+/**
+ * @file pub_error.h
+ * @brief Error handling.
+ **/
+
 #include "pub_types.h"
 
+/**
+ * Returns the type of the current error
+ **/
 SLEQP_EXPORT SLEQP_ERROR_TYPE
 sleqp_error_type();
 
+/**
+ * Returns the message associated
+ * with  the current error
+ **/
 SLEQP_EXPORT const char*
 sleqp_error_msg();
 
+/**
+ * Sets the current error. To be used by @ref sleqp_raise
+ **/
 SLEQP_EXPORT void
 sleqp_set_error(const char* file,
                 int line,
@@ -17,6 +32,9 @@ sleqp_set_error(const char* file,
                 const char* fmt,
                 ...) SLEQP_FORMAT_PRINTF(5, 6);
 
+/**
+ * Raises an error with the given type and message
+ **/
 #define sleqp_raise(error_type, fmt, ...)                                      \
   do                                                                           \
   {                                                                            \

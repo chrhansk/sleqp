@@ -37,12 +37,20 @@ typedef enum
 #define SLEQP_NODISCARD
 #endif
 
+/**
+ * The state of a variable or constraint with respect
+ * to an active set
+ **/
 typedef enum
 {
-  SLEQP_INACTIVE     = 0,
+  /** The variable / constraint is inactive **/
+  SLEQP_INACTIVE = 0,
+  /** The variable / constraint is active at its lower bound **/
   SLEQP_ACTIVE_LOWER = (1 << 0),
+  /** The variable / constraint is active at its upper bound **/
   SLEQP_ACTIVE_UPPER = (1 << 1),
-  SLEQP_ACTIVE_BOTH  = (SLEQP_ACTIVE_LOWER | SLEQP_ACTIVE_UPPER),
+  /** The variable / constraint is active at both of its bounds **/
+  SLEQP_ACTIVE_BOTH = (SLEQP_ACTIVE_LOWER | SLEQP_ACTIVE_UPPER),
 } SLEQP_ACTIVE_STATE;
 
 typedef enum

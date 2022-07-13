@@ -1,32 +1,62 @@
 #ifndef PUB_FUNC_H
 #define PUB_FUNC_H
 
+/**
+ * @file pub_func.h
+ * @brief Definition of nonlinear functions.
+ **/
+
 #include "sleqp/pub_hess_struct.h"
 #include "sparse/pub_sparse_matrix.h"
 #include "sparse/pub_vec.h"
 
 /**
- * @defgroup function Function definition
+ * @defgroup function Nonlinear functions
  * @{
+ *
+ * A function is given by an objective
+ * \f$ f : \R^n \to \R \f$
+ * and constraints
+ * \f$ c : \R^n \to \R^{m} \f$.
+ *
+ * The functions are assumed to be twice continuously
+ * differentiable. Function, gradient, and Hessian evaluations are
+ * supposed to be provided by the user in the form of callbacks.
  **/
 
 typedef struct SleqpFunc SleqpFunc;
 
+/**
+ * The reason for setting the primal point
+ **/
 typedef enum
 {
+  /** No reason **/
   SLEQP_VALUE_REASON_NONE,
+  /** Initial step **/
   SLEQP_VALUE_REASON_INIT,
+  /** Checking derivatives **/
   SLEQP_VALUE_REASON_CHECKING_DERIV,
+  /** Accepted trial step **/
   SLEQP_VALUE_REASON_ACCEPTED_ITERATE,
+  /** New trial step **/
   SLEQP_VALUE_REASON_TRYING_ITERATE,
+  /** New SOC trial step **/
   SLEQP_VALUE_REASON_TRYING_SOC_ITERATE,
+  /** Rejected trial step **/
   SLEQP_VALUE_REASON_REJECTED_ITERATE,
 } SLEQP_VALUE_REASON;
 
+/**
+ * Type of the function
+ **/
 typedef enum
 {
+  /** Regular function **/
   SLEQP_FUNC_TYPE_REGULAR,
+  /** Least-squares function @see least_squares **/
   SLEQP_FUNC_TYPE_LSQ,
+  /** Dynamic function @see dynamic **/
   SLEQP_FUNC_TYPE_DYNAMIC
 } SLEQP_FUNC_TYPE;
 
@@ -68,7 +98,7 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_NONZEROS)(SleqpFunc* func,
                                              void* func_data);
 
 /**
- * Evaluates the objective at the current primal point
+ * Evaluates the objective \f$ f \f$ at the current primal point
  *
  * @param[in]     func            The function
  * @param[out]    obj_val         The objective value \f$ f(x) \f$
@@ -79,7 +109,8 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_VAL)(SleqpFunc* func,
                                             void* func_data);
 
 /**
- * Evaluates the objective gradient at the current primal point
+ * Evaluates the objective gradient \f$ \nabla f \f$ at the current
+ * primal point
  *
  * @param[in]     func            The function
  * @param[out]    obj_grad        The objective gradient \f$ \nabla f(x) \f$
@@ -90,7 +121,7 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_OBJ_GRAD)(SleqpFunc* func,
                                              void* func_data);
 
 /**
- * Evaluates the constraints at the current primal point
+ * Evaluates the constraints \f$ c \f$ at the current primal point
  *
  * @param[in]     func            The function
  * @param[out]    cons_val        The value of the constraint function \f$ c(x)
@@ -102,7 +133,7 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
                                              void* func_data);
 
 /**
- * Evaluates the constraing Jacobian at the current primal point
+ * Evaluates the constraing Jacobian \f$ J_c \f$ at the current primal point
  *
  * @param[in]     func            The function
  * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
@@ -169,7 +200,7 @@ typedef struct
  * @param[in]  callbacks        A callback to the function callbacks
  * @param[in]  num_variables    The number of variables
  * @param[in]  num_constraints  The number of constraints
- * @param[in]  func_data        The function data
+ * @param[in]  func_data        User-provided function data
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_create(SleqpFunc** fstar,
@@ -192,6 +223,9 @@ sleqp_func_num_cons(const SleqpFunc* func);
 
 /**
  * Sets the callbacks of this function to the specified ones
+ *
+ * @param[in]     func            The function
+ * @param[in]     callbacks       The new callbacks
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_set_callbacks(SleqpFunc* func, SleqpFuncCallbacks* callbacks);

@@ -2,7 +2,7 @@
 #define SLEQP_PUB_LSQ_H
 
 /**
- * @file lsq.h
+ * @file pub_lsq.h
  * @brief Defintion of least squares functions.
  **/
 
@@ -12,9 +12,29 @@
 #include "sleqp/sparse/pub_vec.h"
 
 /**
- * A least-squares function consists of a residual \f$ r : \mathbb{R}^n \to
- *\mathbb{R}^k \f$ defining the objective as \f$ 1/2 \|r(x)\|^2 \f$ subjecting
- *to the usual constraints.
+ * @defgroup least_squares Nonlinear least-squares problems
+ *
+ * A least-squares function is defined in terms of residuals
+ * \f$ r : \R^n \to \R^k \f$
+ *
+ * yielding the objective
+ *
+ * \f[
+ *     f(x) := \frac{1}{2} \|r(x)\|^2
+ * \f]
+ *
+ * subjecting to the usual constraints. During the optimization, the
+ * Hessian being used is not that of the original Lagrangean, but
+ * instead the Levenberg-Marquardt approximation of the Hessian of the
+ * objective \f$ f \f$, given as
+ *
+ * \f[
+ * H_f(x) \approx J^{T}(x) \cdot J(x).
+ * \f]
+ *
+ * Optionally, the user can provide a regularization
+ * factor \f$ \lmfact > 0 \f$, which will add a term
+ * of \f$ \lmfact \cdot I_{n} \f$ to the Hessian.
  **/
 
 /**
@@ -43,12 +63,7 @@ typedef SLEQP_RETCODE (*SLEQP_LSQ_NONZEROS)(SleqpFunc* func,
                                             void* func_data);
 
 /**
- * Evaluates the residual.
- * \f[
- *    r(x)
- * \f]
- * This is useful when the constraints part is used to represent a least-squares
- * residual.
+ * Evaluates the residuals \f$ r(x) \f$ at the current primal point.
  *
  * @param[in]     func              The function
  * @param[out]    residual          The resulting residual
@@ -60,8 +75,9 @@ typedef SLEQP_RETCODE (*SLEQP_LSQ_RESIDUALS)(SleqpFunc* func,
                                              void* func_data);
 
 /**
- * Evaluates the product of the Jacobian of the residual with a direction \f$ d
- * \in \mathbb{R}^n \f$. \f[ J_r(x) d \f]
+ * Evaluates the forward product of the Jacobian of the residuals at the
+ * current primal point \f$ J_r(x) \f$ with a direction
+ * \f$ d \in \R^n \f$.
  *
  * @param[in]     func              The function
  * @param[in]     forward_direction The direction \f$ d \f$
@@ -76,8 +92,9 @@ typedef SLEQP_RETCODE (*SLEQP_LSQ_JAC_FORWARD)(
   void* func_data);
 
 /**
- * Evaluates the product of the Jacobian of the residual with a direction \f$ d
- * \in \mathbb{R}^k \f$. \f[ d^T J_r(x) \f]
+ * Evaluates the adjoint product of the Jacobian of the residuals at the
+ * current primal point \f$ J_r(x) \f$ with a
+ * direction \f$ d \in \R^k \f$.
  *
  * @param[in]     func              The function
  * @param[in]     adjoint_direction The direction \f$ d \f$
@@ -103,6 +120,19 @@ typedef struct
   SLEQP_FUNC_FREE func_free;
 } SleqpLSQCallbacks;
 
+/**
+ * Creates a least-squares function.
+ *
+ * @param[out] fstar           A pointer to the function to be created
+ * @param[in]  callbacks       Required callbacks
+ * @param[in]  num_variables   The number \f$ n \f$ of variables
+ * @param[in]  num_constraints The number \f$ m \f$ of constraints
+ * @param[in]  num_residuals   The number \f$ k \f$ of residuals
+ * @param[in]  lm_factor       The regularization factor \f$ \lmfact \f$
+ * @param[in]  params          Numerical parameters
+ * @param[in]  func_data       User-provided function data
+ *
+ **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_lsq_func_create(SleqpFunc** fstar,
                       SleqpLSQCallbacks* callbacks,
@@ -119,6 +149,9 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_lsq_func_set_callbacks(SleqpFunc* func, SleqpLSQCallbacks* callbacks);
 
+/**
+ * Sets the regularization factor \f$ \lmfact \f$
+ **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_lsq_func_set_lm_factor(SleqpFunc* func, double lm_factor);
 

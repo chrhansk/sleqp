@@ -15,7 +15,7 @@
 #include "quasi_newton_types.h"
 
 /**
- * @defgroup BFGS method
+ * @defgroup bfgs BFGS method
  *
  * The BFGS method is a quasi-Newton method based on
  * a sequence of vectors \f$ (s_k, y_k) \f$, where

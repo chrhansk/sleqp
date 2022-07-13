@@ -14,6 +14,11 @@
 bool
 sleqp_working_set_valid(const SleqpWorkingSet* working_set);
 
+SLEQP_EXPORT SLEQP_ACTIVE_STATE
+sleqp_working_set_state(const SleqpWorkingSet* working_set,
+                        bool constraint,
+                        int index);
+
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_working_set_supports_cons_dual(const SleqpWorkingSet* working_set,

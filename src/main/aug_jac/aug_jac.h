@@ -22,7 +22,7 @@ sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac, SleqpIterate* iterate);
  * minimum norm by solving the problem
  *
  * \f[
- * \min \|x\|_2, \text{s.t. } A_W x = b_W
+ * \min \|x\|_2, \st A_W x = b_W
  * \f]
  *
  * @param[in]  aug_jac    The augmented Jacobian system
@@ -59,7 +59,7 @@ sleqp_aug_jac_solve_lsq(SleqpAugJac* aug_jac,
  * null space of \f$ A_W by solving the problem.
  *
  * \f[
- * \min_{x} \|x - y\|_2, \text{s.t. } A_W x = 0
+ * \min_{x} \|x - y\|_2, \st A_W x = 0
  * \f]
  *
  * @param[in]  aug_jac    The augmented Jacobian system

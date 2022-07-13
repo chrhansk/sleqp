@@ -2,7 +2,7 @@
 #define SLEQP_PUB_MEM_H
 
 /**
- * @file mem.h
+ * @file pub_mem.h
  * @brief Definition of memory (de-)allocation functions.
  **/
 
