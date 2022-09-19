@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <mex.h>
 
+#include "mex_error.h"
 #include "mex_fields.h"
 #include "mex_func_common.h"
 #include "mex_output.h"
@@ -75,7 +76,9 @@ read_option_entry(const mxArray* mex_options,
 
   *present = true;
 
-  if (!(mxIsScalar(value) && mxIsDouble(value)))
+  MEX_EXPECT_DOUBLE(value);
+
+  if (!(mxIsScalar(value)))
   {
     return SLEQP_ERROR;
   }
@@ -125,10 +128,7 @@ set_param_value(int name, double value, void* data)
 static SLEQP_RETCODE
 read_params(SleqpParams* params, const mxArray* mex_options)
 {
-  if (!mxIsStruct(mex_options))
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_STRUCT(mex_options);
 
   const int num_params = sizeof(param_names) / sizeof(param_names[0]);
 
@@ -159,10 +159,7 @@ set_option_enum_value(int name, double value, void* data)
 static SLEQP_RETCODE
 read_options(SleqpOptions* options, const mxArray* mex_options)
 {
-  if (!mxIsStruct(mex_options))
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_STRUCT(mex_options);
 
   const int num_bool_options
     = sizeof(bool_option_names) / sizeof(bool_option_names[0]);

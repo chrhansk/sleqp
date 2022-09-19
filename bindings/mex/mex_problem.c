@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "mex_error.h"
 #include "mex_fields.h"
 #include "mex_func.h"
 #include "mex_lsq.h"
@@ -39,7 +40,7 @@ num_vars_from_solution(const mxArray* x0)
 static int
 num_cons_from_options(const mxArray* options)
 {
-  assert(mxIsStruct(options));
+  MEX_EXPECT_STRUCT(options);
 
   const mxArray* cons_lb = mxGetField(options, 0, MEX_INPUT_CONS_LB);
 
@@ -195,14 +196,10 @@ mex_problem_create(SleqpProblem** star,
     const SLEQP_HESS_EVAL hess_eval
       = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
 
-    const bool with_hessian = (hess_eval == SLEQP_HESS_EVAL_EXACT);
+    const bool with_hess = (hess_eval == SLEQP_HESS_EVAL_EXACT);
 
-    SLEQP_CALL(mex_func_create(&func,
-                               mex_funcs,
-                               with_hessian,
-                               params,
-                               num_vars,
-                               num_cons));
+    SLEQP_CALL(
+      mex_func_create(&func, mex_funcs, params, num_vars, num_cons, with_hess));
   }
 
   SLEQP_CALL(sleqp_problem_create_simple(star,

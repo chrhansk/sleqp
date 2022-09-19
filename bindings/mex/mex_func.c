@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <threads.h>
 
+#include "mex_error.h"
 #include "mex_fields.h"
 #include "mex_func_common.h"
 #include "sleqp/pub_types.h"
@@ -18,10 +19,7 @@ callback_has_field(const mxArray* mex_callbacks,
                    const char* name,
                    bool* has_field)
 {
-  if (!mxIsStruct(mex_callbacks))
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_STRUCT(mex_callbacks);
 
   mxArray* field = mxGetField(mex_callbacks, 0, name);
 
@@ -62,14 +60,14 @@ typedef struct
 
 static SLEQP_RETCODE
 mex_func_set(SleqpFunc* func,
-             SleqpVec* x,
+             SleqpVec* primal,
              SLEQP_VALUE_REASON reason,
              bool* reject,
              void* data)
 {
   FuncData* func_data = (FuncData*)data;
 
-  SLEQP_CALL(sleqp_vec_to_raw(x, mxGetPr(func_data->primal)));
+  SLEQP_CALL(sleqp_vec_to_raw(primal, mxGetPr(func_data->primal)));
 
   return SLEQP_OKAY;
 }
@@ -207,14 +205,12 @@ hess_prod_matrix(SleqpFunc* func,
 
   MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
 
-  assert(mxIsDouble(lhs));
-  assert(!mxIsComplex(lhs));
-  assert(mxIsSparse(lhs));
+  MEX_EXPECT_DOUBLE(lhs);
+  MEX_EXPECT_SPARSE(lhs);
 
   const int num_vars = sleqp_func_num_vars(func);
 
-  assert(mxGetM(lhs) == num_vars);
-  assert(mxGetN(lhs) == num_vars);
+  MEX_EXPECT_SHAPE(lhs, num_vars, num_vars);
 
   SLEQP_CALL(sleqp_vec_to_raw(direction, func_data->direction));
 
@@ -262,10 +258,10 @@ mex_func_hess_prod(SleqpFunc* func,
 static SLEQP_RETCODE
 create_func_data(FuncData** star,
                  const mxArray* mex_callbacks,
-                 bool with_hessian,
                  SleqpParams* params,
                  int num_vars,
-                 int num_cons)
+                 int num_cons,
+                 bool with_hess)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -297,7 +293,7 @@ create_func_data(FuncData** star,
                                         &func_data->callbacks.cons_jac));
   }
 
-  if (with_hessian)
+  if (with_hess)
   {
     bool has_hess_prod = false;
 
@@ -360,10 +356,10 @@ mex_func_free(void* data)
 SLEQP_RETCODE
 mex_func_create(SleqpFunc** star,
                 const mxArray* mex_callbacks,
-                bool with_hessian,
                 SleqpParams* params,
-                int num_variables,
-                int num_constraints)
+                int num_vars,
+                int num_cons,
+                bool with_hess)
 {
   SleqpFuncCallbacks callbacks = {.set_value = mex_func_set,
                                   .obj_val   = mex_func_obj_val,
@@ -377,16 +373,13 @@ mex_func_create(SleqpFunc** star,
 
   SLEQP_CALL(create_func_data(&func_data,
                               mex_callbacks,
-                              with_hessian,
                               params,
-                              num_variables,
-                              num_constraints));
+                              num_vars,
+                              num_cons,
+                              with_hess));
 
-  SLEQP_CALL(sleqp_func_create(star,
-                               &callbacks,
-                               num_variables,
-                               num_constraints,
-                               (void*)func_data));
+  SLEQP_CALL(
+    sleqp_func_create(star, &callbacks, num_vars, num_cons, (void*)func_data));
 
   return SLEQP_OKAY;
 }

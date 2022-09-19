@@ -1,5 +1,6 @@
 #include "mex_func_common.h"
 
+#include "mex_error.h"
 #include "mex_fields.h"
 
 SLEQP_RETCODE
@@ -7,17 +8,11 @@ mex_callback_from_struct(const mxArray* mex_callbacks,
                          const char* name,
                          mxArray** star)
 {
-  if (!mxIsStruct(mex_callbacks))
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_STRUCT(mex_callbacks);
 
   *star = mxGetField(mex_callbacks, 0, name);
 
-  if (!(*star && mxIsFunctionHandle(*star)))
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_FUNCTION_HANDLE(*star);
 
   return SLEQP_OKAY;
 }
@@ -27,10 +22,7 @@ mex_callback_has_field(const mxArray* mex_callbacks,
                        const char* name,
                        bool* has_field)
 {
-  if (!mxIsStruct(mex_callbacks))
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_STRUCT(mex_callbacks);
 
   mxArray* field = mxGetField(mex_callbacks, 0, name);
 
@@ -46,15 +38,8 @@ mex_eval_into_real(int nrhs, mxArray** rhs, double* value)
 
   MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
 
-  if (!mxIsDouble(lhs) || mxIsComplex(lhs))
-  {
-    return SLEQP_ERROR;
-  }
-
-  if (!mxIsScalar(lhs))
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_DOUBLE(lhs);
+  MEX_EXPECT_SCALAR(lhs);
 
   *value = *mxGetPr(lhs);
 
@@ -68,10 +53,7 @@ mex_eval_into_bool(int nrhs, mxArray** rhs, bool* value)
 
   MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
 
-  if (!mxIsLogicalScalar(lhs))
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_LOGICAL_SCALAR(lhs);
 
   *value = mxIsLogicalScalarTrue(lhs);
 
@@ -90,15 +72,8 @@ mex_eval_into_sparse_vec(int nrhs,
 
   MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
 
-  if (!mxIsDouble(lhs) || mxIsComplex(lhs))
-  {
-    return SLEQP_ERROR;
-  }
-
-  if (mxGetNumberOfElements(lhs) != vec->dim)
-  {
-    return SLEQP_ERROR;
-  }
+  MEX_EXPECT_DOUBLE(lhs);
+  MEX_EXPECT_NUM_ELEMENTS(lhs, vec->dim);
 
   SLEQP_CALL(sleqp_vec_set_from_raw(vec, mxGetPr(lhs), vec->dim, zero_eps));
 
@@ -108,15 +83,13 @@ mex_eval_into_sparse_vec(int nrhs,
 static SLEQP_RETCODE
 array_to_sparse_matrix(const mxArray* array, SleqpSparseMatrix* matrix)
 {
-  assert(mxIsSparse(array));
-  assert(mxIsDouble(array));
-  assert(!mxIsComplex(array));
+  MEX_EXPECT_DOUBLE(array);
+  MEX_EXPECT_SPARSE(array);
 
   const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
   const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
 
-  assert(mxGetM(array) == num_rows);
-  assert(mxGetN(array) == num_cols);
+  MEX_EXPECT_SHAPE(array, num_rows, num_cols);
 
   const mwIndex* jc = mxGetJc(array);
   const mwIndex* ir = mxGetIr(array);
@@ -157,11 +130,6 @@ mex_eval_into_sparse_matrix(int nrhs,
   mxArray* lhs;
 
   MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
-
-  if (!mxIsDouble(lhs) || mxIsComplex(lhs) || !mxIsSparse(lhs))
-  {
-    return SLEQP_ERROR;
-  }
 
   SLEQP_CALL(array_to_sparse_matrix(lhs, matrix));
 
