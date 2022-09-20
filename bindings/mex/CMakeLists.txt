@@ -1,6 +1,7 @@
 set(MEX_SOURCES
   mex_func.c
   mex_func_common.c
+  mex_hess.c
   mex_info.c
   mex_lsq.c
   mex_main.c
