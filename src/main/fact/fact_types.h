@@ -31,5 +31,4 @@ typedef struct
   SLEQP_FACT_FREE free;
 } SleqpFactorizationCallbacks;
 
-#endif /* SLEQP_FACT                                                           \
-_TYPES_H */
+#endif /* SLEQP_FACT_TYPES_H */
