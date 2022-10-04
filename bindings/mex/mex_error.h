@@ -57,7 +57,7 @@
     if (mxGetNumberOfElements(array) != (elements))                            \
     {                                                                          \
       sleqp_raise(SLEQP_FAILED_ASSERTION,                                      \
-                  "Invalid number of rows: expected %d, actual %zu",           \
+                  "Invalid number of elements: expected %d, actual %zu",       \
                   (elements),                                                  \
                   mxGetNumberOfElements(array));                               \
     }                                                                          \

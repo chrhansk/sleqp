@@ -25,9 +25,9 @@ typedef struct
 
 } DynFuncData;
 
-#define ERROR_SET_ERROR_BOUND "Error setting error bound"
-#define ERROR_SET_OBJ_WEIGHT "Error setting objective weight"
-#define ERROR_SET_CONS_WEIGHTS "Error setting constraint weights"
+#define ERROR_SET_ERROR_BOUND "Error '%s' setting error bound"
+#define ERROR_SET_OBJ_WEIGHT "Error '%s' setting objective weight"
+#define ERROR_SET_CONS_WEIGHTS "Error '%s' setting constraint weights"
 
 static SLEQP_RETCODE
 dyn_func_set_value(SleqpFunc* func,

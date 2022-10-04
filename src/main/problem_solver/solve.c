@@ -50,8 +50,8 @@ print_warning(SleqpProblemSolver* solver)
 
     if (check_first)
     {
-      sleqp_log_warn(
-        "Enabled first order derivative check while using a dynamic function");
+      sleqp_log_warn("Enabled first order derivative check while using a "
+                     "dynamic function");
     }
   }
 

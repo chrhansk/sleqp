@@ -32,18 +32,18 @@ typedef enum
       SLEQP_RETCODE retcode = (x);                                             \
       if (retcode != SLEQP_OKAY)                                               \
       {                                                                        \
-        sleqp_raise(SLEQP_FUNC_EVAL_ERROR, message);                           \
+        sleqp_raise(SLEQP_FUNC_EVAL_ERROR, message, sleqp_error_msg());        \
       }                                                                        \
     }                                                                          \
   } while (false)
 
-#define SLEQP_FUNC_ERROR_SET_VALUE "Error setting function value"
-#define SLEQP_FUNC_ERROR_NONZEROS "Error querying function nonzeros"
-#define SLEQP_FUNC_ERROR_OBJ_VAL "Error evaluating objective"
-#define SLEQP_FUNC_ERROR_OBJ_GRAD "Error evaluating objective gradient"
-#define SLEQP_FUNC_ERROR_CONS_VAL "Error evaluating constraints"
-#define SLEQP_FUNC_ERROR_CONS_JAC "Error evaluating constraint Jacobian"
-#define SLEQP_FUNC_ERROR_HESS_PROD "Error evaluating Hessian product"
+#define SLEQP_FUNC_ERROR_SET_VALUE "Error '%s' setting function value"
+#define SLEQP_FUNC_ERROR_NONZEROS "Error '%s' querying function nonzeros"
+#define SLEQP_FUNC_ERROR_OBJ_VAL "Error '%s' evaluating objective"
+#define SLEQP_FUNC_ERROR_OBJ_GRAD "Error '%s' evaluating objective gradient"
+#define SLEQP_FUNC_ERROR_CONS_VAL "Error '%s' evaluating constraints"
+#define SLEQP_FUNC_ERROR_CONS_JAC "Error '%s' evaluating constraint Jacobian"
+#define SLEQP_FUNC_ERROR_HESS_PROD "Error '%s' evaluating Hessian product"
 
 /**
  * Sets the current input vector of a function

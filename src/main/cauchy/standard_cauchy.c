@@ -720,7 +720,6 @@ needs_reduced_resolve(CauchyData* cauchy_data, bool* resolve)
     // in the working set.
     if (zero_slacks && nonzero_dual)
     {
-      sleqp_log_warn("LP requires resolves");
       needs_resolve = true;
     }
   }
