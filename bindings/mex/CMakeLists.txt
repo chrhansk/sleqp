@@ -27,6 +27,7 @@ set(MEX_TESTS
   tests/test_callback.m
   tests/test_hess_prod.m
   tests/test_solve.m
+  tests/test_solve_dyn.m
   tests/test_solve_lsq.m
   tests/test_solve_quasi_newton.m
   tests/test_working_set.m)
