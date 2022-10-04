@@ -12,6 +12,11 @@
 #include "log.h"
 #include "mem.h"
 
+// TODO: Find out how to derive estimation
+//       number from the values provided
+static const bool ma57_est_cond     = false;
+static const bool ma57_solve_refine = false;
+
 static const bool ma57_verbose = false;
 
 static const double ma57_size_factor = 1.2;
@@ -287,7 +292,9 @@ typedef struct MA57Workspace
   double* work;
   int32_t work_size;
 
-  double* rhs_sol;
+  double* sol;
+  double* rhs;
+  double* res;
   int32_t rhs_sol_size;
 
 } MA57Workspace;
@@ -499,6 +506,26 @@ ma57_numeric(MA57Data* ma57_data)
   return SLEQP_OKAY;
 }
 
+static int
+req_work_size(const int dim, MA57IControl* icntl)
+{
+  if (icntl->permitted_itref_steps == 1)
+  {
+    return dim;
+  }
+  else if (icntl->permitted_itref_steps > 1)
+  {
+    if (icntl->flag_estimate_cond > 0)
+    {
+      return 4 * dim;
+    }
+
+    return 3 * dim;
+  }
+
+  return 0;
+}
+
 static SLEQP_RETCODE
 ma57_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 {
@@ -516,16 +543,25 @@ ma57_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
   const int dim = num_cols;
 
   {
+    const int required_work_size = req_work_size(dim, &(control_info->icntl));
+
     if (ma57_workspace->rhs_sol_size < dim)
     {
-      SLEQP_CALL(sleqp_realloc(&(ma57_workspace->rhs_sol), dim));
+      SLEQP_CALL(sleqp_realloc(&(ma57_workspace->sol), dim));
+
+      if (ma57_solve_refine)
+      {
+        SLEQP_CALL(sleqp_realloc(&(ma57_workspace->rhs), dim));
+        SLEQP_CALL(sleqp_realloc(&(ma57_workspace->res), dim));
+      }
+
       ma57_workspace->rhs_sol_size = dim;
     }
 
-    if (ma57_workspace->work_size < dim)
+    if (ma57_workspace->work_size < required_work_size)
     {
-      SLEQP_CALL(sleqp_realloc(&(ma57_workspace->work), dim));
-      ma57_workspace->work_size = dim;
+      SLEQP_CALL(sleqp_realloc(&(ma57_workspace->work), required_work_size));
+      ma57_workspace->work_size = required_work_size;
     }
   }
 
@@ -598,15 +634,11 @@ ma57_solve(void* fact_data, const SleqpVec* rhs)
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
   HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
-  const int32_t job  = 1; // Solve Ax=b
   const int32_t dim  = hsl_matrix->dim;
+  const int32_t nnz  = hsl_matrix->nnz;
   const int32_t nrhs = 1;
 
   assert(dim == rhs->dim);
-
-  double* rhs_sol = ma57_workspace->rhs_sol;
-
-  SLEQP_CALL(sleqp_vec_to_raw(rhs, rhs_sol));
 
   double* factor            = ma57_factor->factor;
   const int32_t factor_size = ma57_factor->factor_size;
@@ -619,20 +651,61 @@ ma57_solve(void* fact_data, const SleqpVec* rhs)
 
   int32_t* iwork = ma57_workspace->iwork;
 
-  ma57cd_(&job,
-          &dim,
-          factor,
-          &factor_size,
-          ifactor,
-          &ifactor_size,
-          &nrhs,
-          rhs_sol,
-          &dim,
-          work,
-          &work_size,
-          iwork,
-          control_info->icntl_,
-          control_info->info_);
+  if (ma57_solve_refine)
+  {
+    const int32_t job = 0; // Solve Ax=b
+
+    double* rhs_dense = ma57_workspace->rhs;
+    double* sol_dense = ma57_workspace->sol;
+    double* res_dense = ma57_workspace->res;
+
+    SLEQP_CALL(sleqp_vec_to_raw(rhs, rhs_dense));
+
+    ma57dd_(&job,                  // const int32_t *job,
+            &dim,                  // const int32_t *n,
+            &nnz,                  // const int32_t *ne,
+            hsl_matrix->data,      // const double *a,
+            hsl_matrix->rows,      // const int32_t *irn,
+            hsl_matrix->cols,      // const int32_t *jcn,
+            factor,                // const double *fact,
+            &factor_size,          // const int32_t *lfact,
+            ifactor,               // const int32_t *ifact,
+            &ifactor_size,         // const int32_t *lifact,
+            rhs_dense,             // double *rhs,
+            sol_dense,             // double *x,
+            res_dense,             // double *resid,
+            work,                  // double *work,
+            iwork,                 // int32_t *iwork,
+            control_info->icntl_,  // int32_t *icntl,
+            control_info->cntl_,   // double *cntl,
+            control_info->info_,   // int32_t *info,
+            control_info->rinfo_); // double *rinfo
+  }
+  else
+  {
+    const int32_t job = 1; // Solve Ax=b
+
+    double* rhs_sol = ma57_workspace->sol;
+
+    SLEQP_CALL(sleqp_vec_to_raw(rhs, rhs_sol));
+
+    ma57cd_(&job,
+            &dim,
+            factor,
+            &factor_size,
+            ifactor,
+            &ifactor_size,
+            &nrhs,
+            rhs_sol,
+            &dim,
+            work,
+            &work_size,
+            iwork,
+            control_info->icntl_,
+            control_info->info_);
+  }
+
+  MA57_CHECK_ERROR(control_info->info.error);
 
   return SLEQP_OKAY;
 }
@@ -649,7 +722,7 @@ ma57_solution(void* fact_data,
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
 
   SLEQP_CALL(sleqp_vec_set_from_raw(sol,
-                                    ma57_workspace->rhs_sol + begin,
+                                    ma57_workspace->sol + begin,
                                     end - begin,
                                     zero_eps));
 
@@ -678,6 +751,11 @@ ma57_data_create(MA57Data** star)
   {
     // Only print errors
     control_info->icntl.print_level = 1;
+  }
+
+  if (ma57_est_cond)
+  {
+    control_info->icntl.flag_estimate_cond = 1;
   }
 
   // AMD using MC47
@@ -716,7 +794,10 @@ ma57_free(void** star)
   sleqp_free(&(ma57_workspace->keep));
   sleqp_free(&(ma57_workspace->iwork));
   sleqp_free(&(ma57_workspace->work));
-  sleqp_free(&(ma57_workspace->rhs_sol));
+
+  sleqp_free(&(ma57_workspace->res));
+  sleqp_free(&(ma57_workspace->rhs));
+  sleqp_free(&(ma57_workspace->sol));
 
   sleqp_free(&ma57_data);
 

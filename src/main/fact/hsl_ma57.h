@@ -75,6 +75,7 @@ ma57bd_(const int32_t* n,
         int32_t* info,
         double* rinfo);
 
+// solve against multiple rhs without iterative refinement
 void
 ma57cd_(const int32_t* job,
         const int32_t* n,
@@ -90,6 +91,28 @@ ma57cd_(const int32_t* job,
         int32_t* iwork,
         int32_t* icntl,
         int32_t* info);
+
+// solve against one rhs with iterative refinement
+void
+ma57dd_(const int32_t* job,
+        const int32_t* n,
+        const int32_t* ne,
+        const double* a,
+        const int32_t* irn,
+        const int32_t* jcn,
+        const double* fact,
+        const int32_t* lfact,
+        const int32_t* ifact,
+        const int32_t* lifact,
+        double* rhs,
+        double* x,
+        double* resid,
+        double* work,
+        int32_t* iwork,
+        int32_t* icntl,
+        double* cntl,
+        int32_t* info,
+        double* rinfo);
 
 void
 ma57ed_(const int32_t* n,
