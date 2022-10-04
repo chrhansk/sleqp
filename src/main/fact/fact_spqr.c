@@ -198,15 +198,6 @@ spqr_factorization_solve(void* fact_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-spqr_factorization_condition_estimate(void* fact_data,
-                                      double* condition_estimate)
-{
-  (*condition_estimate) = SLEQP_NONE;
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE
 spqr_factorization_solution(void* fact_data,
                             SleqpVec* sol,
                             int begin,
@@ -280,7 +271,7 @@ sleqp_fact_spqr_create(SleqpFact** star, SleqpParams* params)
     = {.set_matrix         = spqr_factorization_set_matrix,
        .solve              = spqr_factorization_solve,
        .solution           = spqr_factorization_solution,
-       .condition_estimate = spqr_factorization_condition_estimate,
+       .condition_estimate = NULL,
        .free               = spqr_factorization_free};
 
   SPQRData* spqr_data;
