@@ -8,7 +8,7 @@
 SLEQP_RETCODE
 mex_solve(mxArray** sol_star,
           mxArray** info_star,
-          bool lsq,
+          SLEQP_FUNC_TYPE func_type,
           const mxArray* mex_x0,
           const mxArray* mex_funcs,
           const mxArray* mex_options);

@@ -14,6 +14,15 @@
     }                                                                          \
   } while (false)
 
+#define MEX_EXPECT_NOT_NULL(array)                                             \
+  do                                                                           \
+  {                                                                            \
+    if (!(array))                                                              \
+    {                                                                          \
+      sleqp_raise(SLEQP_FAILED_ASSERTION, "Expected non-null");                \
+    }                                                                          \
+  } while (false)
+
 #define MEX_EXPECT_DOUBLE(array)                                               \
   MEX_EXPECT(array, mxIsDouble, "Expected type double")
 

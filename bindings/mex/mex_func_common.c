@@ -34,14 +34,26 @@ mex_callback_has_field(const mxArray* mex_callbacks,
 SLEQP_RETCODE
 mex_eval_into_real(int nrhs, mxArray** rhs, double* value)
 {
-  mxArray* lhs;
+  mxArray* lhs[] = {NULL};
 
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
+  MEX_CALL(mexCallMATLABWithTrap(MEX_ARRAY_LEN(lhs),
+                                 lhs,
+                                 nrhs,
+                                 rhs,
+                                 MATLAB_FUNC_FEVAL));
 
-  MEX_EXPECT_DOUBLE(lhs);
-  MEX_EXPECT_SCALAR(lhs);
+  SLEQP_CALL(mex_array_to_real(*lhs, value));
 
-  *value = *mxGetPr(lhs);
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+mex_array_to_real(mxArray* array, double* value)
+{
+  MEX_EXPECT_DOUBLE(array);
+  MEX_EXPECT_SCALAR(array);
+
+  *value = *mxGetPr(array);
 
   return SLEQP_OKAY;
 }
@@ -49,33 +61,46 @@ mex_eval_into_real(int nrhs, mxArray** rhs, double* value)
 SLEQP_RETCODE
 mex_eval_into_bool(int nrhs, mxArray** rhs, bool* value)
 {
-  mxArray* lhs;
+  mxArray* lhs[] = {NULL};
 
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
+  MEX_CALL(mexCallMATLABWithTrap(MEX_ARRAY_LEN(lhs),
+                                 lhs,
+                                 nrhs,
+                                 rhs,
+                                 MATLAB_FUNC_FEVAL));
 
-  MEX_EXPECT_LOGICAL_SCALAR(lhs);
+  MEX_EXPECT_LOGICAL_SCALAR(*lhs);
 
-  *value = mxIsLogicalScalarTrue(lhs);
+  *value = mxIsLogicalScalarTrue(*lhs);
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-mex_eval_into_sparse_vec(int nrhs,
-                         mxArray** rhs,
-                         SleqpParams* params,
-                         SleqpVec* vec)
+mex_eval_into_vec(int nrhs, mxArray** rhs, SleqpParams* params, SleqpVec* vec)
+{
+  mxArray* lhs[] = {NULL};
+
+  MEX_CALL(mexCallMATLABWithTrap(MEX_ARRAY_LEN(lhs),
+                                 lhs,
+                                 nrhs,
+                                 rhs,
+                                 MATLAB_FUNC_FEVAL));
+
+  SLEQP_CALL(mex_array_to_vec(*lhs, params, vec));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+mex_array_to_vec(const mxArray* array, SleqpParams* params, SleqpVec* vec)
 {
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  mxArray* lhs;
+  MEX_EXPECT_DOUBLE(array);
+  MEX_EXPECT_NUM_ELEMENTS(array, vec->dim);
 
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
-
-  MEX_EXPECT_DOUBLE(lhs);
-  MEX_EXPECT_NUM_ELEMENTS(lhs, vec->dim);
-
-  SLEQP_CALL(sleqp_vec_set_from_raw(vec, mxGetPr(lhs), vec->dim, zero_eps));
+  SLEQP_CALL(sleqp_vec_set_from_raw(vec, mxGetPr(array), vec->dim, zero_eps));
 
   return SLEQP_OKAY;
 }
@@ -94,6 +119,10 @@ array_to_sparse_matrix(const mxArray* array, SleqpSparseMatrix* matrix)
   const mwIndex* jc = mxGetJc(array);
   const mwIndex* ir = mxGetIr(array);
   const double* pr  = mxGetPr(array);
+
+  MEX_EXPECT_NOT_NULL(jc);
+  MEX_EXPECT_NOT_NULL(ir);
+  MEX_EXPECT_NOT_NULL(pr);
 
   const int nnz = jc[num_cols];
 
@@ -127,11 +156,15 @@ mex_eval_into_sparse_matrix(int nrhs,
                             SleqpParams* params,
                             SleqpSparseMatrix* matrix)
 {
-  mxArray* lhs;
+  mxArray* lhs[] = {NULL};
 
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
+  MEX_CALL(mexCallMATLABWithTrap(MEX_ARRAY_LEN(lhs),
+                                 lhs,
+                                 nrhs,
+                                 rhs,
+                                 MATLAB_FUNC_FEVAL));
 
-  SLEQP_CALL(array_to_sparse_matrix(lhs, matrix));
+  SLEQP_CALL(array_to_sparse_matrix(*lhs, matrix));
 
   return SLEQP_OKAY;
 }

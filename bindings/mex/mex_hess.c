@@ -44,6 +44,46 @@ mex_hess_init(MexHess* hess,
 }
 
 static SLEQP_RETCODE
+reserve_args(MexHess* hess, int nargs)
+{
+  if (hess->nargs > nargs)
+  {
+    return SLEQP_OKAY;
+  }
+
+  SLEQP_CALL(sleqp_realloc(&hess->args, nargs));
+  hess->nargs = nargs;
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+prepare_args(MexHess* hess,
+             mxArray** default_args,
+             int ndefault_args,
+             mxArray** extra_args,
+             int nextra_args)
+{
+  const int ntotal_args = ndefault_args + nextra_args;
+
+  reserve_args(hess, ntotal_args);
+
+  {
+    for (int i = 0; i < ndefault_args; ++i)
+    {
+      hess->args[i] = default_args[i];
+    }
+
+    for (int i = 0; i < nextra_args; ++i)
+    {
+      hess->args[ndefault_args + i] = extra_args[i];
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 prod_from_hess_matrix(const mxArray* hessian,
                       const double* direction,
                       double* product)
@@ -59,6 +99,10 @@ prod_from_hess_matrix(const mxArray* hessian,
   const mwIndex* ir = mxGetIr(hessian);
   const double* pr  = mxGetPr(hessian);
 
+  MEX_EXPECT_NOT_NULL(jc);
+  MEX_EXPECT_NOT_NULL(ir);
+  MEX_EXPECT_NOT_NULL(pr);
+
   assert(jc[0] == 0);
 
   mwIndex index = 0;
@@ -72,7 +116,13 @@ prod_from_hess_matrix(const mxArray* hessian,
       const mwIndex row  = ir[index];
       const double value = pr[index];
 
-      assert(row >= col);
+      if (row < col)
+      {
+        sleqp_raise(SLEQP_FUNC_EVAL_ERROR,
+                    "Hessian entry at (%ld, %ld) above diagonal",
+                    row,
+                    col);
+      }
 
       if (row == col)
       {
@@ -93,19 +143,32 @@ static SLEQP_RETCODE
 hess_prod_direct(MexHess* hess,
                  mxArray* primal,
                  const SleqpVec* direction,
+                 mxArray** rhs,
+                 int nrhs,
                  SleqpVec* result)
 {
   SLEQP_CALL(sleqp_vec_to_raw(direction, mxGetPr(hess->hess_dir)));
 
-  mxArray* rhs[] = {hess->callbacks.hess,
-                    primal,
-                    hess->hess_dir,
-                    hess->obj_dual,
-                    hess->cons_dual};
+  mxArray* default_args[] = {hess->callbacks.hess,
+                             primal,
+                             hess->hess_dir,
+                             hess->obj_dual,
+                             hess->cons_dual};
 
-  const int nrhs = sizeof(rhs) / sizeof(rhs[0]);
+  if (nrhs == 0)
+  {
+    MEX_EVAL_INTO_VEC(default_args, hess->params, result);
+  }
+  else
+  {
+    const int ndefault_args = MEX_ARRAY_LEN(default_args);
+    const int ntotal_args   = ndefault_args + nrhs;
 
-  SLEQP_CALL(mex_eval_into_sparse_vec(nrhs, rhs, hess->params, result));
+    SLEQP_CALL(prepare_args(hess, default_args, ndefault_args, rhs, nrhs));
+
+    SLEQP_CALL(
+      mex_eval_into_vec(ntotal_args, hess->args, hess->params, result));
+  }
 
   return SLEQP_OKAY;
 }
@@ -114,29 +177,46 @@ static SLEQP_RETCODE
 hess_prod_matrix(MexHess* hess,
                  mxArray* primal,
                  const SleqpVec* direction,
+                 mxArray** rhs,
+                 int nrhs,
                  SleqpVec* result)
 {
   const double zero_eps
     = sleqp_params_value(hess->params, SLEQP_PARAM_ZERO_EPS);
 
-  mxArray* lhs;
-  mxArray* rhs[]
+  mxArray* lhs[] = {NULL};
+
+  mxArray* default_args[]
     = {hess->callbacks.hess, primal, hess->obj_dual, hess->cons_dual};
 
-  const int nrhs = sizeof(rhs) / sizeof(rhs[0]);
+  if (nrhs == 0)
+  {
+    MEX_EVAL(lhs, default_args);
+  }
+  else
+  {
+    const int ndefault_args = MEX_ARRAY_LEN(default_args);
+    const int ntotal_args   = ndefault_args + nrhs;
 
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, nrhs, rhs, MATLAB_FUNC_FEVAL));
+    SLEQP_CALL(prepare_args(hess, default_args, ndefault_args, rhs, nrhs));
 
-  MEX_EXPECT_DOUBLE(lhs);
-  MEX_EXPECT_SPARSE(lhs);
+    MEX_CALL(mexCallMATLABWithTrap(MEX_ARRAY_LEN(lhs),
+                                   lhs,
+                                   ntotal_args,
+                                   hess->args,
+                                   MATLAB_FUNC_FEVAL));
+  }
+
+  MEX_EXPECT_DOUBLE(lhs[0]);
+  MEX_EXPECT_SPARSE(lhs[0]);
 
   const int num_vars = mxGetNumberOfElements(primal);
 
-  MEX_EXPECT_SHAPE(lhs, num_vars, num_vars);
+  MEX_EXPECT_SHAPE(lhs[0], num_vars, num_vars);
 
   SLEQP_CALL(sleqp_vec_to_raw(direction, hess->direction));
 
-  SLEQP_CALL(prod_from_hess_matrix(lhs, hess->direction, hess->product));
+  SLEQP_CALL(prod_from_hess_matrix(lhs[0], hess->direction, hess->product));
 
   SLEQP_CALL(sleqp_vec_set_from_raw(result, hess->product, num_vars, zero_eps));
 
@@ -149,6 +229,8 @@ mex_hess_prod(MexHess* hess,
               const double* obj_dual,
               const SleqpVec* direction,
               const SleqpVec* cons_duals,
+              mxArray** rhs,
+              int nrhs,
               SleqpVec* result)
 {
   SLEQP_CALL(sleqp_vec_to_raw(cons_duals, mxGetPr(hess->cons_dual)));
@@ -164,11 +246,11 @@ mex_hess_prod(MexHess* hess,
 
   if (!!(hess->hess_dir))
   {
-    return hess_prod_direct(hess, primal, direction, result);
+    return hess_prod_direct(hess, primal, direction, rhs, nrhs, result);
   }
   else
   {
-    return hess_prod_matrix(hess, primal, direction, result);
+    return hess_prod_matrix(hess, primal, direction, rhs, nrhs, result);
   }
 
   return SLEQP_OKAY;
@@ -177,6 +259,8 @@ mex_hess_prod(MexHess* hess,
 SLEQP_RETCODE
 mex_hess_free(MexHess* hess)
 {
+  sleqp_free(&hess->args);
+
   mxDestroyArray(hess->cons_dual);
   mxDestroyArray(hess->obj_dual);
 

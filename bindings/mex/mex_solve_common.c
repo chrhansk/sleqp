@@ -215,11 +215,9 @@ accepted_iterate(SleqpSolver* solver, SleqpIterate* iterate, void* data)
   mxArray* rhs[]
     = {callback_data->callbacks.accepted_iterate, callback_data->primal};
 
-  const int nrhs = sizeof(rhs) / sizeof(rhs[0]);
-
   bool value = false;
 
-  SLEQP_CALL(mex_eval_into_bool(nrhs, rhs, &value));
+  MEX_EVAL_INTO_BOOL(rhs, &value);
 
   if (value)
   {
@@ -287,7 +285,7 @@ destroy_callback_data(CallbackData* callback_data)
 SLEQP_RETCODE
 mex_solve(mxArray** sol_star,
           mxArray** info_star,
-          bool lsq,
+          SLEQP_FUNC_TYPE func_type,
           const mxArray* mex_x0,
           const mxArray* mex_funcs,
           const mxArray* mex_options)
@@ -310,7 +308,7 @@ mex_solve(mxArray** sol_star,
   SLEQP_CALL(mex_problem_create(&problem,
                                 params,
                                 options,
-                                lsq,
+                                func_type,
                                 mex_x0,
                                 mex_funcs,
                                 mex_options));

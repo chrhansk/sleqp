@@ -58,9 +58,7 @@ mex_func_obj_val(SleqpFunc* func, double* obj_val, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.obj_val, func_data->primal};
 
-  const int nrhs = sizeof(rhs) / sizeof(rhs[0]);
-
-  SLEQP_CALL(mex_eval_into_real(nrhs, rhs, obj_val));
+  MEX_EVAL_INTO_REAL(rhs, obj_val);
 
   return SLEQP_OKAY;
 }
@@ -72,7 +70,7 @@ mex_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.obj_grad, func_data->primal};
 
-  SLEQP_CALL(mex_eval_into_sparse_vec(2, rhs, func_data->params, obj_grad));
+  MEX_EVAL_INTO_VEC(rhs, func_data->params, obj_grad);
 
   return SLEQP_OKAY;
 }
@@ -84,7 +82,7 @@ mex_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.cons_val, func_data->primal};
 
-  SLEQP_CALL(mex_eval_into_sparse_vec(2, rhs, func_data->params, cons_val));
+  MEX_EVAL_INTO_VEC(rhs, func_data->params, cons_val);
 
   return SLEQP_OKAY;
 }
@@ -96,7 +94,7 @@ mex_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.cons_jac, func_data->primal};
 
-  SLEQP_CALL(mex_eval_into_sparse_matrix(2, rhs, func_data->params, cons_jac));
+  MEX_EVAL_INTO_SPARSE_MATRIX(rhs, func_data->params, cons_jac);
 
   return SLEQP_OKAY;
 }
@@ -116,6 +114,8 @@ mex_func_hess_prod(SleqpFunc* func,
                            obj_dual,
                            direction,
                            cons_duals,
+                           NULL,
+                           0,
                            result));
 
   return SLEQP_OKAY;
