@@ -623,7 +623,7 @@ gurobi_cons_stats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-gurobi_basis_condition_estimate(void* lp_data, bool* exact, double* condition)
+gurobi_basis_cond(void* lp_data, bool* exact, double* condition)
 {
   SleqpLpiGRB* lp_interface = lp_data;
 
@@ -689,23 +689,22 @@ sleqp_lpi_gurobi_create(SleqpLPi** lp_star,
                         SleqpParams* params,
                         SleqpOptions* options)
 {
-  SleqpLPiCallbacks callbacks
-    = {.create_problem           = gurobi_create_problem,
-       .solve                    = gurobi_solve,
-       .status                   = gurobi_status,
-       .set_bounds               = gurobi_set_bounds,
-       .set_coeffs               = gurobi_set_coefficients,
-       .set_obj                  = gurobi_set_objective,
-       .set_basis                = gurobi_set_basis,
-       .save_basis               = gurobi_save_basis,
-       .restore_basis            = gurobi_restore_basis,
-       .primal_sol               = gurobi_primal_sol,
-       .dual_sol                 = gurobi_dual_sol,
-       .vars_stats               = gurobi_vars_stats,
-       .cons_stats               = gurobi_cons_stats,
-       .basis_condition_estimate = gurobi_basis_condition_estimate,
-       .write                    = gurobi_write,
-       .free_problem             = gurobi_free};
+  SleqpLPiCallbacks callbacks = {.create_problem = gurobi_create_problem,
+                                 .solve          = gurobi_solve,
+                                 .status         = gurobi_status,
+                                 .set_bounds     = gurobi_set_bounds,
+                                 .set_coeffs     = gurobi_set_coefficients,
+                                 .set_obj        = gurobi_set_objective,
+                                 .set_basis      = gurobi_set_basis,
+                                 .save_basis     = gurobi_save_basis,
+                                 .restore_basis  = gurobi_restore_basis,
+                                 .primal_sol     = gurobi_primal_sol,
+                                 .dual_sol       = gurobi_dual_sol,
+                                 .vars_stats     = gurobi_vars_stats,
+                                 .cons_stats     = gurobi_cons_stats,
+                                 .basis_cond     = gurobi_basis_cond,
+                                 .write          = gurobi_write,
+                                 .free_problem   = gurobi_free};
 
   return sleqp_lpi_create(lp_star,
                           SLEQP_LP_SOLVER_GUROBI_NAME,

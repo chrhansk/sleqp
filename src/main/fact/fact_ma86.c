@@ -306,8 +306,8 @@ sleqp_fact_ma86_create(SleqpFact** star, SleqpParams* params)
   SleqpFactorizationCallbacks callbacks = {.set_matrix = ma86_data_set_matrix,
                                            .solve      = ma86_data_solve,
                                            .solution   = ma86_data_solution,
-                                           .condition_estimate = NULL,
-                                           .free = ma86_data_free};
+                                           .condition  = NULL,
+                                           .free       = ma86_data_free};
 
   MA86Data* ma86_data;
 

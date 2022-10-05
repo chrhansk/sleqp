@@ -221,11 +221,11 @@ umfpack_fact_solve(void* fact_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-umfpack_fact_condition_estimate(void* fact_data, double* condition_estimate)
+umfpack_fact_condition(void* fact_data, double* condition)
 {
   UmfpackData* umfpack = (UmfpackData*)fact_data;
 
-  *(condition_estimate) = 1. / (umfpack->info[UMFPACK_RCOND]);
+  *(condition) = 1. / (umfpack->info[UMFPACK_RCOND]);
 
   return SLEQP_OKAY;
 }
@@ -290,11 +290,11 @@ sleqp_fact_umfpack_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
-    = {.set_matrix         = umfpack_fact_set_matrix,
-       .solve              = umfpack_fact_solve,
-       .solution           = umfpack_fact_solution,
-       .condition_estimate = umfpack_fact_condition_estimate,
-       .free               = umfpack_fact_free};
+    = {.set_matrix = umfpack_fact_set_matrix,
+       .solve      = umfpack_fact_solve,
+       .solution   = umfpack_fact_solution,
+       .condition  = umfpack_fact_condition,
+       .free       = umfpack_fact_free};
 
   UmfpackData* umfpack_data;
 

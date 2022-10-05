@@ -696,7 +696,7 @@ highs_cons_stats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-highs_basis_condition_estimate(void* lp_data, bool* exact, double* condition)
+highs_basis_cond(void* lp_data, bool* exact, double* condition)
 {
   *exact     = false;
   *condition = SLEQP_NONE;
@@ -757,23 +757,22 @@ sleqp_lpi_highs_create(SleqpLPi** lp_star,
                        SleqpParams* params,
                        SleqpOptions* options)
 {
-  SleqpLPiCallbacks callbacks
-    = {.create_problem           = highs_create_problem,
-       .solve                    = highs_solve,
-       .status                   = highs_status,
-       .set_bounds               = highs_set_bounds,
-       .set_coeffs               = highs_set_coeffs,
-       .set_obj                  = highs_set_objective,
-       .set_basis                = highs_set_basis,
-       .save_basis               = highs_save_basis,
-       .restore_basis            = highs_restore_basis,
-       .primal_sol               = highs_primal_sol,
-       .dual_sol                 = highs_dual_sol,
-       .vars_stats               = highs_vars_stats,
-       .cons_stats               = highs_cons_stats,
-       .basis_condition_estimate = highs_basis_condition_estimate,
-       .write                    = highs_write,
-       .free_problem             = highs_free};
+  SleqpLPiCallbacks callbacks = {.create_problem = highs_create_problem,
+                                 .solve          = highs_solve,
+                                 .status         = highs_status,
+                                 .set_bounds     = highs_set_bounds,
+                                 .set_coeffs     = highs_set_coeffs,
+                                 .set_obj        = highs_set_objective,
+                                 .set_basis      = highs_set_basis,
+                                 .save_basis     = highs_save_basis,
+                                 .restore_basis  = highs_restore_basis,
+                                 .primal_sol     = highs_primal_sol,
+                                 .dual_sol       = highs_dual_sol,
+                                 .vars_stats     = highs_vars_stats,
+                                 .cons_stats     = highs_cons_stats,
+                                 .basis_cond     = highs_basis_cond,
+                                 .write          = highs_write,
+                                 .free_problem   = highs_free};
 
   return sleqp_lpi_create(lp_star,
                           SLEQP_LP_SOLVER_HIGHS_NAME,

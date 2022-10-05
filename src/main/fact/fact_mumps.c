@@ -242,8 +242,8 @@ sleqp_fact_mumps_create(SleqpFact** star, SleqpParams* params)
   SleqpFactorizationCallbacks callbacks = {.set_matrix = sleqp_mumps_set_matrix,
                                            .solve      = sleqp_mumps_solve,
                                            .solution   = sleqp_mumps_solution,
-                                           .condition_estimate = NULL,
-                                           .free = sleqp_mumps_free};
+                                           .condition  = NULL,
+                                           .free       = sleqp_mumps_free};
 
   SleqpMUMPSData* sleqp_mumps_data;
 

@@ -1420,9 +1420,8 @@ standard_cauchy_basis_condition(bool* exact, double* condition, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SLEQP_CALL(sleqp_lpi_basis_condition_estimate(cauchy_data->default_interface,
-                                                exact,
-                                                condition));
+  SLEQP_CALL(
+    sleqp_lpi_basis_cond(cauchy_data->default_interface, exact, condition));
 
   return SLEQP_OKAY;
 }

@@ -102,17 +102,16 @@ sleqp_fact_solution(SleqpFact* factorization,
 }
 
 SLEQP_RETCODE
-sleqp_fact_condition(SleqpFact* factorization, double* condition_estimate)
+sleqp_fact_cond(SleqpFact* factorization, double* condition)
 {
-  if (factorization->callbacks.condition_estimate)
+  if (factorization->callbacks.condition)
   {
     SLEQP_CALL(
-      factorization->callbacks.condition_estimate(factorization->fact_data,
-                                                  condition_estimate));
+      factorization->callbacks.condition(factorization->fact_data, condition));
   }
   else
   {
-    *condition_estimate = SLEQP_NONE;
+    *condition = SLEQP_NONE;
   }
 
   return SLEQP_OKAY;

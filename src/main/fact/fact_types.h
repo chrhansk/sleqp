@@ -17,8 +17,8 @@ typedef SLEQP_RETCODE (*SLEQP_FACT_SOLUTION)(void* fact_data,
                                              int end,
                                              double zero_eps);
 
-typedef SLEQP_RETCODE (
-  *SLEQP_FACT_CONDITION_ESTIMATE)(void* fact_data, double* condition_estimate);
+typedef SLEQP_RETCODE (*SLEQP_FACT_CONDITION)(void* fact_data,
+                                              double* condition);
 
 typedef SLEQP_RETCODE (*SLEQP_FACT_FREE)(void** star);
 
@@ -27,7 +27,7 @@ typedef struct
   SLEQP_FACT_SET_MATRIX set_matrix;
   SLEQP_FACT_SOLVE solve;
   SLEQP_FACT_SOLUTION solution;
-  SLEQP_FACT_CONDITION_ESTIMATE condition_estimate;
+  SLEQP_FACT_CONDITION condition;
   SLEQP_FACT_FREE free;
 } SleqpFactorizationCallbacks;
 

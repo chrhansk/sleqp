@@ -386,8 +386,8 @@ sleqp_fact_ma97_create(SleqpFact** star, SleqpParams* params)
   SleqpFactorizationCallbacks callbacks = {.set_matrix = ma97_data_set_matrix,
                                            .solve      = ma97_data_solve,
                                            .solution   = ma97_data_solution,
-                                           .condition_estimate = NULL,
-                                           .free = ma97_data_free};
+                                           .condition  = NULL,
+                                           .free       = ma97_data_free};
 
   MA97Data* ma97_data;
 

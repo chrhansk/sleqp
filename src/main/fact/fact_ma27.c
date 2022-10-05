@@ -539,8 +539,8 @@ sleqp_fact_ma27_create(SleqpFact** star, SleqpParams* params)
   SleqpFactorizationCallbacks callbacks = {.set_matrix = ma27_set_matrix,
                                            .solve      = ma27_data_solve,
                                            .solution   = ma27_data_solution,
-                                           .condition_estimate = NULL,
-                                           .free = ma27_data_free};
+                                           .condition  = NULL,
+                                           .free       = ma27_data_free};
 
   MA27Data* ma27_data;
 

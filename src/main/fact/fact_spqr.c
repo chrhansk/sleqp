@@ -268,11 +268,11 @@ sleqp_fact_spqr_create(SleqpFact** star, SleqpParams* params)
 {
 
   SleqpFactorizationCallbacks callbacks
-    = {.set_matrix         = spqr_factorization_set_matrix,
-       .solve              = spqr_factorization_solve,
-       .solution           = spqr_factorization_solution,
-       .condition_estimate = NULL,
-       .free               = spqr_factorization_free};
+    = {.set_matrix = spqr_factorization_set_matrix,
+       .solve      = spqr_factorization_solve,
+       .solution   = spqr_factorization_solution,
+       .condition  = NULL,
+       .free       = spqr_factorization_free};
 
   SPQRData* spqr_data;
 

@@ -64,11 +64,9 @@ soplex_create_problem(void** lp_data,
   assert(
     soplex.setRealParam(soplex::SoPlexBase<double>::INFTY, sleqp_infinity()));
 
-  const double feas_eps = sleqp_params_value(params,
-                                             SLEQP_PARAM_FEAS_TOL);
+  const double feas_eps = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
 
-  const double stat_eps
-    = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
+  const double stat_eps = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
 
   assert(soplex.setRealParam(soplex::SoPlexBase<double>::FEASTOL,
                              feas_eps * tolerance_factor));
@@ -203,7 +201,7 @@ soplex_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
     break;
   default:
     spx->status = SLEQP_LP_STATUS_UNKNOWN;
-    sleqp_raise(SLEQP_INTERNAL_ERROR,"Invalid SoPlex status: %d", status);
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Invalid SoPlex status: %d", status);
   }
 
   assert(soplex.hasBasis());
@@ -425,7 +423,7 @@ soplex_set_basis(void* lp_data,
                  const SLEQP_BASESTAT* col_stats,
                  const SLEQP_BASESTAT* row_stats)
 {
-  SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
+  SleqpLpiSoplex* spx = (SleqpLpiSoplex*)lp_data;
 
   assert(index >= 0);
 
@@ -438,12 +436,12 @@ soplex_set_basis(void* lp_data,
 
   SoPlexBasis& basis = spx->bases[index];
 
-  for(int j = 0; j < spx->num_cols; ++j)
+  for (int j = 0; j < spx->num_cols; ++j)
   {
     basis.basis_cols[j] = basestat_from(col_stats[j]);
   }
 
-  for(int i = 0; i < spx->num_rows; ++i)
+  for (int i = 0; i < spx->num_rows; ++i)
   {
     basis.basis_rows[i] = basestat_from(row_stats[i]);
   }
@@ -579,7 +577,7 @@ soplex_cons_stats(void* lp_data,
 }
 
 static SLEQP_RETCODE
-soplex_basis_condition_estimate(void* lp_data, bool* exact, double* condition)
+soplex_basis_cond(void* lp_data, bool* exact, double* condition)
 {
   SleqpLpiSoplex* spx = (SleqpLpiSoplex*)lp_data;
 
@@ -631,23 +629,22 @@ extern "C"
                                     SleqpParams* params,
                                     SleqpOptions* options)
   {
-    SleqpLPiCallbacks callbacks
-      = {.create_problem           = soplex_create_problem,
-         .solve                    = soplex_solve,
-         .status                   = soplex_status,
-         .set_bounds               = soplex_set_bounds,
-         .set_coeffs               = soplex_set_coefficients,
-         .set_obj                  = soplex_set_objective,
-         .set_basis                = soplex_set_basis,
-         .save_basis               = soplex_save_basis,
-         .restore_basis            = soplex_restore_basis,
-         .primal_sol               = soplex_primal_sol,
-         .dual_sol                 = soplex_dual_sol,
-         .vars_stats               = soplex_vars_stats,
-         .cons_stats               = soplex_cons_stats,
-         .basis_condition_estimate = soplex_basis_condition_estimate,
-         .write                    = soplex_write,
-         .free_problem             = soplex_free};
+    SleqpLPiCallbacks callbacks = {.create_problem = soplex_create_problem,
+                                   .solve          = soplex_solve,
+                                   .status         = soplex_status,
+                                   .set_bounds     = soplex_set_bounds,
+                                   .set_coeffs     = soplex_set_coefficients,
+                                   .set_obj        = soplex_set_objective,
+                                   .set_basis      = soplex_set_basis,
+                                   .save_basis     = soplex_save_basis,
+                                   .restore_basis  = soplex_restore_basis,
+                                   .primal_sol     = soplex_primal_sol,
+                                   .dual_sol       = soplex_dual_sol,
+                                   .vars_stats     = soplex_vars_stats,
+                                   .cons_stats     = soplex_cons_stats,
+                                   .basis_cond     = soplex_basis_cond,
+                                   .write          = soplex_write,
+                                   .free_problem   = soplex_free};
 
     return sleqp_lpi_create(lp_star,
                             SLEQP_LP_SOLVER_SOPLEX_NAME,
@@ -661,10 +658,10 @@ extern "C"
 
   SLEQP_RETCODE
   sleqp_lpi_create_default(SleqpLPi** lp_interface,
-                                     int num_variables,
-                                     int num_constraints,
-                                     SleqpParams* params,
-                                     SleqpOptions* options)
+                           int num_variables,
+                           int num_constraints,
+                           SleqpParams* params,
+                           SleqpOptions* options)
   {
     SLEQP_CALL(sleqp_lpi_soplex_create_interface(lp_interface,
                                                  num_variables,

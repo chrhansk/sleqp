@@ -26,7 +26,7 @@ typedef struct
   SleqpTimer* factorization_timer;
   SleqpTimer* substitution_timer;
 
-  double condition_estimate;
+  double condition;
 
   int* col_indices;
 } AugJacData;
@@ -263,7 +263,7 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 
   jacobian->working_set_size = sleqp_working_set_size(working_set);
 
-  jacobian->condition_estimate = SLEQP_NONE;
+  jacobian->condition = SLEQP_NONE;
 
   const bool lower_only
     = sleqp_fact_flags(jacobian->fact) & SLEQP_FACT_FLAGS_LOWER;
@@ -279,8 +279,7 @@ aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 
   SLEQP_CALL(sleqp_timer_stop(jacobian->factorization_timer));
 
-  SLEQP_CALL(
-    sleqp_fact_condition(jacobian->fact, &jacobian->condition_estimate));
+  SLEQP_CALL(sleqp_fact_cond(jacobian->fact, &jacobian->condition));
 
   {
     SleqpSparseMatrix* matrix = jacobian->augmented_matrix;
@@ -300,7 +299,7 @@ aug_jac_condition(bool* exact, double* condition, void* data)
   AugJacData* jacobian = (AugJacData*)data;
 
   *exact     = false;
-  *condition = jacobian->condition_estimate;
+  *condition = jacobian->condition;
 
   return SLEQP_OKAY;
 }
@@ -483,7 +482,7 @@ aug_jac_data_create(AugJacData** star,
   SLEQP_CALL(sleqp_params_capture(params));
   jacobian->params = params;
 
-  jacobian->condition_estimate = SLEQP_NONE;
+  jacobian->condition = SLEQP_NONE;
 
   SLEQP_CALL(sleqp_sparse_matrix_create(&jacobian->augmented_matrix, 0, 0, 0));
 
