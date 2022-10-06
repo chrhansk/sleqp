@@ -383,11 +383,11 @@ ma97_data_free(void** star)
 SLEQP_RETCODE
 sleqp_fact_ma97_create(SleqpFact** star, SleqpParams* params)
 {
-  SleqpFactorizationCallbacks callbacks = {.set_matrix = ma97_data_set_matrix,
-                                           .solve      = ma97_data_solve,
-                                           .solution   = ma97_data_solution,
-                                           .condition  = NULL,
-                                           .free       = ma97_data_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = ma97_data_set_matrix,
+                                  .solve      = ma97_data_solve,
+                                  .solution   = ma97_data_solution,
+                                  .condition  = NULL,
+                                  .free       = ma97_data_free};
 
   MA97Data* ma97_data;
 

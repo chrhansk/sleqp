@@ -239,11 +239,11 @@ sleqp_mumps_free(void** star)
 SLEQP_RETCODE
 sleqp_fact_mumps_create(SleqpFact** star, SleqpParams* params)
 {
-  SleqpFactorizationCallbacks callbacks = {.set_matrix = sleqp_mumps_set_matrix,
-                                           .solve      = sleqp_mumps_solve,
-                                           .solution   = sleqp_mumps_solution,
-                                           .condition  = NULL,
-                                           .free       = sleqp_mumps_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = sleqp_mumps_set_matrix,
+                                  .solve      = sleqp_mumps_solve,
+                                  .solution   = sleqp_mumps_solution,
+                                  .condition  = NULL,
+                                  .free       = sleqp_mumps_free};
 
   SleqpMUMPSData* sleqp_mumps_data;
 

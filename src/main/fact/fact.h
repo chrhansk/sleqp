@@ -24,7 +24,7 @@ sleqp_fact_create(SleqpFact** star,
                   const char* name,
                   const char* version,
                   SleqpParams* params,
-                  SleqpFactorizationCallbacks* callbacks,
+                  SleqpFactCallbacks* callbacks,
                   SLEQP_FACT_FLAGS flags,
                   void* fact_data);
 

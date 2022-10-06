@@ -809,11 +809,11 @@ ma57_free(void** star)
 SLEQP_RETCODE
 sleqp_fact_ma57_create(SleqpFact** star, SleqpParams* params)
 {
-  SleqpFactorizationCallbacks callbacks = {.set_matrix = ma57_set_matrix,
-                                           .solve      = ma57_solve,
-                                           .solution   = ma57_solution,
-                                           .condition = ma57_condition_estimate,
-                                           .free      = ma57_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = ma57_set_matrix,
+                                  .solve      = ma57_solve,
+                                  .solution   = ma57_solution,
+                                  .condition  = ma57_condition_estimate,
+                                  .free       = ma57_free};
 
   MA57Data* ma57_data;
 

@@ -289,12 +289,11 @@ SLEQP_RETCODE
 sleqp_fact_umfpack_create(SleqpFact** star, SleqpParams* params)
 {
 
-  SleqpFactorizationCallbacks callbacks
-    = {.set_matrix = umfpack_fact_set_matrix,
-       .solve      = umfpack_fact_solve,
-       .solution   = umfpack_fact_solution,
-       .condition  = umfpack_fact_condition,
-       .free       = umfpack_fact_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = umfpack_fact_set_matrix,
+                                  .solve      = umfpack_fact_solve,
+                                  .solution   = umfpack_fact_solution,
+                                  .condition  = umfpack_fact_condition,
+                                  .free       = umfpack_fact_free};
 
   UmfpackData* umfpack_data;
 

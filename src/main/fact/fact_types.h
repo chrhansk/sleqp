@@ -29,6 +29,6 @@ typedef struct
   SLEQP_FACT_SOLUTION solution;
   SLEQP_FACT_CONDITION condition;
   SLEQP_FACT_FREE free;
-} SleqpFactorizationCallbacks;
+} SleqpFactCallbacks;
 
 #endif /* SLEQP_FACT_TYPES_H */

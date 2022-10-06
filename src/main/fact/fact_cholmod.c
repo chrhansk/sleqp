@@ -280,12 +280,11 @@ SLEQP_RETCODE
 sleqp_fact_cholmod_create(SleqpFact** star, SleqpParams* params)
 {
 
-  SleqpFactorizationCallbacks callbacks
-    = {.set_matrix = cholmod_fact_set_matrix,
-       .solve      = cholmod_fact_solve,
-       .solution   = cholmod_fact_solution,
-       .condition  = cholmod_fact_condition,
-       .free       = cholmod_fact_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = cholmod_fact_set_matrix,
+                                  .solve      = cholmod_fact_solve,
+                                  .solution   = cholmod_fact_solution,
+                                  .condition  = cholmod_fact_condition,
+                                  .free       = cholmod_fact_free};
 
   CHOLMODData* cholmod_data;
 

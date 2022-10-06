@@ -414,10 +414,10 @@ sleqp_fact_spqr_create(SleqpFactQR** star, SleqpParams* params)
 SLEQP_RETCODE
 sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 {
-  SleqpFactorizationCallbacks callbacks = {.set_matrix = spqr_fact_set_matrix,
-                                           .solve      = spqr_fact_solve,
-                                           .solution   = spqr_fact_sol,
-                                           .free       = spqr_fact_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = spqr_fact_set_matrix,
+                                  .solve      = spqr_fact_solve,
+                                  .solution   = spqr_fact_sol,
+                                  .free       = spqr_fact_free};
 
   SPQRData* spqr_data;
 

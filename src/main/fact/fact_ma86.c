@@ -303,11 +303,11 @@ ma86_data_free(void** star)
 SLEQP_RETCODE
 sleqp_fact_ma86_create(SleqpFact** star, SleqpParams* params)
 {
-  SleqpFactorizationCallbacks callbacks = {.set_matrix = ma86_data_set_matrix,
-                                           .solve      = ma86_data_solve,
-                                           .solution   = ma86_data_solution,
-                                           .condition  = NULL,
-                                           .free       = ma86_data_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = ma86_data_set_matrix,
+                                  .solve      = ma86_data_solve,
+                                  .solution   = ma86_data_solution,
+                                  .condition  = NULL,
+                                  .free       = ma86_data_free};
 
   MA86Data* ma86_data;
 
