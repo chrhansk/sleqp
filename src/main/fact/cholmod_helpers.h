@@ -12,6 +12,17 @@ sleqp_cholmod_report_error(int status,
 SLEQP_RETCODE
 sleqp_cholmod_error_string(int status, const char** message);
 
+#define SLEQP_CHOLMOD_NULL_CHECK(cond)                                         \
+  do                                                                           \
+  {                                                                            \
+    if (!cond)                                                                 \
+    {                                                                          \
+      sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
+                  "CHOLMOD returned NULL for %s",                              \
+                  #cond);                                                      \
+    }                                                                          \
+  } while (false)
+
 #define SLEQP_CHOLMOD_ERROR_CHECK(common)                                      \
   do                                                                           \
   {                                                                            \
