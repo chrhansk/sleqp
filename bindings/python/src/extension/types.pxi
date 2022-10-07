@@ -106,6 +106,17 @@ class InitialTRChoice(_DocEnum):
   Narrow = csleqp.SLEQP_INITIAL_TR_CHOICE_NARROW, "Narrow"
   Wide   = csleqp.SLEQP_INITIAL_TR_CHOICE_WIDE, "Wide"
 
+
+class AugJacMethod(_DocEnum):
+  """
+  Augmented Jacobian type
+  """
+  Auto = csleqp.SLEQP_AUG_JAC_AUTO, "Auto"
+  Standard = csleqp.SLEQP_AUG_JAC_STANDARD, "Standard"
+  Reduced = csleqp.SLEQP_AUG_JAC_REDUCED, "Reduced"
+  Direct = csleqp.SLEQP_AUG_JAC_DIRECT, "Direct"
+
+
 class ValueReason(_DocEnum):
   """
   The reason for setting a new function value

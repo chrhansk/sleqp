@@ -433,3 +433,11 @@ sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 
   return SLEQP_OKAY;
 }
+
+SLEQP_RETCODE
+sleqp_fact_qr_create_default(SleqpFactQR** star, SleqpParams* params)
+{
+  SLEQP_CALL(sleqp_fact_spqr_create(star, params));
+
+  return SLEQP_OKAY;
+}

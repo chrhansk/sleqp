@@ -85,4 +85,12 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_qr_release(SleqpFactQR** star);
 
+#ifdef SLEQP_HAVE_QR_FACT
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_fact_qr_create_default(SleqpFactQR** star, SleqpParams* params);
+
+#endif
+
 #endif /* SLEQP_FACT_QR_H */

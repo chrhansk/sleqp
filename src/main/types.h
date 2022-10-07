@@ -51,4 +51,7 @@ sleqp_enum_linesearch();
 const SleqpEnum*
 sleqp_enum_step_rule();
 
+const SleqpEnum*
+sleqp_enum_aug_jac_method();
+
 #endif /* SLEQP_TYPES_H */

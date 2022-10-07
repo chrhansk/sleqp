@@ -65,7 +65,6 @@ cdef dict opt_prop_map = {
   # Boolean properties
   'perform_newton_step':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP),
   'global_penalty_resets': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS),
-  'reduced_aug_jac':       _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_REDUCED_AUG_JAC),
   'perform_soc':           _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_SOC),
   'use_quadratic_model':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL),
   'enable_preprocessor':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR),
@@ -89,7 +88,8 @@ cdef dict opt_prop_map = {
   'polishing_type':       _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_POLISHING_TYPE, PolishingType),
   'step_rule':            _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_STEP_RULE, StepRule),
   'linesearch':           _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_LINESEARCH, LineSearch),
-  'parametric_cauchy':    _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY, ParametricCauchy)
+  'parametric_cauchy':    _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY, ParametricCauchy),
+  'aug_jac_method':       _Prop.enumerated(csleqp.SLEQP_OPTION_ENUM_AUG_JAC_METHOD, AugJacMethod)
 }
 
 cdef class Options:

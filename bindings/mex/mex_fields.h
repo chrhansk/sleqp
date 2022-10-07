@@ -86,6 +86,7 @@
 #define MEX_LINESEARCH "linesearch"
 #define MEX_PARAMETRIC_CAUCHY "parametric_cauchy"
 #define MEX_INITIAL_TR_CHOICE "initial_tr_choice"
+#define MEX_AUG_JAC_METHOD "aug_jac_method"
 
 #define MEX_NUM_QUASI_NEWTON_ITERATES "num_quasi_newton_iterates"
 #define MEX_MAX_NEWTON_ITERATIONS "max_newton_iterations"
@@ -93,7 +94,6 @@
 
 #define MEX_PERFORM_NEWTON_STEP "perform_newton_step"
 #define MEX_GLOBAL_PENALTY_RESETS "global_penalty_resets"
-#define MEX_REDUCED_AUG_JAC "reduced_aug_jac"
 #define MEX_PERFORM_SOC "perform_soc"
 #define MEX_USE_QUADRATIC_MODEL "use_quadratic_model"
 #define MEX_ALWAYS_WARM_START_LP "always_warm_start_lp"

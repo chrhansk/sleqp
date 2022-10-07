@@ -113,6 +113,14 @@ static const SleqpEnum step_rule_enum
                  {"Minstep", SLEQP_STEP_RULE_MINSTEP},
                  {NULL, 0}}};
 
+static const SleqpEnum aug_jac_type_enum
+  = {.name    = "AugJacMethod",
+     .flags   = false,
+     .entries = {{"Auto", SLEQP_AUG_JAC_AUTO},
+                 {"Standard", SLEQP_AUG_JAC_STANDARD},
+                 {"Reduced", SLEQP_AUG_JAC_REDUCED},
+                 {"Direct", SLEQP_AUG_JAC_DIRECT}}};
+
 const SleqpEnum*
 sleqp_enum_active_state()
 {
@@ -189,4 +197,10 @@ const SleqpEnum*
 sleqp_enum_step_rule()
 {
   return &step_rule_enum;
+}
+
+const SleqpEnum*
+sleqp_enum_aug_jac_method()
+{
+  return &aug_jac_type_enum;
 }
