@@ -12,7 +12,7 @@ macro(add_fact)
 
   cmake_parse_arguments(
     ARGS                  # prefix of output variables
-    ""                    # list of names of the boolean arguments (only defined ones will be true)
+    "QR"                  # list of names of the boolean arguments (only defined ones will be true)
     "NAME"                # list of names of mono-valued arguments
     "SOURCES;DEPS_DEBIAN" # list of names of multi-valued arguments (output variables are lists)
     ${ARGN}               # arguments of the function to parse, here we take the all original ones
@@ -23,6 +23,8 @@ macro(add_fact)
   set(RESULT_SOURCES "${RESULT_NAME}_SOURCES")
 
   set("${RESULT_NAME}_DEPS_DEBIAN" "${ARGS_DEPS_DEBIAN}")
+
+  set("${RESULT_NAME}_QR" "${ARGS_QR}")
 
   set("${RESULT_SOURCES}" "${ARGS_SOURCES}")
 
@@ -36,6 +38,7 @@ add_fact(
 
 add_fact(
   NAME "SPQR"
+  QR
   SOURCES
   fact/cholmod_helpers.c
   fact/fact_spqr.c
@@ -137,3 +140,8 @@ endif()
 string(TOUPPER "${SLEQP_FACT}" SLEQP_FACT_NAME)
 
 set(SLEQP_FACT_PRETTY_NAME "${SLEQP_FACT}")
+
+if("${${SLEQP_FACT}_QR}")
+  message(STATUS "Factorization is QR")
+  set(SLEQP_HAVE_QR_FACT On)
+endif()
