@@ -417,11 +417,10 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
                              linesearch->cauchy_cons_val));
 
     // use the violated multipliers in 0, +/-1 to filter the Jacobian product
-    SLEQP_CALL(
-      sleqp_violated_constraint_multipliers(problem,
-                                            linesearch->cauchy_cons_val,
-                                            linesearch->violated_multipliers,
-                                            NULL));
+    SLEQP_CALL(sleqp_violated_cons_multipliers(problem,
+                                               linesearch->cauchy_cons_val,
+                                               linesearch->violated_multipliers,
+                                               NULL));
 
     double jacobian_dot;
 

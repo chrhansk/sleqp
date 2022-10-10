@@ -4,10 +4,10 @@
 #include "log.h"
 
 SLEQP_RETCODE
-sleqp_violated_constraint_multipliers(SleqpProblem* problem,
-                                      const SleqpVec* cons_vals,
-                                      SleqpVec* multipliers,
-                                      SleqpWorkingSet* working_set)
+sleqp_violated_cons_multipliers(SleqpProblem* problem,
+                                const SleqpVec* cons_vals,
+                                SleqpVec* multipliers,
+                                SleqpWorkingSet* working_set)
 {
   const SleqpVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpVec* ub = sleqp_problem_cons_ub(problem);

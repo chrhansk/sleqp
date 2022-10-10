@@ -16,10 +16,10 @@
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_violated_constraint_multipliers(SleqpProblem* problem,
-                                      const SleqpVec* cons_vals,
-                                      SleqpVec* multipliers,
-                                      SleqpWorkingSet* working_set);
+sleqp_violated_cons_multipliers(SleqpProblem* problem,
+                                const SleqpVec* cons_vals,
+                                SleqpVec* multipliers,
+                                SleqpWorkingSet* working_set);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -59,12 +59,14 @@ sleqp_signed_feasibility_residuals(SleqpProblem* problem,
                                    SleqpVec* residuals,
                                    SleqpWorkingSet* working_set);
 
+// TODO: rename: max_violation
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_violation_inf_norm(SleqpProblem* problem,
                          SleqpVec* cons_val,
                          double* max_violation);
 
+// TODO: rename: total_violation
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_violation_one_norm(SleqpProblem* problem,
