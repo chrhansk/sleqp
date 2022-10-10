@@ -85,30 +85,24 @@ sleqp_working_step_create(SleqpWorkingStep** star,
 }
 
 double
-sleqp_working_step_newton_objective_offset(SleqpWorkingStep* step,
-                                           double penalty_parameter)
+sleqp_working_step_newton_obj_offset(SleqpWorkingStep* step,
+                                     double penalty_parameter)
 {
   SleqpProblem* problem = step->problem;
   double offset         = 0.;
 
-  // linear objective
+  // current objective value
   {
     offset += sleqp_iterate_obj_val(step->iterate);
   }
 
-  // violation
+  // violation at initial step
   {
-    const double zero_eps
-      = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
-
-    SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(step->iterate),
-                             sleqp_direction_cons_jac(step->step_direction),
-                             zero_eps,
-                             step->sparse_cache));
+    SleqpVec* initial_cons_val = step->initial_cons_val;
 
     double violation;
 
-    SLEQP_CALL(sleqp_total_violation(problem, step->sparse_cache, &violation));
+    SLEQP_CALL(sleqp_total_violation(problem, initial_cons_val, &violation));
 
     offset += penalty_parameter * violation;
   }
@@ -417,23 +411,28 @@ compute_initial_step(SleqpWorkingStep* step,
 }
 
 static SLEQP_RETCODE
-compute_violated_multipliers(SleqpWorkingStep* step, SleqpIterate* iterate)
+compute_initial_cons_val(SleqpWorkingStep* step, SleqpIterate* iterate)
 {
-  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
-  SleqpDirection* direction    = step->step_direction;
+  SleqpDirection* direction = step->step_direction;
 
   const double zero_eps
     = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
 
-  SleqpProblem* problem = step->problem;
-
   // Compute linearized constraint values at initial direction
-  {
-    SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
-                             sleqp_direction_cons_jac(direction),
-                             zero_eps,
-                             step->initial_cons_val));
-  }
+  SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
+                           sleqp_direction_cons_jac(direction),
+                           zero_eps,
+                           step->initial_cons_val));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+compute_violated_multipliers(SleqpWorkingStep* step, SleqpIterate* iterate)
+{
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
+
+  SleqpProblem* problem = step->problem;
 
   // Compute violated multipliers
   {
@@ -459,6 +458,8 @@ sleqp_working_step_set_iterate(SleqpWorkingStep* step,
   SLEQP_CALL(compute_initial_direction(step, iterate, jacobian));
 
   SLEQP_CALL(compute_initial_step(step, iterate, trust_radius));
+
+  SLEQP_CALL(compute_initial_cons_val(step, iterate));
 
   SLEQP_CALL(compute_violated_multipliers(step, iterate));
 

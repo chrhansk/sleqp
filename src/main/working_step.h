@@ -43,8 +43,8 @@ bool
 sleqp_working_step_in_working_set(SleqpWorkingStep* step);
 
 double
-sleqp_working_step_newton_objective_offset(SleqpWorkingStep* step,
-                                           double penalty_parameter);
+sleqp_working_step_newton_obj_offset(SleqpWorkingStep* step,
+                                     double penalty_parameter);
 
 SleqpVec*
 sleqp_working_step_violated_cons_multipliers(SleqpWorkingStep* step);

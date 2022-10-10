@@ -398,63 +398,55 @@ compute_gradient(NewtonSolver* solver, const SleqpVec* multipliers)
   return SLEQP_OKAY;
 }
 
+// Compute Newton objective, assuming that
+// the direction produces a linear violation
+// equal to that of the initial step into
+// the working set Jacobian
 static SLEQP_RETCODE
 newton_objective(NewtonSolver* solver,
-                 const SleqpVec* multipliers,
-                 const SleqpVec* direction,
+                 const SleqpDirection* direction,
                  double* objective)
 {
   assert(solver->iterate);
 
-  SleqpProblem* problem = solver->problem;
-  SleqpIterate* iterate = solver->iterate;
+  *objective = sleqp_working_step_newton_obj_offset(solver->working_step,
+                                                    solver->penalty_parameter);
 
-  const double one        = 1.;
-  double bilinear_product = 0.;
+  // add objective gradient
+  {
+    *objective += *sleqp_direction_obj_grad(direction);
+  }
 
-  SLEQP_CALL(sleqp_problem_hess_bilinear(problem,
-                                         &one,
-                                         direction,
-                                         multipliers,
-                                         &bilinear_product));
+  // add hessian
+  {
+    SleqpVec* primal = sleqp_direction_primal(direction);
+    SleqpVec* hess   = sleqp_direction_hess(direction);
 
-  SleqpVec* obj_grad = sleqp_iterate_obj_grad(iterate);
+    double bilinear_product;
 
-  double obj_inner_prod = 0.;
+    SLEQP_CALL(sleqp_vec_dot(primal, hess, &bilinear_product));
 
-  SLEQP_CALL(sleqp_vec_dot(direction, obj_grad, &obj_inner_prod));
+    *objective += .5 * bilinear_product;
+  }
 
-  double cons_inner_prod = 0.;
-
-  SLEQP_CALL(
-    sleqp_vec_dot(direction, solver->jacobian_product, &cons_inner_prod));
-
-  const double offset
-    = sleqp_working_step_newton_objective_offset(solver->working_step,
-                                                 solver->penalty_parameter);
-
-  *objective
-    = offset + obj_inner_prod + cons_inner_prod + .5 * bilinear_product;
+  assert(sleqp_is_finite(*objective));
 
   return SLEQP_OKAY;
 }
 
+/*
 static SLEQP_RETCODE
-print_objective(NewtonSolver* solver,
-                const SleqpVec* multipliers,
-                SleqpVec* newton_step)
+print_objective(NewtonSolver* solver, const SleqpDirection* direction)
 {
   double objective;
 
-  SLEQP_CALL(newton_objective(solver, multipliers, newton_step, &objective));
-
-  // TODO: Find out why / how this becomes infinite
-  assert(sleqp_is_finite(objective));
+  SLEQP_CALL(newton_objective(solver, direction, &objective));
 
   sleqp_log_debug("Newton objective: %g", objective);
 
   return SLEQP_OKAY;
 }
+*/
 
 static SLEQP_RETCODE
 newton_solver_compute_direction(const SleqpVec* multipliers,
@@ -485,7 +477,18 @@ newton_solver_compute_direction(const SleqpVec* multipliers,
 
   SLEQP_CALL(sleqp_working_step_set_multipliers(working_step, multipliers));
 
-  SleqpVec* initial_step = sleqp_working_step_get_step(solver->working_step);
+  SleqpDirection* initial_direction
+    = sleqp_working_step_direction(solver->working_step);
+
+  {
+    double newton_obj;
+
+    SLEQP_CALL(newton_objective(solver, initial_direction, &newton_obj));
+
+    sleqp_log_debug("Newton objective of initial step: %g", newton_obj);
+  }
+
+  SleqpVec* initial_step = sleqp_direction_primal(initial_direction);
 
 #if SLEQP_DEBUG
 
@@ -508,9 +511,6 @@ newton_solver_compute_direction(const SleqpVec* multipliers,
   // in this case the only feasible solution is the zero vector
   if (sleqp_is_zero(reduced_trust_radius, zero_eps))
   {
-    SleqpDirection* initial_direction
-      = sleqp_working_step_direction(solver->working_step);
-
     SLEQP_CALL(sleqp_direction_copy(initial_direction, newton_direction));
 
     return SLEQP_OKAY;
@@ -541,7 +541,20 @@ newton_solver_compute_direction(const SleqpVec* multipliers,
 
   SLEQP_CALL(sleqp_vec_add(tr_step, initial_step, zero_eps, newton_step));
 
-  SLEQP_CALL(print_objective(solver, multipliers, newton_step));
+  SLEQP_CALL(sleqp_direction_reset(newton_direction,
+                                   solver->problem,
+                                   solver->iterate,
+                                   multipliers,
+                                   solver->dense_cache,
+                                   zero_eps));
+
+  {
+    double newton_obj;
+
+    SLEQP_CALL(newton_objective(solver, newton_direction, &newton_obj));
+
+    sleqp_log_debug("Newton objective of Newton step: %g", newton_obj);
+  }
 
   SLEQP_CALL(print_residuals(solver,
                              multipliers,
@@ -549,13 +562,6 @@ newton_solver_compute_direction(const SleqpVec* multipliers,
                              tr_step,
                              reduced_trust_radius,
                              tr_dual));
-
-  SLEQP_CALL(sleqp_direction_reset(newton_direction,
-                                   solver->problem,
-                                   solver->iterate,
-                                   multipliers,
-                                   solver->dense_cache,
-                                   zero_eps));
 
 #if SLEQP_DEBUG
 
