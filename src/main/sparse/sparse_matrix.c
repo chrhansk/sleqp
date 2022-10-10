@@ -845,6 +845,106 @@ sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix)
   return true;
 }
 
+static SLEQP_RETCODE
+compute_row_sums(const SleqpSparseMatrix* matrix, int* row_sums)
+{
+  const int matrix_num_rows = sleqp_sparse_matrix_num_rows(matrix);
+  const int matrix_nnz      = sleqp_sparse_matrix_nnz(matrix);
+
+  const int* matrix_rows = sleqp_sparse_matrix_rows(matrix);
+
+  for (int i = 0; i < matrix_num_rows; ++i)
+  {
+    row_sums[i] = 0;
+  }
+
+  for (int k = 0; k < matrix_nnz; ++k)
+  {
+    ++(row_sums[matrix_rows[k]]);
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+fill_transpose(const SleqpSparseMatrix* source,
+               SleqpSparseMatrix* target,
+               int* row_sums)
+{
+  const int nnz = sleqp_sparse_matrix_nnz(source);
+
+  SLEQP_CALL(sleqp_sparse_matrix_clear(target));
+  SLEQP_CALL(sleqp_sparse_matrix_reserve(target, nnz));
+
+  {
+    const int num_rows = sleqp_sparse_matrix_num_rows(source);
+    const int num_cols = sleqp_sparse_matrix_num_cols(source);
+    SLEQP_CALL(sleqp_sparse_matrix_resize(target, num_cols, num_rows));
+  }
+
+  {
+    int* matrix_cols   = sleqp_sparse_matrix_cols(target);
+    const int num_cols = sleqp_sparse_matrix_num_cols(target);
+
+    matrix_cols[0] = 0;
+    int offset     = 0;
+
+    for (int j = 0; j < num_cols; ++j)
+    {
+      offset += row_sums[j];
+      matrix_cols[j + 1] = offset;
+      row_sums[j]        = 0;
+    }
+  }
+
+  // Store elements
+  {
+    const int* source_rows    = sleqp_sparse_matrix_rows(source);
+    const int* source_cols    = sleqp_sparse_matrix_cols(source);
+    const double* source_data = sleqp_sparse_matrix_data(source);
+    const int source_num_cols = sleqp_sparse_matrix_num_cols(source);
+
+    int* target_rows    = sleqp_sparse_matrix_rows(target);
+    int* target_cols    = sleqp_sparse_matrix_cols(target);
+    double* target_data = sleqp_sparse_matrix_data(target);
+
+    for (int col = 0; col < source_num_cols; ++col)
+    {
+      for (int k = source_cols[col]; k < source_cols[col + 1]; ++k)
+      {
+        const double value = source_data[k];
+        const double row   = source_rows[k];
+
+        const int target_col = row;
+        const int target_row = col;
+        const int target_pos = target_cols[target_col] + row_sums[target_col];
+        ++(row_sums[target_col]);
+
+        target_data[target_pos] = value;
+        target_rows[target_pos] = target_row;
+      }
+    }
+  }
+
+  // Update nnz
+  SLEQP_CALL(sleqp_sparse_matrix_set_nnz(target, nnz));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_sparse_matrix_trans(const SleqpSparseMatrix* source,
+                          SleqpSparseMatrix* target,
+                          int* row_cache)
+{
+  SLEQP_CALL(compute_row_sums(source, row_cache));
+  SLEQP_CALL(fill_transpose(source, target, row_cache));
+
+  assert(sleqp_sparse_matrix_is_valid(target));
+
+  return SLEQP_OKAY;
+}
+
 bool
 sleqp_sparse_matrix_is_finite(const SleqpSparseMatrix* matrix)
 {

@@ -482,14 +482,6 @@ ma27_data_solution(void* fact_data,
 }
 
 static SLEQP_RETCODE
-ma27_data_condition_estimate(void* fact_data, double* condition_estimate)
-{
-  (*condition_estimate) = SLEQP_NONE;
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE
 ma27_data_free(void** star)
 {
   MA27Data* ma27_data = (MA27Data*)(*star);
@@ -544,12 +536,11 @@ ma27_data_create(MA27Data** star)
 SLEQP_RETCODE
 sleqp_fact_ma27_create(SleqpFact** star, SleqpParams* params)
 {
-  SleqpFactorizationCallbacks callbacks
-    = {.set_matrix         = ma27_set_matrix,
-       .solve              = ma27_data_solve,
-       .solution           = ma27_data_solution,
-       .condition_estimate = ma27_data_condition_estimate,
-       .free               = ma27_data_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = ma27_set_matrix,
+                                  .solve      = ma27_data_solve,
+                                  .solution   = ma27_data_solution,
+                                  .condition  = NULL,
+                                  .free       = ma27_data_free};
 
   MA27Data* ma27_data;
 

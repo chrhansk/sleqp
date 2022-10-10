@@ -11,6 +11,7 @@
 #include "soc.h"
 
 #include "aug_jac/box_constrained_aug_jac.h"
+#include "aug_jac/direct_aug_jac.h"
 #include "aug_jac/reduced_aug_jac.h"
 #include "aug_jac/standard_aug_jac.h"
 #include "aug_jac/unconstrained_aug_jac.h"
@@ -24,6 +25,7 @@
 #include "dual_estimation/dual_estimation_mixed.h"
 
 #include "fact/fact.h"
+#include "fact/fact_qr.h"
 
 static SLEQP_RETCODE
 create_dual_estimation(SleqpTrialPointSolver* solver)
@@ -78,27 +80,77 @@ create_aug_jac(SleqpTrialPointSolver* solver)
   {
     // create sparse factorization
 
-    SLEQP_CALL(sleqp_fact_create_default(&solver->fact, params));
+    const SLEQP_AUG_JAC_METHOD aug_jac_method
+      = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_AUG_JAC_METHOD);
 
-    const bool requires_psd
-      = (sleqp_fact_flags(solver->fact) & SLEQP_FACT_FLAGS_PSD);
+    bool requires_psd = false;
 
-    const bool want_psd
-      = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_REDUCED_AUG_JAC);
-
-    if (requires_psd || want_psd)
+    switch (aug_jac_method)
     {
-      SLEQP_CALL(sleqp_reduced_aug_jac_create(&solver->aug_jac,
-                                              problem,
-                                              params,
-                                              solver->fact));
-    }
-    else
-    {
+    case SLEQP_AUG_JAC_AUTO:
+      SLEQP_CALL(sleqp_fact_create_default(&solver->fact, params));
+
+      requires_psd = (sleqp_fact_flags(solver->fact) & SLEQP_FACT_FLAGS_PSD);
+
+      if (requires_psd)
+      {
+        SLEQP_CALL(sleqp_reduced_aug_jac_create(&solver->aug_jac,
+                                                problem,
+                                                params,
+                                                solver->fact));
+      }
+      else
+      {
+        SLEQP_CALL(sleqp_standard_aug_jac_create(&solver->aug_jac,
+                                                 problem,
+                                                 params,
+                                                 solver->fact));
+      }
+
+      break;
+    case SLEQP_AUG_JAC_STANDARD:
+      SLEQP_CALL(sleqp_fact_create_default(&solver->fact, params));
+
+      requires_psd = (sleqp_fact_flags(solver->fact) & SLEQP_FACT_FLAGS_PSD);
+
+      if (requires_psd)
+      {
+        sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                    "Factorization requires PSD matrices");
+      }
+
       SLEQP_CALL(sleqp_standard_aug_jac_create(&solver->aug_jac,
                                                problem,
                                                params,
                                                solver->fact));
+      break;
+    case SLEQP_AUG_JAC_REDUCED:
+      SLEQP_CALL(sleqp_fact_create_default(&solver->fact, params));
+
+      SLEQP_CALL(sleqp_reduced_aug_jac_create(&solver->aug_jac,
+                                              problem,
+                                              params,
+                                              solver->fact));
+
+      break;
+    case SLEQP_AUG_JAC_DIRECT:
+#ifdef SLEQP_HAVE_QR_FACT
+
+      ;
+      SleqpFactQR* qr_fact = NULL;
+
+      SLEQP_CALL(sleqp_fact_qr_create_default(&qr_fact, params));
+
+      SLEQP_CALL(sleqp_direct_aug_jac_create(&solver->aug_jac,
+                                             problem,
+                                             params,
+                                             qr_fact));
+
+      SLEQP_CALL(sleqp_qr_release(&qr_fact));
+#else
+      sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "No QR factorization available");
+#endif
+      break;
     }
   }
 

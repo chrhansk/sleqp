@@ -17,6 +17,7 @@ extern "C" {
 #cmakedefine SLEQP_ENABLE_NUM_ASSERTS
 #cmakedefine SLEQP_HAVE_ATTRIBUTE_WARN_UNUSED_RESULT
 #cmakedefine SLEQP_HAVE_ATTRIBUTE_FORMAT
+#cmakedefine SLEQP_HAVE_QR_FACT
 
 #ifdef SLEQP_HAVE_ATTRIBUTE_FORMAT
 #define SLEQP_FORMAT_PRINTF(index, first)                                      \

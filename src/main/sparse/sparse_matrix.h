@@ -153,6 +153,19 @@ bool
 sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix);
 
 /**
+ * Transposes the given matrix
+ *
+ * @param[in]  source    The source matrix
+ * @param[out] target    The target to store the transposed source
+ * @param[in]  row_cache Cache having at least as many entries as rows of source
+ **/
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_sparse_matrix_trans(const SleqpSparseMatrix* source,
+                          SleqpSparseMatrix* target,
+                          int* row_cache);
+
+/**
  * Returns whether the entries of the given matrix are finite with respect to
  *  \ref sleqp_is_finite(double)
  **/

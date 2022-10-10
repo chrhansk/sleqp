@@ -20,8 +20,6 @@
 #define ENABLE_RESTORATION_PHASE_DEFAULT false
 #define LP_RESOLVES_DEFAULT true
 
-#define PARAMETRIC_CAUCHY_DEFAULT SLEQP_PARAMETRIC_CAUCHY_DISABLED
-#define INITIAL_TR_CHOICE_DEFAULT SLEQP_INITIAL_TR_CHOICE_NARROW
 #define DERIV_CHECK_DEFAULT SLEQP_DERIV_CHECK_SKIP
 #define HESS_EVAL_DEFAULT SLEQP_HESS_EVAL_EXACT
 #define DUAL_ESTIMATION_TYPE_DEFAULT SLEQP_DUAL_ESTIMATION_TYPE_LSQ
@@ -32,6 +30,9 @@
 #define POLISHING_TYPE_DEFAULT SLEQP_POLISHING_ZERO_DUAL
 #define STEP_RULE_DEFAULT SLEQP_STEP_RULE_DIRECT
 #define LINESEARCH_DEFAULT SLEQP_LINESEARCH_APPROX
+#define PARAMETRIC_CAUCHY_DEFAULT SLEQP_PARAMETRIC_CAUCHY_DISABLED
+#define INITIAL_TR_CHOICE_DEFAULT SLEQP_INITIAL_TR_CHOICE_NARROW
+#define AUG_JAC_METHOD_DEFAULT SLEQP_AUG_JAC_AUTO
 
 #define QUASI_NEWTON_SIZE_DEFAULT 5
 #define MAX_NEWTON_ITERATIONS_DEFAULT 100
@@ -97,6 +98,9 @@ OptionInfo enum_option_info[SLEQP_NUM_ENUM_OPTIONS] = {
   [SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE]
   = {.name = "initial_tr_choice",
      .desc = "How to chose the initial trust radius"},
+  [SLEQP_OPTION_ENUM_AUG_JAC_METHOD]
+  = {.name = "augmented Jacobian method",
+     .desc = "How to solve the augmented Jacobian systems"},
 };
 
 const char*
@@ -153,9 +157,6 @@ OptionInfo bool_option_info[SLEQP_NUM_BOOL_OPTIONS]
      [SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS]
      = {.name = "global_penalty_resets",
         .desc = "Whether or not to perform global penalty resets"},
-     [SLEQP_OPTION_BOOL_REDUCED_AUG_JAC]
-     = {.name = "reduced_aug_jac",
-        .desc = "Whether or not to solve the reduced augmented Jacobian"},
      [SLEQP_OPTION_BOOL_PERFORM_SOC]
      = {.name = "perform_soc",
         .desc = "Whether or not to perform a second-order correction"},
@@ -214,7 +215,8 @@ sleqp_options_create(SleqpOptions** star)
        [SLEQP_OPTION_ENUM_STEP_RULE]            = STEP_RULE_DEFAULT,
        [SLEQP_OPTION_ENUM_LINESEARCH]           = LINESEARCH_DEFAULT,
        [SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY]    = PARAMETRIC_CAUCHY_DEFAULT,
-       [SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE]    = INITIAL_TR_CHOICE_DEFAULT},
+       [SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE]    = INITIAL_TR_CHOICE_DEFAULT,
+       [SLEQP_OPTION_ENUM_AUG_JAC_METHOD]       = AUG_JAC_METHOD_DEFAULT},
     .int_values
     = {[SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES] = QUASI_NEWTON_SIZE_DEFAULT,
        [SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS] = MAX_NEWTON_ITERATIONS_DEFAULT,
@@ -222,7 +224,6 @@ sleqp_options_create(SleqpOptions** star)
     .bool_values = {
       [SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP]   = PERFORM_NEWTON_DEFAULT,
       [SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS] = GLOBAL_PENALTY_RESETS_DEFAULT,
-      [SLEQP_OPTION_BOOL_REDUCED_AUG_JAC]       = REDUCED_AUG_JAC_DEFAULT,
       [SLEQP_OPTION_BOOL_PERFORM_SOC]           = PERFORM_SOC_DEFAULT,
       [SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL]   = USE_QUADRATIC_MODEL_DEFAULT,
       [SLEQP_OPTION_BOOL_ALWAYS_WARM_START_LP]  = ALWAYS_WARM_START_LP_DEFAULT,
@@ -262,6 +263,8 @@ valid_member(SLEQP_OPTION_ENUM option, int value)
     return sleqp_enum_member(sleqp_enum_parametric_cauchy(), value);
   case SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE:
     return sleqp_enum_member(sleqp_enum_initial_tr(), value);
+  case SLEQP_OPTION_ENUM_AUG_JAC_METHOD:
+    return sleqp_enum_member(sleqp_enum_aug_jac_method(), value);
   default:
     assert(0);
   }

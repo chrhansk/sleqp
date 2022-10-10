@@ -223,13 +223,11 @@ sleqp_lpi_solve_timer(SleqpLPi* lp_interface)
 }
 
 SLEQP_RETCODE
-sleqp_lpi_basis_condition_estimate(SleqpLPi* lp_interface,
-                                   bool* exact,
-                                   double* condition)
+sleqp_lpi_basis_cond(SleqpLPi* lp_interface, bool* exact, double* condition)
 {
-  return lp_interface->callbacks.basis_condition_estimate(lp_interface->lp_data,
-                                                          exact,
-                                                          condition);
+  return lp_interface->callbacks.basis_cond(lp_interface->lp_data,
+                                            exact,
+                                            condition);
 }
 
 SLEQP_RETCODE

@@ -456,6 +456,9 @@ print_objective(NewtonSolver* solver,
 
   SLEQP_CALL(newton_objective(solver, multipliers, newton_step, &objective));
 
+  // TODO: Find out why / how this becomes infinite
+  // assert(sleqp_is_finite(objective));
+
   sleqp_log_debug("Newton objective: %g", objective);
 
   return SLEQP_OKAY;

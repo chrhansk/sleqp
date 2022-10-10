@@ -24,7 +24,7 @@ sleqp_fact_create(SleqpFact** star,
                   const char* name,
                   const char* version,
                   SleqpParams* params,
-                  SleqpFactorizationCallbacks* callbacks,
+                  SleqpFactCallbacks* callbacks,
                   SLEQP_FACT_FLAGS flags,
                   void* fact_data);
 
@@ -63,7 +63,7 @@ sleqp_fact_solution(SleqpFact* factorization,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_fact_condition(SleqpFact* factorization, double* condition_estimate);
+sleqp_fact_cond(SleqpFact* factorization, double* condition);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

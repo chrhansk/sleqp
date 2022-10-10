@@ -8,6 +8,7 @@ struct SleqpAugJac
   int refcount;
 
   SleqpProblem* problem;
+  int working_set_size;
   SleqpTimer* creation_timer;
   SleqpTimer* solution_timer;
 
@@ -50,6 +51,10 @@ sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac, SleqpIterate* iterate)
 
   SLEQP_CALL(sleqp_timer_stop(aug_jac->creation_timer));
 
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
+
+  aug_jac->working_set_size = sleqp_working_set_size(working_set);
+
   return SLEQP_OKAY;
 }
 
@@ -59,6 +64,7 @@ sleqp_aug_jac_solve_min_norm(SleqpAugJac* aug_jac,
                              SleqpVec* sol)
 {
   assert(sol->dim == sleqp_problem_num_vars(aug_jac->problem));
+  assert(rhs->dim == aug_jac->working_set_size);
 
   SLEQP_CALL(sleqp_timer_start(aug_jac->solution_timer));
 
@@ -74,6 +80,9 @@ sleqp_aug_jac_solve_lsq(SleqpAugJac* aug_jac,
                         const SleqpVec* rhs,
                         SleqpVec* sol)
 {
+  assert(rhs->dim == sleqp_problem_num_vars(aug_jac->problem));
+  assert(sol->dim == aug_jac->working_set_size);
+
   return aug_jac->callbacks.solve_lsq(rhs, sol, aug_jac->data);
 }
 
@@ -82,6 +91,9 @@ sleqp_aug_jac_project_nullspace(SleqpAugJac* aug_jac,
                                 const SleqpVec* rhs,
                                 SleqpVec* sol)
 {
+  assert(rhs->dim == sleqp_problem_num_vars(aug_jac->problem));
+  assert(sol->dim == sleqp_problem_num_vars(aug_jac->problem));
+
   return aug_jac->callbacks.project_nullspace(rhs, sol, aug_jac->data);
 }
 

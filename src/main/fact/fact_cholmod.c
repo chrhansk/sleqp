@@ -195,7 +195,7 @@ cholmod_fact_solve(void* fact_data, const SleqpVec* rhs)
 }
 
 static SLEQP_RETCODE
-cholmod_fact_condition_estimate(void* fact_data, double* condition_estimate)
+cholmod_fact_condition(void* fact_data, double* condition)
 {
   CHOLMODData* cholmod_data = (CHOLMODData*)fact_data;
 
@@ -203,7 +203,7 @@ cholmod_fact_condition_estimate(void* fact_data, double* condition_estimate)
 
   const double rcond = cholmod_l_rcond(cholmod_data->factor, common);
 
-  (*condition_estimate) = 1. / rcond;
+  (*condition) = 1. / rcond;
 
   return SLEQP_OKAY;
 }
@@ -280,12 +280,11 @@ SLEQP_RETCODE
 sleqp_fact_cholmod_create(SleqpFact** star, SleqpParams* params)
 {
 
-  SleqpFactorizationCallbacks callbacks
-    = {.set_matrix         = cholmod_fact_set_matrix,
-       .solve              = cholmod_fact_solve,
-       .solution           = cholmod_fact_solution,
-       .condition_estimate = cholmod_fact_condition_estimate,
-       .free               = cholmod_fact_free};
+  SleqpFactCallbacks callbacks = {.set_matrix = cholmod_fact_set_matrix,
+                                  .solve      = cholmod_fact_solve,
+                                  .solution   = cholmod_fact_solution,
+                                  .condition  = cholmod_fact_condition,
+                                  .free       = cholmod_fact_free};
 
   CHOLMODData* cholmod_data;
 

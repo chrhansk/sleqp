@@ -66,7 +66,8 @@ main()
          sleqp_enum_step_rule(),
          sleqp_enum_linesearch(),
          sleqp_enum_parametric_cauchy(),
-         sleqp_enum_initial_tr()};
+         sleqp_enum_initial_tr(),
+         sleqp_enum_aug_jac_method()};
 
     for (int i = 0; i < SLEQP_NUM_ENUM_OPTIONS; ++i)
     {

@@ -13,7 +13,7 @@ struct SleqpFact
   char* name;
   char* version;
 
-  SleqpFactorizationCallbacks callbacks;
+  SleqpFactCallbacks callbacks;
   SLEQP_FACT_FLAGS flags;
   void* fact_data;
 };
@@ -23,7 +23,7 @@ sleqp_fact_create(SleqpFact** star,
                   const char* name,
                   const char* version,
                   SleqpParams* params,
-                  SleqpFactorizationCallbacks* callbacks,
+                  SleqpFactCallbacks* callbacks,
                   SLEQP_FACT_FLAGS flags,
                   void* fact_data)
 {
@@ -102,11 +102,17 @@ sleqp_fact_solution(SleqpFact* factorization,
 }
 
 SLEQP_RETCODE
-sleqp_fact_condition(SleqpFact* factorization, double* condition_estimate)
+sleqp_fact_cond(SleqpFact* factorization, double* condition)
 {
-  SLEQP_CALL(
-    factorization->callbacks.condition_estimate(factorization->fact_data,
-                                                condition_estimate));
+  if (factorization->callbacks.condition)
+  {
+    SLEQP_CALL(
+      factorization->callbacks.condition(factorization->fact_data, condition));
+  }
+  else
+  {
+    *condition = SLEQP_NONE;
+  }
 
   return SLEQP_OKAY;
 }

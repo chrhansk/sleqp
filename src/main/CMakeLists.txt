@@ -1,6 +1,7 @@
 set(COMMON_SRC
   aug_jac/aug_jac.c
   aug_jac/box_constrained_aug_jac.c
+  aug_jac/direct_aug_jac.c
   aug_jac/reduced_aug_jac.c
   aug_jac/standard_aug_jac.c
   aug_jac/unconstrained_aug_jac.c
@@ -21,6 +22,7 @@ set(COMMON_SRC
   eqp.c
   error.c
   fact/fact.c
+  fact/fact_qr.c
   feas.c
   func.c
   gauss_newton.c

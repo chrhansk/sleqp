@@ -132,9 +132,9 @@ START_TEST(test_solve_reduced)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_bool_value(options,
-                                           SLEQP_OPTION_BOOL_REDUCED_AUG_JAC,
-                                           true));
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_AUG_JAC_METHOD,
+                                           SLEQP_AUG_JAC_REDUCED));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -146,6 +146,29 @@ START_TEST(test_solve_reduced)
   solve_and_release_solver(solver);
 }
 END_TEST
+
+#ifdef SLEQP_HAVE_QR_FACT
+
+START_TEST(test_solve_direct)
+{
+  SleqpSolver* solver;
+
+  ASSERT_CALL(sleqp_options_set_enum_value(options,
+                                           SLEQP_OPTION_ENUM_AUG_JAC_METHOD,
+                                           SLEQP_AUG_JAC_DIRECT));
+
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  options,
+                                  constrained_initial,
+                                  NULL));
+
+  solve_and_release_solver(solver);
+}
+END_TEST
+
+#endif
 
 START_TEST(test_exact_linesearch)
 {
@@ -525,6 +548,12 @@ constrained_test_suite()
   tcase_add_test(tc_cons, test_solve);
 
   tcase_add_test(tc_cons, test_solve_reduced);
+
+#ifdef SLEQP_HAVE_QR_FACT
+
+  tcase_add_test(tc_cons, test_solve_direct);
+
+#endif
 
   tcase_add_test(tc_cons, test_exact_linesearch);
 
