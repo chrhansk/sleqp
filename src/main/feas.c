@@ -326,9 +326,9 @@ sleqp_signed_feasibility_residuals(SleqpProblem* problem,
 }
 
 SLEQP_RETCODE
-sleqp_violation_inf_norm(SleqpProblem* problem,
-                         SleqpVec* cons_val,
-                         double* max_violation)
+sleqp_max_violation(SleqpProblem* problem,
+                    SleqpVec* cons_val,
+                    double* max_violation)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 
@@ -390,9 +390,9 @@ sleqp_violation_inf_norm(SleqpProblem* problem,
 }
 
 SLEQP_RETCODE
-sleqp_violation_one_norm(SleqpProblem* problem,
-                         SleqpVec* cons_val,
-                         double* total_violation)
+sleqp_total_violation(SleqpProblem* problem,
+                      SleqpVec* cons_val,
+                      double* total_violation)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 

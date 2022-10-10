@@ -394,7 +394,7 @@ sleqp_iterate_feasibility_residuum(SleqpProblem* problem,
                                    double* feasibility_residuum)
 {
   SLEQP_CALL(
-    sleqp_violation_inf_norm(problem, iterate->cons_val, feasibility_residuum));
+    sleqp_max_violation(problem, iterate->cons_val, feasibility_residuum));
 
   return SLEQP_OKAY;
 }

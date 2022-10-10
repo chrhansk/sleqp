@@ -59,18 +59,33 @@ sleqp_signed_feasibility_residuals(SleqpProblem* problem,
                                    SleqpVec* residuals,
                                    SleqpWorkingSet* working_set);
 
-// TODO: rename: max_violation
-SLEQP_NODISCARD
-SLEQP_RETCODE
-sleqp_violation_inf_norm(SleqpProblem* problem,
-                         SleqpVec* cons_val,
-                         double* max_violation);
 
-// TODO: rename: total_violation
+/**
+ * Compute the maximum violation of the given constraint values, i.e.,
+ * the \f$\| \cdot \|_{\infty}\f$-norm of the violation
+ *
+ * @param[in]  problem       Underlying problem
+ * @param[in]  cons_val      Constraint values
+ * @param[out] max_violation Total violation
+ **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_violation_one_norm(SleqpProblem* problem,
-                         SleqpVec* cons_val,
-                         double* total_violation);
+sleqp_max_violation(SleqpProblem* problem,
+                    SleqpVec* cons_val,
+                    double* max_violation);
+
+/**
+ * Compute the total violation of the given constraint values, i.e.,
+ * the \f$\| \cdot \|_{1}\f$-norm of the violation
+ *
+ * @param[in]  problem         Underlying problem
+ * @param[in]  cons_val        Constraint values
+ * @param[out] total_violation Total violation
+ **/
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_total_violation(SleqpProblem* problem,
+                      SleqpVec* cons_val,
+                      double* total_violation);
 
 #endif /* SLEQP_FEAS_H */

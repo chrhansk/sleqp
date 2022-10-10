@@ -67,9 +67,9 @@ sleqp_merit_func(SleqpMerit* merit,
 
   double total_violation;
 
-  SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      sleqp_iterate_cons_val(iterate),
-                                      &total_violation));
+  SLEQP_CALL(sleqp_total_violation(problem,
+                                   sleqp_iterate_cons_val(iterate),
+                                   &total_violation));
 
   (*merit_value) += penalty_parameter * total_violation;
 
@@ -101,9 +101,8 @@ sleqp_merit_linear(SleqpMerit* merit,
 
   double total_violation;
 
-  SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      merit->combined_cons_val,
-                                      &total_violation));
+  SLEQP_CALL(
+    sleqp_total_violation(problem, merit->combined_cons_val, &total_violation));
 
   (*merit_value) += penalty_parameter * total_violation;
 

@@ -133,17 +133,17 @@ compute_cons_nonlin(SleqpMeasure* measure,
 
   SLEQP_CALL(sleqp_vec_scale(cons_nonlin, (2. / measure->direction_norm_sq)));
 
-  SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      sleqp_iterate_cons_val(iterate),
-                                      &(measure->current_violation)));
+  SLEQP_CALL(sleqp_total_violation(problem,
+                                   sleqp_iterate_cons_val(iterate),
+                                   &(measure->current_violation)));
 
-  SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      measure->expected_cons_val,
-                                      &(measure->expected_violation)));
+  SLEQP_CALL(sleqp_total_violation(problem,
+                                   measure->expected_cons_val,
+                                   &(measure->expected_violation)));
 
-  SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      sleqp_iterate_cons_val(trial_iterate),
-                                      &(measure->trial_violation)));
+  SLEQP_CALL(sleqp_total_violation(problem,
+                                   sleqp_iterate_cons_val(trial_iterate),
+                                   &(measure->trial_violation)));
 
   return SLEQP_OKAY;
 }
@@ -404,9 +404,9 @@ sleqp_measure_report_soc_trial_point(SleqpMeasure* measure,
 
   double soc_violation;
 
-  SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      sleqp_iterate_cons_val(soc_iterate),
-                                      &(soc_violation)));
+  SLEQP_CALL(sleqp_total_violation(problem,
+                                   sleqp_iterate_cons_val(soc_iterate),
+                                   &(soc_violation)));
 
   sleqp_log_debug("Violation: current: %14e, trial: %14e, SOC: %14e, trial "
                   "reduction: %g%%, SOC reduction: %g%%",

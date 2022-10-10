@@ -173,9 +173,9 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
   SleqpVec* direction_cons_jac = sleqp_direction_cons_jac(direction);
   SleqpVec* direction_hess     = sleqp_direction_hess(direction);
 
-  SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      sleqp_iterate_cons_val(iterate),
-                                      &exact_violation));
+  SLEQP_CALL(sleqp_total_violation(problem,
+                                   sleqp_iterate_cons_val(iterate),
+                                   &exact_violation));
 
   (*full_step)             = true;
   (*quadratic_merit_value) = 0.;
@@ -236,9 +236,9 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
                                zero_eps,
                                linesearch->combined_cons_val));
 
-      SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                          linesearch->combined_cons_val,
-                                          &linear_violation));
+      SLEQP_CALL(sleqp_total_violation(problem,
+                                       linesearch->combined_cons_val,
+                                       &linear_violation));
 
       linear_merit_value += penalty_parameter * linear_violation;
     }
@@ -486,9 +486,9 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
 
       double total_violation;
 
-      SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                          linesearch->combined_cons_val,
-                                          &total_violation));
+      SLEQP_CALL(sleqp_total_violation(problem,
+                                       linesearch->combined_cons_val,
+                                       &total_violation));
 
       linear_merit_value += penalty_parameter * total_violation;
     }

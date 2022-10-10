@@ -129,9 +129,9 @@ has_sufficient_decrease(SleqpParametricSolver* solver,
                            zero_eps,
                            solver->combined_cons_val));
 
-  SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                      solver->combined_cons_val,
-                                      &linear_violation));
+  SLEQP_CALL(sleqp_total_violation(problem,
+                                   solver->combined_cons_val,
+                                   &linear_violation));
 
   SLEQP_CALL(sleqp_vec_dot(sleqp_direction_primal(direction),
                            sleqp_direction_hess(direction),
@@ -358,9 +358,9 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
                                      zero_eps));
   }
 
-  SLEQP_CALL(sleqp_violation_one_norm(solver->problem,
-                                      sleqp_iterate_cons_val(iterate),
-                                      &solver->exact_violation));
+  SLEQP_CALL(sleqp_total_violation(solver->problem,
+                                   sleqp_iterate_cons_val(iterate),
+                                   &solver->exact_violation));
 
   bool sufficient_decrease;
 

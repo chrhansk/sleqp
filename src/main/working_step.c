@@ -108,8 +108,7 @@ sleqp_working_step_newton_objective_offset(SleqpWorkingStep* step,
 
     double violation;
 
-    SLEQP_CALL(
-      sleqp_violation_one_norm(problem, step->sparse_cache, &violation));
+    SLEQP_CALL(sleqp_total_violation(problem, step->sparse_cache, &violation));
 
     offset += penalty_parameter * violation;
   }
