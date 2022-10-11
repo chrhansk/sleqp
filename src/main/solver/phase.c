@@ -26,7 +26,7 @@ on_restoration_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
 
   double feas_res;
 
-  SLEQP_CALL(sleqp_violation_inf_norm(problem, cons_val, &feas_res));
+  SLEQP_CALL(sleqp_max_violation(problem, cons_val, &feas_res));
 
   if (feas_res <= feas_eps)
   {

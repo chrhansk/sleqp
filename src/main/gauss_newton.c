@@ -313,7 +313,7 @@ compute_removed_cons(GaussNewtonSolver* solver)
   const int num_constraints = sleqp_problem_num_cons(problem);
 
   SleqpVec* violated_cons_mult
-    = sleqp_working_step_get_violated_cons_multipliers(solver->working_step);
+    = sleqp_working_step_violated_cons_multipliers(solver->working_step);
 
   solver->num_removed_cons = 0;
 
@@ -418,7 +418,7 @@ gauss_newton_solver_set_iterate(SleqpIterate* iterate,
   }
 
   solver->trust_radius
-    = sleqp_working_step_get_reduced_trust_radius(solver->working_step);
+    = sleqp_working_step_reduced_trust_radius(solver->working_step);
   solver->penalty_parameter = penalty_parameter;
 
   SLEQP_CALL(compute_removed_cons(solver));

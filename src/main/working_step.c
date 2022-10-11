@@ -18,14 +18,15 @@ struct SleqpWorkingStep
   SleqpProblem* problem;
   SleqpParams* params;
 
+  SleqpIterate* iterate;
+
   SleqpVec* lower_diff;
   SleqpVec* upper_diff;
 
   SleqpVec* initial_rhs;
   SleqpVec* initial_direction;
-  SleqpVec* initial_step;
 
-  SleqpVec* initial_point;
+  SleqpDirection* step_direction;
 
   SleqpVec* initial_cons_val;
 
@@ -36,9 +37,6 @@ struct SleqpWorkingStep
 
   double reduced_trust_radius;
   bool initial_step_in_working_set;
-
-  double obj_offset;
-  double diff_offset;
 };
 
 SLEQP_RETCODE
@@ -71,9 +69,7 @@ sleqp_working_step_create(SleqpWorkingStep** star,
 
   SLEQP_CALL(sleqp_vec_create_empty(&step->initial_direction, num_variables));
 
-  SLEQP_CALL(sleqp_vec_create_empty(&step->initial_step, num_variables));
-
-  SLEQP_CALL(sleqp_vec_create_empty(&step->initial_point, num_variables));
+  SLEQP_CALL(sleqp_direction_create(&step->step_direction, problem, params));
 
   SLEQP_CALL(sleqp_vec_create_empty(&step->initial_cons_val, num_constraints));
 
@@ -88,65 +84,30 @@ sleqp_working_step_create(SleqpWorkingStep** star,
   return SLEQP_OKAY;
 }
 
-static SLEQP_RETCODE
-compute_offset(SleqpWorkingStep* step, SleqpIterate* iterate)
+double
+sleqp_working_step_newton_obj_offset(SleqpWorkingStep* step,
+                                     double penalty_parameter)
 {
   SleqpProblem* problem = step->problem;
+  double offset         = 0.;
 
-  const int num_constraints = sleqp_problem_num_cons(problem);
-
-  SleqpVec* lower_diff = step->lower_diff;
-  SleqpVec* upper_diff = step->upper_diff;
-
-  assert(lower_diff->dim == num_constraints);
-  assert(upper_diff->dim == num_constraints);
-
-  double offset = 0.;
-
-  const SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
-
-  for (int k = 0; k < upper_diff->nnz; ++k)
+  // current objective value
   {
-    int i = upper_diff->indices[k];
-
-    const SLEQP_ACTIVE_STATE cons_state
-      = sleqp_working_set_cons_state(working_set, i);
-
-    if (cons_state != SLEQP_INACTIVE)
-    {
-      continue;
-    }
-
-    offset += upper_diff->data[k];
+    offset += sleqp_iterate_obj_val(step->iterate);
   }
 
-  for (int k = 0; k < lower_diff->nnz; ++k)
+  // violation at initial step
   {
-    int i = lower_diff->indices[k];
+    SleqpVec* initial_cons_val = step->initial_cons_val;
 
-    const SLEQP_ACTIVE_STATE cons_state
-      = sleqp_working_set_cons_state(working_set, i);
+    double violation;
 
-    if (cons_state != SLEQP_INACTIVE)
-    {
-      continue;
-    }
+    SLEQP_CALL(sleqp_total_violation(problem, initial_cons_val, &violation));
 
-    offset += lower_diff->data[k];
+    offset += penalty_parameter * violation;
   }
 
-  step->diff_offset = offset;
-
-  step->obj_offset = sleqp_iterate_obj_val(iterate);
-
-  return SLEQP_OKAY;
-}
-
-double
-sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
-                                        double penalty_parameter)
-{
-  return step->obj_offset + penalty_parameter * step->diff_offset;
+  return offset;
 }
 
 static SLEQP_RETCODE
@@ -311,8 +272,6 @@ compute_initial_rhs(SleqpWorkingStep* step,
         ++k_upper;
       }
     }
-
-    SLEQP_CALL(compute_offset(step, iterate));
   }
 
   return SLEQP_OKAY;
@@ -355,10 +314,51 @@ compute_initial_direction(SleqpWorkingStep* step,
   return SLEQP_OKAY;
 }
 
+// fills all but the Hessian product
 static SLEQP_RETCODE
-compute_initial_step(SleqpWorkingStep* step, double trust_radius)
+fill_initial_step(SleqpWorkingStep* step, SleqpIterate* iterate)
 {
-  SLEQP_CALL(sleqp_vec_copy(step->initial_direction, step->initial_step));
+  SleqpProblem* problem     = step->problem;
+  SleqpDirection* direction = step->step_direction;
+  SleqpVec* primal          = sleqp_direction_primal(direction);
+
+  // gradient
+  {
+    SleqpVec* obj_grad         = sleqp_iterate_obj_grad(iterate);
+    double* direction_obj_grad = sleqp_direction_obj_grad(direction);
+    SLEQP_CALL(sleqp_vec_dot(primal, obj_grad, direction_obj_grad));
+  }
+
+  // constraint Jacobian
+  {
+    const SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+    const int num_cons                = sleqp_problem_num_cons(problem);
+    SleqpVec* direction_cons          = sleqp_direction_cons_jac(direction);
+
+    const double zero_eps
+      = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
+
+    SLEQP_CALL(
+      sleqp_sparse_matrix_vector_product(cons_jac, primal, step->dense_cache));
+
+    SLEQP_CALL(sleqp_vec_set_from_raw(direction_cons,
+                                      step->dense_cache,
+                                      num_cons,
+                                      zero_eps));
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+compute_initial_step(SleqpWorkingStep* step,
+                     SleqpIterate* iterate,
+                     double trust_radius)
+{
+  SleqpDirection* direction = step->step_direction;
+  SleqpVec* initial_step    = sleqp_direction_primal(direction);
+
+  SLEQP_CALL(sleqp_vec_copy(step->initial_direction, initial_step));
 
   const double eps = sleqp_params_value(step->params, SLEQP_PARAM_EPS);
 
@@ -392,7 +392,7 @@ compute_initial_step(SleqpWorkingStep* step, double trust_radius)
     {
       step->initial_step_in_working_set = false;
 
-      SLEQP_CALL(sleqp_vec_scale(step->initial_step, alpha));
+      SLEQP_CALL(sleqp_vec_scale(initial_step, alpha));
 
       // we know that the scaled initial solution
       // has norm equal to norm_ratio * trust_radius
@@ -405,19 +405,24 @@ compute_initial_step(SleqpWorkingStep* step, double trust_radius)
     step->reduced_trust_radius = trust_radius;
   }
 
+  SLEQP_CALL(fill_initial_step(step, iterate));
+
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-compute_initial_point(SleqpWorkingStep* step, SleqpIterate* iterate)
+compute_initial_cons_val(SleqpWorkingStep* step, SleqpIterate* iterate)
 {
+  SleqpDirection* direction = step->step_direction;
+
   const double zero_eps
     = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_vec_add(sleqp_iterate_primal(iterate),
-                           step->initial_step,
+  // Compute linearized constraint values at initial direction
+  SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
+                           sleqp_direction_cons_jac(direction),
                            zero_eps,
-                           step->initial_point));
+                           step->initial_cons_val));
 
   return SLEQP_OKAY;
 }
@@ -425,40 +430,17 @@ compute_initial_point(SleqpWorkingStep* step, SleqpIterate* iterate)
 static SLEQP_RETCODE
 compute_violated_multipliers(SleqpWorkingStep* step, SleqpIterate* iterate)
 {
-  const SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  SleqpWorkingSet* working_set      = sleqp_iterate_working_set(iterate);
-
-  const double zero_eps
-    = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
+  SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   SleqpProblem* problem = step->problem;
 
-  const int num_constraints = sleqp_problem_num_cons(problem);
-
-  // Compute linearized constraint values at initial direction
-  {
-    SLEQP_CALL(sleqp_sparse_matrix_vector_product(cons_jac,
-                                                  step->initial_step,
-                                                  step->dense_cache));
-
-    SLEQP_CALL(sleqp_vec_set_from_raw(step->sparse_cache,
-                                      step->dense_cache,
-                                      num_constraints,
-                                      zero_eps));
-
-    SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
-                             step->sparse_cache,
-                             zero_eps,
-                             step->initial_cons_val));
-  }
-
   // Compute violated multipliers
   {
-    SLEQP_CALL(sleqp_violated_constraint_multipliers(
-      problem,
-      step->initial_cons_val,
-      step->violated_constraint_multipliers,
-      working_set));
+    SLEQP_CALL(
+      sleqp_violated_cons_multipliers(problem,
+                                      step->initial_cons_val,
+                                      step->violated_constraint_multipliers,
+                                      working_set));
 
     sleqp_log_debug("Violated constraints at initial Newton step: %d",
                     step->violated_constraint_multipliers->nnz);
@@ -475,29 +457,34 @@ sleqp_working_step_set_iterate(SleqpWorkingStep* step,
 {
   SLEQP_CALL(compute_initial_direction(step, iterate, jacobian));
 
-  SLEQP_CALL(compute_initial_step(step, trust_radius));
+  SLEQP_CALL(compute_initial_step(step, iterate, trust_radius));
 
-  SLEQP_CALL(compute_initial_point(step, iterate));
+  SLEQP_CALL(compute_initial_cons_val(step, iterate));
 
   SLEQP_CALL(compute_violated_multipliers(step, iterate));
+
+  SLEQP_CALL(sleqp_iterate_release(&step->iterate));
+
+  SLEQP_CALL(sleqp_iterate_capture(iterate));
+  step->iterate = iterate;
 
   return SLEQP_OKAY;
 }
 
 SleqpVec*
-sleqp_working_step_get_direction(SleqpWorkingStep* step)
-{
-  return step->initial_direction;
-}
-
-SleqpVec*
 sleqp_working_step_get_step(SleqpWorkingStep* step)
 {
-  return step->initial_step;
+  return sleqp_direction_primal(step->step_direction);
+}
+
+SleqpDirection*
+sleqp_working_step_direction(SleqpWorkingStep* step)
+{
+  return step->step_direction;
 }
 
 double
-sleqp_working_step_get_reduced_trust_radius(SleqpWorkingStep* step)
+sleqp_working_step_reduced_trust_radius(SleqpWorkingStep* step)
 {
   return step->reduced_trust_radius;
 }
@@ -509,9 +496,29 @@ sleqp_working_step_in_working_set(SleqpWorkingStep* step)
 }
 
 SleqpVec*
-sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step)
+sleqp_working_step_violated_cons_multipliers(SleqpWorkingStep* step)
 {
   return step->violated_constraint_multipliers;
+}
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_working_step_set_multipliers(SleqpWorkingStep* step,
+                                   const SleqpVec* multipliers)
+{
+  SleqpProblem* problem = step->problem;
+  SleqpVec* primal      = sleqp_direction_primal(step->step_direction);
+
+  const double one         = 1.;
+  SleqpVec* direction_hess = sleqp_direction_hess(step->step_direction);
+
+  SLEQP_CALL(sleqp_problem_hess_prod(problem,
+                                     &one,
+                                     primal,
+                                     multipliers,
+                                     direction_hess));
+
+  return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
@@ -532,13 +539,15 @@ working_step_free(SleqpWorkingStep** star)
 
   SLEQP_CALL(sleqp_vec_free(&step->initial_cons_val));
 
-  SLEQP_CALL(sleqp_vec_free(&step->initial_point));
-  SLEQP_CALL(sleqp_vec_free(&step->initial_step));
+  SLEQP_CALL(sleqp_direction_release(&step->step_direction));
+
   SLEQP_CALL(sleqp_vec_free(&step->initial_direction));
   SLEQP_CALL(sleqp_vec_free(&step->initial_rhs));
 
   SLEQP_CALL(sleqp_vec_free(&step->upper_diff));
   SLEQP_CALL(sleqp_vec_free(&step->lower_diff));
+
+  SLEQP_CALL(sleqp_iterate_release(&step->iterate));
 
   SLEQP_CALL(sleqp_params_release(&step->params));
 

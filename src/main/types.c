@@ -119,7 +119,8 @@ static const SleqpEnum aug_jac_type_enum
      .entries = {{"Auto", SLEQP_AUG_JAC_AUTO},
                  {"Standard", SLEQP_AUG_JAC_STANDARD},
                  {"Reduced", SLEQP_AUG_JAC_REDUCED},
-                 {"Direct", SLEQP_AUG_JAC_DIRECT}}};
+                 {"Direct", SLEQP_AUG_JAC_DIRECT},
+                 {NULL, 0}}};
 
 const SleqpEnum*
 sleqp_enum_active_state()

@@ -7,6 +7,7 @@
  *towards the working set.
  **/
 
+#include "direction.h"
 #include "iterate.h"
 #include "options.h"
 #include "params.h"
@@ -30,23 +31,28 @@ sleqp_working_step_set_iterate(SleqpWorkingStep* step,
                                double trust_radius);
 
 SleqpVec*
-sleqp_working_step_get_direction(SleqpWorkingStep* step);
-
-SleqpVec*
 sleqp_working_step_get_step(SleqpWorkingStep* step);
 
+SleqpDirection*
+sleqp_working_step_direction(SleqpWorkingStep* step);
+
 double
-sleqp_working_step_get_reduced_trust_radius(SleqpWorkingStep* step);
+sleqp_working_step_reduced_trust_radius(SleqpWorkingStep* step);
 
 bool
 sleqp_working_step_in_working_set(SleqpWorkingStep* step);
 
 double
-sleqp_working_step_get_objective_offset(SleqpWorkingStep* step,
-                                        double penalty_parameter);
+sleqp_working_step_newton_obj_offset(SleqpWorkingStep* step,
+                                     double penalty_parameter);
 
 SleqpVec*
-sleqp_working_step_get_violated_cons_multipliers(SleqpWorkingStep* step);
+sleqp_working_step_violated_cons_multipliers(SleqpWorkingStep* step);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_working_step_set_multipliers(SleqpWorkingStep* step,
+                                   const SleqpVec* multipliers);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

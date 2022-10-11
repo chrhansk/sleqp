@@ -57,9 +57,9 @@ print_warning(SleqpProblemSolver* solver)
   {
     double total_violation;
 
-    SLEQP_CALL(sleqp_violation_one_norm(problem,
-                                        sleqp_iterate_cons_val(iterate),
-                                        &total_violation));
+    SLEQP_CALL(sleqp_total_violation(problem,
+                                     sleqp_iterate_cons_val(iterate),
+                                     &total_violation));
 
     const double obj_val = sleqp_iterate_obj_val(iterate);
 

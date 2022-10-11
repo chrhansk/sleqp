@@ -4,10 +4,10 @@
 #include "log.h"
 
 SLEQP_RETCODE
-sleqp_violated_constraint_multipliers(SleqpProblem* problem,
-                                      const SleqpVec* cons_vals,
-                                      SleqpVec* multipliers,
-                                      SleqpWorkingSet* working_set)
+sleqp_violated_cons_multipliers(SleqpProblem* problem,
+                                const SleqpVec* cons_vals,
+                                SleqpVec* multipliers,
+                                SleqpWorkingSet* working_set)
 {
   const SleqpVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpVec* ub = sleqp_problem_cons_ub(problem);
@@ -326,9 +326,9 @@ sleqp_signed_feasibility_residuals(SleqpProblem* problem,
 }
 
 SLEQP_RETCODE
-sleqp_violation_inf_norm(SleqpProblem* problem,
-                         SleqpVec* cons_val,
-                         double* max_violation)
+sleqp_max_violation(SleqpProblem* problem,
+                    SleqpVec* cons_val,
+                    double* max_violation)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 
@@ -390,9 +390,9 @@ sleqp_violation_inf_norm(SleqpProblem* problem,
 }
 
 SLEQP_RETCODE
-sleqp_violation_one_norm(SleqpProblem* problem,
-                         SleqpVec* cons_val,
-                         double* total_violation)
+sleqp_total_violation(SleqpProblem* problem,
+                      SleqpVec* cons_val,
+                      double* total_violation)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 

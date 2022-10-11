@@ -467,6 +467,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 
 #if SLEQP_DEBUG
     SLEQP_CALL(check_projection(solver, jacobian, solver->g));
+    SLEQP_CALL(check_projection(solver, jacobian, solver->d));
 #endif
 
     // set beta_{j+1} = r_{j+1}^T * g_{j+1} / r_j^T * g_j
@@ -485,7 +486,6 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
     SLEQP_CALL(sleqp_vec_copy(solver->sparse_cache, solver->d));
 
 #if SLEQP_DEBUG
-    SLEQP_CALL(check_projection(solver, jacobian, solver->g));
     SLEQP_CALL(check_projection(solver, jacobian, solver->d));
 #endif
   }
