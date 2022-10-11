@@ -75,7 +75,7 @@ START_TEST(test_unconstrained_solve)
 
   SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
-  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimum, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -122,7 +122,7 @@ START_TEST(test_lm_factor)
 
   SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
-  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimum, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -165,7 +165,7 @@ START_TEST(test_lsqr_solve)
 
   SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
-  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimum, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -185,7 +185,7 @@ START_TEST(test_constrained_lsqr_solve)
   const double inf = sleqp_infinity();
 
   ASSERT_CALL(
-    sleqp_sparse_matrix_create(&linear_coeffs, 1, rosenbrock_num_variables, 2));
+    sleqp_sparse_matrix_create(&linear_coeffs, 1, rosenbrock_num_vars, 2));
 
   ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_coeffs, 0));
 
@@ -240,7 +240,7 @@ START_TEST(test_constrained_lsqr_solve)
 
   SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
-  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimum, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
@@ -259,9 +259,8 @@ START_TEST(test_scaled_solve)
   SleqpScaling* scaling;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_scaling_create(&scaling,
-                                   rosenbrock_num_variables,
-                                   rosenbrock_num_constraints));
+  ASSERT_CALL(
+    sleqp_scaling_create(&scaling, rosenbrock_num_vars, rosenbrock_num_cons));
 
   ASSERT_CALL(sleqp_scaling_set_obj_weight(scaling, -2));
 
@@ -299,7 +298,7 @@ START_TEST(test_scaled_solve)
 
   SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
-  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimum, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 

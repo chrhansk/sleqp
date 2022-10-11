@@ -29,15 +29,15 @@ get_num_residuals(const mxArray* mex_x0,
                   const mxArray* mex_res_callback,
                   int* num_residuals)
 {
-  mxArray* lhs;
+  mxArray* lhs[] = {NULL};
 
   // Need to strip const'ness away
   // due to signature of mexCallMATLABWithTrap
   mxArray* rhs[] = {(mxArray*)mex_res_callback, (mxArray*)mex_x0};
 
-  MATLAB_CALL(mexCallMATLABWithTrap(1, &lhs, 2, rhs, MATLAB_FUNC_FEVAL));
+  MEX_EVAL(lhs, rhs);
 
-  *num_residuals = mxGetNumberOfElements(lhs);
+  *num_residuals = mxGetNumberOfElements(*lhs);
 
   return SLEQP_OKAY;
 }
@@ -116,7 +116,7 @@ mex_lsq_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.cons_val, func_data->primal};
 
-  SLEQP_CALL(mex_eval_into_sparse_vec(2, rhs, func_data->params, cons_val));
+  MEX_EVAL_INTO_VEC(rhs, func_data->params, cons_val);
 
   return SLEQP_OKAY;
 }
@@ -128,7 +128,7 @@ mex_lsq_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.cons_jac, func_data->primal};
 
-  SLEQP_CALL(mex_eval_into_sparse_matrix(2, rhs, func_data->params, cons_jac));
+  MEX_EVAL_INTO_SPARSE_MATRIX(rhs, func_data->params, cons_jac);
 
   return SLEQP_OKAY;
 }
@@ -140,7 +140,7 @@ mex_lsq_residuals(SleqpFunc* func, SleqpVec* residual, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.lsq_residuals, func_data->primal};
 
-  SLEQP_CALL(mex_eval_into_sparse_vec(2, rhs, func_data->params, residual));
+  MEX_EVAL_INTO_VEC(rhs, func_data->params, residual);
 
   return SLEQP_OKAY;
 }
@@ -160,7 +160,7 @@ mex_lsq_jac_forward(SleqpFunc* func,
                     func_data->primal,
                     func_data->forward_dir};
 
-  SLEQP_CALL(mex_eval_into_sparse_vec(3, rhs, func_data->params, product));
+  MEX_EVAL_INTO_VEC(rhs, func_data->params, product);
 
   return SLEQP_OKAY;
 }
@@ -180,7 +180,7 @@ mex_lsq_jac_adjoint(SleqpFunc* func,
                     func_data->primal,
                     func_data->adjoint_dir};
 
-  SLEQP_CALL(mex_eval_into_sparse_vec(3, rhs, func_data->params, product));
+  MEX_EVAL_INTO_VEC(rhs, func_data->params, product);
 
   return SLEQP_OKAY;
 }

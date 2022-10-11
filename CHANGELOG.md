@@ -5,6 +5,7 @@
 ### Added
 
 - Added direct QR factorization to solve augmented Jacobian systems
+- Extended dynamic functions to include constraints
 
 ### Fixed
 

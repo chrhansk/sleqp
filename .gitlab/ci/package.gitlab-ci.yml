@@ -9,6 +9,7 @@ package:
     - build
   artifacts:
     paths:
+      - build/*.ddeb
       - build/*.deb
       - build/*.bz2
 

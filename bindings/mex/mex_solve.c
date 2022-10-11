@@ -14,8 +14,12 @@ mex_command_solve(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
   const mxArray* mex_funcs   = prhs[1];
   const mxArray* mex_options = prhs[2];
 
-  SLEQP_CALL(
-    mex_solve(&plhs[0], &plhs[1], false, mex_x0, mex_funcs, mex_options));
+  SLEQP_CALL(mex_solve(&plhs[0],
+                       &plhs[1],
+                       SLEQP_FUNC_TYPE_REGULAR,
+                       mex_x0,
+                       mex_funcs,
+                       mex_options));
 
   return SLEQP_OKAY;
 }

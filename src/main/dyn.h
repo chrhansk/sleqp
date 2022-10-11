@@ -3,16 +3,28 @@
 
 #include "pub_dyn.h"
 
-SLEQP_RETCODE
-sleqp_dyn_func_set_accuracy(SleqpFunc* func, double accuracy);
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_func_eval(SleqpFunc* func,
+                    double* obj_val,
+                    SleqpVec* cons_val,
+                    double* error);
 
-SLEQP_RETCODE
-sleqp_dyn_func_get_accuracy(SleqpFunc* func, double* accuracy);
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_func_set_error_bound(SleqpFunc* func, double error_bound);
 
-SLEQP_RETCODE
-sleqp_dyn_func_obj_val(SleqpFunc* func, double accuracy, double* obj_val);
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_func_error(SleqpFunc* func, double* error);
 
-SLEQP_RETCODE
-sleqp_dyn_func_cons_val(SleqpFunc* func, double accuracy, SleqpVec* cons_val);
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_func_error_bound(SleqpFunc* func, double* error_bound);
+
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_func_error_estimate(SleqpFunc* func, double* error_estimate);
+
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_func_set_obj_weight(SleqpFunc* func, double obj_weight);
+
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_func_set_cons_weights(SleqpFunc* func, const double* cons_weights);
 
 #endif /* SLEQP_DYN_H */

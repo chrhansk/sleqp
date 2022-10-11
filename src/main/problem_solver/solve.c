@@ -3,6 +3,7 @@
 #include "cmp.h"
 #include "error.h"
 #include "feas.h"
+#include "func.h"
 
 static bool
 exhausted_time_limit(SleqpProblemSolver* solver)
@@ -49,8 +50,8 @@ print_warning(SleqpProblemSolver* solver)
 
     if (check_first)
     {
-      sleqp_log_warn(
-        "Enabled first order derivative check while using a dynamic function");
+      sleqp_log_warn("Enabled first order derivative check while using a "
+                     "dynamic function");
     }
   }
 
@@ -82,6 +83,7 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
                            bool abort_on_local_infeasibility)
 {
   SleqpProblem* problem = solver->problem;
+  SleqpFunc* func       = sleqp_problem_func(problem);
   SleqpIterate* iterate = solver->iterate;
 
   const int num_variables   = sleqp_problem_num_vars(problem);
@@ -91,6 +93,16 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   solver->status                       = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
 
   bool reject_initial;
+
+  // ensure that constraint weights are set
+  if (sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC)
+  {
+    SLEQP_CALL(sleqp_trial_point_solver_set_iterate(solver->trial_point_solver,
+                                                    iterate));
+
+    SLEQP_CALL(sleqp_trial_point_solver_set_penalty(solver->trial_point_solver,
+                                                    solver->penalty_parameter));
+  }
 
   SLEQP_CALL(sleqp_set_and_evaluate(problem,
                                     iterate,
@@ -114,8 +126,6 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
 
   // Warnings
   SLEQP_CALL(print_warning(solver));
-
-  SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
   solver->status = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
 

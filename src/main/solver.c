@@ -5,8 +5,10 @@
 
 #include "cmp.h"
 #include "defs.h"
+#include "dyn.h"
 #include "fail.h"
 #include "feas.h"
+#include "func.h"
 #include "iterate.h"
 #include "mem.h"
 #include "scale.h"
@@ -86,6 +88,19 @@ sleqp_solver_restore_original_iterate(SleqpSolver* solver)
     do_restore_iterate(solver,
                        sleqp_problem_solver_get_iterate(solver->problem_solver),
                        solver->original_iterate));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+set_obj_weight(SleqpProblem* problem)
+{
+  SleqpFunc* func = sleqp_problem_func(problem);
+
+  if (sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC)
+  {
+    SLEQP_CALL(sleqp_dyn_func_set_obj_weight(func, 1.));
+  }
 
   return SLEQP_OKAY;
 }
@@ -175,6 +190,9 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
   }
 
   SLEQP_CALL(sleqp_problem_capture(solver->problem));
+
+  // Only needs to be set once, does not change afterwards
+  SLEQP_CALL(set_obj_weight(solver->problem));
 
   return SLEQP_OKAY;
 }

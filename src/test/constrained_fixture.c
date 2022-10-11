@@ -12,7 +12,7 @@ SleqpVec* constrained_var_ub  = NULL;
 SleqpVec* constrained_cons_lb = NULL;
 SleqpVec* constrained_cons_ub = NULL;
 SleqpVec* constrained_initial = NULL;
-SleqpVec* constrained_optimal = NULL;
+SleqpVec* constrained_optimum = NULL;
 
 SleqpFunc* constrained_func = NULL;
 
@@ -268,18 +268,18 @@ constrained_setup()
                                 constrained_num_constraints,
                                 func_data));
 
-  ASSERT_CALL(sleqp_vec_create(&constrained_optimal, 4, 4));
+  ASSERT_CALL(sleqp_vec_create(&constrained_optimum, 4, 4));
 
-  ASSERT_CALL(sleqp_vec_push(constrained_optimal, 0, 1.));
-  ASSERT_CALL(sleqp_vec_push(constrained_optimal, 1, 4.742999));
-  ASSERT_CALL(sleqp_vec_push(constrained_optimal, 2, 3.821151));
-  ASSERT_CALL(sleqp_vec_push(constrained_optimal, 3, 1.379408));
+  ASSERT_CALL(sleqp_vec_push(constrained_optimum, 0, 1.));
+  ASSERT_CALL(sleqp_vec_push(constrained_optimum, 1, 4.742999));
+  ASSERT_CALL(sleqp_vec_push(constrained_optimum, 2, 3.821151));
+  ASSERT_CALL(sleqp_vec_push(constrained_optimum, 3, 1.379408));
 }
 
 void
 constrained_teardown()
 {
-  ASSERT_CALL(sleqp_vec_free(&constrained_optimal));
+  ASSERT_CALL(sleqp_vec_free(&constrained_optimum));
 
   ASSERT_CALL(sleqp_func_release(&constrained_func));
 

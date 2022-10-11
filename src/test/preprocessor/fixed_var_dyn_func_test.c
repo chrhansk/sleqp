@@ -22,8 +22,8 @@ setup()
 {
   dyn_rosenbrock_setup();
 
-  ASSERT_CALL(sleqp_vec_create_full(&fixed_initial,
-                                    rosenbrock_num_variables - num_fixed));
+  ASSERT_CALL(
+    sleqp_vec_create_full(&fixed_initial, rosenbrock_num_vars - num_fixed));
 
   const double fixed_value
     = sleqp_vec_value_at(rosenbrock_initial, fixed_indices[0]);
@@ -38,9 +38,11 @@ setup()
                                               fixed_indices,
                                               fixed_values));
 
-  ASSERT_CALL(sleqp_dyn_func_set_accuracy(dyn_rosenbrock_func, accuracy));
+  ASSERT_CALL(sleqp_dyn_func_set_error_bound(dyn_rosenbrock_func, accuracy));
+  ASSERT_CALL(sleqp_dyn_func_set_obj_weight(dyn_rosenbrock_func, 1.));
 
-  ASSERT_CALL(sleqp_dyn_func_set_accuracy(fixed_var_func, accuracy));
+  ASSERT_CALL(sleqp_dyn_func_set_error_bound(fixed_var_func, accuracy));
+  ASSERT_CALL(sleqp_dyn_func_set_obj_weight(fixed_var_func, 1.));
 }
 
 void
@@ -66,12 +68,14 @@ START_TEST(test_obj_val)
 
   ASSERT_CALL(sleqp_func_obj_val(dyn_rosenbrock_func, &obj_val));
 
-  assert(!reject);
+  ck_assert(!reject);
 
   ASSERT_CALL(sleqp_func_set_value(fixed_var_func,
                                    fixed_initial,
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject));
+
+  ck_assert(!reject);
 
   double fixed_obj_val;
 

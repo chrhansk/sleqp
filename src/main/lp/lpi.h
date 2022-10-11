@@ -6,7 +6,7 @@
  * @brief Definition of the LP interface.
  *
  * The LP interface solves problem of the form
- * \f$ \min \langle c, x \rangle, \textrm{ s.t. } l_x \leq x \leq u_x, l \leq A
+ * \f$ \min \langle c, x \rangle, \st l_x \leq x \leq u_x, l \leq A
  *x \leq u \f$
  *
  **/

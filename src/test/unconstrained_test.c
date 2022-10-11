@@ -46,7 +46,7 @@ START_TEST(test_unconstrained_solve)
 
   SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
 
-  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimum, 1e-6));
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 

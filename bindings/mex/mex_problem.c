@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include "mex_dyn.h"
+#include "mex_error.h"
 #include "mex_fields.h"
 #include "mex_func.h"
 #include "mex_lsq.h"
@@ -39,7 +41,7 @@ num_vars_from_solution(const mxArray* x0)
 static int
 num_cons_from_options(const mxArray* options)
 {
-  assert(mxIsStruct(options));
+  MEX_EXPECT_STRUCT(options);
 
   const mxArray* cons_lb = mxGetField(options, 0, MEX_INPUT_CONS_LB);
 
@@ -159,9 +161,9 @@ SLEQP_RETCODE
 mex_problem_create(SleqpProblem** star,
                    SleqpParams* params,
                    SleqpOptions* options,
-                   bool lsq_problem,
+                   SLEQP_FUNC_TYPE func_type,
                    const mxArray* mex_x0,
-                   const mxArray* mex_funcs,
+                   const mxArray* mex_callbacks,
                    const mxArray* mex_options)
 {
   const int num_vars = num_vars_from_solution(mex_x0);
@@ -181,28 +183,38 @@ mex_problem_create(SleqpProblem** star,
 
   SleqpFunc* func;
 
-  if (lsq_problem)
+  const SLEQP_HESS_EVAL hess_eval
+    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
+
+  const bool with_hess = (hess_eval == SLEQP_HESS_EVAL_EXACT);
+
+  switch (func_type)
   {
+  case SLEQP_FUNC_TYPE_REGULAR:
+    SLEQP_CALL(mex_func_create(&func,
+                               mex_callbacks,
+                               params,
+                               num_vars,
+                               num_cons,
+                               with_hess));
+    break;
+  case SLEQP_FUNC_TYPE_LSQ:
     SLEQP_CALL(mex_lsq_func_create(&func,
                                    mex_x0,
-                                   mex_funcs,
+                                   mex_callbacks,
                                    params,
                                    num_vars,
                                    num_cons));
-  }
-  else
-  {
-    const SLEQP_HESS_EVAL hess_eval
-      = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
-
-    const bool with_hessian = (hess_eval == SLEQP_HESS_EVAL_EXACT);
-
-    SLEQP_CALL(mex_func_create(&func,
-                               mex_funcs,
-                               with_hessian,
-                               params,
-                               num_vars,
-                               num_cons));
+    break;
+  case SLEQP_FUNC_TYPE_DYNAMIC:
+    SLEQP_CALL(mex_dyn_func_create(&func,
+                                   mex_x0,
+                                   mex_callbacks,
+                                   params,
+                                   num_vars,
+                                   num_cons,
+                                   with_hess));
+    break;
   }
 
   SLEQP_CALL(sleqp_problem_create_simple(star,

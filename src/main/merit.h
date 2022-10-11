@@ -24,14 +24,14 @@ sleqp_merit_create(SleqpMerit** star,
  * iterate. The exact merit value at \f$ x \f$ is given by
  *
  * \f[
- * \Phi_v(x) := f(x)
- *              + v \left( \sum_{i=1}^{m} \max(c_i(x) - u_i, 0) \right)
- *              + v \left(\sum_{i=1}^{m} \max(l_i - c_i(x), 0) \right)
+ * \Phi_{\nu}(x) := f(x)
+ *              + {\nu} \left( \sum_{i=1}^{m} \max(c_i(x) - u_i, 0) \right)
+ *              + {\nu} \left(\sum_{i=1}^{m} \max(l_i - c_i(x), 0) \right)
  * \f]
  *
  * @param[in]  merit             Merit data
  * @param[in]  iterate           The current iterate
- * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
+ * @param[in]  penalty_parameter The penalty parameter \f$ \nu \f$
  * @param[out] merit_value       The exact merit value
  *
  **/
@@ -47,17 +47,18 @@ sleqp_merit_func(SleqpMerit* merit,
  * a direction \f$ d \f$ is given by
  *
  * \f[
- * \ell_v(\overline{x}, d) := f(x) + \langle \nabla f(\overline{x}), d \rangle
- * + v \left( \sum_{i=1}^{m} \max((c_i{\overline{x}} + \langle \nabla
- *c_i(\overline{x}) , d \rangle) - u_i, 0) \right)
- * + v  \left(\sum_{i=1}^{m} \max(l_i - (c_i{\overline{x}} + \langle \nabla
- *c_i(\overline{x}) , d \rangle), 0) \right) \f]
+ * \ell_v(\overline{x}, d) := f(\overline{x}) + \langle \nabla f(\overline{x}), d \rangle
+ * + v \left( \sum_{i=1}^{m} \max((c_i(\overline{x}) + \langle \nabla
+ * c_i(\overline{x}) , d \rangle) - u_i, 0) \right)
+ * + v  \left(\sum_{i=1}^{m} \max(l_i - (c_i(\overline{x}) + \langle \nabla
+ * c_i(\overline{x}) , d \rangle), 0) \right)
+ * \f]
  *
  *
  * @param[in]  merit             Merit data
  * @param[in]  iterate           The current iterate \f$ overline{x} \f$
  * @param[in]  direction         The direction \f$ d \f$
- * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
+ * @param[in]  penalty_parameter The penalty parameter \f$ \nu \f$
  * @param[out] merit_value       The linearized merit value
  *
  **/
@@ -75,7 +76,8 @@ sleqp_merit_linear(SleqpMerit* merit,
  *
  * \f[
  * q_v(\overline{x}, d, \mu) := \ell_v(\overline{x}, d) + 1/2 \langle d,
- *H(\overline{x}, \mu) d \rangle \f]
+ * H(\overline{x}, \mu) d \rangle
+ * \f]
  *
  * The computation involves the computation of one Hessian product of the
  *underlying function
@@ -83,7 +85,7 @@ sleqp_merit_linear(SleqpMerit* merit,
  * @param[in]  merit             Merit data
  * @param[in]  iterate           The current iterate \f$ overline{x} \f$
  * @param[in]  direction         The direction \f$ d \f$
- * @param[in]  penalty_parameter The penalty parameter \f$ v \f$
+ * @param[in]  penalty_parameter The penalty parameter \f$ \nu \f$
  * @param[out] merit_value       The quadratic merit value
  *
  **/

@@ -1,11 +1,19 @@
 #ifndef SLEQP_PUB_LOG_H
 #define SLEQP_PUB_LOG_H
 
+/**
+ * @file pub_log.h
+ * @brief Logging functionality.
+ **/
+
 #include <time.h>
 
 #include "sleqp/defs.h"
 #include "sleqp/export.h"
 
+/**
+ * Definition of log levels
+ **/
 typedef enum
 {
   SLEQP_LOG_SILENT     = 0,
@@ -16,16 +24,28 @@ typedef enum
   SLEQP_NUM_LOG_LEVELS = 5
 } SLEQP_LOG_LEVEL;
 
+/**
+ * Returns the current log level
+ **/
 SLEQP_EXPORT SLEQP_LOG_LEVEL
 sleqp_log_level();
 
+/**
+ * Sets the log level
+ **/
 SLEQP_EXPORT void
 sleqp_log_set_level(SLEQP_LOG_LEVEL level);
 
+/**
+ * Definition of the log handler function
+ **/
 typedef void (*SLEQP_LOG_HANDLER)(SLEQP_LOG_LEVEL level,
                                   time_t time,
                                   const char* message);
 
+/**
+ * Sets a custom log handler
+ **/
 SLEQP_EXPORT void
 sleqp_log_set_handler(SLEQP_LOG_HANDLER handler);
 

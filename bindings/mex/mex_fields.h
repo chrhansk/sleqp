@@ -16,6 +16,7 @@
 
 #define MEX_COMMAND_INFO "info"
 #define MEX_COMMAND_SOLVE "solve"
+#define MEX_COMMAND_SOLVE_DYN "solve_dyn"
 #define MEX_COMMAND_SOLVE_LSQ "solve_lsq"
 
 #define MATLAB_FUNC_FEVAL "feval"
@@ -42,6 +43,11 @@
 #define MEX_INPUT_LSQ_RES "lsq_residuals"
 #define MEX_INPUT_LSQ_JAC_FWD "lsq_jac_forward"
 #define MEX_INPUT_LSQ_JAC_ADJ "lsq_jac_adjoint"
+
+#define MEX_INPUT_DYN_EVAL "eval"
+#define MEX_INPUT_DYN_ERROR_BOUND "error_bound"
+#define MEX_INPUT_DYN_OBJ_WEIGHT "obj_weight"
+#define MEX_INPUT_DYN_CONS_WEIGHTS "cons_weights"
 
 #define MEX_INPUT_CONS_LB "cons_lb"
 #define MEX_INPUT_CONS_UB "cons_ub"

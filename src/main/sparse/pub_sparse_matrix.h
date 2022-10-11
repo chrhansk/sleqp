@@ -2,7 +2,7 @@
 #define SLEQP_PUB_SPARSE_MATRIX_H
 
 /**
- * @file sparse_matrix.h
+ * @file pub_sparse_matrix.h
  * @brief Definition of sparse matrices.
  **/
 

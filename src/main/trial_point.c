@@ -4,6 +4,7 @@
 #include "dyn.h"
 #include "error.h"
 #include "fail.h"
+#include "func.h"
 #include "gauss_newton.h"
 #include "mem.h"
 #include "newton.h"
@@ -329,6 +330,16 @@ sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
   solver->trust_radius      = SLEQP_NONE;
   solver->lp_trust_radius   = SLEQP_NONE;
 
+  {
+    SleqpFunc* func = sleqp_problem_func(problem);
+
+    if (sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC)
+    {
+      SLEQP_CALL(sleqp_alloc_array(&solver->cons_weights, num_constraints));
+      SLEQP_CALL(sleqp_dyn_func_set_error_bound(func, 1.));
+    }
+  }
+
   return SLEQP_OKAY;
 }
 
@@ -389,7 +400,14 @@ sleqp_trial_point_solver_set_penalty(SleqpTrialPointSolver* solver,
 {
   assert(penalty_parameter > 0.);
 
+  const double last_penalty_parameter = solver->penalty_parameter;
+
   solver->penalty_parameter = penalty_parameter;
+
+  if (solver->penalty_parameter != last_penalty_parameter)
+  {
+    SLEQP_CALL(sleqp_trial_point_solver_update_cons_weights(solver));
+  }
 
   SleqpIterate* iterate = solver->iterate;
 
@@ -406,6 +424,30 @@ sleqp_trial_point_solver_penalty(SleqpTrialPointSolver* solver,
                                  double* penalty_parameter)
 {
   *penalty_parameter = solver->penalty_parameter;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_trial_point_solver_update_cons_weights(SleqpTrialPointSolver* solver)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpFunc* func       = sleqp_problem_func(problem);
+  const int num_cons    = sleqp_problem_num_cons(problem);
+
+  assert(solver->penalty_parameter != SLEQP_NONE);
+
+  if ((num_cons == 0) || (sleqp_func_get_type(func) != SLEQP_FUNC_TYPE_DYNAMIC))
+  {
+    return SLEQP_OKAY;
+  }
+
+  for (int i = 0; i < num_cons; ++i)
+  {
+    solver->cons_weights[i] = solver->penalty_parameter;
+  }
+
+  SLEQP_CALL(sleqp_dyn_func_set_cons_weights(func, solver->cons_weights));
 
   return SLEQP_OKAY;
 }
@@ -732,7 +774,8 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
 }
 
 static double
-compute_required_accuracy(SleqpTrialPointSolver* solver, double model_reduction)
+compute_required_error_bound(SleqpTrialPointSolver* solver,
+                             double model_reduction)
 {
   const double accepted_reduction
     = sleqp_params_value(solver->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
@@ -745,10 +788,17 @@ compute_required_accuracy(SleqpTrialPointSolver* solver, double model_reduction)
 }
 
 static SLEQP_RETCODE
-evaluate_iterate(SleqpTrialPointSolver* solver,
-                 SleqpProblem* problem,
-                 SleqpIterate* iterate)
+refine_iterate(SleqpTrialPointSolver* solver,
+               SleqpProblem* problem,
+               SleqpIterate* iterate,
+               double required_accuracy)
 {
+  SleqpFunc* func = sleqp_problem_func(problem);
+
+  assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
+
+  SLEQP_CALL(sleqp_dyn_func_set_error_bound(func, required_accuracy));
+
   double obj_val;
 
   SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
@@ -788,28 +838,26 @@ solver_refine_step(SleqpTrialPointSolver* solver,
 
   while (true)
   {
-    double current_accuracy;
+    double current_error_estimate = 0.;
 
-    SLEQP_CALL(sleqp_dyn_func_get_accuracy(func, &current_accuracy));
+    SLEQP_CALL(sleqp_dyn_func_error_estimate(func, &current_error_estimate));
 
     const double model_reduction
       = solver->current_merit_value - (*model_trial_value);
 
-    const double required_accuracy
-      = compute_required_accuracy(solver, model_reduction);
+    const double required_error_bound
+      = compute_required_error_bound(solver, model_reduction);
 
-    if (current_accuracy <= required_accuracy)
+    if (current_error_estimate <= required_error_bound)
     {
       break;
     }
 
     sleqp_log_debug("Current accuracy of %e is insufficient, reducing to %e",
-                    current_accuracy,
-                    required_accuracy);
+                    current_error_estimate,
+                    required_error_bound);
 
-    SLEQP_CALL(sleqp_dyn_func_set_accuracy(func, required_accuracy));
-
-    SLEQP_CALL(evaluate_iterate(solver, problem, iterate));
+    SLEQP_CALL(refine_iterate(solver, problem, iterate, required_error_bound));
 
     SLEQP_CALL(sleqp_merit_func(solver->merit,
                                 iterate,
@@ -891,8 +939,6 @@ sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
                                            trial_merit_value,
                                            failed_eqp_step,
                                            full_step));
-
-    return SLEQP_OKAY;
   }
   else
   {
@@ -990,14 +1036,14 @@ compute_trial_point_soc_dynamic(SleqpTrialPointSolver* solver,
 
   const double model_reduction = solver->current_merit_value - soc_model_merit;
 
-  double current_accuracy;
+  double current_error_estimate;
 
-  SLEQP_CALL(sleqp_dyn_func_get_accuracy(func, &current_accuracy));
+  SLEQP_CALL(sleqp_dyn_func_error_estimate(func, &current_error_estimate));
 
   const double required_accuracy
-    = compute_required_accuracy(solver, model_reduction);
+    = compute_required_error_bound(solver, model_reduction);
 
-  *reject = (current_accuracy > required_accuracy);
+  *reject = (current_error_estimate > required_accuracy);
 
   return SLEQP_OKAY;
 }
@@ -1031,6 +1077,8 @@ static SLEQP_RETCODE
 trial_point_solver_free(SleqpTrialPointSolver** star)
 {
   SleqpTrialPointSolver* solver = *star;
+
+  sleqp_free(&solver->cons_weights);
 
   SLEQP_CALL(sleqp_timer_free(&solver->elapsed_timer));
 

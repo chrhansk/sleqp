@@ -6,6 +6,7 @@
 #include "mex_fields.h"
 #include "mex_info.h"
 #include "mex_solve.h"
+#include "mex_solve_dyn.h"
 #include "mex_solve_lsq.h"
 
 #include "sleqp.h"
@@ -85,6 +86,7 @@ mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[])
   MexCommand commands[]
     = {{MEX_COMMAND_INFO, mex_command_info, 1, 0},
        {MEX_COMMAND_SOLVE, mex_command_solve, 2, 3},
+       {MEX_COMMAND_SOLVE_DYN, mex_command_solve_dyn, 2, 3},
        {MEX_COMMAND_SOLVE_LSQ, mex_command_solve_lsq, 2, 3}};
 
   const int num_commands = sizeof(commands) / sizeof(MexCommand);

@@ -9,21 +9,21 @@
  *
  * \f[
  * \begin{aligned}
- * \min \: & f(x)                       \\
- * \text{s.t. } \: & l \leq c(x) \leq u \\
+ * \min \: & f(x)              \\
+ * \st \: & l \leq c(x) \leq u \\
  * & l_x \leq x \leq u_x
  * \end{aligned}
  * \f]
  *
- * is given in terms of the residuum \f$ r : \mathbb{R}^{m + n} \to
- *\mathbb{R}^{m} \f$ \f[ r(x, s) := c(x) - s \f]
+ * is given in terms of the residuum \f$ r : \R^{m + n} \to
+ *\R^{m} \f$ \f[ r(x, s) := c(x) - s \f]
  *
  * as the problem
  *
  * \f[
  * \begin{aligned}
- * \min \: & 1/2 \| r(x, s) \|^2  \\
- * \text{s.t. } \: & l s \leq u   \\
+ * \min \: & 1/2 \| r(x, s) \|^2 \\
+ * \st \: & l s \leq u           \\
  * & l_x \leq x \leq u_x
  * \end{aligned}
  * \f]

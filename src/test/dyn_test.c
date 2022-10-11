@@ -3,18 +3,21 @@
 
 #include "cmp.h"
 #include "mem.h"
+#include "scale.h"
 #include "solver.h"
 
 #include "test_common.h"
 
 #include "dyn_rosenbrock_fixture.h"
 
-START_TEST(test_solve)
+SleqpParams* params;
+SleqpOptions* options;
+SleqpProblem* problem;
+
+void
+setup()
 {
-  SleqpParams* params;
-  SleqpOptions* options;
-  SleqpProblem* problem;
-  SleqpSolver* solver;
+  dyn_rosenbrock_setup();
 
   ASSERT_CALL(sleqp_params_create(&params));
 
@@ -27,6 +30,42 @@ START_TEST(test_solve)
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
                                           rosenbrock_cons_ub));
+}
+
+void
+teardown()
+{
+  ASSERT_CALL(sleqp_problem_release(&problem));
+
+  ASSERT_CALL(sleqp_options_release(&options));
+
+  ASSERT_CALL(sleqp_params_release(&params));
+
+  dyn_rosenbrock_teardown();
+}
+
+void
+solve_and_release_solver(SleqpSolver* solver)
+{
+  // 1000 iterations, one minute time limit
+  ASSERT_CALL(sleqp_solver_solve(solver, 1000, 60.));
+
+  SleqpIterate* iterate;
+
+  ASSERT_CALL(sleqp_solver_solution(solver, &iterate));
+
+  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
+
+  SleqpVec* actual_solution = sleqp_iterate_primal(iterate);
+
+  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimum, 1e-6));
+
+  ASSERT_CALL(sleqp_solver_release(&solver));
+}
+
+START_TEST(test_solve)
+{
+  SleqpSolver* solver;
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
@@ -35,26 +74,34 @@ START_TEST(test_solve)
                                   rosenbrock_initial,
                                   NULL));
 
-  // 100 iterations should be plenty...
-  ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
+  solve_and_release_solver(solver);
+}
+END_TEST
 
-  SleqpIterate* solution_iterate;
+START_TEST(test_scaled_solve)
+{
+  SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_solver_solution(solver, &solution_iterate));
+  SleqpScaling* scaling;
 
-  ck_assert_int_eq(sleqp_solver_status(solver), SLEQP_STATUS_OPTIMAL);
+  ASSERT_CALL(
+    sleqp_scaling_create(&scaling, rosenbrock_num_vars, rosenbrock_num_cons));
 
-  SleqpVec* actual_solution = sleqp_iterate_primal(solution_iterate);
+  ASSERT_CALL(sleqp_scaling_set_obj_weight(scaling, 2));
 
-  ck_assert(sleqp_vec_eq(actual_solution, rosenbrock_optimal, 1e-6));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -5));
+  ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, 5));
 
-  ASSERT_CALL(sleqp_solver_release(&solver));
+  ASSERT_CALL(sleqp_solver_create(&solver,
+                                  problem,
+                                  params,
+                                  options,
+                                  rosenbrock_initial,
+                                  scaling));
 
-  ASSERT_CALL(sleqp_problem_release(&problem));
+  solve_and_release_solver(solver);
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_scaling_release(&scaling));
 }
 END_TEST
 
@@ -64,15 +111,15 @@ dyn_test_suite()
   Suite* suite;
   TCase* tc_dyn;
 
-  suite = suite_create("Unconstrained tests");
+  suite = suite_create("Dynamic unconstrained tests");
 
-  tc_dyn = tcase_create("Unconstrained solution test");
+  tc_dyn = tcase_create("Dynamic unconstrained solution test");
 
-  tcase_add_checked_fixture(tc_dyn,
-                            dyn_rosenbrock_setup,
-                            dyn_rosenbrock_teardown);
+  tcase_add_checked_fixture(tc_dyn, setup, teardown);
 
   tcase_add_test(tc_dyn, test_solve);
+  tcase_add_test(tc_dyn, test_scaled_solve);
+
   suite_add_tcase(suite, tc_dyn);
 
   return suite;

@@ -101,7 +101,7 @@ solve_and_release_solver(SleqpSolver* solver)
 
   SleqpVec* actual_solution = sleqp_iterate_primal(iterate);
 
-  ck_assert(sleqp_vec_eq(actual_solution, constrained_optimal, 1e-6));
+  ck_assert(sleqp_vec_eq(actual_solution, constrained_optimum, 1e-6));
 
   ck_assert(sleqp_is_zero(stat_res(problem, iterate), 1e-6));
 

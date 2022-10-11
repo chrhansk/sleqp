@@ -331,24 +331,47 @@ fixed_lsq_func_jac_adjoint(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-fixed_dyn_obj_val(SleqpFunc* func, double accuracy, double* obj_val, void* data)
+fixed_dyn_func_eval(SleqpFunc* func,
+                    double* obj_val,
+                    SleqpVec* cons_val,
+                    double* error,
+                    void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
-  SLEQP_CALL(sleqp_dyn_func_obj_val(func_data->func, accuracy, obj_val));
+  SLEQP_CALL(sleqp_dyn_func_eval(func_data->func, obj_val, cons_val, error));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-fixed_dyn_func_cons_val(SleqpFunc* func,
-                        double accuracy,
-                        SleqpVec* cons_val,
-                        void* data)
+fixed_dyn_func_set_error_bound(SleqpFunc* func, double error_bound, void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
-  SLEQP_CALL(sleqp_dyn_func_cons_val(func_data->func, accuracy, cons_val));
+  SLEQP_CALL(sleqp_dyn_func_set_error_bound(func_data->func, error_bound));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+fixed_dyn_func_set_obj_weight(SleqpFunc* func, double obj_weight, void* data)
+{
+  FixedVarFuncData* func_data = (FixedVarFuncData*)data;
+
+  SLEQP_CALL(sleqp_dyn_func_set_obj_weight(func_data->func, obj_weight));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+fixed_dyn_func_set_cons_weights(SleqpFunc* func,
+                                const double* cons_weights,
+                                void* data)
+{
+  FixedVarFuncData* func_data = (FixedVarFuncData*)data;
+
+  SLEQP_CALL(sleqp_dyn_func_set_cons_weights(func_data->func, cons_weights));
 
   return SLEQP_OKAY;
 }
@@ -554,13 +577,17 @@ sleqp_fixed_var_dyn_func_create(SleqpFunc** star,
                                         fixed_indices,
                                         fixed_values));
 
-  SleqpDynFuncCallbacks callbacks = {.set_value = fixed_var_func_set,
-                                     .obj_val   = fixed_dyn_obj_val,
-                                     .obj_grad  = fixed_var_obj_grad,
-                                     .cons_val  = fixed_dyn_func_cons_val,
-                                     .cons_jac  = fixed_var_cons_jac,
-                                     .hess_prod = fixed_var_hess_prod,
-                                     .func_free = fixed_func_free};
+  SleqpDynFuncCallbacks callbacks
+    = {.set_value        = fixed_var_func_set,
+       .nonzeros         = fixed_var_func_nonzeros,
+       .set_error_bound  = fixed_dyn_func_set_error_bound,
+       .set_obj_weight   = fixed_dyn_func_set_obj_weight,
+       .set_cons_weights = fixed_dyn_func_set_cons_weights,
+       .eval             = fixed_dyn_func_eval,
+       .obj_grad         = fixed_var_obj_grad,
+       .cons_jac         = fixed_var_cons_jac,
+       .hess_prod        = fixed_var_hess_prod,
+       .func_free        = fixed_func_free};
 
   SLEQP_CALL(sleqp_dyn_func_create(star,
                                    &callbacks,

@@ -9,7 +9,7 @@ SLEQP_RETCODE
 mex_problem_create(SleqpProblem** star,
                    SleqpParams* params,
                    SleqpOptions* options,
-                   bool lsq_problem,
+                   SLEQP_FUNC_TYPE func_type,
                    const mxArray* mex_x0,
                    const mxArray* mex_funcs,
                    const mxArray* mex_options);

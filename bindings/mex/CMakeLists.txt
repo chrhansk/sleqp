@@ -1,6 +1,8 @@
 set(MEX_SOURCES
+  mex_dyn.c
   mex_func.c
   mex_func_common.c
+  mex_hess.c
   mex_info.c
   mex_lsq.c
   mex_main.c
@@ -8,6 +10,7 @@ set(MEX_SOURCES
   mex_problem.c
   mex_solve.c
   mex_solve_common.c
+  mex_solve_dyn.c
   mex_solve_lsq.c)
 
 set(MATLAB_OUTPUT_DIR "${CMAKE_BINARY_DIR}/matlab")
@@ -17,12 +20,14 @@ set(MATLAB_TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests")
 set(MATLAB_SOURCES
   sleqp/info.m
   sleqp/solve.m
+  sleqp/solve_dyn.m
   sleqp/solve_lsq.m)
 
 set(MEX_TESTS
   tests/test_callback.m
   tests/test_hess_prod.m
   tests/test_solve.m
+  tests/test_solve_dyn.m
   tests/test_solve_lsq.m
   tests/test_solve_quasi_newton.m
   tests/test_working_set.m)

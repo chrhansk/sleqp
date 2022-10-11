@@ -38,12 +38,14 @@ update_penalty(SleqpTrialPointSolver* solver)
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const int num_constraints = sleqp_problem_num_cons(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
 
-  if (num_constraints == 0)
+  if (num_cons == 0)
   {
     return SLEQP_OKAY;
   }
+
+  const double last_penalty_parameter = solver->penalty_parameter;
 
   const double feas_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
@@ -86,6 +88,11 @@ update_penalty(SleqpTrialPointSolver* solver)
                                     solver->cauchy_data,
                                     &(solver->penalty_parameter),
                                     &(solver->locally_infeasible)));
+  }
+
+  if (solver->penalty_parameter != last_penalty_parameter)
+  {
+    SLEQP_CALL(sleqp_trial_point_solver_update_cons_weights(solver));
   }
 
   return SLEQP_OKAY;

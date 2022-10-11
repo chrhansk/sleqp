@@ -127,9 +127,6 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(csleqp.SleqpFunc* func,
   return csleqp.SLEQP_OKAY
 
 
-cdef object lsq_funcs = weakref.WeakSet()
-
-
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint_nogil(csleqp.SleqpFunc* func,
                                                       const csleqp.SleqpVec* adjoint_direction,
                                                       csleqp.SleqpVec* product,
@@ -162,6 +159,8 @@ cdef set_lsq_func_callbacks(csleqp.SleqpLSQCallbacks* callbacks):
   callbacks.func_free = &sleqp_func_free
 
 
+cdef object lsq_funcs = weakref.WeakSet()
+
 cdef update_lsq_func_callbacks():
   cdef _Func func
   cdef csleqp.SleqpLSQCallbacks callbacks
@@ -182,20 +181,16 @@ cdef csleqp.SLEQP_RETCODE create_lsq_func(csleqp.SleqpFunc** cfunc,
                                           double levenberg_marquardt,
                                           csleqp.SleqpParams* params):
   cdef csleqp.SleqpLSQCallbacks callbacks
-  cdef csleqp.SLEQP_RETCODE retcode
 
   assert func is not None
 
   set_lsq_func_callbacks(&callbacks)
 
-  retcode = csleqp.sleqp_lsq_func_create(cfunc,
-                                         &callbacks,
-                                         num_variables,
-                                         num_constraints,
-                                         num_residuals,
-                                         levenberg_marquardt,
-                                         params,
-                                         <void*> func)
-  
-  return retcode
-    
+  return csleqp.sleqp_lsq_func_create(cfunc,
+                                      &callbacks,
+                                      num_variables,
+                                      num_constraints,
+                                      num_residuals,
+                                      levenberg_marquardt,
+                                      params,
+                                      <void*> func)

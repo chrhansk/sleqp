@@ -38,6 +38,11 @@ typedef struct SleqpLSQData
 
 } SleqpLSQData;
 
+#define SLEQP_LSQ_ERROR_NONZEROS "Error '%s' querying LSQ function nonzeros"
+#define SLEQP_LSQ_ERROR_EVAL "Error '%s' evaluating least squares residuals"
+#define SLEQP_LSQ_ERROR_JAC_FWD "Error '%s' evaluating forward Jacobian product"
+#define SLEQP_LSQ_ERROR_JAC_ADJ "Error '%s' evaluating adjoint Jacobian product"
+
 static SLEQP_RETCODE
 lsq_func_set_value(SleqpFunc* func,
                    SleqpVec* x,
@@ -50,7 +55,7 @@ lsq_func_set_value(SleqpFunc* func,
   SLEQP_FUNC_CALL(
     lsq_data->callbacks.set_value(func, x, reason, reject, lsq_data->func_data),
     sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
-    "Error setting function value");
+    SLEQP_FUNC_ERROR_SET_VALUE);
 
   lsq_data->has_lsq_residual = false;
 
@@ -125,7 +130,7 @@ compute_lsq_residual(SleqpFunc* func, SleqpLSQData* lsq_data)
                                                       lsq_data->lsq_residual,
                                                       lsq_data->func_data),
                     sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
-                    "Error evaluating least squares residuals");
+                    SLEQP_LSQ_ERROR_EVAL);
 
     SLEQP_CALL(sleqp_timer_stop(lsq_data->residual_timer));
 
@@ -405,7 +410,7 @@ sleqp_lsq_func_nonzeros(SleqpFunc* func,
                                                      cons_jac_nnz,
                                                      lsq_data->func_data),
                     sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
-                    "Error querying LSQ function nonzeros");
+                    SLEQP_LSQ_ERROR_NONZEROS);
   }
 
   return SLEQP_OKAY;
@@ -477,7 +482,7 @@ sleqp_lsq_func_jac_forward(SleqpFunc* func,
                                                       product,
                                                       lsq_data->func_data),
                   sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
-                  "Error evaluating forward Jacobian product");
+                  SLEQP_LSQ_ERROR_JAC_FWD);
 
   SLEQP_CALL(sleqp_timer_stop(lsq_data->forward_timer));
 
@@ -508,7 +513,7 @@ sleqp_lsq_func_jac_adjoint(SleqpFunc* func,
                                                       product,
                                                       lsq_data->func_data),
                   sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL),
-                  "Error evaluating adjoint Jacobian product");
+                  SLEQP_LSQ_ERROR_JAC_ADJ);
 
   SLEQP_CALL(sleqp_timer_stop(lsq_data->adjoint_timer));
 

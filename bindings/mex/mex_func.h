@@ -8,9 +8,9 @@
 SLEQP_RETCODE
 mex_func_create(SleqpFunc** star,
                 const mxArray* mex_callbacks,
-                bool with_hessian,
                 SleqpParams* params,
-                int num_variables,
-                int num_constraints);
+                int num_vars,
+                int num_cons,
+                bool with_hess);
 
 #endif /* SLEQP_MEX_FUNC_H */

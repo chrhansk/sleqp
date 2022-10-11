@@ -43,10 +43,10 @@ setup()
   ASSERT_CALL(
     sleqp_vec_create_empty(&fixed_residuals, rosenbrock_num_residuals));
 
-  ASSERT_CALL(sleqp_vec_create_full(&forward, rosenbrock_num_variables));
+  ASSERT_CALL(sleqp_vec_create_full(&forward, rosenbrock_num_vars));
 
-  ASSERT_CALL(sleqp_vec_create_full(&fixed_forward,
-                                    rosenbrock_num_variables - num_fixed));
+  ASSERT_CALL(
+    sleqp_vec_create_full(&fixed_forward, rosenbrock_num_vars - num_fixed));
 
   ASSERT_CALL(sleqp_vec_create_full(&adjoint, rosenbrock_num_residuals));
 
@@ -61,8 +61,8 @@ setup()
                                               fixed_indices,
                                               fixed_values));
 
-  ASSERT_CALL(sleqp_vec_create_full(&fixed_initial,
-                                    rosenbrock_num_variables - num_fixed));
+  ASSERT_CALL(
+    sleqp_vec_create_full(&fixed_initial, rosenbrock_num_vars - num_fixed));
 
   const double fixed_value = sleqp_vec_value_at(rosenbrock_initial, 1);
 

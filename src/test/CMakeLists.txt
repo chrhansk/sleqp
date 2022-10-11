@@ -6,6 +6,7 @@ include_directories(
 set(TEST_COMMON_SRC
   test_common.c
   constrained_fixture.c
+  dyn_constrained_fixture.c
   dyn_rosenbrock_fixture.c
   quadcons_fixture.c
   quadfunc_fixture.c
@@ -59,7 +60,7 @@ add_unit_test(sparse/sleqp_sparse_matrix_test)
 
 add_unit_test(preprocessor/fixed_var_func_test)
 add_unit_test(preprocessor/fixed_var_lsq_func_test)
-add_unit_test(preprocessor/fixed_var_dynamic_func_test)
+add_unit_test(preprocessor/fixed_var_dyn_func_test)
 
 add_unit_test(preprocessor/preprocessor_test)
 
@@ -74,6 +75,7 @@ add_unit_test(constrained_test)
 add_unit_test(degraded_cons_test)
 add_unit_test(dual_estimation_test)
 add_unit_test(dyn_test)
+add_unit_test(dyn_constrained_test)
 add_unit_test(gauss_newton_test)
 add_unit_test(log_test)
 add_unit_test(lsq_test)
