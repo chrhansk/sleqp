@@ -8,7 +8,7 @@ check_feasibility(SleqpSolver* solver, bool* feasible)
   SleqpProblemSolver* problem_solver = solver->problem_solver;
   SleqpProblem* problem              = solver->problem;
 
-  SleqpIterate* iterate = sleqp_problem_solver_get_iterate(problem_solver);
+  SleqpIterate* iterate = sleqp_problem_solver_iterate(problem_solver);
 
   bool reject;
 
@@ -98,7 +98,7 @@ run_solving_loop(SleqpSolver* solver, int max_num_iterations, double time_limit)
                                           enable_restoration));
 
     SLEQP_PROBLEM_SOLVER_STATUS status
-      = sleqp_problem_solver_get_status(problem_solver);
+      = sleqp_problem_solver_status(problem_solver);
 
     assert(status != SLEQP_PROBLEM_SOLVER_STATUS_UNKNOWN);
     assert(status != SLEQP_PROBLEM_SOLVER_STATUS_RUNNING);
@@ -232,8 +232,7 @@ sleqp_solver_solve(SleqpSolver* solver,
 
   double violation;
 
-  SleqpIterate* iterate
-    = sleqp_problem_solver_get_iterate(solver->problem_solver);
+  SleqpIterate* iterate = sleqp_problem_solver_iterate(solver->problem_solver);
 
   SLEQP_CALL(
     sleqp_iterate_feasibility_residuum(solver->problem, iterate, &violation));

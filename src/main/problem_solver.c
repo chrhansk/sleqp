@@ -177,13 +177,13 @@ sleqp_problem_solver_get_elapsed_seconds(const SleqpProblemSolver* solver)
 }
 
 SleqpIterate*
-sleqp_problem_solver_get_iterate(const SleqpProblemSolver* solver)
+sleqp_problem_solver_iterate(const SleqpProblemSolver* solver)
 {
   return solver->iterate;
 }
 
 SLEQP_PROBLEM_SOLVER_STATUS
-sleqp_problem_solver_get_status(const SleqpProblemSolver* solver)
+sleqp_problem_solver_status(const SleqpProblemSolver* solver)
 {
   return solver->status;
 }

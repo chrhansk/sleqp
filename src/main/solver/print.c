@@ -27,8 +27,7 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
     "reached time limit" SLEQP_FORMAT_RESET,
   };
 
-  SleqpIterate* iterate
-    = sleqp_problem_solver_get_iterate(solver->problem_solver);
+  SleqpIterate* iterate = sleqp_problem_solver_iterate(solver->problem_solver);
 
   SleqpFunc* original_func = sleqp_problem_func(solver->original_problem);
   SleqpFunc* func          = sleqp_problem_func(solver->problem);

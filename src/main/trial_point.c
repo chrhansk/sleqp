@@ -406,7 +406,7 @@ sleqp_trial_point_solver_set_penalty(SleqpTrialPointSolver* solver,
 
   if (solver->penalty_parameter != last_penalty_parameter)
   {
-    SLEQP_CALL(sleqp_trial_point_solver_update_cons_weights(solver));
+    SLEQP_CALL(sleqp_trial_point_solver_set_cons_weights(solver));
   }
 
   SleqpIterate* iterate = solver->iterate;
@@ -429,7 +429,7 @@ sleqp_trial_point_solver_penalty(SleqpTrialPointSolver* solver,
 }
 
 SLEQP_RETCODE
-sleqp_trial_point_solver_update_cons_weights(SleqpTrialPointSolver* solver)
+sleqp_trial_point_solver_set_cons_weights(SleqpTrialPointSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func       = sleqp_problem_func(problem);

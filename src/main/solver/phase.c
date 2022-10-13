@@ -39,8 +39,7 @@ on_restoration_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
 static SLEQP_RETCODE
 create_restoration_primal(SleqpSolver* solver)
 {
-  SleqpIterate* iterate
-    = sleqp_problem_solver_get_iterate(solver->problem_solver);
+  SleqpIterate* iterate = sleqp_problem_solver_iterate(solver->problem_solver);
 
   SLEQP_CALL(
     sleqp_restoration_problem_transform(solver->problem,
@@ -55,7 +54,7 @@ static SLEQP_RETCODE
 create_primal(SleqpSolver* solver)
 {
   SleqpIterate* restoration_iterate
-    = sleqp_problem_solver_get_iterate(solver->restoration_problem_solver);
+    = sleqp_problem_solver_iterate(solver->restoration_problem_solver);
 
   SLEQP_CALL(
     sleqp_restoration_problem_restore(solver->problem,

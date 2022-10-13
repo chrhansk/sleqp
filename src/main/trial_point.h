@@ -132,7 +132,7 @@ sleqp_trial_point_solver_penalty(SleqpTrialPointSolver* solver,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_trial_point_solver_update_cons_weights(SleqpTrialPointSolver* solver);
+sleqp_trial_point_solver_set_cons_weights(SleqpTrialPointSolver* solver);
 
 bool
 sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver);

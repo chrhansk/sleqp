@@ -86,7 +86,7 @@ sleqp_solver_restore_original_iterate(SleqpSolver* solver)
 {
   SLEQP_CALL(
     do_restore_iterate(solver,
-                       sleqp_problem_solver_get_iterate(solver->problem_solver),
+                       sleqp_problem_solver_iterate(solver->problem_solver),
                        solver->original_iterate));
 
   return SLEQP_OKAY;
