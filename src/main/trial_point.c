@@ -433,21 +433,12 @@ sleqp_trial_point_solver_set_cons_weights(SleqpTrialPointSolver* solver)
 {
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func       = sleqp_problem_func(problem);
-  const int num_cons    = sleqp_problem_num_cons(problem);
 
   assert(solver->penalty_parameter != SLEQP_NONE);
 
-  if ((num_cons == 0) || (sleqp_func_get_type(func) != SLEQP_FUNC_TYPE_DYNAMIC))
-  {
-    return SLEQP_OKAY;
-  }
-
-  for (int i = 0; i < num_cons; ++i)
-  {
-    solver->cons_weights[i] = solver->penalty_parameter;
-  }
-
-  SLEQP_CALL(sleqp_dyn_func_set_cons_weights(func, solver->cons_weights));
+  SLEQP_CALL(sleqp_dyn_set_penalty_cons_weights(func,
+                                                solver->penalty_parameter,
+                                                solver->cons_weights));
 
   return SLEQP_OKAY;
 }

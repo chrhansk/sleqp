@@ -3,17 +3,19 @@
 #include <math.h>
 
 #include "cmp.h"
+#include "dyn.h"
 #include "mem.h"
 
-const double trust_region_factor = .8;
+// penalty parameter as suggested:
+const double penalty_parameter_default = 10.;
+const double trust_region_factor       = .8;
 
 SLEQP_RETCODE
 sleqp_problem_solver_create(SleqpProblemSolver** star,
                             SLEQP_SOLVER_PHASE solver_phase,
                             SleqpProblem* problem,
                             SleqpParams* params,
-                            SleqpOptions* options,
-                            SleqpVec* primal)
+                            SleqpOptions* options)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -48,16 +50,9 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
 
   SLEQP_CALL(sleqp_vec_create_empty(&solver->vars_dual_diff, num_variables));
 
-  SLEQP_CALL(sleqp_iterate_create(&solver->iterate, solver->problem, primal));
+  SleqpVec* var_lb = sleqp_problem_vars_lb(solver->problem);
 
-  const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
-
-  SLEQP_CALL(sleqp_vec_clip(primal,
-                            sleqp_problem_vars_lb(solver->problem),
-                            sleqp_problem_vars_ub(solver->problem),
-                            zero_eps,
-                            sleqp_iterate_primal(solver->iterate)));
+  SLEQP_CALL(sleqp_iterate_create(&solver->iterate, solver->problem, var_lb));
 
   SLEQP_CALL(sleqp_iterate_create(&solver->trial_iterate,
                                   solver->problem,
@@ -87,19 +82,6 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
   }
 
   SLEQP_CALL(sleqp_problem_solver_reset(solver));
-
-  return SLEQP_OKAY;
-}
-
-SLEQP_RETCODE
-sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
-                                const SleqpVec* primal)
-{
-  const int num_variables = sleqp_problem_num_vars(solver->problem);
-
-  assert(primal->dim == num_variables);
-
-  SLEQP_CALL(sleqp_vec_copy(primal, sleqp_iterate_primal(solver->iterate)));
 
   return SLEQP_OKAY;
 }
@@ -139,8 +121,7 @@ sleqp_problem_solver_reset(SleqpProblemSolver* solver)
 {
   SLEQP_CALL(compute_initial_trust_radius(solver));
 
-  // penalty parameter as suggested:
-  solver->penalty_parameter = 10.;
+  solver->penalty_parameter = penalty_parameter_default;
 
   solver->num_feasible_steps        = 0;
   solver->num_global_penalty_resets = 0;
@@ -171,9 +152,22 @@ sleqp_problem_solver_elapsed_iterations(const SleqpProblemSolver* solver)
 }
 
 double
-sleqp_problem_solver_get_elapsed_seconds(const SleqpProblemSolver* solver)
+sleqp_problem_solver_elapsed_seconds(const SleqpProblemSolver* solver)
 {
   return sleqp_timer_get_ttl(solver->elapsed_timer);
+}
+
+SLEQP_RETCODE
+sleqp_problem_solver_set_cons_weights(SleqpProblemSolver* solver)
+{
+  SleqpProblem* problem = solver->problem;
+  SleqpFunc* func       = sleqp_problem_func(problem);
+
+  SLEQP_CALL(sleqp_dyn_set_penalty_cons_weights(func,
+                                                solver->penalty_parameter,
+                                                solver->dense_cache));
+
+  return SLEQP_OKAY;
 }
 
 SleqpIterate*

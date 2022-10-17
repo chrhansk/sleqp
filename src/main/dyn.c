@@ -395,6 +395,33 @@ sleqp_dyn_func_set_cons_weights(SleqpFunc* func, const double* cons_weights)
 }
 
 SLEQP_RETCODE
+sleqp_dyn_set_penalty_cons_weights(SleqpFunc* func,
+                                   double penalty,
+                                   double* cache)
+{
+  if (sleqp_func_get_type(func) != SLEQP_FUNC_TYPE_DYNAMIC)
+  {
+    return SLEQP_OKAY;
+  }
+
+  const int num_cons = sleqp_func_num_cons(func);
+
+  if (num_cons == 0)
+  {
+    return SLEQP_OKAY;
+  }
+
+  for (int i = 0; i < num_cons; ++i)
+  {
+    cache[i] = penalty;
+  }
+
+  SLEQP_CALL(sleqp_dyn_func_set_cons_weights(func, cache));
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
 sleqp_dyn_func_set_callbacks(SleqpFunc* func, SleqpDynFuncCallbacks* callbacks)
 {
   assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);

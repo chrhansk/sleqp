@@ -81,20 +81,113 @@ create_restoration_solver(SleqpSolver* solver)
   SLEQP_CALL(
     sleqp_vec_create_empty(&solver->restoration_primal, num_variables));
 
-  SLEQP_CALL(create_restoration_primal(solver));
-
   SLEQP_CALL(sleqp_problem_solver_create(&solver->restoration_problem_solver,
                                          SLEQP_SOLVER_PHASE_RESTORATION,
                                          solver->restoration_problem,
                                          solver->params,
-                                         solver->options,
-                                         solver->restoration_primal));
+                                         solver->options));
 
   SLEQP_CALL(sleqp_problem_solver_add_callback(
     solver->restoration_problem_solver,
     SLEQP_PROBLEM_SOLVER_EVENT_ACCEPTED_ITERATE,
     on_restoration_solver_accepted_iterate,
     (void*)solver));
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
+fill_optimization_iterate(SleqpSolver* solver)
+{
+  SLEQP_CALL(create_primal(solver));
+
+  SleqpProblemSolver* problem_solver = solver->problem_solver;
+
+  SleqpIterate* opt_iterate = sleqp_problem_solver_iterate(problem_solver);
+
+  SleqpVec* primal = solver->primal;
+
+  SLEQP_CALL(sleqp_vec_copy(primal, sleqp_iterate_primal(opt_iterate)));
+
+  SleqpProblem* problem = solver->problem;
+  SleqpFunc* func       = sleqp_problem_func(problem);
+
+  SleqpProblem* rest_problem = solver->restoration_problem;
+  SleqpFunc* rest_func       = sleqp_problem_func(rest_problem);
+
+  {
+    SleqpVec* cons_val;
+    SleqpSparseMatrix* cons_jac;
+
+    SLEQP_CALL(sleqp_restoration_func_cons_val(rest_func, &cons_val));
+    SLEQP_CALL(sleqp_restoration_func_cons_jac(rest_func, &cons_jac));
+
+    SLEQP_CALL(sleqp_vec_copy(cons_val, sleqp_iterate_cons_val(opt_iterate)));
+
+    SLEQP_CALL(
+      sleqp_sparse_matrix_copy(cons_jac, sleqp_iterate_cons_jac(opt_iterate)));
+  }
+
+  {
+    double obj_val;
+
+    SLEQP_CALL(sleqp_func_obj_val(func, &obj_val));
+
+    SLEQP_CALL(sleqp_iterate_set_obj_val(opt_iterate, obj_val));
+  }
+
+  {
+    SleqpVec* obj_grad = sleqp_iterate_obj_grad(opt_iterate);
+
+    SLEQP_CALL(sleqp_func_obj_grad(func, obj_grad));
+  }
+
+  return SLEQP_OKAY;
+}
+
+// Assuming that we are switching to the restoration phase
+// based on a *full* iterate (in particular, containing
+// cons vals / cons Jac). Initialize iterate
+// and restoration func based on these values
+static SLEQP_RETCODE
+fill_restoration_iterate(SleqpSolver* solver)
+{
+  SLEQP_CALL(create_restoration_primal(solver));
+
+  SleqpProblemSolver* problem_solver = solver->problem_solver;
+  SleqpProblemSolver* rest_solver    = solver->restoration_problem_solver;
+
+  SleqpIterate* opt_iterate  = sleqp_problem_solver_iterate(problem_solver);
+  SleqpIterate* rest_iterate = sleqp_problem_solver_iterate(rest_solver);
+
+  SleqpVec* rest_primal = solver->restoration_primal;
+
+  SLEQP_CALL(sleqp_vec_copy(rest_primal, sleqp_iterate_primal(rest_iterate)));
+
+  SleqpProblem* rest_problem = solver->restoration_problem;
+  SleqpFunc* rest_func       = sleqp_problem_func(rest_problem);
+
+  SleqpVec* orig_cons_val          = sleqp_iterate_cons_val(opt_iterate);
+  SleqpSparseMatrix* orig_cons_jac = sleqp_iterate_cons_jac(opt_iterate);
+
+  SLEQP_CALL(sleqp_restoration_func_init(rest_func,
+                                         rest_primal,
+                                         orig_cons_val,
+                                         orig_cons_jac));
+
+  {
+    double obj_val;
+
+    SLEQP_CALL(sleqp_func_obj_val(rest_func, &obj_val));
+
+    SLEQP_CALL(sleqp_iterate_set_obj_val(rest_iterate, obj_val));
+  }
+
+  {
+    SleqpVec* obj_grad = sleqp_iterate_obj_grad(rest_iterate);
+
+    SLEQP_CALL(sleqp_func_obj_grad(rest_func, obj_grad));
+  }
 
   return SLEQP_OKAY;
 }
@@ -112,9 +205,7 @@ sleqp_solver_toggle_phase(SleqpSolver* solver)
 
     SLEQP_CALL(create_restoration_primal(solver));
 
-    SLEQP_CALL(
-      sleqp_problem_solver_set_primal(solver->restoration_problem_solver,
-                                      solver->restoration_primal));
+    SLEQP_CALL(fill_restoration_iterate(solver));
 
     solver->solver_phase = SLEQP_SOLVER_PHASE_RESTORATION;
   }
@@ -124,8 +215,7 @@ sleqp_solver_toggle_phase(SleqpSolver* solver)
 
     SLEQP_CALL(create_primal(solver));
 
-    SLEQP_CALL(
-      sleqp_problem_solver_set_primal(solver->problem_solver, solver->primal));
+    SLEQP_CALL(fill_optimization_iterate(solver));
 
     solver->solver_phase = SLEQP_SOLVER_PHASE_OPTIMIZATION;
   }

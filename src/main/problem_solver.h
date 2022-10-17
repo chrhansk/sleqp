@@ -92,13 +92,7 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
                             SLEQP_SOLVER_PHASE solver_phase,
                             SleqpProblem* problem,
                             SleqpParams* params,
-                            SleqpOptions* options,
-                            SleqpVec* primal);
-
-SLEQP_NODISCARD
-SLEQP_RETCODE
-sleqp_problem_solver_set_primal(SleqpProblemSolver* solver,
-                                const SleqpVec* primal);
+                            SleqpOptions* options);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -130,7 +124,11 @@ int
 sleqp_problem_solver_elapsed_iterations(const SleqpProblemSolver* solver);
 
 double
-sleqp_problem_solver_get_elapsed_seconds(const SleqpProblemSolver* solver);
+sleqp_problem_solver_elapsed_seconds(const SleqpProblemSolver* solver);
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_problem_solver_set_cons_weights(SleqpProblemSolver* solver);
 
 SleqpIterate*
 sleqp_problem_solver_iterate(const SleqpProblemSolver* solver);
@@ -197,6 +195,14 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver);
 
+/**
+ * Solve the problem with given iteration and time limit.
+ * This assumes that the solver iterate @ref sleqp_problem_solver_iterate
+ * has correctly set primal, obj_val, obj_grad, cons_val, cons_jac,
+ * and that obj_weights / cons_weights / error_bounds are set
+ * for dynamic functions
+ *
+ **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_solver_solve(SleqpProblemSolver* solver,

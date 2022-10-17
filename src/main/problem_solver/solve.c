@@ -83,7 +83,6 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
                            bool abort_on_local_infeasibility)
 {
   SleqpProblem* problem = solver->problem;
-  SleqpFunc* func       = sleqp_problem_func(problem);
   SleqpIterate* iterate = solver->iterate;
 
   const int num_variables   = sleqp_problem_num_vars(problem);
@@ -91,28 +90,6 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
 
   solver->abort_on_local_infeasibility = abort_on_local_infeasibility;
   solver->status                       = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
-
-  bool reject_initial;
-
-  // ensure that constraint weights are set
-  if (sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC)
-  {
-    SLEQP_CALL(sleqp_trial_point_solver_set_iterate(solver->trial_point_solver,
-                                                    iterate));
-
-    SLEQP_CALL(sleqp_trial_point_solver_set_penalty(solver->trial_point_solver,
-                                                    solver->penalty_parameter));
-  }
-
-  SLEQP_CALL(sleqp_set_and_evaluate(problem,
-                                    iterate,
-                                    SLEQP_VALUE_REASON_INIT,
-                                    &reject_initial));
-
-  if (reject_initial)
-  {
-    sleqp_raise(SLEQP_INTERNAL_ERROR, "Function rejected initial solution");
-  }
 
   {
     SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);

@@ -324,8 +324,7 @@ sleqp_solver_create(SleqpSolver** star,
                                          SLEQP_SOLVER_PHASE_OPTIMIZATION,
                                          solver->problem,
                                          params,
-                                         options,
-                                         solver->primal));
+                                         options));
 
   SLEQP_CALL(sleqp_problem_solver_add_callback(
     solver->problem_solver,
