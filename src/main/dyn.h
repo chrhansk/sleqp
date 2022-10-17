@@ -27,4 +27,9 @@ sleqp_dyn_func_set_obj_weight(SleqpFunc* func, double obj_weight);
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_dyn_func_set_cons_weights(SleqpFunc* func, const double* cons_weights);
 
+SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_dyn_set_penalty_cons_weights(SleqpFunc* func,
+                                   double penalty,
+                                   double* cache);
+
 #endif /* SLEQP_DYN_H */

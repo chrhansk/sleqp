@@ -399,6 +399,47 @@ sleqp_restoration_func_cons_val(SleqpFunc* restoration_func, SleqpVec** star)
   return SLEQP_OKAY;
 }
 
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_restoration_func_cons_jac(SleqpFunc* restoration_func,
+                                SleqpSparseMatrix** star)
+{
+  FuncData* func_data = (FuncData*)sleqp_lsq_func_get_data(restoration_func);
+
+  SLEQP_CALL(compute_cons_jac(func_data));
+
+  (*star) = func_data->cons_jac;
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_NODISCARD
+SLEQP_RETCODE
+sleqp_restoration_func_init(SleqpFunc* restoration_func,
+                            SleqpVec* restoration_primal,
+                            SleqpVec* orig_cons_val,
+                            SleqpSparseMatrix* orig_cons_jac)
+{
+  FuncData* func_data = (FuncData*)sleqp_lsq_func_get_data(restoration_func);
+
+  SLEQP_CALL(split_primal(func_data,
+                          restoration_primal,
+                          func_data->var_primal,
+                          func_data->cons_primal));
+
+  {
+    SLEQP_CALL(sleqp_vec_copy(orig_cons_val, func_data->cons_val));
+    func_data->has_cons_val = true;
+  }
+
+  {
+    SLEQP_CALL(sleqp_sparse_matrix_copy(orig_cons_jac, func_data->cons_jac));
+    func_data->has_cons_jac = true;
+  }
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE
 sleqp_restoration_problem_create(SleqpProblem** star,
                                  SleqpParams* params,

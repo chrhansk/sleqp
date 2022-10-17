@@ -8,7 +8,7 @@ check_feasibility(SleqpSolver* solver, bool* feasible)
   SleqpProblemSolver* problem_solver = solver->problem_solver;
   SleqpProblem* problem              = solver->problem;
 
-  SleqpIterate* iterate = sleqp_problem_solver_get_iterate(problem_solver);
+  SleqpIterate* iterate = sleqp_problem_solver_iterate(problem_solver);
 
   bool reject;
 
@@ -44,7 +44,7 @@ check_feasibility(SleqpSolver* solver, bool* feasible)
 }
 
 static SleqpProblemSolver*
-get_problem_solver(SleqpSolver* solver)
+current_problem_solver(SleqpSolver* solver)
 {
   if (solver->solver_phase == SLEQP_SOLVER_PHASE_RESTORATION)
   {
@@ -55,9 +55,49 @@ get_problem_solver(SleqpSolver* solver)
 }
 
 static SLEQP_RETCODE
+set_initial_iterate(SleqpSolver* solver)
+{
+  assert(solver->solver_phase == SLEQP_SOLVER_PHASE_OPTIMIZATION);
+
+  SleqpProblemSolver* problem_solver = solver->problem_solver;
+  SleqpProblem* problem              = solver->problem;
+
+  SLEQP_CALL(sleqp_problem_solver_set_cons_weights(problem_solver));
+
+  SleqpIterate* iterate = sleqp_problem_solver_iterate(problem_solver);
+
+  SleqpVec* primal = sleqp_iterate_primal(iterate);
+
+  const double zero_eps
+    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+
+  SLEQP_CALL(sleqp_vec_clip(solver->primal,
+                            sleqp_problem_vars_lb(problem),
+                            sleqp_problem_vars_ub(problem),
+                            zero_eps,
+                            primal));
+
+  bool reject_initial;
+
+  SLEQP_CALL(sleqp_set_and_evaluate(problem,
+                                    iterate,
+                                    SLEQP_VALUE_REASON_INIT,
+                                    &reject_initial));
+
+  if (reject_initial)
+  {
+    sleqp_raise(SLEQP_INTERNAL_ERROR, "Function rejected initial solution");
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 run_solving_loop(SleqpSolver* solver, int max_num_iterations, double time_limit)
 {
   solver->iterations = 0;
+
+  SLEQP_CALL(set_initial_iterate(solver));
 
   int remaining_iterations = max_num_iterations;
 
@@ -87,7 +127,7 @@ run_solving_loop(SleqpSolver* solver, int max_num_iterations, double time_limit)
     double remaining_time
       = sleqp_timer_remaining_time(solver->elapsed_timer, time_limit);
 
-    SleqpProblemSolver* problem_solver = get_problem_solver(solver);
+    SleqpProblemSolver* problem_solver = current_problem_solver(solver);
 
     SLEQP_CALL(
       sleqp_problem_solver_set_iteration(problem_solver, solver->iterations));
@@ -98,7 +138,7 @@ run_solving_loop(SleqpSolver* solver, int max_num_iterations, double time_limit)
                                           enable_restoration));
 
     SLEQP_PROBLEM_SOLVER_STATUS status
-      = sleqp_problem_solver_get_status(problem_solver);
+      = sleqp_problem_solver_status(problem_solver);
 
     assert(status != SLEQP_PROBLEM_SOLVER_STATUS_UNKNOWN);
     assert(status != SLEQP_PROBLEM_SOLVER_STATUS_RUNNING);
@@ -232,8 +272,7 @@ sleqp_solver_solve(SleqpSolver* solver,
 
   double violation;
 
-  SleqpIterate* iterate
-    = sleqp_problem_solver_get_iterate(solver->problem_solver);
+  SleqpIterate* iterate = sleqp_problem_solver_iterate(solver->problem_solver);
 
   SLEQP_CALL(
     sleqp_iterate_feasibility_residuum(solver->problem, iterate, &violation));
