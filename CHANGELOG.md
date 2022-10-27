@@ -6,6 +6,7 @@
 
 - Added direct QR factorization to solve augmented Jacobian systems
 - Extended dynamic functions to include constraints
+- Adapted HiGHS to use newly-introduced integer constants
 
 ### Fixed
 
