@@ -12,33 +12,6 @@
 #include "mem.h"
 #include "pub_types.h"
 
-#define HIGHS_LOWER 0
-#define HIGHS_BASIC 1
-#define HIGHS_UPPER 2
-#define HIGHS_ZERO 3
-#define HIGHS_NONBASIC 4
-
-#define HIGHS_NOTSET 0
-#define HIGHS_ERROR 1
-#define HIGHS_MODEL_ERROR 2
-#define HIGHS_PRESOLVE_ERROR 3
-#define HIGHS_SOLVE_ERROR 4
-#define HIGHS_POSTSOLVE_ERROR 5
-#define HIGHS_MODEL_EMPTY 6
-#define HIGHS_OPTIMAL 7
-#define HIGHS_INFEASIBLE 8
-#define HIGHS_UNBOUNDED_OR_INFEASIBLE 9
-#define HIGHS_UNBOUNDED 10
-#define HIGHS_OBJECTIVE_BOUND 11
-#define HIGHS_OBJECTIVE_TARGET 12
-#define HIGHS_TIME_LIMIT 13
-#define HIGHS_ITERATION_LIMIT 14
-#define HIGHS_UNKNOWN 15
-
-static const int sense_min             = 1;
-static const int format_sparse_columns = 1;
-static const double objective_offset   = 0.;
-
 typedef struct SleqpLpiHIGHS
 {
   void* highs;
@@ -84,7 +57,7 @@ typedef struct SleqpLpiHIGHS
   {                                                                            \
     int highs_ret_status = (x);                                                \
                                                                                \
-    if (highs_ret_status == HighsStatuskError)                                 \
+    if (highs_ret_status == kHighsStatusError)                                 \
     {                                                                          \
       sleqp_raise(SLEQP_INTERNAL_ERROR,                                        \
                   "Caught HiGHS error <%d>",                                   \
@@ -141,11 +114,20 @@ highs_create_problem(void** star,
       SLEQP_HIGHS_CALL(Highs_setIntOptionValue(highs, "threads", num_threads),
                        highs);
     }
+
+    bool verbose = (sleqp_log_level() >= SLEQP_LOG_DEBUG);
+
+    if (verbose)
+    {
+      SLEQP_HIGHS_CALL(Highs_setIntOptionValue(highs, "log_dev_level", 2),
+                       highs);
+    }
   }
 
   SLEQP_HIGHS_CALL(
     Highs_setDoubleOptionValue(highs, "infinite_cost", sleqp_infinity()),
     highs);
+
   SLEQP_HIGHS_CALL(
     Highs_setDoubleOptionValue(highs, "infinite_bound", sleqp_infinity()),
     highs);
@@ -265,7 +247,6 @@ static SLEQP_RETCODE
 highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
 {
   int model_status;
-  int scaled_model_status;
 
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
   void* highs                 = lp_interface->highs;
@@ -283,67 +264,31 @@ highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
 
   SLEQP_HIGHS_CALL(Highs_run(highs), highs);
 
-  model_status        = Highs_getModelStatus(highs);
-  scaled_model_status = Highs_getScaledModelStatus(highs);
+  model_status = Highs_getModelStatus(highs);
 
-  switch (model_status)
+  if (model_status == kHighsModelStatusOptimal)
   {
-  case HIGHS_NOTSET:
-    // This might be related to https://github.com/ERGO-Code/HiGHS/issues/494!
-    sleqp_log_warn("Received HiGHS status NOTSET for original model after run");
-    switch (scaled_model_status)
-    {
-    case HIGHS_OPTIMAL:
-      lp_interface->status = SLEQP_LP_STATUS_OPTIMAL;
-      break;
-    case HIGHS_INFEASIBLE:
-      lp_interface->status = SLEQP_LP_STATUS_INF;
-      break;
-    case HIGHS_UNBOUNDED_OR_INFEASIBLE:
-      lp_interface->status = SLEQP_LP_STATUS_INF_OR_UNBOUNDED;
-      break;
-    case HIGHS_UNBOUNDED:
-      lp_interface->status = SLEQP_LP_STATUS_UNBOUNDED;
-      break;
-    case HIGHS_TIME_LIMIT:
-      lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
-      return SLEQP_ABORT_TIME;
-      break;
-    default:
-      lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
-      sleqp_raise(SLEQP_INTERNAL_ERROR,
-                  "Invalid HiGHS status for scaled model: %d",
-                  model_status);
-    }
-    break;
-    // case HIGHS_ERROR:
-    // case HIGHS_MODEL_ERROR:
-    // case HIGHS_PRESOLVE_ERROR:
-    // case HIGHS_SOLVE_ERROR:
-    // case HIGHS_POSTSOLVE_ERROR:
-    // case HIGHS_MODEL_ERROR:
-  case HIGHS_OPTIMAL:
     lp_interface->status = SLEQP_LP_STATUS_OPTIMAL;
-    break;
-  case HIGHS_INFEASIBLE:
+  }
+  else if (model_status == kHighsModelStatusInfeasible)
+  {
     lp_interface->status = SLEQP_LP_STATUS_INF;
-    break;
-  case HIGHS_UNBOUNDED_OR_INFEASIBLE:
+  }
+  else if (model_status == kHighsModelStatusUnboundedOrInfeasible)
+  {
     lp_interface->status = SLEQP_LP_STATUS_INF_OR_UNBOUNDED;
-    break;
-  case HIGHS_UNBOUNDED:
+  }
+  else if (model_status == kHighsModelStatusUnbounded)
+  {
     lp_interface->status = SLEQP_LP_STATUS_UNBOUNDED;
-    break;
-    // case HIGHS_OBJECTIVE_BOUND:
-    // case HIGHS_OBJECTIVE_TARGET:
-  case HIGHS_TIME_LIMIT:
+  }
+  else if (model_status == kHighsModelStatusTimeLimit)
+  {
     lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
     return SLEQP_ABORT_TIME;
-    break;
-  case HIGHS_ITERATION_LIMIT: // fallthrough
-  case HIGHS_UNKNOWN:         // fallthrough
-  default:
-    lp_interface->status = SLEQP_LP_STATUS_UNKNOWN;
+  }
+  else
+  {
     sleqp_raise(SLEQP_INTERNAL_ERROR, "Invalid HiGHS status: %d", model_status);
   }
 
@@ -418,20 +363,20 @@ highs_set_coeffs(void* lp_data,
   const int coeff_nnz          = sleqp_sparse_matrix_nnz(coeff_matrix);
 
   SLEQP_HIGHS_CALL(Highs_passLp(highs,
-                                lp_interface->num_cols, // num cols
-                                lp_interface->num_rows, // num rows
-                                coeff_nnz,              // num nnz
-                                format_sparse_columns,  // format
-                                sense_min,              // sense
-                                objective_offset,       // objective offset
-                                lp_interface->costs,    // costs
-                                lp_interface->col_lb,   // var lb
-                                lp_interface->col_ub,   // var ub
-                                lp_interface->row_lb,   // cons lb
-                                lp_interface->row_ub,   // cons ub
-                                coeff_matrix_cols,      // coeff colptr
-                                coeff_matrix_rows,      // coeff indices
-                                coeff_matrix_data),     // coeff values
+                                lp_interface->num_cols,    // num cols
+                                lp_interface->num_rows,    // num rows
+                                coeff_nnz,                 // num nnz
+                                kHighsMatrixFormatColwise, // format
+                                kHighsObjSenseMinimize,    // sense
+                                0.,                        // objective offset
+                                lp_interface->costs,       // costs
+                                lp_interface->col_lb,      // var lb
+                                lp_interface->col_ub,      // var ub
+                                lp_interface->row_lb,      // cons lb
+                                lp_interface->row_ub,      // cons ub
+                                coeff_matrix_cols,         // coeff colptr
+                                coeff_matrix_rows,         // coeff indices
+                                coeff_matrix_data),        // coeff values
                    highs);
 
   lp_interface->dirty &= ~(COL_BOUNDS | ROW_BOUNDS | OBJECTIVE | COEFFS);
@@ -481,30 +426,36 @@ highs_reserve_bases(SleqpLpiHIGHS* lp_interface, int size)
   return SLEQP_OKAY;
 }
 
-static SLEQP_BASESTAT
-basestat_for(int status)
+static SLEQP_RETCODE
+basestat_for(int status, SLEQP_BASESTAT* stat)
 {
-  switch (status)
+  if (status == kHighsBasisStatusBasic)
   {
-  case HIGHS_BASIC:
-    return SLEQP_BASESTAT_BASIC;
-  case HIGHS_LOWER:
-    return SLEQP_BASESTAT_LOWER;
-  case HIGHS_UPPER:
-    return SLEQP_BASESTAT_UPPER;
-  case HIGHS_ZERO:
-    return SLEQP_BASESTAT_ZERO;
-  case HIGHS_NONBASIC:
-    sleqp_log_error("Encountered an unspecific non-basic variable");
-    break;
-  default:
-    break;
+    *stat = SLEQP_BASESTAT_BASIC;
+    return SLEQP_OKAY;
+  }
+  else if (status == kHighsBasisStatusLower)
+  {
+    *stat = SLEQP_BASESTAT_LOWER;
+    return SLEQP_OKAY;
+  }
+  else if (status == kHighsBasisStatusUpper)
+  {
+    *stat = SLEQP_BASESTAT_UPPER;
+    return SLEQP_OKAY;
+  }
+  else if (status == kHighsBasisStatusZero)
+  {
+    *stat = SLEQP_BASESTAT_ZERO;
+    return SLEQP_OKAY;
+  }
+  else if (status == kHighsBasisStatusNonbasic)
+  {
+    sleqp_raise(SLEQP_INTERNAL_ERROR,
+                "Encountered an unspecific non-basic variable");
   }
 
-  // Invalid basis status reported
-  assert(false);
-
-  return SLEQP_BASESTAT_ZERO;
+  sleqp_raise(SLEQP_INTERNAL_ERROR, "Invalid basis status");
 }
 
 static int
@@ -513,13 +464,13 @@ basestat_from(SLEQP_BASESTAT status)
   switch (status)
   {
   case SLEQP_BASESTAT_BASIC:
-    return HIGHS_BASIC;
+    return kHighsBasisStatusBasic;
   case SLEQP_BASESTAT_LOWER:
-    return HIGHS_LOWER;
+    return kHighsBasisStatusLower;
   case SLEQP_BASESTAT_UPPER:
-    return HIGHS_UPPER;
+    return kHighsBasisStatusUpper;
   case SLEQP_BASESTAT_ZERO:
-    return HIGHS_ZERO;
+    return kHighsBasisStatusZero;
   default:
     break;
   }
@@ -527,7 +478,7 @@ basestat_from(SLEQP_BASESTAT status)
   // Invalid basis status reported
   assert(false);
 
-  return HIGHS_BASIC;
+  return kHighsBasisStatusBasic;
 }
 
 static SLEQP_RETCODE
@@ -668,7 +619,7 @@ highs_vars_stats(void* lp_data,
 
   for (int j = 0; j < num_cols; ++j)
   {
-    variable_stats[j] = basestat_for(lp_interface->col_basis[j]);
+    SLEQP_CALL(basestat_for(lp_interface->col_basis[j], variable_stats + j));
   }
 
   return SLEQP_OKAY;
@@ -689,7 +640,7 @@ highs_cons_stats(void* lp_data,
 
   for (int j = 0; j < num_rows; ++j)
   {
-    constraint_stats[j] = basestat_for(lp_interface->row_basis[j]);
+    SLEQP_CALL(basestat_for(lp_interface->row_basis[j], constraint_stats + j));
   }
 
   return SLEQP_OKAY;
