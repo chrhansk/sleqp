@@ -58,11 +58,10 @@ stat_res(SleqpProblem* problem, SleqpIterate* iterate)
 
   ASSERT_CALL(sleqp_vec_to_raw(sleqp_iterate_obj_grad(iterate), residuals));
 
-  ASSERT_CALL(
-    sleqp_sparse_matrix_trans_vector_product(sleqp_iterate_cons_jac(iterate),
-                                             sleqp_iterate_cons_dual(iterate),
-                                             0.,
-                                             product));
+  ASSERT_CALL(sleqp_mat_mult_vec_trans(sleqp_iterate_cons_jac(iterate),
+                                       sleqp_iterate_cons_dual(iterate),
+                                       0.,
+                                       product));
 
   for (int k = 0; k < product->nnz; ++k)
   {

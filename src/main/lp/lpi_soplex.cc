@@ -308,17 +308,17 @@ static SLEQP_RETCODE
 soplex_set_coefficients(void* lp_data,
                         int num_cols,
                         int num_rows,
-                        SleqpSparseMatrix* coeff_matrix)
+                        SleqpMat* coeff_matrix)
 {
   SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
 
-  assert(sleqp_sparse_matrix_num_rows(coeff_matrix) == num_rows);
-  assert(sleqp_sparse_matrix_num_cols(coeff_matrix) == num_cols);
+  assert(sleqp_mat_num_rows(coeff_matrix) == num_rows);
+  assert(sleqp_mat_num_cols(coeff_matrix) == num_cols);
 
-  const int* coeff_matrix_cols = sleqp_sparse_matrix_cols(coeff_matrix);
-  const int* coeff_matrix_rows = sleqp_sparse_matrix_rows(coeff_matrix);
-  double* coeff_matrix_data    = sleqp_sparse_matrix_data(coeff_matrix);
+  const int* coeff_matrix_cols = sleqp_mat_cols(coeff_matrix);
+  const int* coeff_matrix_rows = sleqp_mat_rows(coeff_matrix);
+  double* coeff_matrix_data    = sleqp_mat_data(coeff_matrix);
 
   // Note: We save / restore the basis in order to
   //       warm-start the iteration.

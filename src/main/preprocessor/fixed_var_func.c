@@ -23,7 +23,7 @@ typedef struct FixedVarFuncData
   SleqpVec* direction;
   SleqpVec* product;
 
-  SleqpSparseMatrix* jacobian;
+  SleqpMat* jacobian;
 
 } FixedVarFuncData;
 
@@ -80,12 +80,12 @@ fixed_var_func_nonzeros(SleqpFunc* func,
 
   if (*cons_jac_nnz != SLEQP_NONE)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_reserve(func_data->jacobian, *cons_jac_nnz));
+    SLEQP_CALL(sleqp_mat_reserve(func_data->jacobian, *cons_jac_nnz));
   }
   else
   {
     const int jac_nnz = num_orig_vars * num_cons;
-    SLEQP_CALL(sleqp_sparse_matrix_reserve(func_data->jacobian, jac_nnz));
+    SLEQP_CALL(sleqp_mat_reserve(func_data->jacobian, jac_nnz));
   }
 
   if (*obj_grad_nnz != SLEQP_NONE)
@@ -133,16 +133,16 @@ fixed_var_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* data)
 }
 
 static SLEQP_RETCODE
-fixed_var_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
+fixed_var_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
   SLEQP_CALL(sleqp_func_cons_jac(func_data->func, func_data->jacobian));
 
-  SLEQP_CALL(sleqp_sparse_matrix_remove_cols(func_data->jacobian,
-                                             cons_jac,
-                                             func_data->fixed_indices,
-                                             func_data->num_fixed));
+  SLEQP_CALL(sleqp_mat_remove_cols(func_data->jacobian,
+                                   cons_jac,
+                                   func_data->fixed_indices,
+                                   func_data->num_fixed));
 
   return SLEQP_OKAY;
 }
@@ -181,7 +181,7 @@ fixed_func_free(void* data)
 {
   FixedVarFuncData* func_data = (FixedVarFuncData*)data;
 
-  SLEQP_CALL(sleqp_sparse_matrix_release(&func_data->jacobian));
+  SLEQP_CALL(sleqp_mat_release(&func_data->jacobian));
 
   SLEQP_CALL(sleqp_vec_free(&func_data->product));
 
@@ -297,7 +297,7 @@ fixed_lsq_func_nonzeros(SleqpFunc* func,
 
   if (*cons_jac_nnz != SLEQP_NONE)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_reserve(func_data->jacobian, *cons_jac_nnz));
+    SLEQP_CALL(sleqp_mat_reserve(func_data->jacobian, *cons_jac_nnz));
   }
 
   if (*jac_adj_nnz != SLEQP_NONE)
@@ -437,10 +437,8 @@ create_fixed_var_func_data(FixedVarFuncData** star,
 
   SLEQP_CALL(sleqp_vec_create_full(&func_data->product, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(&func_data->jacobian,
-                                        num_constraints,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(
+    sleqp_mat_create(&func_data->jacobian, num_constraints, num_variables, 0));
 
   return SLEQP_OKAY;
 }

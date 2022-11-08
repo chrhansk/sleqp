@@ -527,7 +527,7 @@ req_work_size(const int dim, MA57IControl* icntl)
 }
 
 static SLEQP_RETCODE
-ma57_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
+ma57_set_matrix(void* fact_data, SleqpMat* matrix)
 {
   MA57Data* ma57_data = (MA57Data*)fact_data;
 
@@ -536,8 +536,8 @@ ma57_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
   MA57Workspace* ma57_workspace = &(ma57_data->workspace);
   HSLMatrix* hsl_matrix         = &(ma57_data->matrix);
 
-  const int num_rows = sleqp_sparse_matrix_num_cols(matrix);
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_cols(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
   assert(num_rows == num_cols);
 
   const int dim = num_cols;

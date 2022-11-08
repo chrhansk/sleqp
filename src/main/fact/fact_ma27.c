@@ -322,20 +322,20 @@ ma27_numeric(MA27Data* ma27_data)
 }
 
 static SLEQP_RETCODE
-ma27_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
+ma27_set_matrix(void* fact_data, SleqpMat* matrix)
 {
   MA27Data* ma27_data = (MA27Data*)fact_data;
 
   HSLMatrix* hsl_matrix         = &(ma27_data->matrix);
   MA27Workspace* ma27_workspace = &(ma27_data->workspace);
 
-  const int32_t num_rows = sleqp_sparse_matrix_num_cols(matrix);
-  const int32_t num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int32_t num_rows = sleqp_mat_num_cols(matrix);
+  const int32_t num_cols = sleqp_mat_num_cols(matrix);
   assert(num_rows == num_cols);
 
   const int32_t dim = num_cols;
 
-  const int32_t matrix_nnz = sleqp_sparse_matrix_nnz(matrix);
+  const int32_t matrix_nnz = sleqp_mat_nnz(matrix);
   const int32_t total_nnz  = dim + matrix_nnz;
 
   // prepare rhs / sol

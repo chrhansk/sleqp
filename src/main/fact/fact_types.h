@@ -1,13 +1,13 @@
 #ifndef SLEQP_FACT_TYPES_H
 #define SLEQP_FACT_TYPES_H
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "sparse/vec.h"
 
 typedef struct SleqpFact SleqpFact;
 
 typedef SLEQP_RETCODE (*SLEQP_FACT_SET_MATRIX)(void* fact_data,
-                                               SleqpSparseMatrix* matrix);
+                                               SleqpMat* matrix);
 
 typedef SLEQP_RETCODE (*SLEQP_FACT_SOLVE)(void* fact_data, const SleqpVec* rhs);
 

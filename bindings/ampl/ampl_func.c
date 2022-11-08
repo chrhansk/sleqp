@@ -312,7 +312,7 @@ ampl_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-ampl_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
+ampl_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   AmplFuncData* data       = (AmplFuncData*)func_data;
   ASL* asl                 = data->ampl_data->asl;
@@ -324,7 +324,7 @@ ampl_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 
   int next_col = 0;
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, ampl_data->jac_nnz));
+  SLEQP_CALL(sleqp_mat_reserve(cons_jac, ampl_data->jac_nnz));
 
   const int num_general = ampl_data->num_constraints - ampl_data->num_linear;
 
@@ -336,12 +336,12 @@ ampl_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 
     while (col >= next_col)
     {
-      SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, next_col++));
+      SLEQP_CALL(sleqp_mat_push_col(cons_jac, next_col++));
     }
 
     if (row < num_general)
     {
-      SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, row, col, val));
+      SLEQP_CALL(sleqp_mat_push(cons_jac, row, col, val));
     }
   }
 
@@ -349,7 +349,7 @@ ampl_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
 
   while (num_cols > next_col)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, next_col++));
+    SLEQP_CALL(sleqp_mat_push_col(cons_jac, next_col++));
   }
 
   return SLEQP_OKAY;

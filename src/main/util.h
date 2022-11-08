@@ -11,7 +11,7 @@
 #include "problem.h"
 #include "types.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "sparse/vec.h"
 
 SLEQP_NODISCARD

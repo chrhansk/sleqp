@@ -94,12 +94,12 @@ matrix_reserve(SleqpMUMPSData* sleqp_mumps_data, int nnz)
 }
 
 static SLEQP_RETCODE
-matrix_fill(SleqpMUMPSData* sleqp_mumps_data, SleqpSparseMatrix* matrix)
+matrix_fill(SleqpMUMPSData* sleqp_mumps_data, SleqpMat* matrix)
 {
-  const int nnz = sleqp_sparse_matrix_nnz(matrix);
+  const int nnz = sleqp_mat_nnz(matrix);
 
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
 
   assert(num_rows == num_cols);
 
@@ -114,9 +114,9 @@ matrix_fill(SleqpMUMPSData* sleqp_mumps_data, SleqpSparseMatrix* matrix)
 
   sleqp_mumps_data->dim = dim;
 
-  const double* data = sleqp_sparse_matrix_data(matrix);
-  const int* cols    = sleqp_sparse_matrix_cols(matrix);
-  const int* rows    = sleqp_sparse_matrix_rows(matrix);
+  const double* data = sleqp_mat_data(matrix);
+  const int* cols    = sleqp_mat_cols(matrix);
+  const int* rows    = sleqp_mat_rows(matrix);
 
   int col = 0;
 
@@ -152,7 +152,7 @@ matrix_fill(SleqpMUMPSData* sleqp_mumps_data, SleqpSparseMatrix* matrix)
 }
 
 static SLEQP_RETCODE
-sleqp_mumps_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
+sleqp_mumps_set_matrix(void* fact_data, SleqpMat* matrix)
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)fact_data;
 

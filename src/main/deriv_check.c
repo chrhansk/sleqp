@@ -6,7 +6,7 @@
 #include "log.h"
 #include "mem.h"
 #include "problem.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 struct SleqpDerivChecker
 {
@@ -26,7 +26,7 @@ struct SleqpDerivChecker
 
   SleqpVec* hessian_prod_cache;
 
-  SleqpSparseMatrix* hessian_cons_prods;
+  SleqpMat* hessian_cons_prods;
 
   SleqpVec* cons_grad_iterate;
   SleqpVec* cons_grad_check_iterate;
@@ -145,9 +145,9 @@ compute_hessian_cons_products(SleqpDerivChecker* deriv_checker, int j)
 
   SLEQP_CALL(create_unit_direction(unit_direction, j));
 
-  SleqpSparseMatrix* hessian_prod_matrix = deriv_checker->hessian_cons_prods;
+  SleqpMat* hessian_prod_matrix = deriv_checker->hessian_cons_prods;
 
-  SLEQP_CALL(sleqp_sparse_matrix_clear(hessian_prod_matrix));
+  SLEQP_CALL(sleqp_mat_clear(hessian_prod_matrix));
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
@@ -168,20 +168,19 @@ compute_hessian_cons_products(SleqpDerivChecker* deriv_checker, int j)
                                     zero_eps,
                                     deriv_checker->hessian_prod_cons));
 
-    const int nnz = sleqp_sparse_matrix_nnz(hessian_prod_matrix);
+    const int nnz = sleqp_mat_nnz(hessian_prod_matrix);
 
-    SLEQP_CALL(
-      sleqp_sparse_matrix_reserve(hessian_prod_matrix,
-                                  nnz + deriv_checker->hessian_prod_cons->nnz));
+    SLEQP_CALL(sleqp_mat_reserve(hessian_prod_matrix,
+                                 nnz + deriv_checker->hessian_prod_cons->nnz));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(hessian_prod_matrix, k));
+    SLEQP_CALL(sleqp_mat_push_col(hessian_prod_matrix, k));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_vec(hessian_prod_matrix,
-                                            k,
-                                            deriv_checker->hessian_prod_cons));
+    SLEQP_CALL(sleqp_mat_push_vec(hessian_prod_matrix,
+                                  k,
+                                  deriv_checker->hessian_prod_cons));
   }
 
-  assert(sleqp_sparse_matrix_is_valid(hessian_prod_matrix));
+  assert(sleqp_mat_is_valid(hessian_prod_matrix));
 
   return SLEQP_OKAY;
 }
@@ -260,10 +259,10 @@ eval_at_check_iterate(SleqpDerivChecker* deriv_checker, SLEQP_DERIV_CHECK flags)
 
   double obj_val;
 
-  double* obj_ptr             = NULL;
-  SleqpVec* cons_val          = NULL;
-  SleqpVec* obj_grad          = NULL;
-  SleqpSparseMatrix* cons_jac = NULL;
+  double* obj_ptr    = NULL;
+  SleqpVec* cons_val = NULL;
+  SleqpVec* obj_grad = NULL;
+  SleqpMat* cons_jac = NULL;
 
   if (flags & SLEQP_DERIV_CHECK_FIRST_OBJ)
   {
@@ -340,7 +339,7 @@ check_deriv_cons_first_order(SleqpDerivChecker* deriv_checker,
 {
   SleqpIterate* check_iterate = deriv_checker->check_iterate;
   SleqpProblem* problem       = deriv_checker->problem;
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpMat* cons_jac          = sleqp_iterate_cons_jac(iterate);
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
@@ -349,7 +348,7 @@ check_deriv_cons_first_order(SleqpDerivChecker* deriv_checker,
 
   for (int i = 0; i < num_constraints; ++i)
   {
-    const double expected_value = sleqp_sparse_matrix_value_at(cons_jac, i, j);
+    const double expected_value = sleqp_mat_value_at(cons_jac, i, j);
 
     const double lower_value
       = sleqp_vec_value_at(sleqp_iterate_cons_val(iterate), i);
@@ -450,31 +449,29 @@ check_deriv_cons_second_order(SleqpDerivChecker* deriv_checker,
   const double tolerance
     = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_DERIV_TOL);
 
-  SleqpSparseMatrix* cons_jac  = sleqp_iterate_cons_jac(iterate);
-  SleqpSparseMatrix* check_jac = sleqp_iterate_cons_jac(check_iterate);
+  SleqpMat* cons_jac  = sleqp_iterate_cons_jac(iterate);
+  SleqpMat* check_jac = sleqp_iterate_cons_jac(check_iterate);
 
   SleqpVec* expected_hessian_prod = deriv_checker->hessian_prod_cons;
   SleqpVec* actual_hessian_prod   = deriv_checker->hessian_estimate;
 
   for (int i = 0; i < num_constraints; ++i)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_col(deriv_checker->hessian_cons_prods,
-                                       i,
-                                       expected_hessian_prod));
+    SLEQP_CALL(sleqp_mat_col(deriv_checker->hessian_cons_prods,
+                             i,
+                             expected_hessian_prod));
 
     SLEQP_CALL(create_unit_direction(deriv_checker->multipliers, i));
 
-    SLEQP_CALL(
-      sleqp_sparse_matrix_trans_vector_product(cons_jac,
-                                               deriv_checker->multipliers,
-                                               zero_eps,
-                                               deriv_checker->jac_row));
+    SLEQP_CALL(sleqp_mat_mult_vec_trans(cons_jac,
+                                        deriv_checker->multipliers,
+                                        zero_eps,
+                                        deriv_checker->jac_row));
 
-    SLEQP_CALL(
-      sleqp_sparse_matrix_trans_vector_product(check_jac,
-                                               deriv_checker->multipliers,
-                                               zero_eps,
-                                               deriv_checker->check_jac_row));
+    SLEQP_CALL(sleqp_mat_mult_vec_trans(check_jac,
+                                        deriv_checker->multipliers,
+                                        zero_eps,
+                                        deriv_checker->check_jac_row));
 
     SLEQP_CALL(sleqp_vec_add_scaled(deriv_checker->check_jac_row,
                                     deriv_checker->jac_row,
@@ -522,11 +519,11 @@ compute_combined_cons_grad(SleqpDerivChecker* deriv_checker,
 
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(
-    sleqp_iterate_cons_jac(iterate),
-    multipliers,
-    zero_eps,
-    deriv_checker->transposed_jacobian_product));
+  SLEQP_CALL(
+    sleqp_mat_mult_vec_trans(sleqp_iterate_cons_jac(iterate),
+                             multipliers,
+                             zero_eps,
+                             deriv_checker->transposed_jacobian_product));
 
   SLEQP_CALL(sleqp_vec_add(sleqp_iterate_obj_grad(iterate),
                            deriv_checker->transposed_jacobian_product,
@@ -714,10 +711,10 @@ sleqp_deriv_checker_create(SleqpDerivChecker** deriv_checker,
 
   SLEQP_CALL(sleqp_vec_create_empty(&data->hessian_prod_cache, num_variables));
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(&data->hessian_cons_prods,
-                                        num_variables,
-                                        num_constraints,
-                                        0));
+  SLEQP_CALL(sleqp_mat_create(&data->hessian_cons_prods,
+                              num_variables,
+                              num_constraints,
+                              0));
 
   SLEQP_CALL(sleqp_vec_create_empty(&data->cons_grad_iterate, num_variables));
 
@@ -826,7 +823,7 @@ sleqp_deriv_checker_free(SleqpDerivChecker** star)
 
   SLEQP_CALL(sleqp_vec_free(&deriv_checker->cons_grad_iterate));
 
-  SLEQP_CALL(sleqp_sparse_matrix_release(&deriv_checker->hessian_cons_prods));
+  SLEQP_CALL(sleqp_mat_release(&deriv_checker->hessian_cons_prods));
 
   SLEQP_CALL(sleqp_vec_free(&deriv_checker->hessian_prod_cache));
 

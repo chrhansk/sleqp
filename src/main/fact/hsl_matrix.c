@@ -3,23 +3,23 @@
 #include "fail.h"
 #include "log.h"
 #include "mem.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "types.h"
 
 SLEQP_RETCODE
-hsl_matrix_set(HSLMatrix* hsl_matrix, SleqpSparseMatrix* matrix)
+hsl_matrix_set(HSLMatrix* hsl_matrix, SleqpMat* matrix)
 {
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
 
   assert(num_rows == num_cols);
 
   hsl_matrix->dim = num_rows;
 
-  const double* matrix_data = sleqp_sparse_matrix_data(matrix);
-  const int* matrix_cols    = sleqp_sparse_matrix_cols(matrix);
-  const int* matrix_rows    = sleqp_sparse_matrix_rows(matrix);
-  const int matrix_nnz      = sleqp_sparse_matrix_nnz(matrix);
+  const double* matrix_data = sleqp_mat_data(matrix);
+  const int* matrix_cols    = sleqp_mat_cols(matrix);
+  const int* matrix_rows    = sleqp_mat_rows(matrix);
+  const int matrix_nnz      = sleqp_mat_nnz(matrix);
 
   if (hsl_matrix->max_nnz < matrix_nnz)
   {

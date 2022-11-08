@@ -331,15 +331,14 @@ fill_initial_step(SleqpWorkingStep* step, SleqpIterate* iterate)
 
   // constraint Jacobian
   {
-    const SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-    const int num_cons                = sleqp_problem_num_cons(problem);
-    SleqpVec* direction_cons          = sleqp_direction_cons_jac(direction);
+    const SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
+    const int num_cons       = sleqp_problem_num_cons(problem);
+    SleqpVec* direction_cons = sleqp_direction_cons_jac(direction);
 
     const double zero_eps
       = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
 
-    SLEQP_CALL(
-      sleqp_sparse_matrix_vector_product(cons_jac, primal, step->dense_cache));
+    SLEQP_CALL(sleqp_mat_mult_vec(cons_jac, primal, step->dense_cache));
 
     SLEQP_CALL(sleqp_vec_set_from_raw(direction_cons,
                                       step->dense_cache,

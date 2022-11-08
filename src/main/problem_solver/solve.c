@@ -92,13 +92,13 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   solver->status                       = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
 
   {
-    SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+    SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
 
     sleqp_log_info("Solving a problem with %d variables, %d constraints, %d "
                    "Jacobian nonzeros",
                    num_variables,
                    num_constraints,
-                   sleqp_sparse_matrix_nnz(cons_jac));
+                   sleqp_mat_nnz(cons_jac));
   }
 
   // Warnings

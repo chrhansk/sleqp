@@ -11,22 +11,22 @@ typedef struct
 
   SleqpVec* product;
 
-  SleqpSparseMatrix* working_jac;
+  SleqpMat* working_jac;
 
   int* row_sums;
   // transposed working Jacobian
-  SleqpSparseMatrix* matrix;
+  SleqpMat* matrix;
 
 } AugJacData;
 
 static SLEQP_RETCODE
 update_dims(AugJacData* aug_jac,
-            const SleqpSparseMatrix* cons_jac,
+            const SleqpMat* cons_jac,
             SleqpWorkingSet* working_set)
 {
   // store the transpose!
-  const int cons_jac_num_rows = sleqp_sparse_matrix_num_rows(cons_jac);
-  const int cons_jac_num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
+  const int cons_jac_num_rows = sleqp_mat_num_rows(cons_jac);
+  const int cons_jac_num_cols = sleqp_mat_num_cols(cons_jac);
 
   SLEQP_CALL(sleqp_vec_clear(aug_jac->product));
   SLEQP_CALL(sleqp_vec_resize(aug_jac->product, cons_jac_num_rows));
@@ -36,20 +36,19 @@ update_dims(AugJacData* aug_jac,
 
   const int num_active_cons = sleqp_working_set_num_active_cons(working_set);
 
-  SLEQP_CALL(sleqp_sparse_matrix_resize(aug_jac->working_jac,
-                                        num_active_cons,
-                                        cons_jac_num_cols));
+  SLEQP_CALL(
+    sleqp_mat_resize(aug_jac->working_jac, num_active_cons, cons_jac_num_cols));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 compute_working_jac(AugJacData* aug_jac,
-                    const SleqpSparseMatrix* cons_jac,
+                    const SleqpMat* cons_jac,
                     SleqpWorkingSet* working_set)
 {
-  const int num_rows = sleqp_sparse_matrix_num_rows(cons_jac);
-  const int num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
+  const int num_rows = sleqp_mat_num_rows(cons_jac);
+  const int num_cols = sleqp_mat_num_cols(cons_jac);
 
   const int num_active_vars  = sleqp_working_set_num_active_vars(working_set);
   const int working_set_size = sleqp_working_set_size(working_set);
@@ -66,34 +65,31 @@ compute_working_jac(AugJacData* aug_jac,
     }
   }
 
-  SleqpSparseMatrix* working_jac = aug_jac->working_jac;
+  SleqpMat* working_jac = aug_jac->working_jac;
 
   // Remove inactive cons
-  SLEQP_CALL(sleqp_sparse_matrix_remove_rows(cons_jac,
-                                             working_jac,
-                                             removed_rows,
-                                             num_removed));
+  SLEQP_CALL(
+    sleqp_mat_remove_rows(cons_jac, working_jac, removed_rows, num_removed));
 
   if (num_active_vars == 0)
   {
     return SLEQP_OKAY;
   }
 
-  int working_nnz = sleqp_sparse_matrix_nnz(working_jac);
+  int working_nnz = sleqp_mat_nnz(working_jac);
   working_nnz += num_active_vars;
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(working_jac, working_nnz));
+  SLEQP_CALL(sleqp_mat_reserve(working_jac, working_nnz));
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_resize(working_jac, working_set_size, num_cols));
+  SLEQP_CALL(sleqp_mat_resize(working_jac, working_set_size, num_cols));
 
   // Push active vars
   {
     int offset = num_active_vars;
 
-    int* working_cols    = sleqp_sparse_matrix_cols(working_jac);
-    int* working_rows    = sleqp_sparse_matrix_rows(working_jac);
-    double* working_data = sleqp_sparse_matrix_data(working_jac);
+    int* working_cols    = sleqp_mat_cols(working_jac);
+    int* working_rows    = sleqp_mat_rows(working_jac);
+    double* working_data = sleqp_mat_data(working_jac);
 
     for (int col = num_cols - 1; col >= 0; --col)
     {
@@ -123,9 +119,9 @@ compute_working_jac(AugJacData* aug_jac,
     assert(offset == 0);
   }
 
-  SLEQP_CALL(sleqp_sparse_matrix_set_nnz(working_jac, working_nnz));
+  SLEQP_CALL(sleqp_mat_set_nnz(working_jac, working_nnz));
 
-  assert(sleqp_sparse_matrix_is_valid(working_jac));
+  assert(sleqp_mat_is_valid(working_jac));
 
   return SLEQP_OKAY;
 }
@@ -135,20 +131,20 @@ direct_aug_jac_set_iterate(SleqpIterate* iterate, void* data)
 {
   AugJacData* aug_jac = (AugJacData*)data;
 
-  SleqpSparseMatrix* cons_jac  = sleqp_iterate_cons_jac(iterate);
+  SleqpMat* cons_jac           = sleqp_iterate_cons_jac(iterate);
   SleqpWorkingSet* working_set = sleqp_iterate_working_set(iterate);
 
   SLEQP_CALL(update_dims(aug_jac, cons_jac, working_set));
 
   SLEQP_CALL(compute_working_jac(aug_jac, cons_jac, working_set));
 
-  SleqpSparseMatrix* working_jac = aug_jac->working_jac;
+  SleqpMat* working_jac = aug_jac->working_jac;
 
   int* row_sums = aug_jac->row_sums;
 
-  SLEQP_CALL(sleqp_sparse_matrix_trans(working_jac, aug_jac->matrix, row_sums));
+  SLEQP_CALL(sleqp_mat_trans(working_jac, aug_jac->matrix, row_sums));
 
-  assert(sleqp_sparse_matrix_is_valid(aug_jac->matrix));
+  assert(sleqp_mat_is_valid(aug_jac->matrix));
 
   SLEQP_CALL(sleqp_qr_set_matrix(aug_jac->fact, aug_jac->matrix));
 
@@ -160,11 +156,11 @@ direct_aug_jac_solve_min_norm(const SleqpVec* rhs, SleqpVec* sol, void* data)
 {
   AugJacData* aug_jac = (AugJacData*)data;
 
-  SleqpSparseMatrix* matrix = aug_jac->matrix;
-  SleqpVec* product         = aug_jac->product;
+  SleqpMat* matrix  = aug_jac->matrix;
+  SleqpVec* product = aug_jac->product;
 
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
 
   SLEQP_CALL(sleqp_vec_clear(product));
   SLEQP_CALL(sleqp_vec_resize(product, num_cols));
@@ -184,11 +180,11 @@ direct_aug_jac_solve_lsq(const SleqpVec* rhs, SleqpVec* sol, void* data)
 {
   AugJacData* aug_jac = (AugJacData*)data;
 
-  SleqpSparseMatrix* matrix = aug_jac->matrix;
-  SleqpVec* product         = aug_jac->product;
+  SleqpMat* matrix  = aug_jac->matrix;
+  SleqpVec* product = aug_jac->product;
 
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
 
   assert(rhs->dim == num_rows);
 
@@ -209,11 +205,11 @@ direct_aug_jac_project_nullspace(const SleqpVec* rhs, SleqpVec* sol, void* data)
 {
   AugJacData* aug_jac = (AugJacData*)data;
 
-  SleqpSparseMatrix* matrix = aug_jac->matrix;
-  SleqpVec* product         = aug_jac->product;
+  SleqpMat* matrix  = aug_jac->matrix;
+  SleqpVec* product = aug_jac->product;
 
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
 
   product->dim = num_rows;
 
@@ -262,11 +258,11 @@ direct_aug_jac_free(void* data)
 
   SLEQP_CALL(sleqp_qr_release(&aug_jac->fact));
 
-  SLEQP_CALL(sleqp_sparse_matrix_release(&aug_jac->matrix));
+  SLEQP_CALL(sleqp_mat_release(&aug_jac->matrix));
 
   sleqp_free(&aug_jac->row_sums);
 
-  SLEQP_CALL(sleqp_sparse_matrix_release(&aug_jac->working_jac));
+  SLEQP_CALL(sleqp_mat_release(&aug_jac->working_jac));
 
   SLEQP_CALL(sleqp_vec_free(&aug_jac->product));
 
@@ -286,9 +282,9 @@ create_aug_jac_data(AugJacData** star, SleqpFactQR* fact)
 
   SLEQP_CALL(sleqp_vec_create_empty(&aug_jac->product, 0));
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(&aug_jac->working_jac, 0, 0, 0));
+  SLEQP_CALL(sleqp_mat_create(&aug_jac->working_jac, 0, 0, 0));
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(&aug_jac->matrix, 0, 0, 0));
+  SLEQP_CALL(sleqp_mat_create(&aug_jac->matrix, 0, 0, 0));
   sleqp_free(&aug_jac->row_sums);
 
   SLEQP_CALL(sleqp_qr_capture(fact));

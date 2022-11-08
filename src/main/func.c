@@ -5,7 +5,7 @@
 #include "log.h"
 #include "mem.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 struct SleqpFunc
 {
@@ -202,13 +202,13 @@ sleqp_func_cons_val(SleqpFunc* func, SleqpVec* cons_val)
 }
 
 SLEQP_RETCODE
-sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac)
+sleqp_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac)
 {
   const int num_constraints = sleqp_func_num_cons(func);
 
   if (cons_jac)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
+    SLEQP_CALL(sleqp_mat_clear(cons_jac));
 
     if ((num_constraints != 0))
     {
@@ -221,10 +221,10 @@ sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac)
       SLEQP_CALL(sleqp_timer_stop(func->cons_jac_timer));
     }
 
-    sleqp_assert_msg(sleqp_sparse_matrix_is_valid(cons_jac),
+    sleqp_assert_msg(sleqp_mat_is_valid(cons_jac),
                      "Returned invalid constraint Jacobian");
 
-    sleqp_assert_msg(sleqp_sparse_matrix_is_finite(cons_jac),
+    sleqp_assert_msg(sleqp_mat_is_finite(cons_jac),
                      "Returned constraint Jacobian is not all-finite");
   }
 
@@ -236,7 +236,7 @@ sleqp_func_eval(SleqpFunc* func,
                 double* obj_val,
                 SleqpVec* obj_grad,
                 SleqpVec* cons_val,
-                SleqpSparseMatrix* cons_jac)
+                SleqpMat* cons_jac)
 {
   SLEQP_CALL(sleqp_func_obj_val(func, obj_val));
 

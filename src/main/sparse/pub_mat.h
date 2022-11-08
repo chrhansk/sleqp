@@ -1,8 +1,8 @@
-#ifndef SLEQP_PUB_SPARSE_MATRIX_H
-#define SLEQP_PUB_SPARSE_MATRIX_H
+#ifndef SLEQP_PUB_MAT_H
+#define SLEQP_PUB_MAT_H
 
 /**
- * @file pub_sparse_matrix.h
+ * @file pub_mat.h
  * @brief Definition of sparse matrices.
  **/
 
@@ -21,7 +21,7 @@
  * for \f$ k = 0, \ldots, nnz - 1 \f$
  *
  **/
-typedef struct SleqpSparseMatrix SleqpSparseMatrix;
+typedef struct SleqpMat SleqpMat;
 
 /**
  * Creates a new sparse matrix with a specified number of nonzeros
@@ -32,10 +32,7 @@ typedef struct SleqpSparseMatrix SleqpSparseMatrix;
  * @param[in] nnz_max    The desired number of nonzeros
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_create(SleqpSparseMatrix** matrix,
-                           int num_rows,
-                           int num_cols,
-                           int nnz_max);
+sleqp_mat_create(SleqpMat** matrix, int num_rows, int num_cols, int nnz_max);
 
 /**
  * Reserves a number of nonzeros for the given matrix
@@ -44,7 +41,7 @@ sleqp_sparse_matrix_create(SleqpSparseMatrix** matrix,
  * @param[in] nnz      The desired number of nonzeros
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix, int nnz);
+sleqp_mat_reserve(SleqpMat* matrix, int nnz);
 
 /**
  * Resizes the given matrix
@@ -57,84 +54,79 @@ sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix, int nnz);
  * @param[in] num_cols   The desired number of columns
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
-                           int num_rows,
-                           int num_cols);
+sleqp_mat_resize(SleqpMat* matrix, int num_rows, int num_cols);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_scale(SleqpSparseMatrix* matrix, double scale);
+sleqp_mat_scale(SleqpMat* matrix, double scale);
 
 /**
  * Returns the number of columns of the given matrix
  **/
 SLEQP_EXPORT int
-sleqp_sparse_matrix_num_cols(const SleqpSparseMatrix* matrix);
+sleqp_mat_num_cols(const SleqpMat* matrix);
 
 /**
  * Returns the number of rows of the given matrix
  **/
 SLEQP_EXPORT int
-sleqp_sparse_matrix_num_rows(const SleqpSparseMatrix* matrix);
+sleqp_mat_num_rows(const SleqpMat* matrix);
 
 /**
  * Returns the number of nonzeros of the given matrix
  **/
 SLEQP_EXPORT int
-sleqp_sparse_matrix_nnz(const SleqpSparseMatrix* matrix);
+sleqp_mat_nnz(const SleqpMat* matrix);
 
 /**
  * Returns the maximum number of nonzeros of the given matrix
  **/
 SLEQP_EXPORT int
-sleqp_sparse_matrix_nnz_max(const SleqpSparseMatrix* matrix);
+sleqp_mat_nnz_max(const SleqpMat* matrix);
 
 /**
  * Sets the number of nonzeros of the given matrix
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_set_nnz(SleqpSparseMatrix* matrix, int nnz);
+sleqp_mat_set_nnz(SleqpMat* matrix, int nnz);
 
 /**
  * Returns whether the given matrix is rectangular
  **/
 SLEQP_EXPORT bool
-sleqp_sparse_matrix_is_quadratic(const SleqpSparseMatrix* matrix);
+sleqp_mat_is_quadratic(const SleqpMat* matrix);
 
 /**
  * Returns a pointer to the values of the matrix
  **/
 SLEQP_EXPORT double*
-sleqp_sparse_matrix_data(const SleqpSparseMatrix* matrix);
+sleqp_mat_data(const SleqpMat* matrix);
 
 /**
  * Returns a pointer to the columns of the given matrix
  **/
 SLEQP_EXPORT int*
-sleqp_sparse_matrix_cols(const SleqpSparseMatrix* matrix);
+sleqp_mat_cols(const SleqpMat* matrix);
 
 /**
  * Returns a pointer to the rows of the given matrix
  **/
 SLEQP_EXPORT int*
-sleqp_sparse_matrix_rows(const SleqpSparseMatrix* matrix);
+sleqp_mat_rows(const SleqpMat* matrix);
 
 /**
  * Pushes a new entry to the matrix. Fails if the matrix is at capacity
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
-                         int row,
-                         int col,
-                         double value);
+sleqp_mat_push(SleqpMat* matrix, int row, int col, double value);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_push_vec(SleqpSparseMatrix* matrix, int col, SleqpVec* vec);
+sleqp_mat_push_vec(SleqpMat* matrix, int col, SleqpVec* vec);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix, int col);
+sleqp_mat_push_col(SleqpMat* matrix, int col);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix, int col);
+sleqp_mat_pop_col(SleqpMat* matrix, int col);
 
 /**
  * Copies the given matrix
@@ -143,20 +135,19 @@ sleqp_sparse_matrix_pop_column(SleqpSparseMatrix* matrix, int col);
  * @param[in,out] target     The target matrix
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_copy(const SleqpSparseMatrix* source,
-                         SleqpSparseMatrix* target);
+sleqp_mat_copy(const SleqpMat* source, SleqpMat* target);
 
 /**
  * Increases the reference count of the given matrix
  */
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix);
+sleqp_mat_capture(SleqpMat* matrix);
 
 /**
  * Decreases the reference count of the given matrix, freeing it
  * if the reference count reaches count
  */
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_sparse_matrix_release(SleqpSparseMatrix** star);
+sleqp_mat_release(SleqpMat** star);
 
-#endif /* SLEQP_PUB_SPARSE_MATRIX_H */
+#endif /* SLEQP_PUB_MAT_H */

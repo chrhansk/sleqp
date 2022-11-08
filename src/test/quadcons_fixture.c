@@ -99,25 +99,23 @@ quadconsfunc_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 SLEQP_RETCODE
-quadconsfunc_cons_jac(SleqpFunc* func,
-                      SleqpSparseMatrix* cons_jac,
-                      void* func_data)
+quadconsfunc_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   SquareFuncData* data = (SquareFuncData*)func_data;
 
-  assert(sleqp_sparse_matrix_num_rows(cons_jac) == 2);
-  assert(sleqp_sparse_matrix_num_cols(cons_jac) == 2);
-  assert(sleqp_sparse_matrix_nnz_max(cons_jac) >= 4);
+  assert(sleqp_mat_num_rows(cons_jac) == 2);
+  assert(sleqp_mat_num_cols(cons_jac) == 2);
+  assert(sleqp_mat_nnz_max(cons_jac) >= 4);
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 0));
+  SLEQP_CALL(sleqp_mat_push_col(cons_jac, 0));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 0, 2 * data->x[0]));
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 0, 2 * (data->x[0] - 1.)));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 0, 2 * data->x[0]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 1, 0, 2 * (data->x[0] - 1.)));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
+  SLEQP_CALL(sleqp_mat_push_col(cons_jac, 1));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 2 * data->x[1]));
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 1, 2 * (data->x[1] - 1.)));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 1, 2 * data->x[1]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 1, 1, 2 * (data->x[1] - 1.)));
 
   return SLEQP_OKAY;
 }

@@ -11,7 +11,7 @@
 #include "trial_point.h"
 #include "types.h"
 
-#include "sparse/pub_sparse_matrix.h"
+#include "sparse/pub_mat.h"
 #include "sparse/pub_vec.h"
 
 const double allowed_dual_factor = 1000.;

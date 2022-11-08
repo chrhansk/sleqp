@@ -6,8 +6,8 @@
 #include "pub_iterate.h"
 #include "pub_problem.h"
 #include "pub_types.h"
+#include "sparse/mat.h"
 #include "sparse/pub_vec.h"
-#include "sparse/sparse_matrix.h"
 
 struct SleqpDirection
 {
@@ -61,10 +61,9 @@ sleqp_direction_reset(SleqpDirection* direction,
 
   if (num_cons > 0)
   {
-    SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+    SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
 
-    SLEQP_CALL(
-      sleqp_sparse_matrix_vector_product(cons_jac, direction_primal, cache));
+    SLEQP_CALL(sleqp_mat_mult_vec(cons_jac, direction_primal, cache));
 
     SLEQP_CALL(
       sleqp_vec_set_from_raw(direction_cons_jac, cache, num_cons, zero_eps));
@@ -113,9 +112,9 @@ sleqp_direction_check(const SleqpDirection* direction,
 
   SLEQP_CALL(sleqp_vec_create_full(&cons_dir, num_cons));
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(sleqp_iterate_cons_jac(iterate),
-                                                direction->primal,
-                                                cache));
+  SLEQP_CALL(sleqp_mat_mult_vec(sleqp_iterate_cons_jac(iterate),
+                                direction->primal,
+                                cache));
 
   SLEQP_CALL(sleqp_vec_set_from_raw(cons_dir, cache, num_cons, zero_eps));
 

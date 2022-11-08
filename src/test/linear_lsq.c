@@ -2,7 +2,7 @@
 
 #include "cmp.h"
 #include "lsq.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 #define LINEAR_LSQ_NUM_VARIABLES 2
 #define LINEAR_LSQ_NUM_RESIDUALS 3
@@ -11,7 +11,7 @@ const int linear_lsq_num_variables   = LINEAR_LSQ_NUM_VARIABLES;
 const int linear_lsq_num_constraints = 0;
 const int linear_lsq_num_residuals   = LINEAR_LSQ_NUM_RESIDUALS;
 
-SleqpSparseMatrix* linear_lsq_matrix;
+SleqpMat* linear_lsq_matrix;
 SleqpVec* linear_lsq_rhs;
 
 SleqpParams* linear_lsq_params;
@@ -47,9 +47,9 @@ lsq_residuals(SleqpFunc* func, SleqpVec* residual, void* func_data)
   const double zero_eps
     = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_lsq_matrix,
-                                                linear_lsq_current,
-                                                dense_cache_forward));
+  SLEQP_CALL(sleqp_mat_mult_vec(linear_lsq_matrix,
+                                linear_lsq_current,
+                                dense_cache_forward));
 
   SLEQP_CALL(sleqp_vec_set_from_raw(linear_lsq_forward,
                                     dense_cache_forward,
@@ -75,9 +75,9 @@ lsq_jac_forward(SleqpFunc* func,
   const double zero_eps
     = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_lsq_matrix,
-                                                forward_direction,
-                                                dense_cache_forward));
+  SLEQP_CALL(sleqp_mat_mult_vec(linear_lsq_matrix,
+                                forward_direction,
+                                dense_cache_forward));
 
   SLEQP_CALL(sleqp_vec_set_from_raw(product,
                                     dense_cache_forward,
@@ -96,10 +96,10 @@ lsq_jac_adjoint(SleqpFunc* func,
   const double zero_eps
     = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(linear_lsq_matrix,
-                                                      adjoint_direction,
-                                                      zero_eps,
-                                                      product));
+  SLEQP_CALL(sleqp_mat_mult_vec_trans(linear_lsq_matrix,
+                                      adjoint_direction,
+                                      zero_eps,
+                                      product));
 
   return SLEQP_OKAY;
 }
@@ -109,23 +109,23 @@ linear_lsq_setup()
 {
   const double inf = sleqp_infinity();
 
-  ASSERT_CALL(sleqp_sparse_matrix_create(&linear_lsq_matrix,
-                                         linear_lsq_num_residuals,
-                                         linear_lsq_num_variables,
-                                         linear_lsq_num_residuals
-                                           * linear_lsq_num_variables));
+  ASSERT_CALL(
+    sleqp_mat_create(&linear_lsq_matrix,
+                     linear_lsq_num_residuals,
+                     linear_lsq_num_variables,
+                     linear_lsq_num_residuals * linear_lsq_num_variables));
 
   {
-    ASSERT_CALL(sleqp_sparse_matrix_clear(linear_lsq_matrix));
+    ASSERT_CALL(sleqp_mat_clear(linear_lsq_matrix));
 
-    ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 0, 0, 1.));
-    ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 1, 0, 1.));
-    ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 2, 0, 1.));
+    ASSERT_CALL(sleqp_mat_push(linear_lsq_matrix, 0, 0, 1.));
+    ASSERT_CALL(sleqp_mat_push(linear_lsq_matrix, 1, 0, 1.));
+    ASSERT_CALL(sleqp_mat_push(linear_lsq_matrix, 2, 0, 1.));
 
-    ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_lsq_matrix, 1));
+    ASSERT_CALL(sleqp_mat_push_col(linear_lsq_matrix, 1));
 
-    ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 1, 1, 1.));
-    ASSERT_CALL(sleqp_sparse_matrix_push(linear_lsq_matrix, 2, 1, 2.));
+    ASSERT_CALL(sleqp_mat_push(linear_lsq_matrix, 1, 1, 1.));
+    ASSERT_CALL(sleqp_mat_push(linear_lsq_matrix, 2, 1, 2.));
   }
 
   ASSERT_CALL(sleqp_vec_create_full(&linear_lsq_rhs, linear_lsq_num_residuals));
@@ -232,5 +232,5 @@ linear_lsq_teardown()
 
   ASSERT_CALL(sleqp_vec_free(&linear_lsq_rhs));
 
-  ASSERT_CALL(sleqp_sparse_matrix_release(&linear_lsq_matrix));
+  ASSERT_CALL(sleqp_mat_release(&linear_lsq_matrix));
 }

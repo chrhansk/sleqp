@@ -85,7 +85,7 @@ SLEQP_RETCODE
 mex_eval_into_sparse_matrix(int nrhs,
                             mxArray** rhs,
                             SleqpParams* params,
-                            SleqpSparseMatrix* matrix);
+                            SleqpMat* matrix);
 
 #define MEX_EVAL_INTO_REAL(array, value)                                       \
   SLEQP_CALL(mex_eval_into_real(MEX_ARRAY_LEN(array), array, value))

@@ -7,9 +7,9 @@
 #include "pub_mem.h"
 #include "pub_problem.h"
 #include "scale.h"
-#include "sparse/pub_sparse_matrix.h"
+#include "sparse/mat.h"
+#include "sparse/pub_mat.h"
 #include "sparse/pub_vec.h"
-#include "sparse/sparse_matrix.h"
 #include "util.h"
 
 #include "test_common.h"
@@ -239,21 +239,19 @@ END_TEST
 
 START_TEST(test_cons_jac_inverse)
 {
-  SleqpSparseMatrix* cons_jac;
+  SleqpMat* cons_jac;
 
-  ASSERT_CALL(sleqp_sparse_matrix_create(&cons_jac, 2, 2, 4));
+  ASSERT_CALL(sleqp_mat_create(&cons_jac, 2, 2, 4));
 
-  ASSERT_CALL(
-    sleqp_sparse_matrix_copy(sleqp_iterate_cons_jac(iterate), cons_jac));
+  ASSERT_CALL(sleqp_mat_copy(sleqp_iterate_cons_jac(iterate), cons_jac));
 
   ASSERT_CALL(sleqp_scale_cons_jac(scaling, cons_jac));
 
   ASSERT_CALL(sleqp_unscale_cons_jac(scaling, cons_jac));
 
-  ck_assert(
-    sleqp_sparse_matrix_eq(sleqp_iterate_cons_jac(iterate), cons_jac, 0.));
+  ck_assert(sleqp_mat_eq(sleqp_iterate_cons_jac(iterate), cons_jac, 0.));
 
-  ASSERT_CALL(sleqp_sparse_matrix_release(&cons_jac));
+  ASSERT_CALL(sleqp_mat_release(&cons_jac));
 }
 END_TEST
 
@@ -306,10 +304,10 @@ START_TEST(test_stationarity)
 
   ASSERT_CALL(sleqp_iterate_create(&scaled_iterate, problem, quadconsfunc_x));
 
-  SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  SleqpVec* cons_dual         = sleqp_iterate_cons_dual(iterate);
-  SleqpVec* vars_dual         = sleqp_iterate_vars_dual(iterate);
+  SleqpVec* obj_grad  = sleqp_iterate_obj_grad(iterate);
+  SleqpMat* cons_jac  = sleqp_iterate_cons_jac(iterate);
+  SleqpVec* cons_dual = sleqp_iterate_cons_dual(iterate);
+  SleqpVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
   {
     ASSERT_CALL(sleqp_vec_clear(obj_grad));
@@ -322,16 +320,16 @@ START_TEST(test_stationarity)
   }
 
   {
-    ASSERT_CALL(sleqp_sparse_matrix_clear(cons_jac));
-    ASSERT_CALL(sleqp_sparse_matrix_reserve(cons_jac, num_vars));
+    ASSERT_CALL(sleqp_mat_clear(cons_jac));
+    ASSERT_CALL(sleqp_mat_reserve(cons_jac, num_vars));
 
     for (int i = 0; i < num_vars; ++i)
     {
-      ASSERT_CALL(sleqp_sparse_matrix_push(cons_jac, i, i, 2 * i - 1));
+      ASSERT_CALL(sleqp_mat_push(cons_jac, i, i, 2 * i - 1));
 
       if ((i + 1) < num_vars)
       {
-        ASSERT_CALL(sleqp_sparse_matrix_push_column(cons_jac, i + 1));
+        ASSERT_CALL(sleqp_mat_push_col(cons_jac, i + 1));
       }
     }
   }
@@ -354,7 +352,7 @@ START_TEST(test_stationarity)
     {
       const double obj_grad_val  = sleqp_vec_value_at(obj_grad, i);
       const double cons_dual_val = sleqp_vec_value_at(cons_dual, i);
-      const double cons_jac_val  = sleqp_sparse_matrix_value_at(cons_jac, i, i);
+      const double cons_jac_val  = sleqp_mat_value_at(cons_jac, i, i);
 
       const double vars_dual_val
         = -(obj_grad_val + cons_dual_val * cons_jac_val);

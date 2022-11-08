@@ -27,6 +27,6 @@ sleqp_cutest_eval_linear(SleqpFunc* func, SleqpVec* linear);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpSparseMatrix* coeffs);
+sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpMat* coeffs);
 
 #endif /* SLEQP_CUTEST_CONSTRAINED_H */

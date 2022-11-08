@@ -30,7 +30,7 @@ sleqp_problem_eval(SleqpProblem* problem,
                    double* obj_val,
                    SleqpVec* obj_grad,
                    SleqpVec* cons_val,
-                   SleqpSparseMatrix* cons_jac);
+                   SleqpMat* cons_jac);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -46,7 +46,7 @@ sleqp_problem_cons_val(SleqpProblem* problem, SleqpVec* cons_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_problem_cons_jac(SleqpProblem* problem, SleqpSparseMatrix* cons_jac);
+sleqp_problem_cons_jac(SleqpProblem* problem, SleqpMat* cons_jac);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

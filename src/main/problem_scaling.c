@@ -8,7 +8,7 @@
 #include "lsq.h"
 #include "math_error.h"
 #include "mem.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 struct SleqpProblemScaling
 {
@@ -126,9 +126,7 @@ scaled_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-scaled_func_cons_jac(SleqpFunc* func,
-                     SleqpSparseMatrix* cons_jac,
-                     void* func_data)
+scaled_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   SleqpProblemScaling* problem_scaling = (SleqpProblemScaling*)func_data;
   SleqpScaling* scaling                = problem_scaling->scaling;
@@ -609,9 +607,8 @@ sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling)
   SLEQP_CALL(
     sleqp_scale_cons_linear(scaling, sleqp_problem_linear_ub(scaled_problem)));
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_copy(sleqp_problem_linear_coeffs(problem),
-                             sleqp_problem_linear_coeffs(scaled_problem)));
+  SLEQP_CALL(sleqp_mat_copy(sleqp_problem_linear_coeffs(problem),
+                            sleqp_problem_linear_coeffs(scaled_problem)));
 
   SLEQP_CALL(
     sleqp_scale_linear_coeffs(scaling,

@@ -134,7 +134,7 @@ sleqp_obj_scaling_from_grad(SleqpScaling* scaling,
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
-                            SleqpSparseMatrix* cons_jac,
+                            SleqpMat* cons_jac,
                             double eps);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE

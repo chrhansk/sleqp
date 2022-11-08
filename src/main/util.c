@@ -33,9 +33,9 @@ sleqp_set_and_evaluate(SleqpProblem* problem,
 
   SLEQP_CALL(sleqp_iterate_reserve(iterate, problem));
 
-  SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  SleqpVec* cons_val          = sleqp_iterate_cons_val(iterate);
+  SleqpVec* obj_grad = sleqp_iterate_obj_grad(iterate);
+  SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpVec* cons_val = sleqp_iterate_cons_val(iterate);
 
   double obj_val;
 
@@ -57,9 +57,9 @@ sleqp_direction_in_working_set(SleqpProblem* problem,
 {
   (*in_working_set) = true;
 
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(cons_jac, direction, cache));
+  SLEQP_CALL(sleqp_mat_mult_vec(cons_jac, direction, cache));
 
   const SleqpVec* lb = sleqp_problem_cons_lb(problem);
   const SleqpVec* ub = sleqp_problem_cons_ub(problem);

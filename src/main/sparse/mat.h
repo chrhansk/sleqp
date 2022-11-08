@@ -1,15 +1,15 @@
-#ifndef SLEQP_SPARSE_MATRIX_H
-#define SLEQP_SPARSE_MATRIX_H
+#ifndef SLEQP_MAT_H
+#define SLEQP_MAT_H
 
-#include "pub_sparse_matrix.h"
+#include "pub_mat.h"
 
 #include "vec.h"
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_vstack(const SleqpSparseMatrix* first,
-                           const SleqpSparseMatrix* second,
-                           SleqpSparseMatrix* result);
+sleqp_mat_vstack(const SleqpMat* first,
+                 const SleqpMat* second,
+                 SleqpMat* result);
 
 /**
  * Computes the product of the given matrix with the given vector
@@ -21,9 +21,9 @@ sleqp_sparse_matrix_vstack(const SleqpSparseMatrix* first,
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
-                                   const SleqpVec* vector,
-                                   double* result);
+sleqp_mat_mult_vec(const SleqpMat* matrix,
+                   const SleqpVec* vector,
+                   double* result);
 
 /**
  * Computes the product of the transposed matrix with the given vector
@@ -37,10 +37,10 @@ sleqp_sparse_matrix_vector_product(const SleqpSparseMatrix* matrix,
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* matrix,
-                                         const SleqpVec* vector,
-                                         double eps,
-                                         SleqpVec* result);
+sleqp_mat_mult_vec_trans(const SleqpMat* matrix,
+                         const SleqpVec* vector,
+                         double eps,
+                         SleqpVec* result);
 
 /**
  * Returns a pointer to the entry to the given element of the matrix
@@ -52,7 +52,7 @@ sleqp_sparse_matrix_trans_vector_product(const SleqpSparseMatrix* matrix,
  * @return A pointer to the entry, or NULL if the entry is not contained
  **/
 double*
-sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix, int row, int col);
+sleqp_mat_at(SleqpMat* matrix, int row, int col);
 
 /**
  * Returns the value of the entry at the given element of the matrix
@@ -64,16 +64,14 @@ sleqp_sparse_matrix_at(SleqpSparseMatrix* matrix, int row, int col);
  * @return A pointer to the entry, or NULL if the entry is not contained
  **/
 double
-sleqp_sparse_matrix_value_at(SleqpSparseMatrix* matrix, int row, int col);
+sleqp_mat_value_at(SleqpMat* matrix, int row, int col);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_col(const SleqpSparseMatrix* matrix,
-                        int col,
-                        SleqpVec* vec);
+sleqp_mat_col(const SleqpMat* matrix, int col, SleqpVec* vec);
 
 bool
-sleqp_sparse_matrix_is_lower(const SleqpSparseMatrix* matrix);
+sleqp_mat_is_lower(const SleqpMat* matrix);
 
 /**
  * Returns whether all entries of the given matrices are equal to
@@ -86,29 +84,27 @@ sleqp_sparse_matrix_is_lower(const SleqpSparseMatrix* matrix);
  * @sa sleqp_is_eq(double x, double y, double eps)
  **/
 bool
-sleqp_sparse_matrix_eq(const SleqpSparseMatrix* first,
-                       const SleqpSparseMatrix* second,
-                       double eps);
+sleqp_mat_eq(const SleqpMat* first, const SleqpMat* second, double eps);
 
 SLEQP_RETCODE
-sleqp_sparse_matrix_remove_rows(const SleqpSparseMatrix* source,
-                                SleqpSparseMatrix* target,
-                                const int* row_indices,
-                                int num_row_entries);
+sleqp_mat_remove_rows(const SleqpMat* source,
+                      SleqpMat* target,
+                      const int* row_indices,
+                      int num_row_entries);
 
 SLEQP_RETCODE
-sleqp_sparse_matrix_remove_cols(const SleqpSparseMatrix* source,
-                                SleqpSparseMatrix* target,
-                                const int* col_indices,
-                                int num_col_entries);
+sleqp_mat_remove_cols(const SleqpMat* source,
+                      SleqpMat* target,
+                      const int* col_indices,
+                      int num_col_entries);
 
 SLEQP_RETCODE
-sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source,
-                                   SleqpSparseMatrix* target,
-                                   const int* col_indices,
-                                   int num_col_entries,
-                                   const int* row_indices,
-                                   int num_row_entries);
+sleqp_mat_remove_entries(const SleqpMat* source,
+                         SleqpMat* target,
+                         const int* col_indices,
+                         int num_col_entries,
+                         const int* row_indices,
+                         int num_row_entries);
 
 /**
  * Clears the given matrix, i.e., removes all of its elements
@@ -117,7 +113,7 @@ sleqp_sparse_matrix_remove_entries(const SleqpSparseMatrix* source,
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix);
+sleqp_mat_clear(SleqpMat* matrix);
 
 /**
  * Prints the matrix to the given file
@@ -127,7 +123,7 @@ sleqp_sparse_matrix_clear(SleqpSparseMatrix* matrix);
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix, FILE* output);
+sleqp_mat_fprintf(const SleqpMat* matrix, FILE* output);
 
 /**
  * Dumps the matrix to the given file using the MatrixMarket format
@@ -137,12 +133,11 @@ sleqp_sparse_matrix_fprintf(const SleqpSparseMatrix* matrix, FILE* output);
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_dump(const SleqpSparseMatrix* matrix, FILE* output);
+sleqp_mat_dump(const SleqpMat* matrix, FILE* output);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
-                                 const char* name);
+sleqp_mat_dump_to_file(const SleqpMat* matrix, const char* name);
 
 /**
  * Returns whether the given matrix is valid, i.e. whether the
@@ -150,7 +145,7 @@ sleqp_sparse_matrix_dump_to_file(const SleqpSparseMatrix* matrix,
  * within their respective bounds and properly ordered.
  **/
 bool
-sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix);
+sleqp_mat_is_valid(const SleqpMat* matrix);
 
 /**
  * Transposes the given matrix
@@ -161,15 +156,13 @@ sleqp_sparse_matrix_is_valid(const SleqpSparseMatrix* matrix);
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_sparse_matrix_trans(const SleqpSparseMatrix* source,
-                          SleqpSparseMatrix* target,
-                          int* row_cache);
+sleqp_mat_trans(const SleqpMat* source, SleqpMat* target, int* row_cache);
 
 /**
  * Returns whether the entries of the given matrix are finite with respect to
  *  \ref sleqp_is_finite(double)
  **/
 bool
-sleqp_sparse_matrix_is_finite(const SleqpSparseMatrix* matrix);
+sleqp_mat_is_finite(const SleqpMat* matrix);
 
-#endif /* SLEQP_SPARSE_MATRIX_H */
+#endif /* SLEQP_MAT_H */

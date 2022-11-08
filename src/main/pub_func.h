@@ -7,7 +7,7 @@
  **/
 
 #include "sleqp/pub_hess_struct.h"
-#include "sparse/pub_sparse_matrix.h"
+#include "sparse/pub_mat.h"
 #include "sparse/pub_vec.h"
 
 /**
@@ -140,7 +140,7 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_VAL)(SleqpFunc* func,
  * @param[in,out] func_data       The function data
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
-                                             SleqpSparseMatrix* cons_jac,
+                                             SleqpMat* cons_jac,
                                              void* func_data);
 
 /**

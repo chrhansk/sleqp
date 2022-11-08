@@ -178,22 +178,21 @@ START_TEST(test_constrained_lsqr_solve)
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  SleqpSparseMatrix* linear_coeffs;
+  SleqpMat* linear_coeffs;
   SleqpVec* linear_lb;
   SleqpVec* linear_ub;
 
   const double inf = sleqp_infinity();
 
-  ASSERT_CALL(
-    sleqp_sparse_matrix_create(&linear_coeffs, 1, rosenbrock_num_vars, 2));
+  ASSERT_CALL(sleqp_mat_create(&linear_coeffs, 1, rosenbrock_num_vars, 2));
 
-  ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_coeffs, 0));
+  ASSERT_CALL(sleqp_mat_push_col(linear_coeffs, 0));
 
-  ASSERT_CALL(sleqp_sparse_matrix_push(linear_coeffs, 0, 0, 1.));
+  ASSERT_CALL(sleqp_mat_push(linear_coeffs, 0, 0, 1.));
 
-  ASSERT_CALL(sleqp_sparse_matrix_push_column(linear_coeffs, 1));
+  ASSERT_CALL(sleqp_mat_push_col(linear_coeffs, 1));
 
-  ASSERT_CALL(sleqp_sparse_matrix_push(linear_coeffs, 0, 1, 1.));
+  ASSERT_CALL(sleqp_mat_push(linear_coeffs, 0, 1, 1.));
 
   ASSERT_CALL(sleqp_vec_create(&linear_lb, 1, 1));
   ASSERT_CALL(sleqp_vec_push(linear_lb, 0, 1.));
@@ -249,7 +248,7 @@ START_TEST(test_constrained_lsqr_solve)
   ASSERT_CALL(sleqp_vec_free(&linear_ub));
   ASSERT_CALL(sleqp_vec_free(&linear_lb));
 
-  ASSERT_CALL(sleqp_sparse_matrix_release(&linear_coeffs));
+  ASSERT_CALL(sleqp_mat_release(&linear_coeffs));
 }
 END_TEST
 

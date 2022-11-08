@@ -12,7 +12,7 @@
 
 typedef struct SPQRData
 {
-  SleqpSparseMatrix* matrix;
+  SleqpMat* matrix;
 
   cholmod_common common;
   cholmod_sparse* sparse;
@@ -83,15 +83,15 @@ update_shape(SPQRData* spqr, int num_rows, int num_cols, int nnz_max)
 }
 
 static SLEQP_RETCODE
-spqr_fact_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
+spqr_fact_set_matrix(void* fact_data, SleqpMat* matrix)
 {
   SPQRData* spqr = (SPQRData*)fact_data;
 
   cholmod_common* common = &(spqr->common);
 
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
-  const int nnz      = sleqp_sparse_matrix_nnz(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
+  const int nnz      = sleqp_mat_nnz(matrix);
 
   assert(num_rows >= num_cols);
 
@@ -104,9 +104,9 @@ spqr_fact_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
   assert(spqr->sparse->dtype == CHOLMOD_DOUBLE);
   assert(spqr->sparse->itype == CHOLMOD_LONG);
 
-  const double* mat_data = sleqp_sparse_matrix_data(matrix);
-  const int* mat_cols    = sleqp_sparse_matrix_cols(matrix);
-  const int* mat_rows    = sleqp_sparse_matrix_rows(matrix);
+  const double* mat_data = sleqp_mat_data(matrix);
+  const int* mat_cols    = sleqp_mat_cols(matrix);
+  const int* mat_rows    = sleqp_mat_rows(matrix);
 
   SuiteSparse_long* cols = spqr->sparse->p;
   SuiteSparse_long* rows = spqr->sparse->i;

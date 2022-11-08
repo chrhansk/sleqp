@@ -11,7 +11,7 @@ extern const int linear_lsq_num_variables;
 extern const int linear_lsq_num_constraints;
 extern const int linear_lsq_num_residuals;
 
-extern SleqpSparseMatrix* linear_lsq_matrix;
+extern SleqpMat* linear_lsq_matrix;
 extern SleqpVec* linear_lsq_rhs;
 
 extern SleqpParams* linear_lsq_params;

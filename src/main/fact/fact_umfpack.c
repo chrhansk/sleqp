@@ -12,7 +12,7 @@
 
 typedef struct UmfpackData
 {
-  SleqpSparseMatrix* matrix;
+  SleqpMat* matrix;
 
   void* numeric_factorization;
   void* symbolic_factorization;
@@ -102,12 +102,12 @@ umfpack_fact_free_fact(UmfpackData* umfpack)
 }
 
 static SLEQP_RETCODE
-umfpack_fact_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
+umfpack_fact_set_matrix(void* fact_data, SleqpMat* matrix)
 {
   UmfpackData* umfpack = (UmfpackData*)fact_data;
 
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
 
   assert(num_cols == num_rows);
 
@@ -128,22 +128,22 @@ umfpack_fact_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 
   SLEQP_CALL(umfpack_fact_free_fact(umfpack));
 
-  assert(sleqp_sparse_matrix_is_quadratic(matrix));
+  assert(sleqp_mat_is_quadratic(matrix));
 
   umfpack->matrix = matrix;
 
-  UMFPACK_CALL(umfpack_di_symbolic(sleqp_sparse_matrix_num_cols(matrix),
-                                   sleqp_sparse_matrix_num_rows(matrix),
-                                   sleqp_sparse_matrix_cols(matrix),
-                                   sleqp_sparse_matrix_rows(matrix),
-                                   sleqp_sparse_matrix_data(matrix),
+  UMFPACK_CALL(umfpack_di_symbolic(sleqp_mat_num_cols(matrix),
+                                   sleqp_mat_num_rows(matrix),
+                                   sleqp_mat_cols(matrix),
+                                   sleqp_mat_rows(matrix),
+                                   sleqp_mat_data(matrix),
                                    &umfpack->symbolic_factorization,
                                    umfpack->control,
                                    umfpack->info));
 
-  UMFPACK_CALL(umfpack_di_numeric(sleqp_sparse_matrix_cols(matrix),
-                                  sleqp_sparse_matrix_rows(matrix),
-                                  sleqp_sparse_matrix_data(matrix),
+  UMFPACK_CALL(umfpack_di_numeric(sleqp_mat_cols(matrix),
+                                  sleqp_mat_rows(matrix),
+                                  sleqp_mat_data(matrix),
                                   umfpack->symbolic_factorization,
                                   &umfpack->numeric_factorization,
                                   umfpack->control,
@@ -199,16 +199,16 @@ umfpack_fact_solve(void* fact_data, const SleqpVec* rhs)
 {
   UmfpackData* umfpack = (UmfpackData*)fact_data;
 
-  SleqpSparseMatrix* matrix = umfpack->matrix;
+  SleqpMat* matrix = umfpack->matrix;
 
-  assert(rhs->dim == sleqp_sparse_matrix_num_rows(matrix));
+  assert(rhs->dim == sleqp_mat_num_rows(matrix));
 
   SLEQP_CALL(set_cache(umfpack->rhs, rhs));
 
   UMFPACK_CALL(umfpack_di_solve(UMFPACK_A,
-                                sleqp_sparse_matrix_cols(matrix),
-                                sleqp_sparse_matrix_rows(matrix),
-                                sleqp_sparse_matrix_data(matrix),
+                                sleqp_mat_cols(matrix),
+                                sleqp_mat_rows(matrix),
+                                sleqp_mat_data(matrix),
                                 umfpack->solution,
                                 umfpack->rhs,
                                 umfpack->numeric_factorization,

@@ -122,7 +122,7 @@ mex_lsq_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* data)
 }
 
 static SLEQP_RETCODE
-mex_lsq_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
+mex_lsq_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* data)
 {
   LSQFuncData* func_data = (LSQFuncData*)data;
 

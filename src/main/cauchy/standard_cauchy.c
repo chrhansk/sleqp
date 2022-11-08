@@ -137,35 +137,32 @@ cauchy_data_create(CauchyData** star,
 }
 
 static SLEQP_RETCODE
-append_identities(SleqpSparseMatrix* cons_jac,
-                  int num_variables,
-                  int num_constraints)
+append_identities(SleqpMat* cons_jac, int num_variables, int num_constraints)
 {
-  assert(num_constraints == sleqp_sparse_matrix_num_rows(cons_jac));
-  assert(num_variables == sleqp_sparse_matrix_num_cols(cons_jac));
+  assert(num_constraints == sleqp_mat_num_rows(cons_jac));
+  assert(num_variables == sleqp_mat_num_cols(cons_jac));
 
-  const int nnz      = sleqp_sparse_matrix_nnz(cons_jac);
-  const int num_rows = sleqp_sparse_matrix_num_rows(cons_jac);
-  const int num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
+  const int nnz      = sleqp_mat_nnz(cons_jac);
+  const int num_rows = sleqp_mat_num_rows(cons_jac);
+  const int num_cols = sleqp_mat_num_cols(cons_jac);
 
   /*
    * Reserve a litte more so we can add the two
    * identity matrices afterwards
    */
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, nnz + 2 * num_constraints));
+  SLEQP_CALL(sleqp_mat_reserve(cons_jac, nnz + 2 * num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_matrix_resize(cons_jac,
-                                        num_rows,
-                                        num_cols + 2 * num_constraints));
+  SLEQP_CALL(
+    sleqp_mat_resize(cons_jac, num_rows, num_cols + 2 * num_constraints));
 
   // append the +I
   for (int i = 0; i < num_constraints; ++i)
   {
     const int con = num_variables + i;
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, con));
+    SLEQP_CALL(sleqp_mat_push_col(cons_jac, con));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, i, con, 1.));
+    SLEQP_CALL(sleqp_mat_push(cons_jac, i, con, 1.));
   }
 
   // append the -I
@@ -173,27 +170,24 @@ append_identities(SleqpSparseMatrix* cons_jac,
   {
     const int con = num_variables + num_constraints + i;
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, con));
+    SLEQP_CALL(sleqp_mat_push_col(cons_jac, con));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, i, con, -1.));
+    SLEQP_CALL(sleqp_mat_push(cons_jac, i, con, -1.));
   }
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
-remove_identities(SleqpSparseMatrix* cons_jac,
-                  int num_variables,
-                  int num_constraints)
+remove_identities(SleqpMat* cons_jac, int num_variables, int num_constraints)
 {
-  const int num_rows = sleqp_sparse_matrix_num_rows(cons_jac);
-  const int num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
+  const int num_rows = sleqp_mat_num_rows(cons_jac);
+  const int num_cols = sleqp_mat_num_cols(cons_jac);
 
   assert(num_constraints == num_rows);
   assert(num_variables + 2 * num_constraints == num_cols);
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_resize(cons_jac, num_constraints, num_variables));
+  SLEQP_CALL(sleqp_mat_resize(cons_jac, num_constraints, num_variables));
 
   return SLEQP_OKAY;
 }
@@ -372,12 +366,12 @@ create_default_objective(CauchyData* cauchy_data,
 }
 
 static SLEQP_RETCODE
-set_default_coefficients(CauchyData* cauchy_data, SleqpSparseMatrix* cons_jac)
+set_default_coefficients(CauchyData* cauchy_data, SleqpMat* cons_jac)
 {
   SleqpProblem* problem = cauchy_data->problem;
 
-  const int num_variables   = sleqp_sparse_matrix_num_cols(cons_jac);
-  const int num_constraints = sleqp_sparse_matrix_num_rows(cons_jac);
+  const int num_variables   = sleqp_mat_num_cols(cons_jac);
+  const int num_constraints = sleqp_mat_num_rows(cons_jac);
 
   bool fixed_jacobian = !(sleqp_problem_has_nonlinear_cons(problem));
 
@@ -388,13 +382,13 @@ set_default_coefficients(CauchyData* cauchy_data, SleqpSparseMatrix* cons_jac)
 
   SLEQP_CALL(append_identities(cons_jac, num_variables, num_constraints));
 
-  assert(sleqp_sparse_matrix_is_valid(cons_jac));
+  assert(sleqp_mat_is_valid(cons_jac));
 
   SLEQP_CALL(sleqp_lpi_set_coeffs(cauchy_data->default_interface, cons_jac));
 
   SLEQP_CALL(remove_identities(cons_jac, num_variables, num_constraints));
 
-  assert(sleqp_sparse_matrix_is_valid(cons_jac));
+  assert(sleqp_mat_is_valid(cons_jac));
 
   cauchy_data->has_coefficients = true;
 
@@ -406,11 +400,11 @@ standard_cauchy_set_iterate(SleqpIterate* iterate,
                             double trust_radius,
                             void* data)
 {
-  CauchyData* cauchy_data     = (CauchyData*)data;
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+  CauchyData* cauchy_data = (CauchyData*)data;
+  SleqpMat* cons_jac      = sleqp_iterate_cons_jac(iterate);
 
-  const int num_variables   = sleqp_sparse_matrix_num_cols(cons_jac);
-  const int num_constraints = sleqp_sparse_matrix_num_rows(cons_jac);
+  const int num_variables   = sleqp_mat_num_cols(cons_jac);
+  const int num_constraints = sleqp_mat_num_rows(cons_jac);
 
   assert(trust_radius > 0.);
 
@@ -444,10 +438,10 @@ standard_cauchy_set_trust_radius(double trust_radius, void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
 
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(cauchy_data->iterate);
+  SleqpMat* cons_jac = sleqp_iterate_cons_jac(cauchy_data->iterate);
 
-  const int num_variables   = sleqp_sparse_matrix_num_cols(cons_jac);
-  const int num_constraints = sleqp_sparse_matrix_num_rows(cons_jac);
+  const int num_variables   = sleqp_mat_num_cols(cons_jac);
+  const int num_constraints = sleqp_mat_num_rows(cons_jac);
 
   cauchy_data->trust_radius = trust_radius;
 
@@ -514,7 +508,7 @@ switch_to_reduced_problem(CauchyData* cauchy_data)
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
 
   if (!cauchy_data->reduced_interface)
   {

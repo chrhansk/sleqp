@@ -106,13 +106,13 @@ mex_array_to_vec(const mxArray* array, SleqpParams* params, SleqpVec* vec)
 }
 
 static SLEQP_RETCODE
-array_to_sparse_matrix(const mxArray* array, SleqpSparseMatrix* matrix)
+array_to_sparse_matrix(const mxArray* array, SleqpMat* matrix)
 {
   MEX_EXPECT_DOUBLE(array);
   MEX_EXPECT_SPARSE(array);
 
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
 
   MEX_EXPECT_SHAPE(array, num_rows, num_cols);
 
@@ -126,7 +126,7 @@ array_to_sparse_matrix(const mxArray* array, SleqpSparseMatrix* matrix)
 
   const int nnz = jc[num_cols];
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(matrix, nnz));
+  SLEQP_CALL(sleqp_mat_reserve(matrix, nnz));
 
   assert(jc[0] == 0);
 
@@ -134,7 +134,7 @@ array_to_sparse_matrix(const mxArray* array, SleqpSparseMatrix* matrix)
 
   for (mwIndex col = 0; col < num_cols; ++col)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(matrix, col));
+    SLEQP_CALL(sleqp_mat_push_col(matrix, col));
 
     assert(jc[col] <= jc[col + 1]);
 
@@ -143,7 +143,7 @@ array_to_sparse_matrix(const mxArray* array, SleqpSparseMatrix* matrix)
       const mwIndex row  = ir[index];
       const double value = pr[index];
 
-      SLEQP_CALL(sleqp_sparse_matrix_push(matrix, row, col, value));
+      SLEQP_CALL(sleqp_mat_push(matrix, row, col, value));
     }
   }
 
@@ -154,7 +154,7 @@ SLEQP_RETCODE
 mex_eval_into_sparse_matrix(int nrhs,
                             mxArray** rhs,
                             SleqpParams* params,
-                            SleqpSparseMatrix* matrix)
+                            SleqpMat* matrix)
 {
   mxArray* lhs[] = {NULL};
 
