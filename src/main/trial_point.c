@@ -792,9 +792,9 @@ refine_iterate(SleqpTrialPointSolver* solver,
 
   double obj_val;
 
-  SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  SleqpVec* cons_val          = sleqp_iterate_cons_val(iterate);
+  SleqpVec* obj_grad = sleqp_iterate_obj_grad(iterate);
+  SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpVec* cons_val = sleqp_iterate_cons_val(iterate);
 
   SLEQP_CALL(
     sleqp_problem_eval(problem, &obj_val, obj_grad, cons_val, cons_jac));

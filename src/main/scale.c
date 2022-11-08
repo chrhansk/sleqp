@@ -360,15 +360,15 @@ sleqp_scale_cons_linear(SleqpScaling* scaling, SleqpVec* linear_val)
 }
 
 SLEQP_RETCODE
-sleqp_scale_cons_jac(SleqpScaling* scaling, SleqpSparseMatrix* cons_jac)
+sleqp_scale_cons_jac(SleqpScaling* scaling, SleqpMat* cons_jac)
 {
   int col = 0;
 
-  const int* cons_jac_cols = sleqp_sparse_matrix_cols(cons_jac);
-  const int* cons_jac_rows = sleqp_sparse_matrix_rows(cons_jac);
-  double* cons_jac_data    = sleqp_sparse_matrix_data(cons_jac);
+  const int* cons_jac_cols = sleqp_mat_cols(cons_jac);
+  const int* cons_jac_rows = sleqp_mat_rows(cons_jac);
+  double* cons_jac_data    = sleqp_mat_data(cons_jac);
 
-  int cons_jac_nnz = sleqp_sparse_matrix_nnz(cons_jac);
+  int cons_jac_nnz = sleqp_mat_nnz(cons_jac);
 
   for (int index = 0; index < cons_jac_nnz; ++index)
   {
@@ -388,20 +388,19 @@ sleqp_scale_cons_jac(SleqpScaling* scaling, SleqpSparseMatrix* cons_jac)
 }
 
 SLEQP_RETCODE
-sleqp_scale_linear_coeffs(SleqpScaling* scaling,
-                          SleqpSparseMatrix* linear_coeffs)
+sleqp_scale_linear_coeffs(SleqpScaling* scaling, SleqpMat* linear_coeffs)
 {
   int col = 0;
 
-  const int num_linear = sleqp_sparse_matrix_num_rows(linear_coeffs);
+  const int num_linear = sleqp_mat_num_rows(linear_coeffs);
 
   assert(num_linear <= scaling->num_constraints);
 
-  const int* linear_coeffs_cols = sleqp_sparse_matrix_cols(linear_coeffs);
-  const int* linear_coeffs_rows = sleqp_sparse_matrix_rows(linear_coeffs);
-  double* linear_coeffs_data    = sleqp_sparse_matrix_data(linear_coeffs);
+  const int* linear_coeffs_cols = sleqp_mat_cols(linear_coeffs);
+  const int* linear_coeffs_rows = sleqp_mat_rows(linear_coeffs);
+  double* linear_coeffs_data    = sleqp_mat_data(linear_coeffs);
 
-  int linear_coeffs_nnz = sleqp_sparse_matrix_nnz(linear_coeffs);
+  int linear_coeffs_nnz = sleqp_mat_nnz(linear_coeffs);
 
   for (int index = 0; index < linear_coeffs_nnz; ++index)
   {
@@ -528,16 +527,15 @@ sleqp_unscale_cons_val(SleqpScaling* scaling, SleqpVec* scaled_cons_val)
 }
 
 SLEQP_RETCODE
-sleqp_unscale_cons_jac(SleqpScaling* scaling,
-                       SleqpSparseMatrix* scaled_cons_jac)
+sleqp_unscale_cons_jac(SleqpScaling* scaling, SleqpMat* scaled_cons_jac)
 {
   int col = 0;
 
-  const int* cons_jac_cols = sleqp_sparse_matrix_cols(scaled_cons_jac);
-  const int* cons_jac_rows = sleqp_sparse_matrix_rows(scaled_cons_jac);
-  double* cons_jac_data    = sleqp_sparse_matrix_data(scaled_cons_jac);
+  const int* cons_jac_cols = sleqp_mat_cols(scaled_cons_jac);
+  const int* cons_jac_rows = sleqp_mat_rows(scaled_cons_jac);
+  double* cons_jac_data    = sleqp_mat_data(scaled_cons_jac);
 
-  int cons_jac_nnz = sleqp_sparse_matrix_nnz(scaled_cons_jac);
+  int cons_jac_nnz = sleqp_mat_nnz(scaled_cons_jac);
 
   for (int index = 0; index < cons_jac_nnz; ++index)
   {
@@ -671,7 +669,7 @@ sleqp_obj_scaling_from_grad(SleqpScaling* scaling,
 
 static SLEQP_RETCODE
 compute_scale_factors(SleqpScaling* scaling,
-                      SleqpSparseMatrix* matrix,
+                      SleqpMat* matrix,
                       bool column,
                       int* scaling_factors,
                       int* prescaling,
@@ -679,8 +677,8 @@ compute_scale_factors(SleqpScaling* scaling,
 {
   double* max_vals = scaling->max_cache;
 
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
 
   int size = (column) ? num_cols : num_rows;
 
@@ -693,11 +691,11 @@ compute_scale_factors(SleqpScaling* scaling,
 
   int col = 0;
 
-  const int* matrix_cols = sleqp_sparse_matrix_cols(matrix);
-  const int* matrix_rows = sleqp_sparse_matrix_rows(matrix);
-  double* matrix_data    = sleqp_sparse_matrix_data(matrix);
+  const int* matrix_cols = sleqp_mat_cols(matrix);
+  const int* matrix_rows = sleqp_mat_rows(matrix);
+  double* matrix_data    = sleqp_mat_data(matrix);
 
-  int matrix_nnz = sleqp_sparse_matrix_nnz(matrix);
+  int matrix_nnz = sleqp_mat_nnz(matrix);
 
   for (int index = 0; index < matrix_nnz; ++index)
   {
@@ -748,21 +746,21 @@ compute_scale_factors(SleqpScaling* scaling,
 
 static double
 max_matrix_ratio(SleqpScaling* scaling,
-                 SleqpSparseMatrix* matrix,
+                 SleqpMat* matrix,
                  bool column,
                  double eps)
 {
   double* min_vals = scaling->min_cache;
   double* max_vals = scaling->max_cache;
 
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
 
-  const int* matrix_cols = sleqp_sparse_matrix_cols(matrix);
-  const int* matrix_rows = sleqp_sparse_matrix_rows(matrix);
-  double* matrix_data    = sleqp_sparse_matrix_data(matrix);
+  const int* matrix_cols = sleqp_mat_cols(matrix);
+  const int* matrix_rows = sleqp_mat_rows(matrix);
+  double* matrix_data    = sleqp_mat_data(matrix);
 
-  const int matrix_nnz = sleqp_sparse_matrix_nnz(matrix);
+  const int matrix_nnz = sleqp_mat_nnz(matrix);
 
   int size = (column) ? num_cols : num_rows;
 
@@ -816,7 +814,7 @@ max_matrix_ratio(SleqpScaling* scaling,
 
 SLEQP_RETCODE
 sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
-                            SleqpSparseMatrix* cons_jac,
+                            SleqpMat* cons_jac,
                             double eps)
 {
   SLEQP_CALL(sleqp_scaling_reset(scaling));

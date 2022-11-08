@@ -87,7 +87,7 @@ dyn_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* data)
 }
 
 static SLEQP_RETCODE
-dyn_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
+dyn_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* data)
 {
   SLEQP_CALL(sleqp_func_cons_jac(constrained_func, cons_jac));
 

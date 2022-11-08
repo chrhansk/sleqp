@@ -11,7 +11,7 @@
 #include "problem.h"
 #include "types.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "sparse/vec.h"
 
 SLEQP_NODISCARD
@@ -58,7 +58,6 @@ sleqp_signed_feasibility_residuals(SleqpProblem* problem,
                                    const SleqpVec* cons_val,
                                    SleqpVec* residuals,
                                    SleqpWorkingSet* working_set);
-
 
 /**
  * Compute the maximum violation of the given constraint values, i.e.,

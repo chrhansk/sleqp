@@ -87,7 +87,7 @@ sleqp_func_eval(SleqpFunc* func,
                 double* obj,
                 SleqpVec* obj_grad,
                 SleqpVec* cons_val,
-                SleqpSparseMatrix* cons_jac);
+                SleqpMat* cons_jac);
 
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_obj_val(SleqpFunc* func, double* obj);
@@ -99,7 +99,7 @@ SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_func_cons_val(SleqpFunc* func, SleqpVec* cons_val);
 
 SLEQP_NODISCARD SLEQP_RETCODE
-sleqp_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac);
+sleqp_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac);
 
 SLEQP_FUNC_FLAGS
 sleqp_func_flags(const SleqpFunc* func);

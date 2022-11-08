@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "types.h"
 
 typedef struct HSLMatrix
@@ -20,7 +20,7 @@ typedef struct HSLMatrix
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-hsl_matrix_set(HSLMatrix* hsl_matrix, SleqpSparseMatrix* matrix);
+hsl_matrix_set(HSLMatrix* hsl_matrix, SleqpMat* matrix);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

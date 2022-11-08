@@ -11,7 +11,7 @@
 #include "options.h"
 #include "params.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "sparse/vec.h"
 
 typedef enum
@@ -55,7 +55,7 @@ typedef SLEQP_RETCODE (*SLEQP_LPI_SET_BOUNDS)(void* lp_data,
 typedef SLEQP_RETCODE (*SLEQP_LPI_SET_COEFFS)(void* lp_data,
                                               int num_variables,
                                               int num_constraints,
-                                              SleqpSparseMatrix* cons_matrix);
+                                              SleqpMat* cons_matrix);
 
 typedef SLEQP_RETCODE (*SLEQP_LPI_SET_OBJ)(void* lp_data,
                                            int num_variables,

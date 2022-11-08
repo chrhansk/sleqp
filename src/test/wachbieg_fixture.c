@@ -5,7 +5,7 @@
 #include "cmp.h"
 #include "mem.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 const int wachbieg_num_variables   = 3;
 const int wachbieg_num_constraints = 2;
@@ -110,23 +110,23 @@ wachbieg_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 SLEQP_RETCODE
-wachbieg_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
+wachbieg_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   const double x0 = wachbieg_data.x[0];
 
-  SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
+  SLEQP_CALL(sleqp_mat_clear(cons_jac));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 0, 2 * x0));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 0, 2 * x0));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 0, 1.));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 1, 0, 1.));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
+  SLEQP_CALL(sleqp_mat_push_col(cons_jac, 1));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, -1.));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 1, -1.));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 2));
+  SLEQP_CALL(sleqp_mat_push_col(cons_jac, 2));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 2, -1.));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 1, 2, -1.));
 
   return SLEQP_OKAY;
 }

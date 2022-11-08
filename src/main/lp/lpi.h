@@ -59,7 +59,7 @@ sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_lpi_set_coeffs(SleqpLPi* lp_interface, SleqpSparseMatrix* coeff_matrix);
+sleqp_lpi_set_coeffs(SleqpLPi* lp_interface, SleqpMat* coeff_matrix);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

@@ -101,7 +101,7 @@ degraded_func_create(SleqpFunc** fstar)
 }
 
 SLEQP_RETCODE
-linear_cons_create(SleqpSparseMatrix** cstar,
+linear_cons_create(SleqpMat** cstar,
                    SleqpVec** lbstar,
                    SleqpVec** ubstar,
                    bool swapped)
@@ -113,14 +113,12 @@ linear_cons_create(SleqpSparseMatrix** cstar,
 
   const int nnz = DEGRADED_NUM_LINEAR * DEGRADED_NUM_VARS;
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(cstar,
-                                        DEGRADED_NUM_LINEAR,
-                                        DEGRADED_NUM_VARS,
-                                        nnz));
+  SLEQP_CALL(
+    sleqp_mat_create(cstar, DEGRADED_NUM_LINEAR, DEGRADED_NUM_VARS, nnz));
 
-  SleqpVec* linear_lb              = *lbstar;
-  SleqpVec* linear_ub              = *ubstar;
-  SleqpSparseMatrix* linear_coeffs = *cstar;
+  SleqpVec* linear_lb     = *lbstar;
+  SleqpVec* linear_ub     = *ubstar;
+  SleqpMat* linear_coeffs = *cstar;
 
   if (swapped)
   {
@@ -139,27 +137,27 @@ linear_cons_create(SleqpSparseMatrix** cstar,
 
   if (swapped)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 0, 0, -1.));
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 1, 0, -1.));
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 2, 0, 1.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 0, 0, -1.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 1, 0, -1.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 2, 0, 1.));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(linear_coeffs, 1));
+    SLEQP_CALL(sleqp_mat_push_col(linear_coeffs, 1));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 0, 1, 2.));
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 1, 1, -2.));
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 2, 1, -2.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 0, 1, 2.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 1, 1, -2.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 2, 1, -2.));
   }
   else
   {
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 0, 0, 1.));
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 1, 0, -1.));
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 2, 0, -1.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 0, 0, 1.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 1, 0, -1.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 2, 0, -1.));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(linear_coeffs, 1));
+    SLEQP_CALL(sleqp_mat_push_col(linear_coeffs, 1));
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 0, 1, -2.));
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 1, 1, -2.));
-    SLEQP_CALL(sleqp_sparse_matrix_push(linear_coeffs, 2, 1, 2.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 0, 1, -2.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 1, 1, -2.));
+    SLEQP_CALL(sleqp_mat_push(linear_coeffs, 2, 1, 2.));
   }
 
   return SLEQP_OKAY;
@@ -177,7 +175,7 @@ degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
 
   SleqpVec* linear_lb;
   SleqpVec* linear_ub;
-  SleqpSparseMatrix* linear_coeffs;
+  SleqpMat* linear_coeffs;
 
   const double inf = sleqp_infinity();
 
@@ -205,7 +203,7 @@ degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
                                   linear_lb,
                                   linear_ub));
 
-  SLEQP_CALL(sleqp_sparse_matrix_release(&linear_coeffs));
+  SLEQP_CALL(sleqp_mat_release(&linear_coeffs));
   SLEQP_CALL(sleqp_vec_free(&linear_ub));
   SLEQP_CALL(sleqp_vec_free(&linear_lb));
 

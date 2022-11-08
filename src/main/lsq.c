@@ -7,8 +7,8 @@
 #include "func.h"
 #include "log.h"
 #include "mem.h"
+#include "sparse/mat.h"
 #include "sparse/pub_vec.h"
-#include "sparse/sparse_matrix.h"
 
 typedef struct SleqpLSQData
 {
@@ -188,13 +188,13 @@ lsq_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-lsq_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
+lsq_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   SleqpLSQData* lsq_data = (SleqpLSQData*)func_data;
 
   const int num_constraints = sleqp_func_num_cons(func);
 
-  SLEQP_CALL(sleqp_sparse_matrix_clear(cons_jac));
+  SLEQP_CALL(sleqp_mat_clear(cons_jac));
 
   if (num_constraints != 0)
   {

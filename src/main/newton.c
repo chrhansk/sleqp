@@ -14,7 +14,7 @@
 #include "util.h"
 #include "working_set.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 #include "tr/steihaug_solver.h"
 #include "tr/tr_solver.h"
@@ -371,8 +371,8 @@ compute_gradient(NewtonSolver* solver, const SleqpVec* multipliers)
 
   const double penalty_parameter = solver->penalty_parameter;
 
-  SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
+  SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
+  SleqpVec* obj_grad = sleqp_iterate_obj_grad(iterate);
 
   SleqpVec* violated_cons_mult
     = sleqp_working_step_violated_cons_multipliers(solver->working_step);
@@ -382,11 +382,10 @@ compute_gradient(NewtonSolver* solver, const SleqpVec* multipliers)
   SLEQP_CALL(
     sleqp_vec_add(initial_hess, obj_grad, zero_eps, solver->sparse_cache));
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_trans_vector_product(cons_jac,
-                                             violated_cons_mult,
-                                             zero_eps,
-                                             solver->jacobian_product));
+  SLEQP_CALL(sleqp_mat_mult_vec_trans(cons_jac,
+                                      violated_cons_mult,
+                                      zero_eps,
+                                      solver->jacobian_product));
 
   SLEQP_CALL(sleqp_vec_add_scaled(solver->sparse_cache,
                                   solver->jacobian_product,

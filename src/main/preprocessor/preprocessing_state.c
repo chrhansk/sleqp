@@ -168,11 +168,11 @@ sleqp_preprocessing_state_add_forcing_constraint(SleqpPreprocessingState* state,
 
   assert(linear_states[constraint].state == SLEQP_CONS_UNCHANGED);
 
-  const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+  const SleqpMat* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  double* linear_data = sleqp_sparse_matrix_data(linear_coeffs);
-  int* linear_rows    = sleqp_sparse_matrix_rows(linear_coeffs);
-  int* linear_cols    = sleqp_sparse_matrix_cols(linear_coeffs);
+  double* linear_data = sleqp_mat_data(linear_coeffs);
+  int* linear_rows    = sleqp_mat_rows(linear_coeffs);
+  int* linear_cols    = sleqp_mat_cols(linear_coeffs);
 
   int num_coeffs = 0;
 

@@ -5,7 +5,7 @@
 #include "cmp.h"
 #include "log.h"
 #include "mem.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 #include "quasi_newton.h"
 
@@ -373,11 +373,11 @@ sr1_push(const SleqpIterate* previous_iterate,
 
   // Compute gradient difference
   {
-    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(
-      sleqp_iterate_cons_jac(previous_iterate),
-      multipliers,
-      zero_eps,
-      sr1->prod_cache));
+    SLEQP_CALL(
+      sleqp_mat_mult_vec_trans(sleqp_iterate_cons_jac(previous_iterate),
+                               multipliers,
+                               zero_eps,
+                               sr1->prod_cache));
 
     SLEQP_CALL(sleqp_vec_add(sr1->prod_cache,
                              sleqp_iterate_obj_grad(previous_iterate),
@@ -386,11 +386,10 @@ sr1_push(const SleqpIterate* previous_iterate,
   }
 
   {
-    SLEQP_CALL(sleqp_sparse_matrix_trans_vector_product(
-      sleqp_iterate_cons_jac(current_iterate),
-      multipliers,
-      zero_eps,
-      sr1->prod_cache));
+    SLEQP_CALL(sleqp_mat_mult_vec_trans(sleqp_iterate_cons_jac(current_iterate),
+                                        multipliers,
+                                        zero_eps,
+                                        sr1->prod_cache));
 
     SLEQP_CALL(sleqp_vec_add(sr1->prod_cache,
                              sleqp_iterate_obj_grad(current_iterate),

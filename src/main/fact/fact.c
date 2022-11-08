@@ -57,13 +57,13 @@ sleqp_factorization_version(SleqpFact* factorization)
 }
 
 SLEQP_RETCODE
-sleqp_fact_set_matrix(SleqpFact* factorization, SleqpSparseMatrix* matrix)
+sleqp_fact_set_matrix(SleqpFact* factorization, SleqpMat* matrix)
 {
 #if SLEQP_DEBUG
   {
     if (factorization->flags & SLEQP_FACT_FLAGS_LOWER)
     {
-      assert(sleqp_sparse_matrix_is_lower(matrix));
+      assert(sleqp_mat_is_lower(matrix));
     }
   }
 #endif

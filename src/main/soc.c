@@ -5,7 +5,7 @@
 #include "mem.h"
 #include "working_set.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 struct SleqpSOC
 {

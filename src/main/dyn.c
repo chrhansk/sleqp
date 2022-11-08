@@ -177,7 +177,7 @@ dyn_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-dyn_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
+dyn_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   DynFuncData* data = (DynFuncData*)func_data;
 

@@ -220,7 +220,7 @@ dyn_func_set_cons_weights(SleqpFunc* func,
 }
 
 static SLEQP_RETCODE
-dyn_func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* data)
+dyn_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* data)
 {
   DynFuncData* func_data = (DynFuncData*)data;
 

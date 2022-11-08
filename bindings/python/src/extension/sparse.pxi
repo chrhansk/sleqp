@@ -92,7 +92,7 @@ def matrix_iterator(matrix):
   return CSCIterator(matrix)
 
 cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
-                                                        csleqp.SleqpSparseMatrix* matrix) \
+                                                        csleqp.SleqpMat* matrix) \
                                                         except csleqp.SLEQP_ERROR:
   assert matrix
 
@@ -101,8 +101,8 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
 
   assert mat.ndim == 2
 
-  num_rows = csleqp.sleqp_sparse_matrix_num_rows(matrix)
-  num_cols = csleqp.sleqp_sparse_matrix_num_cols(matrix)
+  num_rows = csleqp.sleqp_mat_num_rows(matrix)
+  num_cols = csleqp.sleqp_mat_num_cols(matrix)
 
   assert mat.shape == (num_rows, num_cols)
 
@@ -116,23 +116,23 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
   for (row, col), data in matrix_iter:
     while last_col != col:
       last_col += 1
-      csleqp_call(csleqp.sleqp_sparse_matrix_push_column(matrix, last_col))
+      csleqp_call(csleqp.sleqp_mat_push_col(matrix, last_col))
 
-    nnz = csleqp.sleqp_sparse_matrix_nnz(matrix)
-    nnz_max = csleqp.sleqp_sparse_matrix_nnz_max(matrix)
+    nnz = csleqp.sleqp_mat_nnz(matrix)
+    nnz_max = csleqp.sleqp_mat_nnz_max(matrix)
 
     if nnz == nnz_max:
       print("Matrix is full. reserving {0}".format(matrix_iter.length_bound()))
-      csleqp_call(csleqp.sleqp_sparse_matrix_reserve(matrix,
+      csleqp_call(csleqp.sleqp_mat_reserve(matrix,
                                                      matrix_iter.length_bound()))
 
-    csleqp_call(csleqp.sleqp_sparse_matrix_push(matrix,
+    csleqp_call(csleqp.sleqp_mat_push(matrix,
                                                 row,
                                                 col,
                                                 data))
 
-  while last_col < csleqp.sleqp_sparse_matrix_num_cols(matrix) - 1:
+  while last_col < csleqp.sleqp_mat_num_cols(matrix) - 1:
     last_col += 1
-    csleqp_call(csleqp.sleqp_sparse_matrix_push_column(matrix, last_col))
+    csleqp_call(csleqp.sleqp_mat_push_col(matrix, last_col))
 
   return csleqp.SLEQP_OKAY

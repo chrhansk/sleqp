@@ -36,7 +36,7 @@ sleqp_fact_version(SleqpFact* factorization);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_fact_set_matrix(SleqpFact* factorization, SleqpSparseMatrix* matrix);
+sleqp_fact_set_matrix(SleqpFact* factorization, SleqpMat* matrix);
 
 SLEQP_FACT_FLAGS
 sleqp_fact_flags(SleqpFact* factorization);

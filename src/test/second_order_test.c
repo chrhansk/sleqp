@@ -92,18 +92,18 @@ func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-func_cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
+func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   FuncData* data = (FuncData*)func_data;
 
   const double x = data->values[0];
   const double y = data->values[1];
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 0, 2 * x));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 0, 2 * x));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
+  SLEQP_CALL(sleqp_mat_push_col(cons_jac, 1));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 2 * y));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 1, 2 * y));
 
   return SLEQP_OKAY;
 }

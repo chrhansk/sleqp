@@ -75,14 +75,14 @@ compute_cons_counts(SleqpPreprocessor* preprocessor)
   const int num_variables          = sleqp_problem_num_vars(problem);
   const int num_linear_constraints = sleqp_problem_num_lin_cons(problem);
 
-  const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+  const SleqpMat* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  assert(sleqp_sparse_matrix_num_rows(linear_coeffs) == num_linear_constraints);
-  assert(sleqp_sparse_matrix_num_cols(linear_coeffs) == num_variables);
+  assert(sleqp_mat_num_rows(linear_coeffs) == num_linear_constraints);
+  assert(sleqp_mat_num_cols(linear_coeffs) == num_variables);
 
-  double* linear_data = sleqp_sparse_matrix_data(linear_coeffs);
-  int* linear_rows    = sleqp_sparse_matrix_rows(linear_coeffs);
-  int* linear_cols    = sleqp_sparse_matrix_cols(linear_coeffs);
+  double* linear_data = sleqp_mat_data(linear_coeffs);
+  int* linear_rows    = sleqp_mat_rows(linear_coeffs);
+  int* linear_cols    = sleqp_mat_cols(linear_coeffs);
 
   for (int i = 0; i < num_linear_constraints; ++i)
   {
@@ -187,14 +187,14 @@ compute_variable_bounds(SleqpPreprocessor* preprocessor)
     preprocessor->var_max[j] = preprocessor->var_ub[j];
   }
 
-  const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+  const SleqpMat* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  assert(sleqp_sparse_matrix_num_rows(linear_coeffs) == num_linear);
-  assert(sleqp_sparse_matrix_num_cols(linear_coeffs) == num_variables);
+  assert(sleqp_mat_num_rows(linear_coeffs) == num_linear);
+  assert(sleqp_mat_num_cols(linear_coeffs) == num_variables);
 
-  double* linear_data = sleqp_sparse_matrix_data(linear_coeffs);
-  int* linear_rows    = sleqp_sparse_matrix_rows(linear_coeffs);
-  int* linear_cols    = sleqp_sparse_matrix_cols(linear_coeffs);
+  double* linear_data = sleqp_mat_data(linear_coeffs);
+  int* linear_rows    = sleqp_mat_rows(linear_coeffs);
+  int* linear_cols    = sleqp_mat_cols(linear_coeffs);
 
   for (int col = 0; col < num_variables; ++col)
   {
@@ -266,14 +266,14 @@ compute_linear_bounds(SleqpPreprocessor* preprocessor)
   const int num_variables = sleqp_problem_num_vars(problem);
   const int num_linear    = sleqp_problem_num_lin_cons(problem);
 
-  const SleqpSparseMatrix* linear_coeffs = sleqp_problem_linear_coeffs(problem);
+  const SleqpMat* linear_coeffs = sleqp_problem_linear_coeffs(problem);
 
-  assert(sleqp_sparse_matrix_num_rows(linear_coeffs) == num_linear);
-  assert(sleqp_sparse_matrix_num_cols(linear_coeffs) == num_variables);
+  assert(sleqp_mat_num_rows(linear_coeffs) == num_linear);
+  assert(sleqp_mat_num_cols(linear_coeffs) == num_variables);
 
-  double* linear_data = sleqp_sparse_matrix_data(linear_coeffs);
-  int* linear_rows    = sleqp_sparse_matrix_rows(linear_coeffs);
-  int* linear_cols    = sleqp_sparse_matrix_cols(linear_coeffs);
+  double* linear_data = sleqp_mat_data(linear_coeffs);
+  int* linear_rows    = sleqp_mat_rows(linear_coeffs);
+  int* linear_cols    = sleqp_mat_cols(linear_coeffs);
 
   const double inf = sleqp_infinity();
 

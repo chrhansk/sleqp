@@ -4,12 +4,12 @@
 #include "func.h"
 #include "pub_types.h"
 #include "quadcons_fixture.h"
-#include "sparse/pub_sparse_matrix.h"
+#include "sparse/pub_mat.h"
 #include "sparse/pub_vec.h"
 #include "test_common.h"
 
 #include "mem.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "util.h"
 
 #include "preprocessor/fixed_var_func.h"
@@ -35,8 +35,8 @@ SleqpVec* fixed_grad;
 SleqpVec* cons_val;
 SleqpVec* fixed_cons_val;
 
-SleqpSparseMatrix* cons_jac;
-SleqpSparseMatrix* fixed_cons_jac;
+SleqpMat* cons_jac;
+SleqpMat* fixed_cons_jac;
 
 SleqpVec* direction;
 SleqpVec* fixed_direction;
@@ -85,13 +85,12 @@ setup()
 
   ASSERT_CALL(sleqp_vec_create_full(&fixed_cons_val, num_constraints));
 
-  ASSERT_CALL(sleqp_sparse_matrix_create(&cons_jac,
-                                         num_constraints,
-                                         num_variables,
-                                         num_variables * num_constraints));
+  ASSERT_CALL(sleqp_mat_create(&cons_jac,
+                               num_constraints,
+                               num_variables,
+                               num_variables * num_constraints));
 
-  ASSERT_CALL(
-    sleqp_sparse_matrix_create(&fixed_cons_jac,
+  ASSERT_CALL(sleqp_mat_create(&fixed_cons_jac,
                                num_constraints,
                                num_variables - num_fixed,
                                (num_variables - num_fixed) * num_constraints));
@@ -130,8 +129,8 @@ teardown()
   ASSERT_CALL(sleqp_vec_free(&fixed_direction));
   ASSERT_CALL(sleqp_vec_free(&direction));
 
-  ASSERT_CALL(sleqp_sparse_matrix_release(&fixed_cons_jac));
-  ASSERT_CALL(sleqp_sparse_matrix_release(&cons_jac));
+  ASSERT_CALL(sleqp_mat_release(&fixed_cons_jac));
+  ASSERT_CALL(sleqp_mat_release(&cons_jac));
 
   ASSERT_CALL(sleqp_vec_free(&fixed_cons_val));
   ASSERT_CALL(sleqp_vec_free(&cons_val));
@@ -255,8 +254,8 @@ START_TEST(test_cons_jac)
 
   for (int i = 0; i < num_constraints; ++i)
   {
-    ck_assert(sleqp_sparse_matrix_value_at(cons_jac, i, 1)
-              == sleqp_sparse_matrix_value_at(fixed_cons_jac, i, 0));
+    ck_assert(sleqp_mat_value_at(cons_jac, i, 1)
+              == sleqp_mat_value_at(fixed_cons_jac, i, 0));
   }
 }
 END_TEST

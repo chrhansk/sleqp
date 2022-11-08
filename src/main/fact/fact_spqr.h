@@ -9,7 +9,7 @@
 #include "fact.h"
 #include "fact_qr.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

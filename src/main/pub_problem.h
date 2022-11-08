@@ -5,7 +5,7 @@
 
 #include "sleqp/pub_func.h"
 #include "sleqp/pub_params.h"
-#include "sparse/pub_sparse_matrix.h"
+#include "sparse/pub_mat.h"
 #include "sparse/pub_vec.h"
 
 /**
@@ -99,7 +99,7 @@ sleqp_problem_create(SleqpProblem** star,
                      const SleqpVec* var_ub,
                      const SleqpVec* genereal_lb,
                      const SleqpVec* genereal_ub,
-                     const SleqpSparseMatrix* linear_coeffs,
+                     const SleqpMat* linear_coeffs,
                      const SleqpVec* linear_lb,
                      const SleqpVec* linear_ub);
 
@@ -169,7 +169,7 @@ sleqp_problem_general_ub(SleqpProblem* problem);
 /**
  * Returns the linear coefficient matrix \f$ A \f$ of the problem.
  **/
-SLEQP_EXPORT SleqpSparseMatrix*
+SLEQP_EXPORT SleqpMat*
 sleqp_problem_linear_coeffs(SleqpProblem* problem);
 
 /**

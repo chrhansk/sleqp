@@ -1,7 +1,7 @@
 #ifndef SLEQP_PREPROCESSING_H
 #define SLEQP_PREPROCESSING_H
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "sparse/vec.h"
 
 SLEQP_RETCODE

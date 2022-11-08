@@ -203,7 +203,7 @@ cdef extern from "sleqp.h":
     int nnz
     int nnz_max
 
-  ctypedef struct SleqpSparseMatrix:
+  ctypedef struct SleqpMat:
     pass
 
   ctypedef struct SleqpProblem:
@@ -272,43 +272,43 @@ cdef extern from "sleqp.h":
                                          double value)
 
   # Sparse matrices
-  SLEQP_RETCODE sleqp_sparse_matrix_create(SleqpSparseMatrix** matrix,
+  SLEQP_RETCODE sleqp_mat_create(SleqpMat** matrix,
                                            int num_rows,
                                            int num_cols,
                                            int nnz_max)
 
-  SLEQP_RETCODE sleqp_sparse_matrix_reserve(SleqpSparseMatrix* matrix,
+  SLEQP_RETCODE sleqp_mat_reserve(SleqpMat* matrix,
                                             int nnz)
 
-  SLEQP_RETCODE sleqp_sparse_matrix_resize(SleqpSparseMatrix* matrix,
+  SLEQP_RETCODE sleqp_mat_resize(SleqpMat* matrix,
                                            int num_rows,
                                            int num_cols)
 
-  int sleqp_sparse_matrix_num_cols(SleqpSparseMatrix* matrix)
+  int sleqp_mat_num_cols(SleqpMat* matrix)
 
-  int sleqp_sparse_matrix_num_rows(SleqpSparseMatrix* matrix)
+  int sleqp_mat_num_rows(SleqpMat* matrix)
 
-  int sleqp_sparse_matrix_nnz(SleqpSparseMatrix* matrix)
+  int sleqp_mat_nnz(SleqpMat* matrix)
 
-  int sleqp_sparse_matrix_nnz_max(SleqpSparseMatrix* matrix)
+  int sleqp_mat_nnz_max(SleqpMat* matrix)
 
-  double* sleqp_sparse_matrix_data(SleqpSparseMatrix* matrix)
+  double* sleqp_mat_data(SleqpMat* matrix)
 
-  int* sleqp_sparse_matrix_cols(SleqpSparseMatrix* matrix)
+  int* sleqp_mat_cols(SleqpMat* matrix)
 
-  int* sleqp_sparse_matrix_rows(SleqpSparseMatrix* matrix)
+  int* sleqp_mat_rows(SleqpMat* matrix)
 
-  SLEQP_RETCODE sleqp_sparse_matrix_push(SleqpSparseMatrix* matrix,
+  SLEQP_RETCODE sleqp_mat_push(SleqpMat* matrix,
                                          int row,
                                          int col,
                                          double value)
 
-  SLEQP_RETCODE sleqp_sparse_matrix_push_column(SleqpSparseMatrix* matrix,
+  SLEQP_RETCODE sleqp_mat_push_col(SleqpMat* matrix,
                                                 int col)
 
-  SLEQP_RETCODE sleqp_sparse_matrix_capture(SleqpSparseMatrix* matrix)
+  SLEQP_RETCODE sleqp_mat_capture(SleqpMat* matrix)
 
-  SLEQP_RETCODE sleqp_sparse_matrix_release(SleqpSparseMatrix** matrix)
+  SLEQP_RETCODE sleqp_mat_release(SleqpMat** matrix)
 
   # Functions
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_SET)(SleqpFunc* func,
@@ -337,7 +337,7 @@ cdef extern from "sleqp.h":
                                                 void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
-                                                SleqpSparseMatrix* cons_jac,
+                                                SleqpMat* cons_jac,
                                                 void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_HESS_PROD)(SleqpFunc* func,
@@ -418,7 +418,7 @@ cdef extern from "sleqp.h":
 
   SleqpVec* sleqp_iterate_cons_val(SleqpIterate* iterate)
 
-  SleqpSparseMatrix* sleqp_iterate_cons_jac(SleqpIterate* iterate)
+  SleqpMat* sleqp_iterate_cons_jac(SleqpIterate* iterate)
 
   SleqpWorkingSet* sleqp_iterate_working_set(SleqpIterate* iterate)
 
@@ -584,7 +584,7 @@ cdef extern from "sleqp.h":
                                             double eps)
 
   SLEQP_RETCODE sleqp_scaling_from_cons_jac(SleqpScaling* scaling,
-                                            SleqpSparseMatrix* cons_jac,
+                                            SleqpMat* cons_jac,
                                             double eps)
 
   SLEQP_RETCODE sleqp_scaling_release(SleqpScaling** scaling)
@@ -661,7 +661,7 @@ cdef extern from "sleqp.h":
                                      const SleqpVec* var_ub,
                                      const SleqpVec* genereal_lb,
                                      const SleqpVec* genereal_ub,
-                                     const SleqpSparseMatrix* linear_coeffs,
+                                     const SleqpMat* linear_coeffs,
                                      const SleqpVec* linear_lb,
                                      const SleqpVec* linear_ub)
 

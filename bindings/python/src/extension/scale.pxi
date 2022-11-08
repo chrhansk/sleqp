@@ -20,7 +20,7 @@ cdef class Scaling:
   cdef dict __dict__
   cdef csleqp.SleqpScaling* scaling
   cdef csleqp.SleqpVec* gradient
-  cdef csleqp.SleqpSparseMatrix* cons_jac
+  cdef csleqp.SleqpMat* cons_jac
 
   def __cinit__(self,
                 int num_vars,
@@ -35,7 +35,7 @@ cdef class Scaling:
     csleqp_call(csleqp.sleqp_vec_create_empty(&self.gradient,
                                                         num_vars))
 
-    csleqp_call(csleqp.sleqp_sparse_matrix_create(&self.cons_jac,
+    csleqp_call(csleqp.sleqp_mat_create(&self.cons_jac,
                                                   num_cons,
                                                   num_vars,
                                                   0))
@@ -49,7 +49,7 @@ cdef class Scaling:
     return csleqp.sleqp_scaling_num_cons(self.scaling)
 
   def __dealloc__(self):
-    csleqp_call(csleqp.sleqp_sparse_matrix_release(&self.cons_jac))
+    csleqp_call(csleqp.sleqp_mat_release(&self.cons_jac))
     csleqp_call(csleqp.sleqp_vec_free(&self.gradient))
     csleqp_call(csleqp.sleqp_scaling_release(&self.scaling))
 

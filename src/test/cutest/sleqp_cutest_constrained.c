@@ -5,7 +5,7 @@
 #include "fail.h"
 #include "log.h"
 #include "mem.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 #include "sleqp_cutest_types.h"
 
@@ -291,9 +291,7 @@ cutest_cons_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-cutest_cons_cons_jac(SleqpFunc* func,
-                     SleqpSparseMatrix* cons_jac,
-                     void* func_data)
+cutest_cons_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
   int status;
@@ -322,10 +320,10 @@ cutest_cons_cons_jac(SleqpFunc* func,
 
   qsort(data->jac_indices, data->jac_nnz, sizeof(int), &jac_compare);
 
-  const int num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
+  const int num_cols = sleqp_mat_num_cols(cons_jac);
   int last_col       = 0;
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(cons_jac, data->jac_nnz));
+  SLEQP_CALL(sleqp_mat_reserve(cons_jac, data->jac_nnz));
 
   const int num_general = data->num_constraints - data->num_linear;
 
@@ -356,18 +354,18 @@ cutest_cons_cons_jac(SleqpFunc* func,
 
     while (col > last_col)
     {
-      SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, ++last_col));
+      SLEQP_CALL(sleqp_mat_push_col(cons_jac, ++last_col));
     }
 
     last_col = col;
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, row, col, val));
+    SLEQP_CALL(sleqp_mat_push(cons_jac, row, col, val));
   }
 
   ++last_col;
   while (num_cols > last_col)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, last_col++));
+    SLEQP_CALL(sleqp_mat_push_col(cons_jac, last_col++));
   }
 
   return SLEQP_OKAY;
@@ -404,14 +402,14 @@ sleqp_cutest_eval_linear(SleqpFunc* func, SleqpVec* linear)
 }
 
 SLEQP_RETCODE
-sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpSparseMatrix* coeffs)
+sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpMat* coeffs)
 {
   void* func_data          = sleqp_func_get_data(func);
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
   int status;
 
-  assert(sleqp_sparse_matrix_num_cols(coeffs) == data->num_variables);
-  assert(sleqp_sparse_matrix_num_rows(coeffs) == data->num_linear);
+  assert(sleqp_mat_num_cols(coeffs) == data->num_variables);
+  assert(sleqp_mat_num_rows(coeffs) == data->num_linear);
 
   CUTEST_csgr(&status,                // status flag
               &data->num_variables,   // number of variables
@@ -437,10 +435,10 @@ sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpSparseMatrix* coeffs)
 
   qsort(data->jac_indices, data->jac_nnz, sizeof(int), &jac_compare);
 
-  const int num_cols = sleqp_sparse_matrix_num_cols(coeffs);
+  const int num_cols = sleqp_mat_num_cols(coeffs);
   int last_col       = 0;
 
-  SLEQP_CALL(sleqp_sparse_matrix_reserve(coeffs, data->jac_nnz));
+  SLEQP_CALL(sleqp_mat_reserve(coeffs, data->jac_nnz));
 
   const int num_general = data->num_constraints - data->num_linear;
 
@@ -474,19 +472,19 @@ sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpSparseMatrix* coeffs)
 
     while (col > last_col)
     {
-      SLEQP_CALL(sleqp_sparse_matrix_push_column(coeffs, ++last_col));
+      SLEQP_CALL(sleqp_mat_push_col(coeffs, ++last_col));
     }
 
     last_col = col;
 
-    SLEQP_CALL(sleqp_sparse_matrix_push(coeffs, row, col, val));
+    SLEQP_CALL(sleqp_mat_push(coeffs, row, col, val));
   }
 
   ++last_col;
 
   while (num_cols > last_col)
   {
-    SLEQP_CALL(sleqp_sparse_matrix_push_column(coeffs, last_col++));
+    SLEQP_CALL(sleqp_mat_push_col(coeffs, last_col++));
   }
 
   return SLEQP_OKAY;
@@ -641,7 +639,7 @@ static SLEQP_RETCODE
 compute_linear_offset(SleqpFunc* func,
                       SleqpParams* params,
                       SleqpCutestData* data,
-                      const SleqpSparseMatrix* linear_coeffs,
+                      const SleqpMat* linear_coeffs,
                       SleqpVec* linear_offset)
 {
   SleqpVec* linear;
@@ -663,7 +661,7 @@ compute_linear_offset(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_cutest_eval_linear(func, linear));
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(linear_coeffs, x, raw_product));
+  SLEQP_CALL(sleqp_mat_mult_vec(linear_coeffs, x, raw_product));
 
   SLEQP_CALL(
     sleqp_vec_set_from_raw(product, raw_product, num_linear, zero_eps));
@@ -700,7 +698,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
   SleqpVec* cons_ub;
   SleqpFunc* func;
 
-  SleqpSparseMatrix* linear_coeffs;
+  SleqpMat* linear_coeffs;
   SleqpVec* sparse_cache;
   SleqpVec* linear_lb;
   SleqpVec* linear_ub;
@@ -729,8 +727,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
   SLEQP_CALL(
     sleqp_vec_set_from_raw(cons_ub, data->cons_ub, num_general, zero_eps));
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_create(&linear_coeffs, num_linear, num_variables, 0));
+  SLEQP_CALL(sleqp_mat_create(&linear_coeffs, num_linear, num_variables, 0));
 
   SLEQP_CALL(sleqp_cutest_cons_func_create(&func,
                                            num_variables,
@@ -783,7 +780,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
   SLEQP_CALL(sleqp_vec_free(&linear_ub));
   SLEQP_CALL(sleqp_vec_free(&linear_lb));
 
-  SLEQP_CALL(sleqp_sparse_matrix_release(&linear_coeffs));
+  SLEQP_CALL(sleqp_mat_release(&linear_coeffs));
 
   SLEQP_CALL(sleqp_vec_free(&sparse_cache));
 

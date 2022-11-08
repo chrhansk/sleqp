@@ -57,10 +57,10 @@ sleqp_qr_version(SleqpFactQR* fact)
 }
 
 SLEQP_RETCODE
-sleqp_qr_set_matrix(SleqpFactQR* fact, SleqpSparseMatrix* matrix)
+sleqp_qr_set_matrix(SleqpFactQR* fact, SleqpMat* matrix)
 {
-  fact->num_rows = sleqp_sparse_matrix_num_rows(matrix);
-  fact->num_cols = sleqp_sparse_matrix_num_cols(matrix);
+  fact->num_rows = sleqp_mat_num_rows(matrix);
+  fact->num_cols = sleqp_mat_num_cols(matrix);
 
   assert(fact->num_rows >= fact->num_cols);
 

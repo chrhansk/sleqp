@@ -1,12 +1,11 @@
 #ifndef SLEQP_FACT_QR_TYPES_H
 #define SLEQP_FACT_QR_TYPES_H
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 typedef struct SleqpFactQR SleqpFactQR;
 
-typedef SLEQP_RETCODE (*SLEQP_QR_SET_MATRIX)(void* fact_data,
-                                             SleqpSparseMatrix* matrix);
+typedef SLEQP_RETCODE (*SLEQP_QR_SET_MATRIX)(void* fact_data, SleqpMat* matrix);
 
 typedef SLEQP_RETCODE (*SLEQP_QR_SOLVE_TRI)(void* fact_data,
                                             const SleqpVec* rhs,

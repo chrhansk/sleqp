@@ -107,16 +107,14 @@ linquadfunc_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 SLEQP_RETCODE
-linquadfunc_cons_jac(SleqpFunc* func,
-                     SleqpSparseMatrix* cons_jac,
-                     void* func_data)
+linquadfunc_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
-  assert(sleqp_sparse_matrix_nnz(cons_jac) == 0);
-  assert(sleqp_sparse_matrix_nnz_max(cons_jac) >= 1);
+  assert(sleqp_mat_nnz(cons_jac) == 0);
+  assert(sleqp_mat_nnz_max(cons_jac) >= 1);
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, 1.));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 1, 1.));
 
-  assert(sleqp_sparse_matrix_is_valid(cons_jac));
+  assert(sleqp_mat_is_valid(cons_jac));
 
   return SLEQP_OKAY;
 }

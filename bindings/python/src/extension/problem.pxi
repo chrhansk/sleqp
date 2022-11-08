@@ -27,7 +27,7 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
   cdef csleqp.SleqpVec* linear_lb_vec
   cdef csleqp.SleqpVec* linear_ub_vec
 
-  cdef csleqp.SleqpSparseMatrix* linear_coeffs_mat
+  cdef csleqp.SleqpMat* linear_coeffs_mat
 
   cdef int num_vars = var_lb.shape[0]
   cdef int num_cons = general_lb.shape[0]
@@ -53,7 +53,7 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
     csleqp_call(csleqp.sleqp_vec_create_empty(&general_ub_vec,
                                                         num_cons))
 
-    csleqp_call(csleqp.sleqp_sparse_matrix_create(&linear_coeffs_mat,
+    csleqp_call(csleqp.sleqp_mat_create(&linear_coeffs_mat,
                                                   num_linear_constraints,
                                                   num_vars,
                                                   0))
@@ -99,7 +99,7 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
     csleqp_call(csleqp.sleqp_vec_free(&linear_ub_vec))
     csleqp_call(csleqp.sleqp_vec_free(&linear_lb_vec))
 
-    csleqp_call(csleqp.sleqp_sparse_matrix_release(&linear_coeffs_mat))
+    csleqp_call(csleqp.sleqp_mat_release(&linear_coeffs_mat))
 
     csleqp_call(csleqp.sleqp_vec_free(&general_ub_vec))
     csleqp_call(csleqp.sleqp_vec_free(&general_lb_vec))

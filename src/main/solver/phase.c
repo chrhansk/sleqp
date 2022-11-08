@@ -117,15 +117,14 @@ fill_optimization_iterate(SleqpSolver* solver)
 
   {
     SleqpVec* cons_val;
-    SleqpSparseMatrix* cons_jac;
+    SleqpMat* cons_jac;
 
     SLEQP_CALL(sleqp_restoration_func_cons_val(rest_func, &cons_val));
     SLEQP_CALL(sleqp_restoration_func_cons_jac(rest_func, &cons_jac));
 
     SLEQP_CALL(sleqp_vec_copy(cons_val, sleqp_iterate_cons_val(opt_iterate)));
 
-    SLEQP_CALL(
-      sleqp_sparse_matrix_copy(cons_jac, sleqp_iterate_cons_jac(opt_iterate)));
+    SLEQP_CALL(sleqp_mat_copy(cons_jac, sleqp_iterate_cons_jac(opt_iterate)));
   }
 
   {
@@ -167,8 +166,8 @@ fill_restoration_iterate(SleqpSolver* solver)
   SleqpProblem* rest_problem = solver->restoration_problem;
   SleqpFunc* rest_func       = sleqp_problem_func(rest_problem);
 
-  SleqpVec* orig_cons_val          = sleqp_iterate_cons_val(opt_iterate);
-  SleqpSparseMatrix* orig_cons_jac = sleqp_iterate_cons_jac(opt_iterate);
+  SleqpVec* orig_cons_val = sleqp_iterate_cons_val(opt_iterate);
+  SleqpMat* orig_cons_jac = sleqp_iterate_cons_jac(opt_iterate);
 
   SLEQP_CALL(sleqp_restoration_func_init(rest_func,
                                          rest_primal,

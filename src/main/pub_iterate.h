@@ -10,7 +10,7 @@
 #include "sleqp/pub_problem.h"
 #include "sleqp/pub_working_set.h"
 
-#include "sparse/pub_sparse_matrix.h"
+#include "sparse/pub_mat.h"
 #include "sparse/pub_vec.h"
 
 typedef struct SleqpIterate SleqpIterate;
@@ -58,7 +58,7 @@ sleqp_iterate_cons_val(const SleqpIterate* iterate);
  * The Jacobian of the constraitns at the current iterate.
  * Has num_constraints many rows, num_variables many columns.
  */
-SLEQP_EXPORT SleqpSparseMatrix*
+SLEQP_EXPORT SleqpMat*
 sleqp_iterate_cons_jac(const SleqpIterate* iterate);
 
 /**

@@ -52,15 +52,14 @@ sleqp_restoration_func_cons_val(SleqpFunc* restoration_func, SleqpVec** star);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_restoration_func_cons_jac(SleqpFunc* restoration_func,
-                                SleqpSparseMatrix** star);
+sleqp_restoration_func_cons_jac(SleqpFunc* restoration_func, SleqpMat** star);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_restoration_func_init(SleqpFunc* restoration_func,
                             SleqpVec* restoration_primal,
                             SleqpVec* orig_cons_val,
-                            SleqpSparseMatrix* orig_cons_jac);
+                            SleqpMat* orig_cons_jac);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

@@ -10,7 +10,7 @@
 #include "util.h"
 
 #include "solver.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 const double nonlinearity_cutoff = 1e-6;
 

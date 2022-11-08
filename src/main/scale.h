@@ -55,12 +55,11 @@ sleqp_scale_cons_linear(SleqpScaling* scaling, SleqpVec* linear_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_cons_jac(SleqpScaling* scaling, SleqpSparseMatrix* cons_jac);
+sleqp_scale_cons_jac(SleqpScaling* scaling, SleqpMat* cons_jac);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_scale_linear_coeffs(SleqpScaling* scaling,
-                          SleqpSparseMatrix* linear_coeffs);
+sleqp_scale_linear_coeffs(SleqpScaling* scaling, SleqpMat* linear_coeffs);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -98,8 +97,7 @@ sleqp_unscale_cons_val(SleqpScaling* scaling, SleqpVec* scaled_cons_val);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_unscale_cons_jac(SleqpScaling* scaling,
-                       SleqpSparseMatrix* scaled_cons_jac);
+sleqp_unscale_cons_jac(SleqpScaling* scaling, SleqpMat* scaled_cons_jac);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

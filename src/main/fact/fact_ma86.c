@@ -171,12 +171,12 @@ ma86_data_create(MA86Data** star)
 }
 
 static SLEQP_RETCODE
-ma86_data_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
+ma86_data_set_matrix(void* fact_data, SleqpMat* matrix)
 {
   MA86Data* ma86_data = (MA86Data*)fact_data;
 
-  const int num_cols = sleqp_sparse_matrix_num_cols(matrix);
-  const int num_rows = sleqp_sparse_matrix_num_rows(matrix);
+  const int num_cols = sleqp_mat_num_cols(matrix);
+  const int num_rows = sleqp_mat_num_rows(matrix);
 
   assert(num_cols == num_rows);
 
@@ -193,9 +193,9 @@ ma86_data_set_matrix(void* fact_data, SleqpSparseMatrix* matrix)
 
   ma86_data->dim = dim;
 
-  int* cols    = sleqp_sparse_matrix_cols(matrix);
-  int* rows    = sleqp_sparse_matrix_rows(matrix);
-  double* data = sleqp_sparse_matrix_data(matrix);
+  int* cols    = sleqp_mat_cols(matrix);
+  int* rows    = sleqp_mat_rows(matrix);
+  double* data = sleqp_mat_data(matrix);
 
   mc68_order(MC68_ORDER_APX_MINDEG,
              dim,

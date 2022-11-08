@@ -89,32 +89,32 @@ cons_val(SleqpFunc* func, SleqpVec* cons_val, void* func_data)
 }
 
 static SLEQP_RETCODE
-cons_jac(SleqpFunc* func, SleqpSparseMatrix* cons_jac, void* func_data)
+cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 {
   FuncData* data = (FuncData*)func_data;
   double* x      = data->values;
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 0, x[1] * x[2] * x[3]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 0, x[1] * x[2] * x[3]));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 0, 2 * x[0]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 1, 0, 2 * x[0]));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 1));
+  SLEQP_CALL(sleqp_mat_push_col(cons_jac, 1));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 1, x[0] * x[2] * x[3]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 1, x[0] * x[2] * x[3]));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 1, 2 * x[1]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 1, 1, 2 * x[1]));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 2));
+  SLEQP_CALL(sleqp_mat_push_col(cons_jac, 2));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 2, x[0] * x[1] * x[3]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 2, x[0] * x[1] * x[3]));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 2, 2 * x[2]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 1, 2, 2 * x[2]));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push_column(cons_jac, 3));
+  SLEQP_CALL(sleqp_mat_push_col(cons_jac, 3));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 0, 3, x[0] * x[1] * x[2]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 0, 3, x[0] * x[1] * x[2]));
 
-  SLEQP_CALL(sleqp_sparse_matrix_push(cons_jac, 1, 3, 2 * x[3]));
+  SLEQP_CALL(sleqp_mat_push(cons_jac, 1, 3, 2 * x[3]));
 
   return SLEQP_OKAY;
 }

@@ -15,7 +15,7 @@ const int num_constraints = 1;
 
 SleqpLPi* lp_interface;
 
-SleqpSparseMatrix* cons_matrix;
+SleqpMat* cons_matrix;
 
 void
 set_lp_data()
@@ -48,11 +48,11 @@ lpi_setup()
                                        params,
                                        options));
 
-  ASSERT_CALL(sleqp_sparse_matrix_create(&cons_matrix, 1, 2, 2));
+  ASSERT_CALL(sleqp_mat_create(&cons_matrix, 1, 2, 2));
 
-  double* cons_data = sleqp_sparse_matrix_data(cons_matrix);
-  int* cons_rows    = sleqp_sparse_matrix_rows(cons_matrix);
-  int* cons_cols    = sleqp_sparse_matrix_cols(cons_matrix);
+  double* cons_data = sleqp_mat_data(cons_matrix);
+  int* cons_rows    = sleqp_mat_rows(cons_matrix);
+  int* cons_cols    = sleqp_mat_cols(cons_matrix);
 
   cons_data[0] = 1;
   cons_data[1] = 1;
@@ -64,7 +64,7 @@ lpi_setup()
   cons_cols[1] = 1;
   cons_cols[2] = 2;
 
-  ASSERT_CALL(sleqp_sparse_matrix_set_nnz(cons_matrix, 2));
+  ASSERT_CALL(sleqp_mat_set_nnz(cons_matrix, 2));
 
   set_lp_data();
 }
@@ -72,7 +72,7 @@ lpi_setup()
 void
 lpi_teardown()
 {
-  ASSERT_CALL(sleqp_sparse_matrix_release(&cons_matrix));
+  ASSERT_CALL(sleqp_mat_release(&cons_matrix));
 
   ASSERT_CALL(sleqp_lpi_release(&lp_interface));
 

@@ -36,7 +36,7 @@ struct SleqpIterate
    * The Jacobian of the constraitns at the current iterate.
    * Has num_constraints many rows, num_variables many columns.
    */
-  SleqpSparseMatrix* cons_jac;
+  SleqpMat* cons_jac;
 
   /**
    * The current working set.
@@ -82,10 +82,8 @@ sleqp_iterate_create(SleqpIterate** star,
 
   SLEQP_CALL(sleqp_vec_create_empty(&iterate->cons_val, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(&iterate->cons_jac,
-                                        num_constraints,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(
+    sleqp_mat_create(&iterate->cons_jac, num_constraints, num_variables, 0));
 
   SLEQP_CALL(sleqp_working_set_create(&iterate->working_set, problem));
 
@@ -127,7 +125,7 @@ sleqp_iterate_cons_val(const SleqpIterate* iterate)
   return iterate->cons_val;
 }
 
-SleqpSparseMatrix*
+SleqpMat*
 sleqp_iterate_cons_jac(const SleqpIterate* iterate)
 {
   return iterate->cons_jac;
@@ -422,18 +420,18 @@ write_stationarity_resiudals_to_cache(SleqpIterate* iterate,
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const SleqpSparseMatrix* cons_jac = sleqp_iterate_cons_jac(iterate);
-  const SleqpVec* obj_grad          = sleqp_iterate_obj_grad(iterate);
+  const SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
+  const SleqpVec* obj_grad = sleqp_iterate_obj_grad(iterate);
 
   const SleqpVec* cons_dual = sleqp_iterate_cons_dual(iterate);
   const SleqpVec* vars_dual = sleqp_iterate_vars_dual(iterate);
 
-  const int num_rows = sleqp_sparse_matrix_num_rows(cons_jac);
-  const int num_cols = sleqp_sparse_matrix_num_cols(cons_jac);
+  const int num_rows = sleqp_mat_num_rows(cons_jac);
+  const int num_cols = sleqp_mat_num_cols(cons_jac);
 
-  const int* cons_jac_cols    = sleqp_sparse_matrix_cols(cons_jac);
-  const int* cons_jac_rows    = sleqp_sparse_matrix_rows(cons_jac);
-  const double* cons_jac_data = sleqp_sparse_matrix_data(cons_jac);
+  const int* cons_jac_cols    = sleqp_mat_cols(cons_jac);
+  const int* cons_jac_rows    = sleqp_mat_rows(cons_jac);
+  const double* cons_jac_data = sleqp_mat_data(cons_jac);
 
   assert(num_variables == num_cols);
   assert(num_constraints == num_rows);
@@ -599,8 +597,7 @@ sleqp_iterate_reserve(SleqpIterate* iterate, SleqpProblem* problem)
   SLEQP_CALL(sleqp_vec_reserve(sleqp_iterate_obj_grad(iterate), obj_grad_nnz));
   SLEQP_CALL(sleqp_vec_reserve(sleqp_iterate_cons_val(iterate), cons_val_nnz));
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_reserve(sleqp_iterate_cons_jac(iterate), cons_jac_nnz));
+  SLEQP_CALL(sleqp_mat_reserve(sleqp_iterate_cons_jac(iterate), cons_jac_nnz));
 
   return SLEQP_OKAY;
 }
@@ -616,7 +613,7 @@ sleqp_iterate_copy(const SleqpIterate* source, SleqpIterate* target)
 
   SLEQP_CALL(sleqp_vec_copy(source->cons_val, target->cons_val));
 
-  SLEQP_CALL(sleqp_sparse_matrix_copy(source->cons_jac, target->cons_jac));
+  SLEQP_CALL(sleqp_mat_copy(source->cons_jac, target->cons_jac));
 
   SLEQP_CALL(sleqp_working_set_copy(source->working_set, target->working_set));
 
@@ -642,7 +639,7 @@ iterate_free(SleqpIterate** star)
 
   SLEQP_CALL(sleqp_working_set_release(&iterate->working_set));
 
-  SLEQP_CALL(sleqp_sparse_matrix_release(&iterate->cons_jac));
+  SLEQP_CALL(sleqp_mat_release(&iterate->cons_jac));
 
   SLEQP_CALL(sleqp_vec_free(&iterate->cons_val));
   SLEQP_CALL(sleqp_vec_free(&iterate->obj_grad));

@@ -4,7 +4,7 @@
 #include "lsq.h"
 #include "mem.h"
 
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 
 typedef struct
 {
@@ -20,7 +20,7 @@ typedef struct
   SleqpVec* adjoint_product;
 
   SleqpVec* cons_val;
-  SleqpSparseMatrix* cons_jac;
+  SleqpMat* cons_jac;
 
   bool has_cons_val;
   bool has_cons_jac;
@@ -123,8 +123,7 @@ restoration_func_nonzeros(SleqpFunc* func,
 
   if (problem_cons_jac_nnz != SLEQP_NONE)
   {
-    SLEQP_CALL(
-      sleqp_sparse_matrix_reserve(func_data->cons_jac, problem_cons_jac_nnz));
+    SLEQP_CALL(sleqp_mat_reserve(func_data->cons_jac, problem_cons_jac_nnz));
   }
 
   *cons_val_nnz = 0;
@@ -198,9 +197,9 @@ restoration_lsq_jac_forward(SleqpFunc* func,
                           func_data->var_forward,
                           func_data->cons_forward));
 
-  SLEQP_CALL(sleqp_sparse_matrix_vector_product(func_data->cons_jac,
-                                                func_data->var_forward,
-                                                func_data->forward_cache));
+  SLEQP_CALL(sleqp_mat_mult_vec(func_data->cons_jac,
+                                func_data->var_forward,
+                                func_data->forward_cache));
 
   SLEQP_CALL(sleqp_vec_set_from_raw(func_data->forward_product,
                                     func_data->forward_cache,
@@ -260,11 +259,10 @@ restoration_lsq_jac_adjoint(SleqpFunc* func,
   const double zero_eps
     = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
 
-  SLEQP_CALL(
-    sleqp_sparse_matrix_trans_vector_product(func_data->cons_jac,
-                                             adjoint_direction,
-                                             zero_eps,
-                                             func_data->adjoint_product));
+  SLEQP_CALL(sleqp_mat_mult_vec_trans(func_data->cons_jac,
+                                      adjoint_direction,
+                                      zero_eps,
+                                      func_data->adjoint_product));
 
   SLEQP_CALL(
     concat_adjoint(func_data->adjoint_product, adjoint_direction, product));
@@ -295,7 +293,7 @@ restoration_func_free(void* data)
 
   SLEQP_CALL(sleqp_vec_free(&func_data->var_primal));
 
-  SLEQP_CALL(sleqp_sparse_matrix_release(&func_data->cons_jac));
+  SLEQP_CALL(sleqp_mat_release(&func_data->cons_jac));
 
   SLEQP_CALL(sleqp_vec_free(&func_data->cons_val));
 
@@ -316,10 +314,8 @@ func_data_create(FuncData** star, SleqpProblem* problem, SleqpParams* params)
 
   SLEQP_CALL(sleqp_vec_create_empty(&func_data->cons_val, num_constraints));
 
-  SLEQP_CALL(sleqp_sparse_matrix_create(&func_data->cons_jac,
-                                        num_constraints,
-                                        num_variables,
-                                        0));
+  SLEQP_CALL(
+    sleqp_mat_create(&func_data->cons_jac, num_constraints, num_variables, 0));
 
   SLEQP_CALL(sleqp_vec_create_empty(&func_data->var_primal, num_variables));
 
@@ -401,8 +397,7 @@ sleqp_restoration_func_cons_val(SleqpFunc* restoration_func, SleqpVec** star)
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_restoration_func_cons_jac(SleqpFunc* restoration_func,
-                                SleqpSparseMatrix** star)
+sleqp_restoration_func_cons_jac(SleqpFunc* restoration_func, SleqpMat** star)
 {
   FuncData* func_data = (FuncData*)sleqp_lsq_func_get_data(restoration_func);
 
@@ -418,7 +413,7 @@ SLEQP_RETCODE
 sleqp_restoration_func_init(SleqpFunc* restoration_func,
                             SleqpVec* restoration_primal,
                             SleqpVec* orig_cons_val,
-                            SleqpSparseMatrix* orig_cons_jac)
+                            SleqpMat* orig_cons_jac)
 {
   FuncData* func_data = (FuncData*)sleqp_lsq_func_get_data(restoration_func);
 
@@ -433,7 +428,7 @@ sleqp_restoration_func_init(SleqpFunc* restoration_func,
   }
 
   {
-    SLEQP_CALL(sleqp_sparse_matrix_copy(orig_cons_jac, func_data->cons_jac));
+    SLEQP_CALL(sleqp_mat_copy(orig_cons_jac, func_data->cons_jac));
     func_data->has_cons_jac = true;
   }
 

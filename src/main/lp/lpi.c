@@ -127,7 +127,7 @@ sleqp_lpi_set_bounds(SleqpLPi* lp_interface,
 }
 
 SLEQP_RETCODE
-sleqp_lpi_set_coeffs(SleqpLPi* lp_interface, SleqpSparseMatrix* coeff_matrix)
+sleqp_lpi_set_coeffs(SleqpLPi* lp_interface, SleqpMat* coeff_matrix)
 {
   return lp_interface->callbacks.set_coeffs(lp_interface->lp_data,
                                             lp_interface->num_variables,

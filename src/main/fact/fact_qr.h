@@ -35,7 +35,7 @@ sleqp_qr_version(SleqpFactQR* fact);
  **/
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_qr_set_matrix(SleqpFactQR* fact, SleqpSparseMatrix* matrix);
+sleqp_qr_set_matrix(SleqpFactQR* fact, SleqpMat* matrix);
 
 /**
  * Solve the system \f$ \overline{R} x = y \f$

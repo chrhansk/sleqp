@@ -2,7 +2,7 @@
 #define SLEQP_FACT_MA97_H
 
 #include "fact.h"
-#include "sparse/sparse_matrix.h"
+#include "sparse/mat.h"
 #include "types.h"
 
 SLEQP_NODISCARD
