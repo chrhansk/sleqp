@@ -14,13 +14,14 @@ test_fact:
     matrix:
       - FACT:
           - CHOLMOD
-          - Umfpack
-          - MUMPS
+          - LAPACK
           - MA27
           - MA57
           - MA86
           - MA97
+          - MUMPS
           - SPQR
+          - Umfpack
 
 test_lps:
   extends: .test
