@@ -67,6 +67,7 @@ cdef dict opt_prop_map = {
   'global_penalty_resets': _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS),
   'perform_soc':           _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_PERFORM_SOC),
   'use_quadratic_model':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL),
+  'enable_restoration':    _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE),
   'enable_preprocessor':   _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR),
   'lp_resolves':           _Prop.boolean(csleqp.SLEQP_OPTION_BOOL_LP_RESOLVES),
 
