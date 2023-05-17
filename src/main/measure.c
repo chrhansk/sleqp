@@ -242,8 +242,8 @@ report_merit(SleqpMeasure* measure,
   const double model_red  = (cur_merit - exp_merit);
   const double actual_red = (cur_merit - act_merit);
 
-  sleqp_log_debug("Merit: current: %14e, expected: %14e, actual: %14e, "
-                  "prediced reduction: %9.4f%%, actual reduction: %9.4f%%, "
+  sleqp_log_debug("    Merit: current: %14e, expected: %14e, actual: %14e, "
+                  "predicted reduction: %9.4f%%, actual reduction: %9.4f%%, "
                   "reduction ratio: %e",
                   cur_merit,
                   exp_merit,
@@ -263,7 +263,7 @@ report_lsq(SleqpMeasure* measure)
   const double act_obj_val = measure->trial_obj_val;
 
   sleqp_log_debug("Objective: current: %14e, expected: %14e, actual: %14e, "
-                  "prediced reduction: %9.4f%%, actual reduction: %9.4f%%",
+                  "predicted reduction: %9.4f%%, actual reduction: %9.4f%%",
                   cur_obj_val,
                   exp_obj_val,
                   act_obj_val,
@@ -275,7 +275,7 @@ report_lsq(SleqpMeasure* measure)
   const double act_violation = measure->trial_violation;
 
   sleqp_log_debug("Violation: current: %14e, expected: %14e, actual: %14e, "
-                  "prediced reduction: %9.4f%%, actual reduction: %9.4f%%",
+                  "predicted reduction: %9.4f%%, actual reduction: %9.4f%%",
                   cur_violation,
                   exp_violation,
                   act_violation,

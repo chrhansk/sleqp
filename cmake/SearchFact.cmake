@@ -77,6 +77,11 @@ add_fact(
   SOURCES
   fact/fact_ma97.c)
 
+add_fact(
+  NAME "LAPACK"
+  SOURCES
+  fact/fact_lapack.c)
+
 set(_SLEQP_FACT_VALUES "")
 
 foreach(FACT ${FACTS})
