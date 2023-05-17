@@ -11,17 +11,22 @@ from sleqp._cons_func import create_constraint_func
 from sleqp._linear import (create_linear_constraints, LinearConstraints)
 
 
-@dataclass
 class GeneralConstraints:
-  lb: object = np.zeros((0,))
-  func: object = None
-  ub: object = np.zeros((0,))
+  def __init__(self,
+               cons_lb=np.zeros((0,)),
+               cons_func=None,
+               cons_ub=np.zeros((0,))):
+    self.lb = cons_lb
+    self.func = cons_func
+    self.ub = cons_ub
 
 
-@dataclass
 class Constraints:
-  general: object = GeneralConstraints()
-  linear: object = LinearConstraints()
+  def __init__(self,
+               general=GeneralConstraints(),
+               linear=LinearConstraints()):
+    self.general = general
+    self.linear = linear
 
 
 def split_linear_constraints(constraints):
