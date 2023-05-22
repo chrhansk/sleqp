@@ -335,12 +335,12 @@ reset_duals(SleqpRestoration* restoration)
 
   for (int j = 0; j < num_variables; ++j)
   {
-    restoration->var_dual[j] = SLEQP_INACTIVE;
+    restoration->var_dual[j] = 0.;
   }
 
   for (int i = 0; i < num_constraints; ++i)
   {
-    restoration->cons_dual[i] = SLEQP_INACTIVE;
+    restoration->cons_dual[i] = 0.;
   }
 
   return SLEQP_OKAY;
@@ -383,7 +383,10 @@ static SLEQP_RETCODE
 correct_forcing_constraint(SleqpRestoration* restoration,
                            SleqpForcingConstraint* forcing_constraint)
 {
+  SleqpProblem* problem = restoration->original_problem;
+
   const int num_variables = forcing_constraint->num_variables;
+  const int num_general = sleqp_problem_num_gen_cons(problem);
 
   double* residuals = restoration->dense_stationarity_residuals;
 
@@ -441,14 +444,15 @@ correct_forcing_constraint(SleqpRestoration* restoration,
       cons_state = SLEQP_ACTIVE_LOWER;
     }
 
-    restoration->working_cons_states[forcing_constraint->constraint]
-      = cons_state;
+    const int constraint_index = num_general + forcing_constraint->constraint;
+
+    restoration->working_cons_states[constraint_index] = cons_state;
 
     const double cons_dual = max_dual;
 
-    assert(restoration->cons_dual[forcing_constraint->constraint] == 0.);
+    assert(restoration->cons_dual[constraint_index] == 0.);
 
-    restoration->cons_dual[forcing_constraint->constraint] = cons_dual;
+    restoration->cons_dual[constraint_index] = cons_dual;
 
     for (int k = 0; k < num_variables; ++k)
     {
