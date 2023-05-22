@@ -22,6 +22,7 @@ static SLEQP_RETCODE
 report_result(SleqpSolver* solver,
               SleqpProblem* problem,
               const char* probname,
+              bool error,
               FILE* output)
 {
   const char* descriptions[] = {
@@ -88,12 +89,23 @@ report_result(SleqpSolver* solver,
 
   SLEQP_CALL(sleqp_iterate_slackness_residuum(problem, iterate, &slack_res));
 
+  const char* description = "";
+
+  if(error)
+  {
+    description = "error";
+  }
+  else
+  {
+    description = descriptions[status];
+  }
+
   fprintf(output,
           "%s;%d;%d;%s;%f;%.14e;%.14e;%.14e;%d;%f;%d;%f;%f;%f\n",
           probname,
           num_variables,
           num_constraints,
-          descriptions[status],
+          description,
           sleqp_iterate_obj_val(iterate),
           feas_res,
           slack_res,
@@ -238,18 +250,15 @@ cutest_run_internal(const char* filename,
   SLEQP_RETCODE retcode
     = sleqp_solver_solve(solver, max_num_iterations, time_limit);
 
-  if (retcode == SLEQP_OKAY)
-  {
-    SLEQP_CALL(report_result(solver, problem, probname, output));
-  }
-  else
+  if (retcode != SLEQP_OKAY)
   {
     sleqp_log_error("Failed to solve problem %s: %s",
                     probname,
                     sleqp_error_msg());
     success = false;
-  }
 
+  }
+  SLEQP_CALL(report_result(solver, problem, probname, !success, output));
   /**/
 
   SLEQP_CALL(sleqp_solver_release(&solver));
