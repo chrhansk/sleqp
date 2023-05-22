@@ -407,8 +407,8 @@ check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor)
       }
       else if (sleqp_is_eq(bound_slack, 0., feas_eps))
       {
-        add_forcing_constraint(preprocessor, i, SLEQP_LOWER_BOUND);
-        // add forcing constraint
+        SLEQP_CALL(add_forcing_constraint(preprocessor, i, SLEQP_LOWER_BOUND));
+        continue;
       }
     }
 
@@ -426,8 +426,8 @@ check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor)
       }
       else if (sleqp_is_eq(bound_slack, 0., feas_eps))
       {
-        add_forcing_constraint(preprocessor, i, SLEQP_UPPER_BOUND);
-        // add forcing constraint
+        SLEQP_CALL(add_forcing_constraint(preprocessor, i, SLEQP_UPPER_BOUND));
+        continue;
       }
     }
   }
@@ -444,10 +444,10 @@ check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor)
                     feas_eps)
         && sleqp_is_finite(preprocessor->linear_lb[i]))
     {
-      sleqp_preprocessing_state_add_linear_constraint_bound_requirement(
-        state,
-        i,
-        SLEQP_BOUND_REDUNDANT_LOWER);
+      SLEQP_CALL(sleqp_preprocessing_state_add_linear_constraint_bound_requirement(
+                   state,
+                   i,
+                   SLEQP_BOUND_REDUNDANT_LOWER));
     }
 
     if (sleqp_is_lt(preprocessor->linear_max[i],
@@ -455,10 +455,10 @@ check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor)
                     feas_eps)
         && sleqp_is_finite(preprocessor->linear_ub[i]))
     {
-      sleqp_preprocessing_state_add_linear_constraint_bound_requirement(
-        state,
-        i,
-        SLEQP_BOUND_REDUNDANT_UPPER);
+      SLEQP_CALL(sleqp_preprocessing_state_add_linear_constraint_bound_requirement(
+                   state,
+                   i,
+                   SLEQP_BOUND_REDUNDANT_UPPER));
     }
   }
 
