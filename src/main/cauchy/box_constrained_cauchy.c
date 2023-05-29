@@ -135,7 +135,7 @@ box_constrained_cauchy_set_trust_radius(double trust_radius, void* data)
 static SLEQP_RETCODE
 box_constrained_cauchy_solve(SleqpVec* gradient,
                              double penalty,
-                             SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
+                             SLEQP_CAUCHY_OBJTYPE objective_type,
                              void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;

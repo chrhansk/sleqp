@@ -183,7 +183,7 @@ search_forward(SleqpParametricSolver* solver,
     SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                   sleqp_iterate_obj_grad(iterate),
                                   penalty_parameter,
-                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+                                  SLEQP_CAUCHY_OBJTYPE_DEFAULT));
 
     SLEQP_CALL(sleqp_cauchy_lp_step(cauchy_data, direction_primal));
 
@@ -231,7 +231,7 @@ search_forward(SleqpParametricSolver* solver,
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                     sleqp_iterate_obj_grad(iterate),
                                     penalty_parameter,
-                                    SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+                                    SLEQP_CAUCHY_OBJTYPE_DEFAULT));
 
       SLEQP_CALL(
         sleqp_direction_copy(solver->last_direction, cauchy_direction));
@@ -271,7 +271,7 @@ search_backtracking(SleqpParametricSolver* solver,
     SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                   sleqp_iterate_obj_grad(iterate),
                                   penalty_parameter,
-                                  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+                                  SLEQP_CAUCHY_OBJTYPE_DEFAULT));
 
     SLEQP_CALL(sleqp_cauchy_lp_step(cauchy_data, direction_primal));
 
