@@ -44,7 +44,7 @@ sleqp_update_penalty(SleqpProblem* problem,
   SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                 NULL,
                                 (*penalty_parameter),
-                                SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY));
+                                SLEQP_CAUCHY_OBJTYPE_FEAS));
 
   {
     SLEQP_CALL(
@@ -81,7 +81,7 @@ sleqp_update_penalty(SleqpProblem* problem,
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                     sleqp_iterate_obj_grad(iterate),
                                     (*penalty_parameter),
-                                    SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED));
+                                    SLEQP_CAUCHY_OBJTYPE_MIXED));
 
       double next_violation;
 
@@ -130,7 +130,7 @@ sleqp_update_penalty(SleqpProblem* problem,
       SLEQP_CALL(sleqp_cauchy_solve(cauchy_data,
                                     sleqp_iterate_obj_grad(iterate),
                                     (*penalty_parameter),
-                                    SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED));
+                                    SLEQP_CAUCHY_OBJTYPE_MIXED));
 
       double next_violation;
 

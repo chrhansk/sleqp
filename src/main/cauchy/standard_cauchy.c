@@ -20,6 +20,11 @@ typedef enum
   ALL         = (BASE_STATS | PRIMAL_VALS | DUAL_VALS),
 } Components;
 
+typedef enum
+{
+  SLACK_BASIS = SLEQP_CAUCHY_NUM_OBJTYPES
+} _;
+
 typedef struct
 {
   SleqpProblem* problem;
@@ -37,9 +42,10 @@ typedef struct
   SLEQP_BASESTAT* var_stats;
   SLEQP_BASESTAT* cons_stats;
 
-  bool has_basis[SLEQP_NUM_CAUCHY_OBJECTIVES];
-  SLEQP_CAUCHY_OBJECTIVE_TYPE current_objective;
+  bool has_basis[SLEQP_CAUCHY_NUM_OBJTYPES];
+  SLEQP_CAUCHY_OBJTYPE current_objective;
 
+  bool first_solve;
   bool has_coefficients;
   bool use_reduced_interface;
 
@@ -62,6 +68,69 @@ typedef struct
   double* cons_dual;
 
 } CauchyData;
+
+static SLEQP_RETCODE
+create_and_set_slack_basis(CauchyData* cauchy_data)
+{
+  SleqpProblem* problem = cauchy_data->problem;
+
+  SLEQP_BASESTAT* var_stats  = cauchy_data->var_stats;
+  SLEQP_BASESTAT* cons_stats = cauchy_data->cons_stats;
+
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
+
+  SLEQP_BASESTAT* lower_slack_stats = var_stats + num_vars;
+  SLEQP_BASESTAT* upper_slack_stats = lower_slack_stats + num_cons;
+
+  double* cons_lb = cauchy_data->cons_lb;
+  double* cons_ub = cauchy_data->cons_ub;
+
+  // Set direction variables to lower, i.e., add
+  // d_j = 0 to row basis
+  for (int j = 0; j < num_vars; ++j)
+  {
+    var_stats[j] = SLEQP_BASESTAT_LOWER;
+  }
+
+  for (int i = 0; i < num_cons; ++i)
+  {
+    lower_slack_stats[i] = SLEQP_BASESTAT_LOWER;
+    upper_slack_stats[i] = SLEQP_BASESTAT_LOWER;
+
+    if (cons_lb[i] > 0.)
+    {
+      // lower slack (with entry +1) raised from
+      // lower (=0) to value > 0
+      // row value will be lb(i), achieved by
+      // lower slack variable
+      lower_slack_stats[i] = SLEQP_BASESTAT_BASIC;
+      cons_stats[i]        = SLEQP_BASESTAT_LOWER;
+    }
+    else if (cons_ub[i] < 0.)
+    {
+      // same as above, just with opposite sign
+      upper_slack_stats[i] = SLEQP_BASESTAT_BASIC;
+      cons_stats[i]        = SLEQP_BASESTAT_UPPER;
+    }
+    else
+    {
+      // Both slacks set to zero, row
+      // set to basic (row value will be zero within [lb(i), ub(i)])
+      cons_stats[i] = SLEQP_BASESTAT_BASIC;
+    }
+  }
+
+  SLEQP_CALL(sleqp_lpi_set_basis(cauchy_data->default_interface,
+                                 SLACK_BASIS,
+                                 var_stats,
+                                 cons_stats));
+
+  SLEQP_CALL(
+    sleqp_lpi_restore_basis(cauchy_data->default_interface, SLACK_BASIS));
+
+  return SLEQP_OKAY;
+}
 
 static SLEQP_RETCODE
 cauchy_data_create(CauchyData** star,
@@ -97,11 +166,12 @@ cauchy_data_create(CauchyData** star,
   SLEQP_CALL(sleqp_alloc_array(&data->var_stats, data->num_lp_variables));
   SLEQP_CALL(sleqp_alloc_array(&data->cons_stats, data->num_lp_constraints));
 
-  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT]     = false;
-  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY] = false;
-  data->has_basis[SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED]       = false;
-  data->current_objective                                  = SLEQP_NONE;
+  data->has_basis[SLEQP_CAUCHY_OBJTYPE_DEFAULT] = false;
+  data->has_basis[SLEQP_CAUCHY_OBJTYPE_FEAS]    = false;
+  data->has_basis[SLEQP_CAUCHY_OBJTYPE_MIXED]   = false;
+  data->current_objective                       = SLEQP_NONE;
 
+  data->first_solve      = true;
   data->has_coefficients = false;
 
   SLEQP_CALL(sleqp_lpi_create_default(&data->default_interface,
@@ -758,14 +828,19 @@ check_basis(CauchyData* cauchy_data, bool* valid_basis)
 }
 
 static SLEQP_RETCODE
-restore_basis(CauchyData* cauchy_data,
-              SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
+restore_basis(CauchyData* cauchy_data, SLEQP_CAUCHY_OBJTYPE objective_type)
 {
   if (cauchy_data->current_objective != objective_type
       && cauchy_data->has_basis[objective_type])
   {
     SLEQP_CALL(
       sleqp_lpi_restore_basis(cauchy_data->default_interface, objective_type));
+  }
+  else if (cauchy_data->first_solve)
+  {
+    sleqp_log_debug("Using slack basis for initial solve");
+    SLEQP_CALL(create_and_set_slack_basis(cauchy_data));
+    cauchy_data->first_solve = false;
   }
 
   return SLEQP_OKAY;
@@ -774,7 +849,7 @@ restore_basis(CauchyData* cauchy_data,
 static SLEQP_RETCODE
 standard_cauchy_solve(SleqpVec* gradient,
                       double penalty,
-                      SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
+                      SLEQP_CAUCHY_OBJTYPE objective_type,
                       void* data)
 {
   CauchyData* cauchy_data = (CauchyData*)data;
@@ -792,18 +867,17 @@ standard_cauchy_solve(SleqpVec* gradient,
   {
     switch (objective_type)
     {
-    case SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT:
+    case SLEQP_CAUCHY_OBJTYPE_DEFAULT:
       // fallthrough
-    case SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY:
+    case SLEQP_CAUCHY_OBJTYPE_FEAS:
       SLEQP_CALL(restore_basis(cauchy_data, objective_type));
       break;
-    case SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED:
-      if (cauchy_data->current_objective != SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED)
+    case SLEQP_CAUCHY_OBJTYPE_MIXED:
+      if (cauchy_data->current_objective != SLEQP_CAUCHY_OBJTYPE_MIXED)
       {
         // restart from the default, this should be closer
         // to the initial mixed one
-        SLEQP_CALL(
-          restore_basis(cauchy_data, SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+        SLEQP_CALL(restore_basis(cauchy_data, SLEQP_CAUCHY_OBJTYPE_DEFAULT));
       }
       break;
     default:
@@ -861,8 +935,7 @@ standard_cauchy_solve(SleqpVec* gradient,
     = sleqp_options_bool_value(cauchy_data->options,
                                SLEQP_OPTION_BOOL_LP_RESOLVES);
 
-  if (enable_resolves
-      && (objective_type == SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT))
+  if (enable_resolves && (objective_type == SLEQP_CAUCHY_OBJTYPE_DEFAULT))
   {
     bool resolve;
 

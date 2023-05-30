@@ -192,7 +192,7 @@ START_TEST(test_unconstrained_cauchy_direction)
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
                                  sleqp_iterate_obj_grad(iterate),
                                  penalty_parameter,
-                                 SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+                                 SLEQP_CAUCHY_OBJTYPE_DEFAULT));
 
   ASSERT_CALL(sleqp_cauchy_lp_step(cauchy_data, direction));
 

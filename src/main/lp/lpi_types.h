@@ -16,10 +16,10 @@
 
 typedef enum
 {
-  SLEQP_BASESTAT_LOWER = 0, /**< variable is at its lower bound */
-  SLEQP_BASESTAT_BASIC = 1, /**< variable is basic */
-  SLEQP_BASESTAT_UPPER = 2, /**< variable is at its upper bound */
-  SLEQP_BASESTAT_ZERO  = 3  /**< free variable is non-basic and set to zero */
+  SLEQP_BASESTAT_LOWER = 0, /**< variable is at its lower bound **/
+  SLEQP_BASESTAT_BASIC = 1, /**< variable is basic **/
+  SLEQP_BASESTAT_UPPER = 2, /**< variable is at its upper bound **/
+  SLEQP_BASESTAT_ZERO  = 3  /**< free variable is non-basic and set to zero **/
 } SLEQP_BASESTAT;
 
 typedef enum

@@ -58,7 +58,7 @@ SLEQP_RETCODE
 sleqp_cauchy_solve(SleqpCauchy* cauchy,
                    SleqpVec* gradient,
                    double penalty,
-                   SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type)
+                   SLEQP_CAUCHY_OBJTYPE objective_type)
 {
   assert(cauchy->trust_radius != SLEQP_NONE);
 

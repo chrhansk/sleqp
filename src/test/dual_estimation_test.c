@@ -61,7 +61,7 @@ START_TEST(test_simply_constrained_dual_estimation)
   ASSERT_CALL(sleqp_cauchy_solve(cauchy_data,
                                  sleqp_iterate_obj_grad(iterate),
                                  penalty_parameter,
-                                 SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+                                 SLEQP_CAUCHY_OBJTYPE_DEFAULT));
 
   ASSERT_CALL(sleqp_cauchy_working_set(cauchy_data, iterate));
 

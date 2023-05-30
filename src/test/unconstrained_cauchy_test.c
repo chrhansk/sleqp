@@ -117,7 +117,7 @@ START_TEST(test_solve)
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy, iterate, trust_radius));
 
   ASSERT_CALL(
-    sleqp_cauchy_solve(cauchy, grad, 1., SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+    sleqp_cauchy_solve(cauchy, grad, 1., SLEQP_CAUCHY_OBJTYPE_DEFAULT));
 
   ASSERT_CALL(sleqp_cauchy_working_set(cauchy, iterate));
 

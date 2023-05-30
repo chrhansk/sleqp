@@ -7,11 +7,11 @@
 
 typedef enum
 {
-  SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT,
-  SLEQP_CAUCHY_OBJECTIVE_TYPE_FEASIBILITY,
-  SLEQP_CAUCHY_OBJECTIVE_TYPE_MIXED,
-  SLEQP_NUM_CAUCHY_OBJECTIVES
-} SLEQP_CAUCHY_OBJECTIVE_TYPE;
+  SLEQP_CAUCHY_OBJTYPE_DEFAULT,
+  SLEQP_CAUCHY_OBJTYPE_FEAS,
+  SLEQP_CAUCHY_OBJTYPE_MIXED,
+  SLEQP_CAUCHY_NUM_OBJTYPES
+} SLEQP_CAUCHY_OBJTYPE;
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_SET_ITERATE)(SleqpIterate* iterate,
                                                   double trust_radius,
@@ -23,7 +23,7 @@ typedef SLEQP_RETCODE (*SLEQP_CAUCHY_SET_TRUST_RADIUS)(double trust_radius,
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_SOLVE)(
   SleqpVec* gradient,
   double penalty,
-  SLEQP_CAUCHY_OBJECTIVE_TYPE objective_type,
+  SLEQP_CAUCHY_OBJTYPE objective_type,
   void* cauchy_data);
 
 typedef SLEQP_RETCODE (*SLEQP_CAUCHY_OBJ_VAL)(double* objective_value,

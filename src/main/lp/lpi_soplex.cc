@@ -110,6 +110,11 @@ soplex_create_problem(void** lp_data,
                        soplex::SoPlex::VERBOSITY_ERROR);
   }
 
+  /*
+  soplex.setIntParam(soplex::SoPlex::ALGORITHM,
+                     soplex::SoPlex::ALGORITHM_PRIMAL);
+  */
+
   spx->num_cols = num_cols;
   spx->num_rows = num_rows;
   spx->status   = SLEQP_LP_STATUS_UNKNOWN;

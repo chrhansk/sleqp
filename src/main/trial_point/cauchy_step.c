@@ -129,7 +129,7 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
   SLEQP_CALL(sleqp_cauchy_solve(solver->cauchy_data,
                                 sleqp_iterate_obj_grad(iterate),
                                 solver->penalty_parameter,
-                                SLEQP_CAUCHY_OBJECTIVE_TYPE_DEFAULT));
+                                SLEQP_CAUCHY_OBJTYPE_DEFAULT));
 
   double criticality_bound;
 
