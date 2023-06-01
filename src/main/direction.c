@@ -73,9 +73,7 @@ sleqp_direction_reset(SleqpDirection* direction,
     SLEQP_CALL(sleqp_vec_clear(direction_cons_jac));
   }
 
-  const double one = 1.;
   SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                     &one,
                                      direction_primal,
                                      multipliers,
                                      direction_hess));
@@ -124,14 +122,11 @@ sleqp_direction_check(const SleqpDirection* direction,
     return SLEQP_OKAY;
   }
 
-  const double one = 1.;
-
   SleqpVec* hess_dir;
 
   SLEQP_CALL(sleqp_vec_create_full(&hess_dir, num_vars));
 
   SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                     &one,
                                      direction->primal,
                                      multipliers,
                                      hess_dir));

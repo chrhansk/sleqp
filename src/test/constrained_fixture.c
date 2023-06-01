@@ -121,7 +121,6 @@ cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 
 static SLEQP_RETCODE
 func_hess_prod(SleqpFunc* func,
-               const double* obj_dual,
                const SleqpVec* direction,
                const SleqpVec* cons_duals,
                SleqpVec* product,
@@ -138,17 +137,15 @@ func_hess_prod(SleqpFunc* func,
   double* duals = data->duals;
   double* dir   = data->direction;
 
-  double o_dual = obj_dual ? *obj_dual : 0.;
-
   SLEQP_CALL(sleqp_vec_reserve(product, constrained_num_variables));
 
   {
     double v = 0.;
 
-    v += (2 * x[3] * o_dual + 2 * duals[1]) * dir[0];
-    v += (x[3] * o_dual + x[2] * x[3] * duals[0]) * dir[1];
-    v += (x[3] * o_dual + x[1] * x[3] * duals[0]) * dir[2];
-    v += ((2 * x[0] + x[1] + x[2]) * o_dual + x[1] * x[2] * duals[0]) * dir[3];
+    v += (2 * x[3] + 2 * duals[1]) * dir[0];
+    v += (x[3] + x[2] * x[3] * duals[0]) * dir[1];
+    v += (x[3] + x[1] * x[3] * duals[0]) * dir[2];
+    v += ((2 * x[0] + x[1] + x[2]) + x[1] * x[2] * duals[0]) * dir[3];
 
     SLEQP_CALL(sleqp_vec_push(product, 0, v));
   }
@@ -156,10 +153,10 @@ func_hess_prod(SleqpFunc* func,
   {
     double v = 0.;
 
-    v += (x[3] * o_dual + x[2] * x[3] * duals[0]) * dir[0];
+    v += (x[3] + x[2] * x[3] * duals[0]) * dir[0];
     v += (2 * duals[1]) * dir[1];
     v += (x[0] * x[3] * duals[0]) * dir[2];
-    v += (x[0] * o_dual + (x[0] * x[2]) * duals[0]) * dir[3];
+    v += (x[0] + (x[0] * x[2]) * duals[0]) * dir[3];
 
     SLEQP_CALL(sleqp_vec_push(product, 1, v));
   }
@@ -167,10 +164,10 @@ func_hess_prod(SleqpFunc* func,
   {
     double v = 0.;
 
-    v += (x[3] * o_dual + x[1] * x[3] * duals[0]) * dir[0];
+    v += (x[3] + x[1] * x[3] * duals[0]) * dir[0];
     v += (x[0] * x[3] * duals[0]) * dir[1];
     v += (2 * duals[1]) * dir[2];
-    v += (x[0] * o_dual + x[0] * x[1] * duals[0]) * dir[3];
+    v += (x[0] + x[0] * x[1] * duals[0]) * dir[3];
 
     SLEQP_CALL(sleqp_vec_push(product, 2, v));
   }
@@ -178,9 +175,9 @@ func_hess_prod(SleqpFunc* func,
   {
     double v = 0.;
 
-    v += ((2 * x[0] + x[1] + x[2]) * o_dual + x[1] * x[2] * duals[0]) * dir[0];
-    v += (x[0] * o_dual + x[0] * x[2] * duals[0]) * dir[1];
-    v += (x[0] * o_dual + x[0] * x[1] * duals[0]) * dir[2];
+    v += ((2 * x[0] + x[1] + x[2]) + x[1] * x[2] * duals[0]) * dir[0];
+    v += (x[0] + x[0] * x[2] * duals[0]) * dir[1];
+    v += (x[0] + x[0] * x[1] * duals[0]) * dir[2];
     v += (2 * duals[1]) * dir[3];
 
     SLEQP_CALL(sleqp_vec_push(product, 3, v));

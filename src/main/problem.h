@@ -51,7 +51,6 @@ sleqp_problem_cons_jac(SleqpProblem* problem, SleqpMat* cons_jac);
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_hess_prod(SleqpProblem* problem,
-                        const double* obj_dual,
                         const SleqpVec* direction,
                         const SleqpVec* cons_duals,
                         SleqpVec* product);
@@ -59,7 +58,6 @@ sleqp_problem_hess_prod(SleqpProblem* problem,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_problem_hess_bilinear(SleqpProblem* problem,
-                            const double* obj_dual,
                             const SleqpVec* direction,
                             const SleqpVec* cons_duals,
                             double* bilinear_prod);

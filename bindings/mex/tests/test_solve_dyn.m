@@ -55,11 +55,11 @@ function g = obj_grad (x, error_info)
        (-2*b*(x(1)^2 - x(2)))];
 end
 
-function H = hess (x, obj_dual, cons_dual, error_info)
+function H = hess (x, cons_dual, error_info)
   global a b;
 
-  H = obj_dual*[(8*b*x(1)^2 + 4*b*(x(1)^2 - x(2)) + 2) 0;
-                (-4*b*x(1)) (2*b)];
+  H = [(8*b*x(1)^2 + 4*b*(x(1)^2 - x(2)) + 2) 0;
+       (-4*b*x(1)) (2*b)];
 
   H = sparse(H);
 end

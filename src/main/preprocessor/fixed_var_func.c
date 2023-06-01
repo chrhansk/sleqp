@@ -149,7 +149,6 @@ fixed_var_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* data)
 
 static SLEQP_RETCODE
 fixed_var_hess_prod(SleqpFunc* func,
-                    const double* obj_dual,
                     const SleqpVec* direction,
                     const SleqpVec* cons_duals,
                     SleqpVec* product,
@@ -163,7 +162,6 @@ fixed_var_hess_prod(SleqpFunc* func,
                                                   func_data->fixed_indices));
 
   SLEQP_CALL(sleqp_func_hess_prod(func_data->func,
-                                  obj_dual,
                                   func_data->direction,
                                   cons_duals,
                                   func_data->product));

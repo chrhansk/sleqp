@@ -64,14 +64,11 @@ class LSQFunc:
     def cons_jac(self):
         return np.zeros((num_constraints, num_variables))
 
-    def hess_prod(self, obj_dual, direction, cons_dual):
-
-        if not obj_dual:
-          return np.zeros((self.num_vars,))
+    def hess_prod(self, direction, cons_dual):
 
         # use the first-order approximation to the Hessian
-        return obj_dual * np.dot(np.transpose(self.lsq_jac),
-                                 np.dot(self.lsq_jac, direction))
+        return np.dot(np.transpose(self.lsq_jac),
+                      np.dot(self.lsq_jac, direction))
 
 
 class LSQImplicitFunc:
@@ -139,13 +136,9 @@ class LSQImplicitFunc:
     def obj_grad(self):
         return self.eval_lsq_jac_adjoint(self.lsq_val)
 
-    def hess_prod(self, obj_dual, direction, cons_dual):
-
-        if not obj_dual:
-          return np.zeros((self.num_vars,))
-
+    def hess_prod(self, direction, cons_dual):
         # use the first-order approximation to the Hessian
-        return obj_dual * self.eval_lsq_jac_adjoint(self.eval_lsq_jac_forward(direction))
+        return self.eval_lsq_jac_adjoint(self.eval_lsq_jac_forward(direction))
 
 
 class LSQTest(unittest.TestCase):

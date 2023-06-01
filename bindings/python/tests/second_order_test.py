@@ -32,8 +32,8 @@ class Func:
     [x, y] = self.v
     return np.array([[2*x, 2*y]])
 
-  def hess_prod(self, obj_dual, direction, cons_duals):
-    return 4*obj_dual*direction + 2*cons_duals.item()*direction
+  def hess_prod(self, direction, cons_duals):
+    return 4.*direction + 2*cons_duals.item()*direction
 
 
 class SecondOrderTest(unittest.TestCase):

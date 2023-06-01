@@ -126,8 +126,6 @@ check_residuals(SleqpSteihaugSolver* solver,
                 const SleqpVec* multipliers,
                 const SleqpVec* gradient)
 {
-  const double one = 1.;
-
   SleqpProblem* problem = solver->problem;
   SleqpParams* params   = solver->params;
 
@@ -135,7 +133,7 @@ check_residuals(SleqpSteihaugSolver* solver,
   const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
 
   SLEQP_CALL(
-    sleqp_problem_hess_prod(problem, &one, solver->z, multipliers, solver->Bd));
+    sleqp_problem_hess_prod(problem, solver->z, multipliers, solver->Bd));
 
   SLEQP_CALL(
     sleqp_vec_add(solver->Bd, gradient, zero_eps, solver->sparse_cache));
@@ -197,10 +195,7 @@ steihaug_tr_dual(SleqpSteihaugSolver* solver,
 {
   SleqpProblem* problem = solver->problem;
 
-  const double one = 1.;
-
   SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                     &one,
                                      newton_step,
                                      multipliers,
                                      solver->Bd));
@@ -240,8 +235,6 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 
   solver->min_rayleigh = 1.;
   solver->max_rayleigh = 1.;
-
-  const double one = 1.;
 
   const double stat_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_STAT_TOL);
@@ -345,7 +338,6 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 
     // compute B_k * d_j
     SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &one,
                                        solver->d,
                                        multipliers,
                                        solver->Bd));

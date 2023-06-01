@@ -67,14 +67,12 @@ dyn_rosenbrock_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 
 static SLEQP_RETCODE
 dyn_rosenbrock_hess_prod(SleqpFunc* func,
-                         const double* obj_dual,
                          const SleqpVec* direction,
                          const SleqpVec* cons_duals,
                          SleqpVec* product,
                          void* func_data)
 {
   SLEQP_CALL(sleqp_func_hess_prod(rosenbrock_func,
-                                  obj_dual,
                                   direction,
                                   cons_duals,
                                   product));

@@ -269,10 +269,7 @@ START_TEST(test_hess_prod)
                                    SLEQP_VALUE_REASON_NONE,
                                    &reject));
 
-  const double one = 1.;
-
   ASSERT_CALL(sleqp_func_hess_prod(fixed_var_func,
-                                   &one,
                                    fixed_direction,
                                    cons_duals,
                                    fixed_product));
@@ -283,7 +280,7 @@ START_TEST(test_hess_prod)
                                    &reject));
 
   ASSERT_CALL(
-    sleqp_func_hess_prod(quadconsfunc, &one, direction, cons_duals, product));
+    sleqp_func_hess_prod(quadconsfunc, direction, cons_duals, product));
 
   ck_assert(sleqp_vec_value_at(fixed_product, 0)
             == sleqp_vec_value_at(product, 1));

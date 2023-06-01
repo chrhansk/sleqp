@@ -508,11 +508,9 @@ sleqp_working_step_set_multipliers(SleqpWorkingStep* step,
   SleqpProblem* problem = step->problem;
   SleqpVec* primal      = sleqp_direction_primal(step->step_direction);
 
-  const double one         = 1.;
   SleqpVec* direction_hess = sleqp_direction_hess(step->step_direction);
 
   SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                     &one,
                                      primal,
                                      multipliers,
                                      direction_hess));

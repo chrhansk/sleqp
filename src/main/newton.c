@@ -259,10 +259,8 @@ stationarity_residuum(NewtonSolver* solver,
   const double zero_eps
     = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
 
-  double one = 1.;
-
   SLEQP_CALL(
-    sleqp_problem_hess_prod(problem, &one, tr_step, multipliers, tr_prod));
+    sleqp_problem_hess_prod(problem, tr_step, multipliers, tr_prod));
 
   SLEQP_CALL(sleqp_vec_add(tr_prod, gradient, zero_eps, sparse_cache));
 

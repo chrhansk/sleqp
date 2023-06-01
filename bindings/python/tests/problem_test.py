@@ -22,7 +22,7 @@ class Func:
     def cons_jac(self):
         return np.zeros((num_constraints, num_variables))
 
-    def hess_prod(self, obj_dual, direction, cons_dual):
+    def hess_prod(self, direction, cons_dual):
         return np.zeros((num_variables,))
 
 

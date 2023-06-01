@@ -46,8 +46,6 @@ struct SleqpDerivChecker
   SleqpVec* check_jac_row;
 };
 
-static const double one = 1.;
-
 static SLEQP_RETCODE
 restore_iterate(SleqpDerivChecker* deriv_checker, SleqpIterate* iterate)
 {
@@ -156,7 +154,6 @@ compute_hessian_cons_products(SleqpDerivChecker* deriv_checker, int j)
     SLEQP_CALL(create_unit_direction(deriv_checker->multipliers, k));
 
     SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &one,
                                        unit_direction,
                                        deriv_checker->multipliers,
                                        deriv_checker->hessian_prod_cache));
@@ -203,7 +200,6 @@ compute_hessian_products(SleqpDerivChecker* deriv_checker,
     SLEQP_CALL(sleqp_vec_clear(deriv_checker->multipliers));
 
     SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &one,
                                        unit_direction,
                                        deriv_checker->multipliers,
                                        deriv_checker->hessian_prod_func));
@@ -219,7 +215,6 @@ compute_hessian_products(SleqpDerivChecker* deriv_checker,
     SleqpVec* multipliers = sleqp_iterate_cons_dual(iterate);
 
     SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                       &one,
                                        unit_direction,
                                        multipliers,
                                        deriv_checker->hessian_prod));

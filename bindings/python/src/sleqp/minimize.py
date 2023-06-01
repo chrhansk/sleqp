@@ -62,13 +62,11 @@ class _MinFunc:
     self._eval_obj_grad()
     return self._obj_grad
 
-  def hess_prod(self, obj_dual, direction, cons_duals):
+  def hess_prod(self, direction, cons_duals):
     self._eval_obj_grad()
 
     prod = self.objective.hess_prod(direction,
                                     self.args)
-
-    prod *= obj_dual
 
     if self.constraints:
       cons_prod = self.constraints.hess_prod(direction,

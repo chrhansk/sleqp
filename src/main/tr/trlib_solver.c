@@ -196,12 +196,11 @@ check_optimality(SolverData* data,
 
   const double zero_eps
     = sleqp_params_value(data->params, SLEQP_PARAM_ZERO_EPS);
-  const double one = 1.;
 
   (*is_optimal) = true;
 
   SLEQP_CALL(
-    sleqp_problem_hess_prod(problem, &one, newton_step, multipliers, data->Hp));
+    sleqp_problem_hess_prod(problem, newton_step, multipliers, data->Hp));
 
   SLEQP_CALL(sleqp_vec_add(gradient, data->Hp, zero_eps, data->g));
 
@@ -352,8 +351,6 @@ trlib_loop(SolverData* data,
                                     &flt2,         // trlib_flt_t *flt2
                                     &flt3);        // trlib_flt_t *flt3
 
-    const double one = 1.;
-
     init = 0;
 
     switch (action)
@@ -382,7 +379,7 @@ trlib_loop(SolverData* data,
       SLEQP_CALL(sleqp_vec_dot(data->v, data->g, &v_dot_g));
 
       SLEQP_CALL(
-        sleqp_problem_hess_prod(problem, &one, data->p, multipliers, data->Hp));
+        sleqp_problem_hess_prod(problem, data->p, multipliers, data->Hp));
 
       SLEQP_CALL(sleqp_vec_dot(data->p, data->Hp, &p_dot_Hp));
 
@@ -507,7 +504,6 @@ trlib_loop(SolverData* data,
     case TRLIB_CLA_CONV_HARD:
     {
       SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                         &one,
                                          data->s,
                                          multipliers,
                                          data->sparse_cache));
@@ -559,7 +555,6 @@ trlib_loop(SolverData* data,
         SLEQP_CALL(sleqp_vec_copy(data->sparse_cache, data->p));
 
         SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                           &one,
                                            data->p,
                                            multipliers,
                                            data->Hp));
@@ -591,7 +586,6 @@ trlib_loop(SolverData* data,
         SLEQP_CALL(sleqp_vec_copy(data->sparse_cache, data->p));
 
         SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                           &one,
                                            data->p,
                                            multipliers,
                                            data->Hp));
@@ -611,7 +605,6 @@ trlib_loop(SolverData* data,
       double lin_term, quad_term;
 
       SLEQP_CALL(sleqp_problem_hess_bilinear(problem,
-                                             &one,
                                              data->s,
                                              multipliers,
                                              &quad_term));

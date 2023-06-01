@@ -210,31 +210,20 @@ lsq_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 static SLEQP_RETCODE
 compute_lsq_hess_prod(SleqpFunc* func,
                       SleqpLSQData* lsq_data,
-                      const double* obj_dual,
                       const SleqpVec* direction,
                       SleqpVec* destination)
 {
-  if (obj_dual)
-  {
-    SLEQP_CALL(
-      sleqp_lsq_func_jac_forward(func, direction, lsq_data->lsq_forward));
+  SLEQP_CALL(
+    sleqp_lsq_func_jac_forward(func, direction, lsq_data->lsq_forward));
 
-    SLEQP_CALL(
-      sleqp_lsq_func_jac_adjoint(func, lsq_data->lsq_forward, destination));
-
-    SLEQP_CALL(sleqp_vec_scale(destination, *obj_dual));
-  }
-  else
-  {
-    SLEQP_CALL(sleqp_vec_clear(destination));
-  }
+  SLEQP_CALL(
+    sleqp_lsq_func_jac_adjoint(func, lsq_data->lsq_forward, destination));
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 lsq_func_hess_product(SleqpFunc* func,
-                      const double* obj_dual,
                       const SleqpVec* direction,
                       const SleqpVec* cons_duals,
                       SleqpVec* product,
@@ -253,7 +242,6 @@ lsq_func_hess_product(SleqpFunc* func,
 
     SLEQP_CALL(compute_lsq_hess_prod(func,
                                      lsq_data,
-                                     obj_dual,
                                      direction,
                                      initial_product));
 
@@ -267,7 +255,7 @@ lsq_func_hess_product(SleqpFunc* func,
   else
   {
     SLEQP_CALL(
-      compute_lsq_hess_prod(func, lsq_data, obj_dual, direction, product));
+      compute_lsq_hess_prod(func, lsq_data, direction, product));
   }
 
   return SLEQP_OKAY;

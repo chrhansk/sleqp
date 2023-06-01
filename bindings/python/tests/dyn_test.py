@@ -23,9 +23,8 @@ class DynRosenbrockFunc:
   def obj_grad(self):
     return self.func.obj_grad()
 
-  def hess_prod(self, obj_dual, direction, cons_duals):
-    return self.func.hess_prod(obj_dual,
-                               direction,
+  def hess_prod(self, direction, cons_duals):
+    return self.func.hess_prod(direction,
                                cons_duals)
 
   def eval(self):
