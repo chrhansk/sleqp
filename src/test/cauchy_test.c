@@ -85,7 +85,6 @@ linfunc_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 
 static SLEQP_RETCODE
 linfunc_hess_prod(SleqpFunc* func,
-                  const double* obj_dual,
                   const SleqpVec* direction,
                   const SleqpVec* cons_duals,
                   SleqpVec* product,

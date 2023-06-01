@@ -37,7 +37,6 @@ mex_hess_init(MexHess* hess,
   SLEQP_CALL(sleqp_params_capture(params));
   hess->params = params;
 
-  hess->obj_dual  = mxCreateDoubleScalar(0.);
   hess->cons_dual = mxCreateDoubleMatrix(num_cons, 1, mxREAL);
 
   return SLEQP_OKAY;
@@ -152,7 +151,6 @@ hess_prod_direct(MexHess* hess,
   mxArray* default_args[] = {hess->callbacks.hess,
                              primal,
                              hess->hess_dir,
-                             hess->obj_dual,
                              hess->cons_dual};
 
   if (nrhs == 0)
@@ -187,7 +185,7 @@ hess_prod_matrix(MexHess* hess,
   mxArray* lhs[] = {NULL};
 
   mxArray* default_args[]
-    = {hess->callbacks.hess, primal, hess->obj_dual, hess->cons_dual};
+    = {hess->callbacks.hess, primal, hess->cons_dual};
 
   if (nrhs == 0)
   {
@@ -226,7 +224,6 @@ hess_prod_matrix(MexHess* hess,
 SLEQP_RETCODE
 mex_hess_prod(MexHess* hess,
               mxArray* primal,
-              const double* obj_dual,
               const SleqpVec* direction,
               const SleqpVec* cons_duals,
               mxArray** rhs,
@@ -234,15 +231,6 @@ mex_hess_prod(MexHess* hess,
               SleqpVec* result)
 {
   SLEQP_CALL(sleqp_vec_to_raw(cons_duals, mxGetPr(hess->cons_dual)));
-
-  if (obj_dual)
-  {
-    *mxGetPr(hess->obj_dual) = *obj_dual;
-  }
-  else
-  {
-    *mxGetPr(hess->obj_dual) = 0.;
-  }
 
   if (!!(hess->hess_dir))
   {
@@ -262,7 +250,6 @@ mex_hess_free(MexHess* hess)
   sleqp_free(&hess->args);
 
   mxDestroyArray(hess->cons_dual);
-  mxDestroyArray(hess->obj_dual);
 
   sleqp_free(&hess->product);
   sleqp_free(&hess->direction);

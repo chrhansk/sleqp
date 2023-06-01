@@ -383,7 +383,6 @@ ensure_eval(AmplFuncData* data)
 
 static SLEQP_RETCODE
 ampl_func_hess_product(SleqpFunc* func,
-                       const double* obj_dual,
                        const SleqpVec* direction,
                        const SleqpVec* cons_duals,
                        SleqpVec* product,
@@ -409,12 +408,12 @@ ampl_func_hess_product(SleqpFunc* func,
     }
   }
 
-  double objective_dual = obj_dual ? (*obj_dual) : 0.;
+  double one = 1.;
 
   hvcomp(data->hessian_product,
          data->direction,
          0,
-         &objective_dual,
+         &one,
          data->multipliers);
 
   SLEQP_CALL(sleqp_vec_set_from_raw(product,

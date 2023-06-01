@@ -190,7 +190,6 @@ dyn_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 
 static SLEQP_RETCODE
 dyn_func_hess_product(SleqpFunc* func,
-                      const double* obj_dual,
                       const SleqpVec* direction,
                       const SleqpVec* cons_duals,
                       SleqpVec* product,
@@ -200,7 +199,6 @@ dyn_func_hess_product(SleqpFunc* func,
 
   SLEQP_FUNC_CALL(
     data->callbacks.hess_prod(func,
-                              obj_dual,
                               direction,
                               cons_duals,
                               product,

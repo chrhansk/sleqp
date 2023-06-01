@@ -615,7 +615,6 @@ prepare_cons_duals(SleqpProblem* problem, const SleqpVec* cons_duals)
 
 SLEQP_RETCODE
 sleqp_problem_hess_prod(SleqpProblem* problem,
-                        const double* obj_dual,
                         const SleqpVec* direction,
                         const SleqpVec* cons_duals,
                         SleqpVec* product)
@@ -623,7 +622,6 @@ sleqp_problem_hess_prod(SleqpProblem* problem,
   if (problem->num_linear_constraints == 0)
   {
     return sleqp_func_hess_prod(problem->func,
-                                obj_dual,
                                 direction,
                                 cons_duals,
                                 product);
@@ -632,7 +630,6 @@ sleqp_problem_hess_prod(SleqpProblem* problem,
   SLEQP_CALL(prepare_cons_duals(problem, cons_duals));
 
   return sleqp_func_hess_prod(problem->func,
-                              obj_dual,
                               direction,
                               problem->general_cons_duals,
                               product);
@@ -640,7 +637,6 @@ sleqp_problem_hess_prod(SleqpProblem* problem,
 
 SLEQP_RETCODE
 sleqp_problem_hess_bilinear(SleqpProblem* problem,
-                            const double* obj_dual,
                             const SleqpVec* direction,
                             const SleqpVec* cons_duals,
                             double* bilinear_prod)
@@ -648,7 +644,6 @@ sleqp_problem_hess_bilinear(SleqpProblem* problem,
   if (problem->num_linear_constraints == 0)
   {
     return sleqp_func_hess_bilinear(problem->func,
-                                    obj_dual,
                                     direction,
                                     cons_duals,
                                     bilinear_prod);
@@ -657,7 +652,6 @@ sleqp_problem_hess_bilinear(SleqpProblem* problem,
   SLEQP_CALL(prepare_cons_duals(problem, cons_duals));
 
   return sleqp_func_hess_bilinear(problem->func,
-                                  obj_dual,
                                   direction,
                                   problem->general_cons_duals,
                                   bilinear_prod);

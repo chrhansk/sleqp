@@ -113,7 +113,6 @@ cutest_uncons_func_obj_grad(SleqpFunc* func,
 
 static SLEQP_RETCODE
 cutest_uncons_func_hess_product(SleqpFunc* func,
-                                const double* obj_dual,
                                 const SleqpVec* direction,
                                 const SleqpVec* cons_duals,
                                 SleqpVec* product,

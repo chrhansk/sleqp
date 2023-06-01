@@ -122,18 +122,12 @@ quadconsfunc_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 
 SLEQP_RETCODE
 quadconsfunc_hess_prod(SleqpFunc* func,
-                       const double* obj_dual,
                        const SleqpVec* direction,
                        const SleqpVec* cons_duals,
                        SleqpVec* result,
                        void* func_data)
 {
-  double total_value = 0.;
-
-  if (obj_dual)
-  {
-    total_value += *obj_dual;
-  }
+  double total_value = 1.;
 
   for (int k = 0; k < cons_duals->nnz; ++k)
   {

@@ -59,7 +59,6 @@ degraded_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 
 SLEQP_RETCODE
 degraded_hess_prod(SleqpFunc* func,
-                   const double* obj_dual,
                    const SleqpVec* direction,
                    const SleqpVec* cons_duals,
                    SleqpVec* product,
@@ -67,15 +66,7 @@ degraded_hess_prod(SleqpFunc* func,
 {
   SLEQP_CALL(sleqp_vec_reserve(product, DEGRADED_NUM_VARS));
 
-  if (obj_dual)
-  {
-    SLEQP_CALL(sleqp_vec_copy(direction, product));
-    SLEQP_CALL(sleqp_vec_scale(product, *obj_dual));
-  }
-  else
-  {
-    SLEQP_CALL(sleqp_vec_clear(product));
-  }
+  SLEQP_CALL(sleqp_vec_copy(direction, product));
 
   return SLEQP_OKAY;
 }

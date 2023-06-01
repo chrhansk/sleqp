@@ -49,12 +49,12 @@ function J = cons_jac (x)
   J = sparse([ prod(x)./x; 2*x ]);
 end
 
-function p = hess_prod (x, direction, obj_dual, cons_dual)
+function p = hess_prod (x, direction, cons_dual)
 
-  H = obj_dual*[ 2*x(4)             x(4)   x(4)   2*x(1)+x(2)+x(3);
-                 x(4)               0      0      x(1);
-                 x(4)               0      0      x(1);
-                 2*x(1)+x(2)+x(3)   x(1)   x(1)   0 ];
+  H = [ 2*x(4)             x(4)   x(4)   2*x(1)+x(2)+x(3);
+        x(4)               0      0      x(1);
+        x(4)               0      0      x(1);
+        2*x(1)+x(2)+x(3)   x(1)   x(1)   0 ];
 
   H = H + cons_dual(1)*[    0      x(3)*x(4) x(2)*x(4) x(2)*x(3);
                             x(3)*x(4) 0         x(1)*x(4) x(1)*x(3);

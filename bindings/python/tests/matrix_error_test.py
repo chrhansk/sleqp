@@ -35,7 +35,7 @@ class MatrixErrorFunc:
   def obj_grad(self):
     return np.array([0]*num_variables)
 
-  def hess_prod(self, obj_dual, direction, cons_dual):
+  def hess_prod(self, direction, cons_dual):
     return np.array([0]*num_variables)
 
   def cons_jac(self):

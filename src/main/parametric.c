@@ -165,8 +165,6 @@ search_forward(SleqpParametricSolver* solver,
 
   const double penalty_parameter = solver->penalty_parameter;
 
-  const double one = 1.;
-
   double last_quadratic_merit = *quadratic_merit;
 
   SleqpVec* direction_primal = sleqp_direction_primal(cauchy_direction);
@@ -197,7 +195,6 @@ search_forward(SleqpParametricSolver* solver,
                                     quadratic_merit));
 
       SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                         &one,
                                          direction_primal,
                                          multipliers,
                                          direction_hess));

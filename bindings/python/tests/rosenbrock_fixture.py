@@ -44,15 +44,15 @@ class RosenbrockFunc:
   def cons_jac(self):
     return np.zeros((num_constraints, num_variables))
 
-  def hess_prod(self, obj_dual, direction, _):
+  def hess_prod(self, direction, _):
     [x, y] = self.v
     (a, b) = (self.a, self.b)
     [dx, dy] = direction
 
     xsq = x**2
 
-    product = np.array([((8.*b*xsq + 4.*b*(xsq - y) + 2.)*dx - (4.*b*x)*dy)*obj_dual,
-                        ((-4.*b*x)*dx + (2.*b)*dy)*obj_dual])
+    product = np.array([((8.*b*xsq + 4.*b*(xsq - y) + 2.)*dx - (4.*b*x)*dy),
+                        ((-4.*b*x)*dx + (2.*b)*dy)])
 
     return product
 

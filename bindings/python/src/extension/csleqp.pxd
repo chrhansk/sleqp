@@ -342,7 +342,6 @@ cdef extern from "sleqp.h":
                                                 void* func_data)
 
   ctypedef SLEQP_RETCODE (*SLEQP_FUNC_HESS_PROD)(SleqpFunc* func,
-                                                 const double* obj_dual,
                                                  const SleqpVec* direction,
                                                  const SleqpVec* cons_duals,
                                                  SleqpVec* product,

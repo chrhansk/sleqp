@@ -21,8 +21,8 @@ class PolishingFunc:
 
     return np.array([x - 1, y - 2.5])
 
-  def hess_prod(self, obj_dual, direction, _):
-    return obj_dual * direction
+  def hess_prod(self, direction, _):
+    return direction
 
 # The first linear constraint is active,
 # the second is not. Correspondingly, its

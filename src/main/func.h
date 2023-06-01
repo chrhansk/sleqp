@@ -194,7 +194,6 @@ sleqp_func_get_hess_timer(SleqpFunc* func);
  * Evaluates the product of the Hessian of the Lagrangian of the given function.
  *
  * @param[in]     func              The function
- * @param[in]     obj_dual          The value \f$ \lambda_0 \f$
  * @param[in]     direction         The direction \f$ d \f$
  * @param[in]     cons_duals        The values \f$ \lambda \f$
  * @param[out]    product           The resulting product
@@ -203,7 +202,6 @@ sleqp_func_get_hess_timer(SleqpFunc* func);
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_func_hess_prod(SleqpFunc* func,
-                     const double* obj_dual,
                      const SleqpVec* direction,
                      const SleqpVec* cons_duals,
                      SleqpVec* product);
@@ -213,7 +211,6 @@ sleqp_func_hess_prod(SleqpFunc* func,
  * function.
  *
  * @param[in]     func              The function
- * @param[in]     obj_dual          The value \f$ \lambda_0 \f$
  * @param[in]     direction         The direction \f$ d \f$
  * @param[in]     cons_duals        The values \f$ \lambda \f$
  * @param[out]    bilinear_prod     The resulting bilinear product
@@ -222,7 +219,6 @@ sleqp_func_hess_prod(SleqpFunc* func,
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_func_hess_bilinear(SleqpFunc* func,
-                         const double* obj_dual,
                          const SleqpVec* direction,
                          const SleqpVec* cons_duals,
                          double* bilinear_prod);

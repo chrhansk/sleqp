@@ -101,7 +101,6 @@ mex_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* data)
 
 static SLEQP_RETCODE
 mex_func_hess_prod(SleqpFunc* func,
-                   const double* obj_dual,
                    const SleqpVec* direction,
                    const SleqpVec* cons_duals,
                    SleqpVec* result,
@@ -111,7 +110,6 @@ mex_func_hess_prod(SleqpFunc* func,
 
   SLEQP_CALL(mex_hess_prod(&(func_data->hess),
                            func_data->primal,
-                           obj_dual,
                            direction,
                            cons_duals,
                            NULL,

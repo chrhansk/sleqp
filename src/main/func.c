@@ -372,7 +372,6 @@ sleqp_func_get_hess_timer(SleqpFunc* func)
 
 SLEQP_RETCODE
 sleqp_func_hess_prod(SleqpFunc* func,
-                     const double* obj_dual,
                      const SleqpVec* direction,
                      const SleqpVec* cons_duals,
                      SleqpVec* product)
@@ -393,7 +392,7 @@ sleqp_func_hess_prod(SleqpFunc* func,
 
   SLEQP_FUNC_CALL(
     func->callbacks
-      .hess_prod(func, obj_dual, direction, cons_duals, product, func->data),
+      .hess_prod(func, direction, cons_duals, product, func->data),
     sleqp_func_has_flags(func, SLEQP_FUNC_INTERNAL | SLEQP_FUNC_HESS_INTERNAL),
     SLEQP_FUNC_ERROR_HESS_PROD);
 
@@ -410,7 +409,6 @@ sleqp_func_hess_prod(SleqpFunc* func,
 
 SLEQP_RETCODE
 sleqp_func_hess_bilinear(SleqpFunc* func,
-                         const double* obj_dual,
                          const SleqpVec* direction,
                          const SleqpVec* cons_duals,
                          double* bilinear_prod)
@@ -418,7 +416,7 @@ sleqp_func_hess_bilinear(SleqpFunc* func,
   SLEQP_CALL(sleqp_vec_clear(func->product));
 
   SLEQP_CALL(
-    sleqp_func_hess_prod(func, obj_dual, direction, cons_duals, func->product));
+    sleqp_func_hess_prod(func, direction, cons_duals, func->product));
 
   SLEQP_CALL(sleqp_vec_dot(direction, func->product, bilinear_prod));
 

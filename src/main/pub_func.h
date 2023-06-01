@@ -148,18 +148,17 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
  * The Lagrangian function is given by:
  *
  * \f[
- * L(x, \lambda_0, \lambda) := \lambda_0 f(x) + \langle \lambda, c(x) \rangle
+ * L(x, \lambda) := f(x) + \langle \lambda, c(x) \rangle
  * \f]
  *
  * The product with a direction \f$ d \f$ is then:
  * \f[
- * \nabla_{xx} L(x, \lambda_0, \lambda) d
- * = \left( \lambda_0 \nabla_{xx} f(x) d
+ * \nabla_{xx} L(x, \lambda) d
+ * = \left( \nabla_{xx} f(x) d
  *   + \sum_{i=1}^{m} \lambda_i  \nabla_{xx} c_i(x) d \right)
  * \f]
  *
  * @param[in]     func              The function
- * @param[in]     obj_dual          The value \f$ \lambda_0 \f$
  * @param[in]     direction         The direction \f$ d \f$
  * @param[in]     cons_duals        The values \f$ \lambda \f$
  * @param[out]    product           The resulting product
@@ -167,7 +166,6 @@ typedef SLEQP_RETCODE (*SLEQP_FUNC_CONS_JAC)(SleqpFunc* func,
  *
  **/
 typedef SLEQP_RETCODE (*SLEQP_FUNC_HESS_PROD)(SleqpFunc* func,
-                                              const double* obj_dual,
                                               const SleqpVec* direction,
                                               const SleqpVec* cons_duals,
                                               SleqpVec* product,

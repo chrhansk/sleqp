@@ -19,7 +19,6 @@ typedef struct
   double* direction;
   double* product;
 
-  mxArray* obj_dual;
   mxArray* cons_dual;
 
   mxArray** args;
@@ -37,7 +36,6 @@ mex_hess_init(MexHess* hess,
 SLEQP_RETCODE
 mex_hess_prod(MexHess* hess,
               mxArray* primal,
-              const double* obj_dual,
               const SleqpVec* direction,
               const SleqpVec* cons_duals,
               mxArray** rhs,

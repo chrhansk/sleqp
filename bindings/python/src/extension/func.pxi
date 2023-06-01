@@ -220,7 +220,6 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac_nogil(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod(csleqp.SleqpFunc* func,
-                                               const double* obj_dual,
                                                const csleqp.SleqpVec* direction,
                                                const csleqp.SleqpVec* cons_dual,
                                                csleqp.SleqpVec* product,
@@ -238,11 +237,10 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod(csleqp.SleqpFunc* func,
 
     num_vars = csleqp.sleqp_func_num_vars(func)
 
-    o_dual = obj_dual[0] if obj_dual else 0.
     direction_array = sleqp_sparse_vec_to_array(direction)
     cons_dual_array = sleqp_sparse_vec_to_array(cons_dual)
 
-    product_array = func_obj.hess_prod(o_dual, direction_array, cons_dual_array)
+    product_array = func_obj.hess_prod(direction_array, cons_dual_array)
 
     assert product_array is not None, "hess_prod(...) returned 'None'"
     assert product_array.ndim == 1, "Hessian product must be a vector"
@@ -258,14 +256,12 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod(csleqp.SleqpFunc* func,
 
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod_nogil(csleqp.SleqpFunc* func,
-                                                     const double* obj_dual,
                                                      const csleqp.SleqpVec* direction,
                                                      const csleqp.SleqpVec* cons_dual,
                                                      csleqp.SleqpVec* product,
                                                      void* func_data) nogil:
   with gil:
     return sleqp_func_hess_prod(func,
-                                obj_dual,
                                 direction,
                                 cons_dual,
                                 product,

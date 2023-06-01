@@ -72,7 +72,6 @@ quasi_newton_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 
 static SLEQP_RETCODE
 quasi_newton_func_hess_prod(SleqpFunc* func,
-                            const double* obj_dual,
                             const SleqpVec* direction,
                             const SleqpVec* cons_duals,
                             SleqpVec* product,

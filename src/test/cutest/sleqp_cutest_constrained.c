@@ -492,7 +492,6 @@ sleqp_cutest_eval_linear_coeffs(SleqpFunc* func, SleqpMat* coeffs)
 
 static SLEQP_RETCODE
 cutest_cons_func_hess_product(SleqpFunc* func,
-                              const double* obj_dual,
                               const SleqpVec* direction,
                               const SleqpVec* cons_duals,
                               SleqpVec* product,
@@ -500,9 +499,6 @@ cutest_cons_func_hess_product(SleqpFunc* func,
 {
   CUTestConsFuncData* data = (CUTestConsFuncData*)func_data;
   int status;
-
-  assert(obj_dual);
-  assert(*obj_dual == 1.);
 
   SLEQP_CALL(sleqp_vec_to_raw(direction, data->direction));
 

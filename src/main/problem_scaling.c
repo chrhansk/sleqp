@@ -140,7 +140,6 @@ scaled_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 
 static SLEQP_RETCODE
 scaled_func_hess_prod(SleqpFunc* func,
-                      const double* obj_dual,
                       const SleqpVec* direction,
                       const SleqpVec* cons_duals,
                       SleqpVec* product,
@@ -173,7 +172,6 @@ scaled_func_hess_prod(SleqpFunc* func,
   }
 
   SLEQP_CALL(sleqp_func_hess_prod(problem_scaling->func,
-                                  obj_dual,
                                   problem_scaling->scaled_direction,
                                   problem_scaling->scaled_cons_duals,
                                   product));

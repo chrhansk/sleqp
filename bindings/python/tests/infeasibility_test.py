@@ -27,7 +27,7 @@ class Func:
     x = self.x
     return np.array([[2*x]])
 
-  def hess_prod(self, obj_dual, direction, cons_duals):
+  def hess_prod(self, direction, cons_duals):
     return 2*cons_duals.item()*direction
 
 

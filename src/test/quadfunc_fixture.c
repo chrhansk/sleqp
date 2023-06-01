@@ -77,20 +77,14 @@ quadfunc_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 
 SLEQP_RETCODE
 quadfunc_hess_prod(SleqpFunc* func,
-                   const double* obj_dual,
                    const SleqpVec* direction,
                    const SleqpVec* cons_duals,
                    SleqpVec* result,
                    void* func_data)
 {
-  if (obj_dual)
-  {
-    double total_value = 2. * (*obj_dual);
+  SLEQP_CALL(sleqp_vec_copy(direction, result));
 
-    SLEQP_CALL(sleqp_vec_copy(direction, result));
-
-    SLEQP_CALL(sleqp_vec_scale(result, total_value));
-  }
+  SLEQP_CALL(sleqp_vec_scale(result, 2.));
 
   return SLEQP_OKAY;
 }

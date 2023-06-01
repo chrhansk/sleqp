@@ -21,7 +21,7 @@ class Func:
     def obj_grad(self):
       return self.v
 
-    def hess_prod(self, obj_dual, direction, cons_dual):
+    def hess_prod(self, direction, cons_dual):
       return direction
 
 

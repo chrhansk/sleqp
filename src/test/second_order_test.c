@@ -110,7 +110,6 @@ func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* func_data)
 
 static SLEQP_RETCODE
 func_hess_prod(SleqpFunc* func,
-               const double* obj_dual,
                const SleqpVec* direction,
                const SleqpVec* cons_duals,
                SleqpVec* product,
@@ -129,18 +128,16 @@ func_hess_prod(SleqpFunc* func,
 
   double c_dual = duals[0];
 
-  double o_dual = obj_dual ? *obj_dual : 0.;
-
   SLEQP_CALL(sleqp_vec_reserve(product, num_variables));
 
   {
-    double v = (4 * o_dual + 2 * c_dual) * d_x;
+    double v = (4. + 2. * c_dual) * d_x;
 
     SLEQP_CALL(sleqp_vec_push(product, 0, v));
   }
 
   {
-    double v = (4 * o_dual + 2 * c_dual) * d_y;
+    double v = (4. + 2. * c_dual) * d_y;
 
     SLEQP_CALL(sleqp_vec_push(product, 1, v));
   }

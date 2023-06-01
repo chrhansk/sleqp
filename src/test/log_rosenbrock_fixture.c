@@ -69,7 +69,6 @@ log_rosenbrock_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* func_data)
 
 static SLEQP_RETCODE
 log_rosenbrock_hess_prod(SleqpFunc* func,
-                         const double* obj_dual,
                          const SleqpVec* direction,
                          const SleqpVec* cons_duals,
                          SleqpVec* product,
@@ -91,12 +90,9 @@ log_rosenbrock_hess_prod(SleqpFunc* func,
 
   const double hyy = 20000. / inner + sq(20000.) * sq(y - sq(x)) / sq(inner);
 
-  if (obj_dual)
-  {
-    SLEQP_CALL(sleqp_vec_push(product, 0, (*obj_dual) * hxx * dx + hxy * dy));
+  SLEQP_CALL(sleqp_vec_push(product, 0, hxx * dx + hxy * dy));
 
-    SLEQP_CALL(sleqp_vec_push(product, 1, (*obj_dual) * hxy * dx + hyy * dy));
-  }
+  SLEQP_CALL(sleqp_vec_push(product, 1, hxy * dx + hyy * dy));
 
   return SLEQP_OKAY;
 }
