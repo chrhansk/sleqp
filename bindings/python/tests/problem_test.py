@@ -36,12 +36,12 @@ class ProblemTest(unittest.TestCase):
         self.cons_lb = np.array([-2.]*num_constraints)
         self.cons_ub = np.array([2.]*num_constraints)
 
-        self.params = sleqp.Params()
+        self.settings = sleqp.Settings()
 
         self.func = Func()
 
         self.problem = sleqp.Problem(self.func,
-                                     self.params,
+                                     self.settings,
                                      self.var_lb,
                                      self.var_ub,
                                      self.cons_lb,
@@ -69,7 +69,7 @@ class ProblemTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
           sleqp.Problem(self.func,
-                        self.params,
+                        self.settings,
                         self.var_lb,
                         self.var_ub,
                         cons_lb,
@@ -85,7 +85,7 @@ class ProblemTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
           sleqp.Problem(self.func,
-                        self.params,
+                        self.settings,
                         var_lb,
                         var_ub,
                         self.cons_lb,

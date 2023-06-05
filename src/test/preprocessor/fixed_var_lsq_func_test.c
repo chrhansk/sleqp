@@ -6,7 +6,7 @@
 #include "rosenbrock_lsq_fixture.h"
 
 #include "lsq.h"
-#include "params.h"
+#include "settings.h"
 
 #include "preprocessor/fixed_var_func.h"
 
@@ -19,7 +19,7 @@ SleqpVec* fixed_forward;
 SleqpVec* adjoint;
 SleqpVec* fixed_adjoint;
 
-SleqpParams* params;
+SleqpSettings* settings;
 
 int num_fixed         = 1;
 int fixed_indices[]   = {0};
@@ -36,7 +36,7 @@ setup()
 
   rosenbrock_lsq_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_vec_create_empty(&residuals, rosenbrock_num_residuals));
 
@@ -56,7 +56,7 @@ setup()
 
   ASSERT_CALL(sleqp_fixed_var_lsq_func_create(&fixed_var_func,
                                               rosenbrock_lsq_func,
-                                              params,
+                                              settings,
                                               num_fixed,
                                               fixed_indices,
                                               fixed_values));
@@ -103,7 +103,7 @@ teardown()
   ASSERT_CALL(sleqp_vec_free(&fixed_residuals));
   ASSERT_CALL(sleqp_vec_free(&residuals));
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   rosenbrock_lsq_teardown();
 
@@ -112,7 +112,7 @@ teardown()
 
 START_TEST(test_residuals)
 {
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   ASSERT_CALL(sleqp_lsq_func_residuals(rosenbrock_lsq_func, residuals));
 
@@ -124,7 +124,7 @@ END_TEST
 
 START_TEST(test_jac_forward)
 {
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   ASSERT_CALL(sleqp_vec_push(forward, 1, 1.));
 

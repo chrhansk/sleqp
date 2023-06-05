@@ -4,7 +4,6 @@
 #include "aug_jac.h"
 #include "fact/fact.h"
 #include "iterate.h"
-#include "params.h"
 #include "problem.h"
 
 /**
@@ -16,7 +15,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_reduced_aug_jac_create(SleqpAugJac** star,
                              SleqpProblem* problem,
-                             SleqpParams* params,
+                             SleqpSettings* settings,
                              SleqpFact* factorization);
 
 #endif /* SLEQP_REDUCED_AUG_JAC_H */

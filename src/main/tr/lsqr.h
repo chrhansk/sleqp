@@ -15,14 +15,14 @@
  **/
 
 #include "lsqr_types.h"
-#include "params.h"
+#include "settings.h"
 
 typedef struct SleqpLSQRSolver SleqpLSQRSolver;
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
-                         SleqpParams* params,
+                         SleqpSettings* settings,
                          int forward_dim,
                          int adjoint_dim,
                          SleqpLSQRCallbacks* callbacks,

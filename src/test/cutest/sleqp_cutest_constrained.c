@@ -82,15 +82,15 @@ cutest_cons_data_create(CUTestConsFuncData** star,
                         int num_variables,
                         int num_constraints,
                         int num_linear,
-                        SleqpParams* params)
+                        SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
   CUTestConsFuncData* data = *star;
   int status;
 
-  data->eps      = sleqp_params_value(params, SLEQP_PARAM_EPS);
-  data->zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  data->eps      = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
+  data->zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   data->num_constraints = num_constraints;
   data->num_variables   = num_variables;
@@ -563,7 +563,7 @@ sleqp_cutest_cons_func_create(SleqpFunc** star,
                               int num_variables,
                               int num_constraints,
                               int num_linear,
-                              SleqpParams* params)
+                              SleqpSettings* settings)
 {
   CUTestConsFuncData* data;
 
@@ -573,7 +573,7 @@ sleqp_cutest_cons_func_create(SleqpFunc** star,
                                      num_variables,
                                      num_constraints,
                                      num_linear,
-                                     params));
+                                     settings));
 
   SleqpFuncCallbacks callbacks = {.set_value = cutest_cons_func_set,
                                   .nonzeros  = cutest_cons_func_nonzeros,
@@ -591,7 +591,7 @@ sleqp_cutest_cons_func_create(SleqpFunc** star,
 }
 
 static SLEQP_RETCODE
-adjust_for_linear_offset(SleqpParams* params,
+adjust_for_linear_offset(SleqpSettings* settings,
                          SleqpCutestData* data,
                          const SleqpVec* linear_offset,
                          SleqpVec* sparse_cache,
@@ -602,7 +602,7 @@ adjust_for_linear_offset(SleqpParams* params,
   const int num_linear      = data->num_linear;
   const int num_general     = num_constraints - num_linear;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_set_from_raw(sparse_cache,
                                     data->cons_lb + num_general,
@@ -633,7 +633,7 @@ adjust_for_linear_offset(SleqpParams* params,
 
 static SLEQP_RETCODE
 compute_linear_offset(SleqpFunc* func,
-                      SleqpParams* params,
+                      SleqpSettings* settings,
                       SleqpCutestData* data,
                       const SleqpMat* linear_coeffs,
                       SleqpVec* linear_offset)
@@ -646,7 +646,7 @@ compute_linear_offset(SleqpFunc* func,
   const int num_variables = data->num_variables;
   const int num_linear    = data->num_linear;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_create_empty(&linear, num_linear));
   SLEQP_CALL(sleqp_vec_create_empty(&x, num_variables));
@@ -677,7 +677,7 @@ compute_linear_offset(SleqpFunc* func,
 SLEQP_RETCODE
 sleqp_cutest_cons_problem_create(SleqpProblem** star,
                                  SleqpCutestData* data,
-                                 SleqpParams* params,
+                                 SleqpSettings* settings,
                                  bool force_nonlinear)
 {
   const int num_variables   = data->num_variables;
@@ -685,7 +685,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
   const int num_linear      = force_nonlinear ? 0 : data->num_linear;
   const int num_general     = num_constraints - num_linear;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* var_lb;
   SleqpVec* var_ub;
@@ -729,7 +729,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
                                            num_variables,
                                            num_constraints,
                                            num_linear,
-                                           params));
+                                           settings));
 
   if (num_linear != 0)
   {
@@ -738,9 +738,9 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
     SLEQP_CALL(sleqp_cutest_eval_linear_coeffs(func, linear_coeffs));
 
     SLEQP_CALL(
-      compute_linear_offset(func, params, data, linear_coeffs, linear_offset));
+      compute_linear_offset(func, settings, data, linear_coeffs, linear_offset));
 
-    SLEQP_CALL(adjust_for_linear_offset(params,
+    SLEQP_CALL(adjust_for_linear_offset(settings,
                                         data,
                                         linear_offset,
                                         sparse_cache,
@@ -749,7 +749,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
 
     SLEQP_CALL(sleqp_problem_create(star,
                                     func,
-                                    params,
+                                    settings,
                                     var_lb,
                                     var_ub,
                                     cons_lb,
@@ -762,7 +762,7 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
   {
     SLEQP_CALL(sleqp_problem_create_simple(star,
                                            func,
-                                           params,
+                                           settings,
                                            var_lb,
                                            var_ub,
                                            cons_lb,

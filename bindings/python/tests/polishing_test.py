@@ -45,9 +45,7 @@ class PolishingTest(unittest.TestCase):
 
     self.func = PolishingFunc()
 
-    self.params = sleqp.Params()
-
-    self.options = sleqp.Options()
+    self.settings = sleqp.Settings()
 
     self.linear_coeffs = np.array([[ 1., -2.],
                                    [-1., -2.]])
@@ -59,7 +57,7 @@ class PolishingTest(unittest.TestCase):
                                inf])
 
     self.problem = sleqp.Problem(self.func,
-                                 self.params,
+                                 self.settings,
                                  self.var_lb,
                                  self.var_ub,
                                  self.cons_lb,
@@ -95,11 +93,10 @@ class PolishingTest(unittest.TestCase):
 
   def test_polishing_zero_dual(self):
 
-    self.options.polishing_type = sleqp.PolishingType.ZeroDual
+    self.settings.polishing_type = sleqp.PolishingType.ZeroDual
 
     solver = sleqp.Solver(self.problem,
-                          self.params,
-                          self.options,
+                          self.settings,
                           self.initial_sol)
 
     solver.solve(100, 3600)
@@ -110,11 +107,10 @@ class PolishingTest(unittest.TestCase):
 
   def test_polishing_inactive(self):
 
-    self.options.polishing_type = sleqp.PolishingType.Inactive
+    self.settings.polishing_type = sleqp.PolishingType.Inactive
 
     solver = sleqp.Solver(self.problem,
-                          self.params,
-                          self.options,
+                          self.settings,
                           self.initial_sol)
 
     solver.solve(100, 3600)

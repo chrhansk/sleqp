@@ -71,9 +71,7 @@ class LSQTest(unittest.TestCase):
 
     self.initial_sol = np.array([0., 0.])
 
-    self.params = sleqp.Params()
-
-    self.options = sleqp.Options()
+    self.settings = sleqp.Settings()
 
     self.expected_sol = np.array([1., 1.])
 
@@ -82,7 +80,7 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
-                               self.params,
+                               self.settings,
                                self.var_lb,
                                self.var_ub,
                                self.cons_lb,
@@ -91,8 +89,7 @@ class LSQTest(unittest.TestCase):
                                regularization=1e-4)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
+                          self.settings,
                           self.initial_sol)
 
     solver.solve(100, 3600)
@@ -106,7 +103,7 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
-                               self.params,
+                               self.settings,
                                self.var_lb,
                                self.var_ub,
                                self.cons_lb,
@@ -114,8 +111,7 @@ class LSQTest(unittest.TestCase):
                                num_residuals)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
+                          self.settings,
                           self.initial_sol)
 
     solver.solve(100, 3600)
@@ -129,7 +125,7 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
-                               self.params,
+                               self.settings,
                                self.var_lb,
                                self.var_ub,
                                self.cons_lb,
@@ -137,8 +133,7 @@ class LSQTest(unittest.TestCase):
                                num_residuals)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
+                          self.settings,
                           self.initial_sol)
 
     sleqp.set_release_gil(True)

@@ -9,7 +9,7 @@
 #include "iterate.h"
 #include "log.h"
 #include "mem.h"
-#include "options.h"
+#include "settings.h"
 
 #include "pub_error.h"
 #include "pub_types.h"
@@ -182,20 +182,19 @@ cutest_run_internal(const char* filename,
   }
 
   SleqpCutestData* cutest_data;
-  SleqpParams* params;
 
   SLEQP_CALL(
     sleqp_cutest_data_create(&cutest_data, funit, CUTEst_nvar, CUTEst_ncons));
 
-  SLEQP_CALL(sleqp_params_create(&params));
-
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
-
   SleqpVec* x;
 
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpProblem* problem;
   SleqpSolver* solver;
+
+  SLEQP_CALL(sleqp_settings_create(&settings));
+
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_create(&x, CUTEst_nvar, 0));
 
@@ -207,40 +206,38 @@ cutest_run_internal(const char* filename,
     SLEQP_CALL(sleqp_cutest_cons_problem_create(
       &problem,
       cutest_data,
-      params,
+      settings,
       cutest_options->force_nonlinear_constraints));
   }
   else
   {
     SLEQP_CALL(
-      sleqp_cutest_uncons_problem_create(&problem, cutest_data, params));
+      sleqp_cutest_uncons_problem_create(&problem, cutest_data, settings));
   }
-
-  SLEQP_CALL(sleqp_options_create(&options));
 
   if (cutest_options->enable_preprocessing)
   {
     SLEQP_CALL(
-      sleqp_options_set_bool_value(options,
-                                   SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR,
+      sleqp_settings_set_bool_value(settings,
+                                   SLEQP_SETTINGS_BOOL_ENABLE_PREPROCESSOR,
                                    true));
   }
 
   if (cutest_options->max_num_threads != SLEQP_NONE)
   {
-    SLEQP_CALL(sleqp_options_set_int_value(options,
-                                           SLEQP_OPTION_INT_NUM_THREADS,
-                                           cutest_options->max_num_threads));
+    SLEQP_CALL(sleqp_settings_set_int_value(settings,
+                                            SLEQP_SETTINGS_INT_NUM_THREADS,
+                                            cutest_options->max_num_threads));
   }
 
   /*
   SLEQP_CALL(sleqp_options_set_int_value(options,
-                                         SLEQP_OPTION_INT_DERIV_CHECK,
+                                         SLEQP_SETTINGS_INT_DERIV_CHECK,
                                          SLEQP_DERIV_CHECK_FIRST |
                                          SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
   */
 
-  SLEQP_CALL(sleqp_solver_create(&solver, problem, params, options, x, NULL));
+  SLEQP_CALL(sleqp_solver_create(&solver, problem, settings, x, NULL));
 
   const int max_num_iterations = -1;
   const double time_limit      = cutest_options->time_limit;
@@ -263,13 +260,11 @@ cutest_run_internal(const char* filename,
 
   SLEQP_CALL(sleqp_solver_release(&solver));
 
-  SLEQP_CALL(sleqp_options_release(&options));
-
   SLEQP_CALL(sleqp_problem_release(&problem));
 
   SLEQP_CALL(sleqp_vec_free(&x));
 
-  SLEQP_CALL(sleqp_params_release(&params));
+  SLEQP_CALL(sleqp_settings_release(&settings));
 
   SLEQP_CALL(sleqp_cutest_data_free(&cutest_data));
 

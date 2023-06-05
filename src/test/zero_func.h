@@ -2,14 +2,14 @@
 #define ZERO_FUNC_H
 
 #include "func.h"
-#include "params.h"
+#include "settings.h"
 
 SLEQP_RETCODE
 zero_func_create(SleqpFunc** star, int num_variables, int num_constraints);
 
 SLEQP_RETCODE
 zero_lsq_func_create(SleqpFunc** star,
-                     SleqpParams* params,
+                     SleqpSettings* settings,
                      int num_variables,
                      int num_constraints,
                      int num_residuals);

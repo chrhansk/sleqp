@@ -7,6 +7,7 @@
 #include "func.h"
 #include "log.h"
 #include "mem.h"
+#include "pub_settings.h"
 #include "sparse/mat.h"
 #include "sparse/pub_vec.h"
 
@@ -300,7 +301,7 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
                       int num_constraints,
                       int num_residuals,
                       double lm_factor,
-                      SleqpParams* params,
+                      SleqpSettings* settings,
                       void* func_data)
 {
   assert(lm_factor >= 0.);
@@ -337,7 +338,7 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
   SLEQP_CALL(sleqp_timer_create(&data->forward_timer));
   SLEQP_CALL(sleqp_timer_create(&data->adjoint_timer));
 
-  data->zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  data->zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   data->func_data = func_data;
 

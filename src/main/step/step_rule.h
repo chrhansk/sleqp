@@ -2,7 +2,7 @@
 #define SLEQP_STEP_RULE_H
 
 #include "iterate.h"
-#include "options.h"
+#include "settings.h"
 #include "types.h"
 
 typedef struct SleqpStepRule SleqpStepRule;
@@ -30,7 +30,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_step_rule_create(SleqpStepRule** star,
                        SleqpProblem* problem,
-                       SleqpParams* params,
+                       SleqpSettings* settings,
                        SleqpStepRuleCallbacks* callbacks,
                        void* step_data);
 
@@ -59,7 +59,6 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_step_rule_create_default(SleqpStepRule** star,
                                SleqpProblem* problem,
-                               SleqpParams* params,
-                               const SleqpOptions* options);
+                               SleqpSettings* settings);
 
 #endif /* SLEQP_STEP_RULE_H */

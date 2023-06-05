@@ -3,7 +3,7 @@
 
 cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
                                          csleqp.SleqpFunc* cfunc,
-                                         csleqp.SleqpParams* cparams,
+                                         csleqp.SleqpSettings* csettings,
                                          np.ndarray var_lb,
                                          np.ndarray var_ub,
                                          np.ndarray general_lb,
@@ -42,27 +42,27 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
   try:
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&var_lb_vec,
-                                                        num_vars))
+                                              num_vars))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&var_ub_vec,
-                                                        num_vars))
+                                              num_vars))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&general_lb_vec,
-                                                        num_cons))
+                                              num_cons))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&general_ub_vec,
-                                                        num_cons))
+                                              num_cons))
 
     csleqp_call(csleqp.sleqp_mat_create(&linear_coeffs_mat,
-                                                  num_linear_constraints,
-                                                  num_vars,
-                                                  0))
+                                        num_linear_constraints,
+                                        num_vars,
+                                        0))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&linear_lb_vec,
-                                                        num_linear_constraints))
+                                              num_linear_constraints))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&linear_ub_vec,
-                                                        num_linear_constraints))
+                                              num_linear_constraints))
 
     array_to_sleqp_sparse_vec(var_lb, var_lb_vec)
     array_to_sleqp_sparse_vec(var_ub, var_ub_vec)
@@ -81,7 +81,7 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
 
     csleqp_call(csleqp.sleqp_problem_create(problem,
                                             cfunc,
-                                            cparams,
+                                            csettings,
                                             var_lb_vec,
                                             var_ub_vec,
                                             general_lb_vec,
@@ -117,7 +117,7 @@ cdef class _Problem:
 
   @staticmethod
   cdef _Problem create(csleqp.SleqpFunc* cfunc,
-                       csleqp.SleqpParams* cparams,
+                       csleqp.SleqpSettings* csettings,
                        np.ndarray var_lb,
                        np.ndarray var_ub,
                        np.ndarray cons_lb,
@@ -133,7 +133,7 @@ cdef class _Problem:
 
     csleqp_call(create_problem(&_problem.cproblem,
                                cfunc,
-                               cparams,
+                               csettings,
                                var_lb,
                                var_ub,
                                cons_lb,
@@ -189,7 +189,7 @@ cdef class Problem:
 
   def __cinit__(self,
                 object func,
-                Params params,
+                Settings settings,
                 np.ndarray var_lb,
                 np.ndarray var_ub,
                 np.ndarray cons_lb,
@@ -213,7 +213,7 @@ cdef class Problem:
 
     try:
       self.problem = _Problem.create(cfunc,
-                                     params.params,
+                                     settings.settings,
                                      var_lb,
                                      var_ub,
                                      cons_lb,
@@ -279,7 +279,7 @@ cdef class LSQProblem:
 
   def __cinit__(self,
                 object func,
-                Params params,
+                Settings settings,
                 np.ndarray var_lb,
                 np.ndarray var_ub,
                 np.ndarray cons_lb,
@@ -299,7 +299,7 @@ cdef class LSQProblem:
                                 num_cons,
                                 num_residuals,
                                 properties.get('regularization', 0.),
-                                params.params))
+                                settings.settings))
 
     assert cfunc != NULL
 
@@ -307,7 +307,7 @@ cdef class LSQProblem:
 
     try:
       self.problem = _Problem.create(cfunc,
-                                     params.params,
+                                     settings.settings,
                                      var_lb,
                                      var_ub,
                                      cons_lb,
@@ -373,7 +373,7 @@ cdef class DynProblem:
 
   def __cinit__(self,
                 object func,
-                Params params,
+                Settings settings,
                 np.ndarray var_lb,
                 np.ndarray var_ub,
                 np.ndarray cons_lb,
@@ -395,7 +395,7 @@ cdef class DynProblem:
 
     try:
       self.problem = _Problem.create(cfunc,
-                                     params.params,
+                                     settings.settings,
                                      var_lb,
                                      var_ub,
                                      cons_lb,

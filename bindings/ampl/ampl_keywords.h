@@ -10,8 +10,7 @@ typedef struct SleqpAmplKeywords SleqpAmplKeywords;
 
 SLEQP_RETCODE
 sleqp_ampl_keywords_create(SleqpAmplKeywords** star,
-                           SleqpOptions* options,
-                           SleqpParams* params);
+                           SleqpSettings* settings);
 
 SLEQP_RETCODE
 sleqp_ampl_keywords_get(SleqpAmplKeywords* ampl_keywords,

@@ -10,7 +10,7 @@ typedef struct SleqpTransformation SleqpTransformation;
 SLEQP_RETCODE
 sleqp_transformation_create(SleqpTransformation** star,
                             SleqpPreprocessingState* preprocessing_state,
-                            SleqpParams* params);
+                            SleqpSettings* settings);
 
 SLEQP_RETCODE
 sleqp_transformation_convert_primal(SleqpTransformation* transformation,

@@ -8,8 +8,7 @@
 
 #include "func.h"
 #include "iterate.h"
-#include "options.h"
-#include "params.h"
+#include "settings.h"
 #include "timer.h"
 
 #include "quasi_newton_types.h"
@@ -18,7 +17,6 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_sr1_create(SleqpQuasiNewton** star,
                  SleqpFunc* func,
-                 SleqpParams* params,
-                 SleqpOptions* options);
+                 SleqpSettings* settings);
 
 #endif /* SLEQP_SR1_H */

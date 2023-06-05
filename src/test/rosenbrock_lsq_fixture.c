@@ -3,7 +3,7 @@
 #include <math.h>
 
 #include "lsq.h"
-#include "params.h"
+#include "settings.h"
 
 typedef struct RosenbrockData
 {
@@ -27,7 +27,7 @@ static const int num_residuals   = 3;
 
 const int rosenbrock_num_residuals = num_residuals;
 
-static SleqpParams* params;
+static SleqpSettings* settings;
 
 SleqpFunc* rosenbrock_lsq_func;
 
@@ -143,7 +143,7 @@ rosenbrock_lsq_jac_adjoint(SleqpFunc* func,
 void
 rosenbrock_lsq_setup()
 {
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_malloc(&rosenbrock_func_data));
 
@@ -168,7 +168,7 @@ rosenbrock_lsq_setup()
                                     num_constraints, // num constraints
                                     num_residuals,   // num residuals
                                     0.,              // ML-term
-                                    params,
+                                    settings,
                                     rosenbrock_func_data));
 }
 
@@ -183,5 +183,5 @@ rosenbrock_lsq_teardown()
 
   sleqp_free(&rosenbrock_func_data);
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }

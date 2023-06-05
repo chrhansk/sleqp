@@ -40,14 +40,12 @@ class SecondOrderTest(unittest.TestCase):
     cons_lb = np.array([-1.])
     cons_ub = np.array([-1.])
 
-    self.params = sleqp.Params()
-
-    self.options = sleqp.Options()
+    self.settings = sleqp.Settings()
 
     func = Func()
 
     problem = sleqp.Problem(func,
-                            self.params,
+                            self.settings,
                             var_lb,
                             var_ub,
                             cons_lb,
@@ -56,8 +54,7 @@ class SecondOrderTest(unittest.TestCase):
     self.initial_sol = np.array([10.])
 
     self.solver = sleqp.Solver(problem,
-                               self.params,
-                               self.options,
+                               self.settings,
                                self.initial_sol)
 
     self.expected_sol = np.array([0.])

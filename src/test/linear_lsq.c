@@ -14,7 +14,7 @@ const int linear_lsq_num_residuals   = LINEAR_LSQ_NUM_RESIDUALS;
 SleqpMat* linear_lsq_matrix;
 SleqpVec* linear_lsq_rhs;
 
-SleqpParams* linear_lsq_params;
+SleqpSettings* linear_lsq_settings;
 SleqpFunc* linear_lsq_func;
 
 SleqpVec* linear_lsq_var_lb;
@@ -45,7 +45,7 @@ static SLEQP_RETCODE
 lsq_residuals(SleqpFunc* func, SleqpVec* residual, void* func_data)
 {
   const double zero_eps
-    = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_mat_mult_vec(linear_lsq_matrix,
                                 linear_lsq_current,
@@ -73,7 +73,7 @@ lsq_jac_forward(SleqpFunc* func,
                 void* func_data)
 {
   const double zero_eps
-    = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_mat_mult_vec(linear_lsq_matrix,
                                 forward_direction,
@@ -94,7 +94,7 @@ lsq_jac_adjoint(SleqpFunc* func,
                 void* func_data)
 {
   const double zero_eps
-    = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_mat_mult_vec_trans(linear_lsq_matrix,
                                       adjoint_direction,
@@ -190,7 +190,7 @@ linear_lsq_setup()
   ASSERT_CALL(
     sleqp_vec_create_empty(&linear_lsq_forward, linear_lsq_num_residuals));
 
-  ASSERT_CALL(sleqp_params_create(&linear_lsq_params));
+  ASSERT_CALL(sleqp_settings_create(&linear_lsq_settings));
 
   SleqpLSQCallbacks callbacks = {.set_value       = func_set,
                                  .lsq_residuals   = lsq_residuals,
@@ -206,7 +206,7 @@ linear_lsq_setup()
                                     linear_lsq_num_constraints,
                                     linear_lsq_num_residuals,
                                     0.,
-                                    linear_lsq_params,
+                                    linear_lsq_settings,
                                     NULL));
 }
 
@@ -215,7 +215,7 @@ linear_lsq_teardown()
 {
   ASSERT_CALL(sleqp_func_release(&linear_lsq_func));
 
-  ASSERT_CALL(sleqp_params_release(&linear_lsq_params));
+  ASSERT_CALL(sleqp_settings_release(&linear_lsq_settings));
 
   ASSERT_CALL(sleqp_vec_free(&linear_lsq_current));
 

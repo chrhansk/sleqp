@@ -153,9 +153,7 @@ class LSQTest(unittest.TestCase):
         self.cons_lb = np.full((self.num_cons,), 0.)
         self.cons_ub = np.full((self.num_cons,), 0.)
 
-        self.params = sleqp.Params()
-
-        self.options = sleqp.Options(deriv_check=sleqp.DerivCheck.First)
+        self.settings = sleqp.Settings(deriv_check=sleqp.DerivCheck.First)
 
         self.initial_sol = np.full((self.num_vars,), 0.)
 
@@ -167,15 +165,14 @@ class LSQTest(unittest.TestCase):
         func = LSQFunc()
 
         problem = sleqp.Problem(func,
-                                self.params,
+                                self.settings,
                                 self.var_lb,
                                 self.var_ub,
                                 self.cons_lb,
                                 self.cons_ub)
 
         solver = sleqp.Solver(problem,
-                              self.params,
-                              self.options,
+                              self.settings,
                               self.initial_sol)
 
         solver.solve(100, 3600)
@@ -190,15 +187,14 @@ class LSQTest(unittest.TestCase):
         func = LSQImplicitFunc()
 
         problem = sleqp.Problem(func,
-                                self.params,
+                                self.settings,
                                 self.var_lb,
                                 self.var_ub,
                                 self.cons_lb,
                                 self.cons_ub)
 
         solver = sleqp.Solver(problem,
-                              self.params,
-                              self.options,
+                              self.settings,
                               self.initial_sol)
 
         solver.solve(100, 3600)

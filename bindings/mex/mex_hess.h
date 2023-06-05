@@ -12,7 +12,7 @@ typedef struct
     mxArray* hess;
   } callbacks;
 
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   mxArray* hess_dir;
 
@@ -28,7 +28,7 @@ typedef struct
 
 SLEQP_RETCODE
 mex_hess_init(MexHess* hess,
-              SleqpParams* params,
+              SleqpSettings* settings,
               const mxArray* mex_callbacks,
               const int num_vars,
               const int num_cons);

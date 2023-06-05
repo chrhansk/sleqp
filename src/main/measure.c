@@ -19,7 +19,7 @@ struct SleqpMeasure
   int refcount;
 
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   double penalty_parameter;
 
@@ -43,7 +43,7 @@ struct SleqpMeasure
 SLEQP_RETCODE
 sleqp_measure_create(SleqpMeasure** star,
                      SleqpProblem* problem,
-                     SleqpParams* params)
+                     SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -56,8 +56,8 @@ sleqp_measure_create(SleqpMeasure** star,
   SLEQP_CALL(sleqp_problem_capture(problem));
   measure->problem = problem;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  measure->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  measure->settings = settings;
 
   const int num_cons = sleqp_problem_num_cons(problem);
 
@@ -115,7 +115,7 @@ compute_cons_nonlin(SleqpMeasure* measure,
   SleqpVec* cons_nonlin = measure->cons_nonlin;
 
   const double zero_eps
-    = sleqp_params_value(measure->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(measure->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* direction_cons_jac = sleqp_direction_cons_jac(direction);
 
@@ -441,7 +441,7 @@ measure_free(SleqpMeasure** star)
 
   SLEQP_CALL(sleqp_vec_free(&measure->expected_cons_val));
 
-  SLEQP_CALL(sleqp_params_release(&measure->params));
+  SLEQP_CALL(sleqp_settings_release(&measure->settings));
   SLEQP_CALL(sleqp_problem_release(&measure->problem));
 
   sleqp_free(star);

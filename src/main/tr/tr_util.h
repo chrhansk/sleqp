@@ -1,13 +1,13 @@
 #ifndef SLEQP_TR_UTIL_H
 #define SLEQP_TR_UTIL_H
 
-#include "params.h"
 #include "sparse/vec.h"
+#include "settings.h"
 
 SLEQP_RETCODE
 sleqp_tr_compute_bdry_sol(const SleqpVec* previous,
                           const SleqpVec* direction,
-                          SleqpParams* params,
+                          SleqpSettings* settings,
                           double radius,
                           SleqpVec* result);
 

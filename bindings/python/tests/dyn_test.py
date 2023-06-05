@@ -50,22 +50,19 @@ class DynRosenbrockFunc:
 class DynTest(unittest.TestCase):
 
   def setUp(self):
-    self.params = sleqp.Params()
-
-    self.options = sleqp.Options()
+    self.settings = sleqp.Settings()
 
     self.func = DynRosenbrockFunc()
 
     self.problem = sleqp.DynProblem(self.func,
-                                    self.params,
+                                    self.settings,
                                     var_lb,
                                     var_ub,
                                     cons_lb,
                                     cons_ub)
 
     self.solver = sleqp.Solver(self.problem,
-                               self.params,
-                               self.options,
+                               self.settings,
                                initial_sol)
 
   def test_solve(self):
@@ -85,8 +82,7 @@ class DynTest(unittest.TestCase):
     self.func.set_obj_weight = error_func
     with self.assertRaises(Exception):
       solver = sleqp.Solver(self.problem,
-                            self.params,
-                            self.options,
+                            self.settings,
                             initial_sol)
       solver.solve(100, 3600)
 

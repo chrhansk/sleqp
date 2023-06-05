@@ -14,7 +14,7 @@ struct SleqpParametricSolver
 {
   int refcount;
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
   SleqpMerit* merit;
   SleqpLineSearch* linesearch;
 
@@ -36,8 +36,7 @@ struct SleqpParametricSolver
 SLEQP_RETCODE
 sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                SleqpProblem* problem,
-                               SleqpParams* params,
-                               SleqpOptions* options,
+                               SleqpSettings* settings,
                                SleqpMerit* merit,
                                SleqpLineSearch* linesearch)
 {
@@ -50,8 +49,8 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
   solver->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(solver->problem));
 
-  solver->params = params;
-  SLEQP_CALL(sleqp_params_capture(solver->params));
+  solver->settings = settings;
+  SLEQP_CALL(sleqp_settings_capture(solver->settings));
 
   solver->merit = merit;
   SLEQP_CALL(sleqp_merit_capture(solver->merit));
@@ -69,10 +68,10 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
   SLEQP_CALL(
     sleqp_vec_create_empty(&solver->combined_cons_val, num_constraints));
 
-  SLEQP_CALL(sleqp_direction_create(&solver->last_direction, problem, params));
+  SLEQP_CALL(sleqp_direction_create(&solver->last_direction, problem, settings));
 
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY);
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_PARAMETRIC_CAUCHY);
 
   if (parametric_cauchy == SLEQP_PARAMETRIC_CAUCHY_COARSE)
   {
@@ -109,12 +108,12 @@ has_sufficient_decrease(SleqpParametricSolver* solver,
 {
   double linear_violation, hessian_product;
 
-  const double eta = sleqp_params_value(solver->params, SLEQP_PARAM_CAUCHY_ETA);
+  const double eta = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_CAUCHY_ETA);
 
   SleqpProblem* problem = solver->problem;
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const double exact_violation = solver->exact_violation;
 
@@ -161,7 +160,7 @@ search_forward(SleqpParametricSolver* solver,
 {
   SleqpProblem* problem = solver->problem;
 
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
   const double penalty_parameter = solver->penalty_parameter;
 
@@ -273,7 +272,7 @@ search_backtracking(SleqpParametricSolver* solver,
     SLEQP_CALL(sleqp_cauchy_lp_step(cauchy_data, direction_primal));
 
     const double zero_eps
-      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
     SLEQP_CALL(sleqp_direction_reset(cauchy_direction,
                                      solver->problem,
@@ -284,7 +283,7 @@ search_backtracking(SleqpParametricSolver* solver,
 
 #if SLEQP_DEBUG
     {
-      const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+      const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
       const double step_norm = sleqp_vec_inf_norm(direction_primal);
 
@@ -345,7 +344,7 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
     SLEQP_CALL(sleqp_vec_copy(lp_step, direction_primal));
 
     const double zero_eps
-      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
     SLEQP_CALL(sleqp_direction_reset(cauchy_direction,
                                      solver->problem,
@@ -405,7 +404,7 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
 
 #if SLEQP_DEBUG
   {
-    const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+    const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
     SleqpVec* cauchy_step = sleqp_direction_primal(cauchy_direction);
 
@@ -444,7 +443,7 @@ parametric_solver_free(SleqpParametricSolver** star)
 
   SLEQP_CALL(sleqp_merit_release(&solver->merit));
 
-  SLEQP_CALL(sleqp_params_release(&solver->params));
+  SLEQP_CALL(sleqp_settings_release(&solver->settings));
 
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
 

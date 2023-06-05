@@ -5,7 +5,7 @@
 
 typedef struct
 {
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   // Callbacks
   struct
@@ -46,7 +46,7 @@ SLEQP_RETCODE
 create_lsq_func_data(LSQFuncData** star,
                      const mxArray* mex_x0,
                      const mxArray* mex_callbacks,
-                     SleqpParams* params,
+                     SleqpSettings* settings,
                      int num_variables,
                      int num_constraints,
                      int* num_residuals)
@@ -57,8 +57,8 @@ create_lsq_func_data(LSQFuncData** star,
 
   *func_data = (LSQFuncData){0};
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  func_data->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  func_data->settings = settings;
 
   SLEQP_CALL(mex_callback_from_struct(mex_callbacks,
                                       MEX_INPUT_LSQ_RES,
@@ -116,7 +116,7 @@ mex_lsq_func_cons_val(SleqpFunc* func, SleqpVec* cons_val, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.cons_val, func_data->primal};
 
-  MEX_EVAL_INTO_VEC(rhs, func_data->params, cons_val);
+  MEX_EVAL_INTO_VEC(rhs, func_data->settings, cons_val);
 
   return SLEQP_OKAY;
 }
@@ -128,7 +128,7 @@ mex_lsq_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.cons_jac, func_data->primal};
 
-  MEX_EVAL_INTO_SPARSE_MATRIX(rhs, func_data->params, cons_jac);
+  MEX_EVAL_INTO_SPARSE_MATRIX(rhs, func_data->settings, cons_jac);
 
   return SLEQP_OKAY;
 }
@@ -140,7 +140,7 @@ mex_lsq_residuals(SleqpFunc* func, SleqpVec* residual, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.lsq_residuals, func_data->primal};
 
-  MEX_EVAL_INTO_VEC(rhs, func_data->params, residual);
+  MEX_EVAL_INTO_VEC(rhs, func_data->settings, residual);
 
   return SLEQP_OKAY;
 }
@@ -160,7 +160,7 @@ mex_lsq_jac_forward(SleqpFunc* func,
                     func_data->primal,
                     func_data->forward_dir};
 
-  MEX_EVAL_INTO_VEC(rhs, func_data->params, product);
+  MEX_EVAL_INTO_VEC(rhs, func_data->settings, product);
 
   return SLEQP_OKAY;
 }
@@ -180,7 +180,7 @@ mex_lsq_jac_adjoint(SleqpFunc* func,
                     func_data->primal,
                     func_data->adjoint_dir};
 
-  MEX_EVAL_INTO_VEC(rhs, func_data->params, product);
+  MEX_EVAL_INTO_VEC(rhs, func_data->settings, product);
 
   return SLEQP_OKAY;
 }
@@ -194,7 +194,7 @@ mex_lsq_func_free(void* data)
   mxDestroyArray(func_data->forward_dir);
   mxDestroyArray(func_data->primal);
 
-  SLEQP_CALL(sleqp_params_release(&func_data->params));
+  SLEQP_CALL(sleqp_settings_release(&func_data->settings));
 
   sleqp_free(&func_data);
 
@@ -205,7 +205,7 @@ SLEQP_RETCODE
 mex_lsq_func_create(SleqpFunc** star,
                     const mxArray* mex_x0,
                     const mxArray* mex_callbacks,
-                    SleqpParams* params,
+                    SleqpSettings* settings,
                     int num_variables,
                     int num_constraints)
 {
@@ -224,7 +224,7 @@ mex_lsq_func_create(SleqpFunc** star,
   SLEQP_CALL(create_lsq_func_data(&func_data,
                                   mex_x0,
                                   mex_callbacks,
-                                  params,
+                                  settings,
                                   num_variables,
                                   num_constraints,
                                   &num_residuals));
@@ -235,7 +235,7 @@ mex_lsq_func_create(SleqpFunc** star,
                                    num_constraints,
                                    num_residuals,
                                    0.,
-                                   params,
+                                   settings,
                                    func_data));
 
   return SLEQP_OKAY;

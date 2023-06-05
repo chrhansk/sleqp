@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "enum.h"
-#include "options.h"
+#include "settings.h"
 #include "types.h"
 
 #define BUF_SIZE 256
@@ -49,12 +49,12 @@ generate_mex_enum(const SleqpEnum* sleqp_enum, const char* desc)
 int
 main()
 {
-  SleqpOptions* options;
+  SleqpSettings* settings;
 
-  SLEQP_CALL(sleqp_options_create(&options));
+  SLEQP_CALL(sleqp_settings_create(&settings));
 
   {
-    const SleqpEnum* option_enums[SLEQP_NUM_ENUM_OPTIONS]
+    const SleqpEnum* settings_enums[SLEQP_NUM_ENUM_SETTINGS]
       = {sleqp_enum_deriv_check(),
          sleqp_enum_hess_eval(),
          sleqp_enum_dual_estimation(),
@@ -69,15 +69,15 @@ main()
          sleqp_enum_initial_tr(),
          sleqp_enum_aug_jac_method()};
 
-    for (int i = 0; i < SLEQP_NUM_ENUM_OPTIONS; ++i)
+    for (int i = 0; i < SLEQP_NUM_ENUM_SETTINGS; ++i)
     {
-      if (!option_enums[i])
+      if (!settings_enums[i])
       {
         continue;
       }
 
-      generate_mex_enum(option_enums[i],
-                        sleqp_options_enum_desc((SLEQP_OPTION_ENUM)i));
+      generate_mex_enum(settings_enums[i],
+                        sleqp_settings_enum_desc((SLEQP_SETTINGS_ENUM)i));
     }
 
     generate_mex_enum(sleqp_enum_active_state(),

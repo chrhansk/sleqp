@@ -159,8 +159,7 @@ create_cons_bounds_from_options(SleqpVec** cons_lb_star,
 
 SLEQP_RETCODE
 mex_problem_create(SleqpProblem** star,
-                   SleqpParams* params,
-                   SleqpOptions* options,
+                   SleqpSettings* settings,
                    SLEQP_FUNC_TYPE func_type,
                    const mxArray* mex_x0,
                    const mxArray* mex_callbacks,
@@ -184,7 +183,7 @@ mex_problem_create(SleqpProblem** star,
   SleqpFunc* func;
 
   const SLEQP_HESS_EVAL hess_eval
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_HESS_EVAL);
 
   const bool with_hess = (hess_eval == SLEQP_HESS_EVAL_EXACT);
 
@@ -193,7 +192,7 @@ mex_problem_create(SleqpProblem** star,
   case SLEQP_FUNC_TYPE_REGULAR:
     SLEQP_CALL(mex_func_create(&func,
                                mex_callbacks,
-                               params,
+                               settings,
                                num_vars,
                                num_cons,
                                with_hess));
@@ -202,7 +201,7 @@ mex_problem_create(SleqpProblem** star,
     SLEQP_CALL(mex_lsq_func_create(&func,
                                    mex_x0,
                                    mex_callbacks,
-                                   params,
+                                   settings,
                                    num_vars,
                                    num_cons));
     break;
@@ -210,7 +209,7 @@ mex_problem_create(SleqpProblem** star,
     SLEQP_CALL(mex_dyn_func_create(&func,
                                    mex_x0,
                                    mex_callbacks,
-                                   params,
+                                   settings,
                                    num_vars,
                                    num_cons,
                                    with_hess));
@@ -219,7 +218,7 @@ mex_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(sleqp_problem_create_simple(star,
                                          func,
-                                         params,
+                                         settings,
                                          var_lb,
                                          var_ub,
                                          cons_lb,

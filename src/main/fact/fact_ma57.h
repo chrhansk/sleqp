@@ -7,6 +7,6 @@
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_fact_ma57_create(SleqpFact** star, SleqpParams* params);
+sleqp_fact_ma57_create(SleqpFact** star, SleqpSettings* settings);
 
 #endif /* SLEQP_FACT_MA57_H */

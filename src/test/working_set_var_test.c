@@ -10,8 +10,7 @@
 #include "quadfunc_fixture.h"
 #include "test_common.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpCauchy* cauchy_data;
@@ -21,12 +20,11 @@ working_set_var_setup()
 {
   quadfunc_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadfunc,
-                                          params,
+                                          settings,
                                           quadfunc_var_lb,
                                           quadfunc_var_ub,
                                           quadfunc_cons_lb,
@@ -38,7 +36,7 @@ working_set_var_setup()
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
   ASSERT_CALL(
-    sleqp_standard_cauchy_create(&cauchy_data, problem, params, options));
+    sleqp_standard_cauchy_create(&cauchy_data, problem, settings));
 }
 
 START_TEST(test_inactive)
@@ -137,9 +135,7 @@ working_set_var_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   quadfunc_teardown();
 }

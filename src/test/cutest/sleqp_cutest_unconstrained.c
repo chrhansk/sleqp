@@ -147,13 +147,13 @@ cutest_uncons_func_hess_product(SleqpFunc* func,
 SLEQP_RETCODE
 sleqp_cutest_uncons_func_create(SleqpFunc** star,
                                 int num_variables,
-                                SleqpParams* params)
+                                SleqpSettings* settings)
 {
   CUTestUnconsFuncData* data;
 
   const int num_constraints = 0;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(cutest_uncons_data_create(&data, num_variables, zero_eps));
 
@@ -174,14 +174,14 @@ sleqp_cutest_uncons_func_create(SleqpFunc** star,
 SLEQP_RETCODE
 sleqp_cutest_uncons_problem_create(SleqpProblem** star,
                                    SleqpCutestData* data,
-                                   SleqpParams* params)
+                                   SleqpSettings* settings)
 {
   const int num_variables   = data->num_variables;
   const int num_constraints = data->num_constraints;
 
   assert(num_constraints == 0);
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* var_lb;
   SleqpVec* var_ub;
@@ -202,11 +202,11 @@ sleqp_cutest_uncons_problem_create(SleqpProblem** star,
   SLEQP_CALL(
     sleqp_vec_set_from_raw(var_ub, data->var_ub, num_variables, zero_eps));
 
-  SLEQP_CALL(sleqp_cutest_uncons_func_create(&func, num_variables, params));
+  SLEQP_CALL(sleqp_cutest_uncons_func_create(&func, num_variables, settings));
 
   SLEQP_CALL(sleqp_problem_create_simple(star,
                                          func,
-                                         params,
+                                         settings,
                                          var_lb,
                                          var_ub,
                                          cons_lb,

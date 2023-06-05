@@ -5,8 +5,7 @@
 
 #include "solver.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpProblem* problem;
 SleqpSolver* solver;
 
@@ -15,13 +14,11 @@ solver_state_setup()
 {
   constrained_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           constrained_func,
-                                          params,
+                                          settings,
                                           constrained_var_lb,
                                           constrained_var_ub,
                                           constrained_cons_lb,
@@ -29,8 +26,7 @@ solver_state_setup()
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
+                                  settings,
                                   constrained_initial,
                                   NULL));
 }
@@ -42,9 +38,7 @@ solver_state_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   constrained_teardown();
 }
@@ -63,9 +57,9 @@ START_TEST(test_stationarity_residuals)
                            SLEQP_SOLVER_STATE_VEC_SCALED_STAT_RESIDUALS,
                            stationarity_residuals));
 
-  const double stat_eps = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
+  const double stat_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ck_assert(
     sleqp_is_leq(sleqp_vec_inf_norm(stationarity_residuals), stat_eps, eps));
@@ -88,9 +82,9 @@ START_TEST(test_feasibility_residuals)
                            SLEQP_SOLVER_STATE_VEC_SCALED_FEAS_RESIDUALS,
                            feasibility_residuals));
 
-  const double feas_eps = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
+  const double feas_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ck_assert(
     sleqp_is_leq(sleqp_vec_inf_norm(feasibility_residuals), feas_eps, eps));
@@ -113,9 +107,9 @@ START_TEST(test_slackness_residuals)
                            SLEQP_SOLVER_STATE_VEC_SCALED_CONS_SLACK_RESIDUALS,
                            slackness_residuals));
 
-  const double slack_eps = sleqp_params_value(params, SLEQP_PARAM_SLACK_TOL);
+  const double slack_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_SLACK_TOL);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ck_assert(
     sleqp_is_leq(sleqp_vec_inf_norm(slackness_residuals), slack_eps, eps));
@@ -149,11 +143,11 @@ START_TEST(test_residuals)
 {
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
-  const double stat_eps  = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
-  const double slack_eps = sleqp_params_value(params, SLEQP_PARAM_SLACK_TOL);
-  const double feas_eps  = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
+const double stat_eps  = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL);
+  const double slack_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_SLACK_TOL);
+  const double feas_eps  = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   double stat_res, slack_res, feas_res;
 

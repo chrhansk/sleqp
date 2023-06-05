@@ -296,7 +296,7 @@ create_aug_jac_data(AugJacData** star, SleqpFactQR* fact)
 SLEQP_RETCODE
 sleqp_direct_aug_jac_create(SleqpAugJac** star,
                             SleqpProblem* problem,
-                            SleqpParams* params,
+                            SleqpSettings* settings,
                             SleqpFactQR* fact)
 {
   AugJacData* data = NULL;

@@ -42,25 +42,25 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           linear_lsq_func,
-                                          linear_lsq_params,
+                                          linear_lsq_settings,
                                           linear_lsq_var_lb,
                                           linear_lsq_var_ub,
                                           linear_lsq_cons_lb,
                                           linear_lsq_cons_ub));
 
   ASSERT_CALL(
-    sleqp_working_step_create(&working_step, problem, linear_lsq_params));
+    sleqp_working_step_create(&working_step, problem, linear_lsq_settings));
 
   ASSERT_CALL(sleqp_gauss_newton_solver_create(&gauss_newton_solver,
                                                problem,
-                                               linear_lsq_params,
+                                               linear_lsq_settings,
                                                working_step));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linear_lsq_initial));
 
   ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac, problem));
 
-  ASSERT_CALL(sleqp_direction_create(&direction, problem, linear_lsq_params));
+  ASSERT_CALL(sleqp_direction_create(&direction, problem, linear_lsq_settings));
 
   ASSERT_CALL(sleqp_vec_create_empty(&cons_dual, linear_lsq_num_constraints));
 
@@ -100,7 +100,7 @@ compute_point(const SleqpVec* initial, SleqpVec* point)
   const double trust_radius      = 1e6;
 
   const double zero_eps
-    = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   ASSERT_CALL(sleqp_vec_copy(initial, sleqp_iterate_primal(iterate)));
 
@@ -129,7 +129,7 @@ compute_point(const SleqpVec* initial, SleqpVec* point)
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_solve)
 {
-  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_EPS);
 
   compute_point(linear_lsq_initial, point);
 
@@ -140,7 +140,7 @@ END_TEST
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_start_high)
 {
-  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_EPS);
 
   {
     double values[] = {20., 20.};
@@ -158,7 +158,7 @@ END_TEST
 // LSQR direction should point to optimum
 START_TEST(test_unconstrained_start_low)
 {
-  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_EPS);
 
   {
     double values[] = {-10., -10.};
@@ -179,7 +179,7 @@ START_TEST(test_unconstrained_small)
   const double penalty_parameter = 1.;
   const double trust_radius      = 1.;
 
-  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(sleqp_eqp_solver_set_iterate(gauss_newton_solver,
                                            iterate,
@@ -206,7 +206,7 @@ constrained_setup()
   int num_residuals   = 0;
 
   ASSERT_CALL(zero_lsq_func_create(&zero_func,
-                                   linear_lsq_params,
+                                   linear_lsq_settings,
                                    linear_lsq_num_variables,
                                    num_constraints,
                                    num_residuals));
@@ -215,7 +215,7 @@ constrained_setup()
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    zero_func,
-                                   linear_lsq_params,
+                                   linear_lsq_settings,
                                    linear_lsq_var_lb,
                                    linear_lsq_var_ub,
                                    zero_vec,
@@ -225,18 +225,18 @@ constrained_setup()
                                    linear_lsq_rhs));
 
   ASSERT_CALL(
-    sleqp_working_step_create(&working_step, problem, linear_lsq_params));
+    sleqp_working_step_create(&working_step, problem, linear_lsq_settings));
 
   ASSERT_CALL(sleqp_gauss_newton_solver_create(&gauss_newton_solver,
                                                problem,
-                                               linear_lsq_params,
+                                               linear_lsq_settings,
                                                working_step));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linear_lsq_initial));
 
   ASSERT_CALL(sleqp_unconstrained_aug_jac_create(&aug_jac, problem));
 
-  ASSERT_CALL(sleqp_direction_create(&direction, problem, linear_lsq_params));
+  ASSERT_CALL(sleqp_direction_create(&direction, problem, linear_lsq_settings));
 
   ASSERT_CALL(sleqp_vec_create_empty(&cons_dual, linear_lsq_num_constraints));
 
@@ -275,7 +275,7 @@ constrained_teardown()
 
 START_TEST(test_constrained_start_high)
 {
-  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_EPS);
 
   {
     double values[] = {20., 20.};
@@ -292,7 +292,7 @@ END_TEST
 
 START_TEST(test_constrained_start_low)
 {
-  const double eps = sleqp_params_value(linear_lsq_params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linear_lsq_settings, SLEQP_SETTINGS_REAL_EPS);
 
   {
     double values[] = {-10., -10.};

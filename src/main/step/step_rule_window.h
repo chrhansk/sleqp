@@ -13,7 +13,7 @@
 SLEQP_RETCODE
 sleqp_step_rule_window_create(SleqpStepRule** star,
                               SleqpProblem* problem,
-                              SleqpParams* params,
+                              SleqpSettings* settings,
                               int window_size);
 
 #endif /* SLEQP_STEP_RULE_WINDOW_H */

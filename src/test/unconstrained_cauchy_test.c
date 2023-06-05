@@ -2,14 +2,13 @@
 #include <stdlib.h>
 
 #include "cmp.h"
-#include "params.h"
 
 #include "cauchy/unconstrained_cauchy.h"
 
 #include "test_common.h"
 #include "zero_func.h"
 
-SleqpParams* params;
+SleqpSettings* settings;
 
 const int num_variables   = 2;
 const int num_constraints = 0;
@@ -37,7 +36,7 @@ unconstrained_setup()
 {
   const double inf = sleqp_infinity();
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(zero_func_create(&func, num_variables, num_constraints));
 
@@ -47,7 +46,7 @@ unconstrained_setup()
   ASSERT_CALL(sleqp_vec_create_full(&var_ub, num_variables));
   ASSERT_CALL(sleqp_vec_fill(var_ub, -inf));
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   ASSERT_CALL(sleqp_vec_create_empty(&cons_lb, num_constraints));
 
@@ -68,7 +67,7 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          params,
+                                          settings,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
@@ -82,7 +81,7 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_vec_create_empty(&direction, num_variables));
 
-  ASSERT_CALL(sleqp_unconstrained_cauchy_create(&cauchy, problem, params));
+  ASSERT_CALL(sleqp_unconstrained_cauchy_create(&cauchy, problem, settings));
 }
 
 void
@@ -107,7 +106,7 @@ unconstrained_teardown()
 
   ASSERT_CALL(sleqp_func_release(&func));
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }
 
 START_TEST(test_solve)
@@ -133,7 +132,7 @@ START_TEST(test_solve)
 
   ck_assert_int_eq(sleqp_vec_value_at(direction, 1), trust_radius);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   double actual_objective;
 

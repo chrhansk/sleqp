@@ -12,8 +12,7 @@
 
 #include "quadcons_fixture.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 
 SleqpScaling* scaling;
 SleqpProblemScaling* problem_scaling;
@@ -27,13 +26,11 @@ problem_scaling_setup()
 {
   quadconsfunc_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadconsfunc,
-                                          params,
+                                          settings,
                                           quadconsfunc_var_lb,
                                           quadconsfunc_var_ub,
                                           quadconsfunc_cons_lb,
@@ -56,8 +53,7 @@ problem_scaling_setup()
   ASSERT_CALL(sleqp_problem_scaling_create(&problem_scaling,
                                            scaling,
                                            problem,
-                                           params,
-                                           options));
+                                           settings));
 
   ASSERT_CALL(sleqp_problem_scaling_flush(problem_scaling));
 
@@ -118,8 +114,8 @@ END_TEST
 
 START_TEST(test_underflow_error)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_FLOAT_ERROR_FLAGS,
                                            FE_ALL_EXCEPT));
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 0, -10000));
@@ -161,7 +157,7 @@ START_TEST(test_first_order_deriv)
                                      NULL));
 
   ASSERT_CALL(
-    sleqp_deriv_checker_create(&deriv_check_data, scaled_problem, params));
+    sleqp_deriv_checker_create(&deriv_check_data, scaled_problem, settings));
 
   ASSERT_CALL(sleqp_deriv_check_perform(deriv_check_data,
                                         scaled_iterate,
@@ -190,7 +186,7 @@ START_TEST(test_second_order_deriv)
                                      NULL));
 
   ASSERT_CALL(
-    sleqp_deriv_checker_create(&deriv_check_data, scaled_problem, params));
+    sleqp_deriv_checker_create(&deriv_check_data, scaled_problem, settings));
 
   ASSERT_CALL(sleqp_deriv_check_perform(deriv_check_data,
                                         scaled_iterate,
@@ -213,9 +209,7 @@ problem_scaling_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   quadconsfunc_teardown();
 }

@@ -10,6 +10,6 @@
 SLEQP_RETCODE
 sleqp_step_rule_direct_create(SleqpStepRule** star,
                               SleqpProblem* problem,
-                              SleqpParams* params);
+                              SleqpSettings* settings);
 
 #endif /* SLEQP_STEP_RULE_DIRECT_H */

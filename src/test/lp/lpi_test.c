@@ -7,8 +7,7 @@
 
 #include "lp/lpi.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 
 const int num_variables   = 2;
 const int num_constraints = 1;
@@ -39,14 +38,12 @@ set_lp_data()
 void
 lpi_setup()
 {
-  ASSERT_CALL(sleqp_params_create(&params));
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_lpi_create_default(&lp_interface,
                                        num_variables,
                                        num_constraints,
-                                       params,
-                                       options));
+                                       settings));
 
   ASSERT_CALL(sleqp_mat_create(&cons_matrix, 1, 2, 2));
 
@@ -76,8 +73,7 @@ lpi_teardown()
 
   ASSERT_CALL(sleqp_lpi_release(&lp_interface));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }
 
 START_TEST(test_solve)

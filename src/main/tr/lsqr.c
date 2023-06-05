@@ -14,7 +14,7 @@ struct SleqpLSQRSolver
 
   double time_limit;
 
-  SleqpParams* params;
+  SleqpSettings* settings;
   SleqpTimer* timer;
 
   int forward_dim;
@@ -37,7 +37,7 @@ struct SleqpLSQRSolver
 
 SLEQP_RETCODE
 sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
-                         SleqpParams* params,
+                         SleqpSettings* settings,
                          int forward_dim,
                          int adjoint_dim,
                          SleqpLSQRCallbacks* callbacks,
@@ -52,8 +52,8 @@ sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
   solver->refcount   = 1;
   solver->time_limit = SLEQP_NONE;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  solver->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  solver->settings = settings;
 
   SLEQP_CALL(sleqp_timer_create(&solver->timer));
 
@@ -151,7 +151,7 @@ compute_objective(SleqpLSQRSolver* solver,
                   double* opt_res)
 {
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(forward_product(solver, sol, solver->p));
 
@@ -182,10 +182,10 @@ sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
   assert(rhs->dim == solver->adjoint_dim);
   assert(sol->dim == solver->forward_dim);
 
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   sleqp_log_debug("Solving a least-squares subproblem with %d rows, %d columns",
                   solver->adjoint_dim,
@@ -262,7 +262,7 @@ sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
       SLEQP_CALL(sleqp_vec_add_scaled(x, t, -1., 1., zero_eps, d));
 
       SLEQP_CALL(
-        sleqp_tr_compute_bdry_sol(x, d, solver->params, trust_radius, t));
+        sleqp_tr_compute_bdry_sol(x, d, solver->settings, trust_radius, t));
 
       SLEQP_CALL(sleqp_vec_copy(t, x));
 
@@ -363,7 +363,7 @@ lsqr_solver_free(SleqpLSQRSolver** star)
 
   SLEQP_CALL(sleqp_timer_free(&solver->timer));
 
-  SLEQP_CALL(sleqp_params_release(&solver->params));
+  SLEQP_CALL(sleqp_settings_release(&solver->settings));
 
   sleqp_free(star);
 

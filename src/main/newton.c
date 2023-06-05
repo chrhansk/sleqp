@@ -26,8 +26,7 @@ typedef struct
   SleqpProblem* problem;
   SleqpWorkingStep* working_step;
 
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
 
   SleqpIterate* iterate;
   SleqpAugJac* aug_jac;
@@ -53,8 +52,7 @@ static SLEQP_RETCODE
 newton_solver_create(NewtonSolver** star,
                      SleqpProblem* problem,
                      SleqpWorkingStep* step,
-                     SleqpParams* params,
-                     SleqpOptions* options)
+                     SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -73,11 +71,8 @@ newton_solver_create(NewtonSolver** star,
   solver->working_step = step;
   SLEQP_CALL(sleqp_working_step_capture(solver->working_step));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  solver->params = params;
-
-  SLEQP_CALL(sleqp_options_capture(options));
-  solver->options = options;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  solver->settings = settings;
 
   SLEQP_CALL(sleqp_vec_create_empty(&solver->gradient, num_variables));
 
@@ -97,7 +92,7 @@ newton_solver_create(NewtonSolver** star,
                                SLEQP_MAX(num_variables, num_constraints)));
 
   SLEQP_TR_SOLVER tr_solver
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_TR_SOLVER);
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_TR_SOLVER);
 
   if (tr_solver == SLEQP_TR_SOLVER_AUTO)
   {
@@ -117,15 +112,14 @@ newton_solver_create(NewtonSolver** star,
   {
     SLEQP_CALL(sleqp_steihaug_solver_create(&solver->tr_solver,
                                             problem,
-                                            params,
-                                            options));
+                                            settings));
   }
   else
   {
     // assert(tr_solver == SLEQP_TR_SOLVER_TRLIB);
 
     SLEQP_CALL(
-      sleqp_trlib_solver_create(&solver->tr_solver, problem, params, options));
+      sleqp_trlib_solver_create(&solver->tr_solver, problem, settings));
   }
 
   SLEQP_CALL(sleqp_timer_create(&(solver->timer)));
@@ -209,7 +203,7 @@ newton_solver_add_violated_multipliers(SleqpVec* multipliers, void* data)
     = sleqp_working_step_violated_cons_multipliers(solver->working_step);
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_add_scaled(cons_dual,
                                   violated_cons_mult,
@@ -225,7 +219,7 @@ static SLEQP_RETCODE
 projection_residuum(NewtonSolver* solver, SleqpVec* tr_step, double* residuum)
 {
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpAugJac* jacobian = solver->aug_jac;
 
@@ -257,7 +251,7 @@ stationarity_residuum(NewtonSolver* solver,
   SleqpVec* tr_prod      = solver->tr_hessian_product;
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(
     sleqp_problem_hess_prod(problem, tr_step, multipliers, tr_prod));
@@ -308,7 +302,7 @@ print_residuals(NewtonSolver* solver,
     stat_res);
 
   const double stat_tol
-    = sleqp_params_value(solver->params, SLEQP_PARAM_STAT_TOL);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
   if (stat_res >= stat_tol)
   {
@@ -324,12 +318,12 @@ print_residuals(NewtonSolver* solver,
 static SLEQP_RETCODE
 check_spectrum(NewtonSolver* solver)
 {
-  SleqpParams* params = solver->params;
+  SleqpSettings* settings = solver->settings;
 
   SleqpProblem* problem = solver->problem;
   SleqpFunc* func       = sleqp_problem_func(problem);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   double min_rayleigh = 0., max_rayleigh = 0.;
 
@@ -365,7 +359,7 @@ compute_gradient(NewtonSolver* solver, const SleqpVec* multipliers)
     = sleqp_working_step_direction(solver->working_step);
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const double penalty_parameter = solver->penalty_parameter;
 
@@ -464,10 +458,10 @@ newton_solver_compute_direction(const SleqpVec* multipliers,
 
   SleqpVec* newton_step = sleqp_direction_primal(newton_direction);
 
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const double reduced_trust_radius
     = sleqp_working_step_reduced_trust_radius(solver->working_step);
@@ -627,8 +621,7 @@ newton_solver_free(void* data)
   SLEQP_CALL(sleqp_aug_jac_release(&solver->aug_jac));
   SLEQP_CALL(sleqp_iterate_release(&solver->iterate));
 
-  SLEQP_CALL(sleqp_options_release(&solver->options));
-  SLEQP_CALL(sleqp_params_release(&solver->params));
+  SLEQP_CALL(sleqp_settings_release(&solver->settings));
 
   SLEQP_CALL(sleqp_working_step_release(&solver->working_step));
 
@@ -642,8 +635,7 @@ newton_solver_free(void* data)
 SLEQP_RETCODE
 sleqp_newton_solver_create(SleqpEQPSolver** star,
                            SleqpProblem* problem,
-                           SleqpParams* params,
-                           SleqpOptions* options,
+                           SleqpSettings* settings,
                            SleqpWorkingStep* step)
 {
   SleqpEQPCallbacks callbacks
@@ -656,7 +648,7 @@ sleqp_newton_solver_create(SleqpEQPSolver** star,
 
   NewtonSolver* solver;
 
-  SLEQP_CALL(newton_solver_create(&solver, problem, step, params, options));
+  SLEQP_CALL(newton_solver_create(&solver, problem, step, settings));
 
   SLEQP_CALL(sleqp_eqp_solver_create(star, &callbacks, (void*)solver));
 

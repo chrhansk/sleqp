@@ -26,7 +26,7 @@ struct SleqpStepRule
 SLEQP_RETCODE
 sleqp_step_rule_create(SleqpStepRule** star,
                        SleqpProblem* problem,
-                       SleqpParams* params,
+                       SleqpSettings* settings,
                        SleqpStepRuleCallbacks* callbacks,
                        void* step_data)
 {
@@ -133,27 +133,26 @@ sleqp_step_rule_release(SleqpStepRule** star)
 SLEQP_RETCODE
 sleqp_step_rule_create_default(SleqpStepRule** star,
                                SleqpProblem* problem,
-                               SleqpParams* params,
-                               const SleqpOptions* options)
+                               SleqpSettings* settings)
 {
   SLEQP_STEP_RULE step_rule
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_STEP_RULE);
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_STEP_RULE);
 
   if (step_rule == SLEQP_STEP_RULE_DIRECT)
   {
-    SLEQP_CALL(sleqp_step_rule_direct_create(star, problem, params));
+    SLEQP_CALL(sleqp_step_rule_direct_create(star, problem, settings));
   }
   else if (step_rule == SLEQP_STEP_RULE_WINDOW)
   {
     SLEQP_CALL(
-      sleqp_step_rule_window_create(star, problem, params, window_size));
+      sleqp_step_rule_window_create(star, problem, settings, window_size));
   }
   else
   {
     assert(step_rule == SLEQP_STEP_RULE_MINSTEP);
 
     SLEQP_CALL(
-      sleqp_step_rule_minstep_create(star, problem, params, step_count));
+      sleqp_step_rule_minstep_create(star, problem, settings, step_count));
   }
 
   return SLEQP_OKAY;

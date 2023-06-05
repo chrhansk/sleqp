@@ -153,10 +153,10 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
 
   objective = create_func(fun, jac, hess, hessp)
 
-  options = sleqp.Options()
+  settings = sleqp.Settings()
 
   if hessp is None and hess is None:
-    options.hessian_eval = sleqp.HessianEval.DampedBFGS
+    settings.hessian_eval = sleqp.HessianEval.DampedBFGS
 
   initial_sol = np.array(x0)
 
@@ -167,10 +167,8 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
                       args,
                       num_variables)
 
-  params = sleqp.Params()
-
   problem = sleqp.Problem(min_func,
-                          params,
+                          settings,
                           var_lb,
                           var_ub,
                           constraints.general.lb,
@@ -180,13 +178,12 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
                           linear_ub=constraints.linear.ub)
 
   solver = sleqp.Solver(problem,
-                        params,
-                        options,
+                        settings,
                         initial_sol)
 
   if callback is not None:
     _add_solver_callback(solver, callback)
 
-  solver.solve(100, 3600)
+  solver.solve()
 
   return _create_result(solver)

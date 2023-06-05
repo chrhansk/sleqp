@@ -69,22 +69,20 @@ class FuncErrorTest(unittest.TestCase):
 
     self.x = np.array([0., 0.])
 
-    self.params = sleqp.Params()
-    self.options = sleqp.Options()
+    self.settings = sleqp.Settings()
 
   def test_error_func(self):
     func = ErrorFunc()
 
     self.problem = sleqp.Problem(func,
-                                 self.params,
+                                 self.settings,
                                  self.var_lb,
                                  self.var_ub,
                                  self.cons_lb,
                                  self.cons_ub)
 
     self.solver = sleqp.Solver(self.problem,
-                               self.params,
-                               self.options,
+                               self.settings,
                                self.x)
 
     with self.assertRaises(Exception):
@@ -94,15 +92,14 @@ class FuncErrorTest(unittest.TestCase):
     func = ErrorFunc()
 
     self.problem = sleqp.Problem(func,
-                                 self.params,
+                                 self.settings,
                                  self.var_lb,
                                  self.var_ub,
                                  self.cons_lb,
                                  self.cons_ub)
 
     self.solver = sleqp.Solver(self.problem,
-                               self.params,
-                               self.options,
+                               self.settings,
                                self.x)
 
     failed = False
@@ -123,15 +120,14 @@ class FuncErrorTest(unittest.TestCase):
     func = TypeErrorFunc()
 
     problem = sleqp.Problem(func,
-                            self.params,
+                            self.settings,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
+                          self.settings,
                           self.x)
 
     with self.assertRaises(Exception):
@@ -141,15 +137,14 @@ class FuncErrorTest(unittest.TestCase):
     func = MatrixErrorFunc()
 
     problem = sleqp.Problem(func,
-                            self.params,
+                            self.settings,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
+                          self.settings,
                           self.x)
 
     with self.assertRaises(Exception):

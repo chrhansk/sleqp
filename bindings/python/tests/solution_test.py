@@ -18,25 +18,22 @@ class SolutionTest(unittest.TestCase):
         cons_lb = np.array([-inf]*num_constraints)
         cons_ub = np.array([inf]*num_constraints)
 
-        self.params = sleqp.Params()
+        self.settings = sleqp.Settings()
 
         self.func = ZeroFunc()
 
         self.problem = sleqp.Problem(self.func,
-                                     self.params,
+                                     self.settings,
                                      var_lb,
                                      var_ub,
                                      cons_lb,
                                      cons_ub)
 
-        self.options = sleqp.Options()
-
     # Solution round trip array -> sparse vec -> array
     def test_set_solution(self):
 
         solver = sleqp.Solver(self.problem,
-                              self.params,
-                              self.options,
+                              self.settings,
                               initial_sol)
 
         solver.solve(max_num_iterations=0)

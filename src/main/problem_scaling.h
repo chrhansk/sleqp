@@ -1,8 +1,7 @@
 #ifndef SLEQP_PROBLEM_SCALING_H
 #define SLEQP_PROBLEM_SCALING_H
 
-#include "options.h"
-#include "params.h"
+#include "settings.h"
 #include "scale.h"
 
 typedef struct SleqpProblemScaling SleqpProblemScaling;
@@ -12,8 +11,7 @@ SLEQP_RETCODE
 sleqp_problem_scaling_create(SleqpProblemScaling** problem_scaling,
                              SleqpScaling* scaling_data,
                              SleqpProblem* problem,
-                             SleqpParams* params,
-                             SleqpOptions* options);
+                             SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

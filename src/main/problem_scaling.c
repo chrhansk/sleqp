@@ -16,8 +16,7 @@ struct SleqpProblemScaling
 
   SleqpScaling* scaling;
   SleqpProblem* problem;
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpFunc* func;
 
   SleqpFunc* scaled_func;
@@ -43,12 +42,12 @@ scaled_func_set_value(SleqpFunc* func,
 
   {
     const int error_flags
-      = sleqp_options_enum_value(problem_scaling->options,
-                                 SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS);
+      = sleqp_settings_enum_value(problem_scaling->settings,
+                                 SLEQP_SETTINGS_ENUM_FLOAT_ERROR_FLAGS);
 
     const int warn_flags
-      = sleqp_options_enum_value(problem_scaling->options,
-                                 SLEQP_OPTION_ENUM_FLOAT_WARNING_FLAGS);
+      = sleqp_settings_enum_value(problem_scaling->settings,
+                                 SLEQP_SETTINGS_ENUM_FLOAT_WARNING_FLAGS);
 
     SLEQP_INIT_MATH_CHECK;
 
@@ -149,12 +148,12 @@ scaled_func_hess_prod(SleqpFunc* func,
   SleqpScaling* scaling                = problem_scaling->scaling;
 
   const int error_flags
-    = sleqp_options_enum_value(problem_scaling->options,
-                               SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS);
+    = sleqp_settings_enum_value(problem_scaling->settings,
+                               SLEQP_SETTINGS_ENUM_FLOAT_ERROR_FLAGS);
 
   const int warn_flags
-    = sleqp_options_enum_value(problem_scaling->options,
-                               SLEQP_OPTION_ENUM_FLOAT_WARNING_FLAGS);
+    = sleqp_settings_enum_value(problem_scaling->settings,
+                               SLEQP_SETTINGS_ENUM_FLOAT_WARNING_FLAGS);
 
   SLEQP_CALL(sleqp_vec_copy(direction, problem_scaling->scaled_direction));
 
@@ -404,7 +403,7 @@ lsq_func_create(SleqpProblemScaling* problem_scaling)
                                    num_constraints,
                                    num_residuals,
                                    levenberg_marquardt,
-                                   problem_scaling->params,
+                                   problem_scaling->settings,
                                    problem_scaling));
 
   SLEQP_CALL(
@@ -449,8 +448,7 @@ SLEQP_RETCODE
 sleqp_problem_scaling_create(SleqpProblemScaling** star,
                              SleqpScaling* scaling,
                              SleqpProblem* problem,
-                             SleqpParams* params,
-                             SleqpOptions* options)
+                             SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -486,11 +484,8 @@ sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   problem_scaling->func = sleqp_problem_func(problem);
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  problem_scaling->params = params;
-
-  SLEQP_CALL(sleqp_options_capture(options));
-  problem_scaling->options = options;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  problem_scaling->settings = settings;
 
   problem_scaling->scaling = scaling;
 
@@ -513,7 +508,7 @@ sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   SLEQP_CALL(sleqp_problem_create(&(problem_scaling->scaled_problem),
                                   problem_scaling->scaled_func,
-                                  problem_scaling->params,
+                                  problem_scaling->settings,
                                   sleqp_problem_vars_lb(problem),
                                   sleqp_problem_vars_ub(problem),
                                   sleqp_problem_general_lb(problem),
@@ -548,12 +543,12 @@ sleqp_problem_scaling_flush(SleqpProblemScaling* problem_scaling)
   SleqpProblem* scaled_problem = problem_scaling->scaled_problem;
 
   const int error_flags
-    = sleqp_options_enum_value(problem_scaling->options,
-                               SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS);
+    = sleqp_settings_enum_value(problem_scaling->settings,
+                               SLEQP_SETTINGS_ENUM_FLOAT_ERROR_FLAGS);
 
   const int warn_flags
-    = sleqp_options_enum_value(problem_scaling->options,
-                               SLEQP_OPTION_ENUM_FLOAT_WARNING_FLAGS);
+    = sleqp_settings_enum_value(problem_scaling->settings,
+                               SLEQP_SETTINGS_ENUM_FLOAT_WARNING_FLAGS);
 
   SLEQP_INIT_MATH_CHECK;
 
@@ -641,9 +636,7 @@ problem_scaling_free(SleqpProblemScaling** star)
 
   SLEQP_CALL(sleqp_scaling_release(&problem_scaling->scaling));
 
-  SLEQP_CALL(sleqp_options_release(&problem_scaling->options));
-
-  SLEQP_CALL(sleqp_params_release(&problem_scaling->params));
+  SLEQP_CALL(sleqp_settings_release(&problem_scaling->settings));
 
   SLEQP_CALL(sleqp_problem_release(&problem_scaling->problem));
 

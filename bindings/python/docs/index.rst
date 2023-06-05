@@ -10,6 +10,7 @@ Welcome to sleqp's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   usage
 
 API Reference
 -------------

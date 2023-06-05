@@ -12,7 +12,7 @@ SLEQP_RETCODE
 sleqp_restoration_create(SleqpRestoration** star,
                          SleqpPreprocessingState* preprocessing_state,
                          SleqpProblem* transformed_problem,
-                         SleqpParams* params);
+                         SleqpSettings* settings);
 
 SLEQP_RETCODE
 sleqp_restoration_restore_iterate(SleqpRestoration* restoration,

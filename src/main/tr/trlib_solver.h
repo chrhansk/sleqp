@@ -7,7 +7,6 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_trlib_solver_create(SleqpTRSolver** star,
                           SleqpProblem* problem,
-                          SleqpParams* params,
-                          SleqpOptions* options);
+                          SleqpSettings* settings);
 
 #endif /* SLEQP_TRLIB_SOLVER_H */

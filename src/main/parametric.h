@@ -17,7 +17,7 @@
 #include "iterate.h"
 #include "linesearch.h"
 #include "merit.h"
-#include "options.h"
+#include "settings.h"
 
 #include "cauchy/cauchy.h"
 
@@ -27,8 +27,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                SleqpProblem* problem,
-                               SleqpParams* params,
-                               SleqpOptions* options,
+                               SleqpSettings* settings,
                                SleqpMerit* merit,
                                SleqpLineSearch* linesearch);
 

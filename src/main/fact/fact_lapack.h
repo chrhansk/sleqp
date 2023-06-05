@@ -7,6 +7,6 @@
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_fact_lapack_create(SleqpFact** star, SleqpParams* params);
+sleqp_fact_lapack_create(SleqpFact** star, SleqpSettings* settings);
 
 #endif /* SLEQP_FACT_LAPACK_H */

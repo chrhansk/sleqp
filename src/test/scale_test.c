@@ -16,7 +16,7 @@
 
 #include "quadcons_fixture.h"
 
-SleqpParams* params;
+SleqpSettings* settings;
 
 SleqpScaling* scaling;
 
@@ -28,11 +28,11 @@ scaling_setup()
 {
   quadconsfunc_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadconsfunc,
-                                          params,
+                                          settings,
                                           quadconsfunc_var_lb,
                                           quadconsfunc_var_ub,
                                           quadconsfunc_cons_lb,
@@ -91,7 +91,7 @@ END_TEST
 
 START_TEST(test_nominal_scale)
 {
-  const double eps        = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps        = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
   double nominal_values[] = {4.1, 15.9};
 
   ASSERT_CALL(
@@ -159,7 +159,7 @@ START_TEST(test_nominal_scale_obj_val)
 {
   double nominal_obj_val = 17.;
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(
     sleqp_scaling_set_obj_weight_from_nominal(scaling, nominal_obj_val));
@@ -176,7 +176,7 @@ START_TEST(test_nominal_scale_cons_vals)
   double nominal_cons_vals[] = {17., .4};
 
   const int num_constraints = 2.;
-  const double eps          = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps          = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   SleqpVec* cons_vals;
 
@@ -415,7 +415,7 @@ scaling_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   quadconsfunc_teardown();
 }

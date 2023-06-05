@@ -17,7 +17,7 @@ static const double tolerance_factor = 1e-2;
 typedef struct
 {
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   // trlib-related data:
   trlib_int_t trlib_maxiter;
@@ -86,7 +86,7 @@ trlib_free(void** star)
   sleqp_free(&data->trlib_fwork);
   sleqp_free(&data->trlib_iwork);
 
-  SLEQP_CALL(sleqp_params_release(&data->params));
+  SLEQP_CALL(sleqp_settings_release(&data->settings));
 
   SLEQP_CALL(sleqp_problem_release(&data->problem));
 
@@ -192,10 +192,10 @@ check_optimality(SolverData* data,
 {
   SleqpProblem* problem = data->problem;
 
-  const double eps = sleqp_params_value(data->params, SLEQP_PARAM_STAT_TOL);
+  const double eps = sleqp_settings_real_value(data->settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
   const double zero_eps
-    = sleqp_params_value(data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   (*is_optimal) = true;
 
@@ -257,10 +257,10 @@ trlib_loop(SolverData* data,
   const double inf = sleqp_infinity();
 
   const double zero_eps
-    = sleqp_params_value(data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const double stat_eps
-    = sleqp_params_value(data->params, SLEQP_PARAM_STAT_TOL);
+    = sleqp_settings_real_value(data->settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
 
@@ -748,8 +748,7 @@ trlib_solve(SleqpAugJac* jacobian,
 SLEQP_RETCODE
 sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
                           SleqpProblem* problem,
-                          SleqpParams* params,
-                          SleqpOptions* options)
+                          SleqpSettings* settings)
 {
   SolverData* data = NULL;
 
@@ -763,11 +762,11 @@ sleqp_trlib_solver_create(SleqpTRSolver** solver_star,
   data->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(data->problem));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  data->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  data->settings = settings;
 
   const int max_newton_iter
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
+    = sleqp_settings_int_value(settings, SLEQP_SETTINGS_INT_MAX_NEWTON_ITERATIONS);
 
   data->trlib_maxiter = num_variables;
 

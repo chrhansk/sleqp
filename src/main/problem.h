@@ -4,7 +4,6 @@
 #include "pub_problem.h"
 
 #include "func.h"
-#include "params.h"
 #include "types.h"
 
 bool

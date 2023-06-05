@@ -14,7 +14,7 @@ const int num_constraints = 3;
 
 SleqpFunc* func;
 
-SleqpParams* params;
+SleqpSettings* settings;
 
 SleqpVec* var_lb;
 SleqpVec* var_ub;
@@ -35,9 +35,9 @@ polish_setup()
 {
   ASSERT_CALL(zero_func_create(&func, num_variables, num_constraints));
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   ASSERT_CALL(sleqp_vec_create_empty(&var_lb, num_variables));
   ASSERT_CALL(sleqp_vec_create_full(&var_ub, num_variables));
@@ -59,7 +59,7 @@ polish_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          params,
+                                          settings,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
@@ -93,7 +93,7 @@ polish_setup()
                                        zero_eps));
   }
 
-  ASSERT_CALL(sleqp_polishing_create(&polishing, problem, params));
+  ASSERT_CALL(sleqp_polishing_create(&polishing, problem, settings));
 }
 
 void
@@ -113,7 +113,7 @@ polish_teardown()
   ASSERT_CALL(sleqp_vec_free(&var_ub));
   ASSERT_CALL(sleqp_vec_free(&var_lb));
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_func_release(&func));
 }

@@ -44,7 +44,7 @@ typedef struct
 
   SleqpProblem* problem;
   SleqpWorkingStep* working_step;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpIterate* iterate;
 
@@ -93,7 +93,7 @@ static SLEQP_RETCODE
 gauss_newton_solver_create(GaussNewtonSolver** star,
                            SleqpProblem* problem,
                            SleqpWorkingStep* step,
-                           SleqpParams* params)
+                           SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -113,8 +113,8 @@ gauss_newton_solver_create(GaussNewtonSolver** star,
   SLEQP_CALL(sleqp_working_step_capture(step));
   solver->working_step = step;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  solver->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  solver->settings = settings;
 
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
@@ -147,7 +147,7 @@ gauss_newton_solver_create(GaussNewtonSolver** star,
   };
 
   SLEQP_CALL(sleqp_lsqr_solver_create(&solver->lsqr_solver,
-                                      params,
+                                      settings,
                                       num_variables,
                                       0,
                                       &callbacks,
@@ -205,7 +205,7 @@ compute_lsq_rhs(GaussNewtonSolver* solver)
   SleqpFunc* func       = sleqp_problem_func(problem);
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* initial_step = sleqp_working_step_get_step(solver->working_step);
 
@@ -232,7 +232,7 @@ compute_cons_rhs(GaussNewtonSolver* solver)
   SleqpIterate* iterate = solver->iterate;
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
@@ -440,7 +440,7 @@ forward_product(const SleqpVec* direction, SleqpVec* product, void* data)
   assert(product->dim == solver->adjoint_dim);
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(
     sleqp_aug_jac_project_nullspace(solver->jacobian,
@@ -476,7 +476,7 @@ adjoint_product(const SleqpVec* direction, SleqpVec* product, void* data)
   SleqpFunc* func       = sleqp_problem_func(problem);
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const int num_residuals = sleqp_lsq_func_num_residuals(func);
 
@@ -536,7 +536,7 @@ static SLEQP_RETCODE
 solve_lsqr(GaussNewtonSolver* solver)
 {
   const double stat_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_STAT_TOL);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
 
@@ -562,7 +562,7 @@ gauss_newton_solver_compute_direction(const SleqpVec* multipliers,
   GaussNewtonSolver* solver = (GaussNewtonSolver*)data;
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* step = sleqp_direction_primal(direction);
 
@@ -586,7 +586,7 @@ gauss_newton_solver_compute_direction(const SleqpVec* multipliers,
     // Direction must be in working set
     bool in_working_set = false;
 
-    const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+    const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
     SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -671,7 +671,7 @@ gauss_newton_solver_free(void* data)
 
   SLEQP_CALL(sleqp_iterate_release(&solver->iterate));
 
-  SLEQP_CALL(sleqp_params_release(&solver->params));
+  SLEQP_CALL(sleqp_settings_release(&solver->settings));
   SLEQP_CALL(sleqp_working_step_release(&solver->working_step));
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
 
@@ -683,7 +683,7 @@ gauss_newton_solver_free(void* data)
 SLEQP_RETCODE
 sleqp_gauss_newton_solver_create(SleqpEQPSolver** star,
                                  SleqpProblem* problem,
-                                 SleqpParams* params,
+                                 SleqpSettings* settings,
                                  SleqpWorkingStep* step)
 {
   SleqpEQPCallbacks callbacks
@@ -696,7 +696,7 @@ sleqp_gauss_newton_solver_create(SleqpEQPSolver** star,
 
   GaussNewtonSolver* solver;
 
-  SLEQP_CALL(gauss_newton_solver_create(&solver, problem, step, params));
+  SLEQP_CALL(gauss_newton_solver_create(&solver, problem, step, settings));
 
   SLEQP_CALL(sleqp_eqp_solver_create(star, &callbacks, (void*)solver));
 

@@ -13,7 +13,7 @@
 SLEQP_RETCODE
 sleqp_step_rule_minstep_create(SleqpStepRule** star,
                                SleqpProblem* problem,
-                               SleqpParams* params,
+                               SleqpSettings* settings,
                                int step_count);
 
 #endif /* SLEQP_STEP_RULE_MINSTEP_H */

@@ -4,6 +4,7 @@
 #include "fail.h"
 #include "log.h"
 #include "mem.h"
+#include "settings.h"
 #include "working_set.h"
 
 struct SleqpPolishing
@@ -11,14 +12,14 @@ struct SleqpPolishing
   int refcount;
 
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
   SleqpWorkingSet* working_set;
 };
 
 SLEQP_RETCODE
 sleqp_polishing_create(SleqpPolishing** star,
                        SleqpProblem* problem,
-                       SleqpParams* params)
+                       SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -31,8 +32,8 @@ sleqp_polishing_create(SleqpPolishing** star,
   SLEQP_CALL(sleqp_problem_capture(problem));
   polishing->problem = problem;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  polishing->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  polishing->settings = settings;
 
   SLEQP_CALL(sleqp_working_set_create(&polishing->working_set, problem));
 
@@ -49,13 +50,13 @@ polish_inactive_range(SleqpPolishing* polishing,
                       bool constraints,
                       int* num_removed)
 {
-  SleqpParams* params = polishing->params;
+  SleqpSettings* settings = polishing->settings;
 
   SleqpWorkingSet* target_set = polishing->working_set;
 
   (*num_removed) = 0;
 
-  const double feas_eps = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
+  const double feas_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   const int size = dual->dim;
   int k_d        = 0;
@@ -276,7 +277,7 @@ polishing_free(SleqpPolishing** star)
 
   SLEQP_CALL(sleqp_working_set_release(&polishing->working_set));
 
-  SLEQP_CALL(sleqp_params_release(&polishing->params));
+  SLEQP_CALL(sleqp_settings_release(&polishing->settings));
 
   SLEQP_CALL(sleqp_problem_release(&polishing->problem));
 

@@ -28,7 +28,7 @@ SleqpVec* linquadfunc_cons_lb;
 SleqpVec* linquadfunc_cons_ub;
 SleqpVec* linquadfunc_x;
 
-SleqpParams* params;
+SleqpSettings* settings;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 
@@ -178,11 +178,11 @@ newton_setup()
 
   ASSERT_CALL(sleqp_vec_push(linquadfunc_x, 1, 2.));
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           linquadfunc,
-                                          params,
+                                          settings,
                                           linquadfunc_var_lb,
                                           linquadfunc_var_ub,
                                           linquadfunc_cons_lb,
@@ -207,8 +207,7 @@ START_TEST(newton_constrained_step)
 
   SleqpDirection* actual_direction;
 
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
 
   SleqpWorkingStep* working_step;
   SleqpEQPSolver* newton_solver;
@@ -225,26 +224,23 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_vec_push(expected_step, 0, -1.));
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
-  ASSERT_CALL(sleqp_options_create(&options));
-
-  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, params));
+  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, settings));
 
   SleqpVec* actual_step = sleqp_direction_primal(actual_direction);
 
-  ASSERT_CALL(sleqp_fact_create_default(&fact, params));
+  ASSERT_CALL(sleqp_fact_create_default(&fact, settings));
 
-  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, params, fact));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, settings, fact));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
-  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
+  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, settings));
 
   ASSERT_CALL(sleqp_newton_solver_create(&newton_solver,
                                          problem,
-                                         params,
-                                         options,
+                                         settings,
                                          working_step));
 
   ASSERT_CALL(sleqp_eqp_solver_set_iterate(newton_solver,
@@ -272,9 +268,7 @@ START_TEST(newton_constrained_step)
 
   ASSERT_CALL(sleqp_direction_release(&actual_direction));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_vec_free(&expected_step));
 }
@@ -287,7 +281,7 @@ newton_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_vec_free(&linquadfunc_x));
 

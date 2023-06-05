@@ -8,7 +8,6 @@
 
 #include "func.h"
 #include "iterate.h"
-#include "params.h"
 
 typedef struct SleqpDerivChecker SleqpDerivChecker;
 
@@ -16,7 +15,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_deriv_checker_create(SleqpDerivChecker** star,
                            SleqpProblem* problem,
-                           SleqpParams* params);
+                           SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

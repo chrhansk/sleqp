@@ -85,7 +85,7 @@ sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solver,
                                    SleqpVec* result)
 {
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* cons_val = sleqp_iterate_cons_val(solver->iterate);
 

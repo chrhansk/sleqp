@@ -16,7 +16,7 @@ struct SleqpWorkingStep
   int refcount;
 
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpIterate* iterate;
 
@@ -42,7 +42,7 @@ struct SleqpWorkingStep
 SLEQP_RETCODE
 sleqp_working_step_create(SleqpWorkingStep** star,
                           SleqpProblem* problem,
-                          SleqpParams* params)
+                          SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -55,8 +55,8 @@ sleqp_working_step_create(SleqpWorkingStep** star,
   step->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(step->problem));
 
-  step->params = params;
-  SLEQP_CALL(sleqp_params_capture(step->params));
+  step->settings = settings;
+  SLEQP_CALL(sleqp_settings_capture(step->settings));
 
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
@@ -69,7 +69,7 @@ sleqp_working_step_create(SleqpWorkingStep** star,
 
   SLEQP_CALL(sleqp_vec_create_empty(&step->initial_direction, num_variables));
 
-  SLEQP_CALL(sleqp_direction_create(&step->step_direction, problem, params));
+  SLEQP_CALL(sleqp_direction_create(&step->step_direction, problem, settings));
 
   SLEQP_CALL(sleqp_vec_create_empty(&step->initial_cons_val, num_constraints));
 
@@ -123,12 +123,12 @@ compute_initial_rhs(SleqpWorkingStep* step,
   SleqpVec* lower_diff = step->lower_diff;
   SleqpVec* upper_diff = step->upper_diff;
 
-  const double eps = sleqp_params_value(step->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(step->settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
   const double zero_eps
-    = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(step->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const int working_set_size = sleqp_working_set_size(working_set);
 
@@ -295,7 +295,7 @@ compute_initial_direction(SleqpWorkingStep* step,
     bool in_working_set   = false;
     SleqpProblem* problem = step->problem;
 
-    const double eps = sleqp_params_value(step->params, SLEQP_PARAM_EPS);
+    const double eps = sleqp_settings_real_value(step->settings, SLEQP_SETTINGS_REAL_EPS);
 
     SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -336,7 +336,7 @@ fill_initial_step(SleqpWorkingStep* step, SleqpIterate* iterate)
     SleqpVec* direction_cons = sleqp_direction_cons_jac(direction);
 
     const double zero_eps
-      = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
+      = sleqp_settings_real_value(step->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
     SLEQP_CALL(sleqp_mat_mult_vec(cons_jac, primal, step->dense_cache));
 
@@ -359,7 +359,7 @@ compute_initial_step(SleqpWorkingStep* step,
 
   SLEQP_CALL(sleqp_vec_copy(step->initial_direction, initial_step));
 
-  const double eps = sleqp_params_value(step->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(step->settings, SLEQP_SETTINGS_REAL_EPS);
 
   const double initial_norm = sleqp_vec_norm(step->initial_direction);
 
@@ -415,7 +415,7 @@ compute_initial_cons_val(SleqpWorkingStep* step, SleqpIterate* iterate)
   SleqpDirection* direction = step->step_direction;
 
   const double zero_eps
-    = sleqp_params_value(step->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(step->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   // Compute linearized constraint values at initial direction
   SLEQP_CALL(sleqp_vec_add(sleqp_iterate_cons_val(iterate),
@@ -546,7 +546,7 @@ working_step_free(SleqpWorkingStep** star)
 
   SLEQP_CALL(sleqp_iterate_release(&step->iterate));
 
-  SLEQP_CALL(sleqp_params_release(&step->params));
+  SLEQP_CALL(sleqp_settings_release(&step->settings));
 
   SLEQP_CALL(sleqp_problem_release(&step->problem));
 

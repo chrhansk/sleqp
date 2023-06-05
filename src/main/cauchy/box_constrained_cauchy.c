@@ -2,12 +2,13 @@
 
 #include "cmp.h"
 #include "mem.h"
+#include "pub_settings.h"
 #include "working_set.h"
 
 typedef struct
 {
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpIterate* iterate;
   double trust_radius;
@@ -83,7 +84,7 @@ compute_diffs(CauchyData* cauchy_data)
   assert(sleqp_vec_is_boxed(primal, var_lb, var_ub));
 
   const double zero_eps
-    = sleqp_params_value(cauchy_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(cauchy_data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_add_scaled(var_lb,
                                   primal,
@@ -351,7 +352,7 @@ box_constrained_cauchy_free(void* data)
 
   SLEQP_CALL(sleqp_iterate_release(&cauchy_data->iterate));
 
-  SLEQP_CALL(sleqp_params_release(&cauchy_data->params));
+  SLEQP_CALL(sleqp_settings_release(&cauchy_data->settings));
 
   SLEQP_CALL(sleqp_problem_release(&cauchy_data->problem));
 
@@ -363,7 +364,7 @@ box_constrained_cauchy_free(void* data)
 static SLEQP_RETCODE
 cauchy_data_create(CauchyData** star,
                    SleqpProblem* problem,
-                   SleqpParams* params)
+                   SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -379,9 +380,9 @@ cauchy_data_create(CauchyData** star,
 
   cauchy_data->problem = problem;
 
-  SLEQP_CALL(sleqp_params_capture(params));
+  SLEQP_CALL(sleqp_settings_capture(settings));
 
-  cauchy_data->params = params;
+  cauchy_data->settings = settings;
 
   cauchy_data->trust_radius = SLEQP_NONE;
 
@@ -405,11 +406,12 @@ cauchy_data_create(CauchyData** star,
 SLEQP_RETCODE
 sleqp_box_constrained_cauchy_create(SleqpCauchy** star,
                                     SleqpProblem* problem,
-                                    SleqpParams* params)
+                                    SleqpSettings* settings)
 {
   CauchyData* cauchy_data;
 
-  SLEQP_CALL(cauchy_data_create(&cauchy_data, problem, params));
+  SLEQP_CALL(cauchy_data_create(&cauchy_data, problem,
+                                settings));
 
   SleqpCauchyCallbacks callbacks
     = {.set_iterate        = box_constrained_cauchy_set_iterate,

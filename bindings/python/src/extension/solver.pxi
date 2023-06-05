@@ -12,24 +12,21 @@ cdef class Solver:
 
   cdef csleqp.SleqpSolver* solver
   cdef object problem
-  cdef Params params
-  cdef Options options
+  cdef Settings settings
   cdef csleqp.SleqpVec* residuals
 
   cdef list callback_handles
 
   def __cinit__(self,
                 object problem,
-                Params params,
-                Options options,
+                Settings settings,
                 np.ndarray primal,
                 Scaling scaling=None):
 
     cdef csleqp.SleqpVec* primal_vec
     cdef _Problem _problem = <_Problem> problem._get_problem()
 
-    self.params = params
-    self.options = options
+    self.settings = settings
     self.callback_handles = []
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&primal_vec,
@@ -41,8 +38,7 @@ cdef class Solver:
 
     csleqp_call(csleqp.sleqp_solver_create(&self.solver,
                                            _problem.cproblem,
-                                           params.params,
-                                           options.options,
+                                           settings.settings,
                                            primal_vec,
                                            scaling.scaling if scaling is not None else NULL))
 

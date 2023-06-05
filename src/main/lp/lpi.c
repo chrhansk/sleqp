@@ -31,8 +31,7 @@ sleqp_lpi_create(SleqpLPi** lp_star,
                  const char* version,
                  int num_variables,
                  int num_constraints,
-                 SleqpParams* params,
-                 SleqpOptions* options,
+                 SleqpSettings* settings,
                  SleqpLPiCallbacks* callbacks)
 {
   SLEQP_CALL(sleqp_malloc(lp_star));
@@ -58,8 +57,7 @@ sleqp_lpi_create(SleqpLPi** lp_star,
   SLEQP_CALL(lp_interface->callbacks.create_problem(&lp_interface->lp_data,
                                                     num_variables,
                                                     num_constraints,
-                                                    params,
-                                                    options));
+                                                    settings));
 
   return SLEQP_OKAY;
 }

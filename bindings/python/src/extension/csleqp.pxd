@@ -116,50 +116,50 @@ cdef extern from "sleqp.h":
     SLEQP_DUAL_ESTIMATION_TYPE_LP,
     SLEQP_DUAL_ESTIMATION_TYPE_LSQ,
 
-  ctypedef enum SLEQP_PARAM:
-    SLEQP_PARAM_ZERO_EPS,
-    SLEQP_PARAM_EPS,
-    SLEQP_PARAM_DERIV_PERTURBATION,
-    SLEQP_PARAM_DERIV_TOL,
-    SLEQP_PARAM_CAUCHY_TAU,
-    SLEQP_PARAM_CAUCHY_ETA,
-    SLEQP_PARAM_LINESEARCH_TAU,
-    SLEQP_PARAM_LINESEARCH_ETA,
-    SLEQP_PARAM_LINESEARCH_CUTOFF,
-    SLEQP_PARAM_FEAS_TOL,
-    SLEQP_PARAM_SLACK_TOL,
-    SLEQP_PARAM_STAT_TOL,
-    SLEQP_PARAM_ACCEPTED_REDUCTION,
-    SLEQP_PARAM_DEADPOINT_BOUND
+  ctypedef enum SLEQP_SETTINGS_REAL:
+    SLEQP_SETTINGS_REAL_ZERO_EPS,
+    SLEQP_SETTINGS_REAL_EPS,
+    SLEQP_SETTINGS_REAL_DERIV_PERTURBATION,
+    SLEQP_SETTINGS_REAL_DERIV_TOL,
+    SLEQP_SETTINGS_REAL_CAUCHY_TAU,
+    SLEQP_SETTINGS_REAL_CAUCHY_ETA,
+    SLEQP_SETTINGS_REAL_LINESEARCH_TAU,
+    SLEQP_SETTINGS_REAL_LINESEARCH_ETA,
+    SLEQP_SETTINGS_REAL_LINESEARCH_CUTOFF,
+    SLEQP_SETTINGS_REAL_FEAS_TOL,
+    SLEQP_SETTINGS_REAL_SLACK_TOL,
+    SLEQP_SETTINGS_REAL_STAT_TOL,
+    SLEQP_SETTINGS_REAL_ACCEPTED_REDUCTION,
+    SLEQP_SETTINGS_REAL_DEADPOINT_BOUND
 
-  ctypedef enum SLEQP_OPTION_INT:
-    SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES,
-    SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS,
-    SLEQP_OPTION_INT_NUM_THREADS
+  ctypedef enum SLEQP_SETTINGS_INT:
+    SLEQP_SETTINGS_INT_NUM_QUASI_NEWTON_ITERATES,
+    SLEQP_SETTINGS_INT_MAX_NEWTON_ITERATIONS,
+    SLEQP_SETTINGS_INT_NUM_THREADS
 
-  ctypedef enum SLEQP_OPTION_ENUM:
-    SLEQP_OPTION_ENUM_DERIV_CHECK,
-    SLEQP_OPTION_ENUM_HESS_EVAL,
-    SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE,
-    SLEQP_OPTION_ENUM_FLOAT_WARNING_FLAGS,
-    SLEQP_OPTION_ENUM_FLOAT_ERROR_FLAGS,
-    SLEQP_OPTION_ENUM_BFGS_SIZING,
-    SLEQP_OPTION_ENUM_TR_SOLVER,
-    SLEQP_OPTION_ENUM_POLISHING_TYPE,
-    SLEQP_OPTION_ENUM_STEP_RULE,
-    SLEQP_OPTION_ENUM_LINESEARCH,
-    SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY,
-    SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE,
-    SLEQP_OPTION_ENUM_AUG_JAC_METHOD
+  ctypedef enum SLEQP_SETTINGS_ENUM:
+    SLEQP_SETTINGS_ENUM_DERIV_CHECK,
+    SLEQP_SETTINGS_ENUM_HESS_EVAL,
+    SLEQP_SETTINGS_ENUM_DUAL_ESTIMATION_TYPE,
+    SLEQP_SETTINGS_ENUM_FLOAT_WARNING_FLAGS,
+    SLEQP_SETTINGS_ENUM_FLOAT_ERROR_FLAGS,
+    SLEQP_SETTINGS_ENUM_BFGS_SIZING,
+    SLEQP_SETTINGS_ENUM_TR_SOLVER,
+    SLEQP_SETTINGS_ENUM_POLISHING_TYPE,
+    SLEQP_SETTINGS_ENUM_STEP_RULE,
+    SLEQP_SETTINGS_ENUM_LINESEARCH,
+    SLEQP_SETTINGS_ENUM_PARAMETRIC_CAUCHY,
+    SLEQP_SETTINGS_ENUM_INITIAL_TR_CHOICE,
+    SLEQP_SETTINGS_ENUM_AUG_JAC_METHOD
 
-  ctypedef enum SLEQP_OPTION_BOOL:
-    SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP,
-    SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS,
-    SLEQP_OPTION_BOOL_PERFORM_SOC,
-    SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL,
-    SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE,
-    SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR,
-    SLEQP_OPTION_BOOL_LP_RESOLVES
+  ctypedef enum SLEQP_SETTINGS_BOOL:
+    SLEQP_SETTINGS_BOOL_PERFORM_NEWTON_STEP,
+    SLEQP_SETTINGS_BOOL_GLOBAL_PENALTY_RESETS,
+    SLEQP_SETTINGS_BOOL_PERFORM_SOC,
+    SLEQP_SETTINGS_BOOL_USE_QUADRATIC_MODEL,
+    SLEQP_SETTINGS_BOOL_ENABLE_RESTORATION_PHASE,
+    SLEQP_SETTINGS_BOOL_ENABLE_PREPROCESSOR,
+    SLEQP_SETTINGS_BOOL_LP_RESOLVES
 
   ctypedef enum SLEQP_SOLVER_STATE_REAL:
     SLEQP_SOLVER_STATE_REAL_TRUST_RADIUS,
@@ -216,10 +216,7 @@ cdef extern from "sleqp.h":
   ctypedef struct SleqpScaling:
     pass
 
-  ctypedef struct SleqpParams:
-    pass
-
-  ctypedef struct SleqpOptions:
+  ctypedef struct SleqpSettings:
     pass
 
   ctypedef struct SleqpWorkingSet:
@@ -489,7 +486,7 @@ cdef extern from "sleqp.h":
                                       int num_constraints,
                                       int num_residuals,
                                       double levenberg_marquardt,
-                                      SleqpParams* params,
+                                      SleqpSettings* settings,
                                       void* func_data)
 
   SLEQP_RETCODE sleqp_lsq_func_set_callbacks(SleqpFunc* func,
@@ -593,8 +590,7 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     SleqpProblem* problem,
-                                    SleqpParams* params,
-                                    SleqpOptions* options,
+                                    SleqpSettings* settings,
                                     SleqpVec* x,
                                     SleqpScaling* scaling)
 
@@ -648,7 +644,7 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_problem_create_simple(SleqpProblem** star,
                                             SleqpFunc* func,
-                                            SleqpParams* params,
+                                            SleqpSettings* settings,
                                             const SleqpVec* var_lb,
                                             const SleqpVec* var_ub,
                                             const SleqpVec* cons_lb,
@@ -656,7 +652,7 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                      SleqpFunc* func,
-                                     SleqpParams* params,
+                                     SleqpSettings* settings,
                                      const SleqpVec* var_lb,
                                      const SleqpVec* var_ub,
                                      const SleqpVec* genereal_lb,
@@ -679,46 +675,43 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_problem_release(SleqpProblem** star)
 
-  # Parameters
+  # Settings
 
-  SLEQP_RETCODE sleqp_params_create(SleqpParams** star)
+  SLEQP_RETCODE sleqp_settings_create(SleqpSettings** star)
 
-  double sleqp_params_value(const SleqpParams* params,
-                            SLEQP_PARAM param)
+  int sleqp_settings_enum_value(const SleqpSettings* options,
+                                SLEQP_SETTINGS_ENUM option)
 
-  SLEQP_RETCODE sleqp_params_set_value(SleqpParams* params,
-                                       SLEQP_PARAM param,
-                                       double value)
+  SLEQP_RETCODE sleqp_settings_set_enum_value(SleqpSettings* options,
+                                              SLEQP_SETTINGS_ENUM option,
+                                              int value)
 
-  SLEQP_RETCODE sleqp_params_release(SleqpParams** star)
+  int sleqp_settings_int_value(const SleqpSettings* options,
+                               SLEQP_SETTINGS_INT option)
 
-  # Options
-
-  SLEQP_RETCODE sleqp_options_create(SleqpOptions** star)
-
-  int sleqp_options_enum_value(const SleqpOptions* options,
-                               SLEQP_OPTION_ENUM option)
-
-  SLEQP_RETCODE sleqp_options_set_enum_value(SleqpOptions* options,
-                                             SLEQP_OPTION_ENUM option,
+  SLEQP_RETCODE sleqp_settings_set_int_value(SleqpSettings* options,
+                                             SLEQP_SETTINGS_INT option,
                                              int value)
 
-  int sleqp_options_int_value(const SleqpOptions* options,
-                              SLEQP_OPTION_INT option)
 
-  SLEQP_RETCODE sleqp_options_set_int_value(SleqpOptions* options,
-                                            SLEQP_OPTION_INT option,
-                                            int value)
+  bool sleqp_settings_bool_value(const SleqpSettings* options,
+                                 SLEQP_SETTINGS_BOOL option)
+
+  SLEQP_RETCODE sleqp_settings_set_bool_value(SleqpSettings* options,
+                                              SLEQP_SETTINGS_BOOL option,
+                                              bool value)
 
 
-  bool sleqp_options_bool_value(const SleqpOptions* options,
-                                SLEQP_OPTION_BOOL option)
+  # Parameters
+  double sleqp_settings_real_value(const SleqpSettings* settings,
+                                   SLEQP_SETTINGS_REAL param)
 
-  SLEQP_RETCODE sleqp_options_set_bool_value(SleqpOptions* options,
-                                             SLEQP_OPTION_BOOL option,
-                                             bool value)
+  SLEQP_RETCODE sleqp_settings_set_real_value(SleqpSettings* settings,
+                                              SLEQP_SETTINGS_REAL param,
+                                              double value)
 
-  SLEQP_RETCODE sleqp_options_release(SleqpOptions** star)
+
+  SLEQP_RETCODE sleqp_settings_release(SleqpSettings** star)
 
   # Logging
 

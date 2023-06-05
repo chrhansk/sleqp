@@ -36,7 +36,7 @@
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_restoration_problem_create(SleqpProblem** star,
-                                 SleqpParams* params,
+                                 SleqpSettings* settings,
                                  SleqpProblem* problem);
 
 SLEQP_NODISCARD

@@ -29,7 +29,7 @@ struct SleqpPreprocessor
 
   SleqpTimer* timer;
 
-  SleqpParams* params;
+  SleqpSettings* settings;
   SleqpProblem* original_problem;
 
   int* linear_cons_counts;
@@ -377,7 +377,7 @@ check_for_constraint_infeasibility(SleqpPreprocessor* preprocessor)
   SleqpProblem* problem = preprocessor->original_problem;
 
   const double feas_eps
-    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEAS_TOL);
+    = sleqp_settings_real_value(preprocessor->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   SleqpPreprocessingState* state = preprocessor->preprocessing_state;
 
@@ -476,7 +476,7 @@ check_for_variable_infeasibility(SleqpPreprocessor* preprocessor)
     = sleqp_preprocessing_state_variable_states(state);
 
   const double feas_eps
-    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEAS_TOL);
+    = sleqp_settings_real_value(preprocessor->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
@@ -548,7 +548,7 @@ remove_redundant_constraints(SleqpPreprocessor* preprocessor)
   SleqpProblem* problem = preprocessor->original_problem;
 
   const double feas_eps
-    = sleqp_params_value(preprocessor->params, SLEQP_PARAM_FEAS_TOL);
+    = sleqp_settings_real_value(preprocessor->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   SLEQP_CALL(sleqp_vec_to_raw(sleqp_problem_linear_lb(problem),
                               preprocessor->linear_lb));
@@ -636,7 +636,7 @@ remove_redundant_constraints(SleqpPreprocessor* preprocessor)
 SLEQP_RETCODE
 sleqp_preprocessor_create(SleqpPreprocessor** star,
                           SleqpProblem* problem,
-                          SleqpParams* params)
+                          SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -648,8 +648,8 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   SLEQP_CALL(sleqp_timer_create(&preprocessor->timer));
 
-  preprocessor->params = params;
-  SLEQP_CALL(sleqp_params_capture(preprocessor->params));
+  preprocessor->settings = settings;
+  SLEQP_CALL(sleqp_settings_capture(preprocessor->settings));
 
   preprocessor->original_problem = problem;
 
@@ -709,7 +709,7 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
 
   SLEQP_CALL(sleqp_transformation_create(&preprocessor->transformation,
                                          preprocessor->preprocessing_state,
-                                         params));
+                                         settings));
 
   SLEQP_CALL(sleqp_transformation_create_transformed_problem(
     preprocessor->transformation,
@@ -718,7 +718,7 @@ sleqp_preprocessor_create(SleqpPreprocessor** star,
   SLEQP_CALL(sleqp_restoration_create(&preprocessor->restoration,
                                       preprocessor->preprocessing_state,
                                       preprocessor->transformed_problem,
-                                      params));
+                                      settings));
 
   SLEQP_CALL(sleqp_timer_stop(preprocessor->timer));
 
@@ -845,7 +845,7 @@ preprocessor_free(SleqpPreprocessor** star)
 
   SLEQP_CALL(sleqp_problem_release(&preprocessor->original_problem));
 
-  SLEQP_CALL(sleqp_params_release(&preprocessor->params));
+  SLEQP_CALL(sleqp_settings_release(&preprocessor->settings));
 
   SLEQP_CALL(sleqp_timer_free(&preprocessor->timer));
 

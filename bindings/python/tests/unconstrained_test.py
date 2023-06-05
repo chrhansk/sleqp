@@ -11,22 +11,19 @@ from tests.rosenbrock_fixture import *
 class UnconstrainedTest(unittest.TestCase):
 
   def setUp(self):
-    self.params = sleqp.Params()
-
-    self.options = sleqp.Options()
+    self.settings = sleqp.Settings()
 
     func = RosenbrockFunc()
 
     problem = sleqp.Problem(func,
-                            self.params,
+                            self.settings,
                             var_lb,
                             var_ub,
                             cons_lb,
                             cons_ub)
 
     self.solver = sleqp.Solver(problem,
-                               self.params,
-                               self.options,
+                               self.settings,
                                initial_sol)
 
   def test_solve(self):

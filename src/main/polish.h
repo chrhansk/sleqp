@@ -2,7 +2,6 @@
 #define SLEQP_POLISH_H
 
 #include "iterate.h"
-#include "params.h"
 
 typedef struct SleqpPolishing SleqpPolishing;
 
@@ -10,7 +9,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_polishing_create(SleqpPolishing** star,
                        SleqpProblem* problem,
-                       SleqpParams* params);
+                       SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

@@ -10,22 +10,19 @@ from .constrained_fixture import *
 class IterateTest(unittest.TestCase):
 
   def test_iterate(self):
-    params = sleqp.Params()
-
-    options = sleqp.Options()
+    settings = sleqp.Settings()
 
     func = ConstrainedFunc()
 
     problem = sleqp.Problem(func,
-                            params,
+                            settings,
                             var_lb,
                             var_ub,
                             cons_lb,
                             cons_ub)
 
     solver = sleqp.Solver(problem,
-                          params,
-                          options,
+                          settings,
                           initial_sol)
 
     solver.solve(max_num_iterations=1000)

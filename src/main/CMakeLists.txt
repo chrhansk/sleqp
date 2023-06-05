@@ -35,9 +35,7 @@ set(COMMON_SRC
   measure.c
   merit.c
   newton.c
-  options.c
   parametric.c
-  params.c
   penalty.c
   polish.c
   preprocessor/fixed_var_func.c
@@ -61,6 +59,7 @@ set(COMMON_SRC
   quasi_newton/sr1.c
   restoration.c
   scale.c
+  settings.c
   soc.c
   solver.c
   solver/callback.c

@@ -5,7 +5,7 @@
 
 typedef struct
 {
-  SleqpParams* params;
+  SleqpSettings* settings;
 } StepRule;
 
 static SLEQP_RETCODE
@@ -24,7 +24,7 @@ step_rule_direct_apply(double iterate_merit,
   *reduction_ratio = sleqp_reduction_ratio(exact_reduction, model_reduction);
 
   const double accepted_reduction
-    = sleqp_params_value(step_rule->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
+    = sleqp_settings_real_value(step_rule->settings, SLEQP_SETTINGS_REAL_ACCEPTED_REDUCTION);
 
   *accept_step = (*reduction_ratio >= accepted_reduction);
 
@@ -40,7 +40,7 @@ step_rule_direct_free(void* step_data)
 {
   StepRule* step_rule = (StepRule*)step_data;
 
-  SLEQP_CALL(sleqp_params_release(&step_rule->params));
+  SLEQP_CALL(sleqp_settings_release(&step_rule->settings));
 
   sleqp_free(&step_data);
 
@@ -50,7 +50,7 @@ step_rule_direct_free(void* step_data)
 SLEQP_RETCODE
 sleqp_step_rule_direct_create(SleqpStepRule** star,
                               SleqpProblem* problem,
-                              SleqpParams* params)
+                              SleqpSettings* settings)
 {
   SleqpStepRuleCallbacks callbacks = {.rule_apply = step_rule_direct_apply,
                                       .rule_reset = NULL,
@@ -60,12 +60,12 @@ sleqp_step_rule_direct_create(SleqpStepRule** star,
 
   SLEQP_CALL(sleqp_malloc(&step_rule));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  step_rule->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  step_rule->settings = settings;
 
   SLEQP_CALL(sleqp_step_rule_create(star,
                                     problem,
-                                    params,
+                                    settings,
                                     &callbacks,
                                     (void*)step_rule));
 

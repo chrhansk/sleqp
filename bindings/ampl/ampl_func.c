@@ -432,7 +432,7 @@ ampl_func_hess_product(SleqpFunc* func,
 SLEQP_RETCODE
 sleqp_ampl_func_create(SleqpFunc** star,
                        SleqpAmplData* ampl_data,
-                       SleqpParams* params,
+                       SleqpSettings* settings,
                        bool halt_on_error)
 {
   AmplFuncData* data;
@@ -440,7 +440,7 @@ sleqp_ampl_func_create(SleqpFunc** star,
   const int num_variables = ampl_data->num_variables;
   const int num_general   = ampl_data->num_constraints - ampl_data->num_linear;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(ampl_func_data_create(&data, ampl_data, zero_eps, halt_on_error));
 

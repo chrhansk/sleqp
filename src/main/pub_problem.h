@@ -4,9 +4,9 @@
 #include "sleqp/export.h"
 
 #include "sleqp/pub_func.h"
-#include "sleqp/pub_params.h"
 #include "sparse/pub_mat.h"
 #include "sparse/pub_vec.h"
+#include "sleqp/pub_settings.h"
 
 /**
  * @file pub_problem.h
@@ -57,7 +57,7 @@ typedef struct SleqpProblem SleqpProblem;
  * Creates a new problem without linear coefficients.
  *
  * @param[in] func        The function associated with the problem
- * @param[in] params      Numerical parameters
+ * @param[in] settings    Settings
  * @param[in] var_lb      The lower variable bounds \f$ l_x \f$
  * @param[in] var_ub      The upper variable bounds \f$ u_x \f$
  * @param[in] general_lb  The lower bounds \f$ l \f$ on the constraints
@@ -67,7 +67,7 @@ typedef struct SleqpProblem SleqpProblem;
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_problem_create_simple(SleqpProblem** star,
                             SleqpFunc* func,
-                            SleqpParams* params,
+                            SleqpSettings* settings,
                             const SleqpVec* var_lb,
                             const SleqpVec* var_ub,
                             const SleqpVec* general_lb,
@@ -77,7 +77,7 @@ sleqp_problem_create_simple(SleqpProblem** star,
  * Creates a new problem with linear coefficients.
  *
  * @param[in] func        The function associated with the problem
- * @param[in] params      Numerical parameters
+ * @param[in] settings    Settings
  * @param[in] var_lb      The lower variable bounds \f$ l_x \f$
  * @param[in] var_ub      The upper variable bounds \f$ u_x \f$
  * @param[in] general_lb  The lower bounds \f$ l_{\nonlin} \f$ on the
@@ -94,7 +94,7 @@ sleqp_problem_create_simple(SleqpProblem** star,
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_problem_create(SleqpProblem** star,
                      SleqpFunc* func,
-                     SleqpParams* params,
+                     SleqpSettings* settings,
                      const SleqpVec* var_lb,
                      const SleqpVec* var_ub,
                      const SleqpVec* genereal_lb,

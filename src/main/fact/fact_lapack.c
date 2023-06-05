@@ -20,7 +20,7 @@ dgetrs_(char* TRANS,
 
 typedef struct
 {
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   int max_size;
 
@@ -35,7 +35,7 @@ typedef struct
 } LAPACKData;
 
 static SLEQP_RETCODE
-lapack_data_create(LAPACKData** star, SleqpParams* params)
+lapack_data_create(LAPACKData** star, SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -43,8 +43,8 @@ lapack_data_create(LAPACKData** star, SleqpParams* params)
 
   *lapack_data = (LAPACKData){0};
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  lapack_data->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  lapack_data->settings = settings;
 
   return SLEQP_OKAY;
 }
@@ -179,7 +179,7 @@ lapack_free(void** star)
   sleqp_free(&lapack_data->ipiv);
   sleqp_free(&lapack_data->values);
 
-  SLEQP_CALL(sleqp_params_release(&lapack_data->params));
+  SLEQP_CALL(sleqp_settings_release(&lapack_data->settings));
 
   sleqp_free(&lapack_data);
 
@@ -187,7 +187,7 @@ lapack_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_fact_lapack_create(SleqpFact** star, SleqpParams* params)
+sleqp_fact_lapack_create(SleqpFact** star, SleqpSettings* settings)
 {
   SleqpFactCallbacks callbacks = {.set_matrix = lapack_set_matrix,
                                   .solve      = lapack_solve,
@@ -197,12 +197,12 @@ sleqp_fact_lapack_create(SleqpFact** star, SleqpParams* params)
 
   LAPACKData* lapack_data = NULL;
 
-  SLEQP_CALL(lapack_data_create(&lapack_data, params));
+  SLEQP_CALL(lapack_data_create(&lapack_data, settings));
 
   SLEQP_CALL(sleqp_fact_create(star,
                                SLEQP_FACT_LAPACK_NAME,
                                SLEQP_FACT_LAPACK_VERSION,
-                               params,
+                               settings,
                                &callbacks,
                                SLEQP_FACT_FLAGS_LOWER,
                                (void*)lapack_data));
@@ -211,9 +211,9 @@ sleqp_fact_lapack_create(SleqpFact** star, SleqpParams* params)
 }
 
 SLEQP_RETCODE
-sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpSettings* settings)
 {
-  SLEQP_CALL(sleqp_fact_lapack_create(star, params));
+  SLEQP_CALL(sleqp_fact_lapack_create(star, settings));
 
   return SLEQP_OKAY;
 }

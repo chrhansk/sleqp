@@ -3,6 +3,7 @@
 #include "cmp.h"
 #include "fail.h"
 #include "mem.h"
+#include "settings.h"
 #include "working_set.h"
 
 #include "sparse/mat.h"
@@ -12,7 +13,7 @@ struct SleqpSOC
   int refcount;
 
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpVec* upper_diff;
   SleqpVec* lower_diff;
@@ -26,7 +27,7 @@ struct SleqpSOC
 SLEQP_RETCODE
 sleqp_soc_data_create(SleqpSOC** star,
                       SleqpProblem* problem,
-                      SleqpParams* params)
+                      SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -38,8 +39,8 @@ sleqp_soc_data_create(SleqpSOC** star,
   soc_data->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(soc_data->problem));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  soc_data->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  soc_data->settings = settings;
 
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
@@ -67,10 +68,10 @@ add_variable_entries(SleqpSOC* soc_data,
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
-  const double eps = sleqp_params_value(soc_data->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(soc_data->settings, SLEQP_SETTINGS_REAL_EPS);
 
   const double zero_eps
-    = sleqp_params_value(soc_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(soc_data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* lower_diff = soc_data->lower_diff;
   SleqpVec* upper_diff = soc_data->upper_diff;
@@ -156,10 +157,10 @@ add_constraint_entries(SleqpSOC* soc_data,
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
-  const double eps = sleqp_params_value(soc_data->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(soc_data->settings, SLEQP_SETTINGS_REAL_EPS);
 
   const double zero_eps
-    = sleqp_params_value(soc_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(soc_data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* lower_diff = soc_data->lower_diff;
   SleqpVec* upper_diff = soc_data->upper_diff;
@@ -278,7 +279,7 @@ sleqp_soc_compute_step(SleqpSOC* soc_data,
   SleqpVec* trial_point = sleqp_iterate_primal(trial_iterate);
 
   const double zero_eps
-    = sleqp_params_value(soc_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(soc_data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   double max_step_length = 1.;
 
@@ -319,7 +320,7 @@ sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
   SleqpVec* trial_point   = sleqp_iterate_primal(trial_iterate);
 
   const double zero_eps
-    = sleqp_params_value(soc_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(soc_data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_soc_compute_correction(soc_data,
                                           aug_jac,
@@ -372,7 +373,7 @@ soc_data_free(SleqpSOC** star)
   SLEQP_CALL(sleqp_vec_free(&soc_data->lower_diff));
   SLEQP_CALL(sleqp_vec_free(&soc_data->upper_diff));
 
-  SLEQP_CALL(sleqp_params_release(&soc_data->params));
+  SLEQP_CALL(sleqp_settings_release(&soc_data->settings));
 
   SLEQP_CALL(sleqp_problem_release(&soc_data->problem));
 

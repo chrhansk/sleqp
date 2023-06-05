@@ -10,8 +10,7 @@
  * not satisfying LICQ / MFCQ constraint qualifications
  */
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpProblem* problem;
 
 #define DEGRADED_NUM_VARS 2
@@ -155,7 +154,7 @@ linear_cons_create(SleqpMat** cstar,
 }
 
 SLEQP_RETCODE
-degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
+degraded_problem_create(SleqpProblem** star, SleqpSettings* settings, bool swapped)
 {
   SleqpFunc* func;
 
@@ -185,7 +184,7 @@ degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
 
   SLEQP_CALL(sleqp_problem_create(star,
                                   func,
-                                  params,
+                                  settings,
                                   var_lb,
                                   var_ub,
                                   cons_bounds,
@@ -208,20 +207,17 @@ degraded_problem_create(SleqpProblem** star, SleqpParams* params, bool swapped)
   return SLEQP_OKAY;
 }
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpVec* initial;
 
 void
 degraded_setup()
 {
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
-  ASSERT_CALL(sleqp_options_create(&options));
-
-  ASSERT_CALL(sleqp_options_set_enum_value(
-    options,
-    SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(
+    settings,
+    SLEQP_SETTINGS_ENUM_DERIV_CHECK,
     SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   ASSERT_CALL(sleqp_vec_create_full(&initial, DEGRADED_NUM_VARS));
@@ -235,9 +231,7 @@ degraded_teardown()
 {
   ASSERT_CALL(sleqp_vec_free(&initial));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }
 
 START_TEST(test_solve)
@@ -245,10 +239,10 @@ START_TEST(test_solve)
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(degraded_problem_create(&problem, params, false));
+  ASSERT_CALL(degraded_problem_create(&problem, settings, false));
 
   ASSERT_CALL(
-    sleqp_solver_create(&solver, problem, params, options, initial, NULL));
+    sleqp_solver_create(&solver, problem, settings, initial, NULL));
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, SLEQP_NONE));
 
@@ -269,10 +263,10 @@ START_TEST(test_solve_swapped)
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(degraded_problem_create(&problem, params, true));
+  ASSERT_CALL(degraded_problem_create(&problem, settings, true));
 
   ASSERT_CALL(
-    sleqp_solver_create(&solver, problem, params, options, initial, NULL));
+    sleqp_solver_create(&solver, problem, settings, initial, NULL));
 
   ASSERT_CALL(sleqp_solver_solve(solver, 10, SLEQP_NONE));
 

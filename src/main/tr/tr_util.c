@@ -8,13 +8,13 @@
 SLEQP_RETCODE
 sleqp_tr_compute_bdry_sol(const SleqpVec* previous,
                           const SleqpVec* direction,
-                          SleqpParams* params,
+                          SleqpSettings* settings,
                           double radius,
                           SleqpVec* result)
 {
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 

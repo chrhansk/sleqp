@@ -49,9 +49,7 @@ struct SleqpSolver
 {
   int refcount;
 
-  SleqpParams* params;
-
-  SleqpOptions* options;
+  SleqpSettings* settings;
 
   SleqpProblem* original_problem;
 

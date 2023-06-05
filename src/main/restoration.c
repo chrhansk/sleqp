@@ -4,6 +4,7 @@
 #include "lsq.h"
 #include "mem.h"
 
+#include "pub_settings.h"
 #include "sparse/mat.h"
 
 typedef struct
@@ -26,7 +27,7 @@ typedef struct
   bool has_cons_jac;
 
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
 } FuncData;
 
@@ -152,7 +153,7 @@ restoration_lsq_residuals(SleqpFunc* func, SleqpVec* residual, void* data)
   SLEQP_CALL(compute_cons_val(func_data));
 
   const double zero_eps
-    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(func_data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_add_scaled(func_data->cons_val,
                                   func_data->cons_primal,
@@ -186,7 +187,7 @@ restoration_lsq_jac_forward(SleqpFunc* func,
   FuncData* func_data = (FuncData*)data;
 
   const double zero_eps
-    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(func_data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const int num_constraints = sleqp_problem_num_cons(func_data->problem);
 
@@ -257,7 +258,7 @@ restoration_lsq_jac_adjoint(SleqpFunc* func,
   SLEQP_CALL(compute_cons_jac(func_data));
 
   const double zero_eps
-    = sleqp_params_value(func_data->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(func_data->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_mat_mult_vec_trans(func_data->cons_jac,
                                       adjoint_direction,
@@ -275,7 +276,7 @@ restoration_func_free(void* data)
 {
   FuncData* func_data = (FuncData*)data;
 
-  SLEQP_CALL(sleqp_params_release(&func_data->params));
+  SLEQP_CALL(sleqp_settings_release(&func_data->settings));
 
   SLEQP_CALL(sleqp_problem_release(&func_data->problem));
 
@@ -303,7 +304,7 @@ restoration_func_free(void* data)
 }
 
 static SLEQP_RETCODE
-func_data_create(FuncData** star, SleqpProblem* problem, SleqpParams* params)
+func_data_create(FuncData** star, SleqpProblem* problem, SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -336,15 +337,15 @@ func_data_create(FuncData** star, SleqpProblem* problem, SleqpParams* params)
   SLEQP_CALL(sleqp_problem_capture(problem));
   func_data->problem = problem;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  func_data->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  func_data->settings = settings;
 
   return SLEQP_OKAY;
 }
 
 static SLEQP_RETCODE
 restoration_func_create(SleqpFunc** star,
-                        SleqpParams* params,
+                        SleqpSettings* settings,
                         SleqpProblem* problem)
 {
   SleqpLSQCallbacks callbacks = {.set_value       = restoration_func_set,
@@ -365,7 +366,7 @@ restoration_func_create(SleqpFunc** star,
 
   FuncData* func_data;
 
-  SLEQP_CALL(func_data_create(&func_data, problem, params));
+  SLEQP_CALL(func_data_create(&func_data, problem, settings));
 
   SLEQP_CALL(sleqp_lsq_func_create(star,
                                    &callbacks,
@@ -373,7 +374,7 @@ restoration_func_create(SleqpFunc** star,
                                    restoration_num_constraints,
                                    restoration_num_residuals,
                                    0.,
-                                   params,
+                                   settings,
                                    func_data));
 
   SleqpFunc* func = *star;
@@ -437,7 +438,7 @@ sleqp_restoration_func_init(SleqpFunc* restoration_func,
 
 SLEQP_RETCODE
 sleqp_restoration_problem_create(SleqpProblem** star,
-                                 SleqpParams* params,
+                                 SleqpSettings* settings,
                                  SleqpProblem* problem)
 {
   const int num_variables   = sleqp_problem_num_vars(problem);
@@ -467,11 +468,11 @@ sleqp_restoration_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(sleqp_vec_create_empty(&empty, 0));
 
-  SLEQP_CALL(restoration_func_create(&restoration_func, params, problem));
+  SLEQP_CALL(restoration_func_create(&restoration_func, settings, problem));
 
   SLEQP_CALL(sleqp_problem_create_simple(star,
                                          restoration_func,
-                                         params,
+                                         settings,
                                          restoration_var_lb,
                                          restoration_var_ub,
                                          empty,
