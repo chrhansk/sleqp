@@ -1,13 +1,19 @@
 #include "settings.h"
 
+#include <ctype.h>
 #include <fenv.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "enum.h"
 #include "error.h"
 #include "fail.h"
 #include "log.h"
 #include "mem.h"
+#include "pub_error.h"
+#include "pub_log.h"
 #include "pub_settings.h"
 #include "pub_types.h"
 #include "types.h"
@@ -346,40 +352,53 @@ sleqp_settings_create(SleqpSettings** star)
   return SLEQP_OKAY;
 }
 
-static bool
-valid_member(SLEQP_SETTINGS_ENUM option, int value)
+static const SleqpEnum*
+get_enum(SLEQP_SETTINGS_ENUM option)
 {
   switch (option)
   {
   case SLEQP_SETTINGS_ENUM_DERIV_CHECK:
-    return sleqp_enum_member(sleqp_enum_deriv_check(), value);
+    return sleqp_enum_deriv_check();
   case SLEQP_SETTINGS_ENUM_HESS_EVAL:
-    return sleqp_enum_member(sleqp_enum_hess_eval(), value);
+    return sleqp_enum_hess_eval();
   case SLEQP_SETTINGS_ENUM_DUAL_ESTIMATION_TYPE:
-    return sleqp_enum_member(sleqp_enum_dual_estimation(), value);
+    return sleqp_enum_dual_estimation();
   case SLEQP_SETTINGS_ENUM_FLOAT_WARNING_FLAGS:
   case SLEQP_SETTINGS_ENUM_FLOAT_ERROR_FLAGS:
-    return true;
+    return NULL;
   case SLEQP_SETTINGS_ENUM_BFGS_SIZING:
-    return sleqp_enum_member(sleqp_enum_bfgs_sizing(), value);
+    return sleqp_enum_bfgs_sizing();
   case SLEQP_SETTINGS_ENUM_TR_SOLVER:
-    return sleqp_enum_member(sleqp_enum_tr_solver(), value);
+    return sleqp_enum_tr_solver();
   case SLEQP_SETTINGS_ENUM_POLISHING_TYPE:
-    return sleqp_enum_member(sleqp_enum_polishing_type(), value);
+    return sleqp_enum_polishing_type();
   case SLEQP_SETTINGS_ENUM_STEP_RULE:
-    return sleqp_enum_member(sleqp_enum_step_rule(), value);
+    return sleqp_enum_step_rule();
   case SLEQP_SETTINGS_ENUM_LINESEARCH:
-    return sleqp_enum_member(sleqp_enum_linesearch(), value);
+    return sleqp_enum_linesearch();
   case SLEQP_SETTINGS_ENUM_PARAMETRIC_CAUCHY:
-    return sleqp_enum_member(sleqp_enum_parametric_cauchy(), value);
+    return sleqp_enum_parametric_cauchy();
   case SLEQP_SETTINGS_ENUM_INITIAL_TR_CHOICE:
-    return sleqp_enum_member(sleqp_enum_initial_tr(), value);
+    return sleqp_enum_initial_tr();
   case SLEQP_SETTINGS_ENUM_AUG_JAC_METHOD:
-    return sleqp_enum_member(sleqp_enum_aug_jac_method(), value);
+    return sleqp_enum_aug_jac_method();
   default:
     assert(0);
   }
-  return false;
+  return NULL;
+}
+
+static bool
+valid_member(SLEQP_SETTINGS_ENUM option, int value)
+{
+  const SleqpEnum* settings_enum = get_enum(option);
+
+  if (!settings_enum)
+  {
+    return true;
+  }
+
+  return sleqp_enum_member(settings_enum, value);
 }
 
 #define OPT_VALID(option, NUM_OPTIONS)                                         \
@@ -497,6 +516,253 @@ sleqp_settings_set_bool_value(SleqpSettings* settings,
   }
 
   settings->bool_values[option] = value;
+
+  return SLEQP_OKAY;
+}
+
+#define BUF_LEN 1024
+
+static void
+trim(char* s)
+{
+  int i;
+
+  while (isspace(*s))
+  {
+    s++;
+  }
+
+  const int size = strlen(s);
+
+  if (size == 0)
+  {
+    return;
+  }
+
+  for (i = size - 1; i >= 0 && (isspace(s[i])); i--)
+  {
+  }
+
+  s[i + 1] = '\0';
+}
+
+void
+extract_key_value(char buffer[BUF_LEN],
+                  char key[BUF_LEN],
+                  char value[BUF_LEN],
+                  bool* error,
+                  bool* content)
+{
+  trim(buffer);
+
+  *content = false;
+  *error   = false;
+
+  // skip empty line
+  if (strlen(buffer) == 0)
+  {
+    return;
+  }
+
+  if (buffer[0] == '#')
+  {
+    return;
+  }
+
+  char* begin = buffer;
+  char* end   = buffer;
+
+  for (; *begin && !isspace(*begin); ++begin)
+  {
+  }
+
+  if (!begin)
+  {
+    *error = true;
+    return;
+  }
+
+  assert(isspace(*begin));
+  memcpy(key, buffer, (begin - buffer));
+  key[begin - buffer] = '\0';
+
+  while (isspace(*begin))
+  {
+    begin++;
+  }
+
+  if (!begin)
+  {
+    *error = true;
+    return;
+  }
+
+  end = begin;
+
+  for (; *end && !isspace(*end); ++end)
+  {
+  }
+
+  memcpy(value, begin, end - begin);
+  value[end - begin] = '\0';
+  *content           = true;
+}
+
+static SLEQP_RETCODE
+settings_set_key_value(SleqpSettings* settings,
+                       const char* key,
+                       const char* value,
+                       bool* error)
+{
+  *error = false;
+
+  // int
+  for (int i = 0; i < SLEQP_NUM_INT_SETTINGS; ++i)
+  {
+    if (!strcmp(key, sleqp_settings_int_name(i)))
+    {
+      char* end;
+      const int v = strtol(value, &end, 10);
+
+      if (*end)
+      {
+        *error = true;
+        return SLEQP_OKAY;
+      }
+
+      SLEQP_CALL(sleqp_settings_set_int_value(settings, i, v));
+      return SLEQP_OKAY;
+    }
+  }
+
+  // real
+  for (int i = 0; i < SLEQP_NUM_REAL_SETTINGS; ++i)
+  {
+    if (!strcmp(key, sleqp_settings_real_name(i)))
+    {
+      char* end;
+      const double v = strtod(value, &end);
+
+      if (*end)
+      {
+        *error = true;
+        return SLEQP_OKAY;
+      }
+
+      SLEQP_CALL(sleqp_settings_set_real_value(settings, i, v));
+      return SLEQP_OKAY;
+    }
+  }
+
+  // bool
+  for (int i = 0; i < SLEQP_NUM_BOOL_SETTINGS; ++i)
+  {
+    if (!strcmp(key, sleqp_settings_bool_name(i)))
+    {
+      if (!strcmp(value, "1") || !strcmp(value, "true"))
+      {
+        SLEQP_CALL(sleqp_settings_set_bool_value(settings, i, true));
+        return SLEQP_OKAY;
+      }
+      else if (!strcmp(value, "0") || !strcmp(value, "false"))
+      {
+        SLEQP_CALL(sleqp_settings_set_bool_value(settings, i, false));
+        return SLEQP_OKAY;
+      }
+    }
+  }
+
+  // enum
+  for (int i = 0; i < SLEQP_NUM_ENUM_SETTINGS; ++i)
+  {
+    if (!strcmp(key, sleqp_settings_enum_name(i)))
+    {
+      const SleqpEnum* settings_enum = get_enum(i);
+
+      if (!settings_enum)
+      {
+        *error = true;
+        return SLEQP_OKAY;
+      }
+
+      const SleqpEnumEntry* entry = settings_enum->entries;
+
+      for (; entry->name; ++entry)
+      {
+        if (!strcmp(entry->name, value))
+        {
+          SLEQP_CALL(sleqp_settings_set_enum_value(settings, i, entry->value));
+          return SLEQP_OKAY;
+        }
+      }
+
+      *error = true;
+      break;
+    }
+  }
+
+  return SLEQP_OKAY;
+}
+
+SLEQP_RETCODE
+sleqp_settings_read_file(SleqpSettings* settings, const char* settings_filename)
+{
+  FILE* file = fopen(settings_filename, "r");
+
+  if (!file)
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                "Could not open settings file '%s'",
+                settings_filename);
+  }
+
+  char buffer[BUF_LEN];
+  char key[BUF_LEN];
+  char value[BUF_LEN];
+
+  int line = 0;
+
+  while (fgets(buffer, BUF_LEN, file))
+  {
+    ++line;
+
+    bool error;
+    bool content;
+
+    extract_key_value(buffer, key, value, &error, &content);
+
+    if (error)
+    {
+      sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+                  "Invalid syntax at line %d of settings file '%s'",
+                  line,
+                  settings_filename);
+    }
+
+    if (!content)
+    {
+      continue;
+    }
+
+    SLEQP_CALL(settings_set_key_value(settings, key, value, &error));
+
+    if (error)
+    {
+      sleqp_raise(
+        SLEQP_ILLEGAL_ARGUMENT,
+        "Could not set parameter '%s' to '%s' at line %d of settings file '%s'",
+        key,
+        value,
+        line,
+        settings_filename);
+    }
+    else
+    {
+      sleqp_log_debug("Setting parameter %s to %s", key, value);
+    }
+  }
+
+  fclose(file);
 
   return SLEQP_OKAY;
 }

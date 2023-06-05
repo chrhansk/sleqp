@@ -136,6 +136,19 @@ sleqp_settings_set_bool_value(SleqpSettings* settings,
                               SLEQP_SETTINGS_BOOL option,
                               bool value);
 
+
+/**
+ * Read settings from file on the disk and
+ * update relevant parts of the given settings
+ *
+ * @param[in,out] settings           Current settings
+ * @param[in]     settings_filename  Name of settings file
+ *
+ **/
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_settings_read_file(SleqpSettings* settings,
+                         const char* settings_filename);
+
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_settings_capture(SleqpSettings* settings);
 

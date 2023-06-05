@@ -132,6 +132,10 @@ cdef class Settings:
   def __repr__(self) -> str:
     return 'Settings({0})'.format(repr(self.props()))
 
+  cpdef read(self, str filename):
+    csleqp_call(csleqp.sleqp_settings_read_file(self.settings,
+                                                filename))
+
   cdef _prop(self, name):
     prop = opt_prop_map.get(name)
     if prop is None:

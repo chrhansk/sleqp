@@ -1,0 +1,12 @@
+# Float
+zero_eps               1e-2
+
+# Enum
+dual_estimation_type   LP
+
+# Integer
+max_newton_iterations  10
+
+# Bool
+global_penalty_resets  false
+

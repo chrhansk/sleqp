@@ -679,6 +679,9 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_settings_create(SleqpSettings** star)
 
+  SLEQP_RETCODE sleqp_settings_read_file(SleqpSettings* settings,
+                                         const char* settings_filename)
+
   int sleqp_settings_enum_value(const SleqpSettings* options,
                                 SLEQP_SETTINGS_ENUM option)
 
@@ -701,8 +704,6 @@ cdef extern from "sleqp.h":
                                               SLEQP_SETTINGS_BOOL option,
                                               bool value)
 
-
-  # Parameters
   double sleqp_settings_real_value(const SleqpSettings* settings,
                                    SLEQP_SETTINGS_REAL param)
 
