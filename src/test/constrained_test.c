@@ -21,11 +21,11 @@ constrained_test_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           constrained_func,
-                                          settings,
                                           constrained_var_lb,
                                           constrained_var_ub,
                                           constrained_cons_lb,
-                                          constrained_cons_ub));
+                                          constrained_cons_ub,
+                                          settings));
 }
 
 void
@@ -113,7 +113,6 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -131,7 +130,6 @@ START_TEST(test_solve_reduced)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -151,7 +149,6 @@ START_TEST(test_solve_direct)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -171,7 +168,6 @@ START_TEST(test_exact_linesearch)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -189,7 +185,6 @@ START_TEST(test_initial_tr_wide)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -207,7 +202,6 @@ START_TEST(test_parametric_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -229,7 +223,6 @@ START_TEST(test_sr1_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -255,7 +248,6 @@ START_TEST(test_bfgs_solve_no_sizing)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -277,7 +269,6 @@ START_TEST(test_bfgs_solve_centered_ol_sizing)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -301,7 +292,6 @@ START_TEST(test_unscaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   scaling));
 
@@ -338,7 +328,6 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   scaling));
 
@@ -378,7 +367,6 @@ START_TEST(test_scaled_sr1_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   scaling));
 
@@ -418,7 +406,6 @@ START_TEST(test_scaled_bfgs_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   scaling));
 
@@ -459,7 +446,6 @@ START_TEST(test_auto_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   scaling));
 
@@ -482,7 +468,6 @@ START_TEST(test_lp_dual_estimation)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -501,7 +486,6 @@ START_TEST(test_mixed_dual_estimation)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 

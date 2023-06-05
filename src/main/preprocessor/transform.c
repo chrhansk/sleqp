@@ -588,14 +588,14 @@ sleqp_transformation_create_transformed_problem(
 
   SLEQP_CALL(sleqp_problem_create(star,
                                   transformation->transformed_func,
-                                  transformation->settings,
                                   transformation->transformed_var_lb,
                                   transformation->transformed_var_ub,
                                   sleqp_problem_general_lb(problem),
                                   sleqp_problem_general_ub(problem),
                                   transformation->transformed_linear_coeffs,
                                   transformation->transformed_linear_lb,
-                                  transformation->transformed_linear_ub));
+                                  transformation->transformed_linear_ub,
+                                  transformation->settings));
 
   {
     SleqpProblem* transformed_problem = *star;

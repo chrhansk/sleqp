@@ -472,11 +472,11 @@ sleqp_restoration_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(sleqp_problem_create_simple(star,
                                          restoration_func,
-                                         settings,
                                          restoration_var_lb,
                                          restoration_var_ub,
                                          empty,
-                                         empty));
+                                         empty,
+                                         settings));
 
   SLEQP_CALL(sleqp_func_release(&restoration_func));
 

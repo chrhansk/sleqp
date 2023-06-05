@@ -54,12 +54,9 @@ class RejectFunc:
 class RejectTest(unittest.TestCase):
 
   def setUp(self):
-    self.settings = sleqp.Settings()
-
     self.func = RejectFunc()
 
     self.problem = sleqp.Problem(self.func,
-                                 self.settings,
                                  var_lb,
                                  var_ub,
                                  cons_lb,
@@ -67,7 +64,6 @@ class RejectTest(unittest.TestCase):
 
   def test_solve(self):
     solver = sleqp.Solver(self.problem,
-                          self.settings,
                           initial_sol)
 
     solver.solve(max_num_iterations=100)

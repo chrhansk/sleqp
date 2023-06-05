@@ -10,12 +10,9 @@ from .constrained_fixture import *
 class ScaledSolverTest(unittest.TestCase):
 
   def setUp(self):
-    self.settings = sleqp.Settings()
-
     self.func = ConstrainedFunc()
 
     self.problem = sleqp.Problem(self.func,
-                                 self.settings,
                                  var_lb,
                                  var_ub,
                                  cons_lb,
@@ -33,7 +30,6 @@ class ScaledSolverTest(unittest.TestCase):
                                           dtype=int)
 
     solver = sleqp.Solver(self.problem,
-                          self.settings,
                           initial_sol,
                           scaling)
 

@@ -11,6 +11,8 @@
 #include "func.h"
 #include "iterate.h"
 #include "mem.h"
+#include "problem.h"
+#include "pub_settings.h"
 #include "scale.h"
 
 #include "timer.h"
@@ -144,14 +146,14 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
 
   SLEQP_CALL(sleqp_problem_create(&solver->scaled_problem,
                                   func,
-                                  settings,
                                   sleqp_problem_vars_lb(scaled_problem),
                                   sleqp_problem_vars_ub(scaled_problem),
                                   sleqp_problem_general_lb(scaled_problem),
                                   sleqp_problem_general_ub(scaled_problem),
                                   sleqp_problem_linear_coeffs(scaled_problem),
                                   sleqp_problem_linear_lb(scaled_problem),
-                                  sleqp_problem_linear_ub(scaled_problem)));
+                                  sleqp_problem_linear_ub(scaled_problem),
+                                  settings));
 
   const bool enable_preprocesor
     = sleqp_settings_bool_value(solver->settings,
@@ -275,7 +277,6 @@ on_problem_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
 SLEQP_RETCODE
 sleqp_solver_create(SleqpSolver** star,
                     SleqpProblem* problem,
-                    SleqpSettings* settings,
                     SleqpVec* primal,
                     SleqpScaling* scaling_data)
 {
@@ -288,6 +289,8 @@ sleqp_solver_create(SleqpSolver** star,
   *solver = (SleqpSolver){0};
 
   solver->refcount = 1;
+
+  SleqpSettings* settings = sleqp_problem_settings(problem);
 
   SLEQP_CALL(sleqp_settings_capture(settings));
   solver->settings = settings;

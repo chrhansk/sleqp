@@ -508,14 +508,14 @@ sleqp_problem_scaling_create(SleqpProblemScaling** star,
 
   SLEQP_CALL(sleqp_problem_create(&(problem_scaling->scaled_problem),
                                   problem_scaling->scaled_func,
-                                  problem_scaling->settings,
                                   sleqp_problem_vars_lb(problem),
                                   sleqp_problem_vars_ub(problem),
                                   sleqp_problem_general_lb(problem),
                                   sleqp_problem_general_ub(problem),
                                   sleqp_problem_linear_coeffs(problem),
                                   sleqp_problem_linear_lb(problem),
-                                  sleqp_problem_linear_ub(problem)));
+                                  sleqp_problem_linear_ub(problem),
+                                  problem_scaling->settings));
 
   SLEQP_CALL(
     sleqp_vec_create_empty(&(problem_scaling->unscaled_value), num_variables));

@@ -29,11 +29,11 @@ constrained_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadconsfunc,
-                                          settings,
                                           quadconsfunc_var_lb,
                                           quadconsfunc_var_ub,
                                           quadconsfunc_cons_lb,
-                                          quadconsfunc_cons_ub));
+                                          quadconsfunc_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadconsfunc_x));
 

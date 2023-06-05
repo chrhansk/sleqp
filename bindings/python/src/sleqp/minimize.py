@@ -168,17 +168,16 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
                       num_variables)
 
   problem = sleqp.Problem(min_func,
-                          settings,
                           var_lb,
                           var_ub,
                           constraints.general.lb,
                           constraints.general.ub,
+                          settings,
                           linear_coeffs=constraints.linear.coeffs,
                           linear_lb=constraints.linear.lb,
                           linear_ub=constraints.linear.ub)
 
   solver = sleqp.Solver(problem,
-                        settings,
                         initial_sol)
 
   if callback is not None:

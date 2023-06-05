@@ -28,11 +28,11 @@ restoration_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           wachbieg_func,
-                                          settings,
                                           wachbieg_var_lb,
                                           wachbieg_var_ub,
                                           wachbieg_cons_lb,
-                                          wachbieg_cons_ub));
+                                          wachbieg_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, wachbieg_initial));
 
@@ -169,7 +169,6 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   restoration_problem,
-                                  settings,
                                   initial,
                                   NULL));
 

@@ -167,11 +167,11 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           linfunc,
-                                          settings,
                                           linfunc_var_lb,
                                           linfunc_var_ub,
                                           linfunc_cons_lb,
-                                          linfunc_cons_ub));
+                                          linfunc_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linfunc_x));
 

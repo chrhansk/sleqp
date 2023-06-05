@@ -132,11 +132,11 @@ time_limit_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          settings,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
-                                          cons_ub));
+                                          cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_vec_create_empty(&primal, num_variables));
 }
@@ -166,7 +166,7 @@ START_TEST(test_solve)
   SleqpSolver* solver;
 
   ASSERT_CALL(
-    sleqp_solver_create(&solver, problem, settings, primal, NULL));
+    sleqp_solver_create(&solver, problem, primal, NULL));
 
   ASSERT_CALL(sleqp_solver_solve(solver, SLEQP_NONE, time_limit));
 

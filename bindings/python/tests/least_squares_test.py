@@ -165,14 +165,13 @@ class LSQTest(unittest.TestCase):
         func = LSQFunc()
 
         problem = sleqp.Problem(func,
-                                self.settings,
                                 self.var_lb,
                                 self.var_ub,
                                 self.cons_lb,
-                                self.cons_ub)
+                                self.cons_ub,
+                                self.settings)
 
         solver = sleqp.Solver(problem,
-                              self.settings,
                               self.initial_sol)
 
         solver.solve(100, 3600)
@@ -187,14 +186,13 @@ class LSQTest(unittest.TestCase):
         func = LSQImplicitFunc()
 
         problem = sleqp.Problem(func,
-                                self.settings,
                                 self.var_lb,
                                 self.var_ub,
                                 self.cons_lb,
-                                self.cons_ub)
+                                self.cons_ub,
+                                self.settings)
 
         solver = sleqp.Solver(problem,
-                              self.settings,
                               self.initial_sol)
 
         solver.solve(100, 3600)

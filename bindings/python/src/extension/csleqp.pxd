@@ -590,7 +590,6 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_solver_create(SleqpSolver** star,
                                     SleqpProblem* problem,
-                                    SleqpSettings* settings,
                                     SleqpVec* x,
                                     SleqpScaling* scaling)
 
@@ -644,22 +643,22 @@ cdef extern from "sleqp.h":
 
   SLEQP_RETCODE sleqp_problem_create_simple(SleqpProblem** star,
                                             SleqpFunc* func,
-                                            SleqpSettings* settings,
                                             const SleqpVec* var_lb,
                                             const SleqpVec* var_ub,
                                             const SleqpVec* cons_lb,
-                                            const SleqpVec* cons_ub)
+                                            const SleqpVec* cons_ub,
+                                            SleqpSettings* settings)
 
   SLEQP_RETCODE sleqp_problem_create(SleqpProblem** star,
                                      SleqpFunc* func,
-                                     SleqpSettings* settings,
                                      const SleqpVec* var_lb,
                                      const SleqpVec* var_ub,
                                      const SleqpVec* genereal_lb,
                                      const SleqpVec* genereal_ub,
                                      const SleqpMat* linear_coeffs,
                                      const SleqpVec* linear_lb,
-                                     const SleqpVec* linear_ub)
+                                     const SleqpVec* linear_ub,
+                                     SleqpSettings* settings)
 
   int sleqp_problem_num_cons(SleqpProblem* problem)
 

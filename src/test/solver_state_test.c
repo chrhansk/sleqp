@@ -18,15 +18,14 @@ solver_state_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           constrained_func,
-                                          settings,
                                           constrained_var_lb,
                                           constrained_var_ub,
                                           constrained_cons_lb,
-                                          constrained_cons_ub));
+                                          constrained_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 }

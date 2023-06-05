@@ -47,15 +47,14 @@ START_TEST(test_unconstrained_solve)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_lsq_func,
-                                          settings,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -93,15 +92,14 @@ START_TEST(test_lm_factor)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_lsq_func,
-                                          settings,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -135,15 +133,14 @@ START_TEST(test_lsqr_solve)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_lsq_func,
-                                          settings,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -199,14 +196,14 @@ START_TEST(test_constrained_lsqr_solve)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_lsq_func,
-                                   settings,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
   ASSERT_CALL(sleqp_vec_clear(rosenbrock_initial));
   ASSERT_CALL(sleqp_vec_reserve(rosenbrock_initial, 2));
@@ -216,7 +213,6 @@ START_TEST(test_constrained_lsqr_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -265,15 +261,14 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_lsq_func,
-                                          settings,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   rosenbrock_initial,
                                   scaling));
 

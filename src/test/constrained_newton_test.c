@@ -182,11 +182,11 @@ newton_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           linquadfunc,
-                                          settings,
                                           linquadfunc_var_lb,
                                           linquadfunc_var_ub,
                                           linquadfunc_cons_lb,
-                                          linquadfunc_cons_ub));
+                                          linquadfunc_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linquadfunc_x));
 

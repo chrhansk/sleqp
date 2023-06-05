@@ -91,7 +91,7 @@ report_result(SleqpSolver* solver,
 
   const char* description = "";
 
-  if(error)
+  if (error)
   {
     description = "error";
   }
@@ -194,7 +194,8 @@ cutest_run_internal(const char* filename,
 
   SLEQP_CALL(sleqp_settings_create(&settings));
 
-  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
+  const double zero_eps
+    = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_create(&x, CUTEst_nvar, 0));
 
@@ -219,8 +220,8 @@ cutest_run_internal(const char* filename,
   {
     SLEQP_CALL(
       sleqp_settings_set_bool_value(settings,
-                                   SLEQP_SETTINGS_BOOL_ENABLE_PREPROCESSOR,
-                                   true));
+                                    SLEQP_SETTINGS_BOOL_ENABLE_PREPROCESSOR,
+                                    true));
   }
 
   if (cutest_options->max_num_threads != SLEQP_NONE)
@@ -237,7 +238,7 @@ cutest_run_internal(const char* filename,
                                          SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
   */
 
-  SLEQP_CALL(sleqp_solver_create(&solver, problem, settings, x, NULL));
+  SLEQP_CALL(sleqp_solver_create(&solver, problem, x, NULL));
 
   const int max_num_iterations = -1;
   const double time_limit      = cutest_options->time_limit;
@@ -253,7 +254,6 @@ cutest_run_internal(const char* filename,
                     probname,
                     sleqp_error_msg());
     success = false;
-
   }
   SLEQP_CALL(report_result(solver, problem, probname, !success, output));
   /**/

@@ -39,7 +39,6 @@ typedef struct SleqpSolver SleqpSolver;
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_solver_create(SleqpSolver** star,
                     SleqpProblem* problem,
-                    SleqpSettings* settings,
                     SleqpVec* primal,
                     SleqpScaling* scaling_data);
 

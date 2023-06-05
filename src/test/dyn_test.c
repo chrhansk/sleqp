@@ -22,11 +22,11 @@ setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           dyn_rosenbrock_func,
-                                          settings,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 }
 
 void
@@ -64,7 +64,6 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -88,7 +87,6 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   rosenbrock_initial,
                                   scaling));
 

@@ -44,7 +44,6 @@ class PolishingTest(unittest.TestCase):
     self.cons_ub = np.array([])
 
     self.func = PolishingFunc()
-
     self.settings = sleqp.Settings()
 
     self.linear_coeffs = np.array([[ 1., -2.],
@@ -56,23 +55,24 @@ class PolishingTest(unittest.TestCase):
     self.linear_ub = np.array([inf,
                                inf])
 
-    self.problem = sleqp.Problem(self.func,
-                                 self.settings,
-                                 self.var_lb,
-                                 self.var_ub,
-                                 self.cons_lb,
-                                 self.cons_ub,
-                                 linear_coeffs=self.linear_coeffs,
-                                 linear_lb=self.linear_lb,
-                                 linear_ub=self.linear_ub)
-
     self.initial_sol = np.array([2., 0.])
 
     self.expected_primal = np.array([1.4, 1.7])
 
     self.expected_cons_dual = np.array([-0.4, 0.])
 
-  def check_sol(self, solution):
+  def get_problem(self, settings):
+    return sleqp.Problem(self.func,
+                         self.var_lb,
+                         self.var_ub,
+                         self.cons_lb,
+                         self.cons_ub,
+                         linear_coeffs=self.linear_coeffs,
+                         linear_lb=self.linear_lb,
+                         linear_ub=self.linear_ub,
+                         settings=settings)
+
+  def check_sol(self, problem, solution):
     primal = solution.primal
     cons_dual = solution.cons_dual
 
@@ -82,7 +82,7 @@ class PolishingTest(unittest.TestCase):
     self.assertTrue(np.allclose(self.expected_cons_dual,
                                 cons_dual))
 
-    num_cons = self.problem.cons_lb.size
+    num_cons = problem.cons_lb.size
     working_set = solution.working_set
 
     for i in range(num_cons):
@@ -93,31 +93,33 @@ class PolishingTest(unittest.TestCase):
 
   def test_polishing_zero_dual(self):
 
-    self.settings.polishing_type = sleqp.PolishingType.ZeroDual
+    settings = sleqp.Settings(polishing_type=sleqp.PolishingType.ZeroDual)
 
-    solver = sleqp.Solver(self.problem,
-                          self.settings,
+    problem = self.get_problem(settings)
+
+    solver = sleqp.Solver(problem,
                           self.initial_sol)
 
     solver.solve(100, 3600)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    self.check_sol(solver.solution)
+    self.check_sol(problem, solver.solution)
 
   def test_polishing_inactive(self):
 
-    self.settings.polishing_type = sleqp.PolishingType.Inactive
+    settings = sleqp.Settings(polishing_type=sleqp.PolishingType.Inactive)
 
-    solver = sleqp.Solver(self.problem,
-                          self.settings,
+    problem = self.get_problem(settings)
+
+    solver = sleqp.Solver(problem,
                           self.initial_sol)
 
     solver.solve(100, 3600)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    self.check_sol(solver.solution)
+    self.check_sol(problem, solver.solution)
 
 
 if __name__ == '__main__':

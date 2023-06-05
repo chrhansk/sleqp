@@ -43,14 +43,13 @@ solve_problem()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          settings,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
-                                          cons_ub));
+                                          cons_ub,
+                                          settings));
 
-  ASSERT_CALL(
-    sleqp_solver_create(&solver, problem, settings, initial, NULL));
+  ASSERT_CALL(sleqp_solver_create(&solver, problem, initial, NULL));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));

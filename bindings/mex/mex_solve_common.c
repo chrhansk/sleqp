@@ -314,7 +314,7 @@ mex_solve(mxArray** sol_star,
   SLEQP_CALL(mex_create_vec_from_array(&initial, mex_x0));
 
   SLEQP_CALL(
-    sleqp_solver_create(&solver, problem, settings, initial, NULL));
+    sleqp_solver_create(&solver, problem, initial, NULL));
 
   SLEQP_CALL(register_callbacks(problem, solver, mex_funcs, &callback_data));
 

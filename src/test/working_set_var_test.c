@@ -24,11 +24,11 @@ working_set_var_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadfunc,
-                                          settings,
                                           quadfunc_var_lb,
                                           quadfunc_var_ub,
                                           quadfunc_cons_lb,
-                                          quadfunc_cons_ub));
+                                          quadfunc_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadfunc_x));
 

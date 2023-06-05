@@ -54,22 +54,18 @@ class MatrixErrorTest(unittest.TestCase):
 
     self.x = np.array([0.]*num_variables)
 
-    self.settings = sleqp.Settings()
-
   def test_string_error(self):
     func = MatrixErrorFunc()
 
     func.set_matrix_value("asd")
 
     problem = sleqp.Problem(func,
-                            self.settings,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.settings,
                           self.x)
 
     with self.assertRaises(Exception):
@@ -81,14 +77,12 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value("asd")
 
     problem = sleqp.Problem(func,
-                            self.settings,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.settings,
                           self.x)
 
     failed = False
@@ -109,14 +103,12 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value(np.array((2, 2, 2)))
 
     problem = sleqp.Problem(func,
-                            self.settings,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.settings,
                           self.x)
 
     with self.assertRaises(Exception):
@@ -130,14 +122,12 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value(m)
 
     problem = sleqp.Problem(func,
-                            self.settings,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.settings,
                           self.x)
 
     solver.solve(max_num_iterations=1)

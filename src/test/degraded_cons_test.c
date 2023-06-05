@@ -184,14 +184,14 @@ degraded_problem_create(SleqpProblem** star, SleqpSettings* settings, bool swapp
 
   SLEQP_CALL(sleqp_problem_create(star,
                                   func,
-                                  settings,
                                   var_lb,
                                   var_ub,
                                   cons_bounds,
                                   cons_bounds,
                                   linear_coeffs,
                                   linear_lb,
-                                  linear_ub));
+                                  linear_ub,
+                                  settings));
 
   SLEQP_CALL(sleqp_mat_release(&linear_coeffs));
   SLEQP_CALL(sleqp_vec_free(&linear_ub));
@@ -242,7 +242,7 @@ START_TEST(test_solve)
   ASSERT_CALL(degraded_problem_create(&problem, settings, false));
 
   ASSERT_CALL(
-    sleqp_solver_create(&solver, problem, settings, initial, NULL));
+    sleqp_solver_create(&solver, problem, initial, NULL));
 
   ASSERT_CALL(sleqp_solver_solve(solver, 100, SLEQP_NONE));
 
@@ -266,7 +266,7 @@ START_TEST(test_solve_swapped)
   ASSERT_CALL(degraded_problem_create(&problem, settings, true));
 
   ASSERT_CALL(
-    sleqp_solver_create(&solver, problem, settings, initial, NULL));
+    sleqp_solver_create(&solver, problem, initial, NULL));
 
   ASSERT_CALL(sleqp_solver_solve(solver, 10, SLEQP_NONE));
 

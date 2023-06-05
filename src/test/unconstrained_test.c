@@ -19,15 +19,14 @@ START_TEST(test_unconstrained_solve)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_func,
-                                          settings,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   rosenbrock_initial,
                                   NULL));
 

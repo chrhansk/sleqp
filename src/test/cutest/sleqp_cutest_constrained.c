@@ -749,24 +749,24 @@ sleqp_cutest_cons_problem_create(SleqpProblem** star,
 
     SLEQP_CALL(sleqp_problem_create(star,
                                     func,
-                                    settings,
                                     var_lb,
                                     var_ub,
                                     cons_lb,
                                     cons_ub,
                                     linear_coeffs,
                                     linear_lb,
-                                    linear_ub));
+                                    linear_ub,
+                                    settings));
   }
   else
   {
     SLEQP_CALL(sleqp_problem_create_simple(star,
                                            func,
-                                           settings,
                                            var_lb,
                                            var_ub,
                                            cons_lb,
-                                           cons_ub));
+                                           cons_ub,
+                                           settings));
   }
 
   SLEQP_CALL(sleqp_func_release(&func));

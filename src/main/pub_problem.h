@@ -57,27 +57,26 @@ typedef struct SleqpProblem SleqpProblem;
  * Creates a new problem without linear coefficients.
  *
  * @param[in] func        The function associated with the problem
- * @param[in] settings    Settings
  * @param[in] var_lb      The lower variable bounds \f$ l_x \f$
  * @param[in] var_ub      The upper variable bounds \f$ u_x \f$
  * @param[in] general_lb  The lower bounds \f$ l \f$ on the constraints
  * @param[in] general_ub  The upper bounds \f$ u \f$ on the constraints
+ * @param[in] settings    Settings (`NULL` for default settings)
  *
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_problem_create_simple(SleqpProblem** star,
                             SleqpFunc* func,
-                            SleqpSettings* settings,
                             const SleqpVec* var_lb,
                             const SleqpVec* var_ub,
                             const SleqpVec* general_lb,
-                            const SleqpVec* general_ub);
+                            const SleqpVec* general_ub,
+                            SleqpSettings* settings);
 
 /**
  * Creates a new problem with linear coefficients.
  *
  * @param[in] func        The function associated with the problem
- * @param[in] settings    Settings
  * @param[in] var_lb      The lower variable bounds \f$ l_x \f$
  * @param[in] var_ub      The upper variable bounds \f$ u_x \f$
  * @param[in] general_lb  The lower bounds \f$ l_{\nonlin} \f$ on the
@@ -89,19 +88,20 @@ sleqp_problem_create_simple(SleqpProblem** star,
  *constraints
  * @param[in] linear_ub  The upper bounds \f$ u_{\lin} \f$ on the
  *constraints
+ * @param[in] settings    Settings (`NULL` for default settings)
  *
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_problem_create(SleqpProblem** star,
                      SleqpFunc* func,
-                     SleqpSettings* settings,
                      const SleqpVec* var_lb,
                      const SleqpVec* var_ub,
                      const SleqpVec* genereal_lb,
                      const SleqpVec* genereal_ub,
                      const SleqpMat* linear_coeffs,
                      const SleqpVec* linear_lb,
-                     const SleqpVec* linear_ub);
+                     const SleqpVec* linear_ub,
+                     SleqpSettings* settings);
 
 /**
  * Returns the total number \f$ m \f$ of constraints (both general and

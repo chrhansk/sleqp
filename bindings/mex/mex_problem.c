@@ -218,11 +218,11 @@ mex_problem_create(SleqpProblem** star,
 
   SLEQP_CALL(sleqp_problem_create_simple(star,
                                          func,
-                                         settings,
                                          var_lb,
                                          var_ub,
                                          cons_lb,
-                                         cons_ub));
+                                         cons_ub,
+                                         settings));
 
   SLEQP_CALL(sleqp_vec_free(&cons_ub));
   SLEQP_CALL(sleqp_vec_free(&cons_lb));

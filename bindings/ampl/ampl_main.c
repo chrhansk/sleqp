@@ -86,7 +86,7 @@ ampl_main(int argc, char* argv[])
   SLEQP_CALL(sleqp_vec_create(&x, n_var, 0));
   SLEQP_CALL(sleqp_vec_set_from_raw(x, data->x, n_var, zero_eps));
 
-  SLEQP_CALL(sleqp_solver_create(&solver, problem, settings, x, NULL));
+  SLEQP_CALL(sleqp_solver_create(&solver, problem, x, NULL));
 
   const int iter_limit    = sleqp_ampl_keywords_iter_limit(ampl_keywords);
   const double time_limit = sleqp_ampl_keywords_time_limit(ampl_keywords);

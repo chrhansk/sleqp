@@ -10,24 +10,18 @@ from .constrained_fixture import *
 class SolverTest(unittest.TestCase):
 
   def setUp(self):
-    self.settings = sleqp.Settings()
-
     self.func = ConstrainedFunc()
-
-    self.problem = sleqp.Problem(self.func,
-                                 self.settings,
-                                 var_lb,
-                                 var_ub,
-                                 cons_lb,
-                                 cons_ub)
 
   def get_solver(self, settings=None):
 
-    if settings is None:
-      settings = self.settings
+    problem = sleqp.Problem(self.func,
+                            var_lb,
+                            var_ub,
+                            cons_lb,
+                            cons_ub,
+                            settings)
 
-    return sleqp.Solver(self.problem,
-                        settings,
+    return sleqp.Solver(problem,
                         initial_sol)
 
   def test_solve(self):

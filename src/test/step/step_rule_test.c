@@ -24,15 +24,14 @@ test_step_rule(SLEQP_STEP_RULE step_rule)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           log_rosenbrock_func,
-                                          settings,
                                           log_rosenbrock_var_lb,
                                           log_rosenbrock_var_ub,
                                           log_rosenbrock_cons_lb,
-                                          log_rosenbrock_cons_ub));
+                                          log_rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   log_rosenbrock_initial,
                                   NULL));
 

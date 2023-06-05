@@ -32,11 +32,11 @@ scaling_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadconsfunc,
-                                          settings,
                                           quadconsfunc_var_lb,
                                           quadconsfunc_var_ub,
                                           quadconsfunc_cons_lb,
-                                          quadconsfunc_cons_ub));
+                                          quadconsfunc_cons_ub,
+                                          settings));
 
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);

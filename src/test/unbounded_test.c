@@ -116,15 +116,14 @@ START_TEST(test_unbounded_solve)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           unbounded_func,
-                                          settings,
                                           unbounded_var_lb,
                                           unbounded_var_ub,
                                           unbounded_cons_lb,
-                                          unbounded_cons_ub));
+                                          unbounded_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   unbounded_initial,
                                   NULL));
 

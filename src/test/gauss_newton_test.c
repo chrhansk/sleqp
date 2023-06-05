@@ -42,11 +42,11 @@ unconstrained_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           linear_lsq_func,
-                                          linear_lsq_settings,
                                           linear_lsq_var_lb,
                                           linear_lsq_var_ub,
                                           linear_lsq_cons_lb,
-                                          linear_lsq_cons_ub));
+                                          linear_lsq_cons_ub,
+                                          linear_lsq_settings));
 
   ASSERT_CALL(
     sleqp_working_step_create(&working_step, problem, linear_lsq_settings));
@@ -215,14 +215,14 @@ constrained_setup()
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    zero_func,
-                                   linear_lsq_settings,
                                    linear_lsq_var_lb,
                                    linear_lsq_var_ub,
                                    zero_vec,
                                    zero_vec,
                                    linear_lsq_matrix,
                                    linear_lsq_rhs,
-                                   linear_lsq_rhs));
+                                   linear_lsq_rhs,
+                                   linear_lsq_settings));
 
   ASSERT_CALL(
     sleqp_working_step_create(&working_step, problem, linear_lsq_settings));

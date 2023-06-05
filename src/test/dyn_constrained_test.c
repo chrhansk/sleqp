@@ -23,11 +23,11 @@ setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           dyn_constrained_func,
-                                          settings,
                                           constrained_var_lb,
                                           constrained_var_ub,
                                           constrained_cons_lb,
-                                          constrained_cons_ub));
+                                          constrained_cons_ub,
+                                          settings));
 }
 
 void
@@ -65,7 +65,6 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   NULL));
 
@@ -93,7 +92,6 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  settings,
                                   constrained_initial,
                                   scaling));
 

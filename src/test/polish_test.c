@@ -59,11 +59,11 @@ polish_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          settings,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
-                                          cons_ub));
+                                          cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_vec_create_full(&primal, num_variables));
 

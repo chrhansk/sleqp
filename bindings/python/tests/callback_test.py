@@ -30,19 +30,15 @@ class CallbackTest(unittest.TestCase):
 
     self.initial_sol = np.array([0., 0.])
 
-    self.settings = sleqp.Settings()
-
     func = RosenbrockFunc()
 
     problem = sleqp.Problem(func,
-                            self.settings,
                             var_lb,
                             var_ub,
                             cons_lb,
                             cons_ub)
 
     self.solver = sleqp.Solver(problem,
-                               self.settings,
                                self.initial_sol)
 
 
