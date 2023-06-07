@@ -81,6 +81,8 @@ def _create_result(solver):
 
   result = OptimizeResult()
 
+  result["mult_g"] = solution.cons_dual
+  result["mult_x"] = solution.vars_dual
   result["x"] = solution.primal
   result["success"] = (solver.status == sleqp.Status.Optimal)
   result["status"] = solver.status.value

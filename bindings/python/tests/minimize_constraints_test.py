@@ -18,18 +18,6 @@ class ConstrainedMinimizeTest(unittest.TestCase):
 
     self.hessp = lambda x, d: 2*d
 
-    # cons_matrix = np.array([[ 1., -2.],
-    #                         [-1., -2.],
-    #                         [-1.,  2.]])
-
-    # cons_lb = np.array([-2.,
-    #                     -6.,
-    #                     2.])
-
-    # cons_ub = np.array([np.inf,
-    #                     np.inf,
-    #                     np.inf])
-
     cons_matrix = np.array([[ 1., -2.],
                             [-1., -2.]])
 
