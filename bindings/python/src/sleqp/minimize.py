@@ -24,9 +24,6 @@ class _MinFunc:
     self._obj_grad = None
 
   def set_value(self, v, reason):
-    if (self.x == v).all():
-      return
-
     self.x[:] = v
 
     self.objective.set_value(self.x)

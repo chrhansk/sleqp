@@ -40,6 +40,11 @@ class MinimizeTest(unittest.TestCase):
     self.assertTrue(res.success)
     self.assertTrue(np.allclose(res.x, self.xopt))
 
+  def test_rosen_2d(self):
+    x0 = np.array([0., 0.])
+    res = sleqp.minimize(rosen, x0, jac=rosen_der)
+    self.assertTrue(res.success)
+
   def test_unconstrained(self):
     res = sleqp.minimize(rosen, self.x0, jac=rosen_der, hessp=rosen_hess_prod)
     self.check_res(res)
