@@ -8,8 +8,7 @@
 
 #include "cauchy.h"
 #include "iterate.h"
-#include "options.h"
-#include "params.h"
+#include "settings.h"
 
 #include "lp/lpi.h"
 
@@ -17,7 +16,6 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_standard_cauchy_create(SleqpCauchy** star,
                              SleqpProblem* problem,
-                             SleqpParams* params,
-                             SleqpOptions* options);
+                             SleqpSettings* settings);
 
 #endif /* SLEQP_STANDARD_CAUCHY_H */

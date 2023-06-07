@@ -28,8 +28,6 @@ class Func:
 class LinearConsTest(unittest.TestCase):
 
   def setUp(self):
-    self.params = sleqp.Params()
-
     self.func = Func()
 
     var_lb = np.array([-np.inf, -np.inf])
@@ -37,8 +35,6 @@ class LinearConsTest(unittest.TestCase):
 
     cons_lb = np.zeros((num_general,))
     cons_ub = np.zeros((num_general,))
-
-    self.options = sleqp.Options()
 
     self.initial_sol = np.array([1., 5.])
 
@@ -51,7 +47,6 @@ class LinearConsTest(unittest.TestCase):
     self.linear_coeffs[0, 1] = 1.
 
     self.problem = sleqp.Problem(self.func,
-                                 self.params,
                                  var_lb,
                                  var_ub,
                                  cons_lb,
@@ -65,8 +60,6 @@ class LinearConsTest(unittest.TestCase):
 
   def test_solve(self):
     solver = sleqp.Solver(self.problem,
-                          self.params,
-                          self.options,
                           self.initial_sol)
 
     solver.solve(max_num_iterations=100)
@@ -90,8 +83,6 @@ class LinearConsTest(unittest.TestCase):
     scaling.set_cons_weight(0, 2)
 
     solver = sleqp.Solver(self.problem,
-                          self.params,
-                          self.options,
                           self.initial_sol)
 
     solver.solve(max_num_iterations=100)

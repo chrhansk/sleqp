@@ -6,7 +6,7 @@
 typedef struct
 {
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpIterate* iterate;
   double trust_radius;
@@ -186,7 +186,7 @@ unconstrained_cauchy_free(void* data)
 
   SLEQP_CALL(sleqp_iterate_release(&cauchy_data->iterate));
 
-  SLEQP_CALL(sleqp_params_release(&cauchy_data->params));
+  SLEQP_CALL(sleqp_settings_release(&cauchy_data->settings));
 
   SLEQP_CALL(sleqp_problem_release(&cauchy_data->problem));
 
@@ -198,7 +198,7 @@ unconstrained_cauchy_free(void* data)
 static SLEQP_RETCODE
 cauchy_data_create(CauchyData** star,
                    SleqpProblem* problem,
-                   SleqpParams* params)
+                   SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -210,9 +210,9 @@ cauchy_data_create(CauchyData** star,
 
   cauchy_data->problem = problem;
 
-  SLEQP_CALL(sleqp_params_capture(params));
+  SLEQP_CALL(sleqp_settings_capture(settings));
 
-  cauchy_data->params = params;
+  cauchy_data->settings = settings;
 
   const int num_variables = sleqp_problem_num_vars(problem);
 
@@ -226,11 +226,11 @@ cauchy_data_create(CauchyData** star,
 SLEQP_RETCODE
 sleqp_unconstrained_cauchy_create(SleqpCauchy** star,
                                   SleqpProblem* problem,
-                                  SleqpParams* params)
+                                  SleqpSettings* settings)
 {
   CauchyData* cauchy_data;
 
-  SLEQP_CALL(cauchy_data_create(&cauchy_data, problem, params));
+  SLEQP_CALL(cauchy_data_create(&cauchy_data, problem, settings));
 
   SleqpCauchyCallbacks callbacks
     = {.set_iterate        = unconstrained_cauchy_set_iterate,

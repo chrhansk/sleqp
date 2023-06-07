@@ -69,8 +69,7 @@ static SLEQP_RETCODE
 highs_create_problem(void** star,
                      int num_cols,
                      int num_rows,
-                     SleqpParams* params,
-                     SleqpOptions* options)
+                     SleqpSettings* settings)
 {
   SleqpLpiHIGHS* lp_interface = NULL;
 
@@ -107,7 +106,7 @@ highs_create_problem(void** star,
 
   {
     const int num_threads
-      = sleqp_options_int_value(options, SLEQP_OPTION_INT_NUM_THREADS);
+      = sleqp_settings_int_value(settings, SLEQP_SETTINGS_INT_NUM_THREADS);
 
     if (num_threads != SLEQP_NONE)
     {
@@ -135,11 +134,11 @@ highs_create_problem(void** star,
   // setting these option causes HiGHS to fail for the
   // constrained test example without quadratic model while the defaults work
 
-  // const double feas_eps = sleqp_params_get(params,
-  //                                         SLEQP_PARAM_FEASIBILITY_TOL);
+  // const double feas_eps = sleqp_settings_real(settings,
+  //                                             SLEQP_SETTINGS_REAL_FEASIBILITY_TOL);
 
-  // const double stat_eps = sleqp_params_get(params,
-  //                                         SLEQP_PARAM_STATIONARITY_TOL);
+  // const double stat_eps = sleqp_settings_real(settings,
+  //                                             SLEQP_SETTINGS_REAL_STATIONARITY_TOL);
 
   // SLEQP_HIGHS_CALL(Highs_setDoubleOptionValue(highs,
   //                                            "primal_feasibility_tolerance",
@@ -705,8 +704,7 @@ SLEQP_RETCODE
 sleqp_lpi_highs_create(SleqpLPi** lp_star,
                        int num_cols,
                        int num_rows,
-                       SleqpParams* params,
-                       SleqpOptions* options)
+                       SleqpSettings* settings)
 {
   SleqpLPiCallbacks callbacks = {.create_problem = highs_create_problem,
                                  .solve          = highs_solve,
@@ -730,8 +728,7 @@ sleqp_lpi_highs_create(SleqpLPi** lp_star,
                           SLEQP_LP_SOLVER_HIGHS_VERSION,
                           num_cols,
                           num_rows,
-                          params,
-                          options,
+                          settings,
                           &callbacks);
 }
 
@@ -739,14 +736,12 @@ SLEQP_RETCODE
 sleqp_lpi_create_default(SleqpLPi** lp_interface,
                          int num_variables,
                          int num_constraints,
-                         SleqpParams* params,
-                         SleqpOptions* options)
+                         SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_lpi_highs_create(lp_interface,
                                     num_variables,
                                     num_constraints,
-                                    params,
-                                    options));
+                                    settings));
 
   return SLEQP_OKAY;
 }

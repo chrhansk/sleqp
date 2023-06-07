@@ -11,6 +11,8 @@
 #include "func.h"
 #include "iterate.h"
 #include "mem.h"
+#include "problem.h"
+#include "pub_settings.h"
 #include "scale.h"
 
 #include "timer.h"
@@ -110,8 +112,7 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
 {
   SleqpProblem* scaled_problem;
 
-  SleqpParams* params   = solver->params;
-  SleqpOptions* options = solver->options;
+  SleqpSettings* settings = solver->settings;
 
   solver->original_problem = problem;
   SLEQP_CALL(sleqp_problem_capture(solver->original_problem));
@@ -121,8 +122,7 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
     SLEQP_CALL(sleqp_problem_scaling_create(&solver->problem_scaling,
                                             solver->scaling_data,
                                             problem,
-                                            params,
-                                            options));
+                                            settings));
 
     SLEQP_CALL(sleqp_problem_scaling_flush(solver->problem_scaling));
 
@@ -137,8 +137,7 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
 
   SLEQP_CALL(sleqp_quasi_newton_create_default(&solver->quasi_newton,
                                                func,
-                                               params,
-                                               options));
+                                               settings));
 
   if (solver->quasi_newton)
   {
@@ -147,24 +146,24 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
 
   SLEQP_CALL(sleqp_problem_create(&solver->scaled_problem,
                                   func,
-                                  params,
                                   sleqp_problem_vars_lb(scaled_problem),
                                   sleqp_problem_vars_ub(scaled_problem),
                                   sleqp_problem_general_lb(scaled_problem),
                                   sleqp_problem_general_ub(scaled_problem),
                                   sleqp_problem_linear_coeffs(scaled_problem),
                                   sleqp_problem_linear_lb(scaled_problem),
-                                  sleqp_problem_linear_ub(scaled_problem)));
+                                  sleqp_problem_linear_ub(scaled_problem),
+                                  settings));
 
   const bool enable_preprocesor
-    = sleqp_options_bool_value(solver->options,
-                               SLEQP_OPTION_BOOL_ENABLE_PREPROCESSOR);
+    = sleqp_settings_bool_value(solver->settings,
+                               SLEQP_SETTINGS_BOOL_ENABLE_PREPROCESSOR);
 
   if (enable_preprocesor)
   {
     SLEQP_CALL(sleqp_preprocessor_create(&solver->preprocessor,
                                          solver->scaled_problem,
-                                         solver->params));
+                                         solver->settings));
 
     const SLEQP_PREPROCESSING_RESULT preprocessing_result
       = sleqp_preprocessor_result(solver->preprocessor);
@@ -278,8 +277,6 @@ on_problem_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
 SLEQP_RETCODE
 sleqp_solver_create(SleqpSolver** star,
                     SleqpProblem* problem,
-                    SleqpParams* params,
-                    SleqpOptions* options,
                     SleqpVec* primal,
                     SleqpScaling* scaling_data)
 {
@@ -293,11 +290,10 @@ sleqp_solver_create(SleqpSolver** star,
 
   solver->refcount = 1;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  solver->params = params;
+  SleqpSettings* settings = sleqp_problem_settings(problem);
 
-  SLEQP_CALL(sleqp_options_capture(options));
-  solver->options = options;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  solver->settings = settings;
 
   const int num_original_variables = sleqp_problem_num_vars(problem);
 
@@ -323,8 +319,7 @@ sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_problem_solver_create(&solver->problem_solver,
                                          SLEQP_SOLVER_PHASE_OPTIMIZATION,
                                          solver->problem,
-                                         params,
-                                         options));
+                                         settings));
 
   SLEQP_CALL(sleqp_problem_solver_add_callback(
     solver->problem_solver,
@@ -340,7 +335,7 @@ sleqp_solver_create(SleqpSolver** star,
 
   SLEQP_CALL(sleqp_polishing_create(&solver->polishing,
                                     solver->problem,
-                                    solver->params));
+                                    settings));
 
   for (int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
   {
@@ -389,7 +384,7 @@ sleqp_solver_violated_constraints(SleqpSolver* solver,
                                   int* num_violated_constraints)
 {
   const double feas_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   SLEQP_CALL(sleqp_iterate_get_violated_constraints(solver->original_problem,
                                                     iterate,
@@ -495,8 +490,7 @@ solver_free(SleqpSolver** star)
 
   SLEQP_CALL(sleqp_problem_release(&solver->original_problem));
 
-  SLEQP_CALL(sleqp_options_release(&solver->options));
-  SLEQP_CALL(sleqp_params_release(&solver->params));
+  SLEQP_CALL(sleqp_settings_release(&solver->settings));
 
   sleqp_free(star);
 

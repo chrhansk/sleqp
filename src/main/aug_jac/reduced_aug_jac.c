@@ -12,7 +12,7 @@
 typedef struct
 {
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpFact* fact;
   bool has_factorization;
@@ -42,7 +42,7 @@ typedef struct
 static SLEQP_RETCODE
 aug_jac_data_create(AugJacData** star,
                     SleqpProblem* problem,
-                    SleqpParams* params,
+                    SleqpSettings* settings,
                     SleqpFact* factorization)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -54,8 +54,8 @@ aug_jac_data_create(AugJacData** star,
   SLEQP_CALL(sleqp_problem_capture(problem));
   jacobian->problem = problem;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  jacobian->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  jacobian->settings = settings;
 
   SLEQP_CALL(sleqp_fact_capture(factorization));
   jacobian->fact              = factorization;
@@ -574,7 +574,7 @@ aug_jac_solve_min_norm(const SleqpVec* rhs, SleqpVec* sol, void* data)
   SleqpVec* product = jacobian->rhs;
 
   const double zero_eps
-    = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(jacobian->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_fact_solve(jacobian->fact, rhs));
 
@@ -597,7 +597,7 @@ aug_jac_solve_lsq(const SleqpVec* rhs, SleqpVec* sol, void* data)
   SleqpVec* product = jacobian->rhs;
 
   const double zero_eps
-    = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(jacobian->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(compute_product(jacobian, rhs, product));
 
@@ -621,7 +621,7 @@ aug_jac_project_nullspace(const SleqpVec* rhs, SleqpVec* sol, void* data)
   SleqpVec* product = jacobian->rhs;
 
   const double zero_eps
-    = sleqp_params_value(jacobian->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(jacobian->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(compute_product(jacobian, rhs, product));
 
@@ -669,7 +669,7 @@ aug_jac_free(void* data)
 
   SLEQP_CALL(sleqp_fact_release(&jacobian->fact));
 
-  SLEQP_CALL(sleqp_params_release(&jacobian->params));
+  SLEQP_CALL(sleqp_settings_release(&jacobian->settings));
 
   SLEQP_CALL(sleqp_problem_release(&jacobian->problem));
 
@@ -681,13 +681,13 @@ aug_jac_free(void* data)
 SLEQP_RETCODE
 sleqp_reduced_aug_jac_create(SleqpAugJac** star,
                              SleqpProblem* problem,
-                             SleqpParams* params,
+                             SleqpSettings* settings,
                              SleqpFact* factorization)
 {
   AugJacData* aug_jac_data;
 
   SLEQP_CALL(
-    aug_jac_data_create(&aug_jac_data, problem, params, factorization));
+    aug_jac_data_create(&aug_jac_data, problem, settings, factorization));
 
   SleqpAugJacCallbacks callbacks
     = {.set_iterate       = aug_jac_set_iterate,

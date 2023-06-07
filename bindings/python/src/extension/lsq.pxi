@@ -179,7 +179,7 @@ cdef csleqp.SLEQP_RETCODE create_lsq_func(csleqp.SleqpFunc** cfunc,
                                           int num_constraints,
                                           int num_residuals,
                                           double levenberg_marquardt,
-                                          csleqp.SleqpParams* params):
+                                          csleqp.SleqpSettings* settings):
   cdef csleqp.SleqpLSQCallbacks callbacks
 
   assert func is not None
@@ -192,5 +192,5 @@ cdef csleqp.SLEQP_RETCODE create_lsq_func(csleqp.SleqpFunc** cfunc,
                                       num_constraints,
                                       num_residuals,
                                       levenberg_marquardt,
-                                      params,
+                                      settings,
                                       <void*> func)

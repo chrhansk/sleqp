@@ -54,24 +54,18 @@ class MatrixErrorTest(unittest.TestCase):
 
     self.x = np.array([0.]*num_variables)
 
-    self.params = sleqp.Params()
-    self.options = sleqp.Options()
-
   def test_string_error(self):
     func = MatrixErrorFunc()
 
     func.set_matrix_value("asd")
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
                           self.x)
 
     with self.assertRaises(Exception):
@@ -83,15 +77,12 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value("asd")
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
                           self.x)
 
     failed = False
@@ -112,15 +103,12 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value(np.array((2, 2, 2)))
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
                           self.x)
 
     with self.assertRaises(Exception):
@@ -134,15 +122,12 @@ class MatrixErrorTest(unittest.TestCase):
     func.set_matrix_value(m)
 
     problem = sleqp.Problem(func,
-                            self.params,
                             self.var_lb,
                             self.var_ub,
                             self.cons_lb,
                             self.cons_ub)
 
     solver = sleqp.Solver(problem,
-                          self.params,
-                          self.options,
                           self.x)
 
     solver.solve(max_num_iterations=1)

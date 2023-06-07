@@ -12,7 +12,7 @@
 
 #include "wachbieg_fixture.h"
 
-SleqpParams* params;
+SleqpSettings* settings;
 
 SleqpProblem* problem;
 SleqpIterate* iterate;
@@ -24,15 +24,15 @@ restoration_setup()
 {
   wachbieg_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           wachbieg_func,
-                                          params,
                                           wachbieg_var_lb,
                                           wachbieg_var_ub,
                                           wachbieg_cons_lb,
-                                          wachbieg_cons_ub));
+                                          wachbieg_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, wachbieg_initial));
 
@@ -44,7 +44,7 @@ restoration_setup()
   assert(!reject);
 
   ASSERT_CALL(
-    sleqp_restoration_problem_create(&restoration_problem, params, problem));
+    sleqp_restoration_problem_create(&restoration_problem, settings, problem));
 }
 
 void
@@ -56,7 +56,7 @@ restoration_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   wachbieg_teardown();
 }
@@ -100,7 +100,7 @@ START_TEST(test_transform)
 
   assert(!reject);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ck_assert(sleqp_is_eq(sleqp_iterate_obj_val(restoration_iterate),
                         .5 * sleqp_vec_norm_sq(residuals),
@@ -116,7 +116,7 @@ END_TEST
 
 START_TEST(test_restore)
 {
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* transformed_primal;
   SleqpVec* restored_primal;
@@ -151,7 +151,7 @@ START_TEST(test_solve)
 {
   SleqpVec* initial;
   SleqpVec* residuals;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpSolver* solver;
 
   ASSERT_CALL(
@@ -161,16 +161,14 @@ START_TEST(test_solve)
   ASSERT_CALL(
     sleqp_vec_create_empty(&residuals, sleqp_problem_num_cons(problem)));
 
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   restoration_problem,
-                                  params,
-                                  options,
                                   initial,
                                   NULL));
 
@@ -205,7 +203,7 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_options_release(&options));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_vec_free(&residuals));
 

@@ -15,7 +15,7 @@ typedef struct SleqpPreprocessor SleqpPreprocessor;
 SLEQP_RETCODE
 sleqp_preprocessor_create(SleqpPreprocessor** star,
                           SleqpProblem* problem,
-                          SleqpParams* params);
+                          SleqpSettings* settings);
 
 SLEQP_PREPROCESSING_RESULT
 sleqp_preprocessor_result(SleqpPreprocessor* preprocessor);

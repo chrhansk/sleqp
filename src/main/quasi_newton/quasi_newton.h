@@ -3,8 +3,7 @@
 
 #include "quasi_newton_types.h"
 
-#include "options.h"
-#include "params.h"
+#include "settings.h"
 #include "timer.h"
 
 #include "bfgs.h"
@@ -52,7 +51,6 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_quasi_newton_create_default(SleqpQuasiNewton** star,
                                   SleqpFunc* func,
-                                  SleqpParams* params,
-                                  SleqpOptions* options);
+                                  SleqpSettings* settings);
 
 #endif /* SLEQP_QUASI_NEWTON_H */

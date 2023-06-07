@@ -11,11 +11,9 @@
 SLEQP_RETCODE
 ampl_main(int argc, char* argv[])
 {
-  SleqpOptions* options;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
-  SLEQP_CALL(sleqp_options_create(&options));
-  SLEQP_CALL(sleqp_params_create(&params));
+  SLEQP_CALL(sleqp_settings_create(&settings));
 
   ASL* asl;
   // allocate ASL
@@ -29,7 +27,7 @@ ampl_main(int argc, char* argv[])
 
   SleqpAmplKeywords* ampl_keywords;
 
-  SLEQP_CALL(sleqp_ampl_keywords_create(&ampl_keywords, options, params));
+  SLEQP_CALL(sleqp_ampl_keywords_create(&ampl_keywords, settings));
 
   keyword* keywords;
   int num_keywords;
@@ -75,20 +73,20 @@ ampl_main(int argc, char* argv[])
   SleqpAmplData* data;
   SLEQP_CALL(sleqp_ampl_data_create(&data, asl, nl));
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpProblem* problem;
   SleqpSolver* solver;
 
   bool halt_on_error = sleqp_ampl_keywords_halt_on_error(ampl_keywords);
 
-  SLEQP_CALL(sleqp_ampl_problem_create(&problem, data, params, halt_on_error));
+  SLEQP_CALL(sleqp_ampl_problem_create(&problem, data, settings, halt_on_error));
 
   SleqpVec* x;
   SLEQP_CALL(sleqp_vec_create(&x, n_var, 0));
   SLEQP_CALL(sleqp_vec_set_from_raw(x, data->x, n_var, zero_eps));
 
-  SLEQP_CALL(sleqp_solver_create(&solver, problem, params, options, x, NULL));
+  SLEQP_CALL(sleqp_solver_create(&solver, problem, x, NULL));
 
   const int iter_limit    = sleqp_ampl_keywords_iter_limit(ampl_keywords);
   const double time_limit = sleqp_ampl_keywords_time_limit(ampl_keywords);
@@ -108,8 +106,7 @@ ampl_main(int argc, char* argv[])
 
   SLEQP_CALL(sleqp_ampl_keywords_free(&ampl_keywords));
 
-  SLEQP_CALL(sleqp_params_release(&params));
-  SLEQP_CALL(sleqp_options_release(&options));
+  SLEQP_CALL(sleqp_settings_release(&settings));
 
   return retcode;
 }

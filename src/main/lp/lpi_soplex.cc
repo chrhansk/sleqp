@@ -12,6 +12,7 @@ extern "C"
 #include "error.h"
 #include "log.h"
 #include "mem.h"
+#include "settings.h"
 }
 
 static const double tolerance_factor = 1e-1;
@@ -53,8 +54,7 @@ static SLEQP_RETCODE
 soplex_create_problem(void** lp_data,
                       int num_cols,
                       int num_rows,
-                      SleqpParams* params,
-                      SleqpOptions* options)
+                      SleqpSettings* settings)
 {
   SleqpLpiSoplex* spx = new SleqpLpiSoplex(num_cols, num_rows);
 
@@ -64,9 +64,9 @@ soplex_create_problem(void** lp_data,
   assert(
     soplex.setRealParam(soplex::SoPlexBase<double>::INFTY, sleqp_infinity()));
 
-  const double feas_eps = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
+  const double feas_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
-  const double stat_eps = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
+  const double stat_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
   assert(soplex.setRealParam(soplex::SoPlexBase<double>::FEASTOL,
                              feas_eps * tolerance_factor));
@@ -85,7 +85,7 @@ soplex_create_problem(void** lp_data,
 
   soplex.spxout = spxout;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   soplex.setRealParam(soplex::SoPlex::EPSILON_ZERO, zero_eps);
 
@@ -631,8 +631,7 @@ extern "C"
   sleqp_lpi_soplex_create_interface(SleqpLPi** lp_star,
                                     int num_cols,
                                     int num_rows,
-                                    SleqpParams* params,
-                                    SleqpOptions* options)
+                                    SleqpSettings* settings)
   {
     SleqpLPiCallbacks callbacks = {.create_problem = soplex_create_problem,
                                    .solve          = soplex_solve,
@@ -656,8 +655,7 @@ extern "C"
                             SLEQP_LP_SOLVER_SOPLEX_VERSION,
                             num_cols,
                             num_rows,
-                            params,
-                            options,
+                            settings,
                             &callbacks);
   }
 
@@ -665,14 +663,12 @@ extern "C"
   sleqp_lpi_create_default(SleqpLPi** lp_interface,
                            int num_variables,
                            int num_constraints,
-                           SleqpParams* params,
-                           SleqpOptions* options)
+                           SleqpSettings* settings)
   {
     SLEQP_CALL(sleqp_lpi_soplex_create_interface(lp_interface,
                                                  num_variables,
                                                  num_constraints,
-                                                 params,
-                                                 options));
+                                                 settings));
 
     return SLEQP_OKAY;
   }

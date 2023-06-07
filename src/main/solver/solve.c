@@ -35,7 +35,7 @@ check_feasibility(SleqpSolver* solver, bool* feasible)
                                                 &feasibility_residuum));
 
   const double feas_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   *feasible
     = sleqp_iterate_is_feasible(iterate, feasibility_residuum, feas_eps);
@@ -69,7 +69,7 @@ set_initial_iterate(SleqpSolver* solver)
   SleqpVec* primal = sleqp_iterate_primal(iterate);
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_clip(solver->primal,
                             sleqp_problem_vars_lb(problem),
@@ -102,8 +102,8 @@ run_solving_loop(SleqpSolver* solver, int max_num_iterations, double time_limit)
   int remaining_iterations = max_num_iterations;
 
   bool enable_restoration
-    = sleqp_options_bool_value(solver->options,
-                               SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE);
+    = sleqp_settings_bool_value(solver->settings,
+                               SLEQP_SETTINGS_BOOL_ENABLE_RESTORATION_PHASE);
 
   const bool unlimited_iterations = (max_num_iterations == SLEQP_NONE);
 
@@ -278,8 +278,8 @@ sleqp_solver_solve(SleqpSolver* solver,
     sleqp_iterate_feasibility_residuum(solver->problem, iterate, &violation));
 
   SLEQP_POLISHING_TYPE polishing_type
-    = sleqp_options_enum_value(solver->options,
-                               SLEQP_OPTION_ENUM_POLISHING_TYPE);
+    = sleqp_settings_enum_value(solver->settings,
+                               SLEQP_SETTINGS_ENUM_POLISHING_TYPE);
 
   SLEQP_CALL(
     sleqp_polishing_polish(solver->polishing, iterate, polishing_type));

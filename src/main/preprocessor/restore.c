@@ -6,6 +6,7 @@
 #include "log.h"
 #include "mem.h"
 #include "util.h"
+#include "settings.h"
 #include "working_set.h"
 
 #include "preprocessor/preprocessing.h"
@@ -18,7 +19,7 @@ struct SleqpRestoration
   SleqpProblem* original_problem;
   SleqpProblem* transformed_problem;
 
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SLEQP_ACTIVE_STATE* working_var_states;
   SLEQP_ACTIVE_STATE* working_cons_states;
@@ -90,7 +91,7 @@ SLEQP_RETCODE
 sleqp_restoration_create(SleqpRestoration** star,
                          SleqpPreprocessingState* preprocessing_state,
                          SleqpProblem* transformed_problem,
-                         SleqpParams* params)
+                         SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -112,8 +113,8 @@ sleqp_restoration_create(SleqpRestoration** star,
   restoration->transformed_problem = problem;
   SLEQP_CALL(sleqp_problem_capture(restoration->transformed_problem));
 
-  restoration->params = params;
-  SLEQP_CALL(sleqp_params_capture(restoration->params));
+  restoration->settings = settings;
+  SLEQP_CALL(sleqp_settings_capture(restoration->settings));
 
   const int num_variables   = sleqp_problem_num_vars(problem);
   const int num_constraints = sleqp_problem_num_cons(problem);
@@ -214,7 +215,7 @@ store_duals(const SleqpRestoration* restoration, SleqpIterate* original)
   const int num_constraints = sleqp_problem_num_cons(problem);
 
   const double zero_eps
-    = sleqp_params_value(restoration->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(restoration->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_set_from_raw(sleqp_iterate_vars_dual(original),
                                     restoration->var_dual,
@@ -390,7 +391,7 @@ correct_forcing_constraint(SleqpRestoration* restoration,
 
   double* residuals = restoration->dense_stationarity_residuals;
 
-  const double eps = sleqp_params_value(restoration->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(restoration->settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -715,7 +716,7 @@ compute_stationarity_residuals(SleqpRestoration* restoration,
   SleqpProblem* problem = restoration->original_problem;
 
   const double zero_eps
-    = sleqp_params_value(restoration->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(restoration->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(store_duals(restoration, original));
 
@@ -849,7 +850,7 @@ restoration_free(SleqpRestoration** star)
   sleqp_free(&restoration->working_cons_states);
   sleqp_free(&restoration->working_var_states);
 
-  SLEQP_CALL(sleqp_params_release(&restoration->params));
+  SLEQP_CALL(sleqp_settings_release(&restoration->settings));
 
   SLEQP_CALL(sleqp_problem_release(&restoration->transformed_problem));
   SLEQP_CALL(sleqp_problem_release(&restoration->original_problem));

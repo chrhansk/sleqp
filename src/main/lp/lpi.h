@@ -12,6 +12,7 @@
  **/
 
 #include "lpi_types.h"
+#include "pub_settings.h"
 #include "pub_types.h"
 #include "timer.h"
 #include "types.h"
@@ -25,8 +26,7 @@ sleqp_lpi_create(SleqpLPi** lp_interface,
                  const char* version,
                  int num_variables,
                  int num_constraints,
-                 SleqpParams* params,
-                 SleqpOptions* options,
+                 SleqpSettings* settings,
                  SleqpLPiCallbacks* callbacks);
 
 const char*
@@ -128,7 +128,6 @@ SLEQP_RETCODE
 sleqp_lpi_create_default(SleqpLPi** lp_interface,
                          int num_variables,
                          int num_constraints,
-                         SleqpParams* params,
-                         SleqpOptions* options);
+                         SleqpSettings* settings);
 
 #endif /* SLEQP_LPI_H */

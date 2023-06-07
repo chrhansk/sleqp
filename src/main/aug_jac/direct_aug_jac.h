@@ -13,7 +13,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_direct_aug_jac_create(SleqpAugJac** star,
                             SleqpProblem* problem,
-                            SleqpParams* params,
+                            SleqpSettings* settings,
                             SleqpFactQR* fact);
 
 #endif /* SLEQP_DIRECT_AUG_JAC_H */

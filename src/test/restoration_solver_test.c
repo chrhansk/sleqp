@@ -11,8 +11,7 @@
 
 #include "wachbieg_fixture.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 
 SleqpProblem* problem;
 
@@ -21,21 +20,20 @@ restoration_solver_setup()
 {
   wachbieg_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(
-    sleqp_options_set_bool_value(options,
-                                 SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE,
+    sleqp_settings_set_bool_value(settings,
+                                 SLEQP_SETTINGS_BOOL_ENABLE_RESTORATION_PHASE,
                                  true));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           wachbieg_func,
-                                          params,
                                           wachbieg_var_lb,
                                           wachbieg_var_ub,
                                           wachbieg_cons_lb,
-                                          wachbieg_cons_ub));
+                                          wachbieg_cons_ub,
+                                          settings));
 }
 
 void
@@ -43,8 +41,7 @@ restoration_solver_teardown()
 {
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   wachbieg_teardown();
 }
@@ -55,8 +52,6 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   wachbieg_initial,
                                   NULL));
 

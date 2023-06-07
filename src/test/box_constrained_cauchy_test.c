@@ -2,14 +2,14 @@
 #include <stdlib.h>
 
 #include "cmp.h"
-#include "params.h"
+#include "settings.h"
 
 #include "cauchy/box_constrained_cauchy.h"
 
 #include "test_common.h"
 #include "zero_func.h"
 
-SleqpParams* params;
+SleqpSettings* settings;
 
 const int num_variables   = 2;
 const int num_constraints = 0;
@@ -35,7 +35,7 @@ SleqpCauchy* cauchy;
 void
 constrained_setup()
 {
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(zero_func_create(&func, num_variables, num_constraints));
 
@@ -45,7 +45,7 @@ constrained_setup()
 
   double ub_vals[] = {2., 3.};
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   ASSERT_CALL(sleqp_vec_set_from_raw(var_ub, ub_vals, num_variables, zero_eps));
 
@@ -68,11 +68,11 @@ constrained_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          params,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
-                                          cons_ub));
+                                          cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, primal));
 
@@ -82,7 +82,7 @@ constrained_setup()
 
   ASSERT_CALL(sleqp_vec_create_empty(&direction, num_variables));
 
-  ASSERT_CALL(sleqp_box_constrained_cauchy_create(&cauchy, problem, params));
+  ASSERT_CALL(sleqp_box_constrained_cauchy_create(&cauchy, problem, settings));
 }
 
 void
@@ -107,7 +107,7 @@ constrained_teardown()
 
   ASSERT_CALL(sleqp_func_release(&func));
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }
 
 START_TEST(test_large_trust_region)
@@ -135,7 +135,7 @@ START_TEST(test_large_trust_region)
 
   ck_assert_int_eq(sleqp_vec_value_at(direction, 1), 2.);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   double actual_objective;
 
@@ -186,7 +186,7 @@ START_TEST(test_small_trust_region)
 
   ck_assert_int_eq(sleqp_vec_value_at(direction, 1), trust_radius);
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   double actual_objective;
 

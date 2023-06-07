@@ -237,7 +237,7 @@ sleqp_mumps_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_fact_mumps_create(SleqpFact** star, SleqpParams* params)
+sleqp_fact_mumps_create(SleqpFact** star, SleqpSettings* settings)
 {
   SleqpFactCallbacks callbacks = {.set_matrix = sleqp_mumps_set_matrix,
                                   .solve      = sleqp_mumps_solve,
@@ -252,7 +252,7 @@ sleqp_fact_mumps_create(SleqpFact** star, SleqpParams* params)
   SLEQP_CALL(sleqp_fact_create(star,
                                SLEQP_FACT_MUMPS_NAME,
                                SLEQP_FACT_MUMPS_VERSION,
-                               params,
+                               settings,
                                &callbacks,
                                SLEQP_FACT_FLAGS_LOWER,
                                (void*)sleqp_mumps_data));
@@ -261,9 +261,9 @@ sleqp_fact_mumps_create(SleqpFact** star, SleqpParams* params)
 }
 
 SLEQP_RETCODE
-sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpSettings* settings)
 {
-  SLEQP_CALL(sleqp_fact_mumps_create(star, params));
+  SLEQP_CALL(sleqp_fact_mumps_create(star, settings));
 
   return SLEQP_OKAY;
 }

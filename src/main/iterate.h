@@ -3,8 +3,8 @@
 
 #include "pub_iterate.h"
 
-#include "params.h"
 #include "pub_types.h"
+#include "pub_settings.h"
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
@@ -54,7 +54,7 @@ sleqp_iterate_is_feasible(SleqpIterate* iterate,
 
 bool
 sleqp_iterate_is_optimal(SleqpIterate* iterate,
-                         SleqpParams* params,
+                         SleqpSettings* settings,
                          double feasibility_residuum,
                          double slackness_residuum,
                          double stationarity_residuum);

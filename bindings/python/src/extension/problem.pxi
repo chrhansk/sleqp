@@ -3,11 +3,11 @@
 
 cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
                                          csleqp.SleqpFunc* cfunc,
-                                         csleqp.SleqpParams* cparams,
                                          np.ndarray var_lb,
                                          np.ndarray var_ub,
                                          np.ndarray general_lb,
                                          np.ndarray general_ub,
+                                         csleqp.SleqpSettings* csettings,
                                          object linear_coeffs = None,
                                          np.ndarray linear_lb = None,
                                          np.ndarray linear_ub = None):
@@ -42,27 +42,27 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
   try:
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&var_lb_vec,
-                                                        num_vars))
+                                              num_vars))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&var_ub_vec,
-                                                        num_vars))
+                                              num_vars))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&general_lb_vec,
-                                                        num_cons))
+                                              num_cons))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&general_ub_vec,
-                                                        num_cons))
+                                              num_cons))
 
     csleqp_call(csleqp.sleqp_mat_create(&linear_coeffs_mat,
-                                                  num_linear_constraints,
-                                                  num_vars,
-                                                  0))
+                                        num_linear_constraints,
+                                        num_vars,
+                                        0))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&linear_lb_vec,
-                                                        num_linear_constraints))
+                                              num_linear_constraints))
 
     csleqp_call(csleqp.sleqp_vec_create_empty(&linear_ub_vec,
-                                                        num_linear_constraints))
+                                              num_linear_constraints))
 
     array_to_sleqp_sparse_vec(var_lb, var_lb_vec)
     array_to_sleqp_sparse_vec(var_ub, var_ub_vec)
@@ -81,14 +81,14 @@ cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
 
     csleqp_call(csleqp.sleqp_problem_create(problem,
                                             cfunc,
-                                            cparams,
                                             var_lb_vec,
                                             var_ub_vec,
                                             general_lb_vec,
                                             general_ub_vec,
                                             linear_coeffs_mat,
                                             linear_lb_vec,
-                                            linear_ub_vec))
+                                            linear_ub_vec,
+                                            csettings))
 
     return csleqp.SLEQP_OKAY
 
@@ -117,11 +117,11 @@ cdef class _Problem:
 
   @staticmethod
   cdef _Problem create(csleqp.SleqpFunc* cfunc,
-                       csleqp.SleqpParams* cparams,
                        np.ndarray var_lb,
                        np.ndarray var_ub,
                        np.ndarray cons_lb,
                        np.ndarray cons_ub,
+                       csleqp.SleqpSettings* csettings,
                        object linear_coeffs = None,
                        np.ndarray linear_lb = None,
                        np.ndarray linear_ub = None):
@@ -133,11 +133,11 @@ cdef class _Problem:
 
     csleqp_call(create_problem(&_problem.cproblem,
                                cfunc,
-                               cparams,
                                var_lb,
                                var_ub,
                                cons_lb,
                                cons_ub,
+                               csettings,
                                linear_coeffs,
                                linear_lb,
                                linear_ub))
@@ -185,20 +185,30 @@ cdef class Problem:
   cdef _Problem problem
   cdef _Func funcref
 
+  cdef Settings _settings
+
   cdef object _func
 
   def __cinit__(self,
                 object func,
-                Params params,
                 np.ndarray var_lb,
                 np.ndarray var_ub,
                 np.ndarray cons_lb,
                 np.ndarray cons_ub,
+                Settings settings=None,
                 **properties):
 
     cdef int num_vars = var_lb.shape[0]
     cdef int num_cons = cons_lb.shape[0]
     cdef csleqp.SleqpFunc* cfunc
+    cdef csleqp.SleqpSettings* csettings
+
+    if settings is None:
+      self._settings = Settings()
+    else:
+      self._settings = settings
+
+    csettings = <csleqp.SleqpSettings*> self._settings.settings
 
     self.funcref = _Func()
 
@@ -213,11 +223,11 @@ cdef class Problem:
 
     try:
       self.problem = _Problem.create(cfunc,
-                                     params.params,
                                      var_lb,
                                      var_ub,
                                      cons_lb,
                                      cons_ub,
+                                     csettings,
                                      properties.get('linear_coeffs', None),
                                      properties.get('linear_lb', None),
                                      properties.get('linear_ub', None))
@@ -275,21 +285,31 @@ cdef class LSQProblem:
   cdef _Problem problem
   cdef _Func funcref
 
+  cdef Settings _settings
+
   cdef object _func
 
   def __cinit__(self,
                 object func,
-                Params params,
                 np.ndarray var_lb,
                 np.ndarray var_ub,
                 np.ndarray cons_lb,
                 np.ndarray cons_ub,
                 num_residuals,
+                Settings settings=None,
                 **properties):
 
     cdef int num_vars = var_lb.shape[0]
     cdef int num_cons = cons_lb.shape[0]
     cdef csleqp.SleqpFunc* cfunc
+    cdef csleqp.SleqpSettings* csettings
+
+    if settings is None:
+      self._settings = Settings()
+    else:
+      self._settings = settings
+
+    csettings = <csleqp.SleqpSettings*> self._settings.settings
 
     self.funcref = _Func()
 
@@ -299,7 +319,7 @@ cdef class LSQProblem:
                                 num_cons,
                                 num_residuals,
                                 properties.get('regularization', 0.),
-                                params.params))
+                                csettings))
 
     assert cfunc != NULL
 
@@ -307,11 +327,11 @@ cdef class LSQProblem:
 
     try:
       self.problem = _Problem.create(cfunc,
-                                     params.params,
                                      var_lb,
                                      var_ub,
                                      cons_lb,
                                      cons_ub,
+                                     csettings,
                                      properties.get('linear_coeffs', None),
                                      properties.get('linear_lb', None),
                                      properties.get('linear_ub', None))
@@ -369,19 +389,29 @@ cdef class DynProblem:
   cdef _Problem problem
   cdef _Func funcref
 
+  cdef Settings _settings
+
   cdef object _func
 
   def __cinit__(self,
                 object func,
-                Params params,
                 np.ndarray var_lb,
                 np.ndarray var_ub,
                 np.ndarray cons_lb,
                 np.ndarray cons_ub,
+                Settings settings=None,
                 **properties):
     cdef int num_vars = var_lb.shape[0]
     cdef int num_cons = cons_lb.shape[0]
     cdef csleqp.SleqpFunc* cfunc
+    cdef csleqp.SleqpSettings* csettings
+
+    if settings is None:
+      self._settings = Settings()
+    else:
+      self._settings = settings
+
+    csettings = <csleqp.SleqpSettings*> self._settings.settings
 
     self.funcref = _Func()
 
@@ -395,11 +425,11 @@ cdef class DynProblem:
 
     try:
       self.problem = _Problem.create(cfunc,
-                                     params.params,
                                      var_lb,
                                      var_ub,
                                      cons_lb,
                                      cons_ub,
+                                     csettings,
                                      properties.get('linear_coeffs', None),
                                      properties.get('linear_lb', None),
                                      properties.get('linear_ub', None))

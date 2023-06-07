@@ -5,6 +5,7 @@
 #include "fail.h"
 #include "feas.h"
 #include "mem.h"
+#include "pub_settings.h"
 #include "sparse/pub_vec.h"
 #include "util.h"
 
@@ -39,7 +40,7 @@ struct SleqpLineSearch
   int refcount;
 
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
   SleqpMerit* merit;
 
   SleqpIterate* iterate;
@@ -72,7 +73,7 @@ struct SleqpLineSearch
 SLEQP_RETCODE
 sleqp_linesearch_create(SleqpLineSearch** star,
                         SleqpProblem* problem,
-                        SleqpParams* params,
+                        SleqpSettings* settings,
                         SleqpMerit* merit)
 {
   SLEQP_CALL(sleqp_malloc(star));
@@ -90,8 +91,8 @@ sleqp_linesearch_create(SleqpLineSearch** star,
   linesearch->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(linesearch->problem));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  linesearch->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  linesearch->settings = settings;
 
   SLEQP_CALL(sleqp_merit_capture(merit));
 
@@ -118,7 +119,7 @@ sleqp_linesearch_create(SleqpLineSearch** star,
     sleqp_vec_create_empty(&linesearch->violated_multipliers, num_constraints));
 
   SLEQP_CALL(
-    sleqp_direction_create(&linesearch->test_direction, problem, params));
+    sleqp_direction_create(&linesearch->test_direction, problem, settings));
 
   SLEQP_CALL(sleqp_alloc_array(&linesearch->cache,
                                SLEQP_MAX(num_variables, num_constraints)));
@@ -160,10 +161,10 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
   const double penalty_parameter = linesearch->penalty_parameter;
   const double trust_radius      = linesearch->trust_radius;
 
-  const double eps = sleqp_params_value(linesearch->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_EPS);
 
   const double zero_eps
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_timer_start(linesearch->timer));
 
@@ -210,9 +211,9 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
   }
 
   const double eta
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_CAUCHY_ETA);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_CAUCHY_ETA);
   const double tau
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_CAUCHY_TAU);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_CAUCHY_TAU);
 
   double linear_violation;
 
@@ -328,12 +329,12 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
   SleqpIterate* iterate          = linesearch->iterate;
   const double penalty_parameter = linesearch->penalty_parameter;
 
-  const double eps = sleqp_params_value(linesearch->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
   const double zero_eps
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpVec* cauchy_step = sleqp_direction_primal(cauchy_direction);
   SleqpVec* newton_step = sleqp_direction_primal(newton_direction);
@@ -378,13 +379,13 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
     sleqp_vec_dot(newton_step, newton_hessian_step, &newton_newton_product));
 
   const double eta
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_LINESEARCH_ETA);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_LINESEARCH_ETA);
 
   const double tau
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_LINESEARCH_TAU);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_LINESEARCH_TAU);
 
   const double cutoff_threshold
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_LINESEARCH_CUTOFF);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_LINESEARCH_CUTOFF);
 
   int iteration = 0;
 
@@ -606,7 +607,7 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
     bool direction_valid;
 
     const double zero_eps
-      = sleqp_params_value(linesearch->params, SLEQP_PARAM_ZERO_EPS);
+      = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
     SLEQP_CALL(sleqp_direction_check(trial_direction,
                                      linesearch->problem,
@@ -727,7 +728,7 @@ compute_breakpoints(SleqpLineSearch* linesearch,
   SleqpProblem* problem = linesearch->problem;
 
   const double zero_eps
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
@@ -802,9 +803,9 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
   SleqpIterate* iterate = linesearch->iterate;
 
   const double zero_eps
-    = sleqp_params_value(linesearch->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
-  const double eps = sleqp_params_value(linesearch->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(linesearch->settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -1074,7 +1075,7 @@ linesearch_free(SleqpLineSearch** star)
 
   SLEQP_CALL(sleqp_iterate_release(&linesearch->iterate));
 
-  SLEQP_CALL(sleqp_params_release(&linesearch->params));
+  SLEQP_CALL(sleqp_settings_release(&linesearch->settings));
 
   SLEQP_CALL(sleqp_problem_release(&linesearch->problem));
 

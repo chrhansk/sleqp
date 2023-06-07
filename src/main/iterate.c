@@ -6,6 +6,7 @@
 #include "fail.h"
 #include "feas.h"
 #include "mem.h"
+#include "pub_settings.h"
 #include "pub_types.h"
 #include "working_set.h"
 
@@ -525,16 +526,16 @@ sleqp_iterate_is_feasible(SleqpIterate* iterate,
 
 bool
 sleqp_iterate_is_optimal(SleqpIterate* iterate,
-                         SleqpParams* params,
+                         SleqpSettings* settings,
                          double feasibility_residuum,
                          double slackness_residuum,
                          double stationarity_residuum)
 {
-  const double feas_eps = sleqp_params_value(params, SLEQP_PARAM_FEAS_TOL);
+  const double feas_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
-  const double slack_eps = sleqp_params_value(params, SLEQP_PARAM_SLACK_TOL);
+  const double slack_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_SLACK_TOL);
 
-  const double stat_eps = sleqp_params_value(params, SLEQP_PARAM_STAT_TOL);
+  const double stat_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
   if (!sleqp_iterate_is_feasible(iterate, feasibility_residuum, feas_eps))
   {

@@ -7,11 +7,12 @@
 #include "mem.h"
 #include "problem.h"
 #include "sparse/mat.h"
+#include "settings.h"
 
 struct SleqpDerivChecker
 {
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpVec* unit_direction;
 
@@ -88,12 +89,12 @@ get_perturbation(const SleqpDerivChecker* deriv_checker,
                  const SleqpIterate* iterate,
                  int j)
 {
-  SleqpParams* params = deriv_checker->params;
+  SleqpSettings* settings = deriv_checker->settings;
 
   SleqpVec* primal = sleqp_iterate_primal(iterate);
 
   double base_perturbation
-    = sleqp_params_value(params, SLEQP_PARAM_DERIV_PERTURBATION);
+    = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_DERIV_PERTURBATION);
 
   double value = sleqp_vec_value_at(primal, j);
 
@@ -139,7 +140,7 @@ compute_hessian_cons_products(SleqpDerivChecker* deriv_checker, int j)
   SleqpVec* unit_direction = deriv_checker->unit_direction;
 
   const double zero_eps
-    = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(deriv_checker->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(create_unit_direction(unit_direction, j));
 
@@ -233,7 +234,7 @@ create_check_iterate(SleqpDerivChecker* deriv_checker,
   SleqpVec* unit_direction    = deriv_checker->unit_direction;
 
   const double zero_eps
-    = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(deriv_checker->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(
     create_perturbed_unit_direction(deriv_checker, iterate, j, perturbation));
@@ -301,7 +302,7 @@ check_deriv_func_first_order(SleqpDerivChecker* deriv_checker,
   SleqpIterate* check_iterate = deriv_checker->check_iterate;
 
   const double tolerance
-    = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_DERIV_TOL);
+    = sleqp_settings_real_value(deriv_checker->settings, SLEQP_SETTINGS_REAL_DERIV_TOL);
 
   const double func_diff
     = sleqp_iterate_obj_val(check_iterate) - sleqp_iterate_obj_val(iterate);
@@ -339,7 +340,7 @@ check_deriv_cons_first_order(SleqpDerivChecker* deriv_checker,
   const int num_constraints = sleqp_problem_num_cons(problem);
 
   const double tolerance
-    = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_DERIV_TOL);
+    = sleqp_settings_real_value(deriv_checker->settings, SLEQP_SETTINGS_REAL_DERIV_TOL);
 
   for (int i = 0; i < num_constraints; ++i)
   {
@@ -384,7 +385,7 @@ check_deriv_func_second_order(SleqpDerivChecker* deriv_checker,
   const int num_variables = sleqp_problem_num_vars(problem);
 
   const double tolerance
-    = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_DERIV_TOL);
+    = sleqp_settings_real_value(deriv_checker->settings, SLEQP_SETTINGS_REAL_DERIV_TOL);
 
   SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_obj_grad(iterate),
                                   sleqp_iterate_obj_grad(check_iterate),
@@ -439,10 +440,10 @@ check_deriv_cons_second_order(SleqpDerivChecker* deriv_checker,
   const int num_variables   = sleqp_problem_num_vars(problem);
 
   const double zero_eps
-    = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(deriv_checker->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const double tolerance
-    = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_DERIV_TOL);
+    = sleqp_settings_real_value(deriv_checker->settings, SLEQP_SETTINGS_REAL_DERIV_TOL);
 
   SleqpMat* cons_jac  = sleqp_iterate_cons_jac(iterate);
   SleqpMat* check_jac = sleqp_iterate_cons_jac(check_iterate);
@@ -510,9 +511,9 @@ compute_combined_cons_grad(SleqpDerivChecker* deriv_checker,
                            SleqpIterate* iterate,
                            SleqpVec* result)
 {
-  SleqpParams* params = deriv_checker->params;
+  SleqpSettings* settings = deriv_checker->settings;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(
     sleqp_mat_mult_vec_trans(sleqp_iterate_cons_jac(iterate),
@@ -541,7 +542,7 @@ check_deriv_simple_second_order(SleqpDerivChecker* deriv_checker,
   const int num_variables = sleqp_problem_num_vars(problem);
 
   const double tolerance
-    = sleqp_params_value(deriv_checker->params, SLEQP_PARAM_DERIV_TOL);
+    = sleqp_settings_real_value(deriv_checker->settings, SLEQP_SETTINGS_REAL_DERIV_TOL);
 
   // Compute Hessian product estimate
   {
@@ -672,7 +673,7 @@ eval_and_check_deriv(SleqpDerivChecker* deriv_checker,
 SLEQP_RETCODE
 sleqp_deriv_checker_create(SleqpDerivChecker** deriv_checker,
                            SleqpProblem* problem,
-                           SleqpParams* params)
+                           SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(deriv_checker));
 
@@ -684,8 +685,8 @@ sleqp_deriv_checker_create(SleqpDerivChecker** deriv_checker,
   data->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(data->problem));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  data->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  data->settings = settings;
 
   data->iterate = NULL;
 
@@ -836,7 +837,7 @@ sleqp_deriv_checker_free(SleqpDerivChecker** star)
 
   SLEQP_CALL(sleqp_vec_free(&deriv_checker->unit_direction));
 
-  SLEQP_CALL(sleqp_params_release(&deriv_checker->params));
+  SLEQP_CALL(sleqp_settings_release(&deriv_checker->settings));
 
   SLEQP_CALL(sleqp_problem_release(&deriv_checker->problem));
 

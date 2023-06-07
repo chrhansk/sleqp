@@ -9,8 +9,7 @@
 
 #include "direction.h"
 #include "iterate.h"
-#include "options.h"
-#include "params.h"
+#include "settings.h"
 #include "problem.h"
 
 #include "aug_jac/aug_jac.h"
@@ -21,7 +20,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_working_step_create(SleqpWorkingStep** star,
                           SleqpProblem* problem,
-                          SleqpParams* params);
+                          SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

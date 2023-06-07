@@ -17,7 +17,7 @@ typedef struct
   double* exact_merit_values;
   double* model_reductions;
 
-  SleqpParams* params;
+  SleqpSettings* settings;
 
 } StepRule;
 
@@ -126,7 +126,7 @@ add_accepted_step(StepRule* step_rule,
     return SLEQP_OKAY;
   }
 
-  const double eps = sleqp_params_value(step_rule->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(step_rule->settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -179,7 +179,7 @@ step_rule_window_apply(double iterate_merit,
     = SLEQP_MAX(current_reduction_ratio, historic_reduction_ratio);
 
   const double accepted_reduction
-    = sleqp_params_value(step_rule->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
+    = sleqp_settings_real_value(step_rule->settings, SLEQP_SETTINGS_REAL_ACCEPTED_REDUCTION);
 
   *accept_step = (*reduction_ratio >= accepted_reduction);
 
@@ -213,7 +213,7 @@ step_rule_window_free(void* step_data)
 {
   StepRule* step_rule = (StepRule*)step_data;
 
-  SLEQP_CALL(sleqp_params_release(&step_rule->params));
+  SLEQP_CALL(sleqp_settings_release(&step_rule->settings));
 
   sleqp_free(&step_rule->model_reductions);
   sleqp_free(&step_rule->exact_merit_values);
@@ -226,7 +226,7 @@ step_rule_window_free(void* step_data)
 SLEQP_RETCODE
 sleqp_step_rule_window_create(SleqpStepRule** star,
                               SleqpProblem* problem,
-                              SleqpParams* params,
+                              SleqpSettings* settings,
                               int window_size)
 {
   assert(window_size >= 0);
@@ -245,12 +245,12 @@ sleqp_step_rule_window_create(SleqpStepRule** star,
   SLEQP_CALL(sleqp_alloc_array(&step_rule->exact_merit_values, window_size));
   SLEQP_CALL(sleqp_alloc_array(&step_rule->model_reductions, window_size));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  step_rule->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  step_rule->settings = settings;
 
   SLEQP_CALL(sleqp_step_rule_create(star,
                                     problem,
-                                    params,
+                                    settings,
                                     &callbacks,
                                     (void*)step_rule));
 

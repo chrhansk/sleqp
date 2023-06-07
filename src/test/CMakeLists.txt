@@ -86,6 +86,7 @@ add_unit_test(restoration_test)
 add_unit_test(restoration_solver_test)
 add_unit_test(scale_test)
 add_unit_test(second_order_test)
+add_unit_test(settings_test)
 add_unit_test(solver_state_test)
 add_unit_test(time_limit_test)
 add_unit_test(unconstrained_cauchy_test)
@@ -93,8 +94,13 @@ add_unit_test(unconstrained_newton_test)
 add_unit_test(unconstrained_test)
 add_unit_test(unbounded_test)
 add_unit_test(working_set_var_test)
-
 add_unit_test(thread_test)
+
+set(EXAMPLE_PARAM_FILE
+  "sleqp_example.opt")
+
+file(COPY ${EXAMPLE_PARAM_FILE}
+  DESTINATION ${CMAKE_BINARY_DIR})
 
 if(SLEQP_ENABLE_CUTEST)
   add_subdirectory(cutest)

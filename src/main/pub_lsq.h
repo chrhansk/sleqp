@@ -140,7 +140,7 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
                       int num_constraints,
                       int num_residuals,
                       double lm_factor,
-                      SleqpParams* params,
+                      SleqpSettings* settings,
                       void* func_data);
 
 /**

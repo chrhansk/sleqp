@@ -21,7 +21,7 @@ struct SleqpDirection
 SLEQP_RETCODE
 sleqp_direction_create(SleqpDirection** star,
                        SleqpProblem* problem,
-                       SleqpParams* params)
+                       SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 

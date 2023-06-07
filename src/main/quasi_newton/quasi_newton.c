@@ -234,20 +234,19 @@ sleqp_quasi_newton_release(SleqpQuasiNewton** star)
 SLEQP_RETCODE
 sleqp_quasi_newton_create_default(SleqpQuasiNewton** star,
                                   SleqpFunc* func,
-                                  SleqpParams* params,
-                                  SleqpOptions* options)
+                                  SleqpSettings* settings)
 {
   const SLEQP_HESS_EVAL hessian_eval
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_HESS_EVAL);
 
   if (hessian_eval == SLEQP_HESS_EVAL_SIMPLE_BFGS
       || hessian_eval == SLEQP_HESS_EVAL_DAMPED_BFGS)
   {
-    SLEQP_CALL(sleqp_bfgs_create(star, func, params, options));
+    SLEQP_CALL(sleqp_bfgs_create(star, func, settings));
   }
   else if (hessian_eval == SLEQP_HESS_EVAL_SR1)
   {
-    SLEQP_CALL(sleqp_sr1_create(star, func, params, options));
+    SLEQP_CALL(sleqp_sr1_create(star, func, settings));
   }
   else
   {

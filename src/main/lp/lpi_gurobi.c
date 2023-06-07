@@ -59,8 +59,7 @@ static SLEQP_RETCODE
 gurobi_create_problem(void** star,
                       int num_cols,
                       int num_rows,
-                      SleqpParams* params,
-                      SleqpOptions* options)
+                      SleqpSettings* settings)
 {
   SleqpLpiGRB* lp_interface = NULL;
 
@@ -96,7 +95,7 @@ gurobi_create_problem(void** star,
 
   {
     const int num_threads
-      = sleqp_options_int_value(options, SLEQP_OPTION_INT_NUM_THREADS);
+      = sleqp_settings_int_value(settings, SLEQP_SETTINGS_INT_NUM_THREADS);
 
     if (num_threads == SLEQP_NONE)
     {
@@ -686,8 +685,7 @@ SLEQP_RETCODE
 sleqp_lpi_gurobi_create(SleqpLPi** lp_star,
                         int num_cols,
                         int num_rows,
-                        SleqpParams* params,
-                        SleqpOptions* options)
+                        SleqpSettings* settings)
 {
   SleqpLPiCallbacks callbacks = {.create_problem = gurobi_create_problem,
                                  .solve          = gurobi_solve,
@@ -711,8 +709,7 @@ sleqp_lpi_gurobi_create(SleqpLPi** lp_star,
                           SLEQP_LP_SOLVER_GUROBI_VERSION,
                           num_cols,
                           num_rows,
-                          params,
-                          options,
+                          settings,
                           &callbacks);
 }
 
@@ -720,14 +717,12 @@ SLEQP_RETCODE
 sleqp_lpi_create_default(SleqpLPi** lp_interface,
                          int num_variables,
                          int num_constraints,
-                         SleqpParams* params,
-                         SleqpOptions* options)
+                         SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_lpi_gurobi_create(lp_interface,
                                      num_variables,
                                      num_constraints,
-                                     params,
-                                     options));
+                                     settings));
 
   return SLEQP_OKAY;
 }

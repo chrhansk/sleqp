@@ -22,7 +22,7 @@ SLEQP_RETCODE
 sleqp_fact_create(SleqpFact** star,
                   const char* name,
                   const char* version,
-                  SleqpParams* params,
+                  SleqpSettings* settings,
                   SleqpFactCallbacks* callbacks,
                   SLEQP_FACT_FLAGS flags,
                   void* fact_data)

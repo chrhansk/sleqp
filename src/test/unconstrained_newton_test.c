@@ -16,8 +16,7 @@
 #include "quadfunc_fixture.h"
 #include "test_common.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpCauchy* cauchy_data;
@@ -29,17 +28,15 @@ newton_setup()
 {
   quadfunc_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadfunc,
-                                          params,
                                           quadfunc_var_lb,
                                           quadfunc_var_ub,
                                           quadfunc_cons_lb,
-                                          quadfunc_cons_ub));
+                                          quadfunc_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadfunc_x));
 
@@ -50,7 +47,7 @@ newton_setup()
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_INIT, NULL));
 
   ASSERT_CALL(
-    sleqp_standard_cauchy_create(&cauchy_data, problem, params, options));
+    sleqp_standard_cauchy_create(&cauchy_data, problem, settings));
 }
 
 void
@@ -62,9 +59,7 @@ newton_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   quadfunc_teardown();
 }
@@ -88,24 +83,23 @@ START_TEST(newton_wide_step)
   ASSERT_CALL(sleqp_vec_push(expected_step, 1, -2.));
 
   // ASSERT_CALL(sleqp_vec_create(&actual_step, num_variables, 0));
-  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, params));
+  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, settings));
 
   double penalty_parameter = 1.;
   double trust_radius      = 10.;
 
-  ASSERT_CALL(sleqp_fact_create_default(&fact, params));
+  ASSERT_CALL(sleqp_fact_create_default(&fact, settings));
 
   // create with empty active set
-  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, params, fact));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, settings, fact));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
-  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
+  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, settings));
 
   ASSERT_CALL(sleqp_newton_solver_create(&newton_solver,
                                          problem,
-                                         params,
-                                         options,
+                                         settings,
                                          working_step));
 
   ASSERT_CALL(sleqp_eqp_solver_set_iterate(newton_solver,
@@ -148,7 +142,7 @@ START_TEST(newton_small_step)
   SleqpVec* expected_step;
   SleqpDirection* actual_direction;
 
-  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, params));
+  ASSERT_CALL(sleqp_direction_create(&actual_direction, problem, settings));
 
   SleqpFact* factorization;
   SleqpAugJac* jacobian;
@@ -163,20 +157,19 @@ START_TEST(newton_small_step)
   double penalty_parameter = 1.;
   double trust_radius      = 1.;
 
-  ASSERT_CALL(sleqp_fact_create_default(&factorization, params));
+  ASSERT_CALL(sleqp_fact_create_default(&factorization, settings));
 
   // create with empty active set
   ASSERT_CALL(
-    sleqp_standard_aug_jac_create(&jacobian, problem, params, factorization));
+    sleqp_standard_aug_jac_create(&jacobian, problem, settings, factorization));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
-  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, params));
+  ASSERT_CALL(sleqp_working_step_create(&working_step, problem, settings));
 
   ASSERT_CALL(sleqp_newton_solver_create(&newton_solver,
                                          problem,
-                                         params,
-                                         options,
+                                         settings,
                                          working_step));
 
   ASSERT_CALL(sleqp_eqp_solver_set_iterate(newton_solver,

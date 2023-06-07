@@ -8,8 +8,7 @@
 
 #include "sleqp/export.h"
 #include "sleqp/pub_iterate.h"
-#include "sleqp/pub_options.h"
-#include "sleqp/pub_params.h"
+#include "sleqp/pub_settings.h"
 #include "sleqp/pub_problem.h"
 #include "sleqp/pub_scale.h"
 
@@ -33,16 +32,13 @@ typedef struct SleqpSolver SleqpSolver;
  *
  * @param[out] star            A pointer to the solver to be created
  * @param[in]  problem         The underlying problem
- * @param[in]  params          The problem parameters
- * @param[in]  options         The solver options
+ * @param[in]  settings         The solver settings
  * @param[in]  primal          The initial solution
  * @param[in]  scaling_data    The scaling to be used (may be `NULL`)
  **/
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_solver_create(SleqpSolver** star,
                     SleqpProblem* problem,
-                    SleqpParams* params,
-                    SleqpOptions* options,
                     SleqpVec* primal,
                     SleqpScaling* scaling_data);
 

@@ -108,27 +108,22 @@ unbounded_teardown()
 
 START_TEST(test_unbounded_solve)
 {
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           unbounded_func,
-                                          params,
                                           unbounded_var_lb,
                                           unbounded_var_ub,
                                           unbounded_cons_lb,
-                                          unbounded_cons_ub));
+                                          unbounded_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   unbounded_initial,
                                   NULL));
 
@@ -145,9 +140,7 @@ START_TEST(test_unbounded_solve)
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }
 END_TEST
 

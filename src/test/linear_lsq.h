@@ -2,7 +2,7 @@
 #define LINEAR_LSQ_H
 
 #include "func.h"
-#include "params.h"
+#include "settings.h"
 #include "sparse/vec.h"
 
 #include "test_common.h"
@@ -14,7 +14,7 @@ extern const int linear_lsq_num_residuals;
 extern SleqpMat* linear_lsq_matrix;
 extern SleqpVec* linear_lsq_rhs;
 
-extern SleqpParams* linear_lsq_params;
+extern SleqpSettings* linear_lsq_settings;
 extern SleqpFunc* linear_lsq_func;
 
 extern SleqpVec* linear_lsq_var_lb;

@@ -18,18 +18,13 @@ class ScaleTest(unittest.TestCase):
     cons_lb = np.array([-inf]*num_constraints)
     cons_ub = np.array([inf]*num_constraints)
 
-    self.params = sleqp.Params()
-
     self.func = ZeroFunc()
 
     self.problem = sleqp.Problem(self.func,
-                                 self.params,
                                  var_lb,
                                  var_ub,
                                  cons_lb,
                                  cons_ub)
-
-    self.options = sleqp.Options()
 
     self.scaling = sleqp.Scaling(num_variables, num_constraints)
 

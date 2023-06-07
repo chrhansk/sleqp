@@ -8,7 +8,7 @@
 #include "linesearch.h"
 #include "measure.h"
 #include "merit.h"
-#include "options.h"
+#include "settings.h"
 #include "parametric.h"
 #include "problem.h"
 #include "soc.h"
@@ -23,8 +23,7 @@ typedef struct
   int refcount;
   SleqpProblem* problem;
 
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
 
   SleqpVec* lp_step;
 
@@ -91,8 +90,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
                                 SleqpProblem* problem,
-                                SleqpParams* params,
-                                SleqpOptions* options);
+                                SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

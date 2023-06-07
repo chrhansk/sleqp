@@ -23,7 +23,7 @@ print_warning(SleqpProblemSolver* solver)
   SLEQP_FUNC_TYPE func_type = sleqp_func_get_type(func);
 
   const SLEQP_DERIV_CHECK deriv_check
-    = sleqp_options_enum_value(solver->options, SLEQP_OPTION_ENUM_DERIV_CHECK);
+    = sleqp_settings_enum_value(solver->settings, SLEQP_SETTINGS_ENUM_DERIV_CHECK);
 
   const int hessian_check_flags
     = (SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE | SLEQP_DERIV_CHECK_SECOND_SIMPLE);
@@ -119,7 +119,7 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
   const double deadpoint_bound
-    = sleqp_params_value(solver->params, SLEQP_PARAM_DEADPOINT_BOUND);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_DEADPOINT_BOUND);
 
   SLEQP_CALL(sleqp_problem_solver_print_header(solver));
 

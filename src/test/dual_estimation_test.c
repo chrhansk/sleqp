@@ -14,8 +14,7 @@
 
 START_TEST(test_simply_constrained_dual_estimation)
 {
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpProblem* problem;
   SleqpIterate* iterate;
   SleqpCauchy* cauchy_data;
@@ -27,17 +26,15 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   double penalty_parameter = 1., trust_radius = 0.1;
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadfunc,
-                                          params,
                                           quadfunc_var_lb,
                                           quadfunc_var_ub,
                                           quadfunc_cons_lb,
-                                          quadfunc_cons_ub));
+                                          quadfunc_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadfunc_x));
 
@@ -45,13 +42,13 @@ START_TEST(test_simply_constrained_dual_estimation)
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
   ASSERT_CALL(
-    sleqp_standard_cauchy_create(&cauchy_data, problem, params, options));
+    sleqp_standard_cauchy_create(&cauchy_data, problem, settings));
 
   ASSERT_CALL(sleqp_working_set_create(&working_set, problem));
 
-  ASSERT_CALL(sleqp_fact_create_default(&fact, params));
+  ASSERT_CALL(sleqp_fact_create_default(&fact, settings));
 
-  ASSERT_CALL(sleqp_standard_aug_jac_create(&aug_jac, problem, params, fact));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&aug_jac, problem, settings, fact));
 
   ASSERT_CALL(
     sleqp_dual_estimation_lsq_create(&estimation_data, problem, aug_jac));
@@ -101,9 +98,7 @@ START_TEST(test_simply_constrained_dual_estimation)
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }
 END_TEST
 

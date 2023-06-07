@@ -9,8 +9,7 @@
 #include "constrained_fixture.h"
 #include "test_common.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpProblem* problem;
 
 void
@@ -18,17 +17,15 @@ constrained_test_setup()
 {
   constrained_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           constrained_func,
-                                          params,
                                           constrained_var_lb,
                                           constrained_var_ub,
                                           constrained_cons_lb,
-                                          constrained_cons_ub));
+                                          constrained_cons_ub,
+                                          settings));
 }
 
 void
@@ -36,9 +33,7 @@ constrained_test_teardown()
 {
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   constrained_teardown();
 }
@@ -111,15 +106,13 @@ START_TEST(test_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(
-    options,
-    SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(
+    settings,
+    SLEQP_SETTINGS_ENUM_DERIV_CHECK,
     SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -131,14 +124,12 @@ START_TEST(test_solve_reduced)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_AUG_JAC_METHOD,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_AUG_JAC_METHOD,
                                            SLEQP_AUG_JAC_REDUCED));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -152,14 +143,12 @@ START_TEST(test_solve_direct)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_AUG_JAC_METHOD,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_AUG_JAC_METHOD,
                                            SLEQP_AUG_JAC_DIRECT));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -173,14 +162,12 @@ START_TEST(test_exact_linesearch)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_LINESEARCH,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_LINESEARCH,
                                            SLEQP_LINESEARCH_EXACT));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -192,14 +179,12 @@ START_TEST(test_initial_tr_wide)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_INITIAL_TR_CHOICE,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_INITIAL_TR_CHOICE,
                                            SLEQP_INITIAL_TR_CHOICE_WIDE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -211,14 +196,12 @@ START_TEST(test_parametric_solve)
 {
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_PARAMETRIC_CAUCHY,
                                            SLEQP_PARAMETRIC_CAUCHY_COARSE));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -228,20 +211,18 @@ END_TEST
 
 START_TEST(test_sr1_solve)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_HESS_EVAL,
                                            SLEQP_HESS_EVAL_SR1));
 
   SleqpSolver* solver;
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -251,24 +232,22 @@ END_TEST
 
 START_TEST(test_bfgs_solve_no_sizing)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_BFGS_SIZING,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_BFGS_SIZING,
                                            SLEQP_BFGS_SIZING_NONE));
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_HESS_EVAL,
                                            SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   SleqpSolver* solver;
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -278,20 +257,18 @@ END_TEST
 
 START_TEST(test_bfgs_solve_centered_ol_sizing)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_BFGS_SIZING,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_BFGS_SIZING,
                                            SLEQP_BFGS_SIZING_CENTERED_OL));
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_HESS_EVAL,
                                            SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   SleqpSolver* solver;
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -301,8 +278,8 @@ END_TEST
 
 START_TEST(test_unscaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
@@ -315,8 +292,6 @@ START_TEST(test_unscaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   scaling));
 
@@ -328,12 +303,12 @@ END_TEST
 
 START_TEST(test_scaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(
-    options,
-    SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(
+    settings,
+    SLEQP_SETTINGS_ENUM_DERIV_CHECK,
     SLEQP_DERIV_CHECK_FIRST | SLEQP_DERIV_CHECK_SECOND_EXHAUSTIVE));
 
-  ASSERT_CALL(sleqp_params_set_value(params, SLEQP_PARAM_STAT_TOL, 1e-7));
+  ASSERT_CALL(sleqp_settings_set_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL, 1e-7));
 
   SleqpSolver* solver;
 
@@ -353,8 +328,6 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   scaling));
 
@@ -366,18 +339,18 @@ END_TEST
 
 START_TEST(test_scaled_sr1_solve)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_params_set_value(params, SLEQP_PARAM_STAT_TOL, 1e-7));
+  ASSERT_CALL(sleqp_settings_set_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL, 1e-7));
 
   SleqpSolver* solver;
 
   SleqpScaling* scaling;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_HESS_EVAL,
                                            SLEQP_HESS_EVAL_SR1));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
@@ -394,8 +367,6 @@ START_TEST(test_scaled_sr1_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   scaling));
 
@@ -407,18 +378,18 @@ END_TEST
 
 START_TEST(test_scaled_bfgs_solve)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
-  ASSERT_CALL(sleqp_params_set_value(params, SLEQP_PARAM_STAT_TOL, 1e-7));
+  ASSERT_CALL(sleqp_settings_set_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL, 1e-7));
 
   SleqpSolver* solver;
 
   SleqpScaling* scaling;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_HESS_EVAL,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_HESS_EVAL,
                                            SLEQP_HESS_EVAL_DAMPED_BFGS));
 
   ASSERT_CALL(sleqp_scaling_create(&scaling,
@@ -435,8 +406,6 @@ START_TEST(test_scaled_bfgs_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   scaling));
 
@@ -448,8 +417,8 @@ END_TEST
 
 START_TEST(test_auto_scaled_solve)
 {
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
   SleqpSolver* solver;
@@ -458,7 +427,7 @@ START_TEST(test_auto_scaled_solve)
 
   SleqpIterate* iterate;
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, constrained_initial));
 
@@ -477,8 +446,6 @@ START_TEST(test_auto_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   scaling));
 
@@ -495,14 +462,12 @@ START_TEST(test_lp_dual_estimation)
   SleqpSolver* solver;
 
   ASSERT_CALL(
-    sleqp_options_set_enum_value(options,
-                                 SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE,
+    sleqp_settings_set_enum_value(settings,
+                                 SLEQP_SETTINGS_ENUM_DUAL_ESTIMATION_TYPE,
                                  SLEQP_DUAL_ESTIMATION_TYPE_LP));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -515,14 +480,12 @@ START_TEST(test_mixed_dual_estimation)
   SleqpSolver* solver;
 
   ASSERT_CALL(
-    sleqp_options_set_enum_value(options,
-                                 SLEQP_OPTION_ENUM_DUAL_ESTIMATION_TYPE,
+    sleqp_settings_set_enum_value(settings,
+                                 SLEQP_SETTINGS_ENUM_DUAL_ESTIMATION_TYPE,
                                  SLEQP_DUAL_ESTIMATION_TYPE_MIXED));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 

@@ -6,7 +6,7 @@
 
 SLEQP_RETCODE
 mex_hess_init(MexHess* hess,
-              SleqpParams* params,
+              SleqpSettings* settings,
               const mxArray* mex_callbacks,
               const int num_vars,
               const int num_cons)
@@ -34,8 +34,8 @@ mex_hess_init(MexHess* hess,
     SLEQP_CALL(sleqp_alloc_array(&hess->product, num_vars));
   }
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  hess->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  hess->settings = settings;
 
   hess->cons_dual = mxCreateDoubleMatrix(num_cons, 1, mxREAL);
 
@@ -155,7 +155,7 @@ hess_prod_direct(MexHess* hess,
 
   if (nrhs == 0)
   {
-    MEX_EVAL_INTO_VEC(default_args, hess->params, result);
+    MEX_EVAL_INTO_VEC(default_args, hess->settings, result);
   }
   else
   {
@@ -165,7 +165,7 @@ hess_prod_direct(MexHess* hess,
     SLEQP_CALL(prepare_args(hess, default_args, ndefault_args, rhs, nrhs));
 
     SLEQP_CALL(
-      mex_eval_into_vec(ntotal_args, hess->args, hess->params, result));
+      mex_eval_into_vec(ntotal_args, hess->args, hess->settings, result));
   }
 
   return SLEQP_OKAY;
@@ -180,7 +180,7 @@ hess_prod_matrix(MexHess* hess,
                  SleqpVec* result)
 {
   const double zero_eps
-    = sleqp_params_value(hess->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(hess->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   mxArray* lhs[] = {NULL};
 
@@ -259,7 +259,7 @@ mex_hess_free(MexHess* hess)
     mxDestroyArray(hess->hess_dir);
   }
 
-  SLEQP_CALL(sleqp_params_release(&hess->params));
+  SLEQP_CALL(sleqp_settings_release(&hess->settings));
 
   return SLEQP_OKAY;
 }

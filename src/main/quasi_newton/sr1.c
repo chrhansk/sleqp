@@ -65,8 +65,7 @@ typedef struct
 {
   int num_variables;
 
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
 
   SleqpVec* grad_diff;
   SleqpVec* step_diff;
@@ -127,8 +126,7 @@ sr1_block_create_at(SR1Block* block, int dimension, int num)
 static SLEQP_RETCODE
 sr1_create(SR1** star,
            SleqpFunc* func,
-           SleqpParams* params,
-           SleqpOptions* options)
+           SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -136,15 +134,12 @@ sr1_create(SR1** star,
 
   *data = (SR1){0};
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  data->params = params;
-
-  SLEQP_CALL(sleqp_options_capture(options));
-  data->options = options;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  data->settings = settings;
 
   const int num_iter
-    = sleqp_options_int_value(options,
-                              SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
+    = sleqp_settings_int_value(settings,
+                              SLEQP_SETTINGS_INT_NUM_QUASI_NEWTON_ITERATES);
 
   assert(num_iter > 0);
 
@@ -242,7 +237,7 @@ sr1_compute_inner_products(SR1* sr1, SR1Block* block)
 
   const int first = block->curr - block->len + 1;
 
-  const double zero_eps = sleqp_params_value(sr1->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(sr1->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   {
     int i = data_index(block, block->curr);
@@ -365,9 +360,9 @@ sr1_push(const SleqpIterate* previous_iterate,
 {
   SR1* sr1 = (SR1*)data;
 
-  const double eps = sleqp_params_value(sr1->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(sr1->settings, SLEQP_SETTINGS_REAL_EPS);
 
-  const double zero_eps = sleqp_params_value(sr1->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(sr1->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const int num_blocks = sr1->num_blocks;
 
@@ -500,7 +495,7 @@ sr1_block_hess_prod(SR1* sr1,
     return SLEQP_OKAY;
   }
 
-  const double zero_eps = sleqp_params_value(sr1->params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(sr1->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   // Note: We have already computed the required inner products / dots
 
@@ -675,8 +670,7 @@ sr1_free(void* data)
   SLEQP_CALL(sleqp_vec_free(&(sr1->step_diff)));
   SLEQP_CALL(sleqp_vec_free(&(sr1->grad_diff)));
 
-  SLEQP_CALL(sleqp_options_release(&sr1->options));
-  SLEQP_CALL(sleqp_params_release(&sr1->params));
+  SLEQP_CALL(sleqp_settings_release(&sr1->settings));
 
   sleqp_free(&sr1);
 
@@ -686,8 +680,7 @@ sr1_free(void* data)
 SLEQP_RETCODE
 sleqp_sr1_create(SleqpQuasiNewton** star,
                  SleqpFunc* func,
-                 SleqpParams* params,
-                 SleqpOptions* options)
+                 SleqpSettings* settings)
 {
   SleqpQuasiNewtonCallbacks callbacks = {
     .push      = sr1_push,
@@ -698,7 +691,7 @@ sleqp_sr1_create(SleqpQuasiNewton** star,
 
   SR1* sr1;
 
-  SLEQP_CALL(sr1_create(&sr1, func, params, options));
+  SLEQP_CALL(sr1_create(&sr1, func, settings));
 
   SLEQP_CALL(sleqp_quasi_newton_create(star, func, &callbacks, (void*)sr1));
 

@@ -388,7 +388,7 @@ spqr_data_create(SPQRData** star)
 }
 
 SLEQP_RETCODE
-sleqp_fact_spqr_create(SleqpFactQR** star, SleqpParams* params)
+sleqp_fact_spqr_create(SleqpFactQR** star, SleqpSettings* settings)
 {
   SleqpQRCallbacks callbacks = {.set_matrix      = spqr_fact_set_matrix,
                                 .solve_tri       = spqr_qr_solve_tri,
@@ -404,7 +404,7 @@ sleqp_fact_spqr_create(SleqpFactQR** star, SleqpParams* params)
   SLEQP_CALL(sleqp_qr_create(star,
                              SLEQP_FACT_SPQR_NAME,
                              SLEQP_FACT_SPQR_VERSION,
-                             params,
+                             settings,
                              &callbacks,
                              (void*)spqr_data));
 
@@ -412,7 +412,7 @@ sleqp_fact_spqr_create(SleqpFactQR** star, SleqpParams* params)
 }
 
 SLEQP_RETCODE
-sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpSettings* settings)
 {
   SleqpFactCallbacks callbacks = {.set_matrix = spqr_fact_set_matrix,
                                   .solve      = spqr_fact_solve,
@@ -426,7 +426,7 @@ sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
   SLEQP_CALL(sleqp_fact_create(star,
                                SLEQP_FACT_SPQR_NAME,
                                SLEQP_FACT_SPQR_VERSION,
-                               params,
+                               settings,
                                &callbacks,
                                SLEQP_FACT_FLAGS_NONE,
                                spqr_data));
@@ -435,9 +435,9 @@ sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
 }
 
 SLEQP_RETCODE
-sleqp_fact_qr_create_default(SleqpFactQR** star, SleqpParams* params)
+sleqp_fact_qr_create_default(SleqpFactQR** star, SleqpSettings* settings)
 {
-  SLEQP_CALL(sleqp_fact_spqr_create(star, params));
+  SLEQP_CALL(sleqp_fact_spqr_create(star, settings));
 
   return SLEQP_OKAY;
 }

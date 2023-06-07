@@ -15,7 +15,6 @@
 #include "fail.h"
 #include "log.h"
 #include "mem.h"
-#include "params.h"
 #include "sparse/pub_vec.h"
 #include "tr/tr_util.h"
 
@@ -24,7 +23,7 @@ static const double tolerance_factor = 1e-2;
 typedef struct
 {
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   double time_limit;
   int max_iter;
@@ -61,7 +60,7 @@ steihaug_solver_free(void** star)
   SLEQP_CALL(sleqp_vec_free(&solver->Bd));
   SLEQP_CALL(sleqp_vec_free(&solver->d));
 
-  SLEQP_CALL(sleqp_params_release(&solver->params));
+  SLEQP_CALL(sleqp_settings_release(&solver->settings));
   SLEQP_CALL(sleqp_problem_release(&solver->problem));
 
   sleqp_free(star);
@@ -80,7 +79,7 @@ check_projection(SleqpSteihaugSolver* solver,
 
   assert(step != sparse_cache);
 
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -100,7 +99,7 @@ check_trust_radius(SleqpSteihaugSolver* solver,
 
   assert(step != sparse_cache);
 
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -127,10 +126,10 @@ check_residuals(SleqpSteihaugSolver* solver,
                 const SleqpVec* gradient)
 {
   SleqpProblem* problem = solver->problem;
-  SleqpParams* params   = solver->params;
+  SleqpSettings* settings = solver->settings;
 
-  const double eps      = sleqp_params_value(params, SLEQP_PARAM_EPS);
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double eps      = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(
     sleqp_problem_hess_prod(problem, solver->z, multipliers, solver->Bd));
@@ -237,17 +236,17 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
   solver->max_rayleigh = 1.;
 
   const double stat_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_STAT_TOL);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
   const double rel_tol = stat_eps * tolerance_factor;
 
   SleqpProblem* problem = solver->problem;
-  SleqpParams* params   = solver->params;
+  SleqpSettings* settings   = solver->settings;
 
   *tr_dual = SLEQP_NONE;
 
-  const double eps      = sleqp_params_value(params, SLEQP_PARAM_EPS);
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double eps      = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -419,7 +418,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
     {
       SLEQP_CALL(sleqp_tr_compute_bdry_sol(solver->z,
                                            solver->d,
-                                           params,
+                                           settings,
                                            trust_radius,
                                            newton_step));
 
@@ -499,8 +498,7 @@ steihaug_solver_solve(SleqpAugJac* jacobian,
 SLEQP_RETCODE
 sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
                              SleqpProblem* problem,
-                             SleqpParams* params,
-                             SleqpOptions* options)
+                             SleqpSettings* settings)
 {
   SleqpSteihaugSolver* solver = NULL;
 
@@ -513,11 +511,11 @@ sleqp_steihaug_solver_create(SleqpTRSolver** solver_star,
   solver->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(solver->problem));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  solver->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  solver->settings = settings;
 
   solver->max_iter
-    = sleqp_options_int_value(options, SLEQP_OPTION_INT_MAX_NEWTON_ITERATIONS);
+    = sleqp_settings_int_value(settings, SLEQP_SETTINGS_INT_MAX_NEWTON_ITERATIONS);
 
   SLEQP_CALL(sleqp_vec_create_empty(&solver->d, num_variables));
   SLEQP_CALL(sleqp_vec_create_empty(&solver->Bd, num_variables));

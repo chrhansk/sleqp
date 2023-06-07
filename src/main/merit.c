@@ -6,6 +6,7 @@
 #include "log.h"
 #include "mem.h"
 #include "sparse/pub_vec.h"
+#include "settings.h"
 #include "util.h"
 
 struct SleqpMeritData
@@ -13,7 +14,7 @@ struct SleqpMeritData
   int refcount;
 
   SleqpProblem* problem;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   int cache_size;
 
@@ -26,7 +27,7 @@ struct SleqpMeritData
 SLEQP_RETCODE
 sleqp_merit_create(SleqpMerit** star,
                    SleqpProblem* problem,
-                   SleqpParams* params)
+                   SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -40,8 +41,8 @@ sleqp_merit_create(SleqpMerit** star,
   merit->problem = problem;
   SLEQP_CALL(sleqp_problem_capture(merit->problem));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  merit->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  merit->settings = settings;
 
   merit->cache_size = SLEQP_MAX(num_constraints, num_variables);
 
@@ -86,7 +87,7 @@ sleqp_merit_linear(SleqpMerit* merit,
   SleqpProblem* problem = merit->problem;
 
   const double zero_eps
-    = sleqp_params_value(merit->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(merit->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   double objective_dot = *sleqp_direction_obj_grad(direction);
 
@@ -151,7 +152,7 @@ merit_free(SleqpMerit** star)
 
   SLEQP_CALL(sleqp_vec_free(&merit->combined_cons_val));
 
-  SLEQP_CALL(sleqp_params_release(&merit->params));
+  SLEQP_CALL(sleqp_settings_release(&merit->settings));
 
   SLEQP_CALL(sleqp_problem_release(&merit->problem));
 

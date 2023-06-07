@@ -18,7 +18,7 @@ on_restoration_solver_accepted_iterate(SleqpProblemSolver* problem_solver,
   SleqpFunc* restoration_func       = sleqp_problem_func(restoration_problem);
 
   const double feas_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   SleqpVec* cons_val;
 
@@ -73,7 +73,7 @@ create_restoration_solver(SleqpSolver* solver)
   }
 
   SLEQP_CALL(sleqp_restoration_problem_create(&solver->restoration_problem,
-                                              solver->params,
+                                              solver->settings,
                                               solver->problem));
 
   const int num_variables = sleqp_problem_num_vars(solver->restoration_problem);
@@ -84,8 +84,7 @@ create_restoration_solver(SleqpSolver* solver)
   SLEQP_CALL(sleqp_problem_solver_create(&solver->restoration_problem_solver,
                                          SLEQP_SOLVER_PHASE_RESTORATION,
                                          solver->restoration_problem,
-                                         solver->params,
-                                         solver->options));
+                                         solver->settings));
 
   SLEQP_CALL(sleqp_problem_solver_add_callback(
     solver->restoration_problem_solver,

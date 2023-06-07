@@ -9,7 +9,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_gauss_newton_solver_create(SleqpEQPSolver** star,
                                  SleqpProblem* problem,
-                                 SleqpParams* params,
+                                 SleqpSettings* settings,
                                  SleqpWorkingStep* step);
 
 #endif /* SLEQP_GAUSS_NEWTON_H */

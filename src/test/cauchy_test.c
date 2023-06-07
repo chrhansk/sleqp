@@ -155,8 +155,7 @@ unconstrained_teardown()
 
 START_TEST(test_unconstrained_cauchy_direction)
 {
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpProblem* problem;
   SleqpIterate* iterate;
   SleqpVec* direction;
@@ -164,17 +163,15 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   double penalty_parameter = 1., trust_radius = 1.5;
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           linfunc,
-                                          params,
                                           linfunc_var_lb,
                                           linfunc_var_ub,
                                           linfunc_cons_lb,
-                                          linfunc_cons_ub));
+                                          linfunc_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, linfunc_x));
 
@@ -184,7 +181,7 @@ START_TEST(test_unconstrained_cauchy_direction)
   ASSERT_CALL(sleqp_vec_create(&direction, 0, 0));
 
   ASSERT_CALL(
-    sleqp_standard_cauchy_create(&cauchy_data, problem, params, options));
+    sleqp_standard_cauchy_create(&cauchy_data, problem, settings));
 
   ASSERT_CALL(sleqp_cauchy_set_iterate(cauchy_data, iterate, trust_radius));
 
@@ -213,9 +210,7 @@ START_TEST(test_unconstrained_cauchy_direction)
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }
 END_TEST
 

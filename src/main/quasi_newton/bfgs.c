@@ -73,8 +73,7 @@ typedef struct
 
   int num_variables;
 
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
 
   int num_blocks;
   BFGSBlock* blocks;
@@ -97,7 +96,7 @@ typedef struct
 static SLEQP_RETCODE
 bfgs_block_create_at(BFGSBlock* block,
                      int dimension,
-                     const SleqpParams* params,
+                     SleqpSettings* settings,
                      int num,
                      bool damped,
                      SLEQP_BFGS_SIZING sizing)
@@ -197,8 +196,7 @@ bfgs_block_free_at(BFGSBlock* block)
 static SLEQP_RETCODE
 bfgs_create(BFGS** star,
             SleqpFunc* func,
-            SleqpParams* params,
-            SleqpOptions* options)
+            SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -208,14 +206,11 @@ bfgs_create(BFGS** star,
 
   data->refcount = 1;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  data->params = params;
-
-  SLEQP_CALL(sleqp_options_capture(options));
-  data->options = options;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  data->settings = settings;
 
   const SLEQP_HESS_EVAL hessian_eval
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_HESS_EVAL);
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_HESS_EVAL);
 
   assert(hessian_eval == SLEQP_HESS_EVAL_SIMPLE_BFGS
          || hessian_eval == SLEQP_HESS_EVAL_DAMPED_BFGS);
@@ -223,11 +218,11 @@ bfgs_create(BFGS** star,
   const bool damped = (hessian_eval == SLEQP_HESS_EVAL_DAMPED_BFGS);
 
   const int num
-    = sleqp_options_int_value(options,
-                              SLEQP_OPTION_INT_NUM_QUASI_NEWTON_ITERATES);
+    = sleqp_settings_int_value(settings,
+                              SLEQP_SETTINGS_INT_NUM_QUASI_NEWTON_ITERATES);
 
   const SLEQP_BFGS_SIZING sizing
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_BFGS_SIZING);
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_BFGS_SIZING);
 
   assert(num > 0);
 
@@ -253,7 +248,7 @@ bfgs_create(BFGS** star,
 
     SLEQP_CALL(bfgs_block_create_at(data->blocks + block,
                                     block_dimension,
-                                    params,
+                                    settings,
                                     num,
                                     damped,
                                     sizing));
@@ -295,12 +290,12 @@ data_index(BFGSBlock* block, int index)
 
 static SLEQP_RETCODE
 bfgs_hess_prod_range(BFGSBlock* block,
-                     const SleqpParams* params,
+                     SleqpSettings* settings,
                      const SleqpVec* direction,
                      SleqpVec* product,
                      int final)
 {
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
   const int begin       = block->curr - block->len + 1;
 
   // Initially apply scaled identity
@@ -435,13 +430,13 @@ bfgs_compute_sizing(BFGSBlock* block, const int val)
 }
 
 static SLEQP_RETCODE
-bfgs_compute_products(BFGSBlock* block, const SleqpParams* params)
+bfgs_compute_products(BFGSBlock* block, SleqpSettings* settings)
 {
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   assert(block->len > 0);
 
@@ -467,7 +462,7 @@ bfgs_compute_products(BFGSBlock* block, const SleqpParams* params)
     SleqpVec* product         = block->prod_cache;
 
     SLEQP_CALL(
-      bfgs_hess_prod_range(block, params, direction, product, val - 1));
+      bfgs_hess_prod_range(block, settings, direction, product, val - 1));
 
     double bidir_product;
 
@@ -539,7 +534,7 @@ bfgs_compute_products(BFGSBlock* block, const SleqpParams* params)
       const int i = data_index(block, val);
 
       SLEQP_CALL(bfgs_hess_prod_range(block,
-                                      params,
+                                      settings,
                                       block->point_diffs[i],
                                       block->prod_cache,
                                       val));
@@ -555,7 +550,7 @@ bfgs_compute_products(BFGSBlock* block, const SleqpParams* params)
 
 static SLEQP_RETCODE
 bfgs_block_push(BFGSBlock* block,
-                const SleqpParams* params,
+                SleqpSettings* settings,
                 const SleqpVec* point_diff,
                 const SleqpVec* grad_diff)
 {
@@ -580,7 +575,7 @@ bfgs_block_push(BFGSBlock* block,
 
   block->curr = next;
 
-  SLEQP_CALL(bfgs_compute_products(block, params));
+  SLEQP_CALL(bfgs_compute_products(block, settings));
 
   return SLEQP_OKAY;
 }
@@ -593,9 +588,9 @@ bfgs_push(const SleqpIterate* previous_iterate,
 {
   BFGS* bfgs = (BFGS*)data;
 
-  const double eps = sleqp_params_value(bfgs->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(bfgs->settings, SLEQP_SETTINGS_REAL_EPS);
   const double zero_eps
-    = sleqp_params_value(bfgs->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(bfgs->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const int num_blocks = bfgs->num_blocks;
 
@@ -687,7 +682,7 @@ bfgs_push(const SleqpIterate* previous_iterate,
     if (!sleqp_is_zero(point_normsq, eps))
     {
       SLEQP_CALL(bfgs_block_push(block,
-                                 bfgs->params,
+                                 bfgs->settings,
                                  bfgs->block_point_diff,
                                  bfgs->block_grad_diff));
     }
@@ -764,7 +759,7 @@ bfgs_hess_prod(const SleqpVec* direction, SleqpVec* product, void* data)
       }
 
       SLEQP_CALL(bfgs_hess_prod_range(block,
-                                      bfgs->params,
+                                      bfgs->settings,
                                       bfgs->block_direction,
                                       bfgs->block_prod,
                                       block->curr));
@@ -823,9 +818,7 @@ bfgs_free(void* data)
 
   sleqp_free(&bfgs->blocks);
 
-  SLEQP_CALL(sleqp_options_release(&bfgs->options));
-
-  SLEQP_CALL(sleqp_params_release(&bfgs->params));
+  SLEQP_CALL(sleqp_settings_release(&bfgs->settings));
 
   sleqp_free(&bfgs);
 
@@ -835,8 +828,7 @@ bfgs_free(void* data)
 SLEQP_RETCODE
 sleqp_bfgs_create(SleqpQuasiNewton** star,
                   SleqpFunc* func,
-                  SleqpParams* params,
-                  SleqpOptions* options)
+                  SleqpSettings* settings)
 {
   SleqpQuasiNewtonCallbacks callbacks = {
     .push      = bfgs_push,
@@ -847,7 +839,7 @@ sleqp_bfgs_create(SleqpQuasiNewton** star,
 
   BFGS* bfgs;
 
-  SLEQP_CALL(bfgs_create(&bfgs, func, params, options));
+  SLEQP_CALL(bfgs_create(&bfgs, func, settings));
 
   SLEQP_CALL(sleqp_quasi_newton_create(star, func, &callbacks, (void*)bfgs));
 

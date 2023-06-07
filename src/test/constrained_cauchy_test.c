@@ -13,8 +13,7 @@
 #include "quadcons_fixture.h"
 #include "test_common.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpProblem* problem;
 SleqpIterate* iterate;
 SleqpCauchy* cauchy_data;
@@ -26,17 +25,15 @@ constrained_setup()
 {
   quadconsfunc_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           quadconsfunc,
-                                          params,
                                           quadconsfunc_var_lb,
                                           quadconsfunc_var_ub,
                                           quadconsfunc_cons_lb,
-                                          quadconsfunc_cons_ub));
+                                          quadconsfunc_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, quadconsfunc_x));
 
@@ -44,7 +41,7 @@ constrained_setup()
     sleqp_set_and_evaluate(problem, iterate, SLEQP_VALUE_REASON_NONE, NULL));
 
   ASSERT_CALL(
-    sleqp_standard_cauchy_create(&cauchy_data, problem, params, options));
+    sleqp_standard_cauchy_create(&cauchy_data, problem, settings));
 
   ASSERT_CALL(sleqp_vec_create(&cauchy_direction, 2, 2));
 }
@@ -92,9 +89,9 @@ START_TEST(test_dual_variable)
 
   ASSERT_CALL(sleqp_cauchy_lp_step(cauchy_data, cauchy_direction));
 
-  ASSERT_CALL(sleqp_fact_create_default(&fact, params));
+  ASSERT_CALL(sleqp_fact_create_default(&fact, settings));
 
-  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, params, fact));
+  ASSERT_CALL(sleqp_standard_aug_jac_create(&jacobian, problem, settings, fact));
 
   ASSERT_CALL(sleqp_aug_jac_set_iterate(jacobian, iterate));
 
@@ -132,9 +129,7 @@ constrained_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   quadconsfunc_teardown();
 }

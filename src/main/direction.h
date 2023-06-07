@@ -1,7 +1,6 @@
 #ifndef SLEQP_DIRECTION_H
 #define SLEQP_DIRECTION_H
 
-#include "params.h"
 #include "problem.h"
 #include "pub_iterate.h"
 #include "pub_types.h"
@@ -13,7 +12,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_direction_create(SleqpDirection** star,
                        SleqpProblem* problem,
-                       SleqpParams* params);
+                       SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

@@ -807,7 +807,7 @@ ma57_free(void** star)
 }
 
 SLEQP_RETCODE
-sleqp_fact_ma57_create(SleqpFact** star, SleqpParams* params)
+sleqp_fact_ma57_create(SleqpFact** star, SleqpSettings* settings)
 {
   SleqpFactCallbacks callbacks = {.set_matrix = ma57_set_matrix,
                                   .solve      = ma57_solve,
@@ -822,7 +822,7 @@ sleqp_fact_ma57_create(SleqpFact** star, SleqpParams* params)
   SLEQP_CALL(sleqp_fact_create(star,
                                SLEQP_FACT_MA57_NAME,
                                SLEQP_FACT_MA57_VERSION,
-                               params,
+                               settings,
                                &callbacks,
                                SLEQP_FACT_FLAGS_LOWER,
                                (void*)ma57_data));
@@ -831,9 +831,9 @@ sleqp_fact_ma57_create(SleqpFact** star, SleqpParams* params)
 }
 
 SLEQP_RETCODE
-sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpSettings* settings)
 {
-  SLEQP_CALL(sleqp_fact_ma57_create(star, params));
+  SLEQP_CALL(sleqp_fact_ma57_create(star, settings));
 
   return SLEQP_OKAY;
 }

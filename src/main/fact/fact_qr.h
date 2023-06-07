@@ -2,7 +2,8 @@
 #define SLEQP_FACT_QR_H
 
 #include "fact_qr_types.h"
-#include "params.h"
+#include "pub_settings.h"
+#include "settings.h"
 
 /**
  * Create data structure modeling a (full) QR
@@ -20,7 +21,7 @@ SLEQP_RETCODE
 sleqp_qr_create(SleqpFactQR** star,
                 const char* name,
                 const char* version,
-                SleqpParams* params,
+                SleqpSettings* settings,
                 SleqpQRCallbacks* callbacks,
                 void* fact_data);
 
@@ -89,7 +90,7 @@ sleqp_qr_release(SleqpFactQR** star);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_fact_qr_create_default(SleqpFactQR** star, SleqpParams* params);
+sleqp_fact_qr_create_default(SleqpFactQR** star, SleqpSettings* settings);
 
 #endif
 

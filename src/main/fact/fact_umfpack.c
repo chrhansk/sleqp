@@ -286,7 +286,7 @@ umfpack_data_create(UmfpackData** star)
 }
 
 SLEQP_RETCODE
-sleqp_fact_umfpack_create(SleqpFact** star, SleqpParams* params)
+sleqp_fact_umfpack_create(SleqpFact** star, SleqpSettings* settings)
 {
 
   SleqpFactCallbacks callbacks = {.set_matrix = umfpack_fact_set_matrix,
@@ -302,7 +302,7 @@ sleqp_fact_umfpack_create(SleqpFact** star, SleqpParams* params)
   SLEQP_CALL(sleqp_fact_create(star,
                                SLEQP_FACT_UMFPACK_NAME,
                                SLEQP_FACT_UMFPACK_VERSION,
-                               params,
+                               settings,
                                &callbacks,
                                SLEQP_FACT_FLAGS_NONE,
                                (void*)umfpack_data));
@@ -311,9 +311,9 @@ sleqp_fact_umfpack_create(SleqpFact** star, SleqpParams* params)
 }
 
 SLEQP_RETCODE
-sleqp_fact_create_default(SleqpFact** star, SleqpParams* params)
+sleqp_fact_create_default(SleqpFact** star, SleqpSettings* settings)
 {
-  SLEQP_CALL(sleqp_fact_umfpack_create(star, params));
+  SLEQP_CALL(sleqp_fact_umfpack_create(star, settings));
 
   return SLEQP_OKAY;
 }

@@ -77,7 +77,7 @@ mex_eval_into_bool(int nrhs, mxArray** rhs, bool* value)
 }
 
 SLEQP_RETCODE
-mex_eval_into_vec(int nrhs, mxArray** rhs, SleqpParams* params, SleqpVec* vec)
+mex_eval_into_vec(int nrhs, mxArray** rhs, SleqpSettings* settings, SleqpVec* vec)
 {
   mxArray* lhs[] = {NULL};
 
@@ -87,15 +87,15 @@ mex_eval_into_vec(int nrhs, mxArray** rhs, SleqpParams* params, SleqpVec* vec)
                                  rhs,
                                  MATLAB_FUNC_FEVAL));
 
-  SLEQP_CALL(mex_array_to_vec(*lhs, params, vec));
+  SLEQP_CALL(mex_array_to_vec(*lhs, settings, vec));
 
   return SLEQP_OKAY;
 }
 
 SLEQP_RETCODE
-mex_array_to_vec(const mxArray* array, SleqpParams* params, SleqpVec* vec)
+mex_array_to_vec(const mxArray* array, SleqpSettings* settings, SleqpVec* vec)
 {
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   MEX_EXPECT_DOUBLE(array);
   MEX_EXPECT_NUM_ELEMENTS(array, vec->dim);
@@ -153,7 +153,7 @@ array_to_sparse_matrix(const mxArray* array, SleqpMat* matrix)
 SLEQP_RETCODE
 mex_eval_into_sparse_matrix(int nrhs,
                             mxArray** rhs,
-                            SleqpParams* params,
+                            SleqpSettings* settings,
                             SleqpMat* matrix)
 {
   mxArray* lhs[] = {NULL};

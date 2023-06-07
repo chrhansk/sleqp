@@ -2,7 +2,7 @@
 #define SLEQP_PROBLEM_SOLVER_H
 
 #include "iterate.h"
-#include "options.h"
+#include "settings.h"
 
 #include "callback_handler.h"
 #include "deriv_check.h"
@@ -16,8 +16,7 @@ struct SleqpProblemSolver
   int refcount;
 
   SleqpProblem* problem;
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
 
   SLEQP_SOLVER_PHASE solver_phase;
 
@@ -91,8 +90,7 @@ SLEQP_RETCODE
 sleqp_problem_solver_create(SleqpProblemSolver** star,
                             SLEQP_SOLVER_PHASE solver_phase,
                             SleqpProblem* problem,
-                            SleqpParams* params,
-                            SleqpOptions* options);
+                            SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

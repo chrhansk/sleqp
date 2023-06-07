@@ -5,7 +5,7 @@
 #include "test_common.h"
 #include "zero_func.h"
 
-#include "options.h"
+#include "settings.h"
 #include "problem.h"
 #include "solver.h"
 
@@ -96,8 +96,7 @@ delay_func_hess_prod(SleqpFunc* func,
 
 SleqpFunc* func;
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 
 SleqpVec* var_lb;
 SleqpVec* var_ub;
@@ -123,9 +122,7 @@ time_limit_setup()
   ASSERT_CALL(
     sleqp_func_create(&func, &callbacks, num_variables, num_constraints, NULL));
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_vec_create_empty(&var_lb, num_variables));
   ASSERT_CALL(sleqp_vec_create_empty(&var_ub, num_variables));
@@ -135,11 +132,11 @@ time_limit_setup()
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          params,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
-                                          cons_ub));
+                                          cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_vec_create_empty(&primal, num_variables));
 }
@@ -157,9 +154,7 @@ time_limit_teardown()
   ASSERT_CALL(sleqp_vec_free(&var_ub));
   ASSERT_CALL(sleqp_vec_free(&var_lb));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_func_release(&func));
 }
@@ -171,7 +166,7 @@ START_TEST(test_solve)
   SleqpSolver* solver;
 
   ASSERT_CALL(
-    sleqp_solver_create(&solver, problem, params, options, primal, NULL));
+    sleqp_solver_create(&solver, problem, primal, NULL));
 
   ASSERT_CALL(sleqp_solver_solve(solver, SLEQP_NONE, time_limit));
 

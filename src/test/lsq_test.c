@@ -14,8 +14,7 @@
 #include "rosenbrock_fixture.h"
 #include "rosenbrock_lsq_fixture.h"
 
-SleqpOptions* options;
-SleqpParams* params;
+SleqpSettings* settings;
 
 void
 lsq_setup()
@@ -24,16 +23,13 @@ lsq_setup()
 
   rosenbrock_lsq_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 }
 
 void
 lsq_teardown()
 {
-
-  ASSERT_CALL(sleqp_options_release(&options));
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   rosenbrock_lsq_teardown();
 
@@ -45,22 +41,20 @@ START_TEST(test_unconstrained_solve)
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_lsq_func,
-                                          params,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -88,26 +82,24 @@ START_TEST(test_lm_factor)
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_params_set_value(params, SLEQP_PARAM_STAT_TOL, 1e-8));
+  ASSERT_CALL(sleqp_settings_set_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL, 1e-8));
 
   ASSERT_CALL(sleqp_lsq_func_set_lm_factor(rosenbrock_lsq_func, 1e-2));
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_lsq_func,
-                                          params,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -135,22 +127,20 @@ START_TEST(test_lsqr_solve)
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_TR_SOLVER,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_TR_SOLVER,
                                            SLEQP_TR_SOLVER_LSQR));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_lsq_func,
-                                          params,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -200,20 +190,20 @@ START_TEST(test_constrained_lsqr_solve)
   ASSERT_CALL(sleqp_vec_create(&linear_ub, 1, 1));
   ASSERT_CALL(sleqp_vec_push(linear_ub, 0, inf));
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_TR_SOLVER,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_TR_SOLVER,
                                            SLEQP_TR_SOLVER_LSQR));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_lsq_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
   ASSERT_CALL(sleqp_vec_clear(rosenbrock_initial));
   ASSERT_CALL(sleqp_vec_reserve(rosenbrock_initial, 2));
@@ -223,8 +213,6 @@ START_TEST(test_constrained_lsqr_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -267,22 +255,20 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_scaling_set_var_weight(scaling, 1, -1));
 
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_DERIV_CHECK,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_DERIV_CHECK,
                                            SLEQP_DERIV_CHECK_FIRST));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_lsq_func,
-                                          params,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   rosenbrock_initial,
                                   scaling));
 

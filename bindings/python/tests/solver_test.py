@@ -10,28 +10,18 @@ from .constrained_fixture import *
 class SolverTest(unittest.TestCase):
 
   def setUp(self):
-    self.params = sleqp.Params()
-
     self.func = ConstrainedFunc()
 
-    self.problem = sleqp.Problem(self.func,
-                                 self.params,
-                                 var_lb,
-                                 var_ub,
-                                 cons_lb,
-                                 cons_ub)
+  def get_solver(self, settings=None):
 
-  def get_solver(self, options=None, params=None):
+    problem = sleqp.Problem(self.func,
+                            var_lb,
+                            var_ub,
+                            cons_lb,
+                            cons_ub,
+                            settings)
 
-    if options is None:
-      options = sleqp.Options()
-
-    if params is None:
-      params = self.params
-
-    return sleqp.Solver(self.problem,
-                        params,
-                        options,
+    return sleqp.Solver(problem,
                         initial_sol)
 
   def test_solve(self):
@@ -46,9 +36,9 @@ class SolverTest(unittest.TestCase):
     self.assertTrue(np.allclose(expected_sol, solution.primal))
 
   def test_solve_linesearch(self):
-    options = sleqp.Options(linesearch=sleqp.LineSearch.Exact)
+    settings = sleqp.Settings(linesearch=sleqp.LineSearch.Exact)
 
-    solver = self.get_solver(options=options)
+    solver = self.get_solver(settings=settings)
 
     solver.solve(max_num_iterations=1000)
 
@@ -59,9 +49,9 @@ class SolverTest(unittest.TestCase):
     self.assertTrue(np.allclose(expected_sol, solution.primal))
 
   def test_solve_lp_duals(self):
-    options = sleqp.Options(dual_estimation_type=sleqp.DualEstimationType.LP)
+    settings = sleqp.Settings(dual_estimation_type=sleqp.DualEstimationType.LP)
 
-    solver = self.get_solver(options=options)
+    solver = self.get_solver(settings=settings)
 
     solver.solve(max_num_iterations=1000)
 
@@ -74,11 +64,9 @@ class SolverTest(unittest.TestCase):
   def test_solve_no_newton(self):
     tol = 1e-4
 
-    options = sleqp.Options(perform_newton_step=False)
-    params = sleqp.Params(stat_tol=tol)
+    settings = sleqp.Settings(stat_tol=tol, perform_newton_step=False)
 
-    solver = self.get_solver(options=options,
-                             params=params)
+    solver = self.get_solver(settings=settings)
 
     solver.solve(max_num_iterations=1000)
 
@@ -91,9 +79,9 @@ class SolverTest(unittest.TestCase):
                                 rtol=tol))
 
   def test_solve_linear(self):
-    options = sleqp.Options(use_quadratic_model=False)
+    settings = sleqp.Settings(use_quadratic_model=False)
 
-    solver = self.get_solver(options=options)
+    solver = self.get_solver(settings=settings)
 
     solver.solve(max_num_iterations=1000)
 
@@ -104,10 +92,10 @@ class SolverTest(unittest.TestCase):
     self.assertTrue(np.allclose(expected_sol, solution.primal))
 
   def test_solve_linear_no_newton(self):
-    options = sleqp.Options(perform_newton_step=False,
-                            use_quadratic_model=False)
+    settings = sleqp.Settings(perform_newton_step=False,
+                              use_quadratic_model=False)
 
-    solver = self.get_solver(options=options)
+    solver = self.get_solver(settings=settings)
 
     solver.solve(max_num_iterations=1000)
 

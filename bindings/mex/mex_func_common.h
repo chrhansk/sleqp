@@ -70,7 +70,7 @@ SLEQP_RETCODE
 mex_array_to_real(mxArray* array, double* value);
 
 SLEQP_RETCODE
-mex_array_to_vec(const mxArray* array, SleqpParams* params, SleqpVec* vec);
+mex_array_to_vec(const mxArray* array, SleqpSettings* settings, SleqpVec* vec);
 
 SLEQP_RETCODE
 mex_eval_into_real(int nrhs, mxArray** rhs, double* value);
@@ -79,12 +79,15 @@ SLEQP_RETCODE
 mex_eval_into_bool(int nrhs, mxArray** rhs, bool* value);
 
 SLEQP_RETCODE
-mex_eval_into_vec(int nrhs, mxArray** rhs, SleqpParams* params, SleqpVec* vec);
+mex_eval_into_vec(int nrhs,
+                  mxArray** rhs,
+                  SleqpSettings* settings,
+                  SleqpVec* vec);
 
 SLEQP_RETCODE
 mex_eval_into_sparse_matrix(int nrhs,
                             mxArray** rhs,
-                            SleqpParams* params,
+                            SleqpSettings* settings,
                             SleqpMat* matrix);
 
 #define MEX_EVAL_INTO_REAL(array, value)                                       \
@@ -93,11 +96,13 @@ mex_eval_into_sparse_matrix(int nrhs,
 #define MEX_EVAL_INTO_BOOL(array, value)                                       \
   SLEQP_CALL(mex_eval_into_bool(MEX_ARRAY_LEN(array), array, value))
 
-#define MEX_EVAL_INTO_VEC(array, params, vec)                                  \
-  SLEQP_CALL(mex_eval_into_vec(MEX_ARRAY_LEN(array), array, params, vec))
+#define MEX_EVAL_INTO_VEC(array, settings, vec)                                \
+  SLEQP_CALL(mex_eval_into_vec(MEX_ARRAY_LEN(array), array, settings, vec))
 
-#define MEX_EVAL_INTO_SPARSE_MATRIX(array, params, matrix)                     \
-  SLEQP_CALL(                                                                  \
-    mex_eval_into_sparse_matrix(MEX_ARRAY_LEN(array), array, params, matrix))
+#define MEX_EVAL_INTO_SPARSE_MATRIX(array, settings, matrix)                   \
+  SLEQP_CALL(mex_eval_into_sparse_matrix(MEX_ARRAY_LEN(array),                 \
+                                         array,                                \
+                                         settings,                             \
+                                         matrix))
 
 #endif /* SLEQP_MEX_FUNC_COMMON_H */

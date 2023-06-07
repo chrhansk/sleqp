@@ -109,7 +109,7 @@ zero_func_create(SleqpFunc** star, int num_variables, int num_constraints)
 
 SLEQP_RETCODE
 zero_lsq_func_create(SleqpFunc** star,
-                     SleqpParams* params,
+                     SleqpSettings* settings,
                      int num_variables,
                      int num_constraints,
                      int num_residuals)
@@ -128,7 +128,7 @@ zero_lsq_func_create(SleqpFunc** star,
                                    num_constraints,
                                    num_residuals,
                                    0.,
-                                   params,
+                                   settings,
                                    NULL));
 
   return SLEQP_OKAY;

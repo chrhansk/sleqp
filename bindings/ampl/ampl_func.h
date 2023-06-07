@@ -8,7 +8,7 @@
 SLEQP_RETCODE
 sleqp_ampl_func_create(SleqpFunc** star,
                        SleqpAmplData* ampl_data,
-                       SleqpParams* params,
+                       SleqpSettings* settings,
                        bool halt_on_error);
 
 #endif /* SLEQP_AMPL_FUNC_H */

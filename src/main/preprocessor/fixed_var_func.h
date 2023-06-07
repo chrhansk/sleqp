@@ -7,7 +7,7 @@
  **/
 
 #include "func.h"
-#include "params.h"
+#include "settings.h"
 
 SLEQP_RETCODE
 sleqp_fixed_var_func_create(SleqpFunc** star,
@@ -19,7 +19,7 @@ sleqp_fixed_var_func_create(SleqpFunc** star,
 SLEQP_RETCODE
 sleqp_fixed_var_lsq_func_create(SleqpFunc** star,
                                 SleqpFunc* func,
-                                SleqpParams* params,
+                                SleqpSettings* settings,
                                 int num_fixed,
                                 const int* fixed_indices,
                                 const double* fixed_values);

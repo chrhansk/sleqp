@@ -13,15 +13,13 @@ SLEQP_RETCODE
 sleqp_lpi_gurobi_create(SleqpLPi** lp_star,
                         int num_variables,
                         int num_constraints,
-                        SleqpParams* params,
-                        SleqpOptions* options);
+                        SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_lpi_create_default(SleqpLPi** lp_interface,
                          int num_variables,
                          int num_constraints,
-                         SleqpParams* params,
-                         SleqpOptions* options);
+                         SleqpSettings* settings);
 
 #endif /* SLEQP_LPI_GUROBI_H */

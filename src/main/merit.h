@@ -9,7 +9,6 @@
 #include "direction.h"
 #include "func.h"
 #include "iterate.h"
-#include "params.h"
 #include "working_set.h"
 
 typedef struct SleqpMeritData SleqpMerit;
@@ -17,7 +16,7 @@ typedef struct SleqpMeritData SleqpMerit;
 SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_merit_create(SleqpMerit** star,
                    SleqpProblem* problem,
-                   SleqpParams* params);
+                   SleqpSettings* params);
 
 /**
  * Computes the exact merit value at the given

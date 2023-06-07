@@ -7,7 +7,7 @@
 
 typedef struct
 {
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   // Callbacks
   struct
@@ -38,7 +38,7 @@ static const char* field_names_cons[] = {MEX_INPUT_DYN_ERROR_BOUND,
 static SLEQP_RETCODE
 create_dyn_func_data(DynFuncData** star,
                      const mxArray* mex_callbacks,
-                     SleqpParams* params,
+                     SleqpSettings* settings,
                      int num_vars,
                      int num_cons,
                      bool with_hess)
@@ -49,8 +49,8 @@ create_dyn_func_data(DynFuncData** star,
 
   *func_data = (DynFuncData){0};
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  func_data->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  func_data->settings = settings;
 
   MEX_EXPECT_STRUCT(mex_callbacks);
 
@@ -74,7 +74,7 @@ create_dyn_func_data(DynFuncData** star,
   if (with_hess)
   {
     SLEQP_CALL(mex_hess_init(&(func_data->hess),
-                             params,
+                             settings,
                              mex_callbacks,
                              num_vars,
                              num_cons));
@@ -151,7 +151,7 @@ dyn_func_eval(SleqpFunc* func,
   {
     mxArray* cons_array = lhs[1];
 
-    SLEQP_CALL(mex_array_to_vec(cons_array, func_data->params, cons_val));
+    SLEQP_CALL(mex_array_to_vec(cons_array, func_data->settings, cons_val));
   }
 
   {
@@ -170,7 +170,7 @@ dyn_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.obj_grad, func_data->primal};
 
-  MEX_EVAL_INTO_VEC(rhs, func_data->params, obj_grad);
+  MEX_EVAL_INTO_VEC(rhs, func_data->settings, obj_grad);
 
   return SLEQP_OKAY;
 }
@@ -226,7 +226,7 @@ dyn_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac, void* data)
 
   mxArray* rhs[] = {func_data->callbacks.cons_jac, func_data->primal};
 
-  MEX_EVAL_INTO_SPARSE_MATRIX(rhs, func_data->params, cons_jac);
+  MEX_EVAL_INTO_SPARSE_MATRIX(rhs, func_data->settings, cons_jac);
 
   return SLEQP_OKAY;
 }
@@ -268,7 +268,7 @@ dyn_func_free(void* data)
 
   mxDestroyArray(func_data->primal);
 
-  SLEQP_CALL(sleqp_params_release(&func_data->params));
+  SLEQP_CALL(sleqp_settings_release(&func_data->settings));
 
   sleqp_free(&func_data);
 
@@ -279,7 +279,7 @@ SLEQP_RETCODE
 mex_dyn_func_create(SleqpFunc** star,
                     const mxArray* mex_x0,
                     const mxArray* mex_callbacks,
-                    SleqpParams* params,
+                    SleqpSettings* settings,
                     int num_vars,
                     int num_cons,
                     bool with_hess)
@@ -300,7 +300,7 @@ mex_dyn_func_create(SleqpFunc** star,
 
   SLEQP_CALL(create_dyn_func_data(&func_data,
                                   mex_callbacks,
-                                  params,
+                                  settings,
                                   num_vars,
                                   num_cons,
                                   with_hess));

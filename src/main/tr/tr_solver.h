@@ -8,8 +8,7 @@
  **/
 
 #include "iterate.h"
-#include "options.h"
-#include "params.h"
+#include "settings.h"
 #include "problem.h"
 
 #include "tr_types.h"

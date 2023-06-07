@@ -148,7 +148,7 @@ func_hess_prod(SleqpFunc* func,
 FuncData* func_data;
 SleqpFunc* func;
 
-SleqpParams* params;
+SleqpSettings* settings;
 SleqpProblem* problem;
 
 void
@@ -198,15 +198,15 @@ second_order_setup()
                                 num_constraints,
                                 func_data));
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          params,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
-                                          cons_ub));
+                                          cons_ub,
+                                          settings));
 }
 
 void
@@ -214,7 +214,7 @@ second_order_teardown()
 {
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_func_release(&func));
 
@@ -234,19 +234,16 @@ START_TEST(test_second_order_solve)
 {
   SleqpVec* expected_solution;
 
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpSolver* solver;
 
   ASSERT_CALL(sleqp_vec_create(&expected_solution, 2, 2));
 
   ASSERT_CALL(sleqp_vec_push(expected_solution, 0, 1.));
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
-  ASSERT_CALL(sleqp_options_create(&options));
-
-  ASSERT_CALL(sleqp_solver_create(&solver, problem, params, options, x, NULL));
+  ASSERT_CALL(sleqp_solver_create(&solver, problem, x, NULL));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
@@ -263,9 +260,7 @@ START_TEST(test_second_order_solve)
 
   ASSERT_CALL(sleqp_solver_release(&solver));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_vec_free(&expected_solution));
 }

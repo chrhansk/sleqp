@@ -9,8 +9,7 @@
 
 #include "rosenbrock_fixture.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpProblem* problem;
 SleqpSolver* solver;
 
@@ -19,22 +18,18 @@ callback_setup()
 {
   rosenbrock_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_func,
-                                          params,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   rosenbrock_initial,
                                   NULL));
 }
@@ -46,9 +41,7 @@ callback_teardown()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   rosenbrock_teardown();
 }

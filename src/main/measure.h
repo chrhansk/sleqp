@@ -18,7 +18,7 @@ extern "C"
   SLEQP_RETCODE
   sleqp_measure_create(SleqpMeasure** star,
                        SleqpProblem* problem,
-                       SleqpParams* params);
+                       SleqpSettings* settings);
 
   SLEQP_NODISCARD
   SLEQP_RETCODE

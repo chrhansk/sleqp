@@ -16,7 +16,7 @@ typedef struct SleqpLineSearch SleqpLineSearch;
  * Creates a new linesearch object.
  *
  * @param[in] problem     The underlying problem
- * @param[in] params      The problem parameters
+ * @param[in] settings    Settings
  * @param[in] merit_data  A merit-function
  *
  **/
@@ -24,7 +24,7 @@ SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_linesearch_create(SleqpLineSearch** star,
                         SleqpProblem* problem,
-                        SleqpParams* params,
+                        SleqpSettings* settings,
                         SleqpMerit* merit);
 
 /**

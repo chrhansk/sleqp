@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "mem.h"
+#include "pub_settings.h"
 
 struct SleqpFactQR
 {
@@ -24,7 +25,7 @@ SLEQP_RETCODE
 sleqp_qr_create(SleqpFactQR** star,
                 const char* name,
                 const char* version,
-                SleqpParams* params,
+                SleqpSettings* settings,
                 SleqpQRCallbacks* callbacks,
                 void* fact_data)
 {

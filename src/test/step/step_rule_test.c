@@ -12,31 +12,26 @@
 void
 test_step_rule(SLEQP_STEP_RULE step_rule)
 {
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
-  ASSERT_CALL(sleqp_options_create(&options));
-
-  ASSERT_CALL(sleqp_options_set_enum_value(options,
-                                           SLEQP_OPTION_ENUM_STEP_RULE,
+  ASSERT_CALL(sleqp_settings_set_enum_value(settings,
+                                           SLEQP_SETTINGS_ENUM_STEP_RULE,
                                            step_rule));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           log_rosenbrock_func,
-                                          params,
                                           log_rosenbrock_var_lb,
                                           log_rosenbrock_var_ub,
                                           log_rosenbrock_cons_lb,
-                                          log_rosenbrock_cons_ub));
+                                          log_rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   log_rosenbrock_initial,
                                   NULL));
 
@@ -56,9 +51,7 @@ test_step_rule(SLEQP_STEP_RULE step_rule)
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 }
 
 START_TEST(test_direct)

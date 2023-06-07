@@ -3,7 +3,7 @@
 
 #include "cmp.h"
 #include "mem.h"
-#include "options.h"
+#include "settings.h"
 #include "problem.h"
 #include "solver.h"
 #include "working_set.h"
@@ -16,7 +16,7 @@
 static const int num_linear    = 1;
 static const int num_variables = 2;
 
-SleqpParams* params;
+SleqpSettings* settings;
 
 SleqpVec* linear_lb;
 SleqpVec* linear_ub;
@@ -28,7 +28,7 @@ setup()
 {
   rosenbrock_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_vec_create_full(&linear_lb, num_linear));
   ASSERT_CALL(sleqp_vec_create_full(&linear_ub, num_linear));
@@ -41,7 +41,7 @@ teardown()
 {
   sleqp_free(&cache);
 
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_vec_free(&linear_ub));
   ASSERT_CALL(sleqp_vec_free(&linear_lb));
@@ -59,16 +59,16 @@ START_TEST(test_single_empty_row)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -106,8 +106,8 @@ START_TEST(test_fixed_var_linear_trans)
 
   const int linear_nnz = 2;
 
-  const double eps      = sleqp_params_value(params, SLEQP_PARAM_EPS);
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double eps      = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const double inf = sleqp_infinity();
 
@@ -138,16 +138,16 @@ START_TEST(test_fixed_var_linear_trans)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -189,7 +189,7 @@ START_TEST(test_positive_bound_row)
   SleqpPreprocessor* preprocessor;
   SleqpProblem* problem;
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(sleqp_vec_push(linear_lb, 0, 1.));
 
@@ -205,16 +205,16 @@ START_TEST(test_positive_bound_row)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -248,7 +248,7 @@ START_TEST(test_negative_bound_row)
 
   const int num_linear = 1;
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(sleqp_vec_push(linear_lb, 0, 1.));
 
@@ -264,16 +264,16 @@ START_TEST(test_negative_bound_row)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -314,7 +314,7 @@ START_TEST(test_forcing_constraint)
   const int num_linear = 1;
 
   const double inf      = sleqp_infinity();
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   double var_lb[] = {-inf, -inf};
 
@@ -342,16 +342,16 @@ START_TEST(test_forcing_constraint)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -377,7 +377,7 @@ START_TEST(test_dominated_row)
   SleqpPreprocessor* preprocessor;
   SleqpProblem* problem;
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const int num_linear = 1;
 
@@ -405,16 +405,16 @@ START_TEST(test_dominated_row)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -439,13 +439,13 @@ START_TEST(test_failure)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_func,
-                                          params,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_FAILURE);
@@ -477,16 +477,16 @@ START_TEST(test_simple_infeasibility)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_INFEASIBLE);
@@ -515,13 +515,13 @@ START_TEST(test_fixed_var)
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_func,
-                                          params,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   SleqpProblem* transformed_problem
     = sleqp_preprocessor_transformed_problem(preprocessor);
@@ -539,34 +539,34 @@ START_TEST(test_solve)
   SleqpMat* linear_coeffs;
   SleqpPreprocessor* preprocessor;
   SleqpProblem* problem;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpSolver* solver;
 
   SleqpIterate* transformed_solution_iterate;
   SleqpIterate* original_solution_iterate;
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  ASSERT_CALL(sleqp_settings_create(&settings));
+
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(sleqp_mat_create(&linear_coeffs, num_linear, num_variables, 0));
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
   ASSERT_CALL(sleqp_iterate_create(&original_solution_iterate,
                                    problem,
                                    rosenbrock_initial));
 
-  ASSERT_CALL(sleqp_options_create(&options));
-
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -576,8 +576,6 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   transformed_problem,
-                                  params,
-                                  options,
                                   rosenbrock_initial,
                                   NULL));
 
@@ -609,7 +607,7 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_preprocessor_release(&preprocessor));
 
-  ASSERT_CALL(sleqp_options_release(&options));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_iterate_release(&original_solution_iterate));
 
@@ -628,7 +626,7 @@ START_TEST(test_restore_positive_bound_row)
   SleqpIterate* original_iterate;
   SleqpIterate* transformed_iterate;
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(sleqp_vec_push(linear_lb, 0, 1.));
 
@@ -644,19 +642,19 @@ START_TEST(test_restore_positive_bound_row)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
   ASSERT_CALL(
     sleqp_iterate_create(&original_iterate, problem, rosenbrock_initial));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -731,7 +729,7 @@ START_TEST(test_restore_negative_bound_row)
   SleqpIterate* original_iterate;
   SleqpIterate* transformed_iterate;
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(sleqp_vec_push(linear_lb, 0, 1.));
 
@@ -747,19 +745,19 @@ START_TEST(test_restore_negative_bound_row)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
   ASSERT_CALL(
     sleqp_iterate_create(&original_iterate, problem, rosenbrock_initial));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -836,9 +834,9 @@ START_TEST(test_restore_forcing_constraint)
 
   const double inf = sleqp_infinity();
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   double var_lb[] = {-inf, -inf};
 
@@ -866,18 +864,18 @@ START_TEST(test_restore_forcing_constraint)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, rosenbrock_initial));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -932,22 +930,22 @@ START_TEST(test_restore_fixed_vars)
   SleqpVec* transformed_initial;
   SleqpIterate* transformed_iterate;
 
-  const double eps = sleqp_params_value(params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
 
   ASSERT_CALL(sleqp_vec_clear(rosenbrock_var_lb));
   ASSERT_CALL(sleqp_vec_clear(rosenbrock_var_ub));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           rosenbrock_func,
-                                          params,
                                           rosenbrock_var_lb,
                                           rosenbrock_var_ub,
                                           rosenbrock_cons_lb,
-                                          rosenbrock_cons_ub));
+                                          rosenbrock_cons_ub,
+                                          settings));
 
   ASSERT_CALL(sleqp_iterate_create(&iterate, problem, rosenbrock_initial));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);
@@ -1000,7 +998,7 @@ START_TEST(test_remove_bounds)
   const int num_linear = 1;
 
   const double inf      = sleqp_infinity();
-  const double zero_eps = sleqp_params_value(params, SLEQP_PARAM_ZERO_EPS);
+  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   double var_lb[] = {0., 0.};
 
@@ -1028,16 +1026,16 @@ START_TEST(test_remove_bounds)
 
   ASSERT_CALL(sleqp_problem_create(&problem,
                                    rosenbrock_func,
-                                   params,
                                    rosenbrock_var_lb,
                                    rosenbrock_var_ub,
                                    rosenbrock_cons_lb,
                                    rosenbrock_cons_ub,
                                    linear_coeffs,
                                    linear_lb,
-                                   linear_ub));
+                                   linear_ub,
+                                   settings));
 
-  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, params));
+  ASSERT_CALL(sleqp_preprocessor_create(&preprocessor, problem, settings));
 
   ck_assert_int_eq(sleqp_preprocessor_result(preprocessor),
                    SLEQP_PREPROCESSING_RESULT_SUCCESS);

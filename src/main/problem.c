@@ -6,6 +6,8 @@
 #include "error.h"
 #include "fail.h"
 #include "mem.h"
+#include "pub_settings.h"
+#include "settings.h"
 
 #include "sparse/mat.h"
 #include "sparse/pub_mat.h"
@@ -15,7 +17,7 @@ typedef struct SleqpProblem
   int refcount;
 
   SleqpFunc* func;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpVec* var_lb;
   SleqpVec* var_ub;
@@ -213,11 +215,11 @@ stack_bounds(SleqpProblem* problem)
 static SLEQP_RETCODE
 problem_create(SleqpProblem** star,
                SleqpFunc* func,
-               SleqpParams* params,
                const SleqpVec* var_lb,
                const SleqpVec* var_ub,
                const SleqpVec* general_lb,
-               const SleqpVec* general_ub)
+               const SleqpVec* general_ub,
+               SleqpSettings* settings)
 {
   const int num_general   = sleqp_func_num_cons(func);
   const int num_variables = sleqp_func_num_vars(func);
@@ -242,8 +244,15 @@ problem_create(SleqpProblem** star,
   problem->func = func;
   SLEQP_CALL(sleqp_func_capture(problem->func));
 
-  problem->params = params;
-  SLEQP_CALL(sleqp_params_capture(problem->params));
+  if(settings)
+  {
+    problem->settings = settings;
+    SLEQP_CALL(sleqp_settings_capture(problem->settings));
+  }
+  else
+  {
+    SLEQP_CALL(sleqp_settings_create(&problem->settings));
+  }
 
   SLEQP_CALL(
     sleqp_mat_create(&problem->linear_coeffs, 0, problem->num_variables, 0));
@@ -264,14 +273,14 @@ problem_create(SleqpProblem** star,
 SLEQP_RETCODE
 sleqp_problem_create_simple(SleqpProblem** star,
                             SleqpFunc* func,
-                            SleqpParams* params,
                             const SleqpVec* var_lb,
                             const SleqpVec* var_ub,
                             const SleqpVec* general_lb,
-                            const SleqpVec* general_ub)
+                            const SleqpVec* general_ub,
+                            SleqpSettings* settings)
 {
   SLEQP_CALL(
-    problem_create(star, func, params, var_lb, var_ub, general_lb, general_ub));
+    problem_create(star, func, var_lb, var_ub, general_lb, general_ub, settings));
 
   SleqpProblem* problem = *star;
 
@@ -283,17 +292,17 @@ sleqp_problem_create_simple(SleqpProblem** star,
 SLEQP_RETCODE
 sleqp_problem_create(SleqpProblem** star,
                      SleqpFunc* func,
-                     SleqpParams* params,
                      const SleqpVec* var_lb,
                      const SleqpVec* var_ub,
                      const SleqpVec* general_lb,
                      const SleqpVec* general_ub,
                      const SleqpMat* linear_coeffs,
                      const SleqpVec* linear_lb,
-                     const SleqpVec* linear_ub)
+                     const SleqpVec* linear_ub,
+                     SleqpSettings* settings)
 {
   SLEQP_CALL(
-    problem_create(star, func, params, var_lb, var_ub, general_lb, general_ub));
+    problem_create(star, func, var_lb, var_ub, general_lb, general_ub, settings));
 
   SleqpProblem* problem = *star;
 
@@ -350,6 +359,12 @@ sleqp_problem_create(SleqpProblem** star,
   SLEQP_CALL(stack_bounds(problem));
 
   return SLEQP_OKAY;
+}
+
+SleqpSettings*
+sleqp_problem_settings(SleqpProblem* problem)
+{
+  return problem->settings;
 }
 
 bool
@@ -535,7 +550,7 @@ SLEQP_RETCODE
 sleqp_problem_cons_val(SleqpProblem* problem, SleqpVec* cons_val)
 {
   const double zero_eps
-    = sleqp_params_value(problem->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(problem->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   if (problem->num_linear_constraints == 0)
   {
@@ -724,7 +739,7 @@ problem_free(SleqpProblem** star)
   SLEQP_CALL(sleqp_vec_free(&problem->var_ub));
   SLEQP_CALL(sleqp_vec_free(&problem->var_lb));
 
-  SLEQP_CALL(sleqp_params_release(&problem->params));
+  SLEQP_CALL(sleqp_settings_release(&problem->settings));
 
   SLEQP_CALL(sleqp_func_release(&problem->func));
 

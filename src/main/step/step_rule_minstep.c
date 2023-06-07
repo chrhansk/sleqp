@@ -7,7 +7,7 @@
 
 typedef struct
 {
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   bool init;
 
@@ -106,7 +106,7 @@ step_rule_minstep_apply(double iterate_merit,
     = SLEQP_MAX(current_reduction_ratio, historic_reduction_ratio);
 
   const double accepted_reduction
-    = sleqp_params_value(step_rule->params, SLEQP_PARAM_ACCEPTED_REDUCTION);
+    = sleqp_settings_real_value(step_rule->settings, SLEQP_SETTINGS_REAL_ACCEPTED_REDUCTION);
 
   *accept_step = (*reduction_ratio >= accepted_reduction);
 
@@ -180,7 +180,7 @@ step_rule_minstep_free(void* step_data)
 {
   StepRule* step_rule = (StepRule*)step_data;
 
-  SLEQP_CALL(sleqp_params_release(&step_rule->params));
+  SLEQP_CALL(sleqp_settings_release(&step_rule->settings));
 
   sleqp_free(&step_rule);
 
@@ -190,7 +190,7 @@ step_rule_minstep_free(void* step_data)
 SLEQP_RETCODE
 sleqp_step_rule_minstep_create(SleqpStepRule** star,
                                SleqpProblem* problem,
-                               SleqpParams* params,
+                               SleqpSettings* settings,
                                int step_count)
 {
   assert(step_count > 0);
@@ -203,15 +203,15 @@ sleqp_step_rule_minstep_create(SleqpStepRule** star,
 
   SLEQP_CALL(sleqp_malloc(&step_rule));
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  step_rule->params = params;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  step_rule->settings = settings;
 
   step_rule->init           = false;
   step_rule->max_step_count = step_count;
 
   SLEQP_CALL(sleqp_step_rule_create(star,
                                     problem,
-                                    params,
+                                    settings,
                                     &callbacks,
                                     (void*)step_rule));
 

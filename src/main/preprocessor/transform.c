@@ -20,7 +20,7 @@ struct SleqpTransformation
   SleqpPreprocessingState* preprocessing_state;
   SleqpProblem* original_problem;
 
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   SleqpVec* transformed_var_lb;
   SleqpVec* transformed_var_ub;
@@ -48,7 +48,7 @@ struct SleqpTransformation
 SLEQP_RETCODE
 sleqp_transformation_create(SleqpTransformation** star,
                             SleqpPreprocessingState* preprocessing_state,
-                            SleqpParams* params)
+                            SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -63,8 +63,8 @@ sleqp_transformation_create(SleqpTransformation** star,
   transformation->original_problem = problem;
   SLEQP_CALL(sleqp_problem_capture(transformation->original_problem));
 
-  transformation->params = params;
-  SLEQP_CALL(sleqp_params_capture(transformation->params));
+  transformation->settings = settings;
+  SLEQP_CALL(sleqp_settings_capture(transformation->settings));
 
   transformation->preprocessing_state = preprocessing_state;
   SLEQP_CALL(
@@ -194,7 +194,7 @@ create_transformed_func(SleqpTransformation* transformation, SleqpFunc** star)
     case SLEQP_FUNC_TYPE_LSQ:
       SLEQP_CALL(sleqp_fixed_var_lsq_func_create(star,
                                                  func,
-                                                 transformation->params,
+                                                 transformation->settings,
                                                  num_fixed_vars,
                                                  fixed_var_indices,
                                                  fixed_var_values));
@@ -298,7 +298,7 @@ create_transformed_var_lb(SleqpTransformation* transformation)
   const int num_variables = sleqp_problem_num_vars(problem);
 
   const double zero_eps
-    = sleqp_params_value(transformation->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(transformation->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const double inf = sleqp_infinity();
 
@@ -369,7 +369,7 @@ create_transformed_var_ub(SleqpTransformation* transformation)
   const int num_variables = sleqp_problem_num_vars(problem);
 
   const double zero_eps
-    = sleqp_params_value(transformation->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(transformation->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const double inf = sleqp_infinity();
 
@@ -444,7 +444,7 @@ transform_linear_constraints(SleqpTransformation* transformation)
   const int num_linear = sleqp_problem_num_lin_cons(problem);
 
   const double zero_eps
-    = sleqp_params_value(transformation->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(transformation->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SleqpPreprocessingState* preprocessing_state
     = transformation->preprocessing_state;
@@ -588,14 +588,14 @@ sleqp_transformation_create_transformed_problem(
 
   SLEQP_CALL(sleqp_problem_create(star,
                                   transformation->transformed_func,
-                                  transformation->params,
                                   transformation->transformed_var_lb,
                                   transformation->transformed_var_ub,
                                   sleqp_problem_general_lb(problem),
                                   sleqp_problem_general_ub(problem),
                                   transformation->transformed_linear_coeffs,
                                   transformation->transformed_linear_lb,
-                                  transformation->transformed_linear_ub));
+                                  transformation->transformed_linear_ub,
+                                  transformation->settings));
 
   {
     SleqpProblem* transformed_problem = *star;
@@ -649,7 +649,7 @@ transformation_free(SleqpTransformation** star)
 
   SLEQP_CALL(
     sleqp_preprocessing_state_release(&transformation->preprocessing_state));
-  SLEQP_CALL(sleqp_params_release(&transformation->params));
+  SLEQP_CALL(sleqp_settings_release(&transformation->settings));
   SLEQP_CALL(sleqp_problem_release(&transformation->original_problem));
 
   sleqp_free(star);

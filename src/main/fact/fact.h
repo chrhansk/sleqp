@@ -2,7 +2,7 @@
 #define SLEQP_FACT_H
 
 #include "fact_types.h"
-#include "params.h"
+#include "pub_settings.h"
 #include "timer.h"
 #include "types.h"
 
@@ -23,7 +23,7 @@ SLEQP_RETCODE
 sleqp_fact_create(SleqpFact** star,
                   const char* name,
                   const char* version,
-                  SleqpParams* params,
+                  SleqpSettings* settings,
                   SleqpFactCallbacks* callbacks,
                   SLEQP_FACT_FLAGS flags,
                   void* fact_data);
@@ -43,7 +43,7 @@ sleqp_fact_flags(SleqpFact* factorization);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
-sleqp_fact_create_default(SleqpFact** star, SleqpParams* params);
+sleqp_fact_create_default(SleqpFact** star, SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE

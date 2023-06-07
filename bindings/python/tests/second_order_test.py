@@ -45,14 +45,9 @@ class SecondOrderTest(unittest.TestCase):
     cons_lb = np.array([0.])
     cons_ub = np.array([0.])
 
-    self.params = sleqp.Params()
-
-    self.options = sleqp.Options()
-
     func = Func()
 
     problem = sleqp.Problem(func,
-                            self.params,
                             var_lb,
                             var_ub,
                             cons_lb,
@@ -64,8 +59,6 @@ class SecondOrderTest(unittest.TestCase):
                                  np.sin(theta)])
 
     self.solver = sleqp.Solver(problem,
-                               self.params,
-                               self.options,
                                self.initial_sol)
 
     self.expected_sol = np.array([1., 0.])

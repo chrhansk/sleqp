@@ -1,4 +1,5 @@
 #include "ampl_keywords.h"
+#include "sleqp/pub_settings.h"
 
 #include <string.h>
 
@@ -6,8 +7,7 @@ typedef struct
 {
   union
   {
-    SleqpOptions* options;
-    SleqpParams* params;
+    SleqpSettings* settings;
     SleqpAmplKeywords* keywords;
   } data;
 
@@ -30,17 +30,16 @@ enum
 typedef enum
 {
   POS_ENUM          = 0,
-  POS_INT           = SLEQP_NUM_ENUM_OPTIONS,
-  POS_BOOL          = POS_INT + SLEQP_NUM_INT_OPTIONS,
-  POS_PAR           = POS_BOOL + SLEQP_NUM_BOOL_OPTIONS,
-  POS_EXTRA         = POS_PAR + SLEQP_NUM_PARAMS,
+  POS_INT           = SLEQP_NUM_ENUM_SETTINGS,
+  POS_BOOL          = POS_INT + SLEQP_NUM_INT_SETTINGS,
+  POS_PAR           = POS_BOOL + SLEQP_NUM_BOOL_SETTINGS,
+  POS_EXTRA         = POS_PAR + SLEQP_NUM_REAL_SETTINGS,
   AMPL_NUM_KEYWORDS = POS_EXTRA + NUM_EXTRA
 } AMPL_KEYWORDS;
 
 struct SleqpAmplKeywords
 {
-  SleqpOptions* options;
-  SleqpParams* params;
+  SleqpSettings* settings;
 
   CallbackData callback_data[AMPL_NUM_KEYWORDS];
   keyword keywds[AMPL_NUM_KEYWORDS];
@@ -61,9 +60,9 @@ kwdfunc_enum(Option_Info* oi, keyword* kw, char* value)
   char* retval = I_val(oi, kw, value);
 
   SLEQP_RETCODE retcode
-    = sleqp_options_set_enum_value(callback_data->data.options,
-                                   callback_data->index,
-                                   int_val);
+    = sleqp_settings_set_enum_value(callback_data->data.settings,
+                                    callback_data->index,
+                                    int_val);
 
   if (retcode != SLEQP_OKAY)
   {
@@ -88,7 +87,7 @@ kwdfunc_int(Option_Info* oi, keyword* kw, char* value)
   char* retval = I_val(oi, kw, value);
 
   SLEQP_RETCODE retcode
-    = sleqp_options_set_int_value(callback_data->data.options,
+    = sleqp_settings_set_int_value(callback_data->data.settings,
                                   callback_data->index,
                                   int_val);
 
@@ -124,7 +123,7 @@ kwdfunc_bool(Option_Info* oi, keyword* kw, char* value)
   }
 
   SLEQP_RETCODE retcode
-    = sleqp_options_set_bool_value(callback_data->data.options,
+    = sleqp_settings_set_bool_value(callback_data->data.settings,
                                    callback_data->index,
                                    !!(int_val));
 
@@ -146,9 +145,9 @@ kwdfunc_param(Option_Info* oi, keyword* kw, char* value)
 
   char* retval = D_val(oi, kw, value);
 
-  SLEQP_RETCODE retcode = sleqp_params_set_value(callback_data->data.params,
-                                                 callback_data->index,
-                                                 real_val);
+  SLEQP_RETCODE retcode = sleqp_settings_set_real_value(callback_data->data.settings,
+                                                        callback_data->index,
+                                                        real_val);
 
   if (retcode != SLEQP_OKAY)
   {
@@ -281,8 +280,7 @@ compare_kwds(const void* first, const void* second)
 
 static SLEQP_RETCODE
 keywords_fill(SleqpAmplKeywords* sleqp_keywords,
-              SleqpOptions* options,
-              SleqpParams* params)
+              SleqpSettings* settings)
 {
   CallbackData* callback_data = sleqp_keywords->callback_data;
 
@@ -292,56 +290,56 @@ keywords_fill(SleqpAmplKeywords* sleqp_keywords,
 
   for (; pos < POS_INT; ++pos)
   {
-    SLEQP_OPTION_ENUM option_value = pos;
+    SLEQP_SETTINGS_ENUM option_value = pos;
 
     callback_data[pos]
-      = (CallbackData){.data.options = options, .index = option_value};
+      = (CallbackData){.data.settings = settings, .index = option_value};
 
     kwds[pos]
-      = (keyword){.name = strdup(sleqp_options_enum_name(option_value)),
+      = (keyword){.name = strdup(sleqp_settings_enum_name(option_value)),
                   .kf   = kwdfunc_enum,
                   .info = callback_data + pos,
-                  .desc = strdup(sleqp_options_enum_desc(option_value))};
+                  .desc = strdup(sleqp_settings_enum_desc(option_value))};
   }
 
   for (; pos < POS_BOOL; ++pos)
   {
-    SLEQP_OPTION_INT option_value = pos - POS_INT;
+    SLEQP_SETTINGS_INT option_value = pos - POS_INT;
 
     callback_data[pos]
-      = (CallbackData){.data.options = options, .index = option_value};
+      = (CallbackData){.data.settings = settings, .index = option_value};
 
-    kwds[pos] = (keyword){.name = strdup(sleqp_options_int_name(option_value)),
+    kwds[pos] = (keyword){.name = strdup(sleqp_settings_int_name(option_value)),
                           .kf   = kwdfunc_int,
                           .info = callback_data + pos,
-                          .desc = strdup(sleqp_options_int_desc(option_value))};
+                          .desc = strdup(sleqp_settings_int_desc(option_value))};
   }
 
   for (; pos < POS_PAR; ++pos)
   {
-    SLEQP_OPTION_BOOL option_value = pos - POS_BOOL;
+    SLEQP_SETTINGS_BOOL option_value = pos - POS_BOOL;
 
     callback_data[pos]
-      = (CallbackData){.data.options = options, .index = option_value};
+      = (CallbackData){.data.settings = settings, .index = option_value};
 
     kwds[pos]
-      = (keyword){.name = strdup(sleqp_options_bool_name(option_value)),
+      = (keyword){.name = strdup(sleqp_settings_bool_name(option_value)),
                   .kf   = kwdfunc_bool,
                   .info = callback_data + pos,
-                  .desc = strdup(sleqp_options_bool_desc(option_value))};
+                  .desc = strdup(sleqp_settings_bool_desc(option_value))};
   }
 
   for (; pos < POS_EXTRA; ++pos)
   {
-    SLEQP_PARAM param_value = pos - POS_PAR;
+    SLEQP_SETTINGS_REAL real_value = pos - POS_PAR;
 
     callback_data[pos]
-      = (CallbackData){.data.params = params, .index = param_value};
+      = (CallbackData){.data.settings = settings, .index = real_value};
 
-    kwds[pos] = (keyword){.name = strdup(sleqp_params_name(param_value)),
+    kwds[pos] = (keyword){.name = strdup(sleqp_settings_real_name(real_value)),
                           .kf   = kwdfunc_param,
                           .info = callback_data + pos,
-                          .desc = strdup(sleqp_params_desc(param_value))};
+                          .desc = strdup(sleqp_settings_real_desc(real_value))};
   }
 
   for (pos = POS_EXTRA; pos < AMPL_NUM_KEYWORDS; ++pos)
@@ -426,8 +424,7 @@ keywords_fill(SleqpAmplKeywords* sleqp_keywords,
 
 SLEQP_RETCODE
 sleqp_ampl_keywords_create(SleqpAmplKeywords** star,
-                           SleqpOptions* options,
-                           SleqpParams* params)
+                           SleqpSettings* settings)
 {
   SLEQP_CALL(sleqp_malloc(star));
 
@@ -439,13 +436,10 @@ sleqp_ampl_keywords_create(SleqpAmplKeywords** star,
   ampl_keywords->iteration_limit = SLEQP_NONE;
   ampl_keywords->halt_on_error   = false;
 
-  SLEQP_CALL(sleqp_options_capture(options));
-  ampl_keywords->options = options;
+  SLEQP_CALL(sleqp_settings_capture(settings));
+  ampl_keywords->settings = settings;
 
-  SLEQP_CALL(sleqp_params_capture(params));
-  ampl_keywords->params = params;
-
-  SLEQP_CALL(keywords_fill(ampl_keywords, options, params));
+  SLEQP_CALL(keywords_fill(ampl_keywords, settings));
 
   return SLEQP_OKAY;
 }
@@ -490,9 +484,7 @@ sleqp_ampl_keywords_free(SleqpAmplKeywords** star)
     return SLEQP_OKAY;
   }
 
-  SLEQP_CALL(sleqp_params_release(&sleqp_keywords->params));
-
-  SLEQP_CALL(sleqp_options_release(&sleqp_keywords->options));
+  SLEQP_CALL(sleqp_settings_release(&sleqp_keywords->settings));
 
   keyword* kwds = sleqp_keywords->keywds;
 

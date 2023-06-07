@@ -35,25 +35,21 @@ solve_problem()
                     &initial,
                     &opt);
 
-  SleqpParams* params;
-  SleqpOptions* options;
+  SleqpSettings* settings;
   SleqpProblem* problem;
   SleqpSolver* solver;
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           func,
-                                          params,
                                           var_lb,
                                           var_ub,
                                           cons_lb,
-                                          cons_ub));
+                                          cons_ub,
+                                          settings));
 
-  ASSERT_CALL(
-    sleqp_solver_create(&solver, problem, params, options, initial, NULL));
+  ASSERT_CALL(sleqp_solver_create(&solver, problem, initial, NULL));
 
   // 100 iterations should be plenty...
   ASSERT_CALL(sleqp_solver_solve(solver, 100, -1));
@@ -62,9 +58,7 @@ solve_problem()
 
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   ASSERT_CALL(sleqp_vec_free(&opt));
   ASSERT_CALL(sleqp_vec_free(&initial));

@@ -12,13 +12,13 @@ sleqp_cutest_cons_func_create(SleqpFunc** star,
                               int num_variables,
                               int num_constraints,
                               int num_linear,
-                              SleqpParams* params);
+                              SleqpSettings* settings);
 
 SLEQP_NODISCARD
 SLEQP_RETCODE
 sleqp_cutest_cons_problem_create(SleqpProblem** star,
                                  SleqpCutestData* data,
-                                 SleqpParams* params,
+                                 SleqpSettings* settings,
                                  bool force_nonlinear);
 
 SLEQP_NODISCARD

@@ -87,8 +87,8 @@ prepare_trial_point_solver(SleqpProblemSolver* solver)
                                                   solver->penalty_parameter));
 
   const bool global_resets
-    = sleqp_options_bool_value(solver->options,
-                               SLEQP_OPTION_BOOL_GLOBAL_PENALTY_RESETS);
+    = sleqp_settings_bool_value(solver->settings,
+                               SLEQP_SETTINGS_BOOL_GLOBAL_PENALTY_RESETS);
 
   const bool many_feasible_steps
     = (solver->num_feasible_steps >= num_reset_steps);
@@ -112,7 +112,7 @@ update_feasible_steps(SleqpProblemSolver* solver)
   SleqpIterate* iterate = solver->iterate;
 
   const double feas_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   const bool is_feasible
     = sleqp_iterate_is_feasible(iterate, solver->feas_res, feas_eps);
@@ -147,11 +147,11 @@ prepare_iteration(SleqpProblemSolver* solver)
 static SLEQP_RETCODE
 check_derivative(SleqpProblemSolver* solver)
 {
-  SleqpOptions* options = solver->options;
+  SleqpSettings* settings = solver->settings;
   SleqpIterate* iterate = solver->iterate;
 
   const SLEQP_DERIV_CHECK deriv_check
-    = sleqp_options_enum_value(options, SLEQP_OPTION_ENUM_DERIV_CHECK);
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_DERIV_CHECK);
 
   SLEQP_CALL(
     sleqp_deriv_check_perform(solver->deriv_checker, iterate, deriv_check));
@@ -176,18 +176,18 @@ update_trust_radii(SleqpProblemSolver* solver,
 
   SleqpVec* trial_step = sleqp_direction_primal(trial_direction);
 
-  const SleqpOptions* options = solver->options;
+  const SleqpSettings* settings = solver->settings;
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const bool quadratic_model
-    = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_USE_QUADRATIC_MODEL);
+    = sleqp_settings_bool_value(settings, SLEQP_SETTINGS_BOOL_USE_QUADRATIC_MODEL);
 
   const bool perform_newton_step
     = quadratic_model
-      && sleqp_options_bool_value(options,
-                                  SLEQP_OPTION_BOOL_PERFORM_NEWTON_STEP);
+      && sleqp_settings_bool_value(settings,
+                                  SLEQP_SETTINGS_BOOL_PERFORM_NEWTON_STEP);
 
   const double trial_step_infnorm  = sleqp_vec_inf_norm(trial_step);
   const double cauchy_step_infnorm = sleqp_vec_inf_norm(cauchy_step);
@@ -238,7 +238,7 @@ compute_step_lengths(SleqpProblemSolver* solver)
   SleqpIterate* trial_iterate = solver->trial_iterate;
 
   const double zero_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   SLEQP_CALL(sleqp_vec_add_scaled(sleqp_iterate_primal(iterate),
                                   sleqp_iterate_primal(trial_iterate),
@@ -277,12 +277,12 @@ static bool
 check_for_unboundedness(SleqpProblemSolver* solver, SleqpIterate* iterate)
 {
   const double obj_lower
-    = sleqp_params_value(solver->params, SLEQP_PARAM_OBJ_LOWER);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_OBJ_LOWER);
 
   if (sleqp_iterate_obj_val(iterate) <= obj_lower)
   {
     const double feas_eps
-      = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
     const bool feasible
       = sleqp_iterate_is_feasible(iterate, solver->feas_res, feas_eps);
@@ -303,7 +303,7 @@ check_for_optimality(SleqpProblemSolver* solver, SleqpIterate* iterate)
 {
   // Optimality check with respect to scaled problem
   if (sleqp_iterate_is_optimal(iterate,
-                               solver->params,
+                               solver->settings,
                                solver->feas_res,
                                solver->slack_res,
                                solver->stat_res))
@@ -366,7 +366,7 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 {
   assert(solver->status == SLEQP_PROBLEM_SOLVER_STATUS_RUNNING);
 
-  const SleqpOptions* options = solver->options;
+  const SleqpSettings* settings = solver->settings;
 
   SleqpTrialPointSolver* trial_point_solver = solver->trial_point_solver;
 
@@ -380,7 +380,7 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
                             sleqp_problem_vars_lb(problem),
                             sleqp_problem_vars_ub(problem)));
 
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
   if (check_for_unboundedness(solver, iterate))
   {
@@ -501,7 +501,7 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
     reject_step   = false;
 
     const bool perform_soc
-      = sleqp_options_bool_value(options, SLEQP_OPTION_BOOL_PERFORM_SOC);
+      = sleqp_settings_bool_value(settings, SLEQP_SETTINGS_BOOL_PERFORM_SOC);
 
     if ((num_constraints > 0) && perform_soc)
     {

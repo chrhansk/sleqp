@@ -4,10 +4,8 @@
 #include "feas.h"
 #include "iterate.h"
 #include "merit.h"
-#include "params.h"
 #include "penalty.h"
 #include "pub_iterate.h"
-#include "pub_params.h"
 #include "trial_point.h"
 #include "types.h"
 
@@ -48,7 +46,7 @@ update_penalty(SleqpTrialPointSolver* solver)
   const double last_penalty_parameter = solver->penalty_parameter;
 
   const double feas_eps
-    = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
   bool is_feasible = sleqp_iterate_is_feasible(iterate,
                                                solver->feasibility_residuum,
@@ -104,8 +102,8 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
   SleqpIterate* iterate = solver->iterate;
 
   const bool enable_restoration
-    = sleqp_options_bool_value(solver->options,
-                               SLEQP_OPTION_BOOL_ENABLE_RESTORATION_PHASE);
+    = sleqp_settings_bool_value(solver->settings,
+                               SLEQP_SETTINGS_BOOL_ENABLE_RESTORATION_PHASE);
 
 #if SLEQP_DEBUG
 
@@ -141,7 +139,7 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
 
   {
     const double stat_eps
-      = sleqp_params_value(solver->params, SLEQP_PARAM_STAT_TOL);
+      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
     SLEQP_NUM_ASSERT_PARAM(stat_eps);
 
@@ -252,7 +250,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+  const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
   SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -274,7 +272,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 
     {
       const double feas_eps
-        = sleqp_params_value(solver->params, SLEQP_PARAM_FEAS_TOL);
+        = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
       bool in_working_set = false;
 
@@ -293,7 +291,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
 #endif
 
     const double zero_eps
-      = sleqp_params_value(solver->params, SLEQP_PARAM_ZERO_EPS);
+      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
     SLEQP_CALL(
       sleqp_vec_copy(solver->lp_step,
@@ -311,7 +309,7 @@ compute_cauchy_step_simple(SleqpTrialPointSolver* solver,
     {
       double merit_value = 0.;
 
-      const double eps = sleqp_params_value(solver->params, SLEQP_PARAM_EPS);
+      const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
       SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -396,8 +394,8 @@ sleqp_trial_point_solver_compute_cauchy_step(SleqpTrialPointSolver* solver,
                                              bool* full_step)
 {
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
-    = sleqp_options_enum_value(solver->options,
-                               SLEQP_OPTION_ENUM_PARAMETRIC_CAUCHY);
+    = sleqp_settings_enum_value(solver->settings,
+                               SLEQP_SETTINGS_ENUM_PARAMETRIC_CAUCHY);
 
   SleqpTimer* timer = solver->elapsed_timer;
   double time_limit = solver->time_limit;

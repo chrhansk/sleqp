@@ -11,8 +11,7 @@
 
 #include "dyn_constrained_fixture.h"
 
-SleqpParams* params;
-SleqpOptions* options;
+SleqpSettings* settings;
 SleqpProblem* problem;
 
 void
@@ -20,17 +19,15 @@ setup()
 {
   dyn_constrained_setup();
 
-  ASSERT_CALL(sleqp_params_create(&params));
-
-  ASSERT_CALL(sleqp_options_create(&options));
+  ASSERT_CALL(sleqp_settings_create(&settings));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           dyn_constrained_func,
-                                          params,
                                           constrained_var_lb,
                                           constrained_var_ub,
                                           constrained_cons_lb,
-                                          constrained_cons_ub));
+                                          constrained_cons_ub,
+                                          settings));
 }
 
 void
@@ -38,9 +35,7 @@ teardown()
 {
   ASSERT_CALL(sleqp_problem_release(&problem));
 
-  ASSERT_CALL(sleqp_options_release(&options));
-
-  ASSERT_CALL(sleqp_params_release(&params));
+  ASSERT_CALL(sleqp_settings_release(&settings));
 
   dyn_constrained_teardown();
 }
@@ -70,8 +65,6 @@ START_TEST(test_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   NULL));
 
@@ -99,8 +92,6 @@ START_TEST(test_scaled_solve)
 
   ASSERT_CALL(sleqp_solver_create(&solver,
                                   problem,
-                                  params,
-                                  options,
                                   constrained_initial,
                                   scaling));
 
