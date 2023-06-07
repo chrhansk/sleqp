@@ -76,6 +76,21 @@ print_warning(SleqpProblemSolver* solver)
   return SLEQP_OKAY;
 }
 
+static SLEQP_RETCODE
+check_derivative(SleqpProblemSolver* solver)
+{
+  SleqpSettings* settings = solver->settings;
+  SleqpIterate* iterate = solver->iterate;
+
+  const SLEQP_DERIV_CHECK deriv_check
+    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_DERIV_CHECK);
+
+  SLEQP_CALL(
+    sleqp_deriv_check_perform(solver->deriv_checker, iterate, deriv_check));
+
+  return SLEQP_OKAY;
+}
+
 SLEQP_RETCODE
 sleqp_problem_solver_solve(SleqpProblemSolver* solver,
                            int max_num_iterations,
@@ -103,6 +118,9 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
 
   // Warnings
   SLEQP_CALL(print_warning(solver));
+
+  // Derivative check
+  SLEQP_CALL(check_derivative(solver));
 
   solver->status = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
 
