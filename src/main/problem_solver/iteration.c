@@ -145,21 +145,6 @@ prepare_iteration(SleqpProblemSolver* solver)
 }
 
 static SLEQP_RETCODE
-check_derivative(SleqpProblemSolver* solver)
-{
-  SleqpSettings* settings = solver->settings;
-  SleqpIterate* iterate = solver->iterate;
-
-  const SLEQP_DERIV_CHECK deriv_check
-    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_DERIV_CHECK);
-
-  SLEQP_CALL(
-    sleqp_deriv_check_perform(solver->deriv_checker, iterate, deriv_check));
-
-  return SLEQP_OKAY;
-}
-
-static SLEQP_RETCODE
 update_trust_radii(SleqpProblemSolver* solver,
                    double reduction_ratio,
                    double trial_step_norm,
@@ -400,9 +385,6 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver)
 
   bool full_cauchy_step;
   bool reject_step = false;
-
-  // Derivative check
-  SLEQP_CALL(check_derivative(solver));
 
   if (check_for_optimality(solver, iterate))
   {
