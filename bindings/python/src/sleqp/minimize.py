@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 from scipy.optimize import OptimizeResult
 
@@ -22,9 +24,6 @@ class _MinFunc:
     self._obj_grad = None
 
   def set_value(self, v, reason):
-    if (self.x == v).all():
-      return
-
     self.x[:] = v
 
     self.objective.set_value(self.x)
@@ -82,6 +81,8 @@ def _create_result(solver):
 
   result = OptimizeResult()
 
+  result["mult_g"] = solution.cons_dual
+  result["mult_x"] = solution.vars_dual
   result["x"] = solution.primal
   result["success"] = (solver.status == sleqp.Status.Optimal)
   result["status"] = solver.status.value
@@ -107,7 +108,58 @@ def _add_solver_callback(solver, callback):
                       accepted_iterate)
 
 
-def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, constraints=None, callback=None):
+_handler = None
+_attached = False
+
+def _attach_handler():
+  global _handler, _attached
+
+  if _handler is None:
+    _handler = logging.StreamHandler()
+    _handler.setLevel(logging.INFO)
+
+  if not(_attached):
+    sleqp.logger.addHandler(_handler)
+    _attached = True
+
+
+def _detach_handler():
+  global _handler, _attached
+
+  if _handler is None:
+    return
+
+  if _attached:
+    sleqp.logger.removeHandler(_handler)
+    _attached = False
+
+
+class LogHelper:
+  def __init__(self, verbose):
+    self.verbose=verbose
+    self.old_level=None
+
+  def __enter__(self):
+    if not(self.verbose):
+      return
+
+    # Set level to at least INFO
+    if sleqp.logger.level < logging.INFO:
+      self.old_level = sleqp.logger.level
+      sleqp.logger.setLevel(logging.INFO)
+
+    _attach_handler()
+
+  def __exit__(self, exc_type, exc_value, exc_tb):
+    if self.verbose:
+      _detach_handler()
+
+    # Restore old level
+    if self.old_level is not None:
+      sleqp.logger.setLevel(self.old_level)
+
+
+def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, constraints=None, callback=None, **options):
   """
   A drop-in replacement for :func:`scipy.optimize.minimize`, minimizing a scalar function
   of one or more variables subjecting to constraints.
@@ -137,6 +189,7 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
         the algorithm execution is terminated. The signature is: ``callback(xk)``
         where ``xk`` is the current guess.
   :type callback: callable, optional
+
   :return: The optimization result
   :rtype: :class:`scipy.optimize.Optimizeresult`
   """
@@ -153,7 +206,9 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
 
   objective = create_func(fun, jac, hess, hessp)
 
-  settings = sleqp.Settings()
+  verbose = options.pop('verbose', False)
+
+  settings = sleqp.Settings(**options)
 
   if hessp is None and hess is None:
     settings.hessian_eval = sleqp.HessianEval.DampedBFGS
@@ -183,6 +238,7 @@ def minimize(fun, x0, args=(), jac=None, hess=None, hessp=None, bounds=None, con
   if callback is not None:
     _add_solver_callback(solver, callback)
 
-  solver.solve()
+  with LogHelper(verbose):
+    solver.solve()
 
   return _create_result(solver)

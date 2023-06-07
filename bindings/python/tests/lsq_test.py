@@ -66,9 +66,6 @@ class LSQTest(unittest.TestCase):
     self.var_lb = np.array([-inf, -inf])
     self.var_ub = np.array([inf, inf])
 
-    self.cons_lb = np.array([])
-    self.cons_ub = np.array([])
-
     self.initial_sol = np.array([0., 0.])
 
     self.expected_sol = np.array([1., 1.])
@@ -78,11 +75,9 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
+                               num_residuals,
                                self.var_lb,
                                self.var_ub,
-                               self.cons_lb,
-                               self.cons_ub,
-                               num_residuals,
                                regularization=1e-4)
 
     solver = sleqp.Solver(problem,
@@ -99,11 +94,9 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
+                               num_residuals,
                                self.var_lb,
-                               self.var_ub,
-                               self.cons_lb,
-                               self.cons_ub,
-                               num_residuals)
+                               self.var_ub)
 
     solver = sleqp.Solver(problem,
                           self.initial_sol)
@@ -119,11 +112,9 @@ class LSQTest(unittest.TestCase):
     func = Func()
 
     problem = sleqp.LSQProblem(func,
+                               num_residuals,
                                self.var_lb,
-                               self.var_ub,
-                               self.cons_lb,
-                               self.cons_ub,
-                               num_residuals)
+                               self.var_ub)
 
     solver = sleqp.Solver(problem,
                           self.initial_sol)

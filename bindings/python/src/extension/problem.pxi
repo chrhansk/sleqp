@@ -117,16 +117,22 @@ cdef class _Problem:
 
   @staticmethod
   cdef _Problem create(csleqp.SleqpFunc* cfunc,
-                       np.ndarray var_lb,
-                       np.ndarray var_ub,
-                       np.ndarray cons_lb,
-                       np.ndarray cons_ub,
+                       object var_lb,
+                       object var_ub,
+                       object cons_lb,
+                       object cons_ub,
                        csleqp.SleqpSettings* csettings,
                        object linear_coeffs = None,
                        np.ndarray linear_lb = None,
                        np.ndarray linear_ub = None):
 
     cdef _Problem _problem = _Problem()
+
+    var_lb = np.atleast_1d(var_lb)
+    var_ub = np.atleast_1d(var_ub)
+
+    cons_lb = np.atleast_1d(cons_lb)
+    cons_ub = np.atleast_1d(cons_ub)
 
     cdef int num_vars = var_lb.shape[0]
     cdef int num_cons = cons_lb.shape[0]
@@ -191,15 +197,15 @@ cdef class Problem:
 
   def __cinit__(self,
                 object func,
-                np.ndarray var_lb,
-                np.ndarray var_ub,
-                np.ndarray cons_lb,
-                np.ndarray cons_ub,
+                object var_lb=[],
+                object var_ub=[],
+                object cons_lb=[],
+                object cons_ub=[],
                 Settings settings=None,
                 **properties):
 
-    cdef int num_vars = var_lb.shape[0]
-    cdef int num_cons = cons_lb.shape[0]
+    cdef int num_vars = np.atleast_1d(var_lb).shape[0]
+    cdef int num_cons = np.atleast_1d(cons_lb).shape[0]
     cdef csleqp.SleqpFunc* cfunc
     cdef csleqp.SleqpSettings* csettings
 
@@ -291,16 +297,16 @@ cdef class LSQProblem:
 
   def __cinit__(self,
                 object func,
-                np.ndarray var_lb,
-                np.ndarray var_ub,
-                np.ndarray cons_lb,
-                np.ndarray cons_ub,
                 num_residuals,
+                object var_lb=[],
+                object var_ub=[],
+                object cons_lb=[],
+                object cons_ub=[],
                 Settings settings=None,
                 **properties):
 
-    cdef int num_vars = var_lb.shape[0]
-    cdef int num_cons = cons_lb.shape[0]
+    cdef int num_vars = np.atleast_1d(var_lb).shape[0]
+    cdef int num_cons = np.atleast_1d(cons_lb).shape[0]
     cdef csleqp.SleqpFunc* cfunc
     cdef csleqp.SleqpSettings* csettings
 
@@ -395,14 +401,15 @@ cdef class DynProblem:
 
   def __cinit__(self,
                 object func,
-                np.ndarray var_lb,
-                np.ndarray var_ub,
-                np.ndarray cons_lb,
-                np.ndarray cons_ub,
+                object var_lb=[],
+                object var_ub=[],
+                object cons_lb=[],
+                object cons_ub=[],
                 Settings settings=None,
                 **properties):
-    cdef int num_vars = var_lb.shape[0]
-    cdef int num_cons = cons_lb.shape[0]
+
+    cdef int num_vars = np.atleast_1d(var_lb).shape[0]
+    cdef int num_cons = np.atleast_1d(cons_lb).shape[0]
     cdef csleqp.SleqpFunc* cfunc
     cdef csleqp.SleqpSettings* csettings
 

@@ -122,14 +122,13 @@ cdef csleqp.SLEQP_RETCODE matrix_to_sleqp_sparse_matrix(object mat,
     nnz_max = csleqp.sleqp_mat_nnz_max(matrix)
 
     if nnz == nnz_max:
-      print("Matrix is full. reserving {0}".format(matrix_iter.length_bound()))
       csleqp_call(csleqp.sleqp_mat_reserve(matrix,
-                                                     matrix_iter.length_bound()))
+                                           matrix_iter.length_bound()))
 
     csleqp_call(csleqp.sleqp_mat_push(matrix,
-                                                row,
-                                                col,
-                                                data))
+                                      row,
+                                      col,
+                                      data))
 
   while last_col < csleqp.sleqp_mat_num_cols(matrix) - 1:
     last_col += 1
