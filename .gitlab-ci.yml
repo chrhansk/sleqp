@@ -1,4 +1,4 @@
-image: "moto.math.nat.tu-bs.de:5050/code/images/sleqp_builddeps:latest"
+image: $SLEQP_BUILD_IMAGE
 
 stages:
   - test
