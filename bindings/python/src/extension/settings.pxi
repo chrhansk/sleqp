@@ -29,7 +29,7 @@ class _EnumConverter:
       pass
 
     try:
-      return self.enum_type[val]
+      return self.enum_type[val].value
     except KeyError:
       raise AttributeError('Invalid attribute value \'{0}\''.format(val))
 
@@ -149,7 +149,7 @@ cdef class Settings:
     if prop.prop_type == _PropType.Integer:
       prop_val = csleqp.sleqp_settings_int_value(self.settings,
                                                  prop.value)
-    if prop.prop_type == _PropType.Real:
+    elif prop.prop_type == _PropType.Real:
       prop_val = csleqp.sleqp_settings_real_value(self.settings,
                                                   prop.value)
     elif prop.prop_type == _PropType.Enumerated:

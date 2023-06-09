@@ -21,3 +21,13 @@ class SettingsTest(unittest.TestCase):
     settings.eps = 1e-6
 
     self.assertEqual(settings.eps, 1e-6)
+
+  def test_set_enum(self):
+    settings = sleqp.Settings(deriv_check=sleqp.DerivCheck.FirstCons)
+
+    self.assertEqual(settings.deriv_check, sleqp.DerivCheck.FirstCons)
+
+  def test_set_enum_str(self):
+    settings = sleqp.Settings(deriv_check="FirstCons")
+
+    self.assertEqual(settings.deriv_check, sleqp.DerivCheck.FirstCons)
