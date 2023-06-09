@@ -24,7 +24,7 @@ include(CTest)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
-set(VERSION_FILE "${CMAKE_BINARY_DIR}/version")
+set(VERSION_FILE "${CMAKE_BINARY_DIR}/sleqp_version")
 write_file(${VERSION_FILE} "${PROJECT_VERSION}")
 
 include(CompilerOptions)

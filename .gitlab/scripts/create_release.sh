@@ -5,7 +5,7 @@ shopt -s failglob
 
 set -x
 
-VERSION_FILE="build/version"
+VERSION_FILE="build/sleqp_version"
 
 VERSION=$(< ${VERSION_FILE})
 
