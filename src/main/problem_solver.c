@@ -34,17 +34,17 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
 
   SLEQP_CALL(sleqp_measure_create(&solver->measure, problem, settings));
 
-  const int num_variables   = sleqp_problem_num_vars(problem);
-  const int num_constraints = sleqp_problem_num_cons(problem);
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
 
-  SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
-                               SLEQP_MAX(num_variables, num_constraints)));
+  SLEQP_CALL(
+    sleqp_alloc_array(&solver->dense_cache, SLEQP_MAX(num_vars, num_cons)));
 
-  SLEQP_CALL(sleqp_vec_create_empty(&solver->primal_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->primal_diff, num_vars));
 
-  SLEQP_CALL(sleqp_vec_create_empty(&solver->cons_dual_diff, num_constraints));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->cons_dual_diff, num_cons));
 
-  SLEQP_CALL(sleqp_vec_create_empty(&solver->vars_dual_diff, num_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->vars_dual_diff, num_vars));
 
   SleqpVec* var_lb = sleqp_problem_vars_lb(solver->problem);
 
@@ -60,9 +60,8 @@ sleqp_problem_solver_create(SleqpProblemSolver** star,
                                              problem,
                                              settings));
 
-  SLEQP_CALL(sleqp_step_rule_create_default(&solver->step_rule,
-                                            problem,
-                                            settings));
+  SLEQP_CALL(
+    sleqp_step_rule_create_default(&solver->step_rule, problem, settings));
 
   SLEQP_CALL(sleqp_deriv_checker_create(&solver->deriv_checker,
                                         solver->problem,
@@ -85,7 +84,7 @@ compute_initial_trust_radius(SleqpProblemSolver* solver)
 {
   const SLEQP_INITIAL_TR_CHOICE initial_tr_choice
     = sleqp_settings_enum_value(solver->settings,
-                               SLEQP_SETTINGS_ENUM_INITIAL_TR_CHOICE);
+                                SLEQP_SETTINGS_ENUM_INITIAL_TR_CHOICE);
 
   const int num_vars         = sleqp_problem_num_vars(solver->problem);
   const double sqrt_num_vars = sqrt((double)num_vars);

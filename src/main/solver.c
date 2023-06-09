@@ -12,6 +12,7 @@
 #include "iterate.h"
 #include "mem.h"
 #include "problem.h"
+#include "pub_mem.h"
 #include "pub_settings.h"
 #include "scale.h"
 
@@ -135,9 +136,8 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
 
   SleqpFunc* func = sleqp_problem_func(scaled_problem);
 
-  SLEQP_CALL(sleqp_quasi_newton_create_default(&solver->quasi_newton,
-                                               func,
-                                               settings));
+  SLEQP_CALL(
+    sleqp_quasi_newton_create_default(&solver->quasi_newton, func, settings));
 
   if (solver->quasi_newton)
   {
@@ -157,7 +157,7 @@ solver_create_problem(SleqpSolver* solver, SleqpProblem* problem)
 
   const bool enable_preprocesor
     = sleqp_settings_bool_value(solver->settings,
-                               SLEQP_SETTINGS_BOOL_ENABLE_PREPROCESSOR);
+                                SLEQP_SETTINGS_BOOL_ENABLE_PREPROCESSOR);
 
   if (enable_preprocesor)
   {
@@ -295,7 +295,11 @@ sleqp_solver_create(SleqpSolver** star,
   SLEQP_CALL(sleqp_settings_capture(settings));
   solver->settings = settings;
 
-  const int num_original_variables = sleqp_problem_num_vars(problem);
+  const int num_orig_vars = sleqp_problem_num_vars(problem);
+  const int num_orig_cons = sleqp_problem_num_cons(problem);
+
+  SLEQP_CALL(sleqp_alloc_array(&solver->dense_cache,
+                               SLEQP_MAX(num_orig_vars, num_orig_cons)));
 
   SLEQP_CALL(sleqp_timer_create(&solver->elapsed_timer));
 
@@ -309,8 +313,7 @@ sleqp_solver_create(SleqpSolver** star,
 
   const int num_variables = sleqp_problem_num_vars(solver->problem);
 
-  SLEQP_CALL(
-    sleqp_vec_create_empty(&solver->scaled_primal, num_original_variables));
+  SLEQP_CALL(sleqp_vec_create_empty(&solver->scaled_primal, num_orig_vars));
 
   SLEQP_CALL(sleqp_vec_create_empty(&solver->primal, num_variables));
 
@@ -333,9 +336,8 @@ sleqp_solver_create(SleqpSolver** star,
     on_problem_solver_performed_iteration,
     (void*)solver));
 
-  SLEQP_CALL(sleqp_polishing_create(&solver->polishing,
-                                    solver->problem,
-                                    settings));
+  SLEQP_CALL(
+    sleqp_polishing_create(&solver->polishing, solver->problem, settings));
 
   for (int i = 0; i < SLEQP_SOLVER_NUM_EVENTS; ++i)
   {
@@ -487,6 +489,8 @@ solver_free(SleqpSolver** star)
   SLEQP_CALL(sleqp_vec_free(&solver->scaled_primal));
 
   SLEQP_CALL(sleqp_scaling_release(&solver->scaling_data));
+
+  sleqp_free(&solver->dense_cache);
 
   SLEQP_CALL(sleqp_problem_release(&solver->original_problem));
 
