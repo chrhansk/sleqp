@@ -1,0 +1,12 @@
+deploy_PyPI:
+  extends:
+    - .rules:release-branch
+  dependencies:
+    - package_sdist
+  stage: deploy
+  script:
+    - python3 -m pip install twine
+    - cd $CI_PROJECT_DIR/bindings/python
+    - export TWINE_USERNAME="__token__"
+    - export TWINE_PASSWORD=$SLEQP_PYPI_UPLOAD_TOKEN
+    - python3 -m twine upload dist/sleqp-*.tar.gz

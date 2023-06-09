@@ -5,6 +5,7 @@ stages:
   - build
   - package
   - postpackage
+  - deploy
   - release
   - downstream
 
@@ -16,5 +17,6 @@ include:
   - local: /.gitlab/ci/build.gitlab-ci.yml
   - local: /.gitlab/ci/package.gitlab-ci.yml
   - local: /.gitlab/ci/postpackage.gitlab-ci.yml
+  - local: /.gitlab/ci/deploy.gitlab-ci.yml
   - local: /.gitlab/ci/release.gitlab-ci.yml
   - local: /.gitlab/ci/downstream.gitlab-ci.yml
