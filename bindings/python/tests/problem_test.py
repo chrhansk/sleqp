@@ -56,6 +56,12 @@ class ProblemTest(unittest.TestCase):
     def test_cons_ub(self):
         self.assertTrue((self.problem.cons_ub == self.cons_ub).all())
 
+    def test_settings(self):
+        self.assertIsNotNone(self.problem.settings)
+
+    def test_func(self):
+      self.assertEqual(self.problem.func, self.func)
+
     def test_invalid_cons_bounds(self):
 
         cons_lb = self.cons_lb[:]

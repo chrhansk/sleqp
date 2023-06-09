@@ -53,6 +53,8 @@ struct SleqpSolver
 
   SleqpProblem* original_problem;
 
+  double* dense_cache;
+
   SleqpScaling* scaling_data;
 
   SleqpVec* scaled_primal;

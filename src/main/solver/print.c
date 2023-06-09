@@ -1,3 +1,6 @@
+#include "problem_solver_types.h"
+#include "pub_iterate.h"
+#include "pub_problem.h"
 #include "solver.h"
 
 #include "log.h"
@@ -27,10 +30,14 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
     "reached time limit" SLEQP_FORMAT_RESET,
   };
 
+  SleqpProblemSolver* problem_solver = solver->problem_solver;
   SleqpIterate* iterate = sleqp_problem_solver_iterate(solver->problem_solver);
 
-  SleqpFunc* original_func = sleqp_problem_func(solver->original_problem);
-  SleqpFunc* func          = sleqp_problem_func(solver->problem);
+  SleqpProblem* orig_prob    = solver->original_problem;
+  SleqpFunc* orig_func       = sleqp_problem_func(solver->original_problem);
+  SleqpIterate* orig_iterate = solver->original_iterate;
+
+  SleqpFunc* func = sleqp_problem_func(solver->problem);
 
   const bool with_hessian = !(solver->quasi_newton);
 
@@ -47,48 +54,84 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
     elapsed_seconds += preprocessing_seconds;
   }
 
-  sleqp_log_info(SLEQP_FORMAT_BOLD "%30s: %s" SLEQP_FORMAT_RESET,
+  sleqp_log_info(SLEQP_FORMAT_BOLD "%40s: %s" SLEQP_FORMAT_RESET,
                  "Solution status",
                  descriptions[solver->status]);
 
   if (solver->scaling_data)
   {
-    double unscaled_violation;
 
-    SLEQP_CALL(sleqp_iterate_feasibility_residuum(solver->original_problem,
-                                                  solver->original_iterate,
-                                                  &unscaled_violation));
-
-    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
                    "Scaled objective value",
                    sleqp_iterate_obj_val(iterate));
 
-    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
-                   "Scaled violation",
-                   violation);
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Scaled feasibility residuum",
+                   problem_solver->feas_res);
 
-    sleqp_log_info("%30s:     %5.10e",
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Scaled stationarity residuum",
+                   problem_solver->stat_res);
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Scaled complementarity residuum",
+                   problem_solver->slack_res);
+
+    sleqp_log_info("%40s:     %5.10e",
                    "Original objective value",
                    sleqp_iterate_obj_val(solver->original_iterate));
 
-    sleqp_log_info("%30s:     %5.10e",
-                   "Original violation",
-                   unscaled_violation);
+    // ...
+
+    double orig_feas_fes, orig_slack_res, orig_stat_res;
+
+    SLEQP_CALL(sleqp_iterate_feasibility_residuum(orig_prob,
+                                                  orig_iterate,
+                                                  &orig_feas_fes));
+
+    SLEQP_CALL(sleqp_iterate_slackness_residuum(orig_prob,
+                                                orig_iterate,
+                                                &orig_slack_res));
+
+    SLEQP_CALL(sleqp_iterate_stationarity_residuum(orig_prob,
+                                                   orig_iterate,
+                                                   solver->dense_cache,
+                                                   &orig_stat_res));
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Original feasibility residuum",
+                   problem_solver->feas_res);
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Original stationarity residuum",
+                   problem_solver->stat_res);
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Original complementarity residuum",
+                   problem_solver->slack_res);
   }
   else
   {
-    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
                    "Objective value",
                    sleqp_iterate_obj_val(iterate));
 
-    sleqp_log_info(SLEQP_FORMAT_BOLD "%30s:     %5.10e" SLEQP_FORMAT_RESET,
-                   "Violation",
-                   violation);
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Feasibility residuum",
+                   problem_solver->feas_res);
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Stationarity residuum",
+                   problem_solver->stat_res);
+
+    sleqp_log_info(SLEQP_FORMAT_BOLD "%40s:     %5.10e" SLEQP_FORMAT_RESET,
+                   "Complementarity residuum",
+                   problem_solver->slack_res);
   }
 
-  sleqp_log_info("%30s: %5d", "Iterations", sleqp_solver_iterations(solver));
+  sleqp_log_info("%40s: %5d", "Iterations", sleqp_solver_iterations(solver));
 
-  sleqp_log_info("%30s: %8.2fs", "Solving time", elapsed_seconds);
+  sleqp_log_info("%40s: %8.2fs", "Solving time", elapsed_seconds);
 
   if (preprocessing_timer)
   {
@@ -97,46 +140,46 @@ sleqp_solver_print_stats(SleqpSolver* solver, double violation)
                                    elapsed_seconds));
   }
 
-  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_set_timer(original_func),
+  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_set_timer(orig_func),
                                  "Setting function values",
                                  elapsed_seconds));
 
-  if (sleqp_func_get_type(original_func) == SLEQP_FUNC_TYPE_LSQ)
+  if (sleqp_func_get_type(orig_func) == SLEQP_FUNC_TYPE_LSQ)
   {
-    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_residual_timer(original_func),
+    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_residual_timer(orig_func),
                                    "Residual evaluations",
                                    elapsed_seconds));
 
-    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_forward_timer(original_func),
+    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_forward_timer(orig_func),
                                    "Residual forward sweeps",
                                    elapsed_seconds));
 
-    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_adjoint_timer(original_func),
+    SLEQP_CALL(sleqp_timer_display(sleqp_lsq_func_adjoint_timer(orig_func),
                                    "Residual adjoint sweeps",
                                    elapsed_seconds));
   }
   else
   {
-    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_val_timer(original_func),
+    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_val_timer(orig_func),
                                    "Objective evaluations",
                                    elapsed_seconds));
 
-    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_grad_timer(original_func),
+    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_grad_timer(orig_func),
                                    "Gradient evaluations",
                                    elapsed_seconds));
   }
 
-  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_cons_val_timer(original_func),
+  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_cons_val_timer(orig_func),
                                  "Constraint evaluations",
                                  elapsed_seconds));
 
-  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_cons_jac_timer(original_func),
+  SLEQP_CALL(sleqp_timer_display(sleqp_func_get_cons_jac_timer(orig_func),
                                  "Jacobian evaluations",
                                  elapsed_seconds));
 
   if (with_hessian)
   {
-    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_hess_timer(original_func),
+    SLEQP_CALL(sleqp_timer_display(sleqp_func_get_hess_timer(orig_func),
                                    "Hessian products",
                                    elapsed_seconds));
   }

@@ -185,15 +185,51 @@ cdef class _Problem:
     csleqp_call(csleqp.sleqp_problem_release(&self.cproblem))
 
 
-cdef class Problem:
+cdef class BaseProblem:
   cdef dict __dict__
 
-  cdef _Problem problem
-  cdef _Func funcref
-
+  cdef object _problem
+  cdef object _func
   cdef Settings _settings
 
-  cdef object _func
+  def __init__(self, problem):
+    self._problem = problem
+
+  @property
+  def num_vars(self) -> int:
+    return self._problem.num_vars
+
+  @property
+  def num_cons(self) -> int:
+    return self._problem.num_cons
+
+  @property
+  def var_lb(self) -> np.array:
+    return self._problem.var_lb
+
+  @property
+  def var_ub(self) -> np.array:
+    return self._problem.var_ub
+
+  @property
+  def cons_lb(self) -> np.array:
+    return self._problem.cons_lb
+
+  @property
+  def cons_ub(self) -> np.array:
+    return self._problem.cons_ub
+
+  @property
+  def func(self) -> object:
+    return self._func
+
+  @property
+  def settings(self) -> object:
+    return self._settings
+
+
+cdef class Problem(BaseProblem):
+  cdef _Func funcref
 
   def __cinit__(self,
                 object func,
@@ -249,33 +285,9 @@ cdef class Problem:
     except AttributeError:
       pass
 
-  @property
-  def func(self):
-      return self._func
-
-  @property
-  def num_vars(self) -> int:
-    return self.problem.num_vars
-
-  @property
-  def num_cons(self) -> int:
-    return self.problem.num_cons
-
-  @property
-  def var_lb(self) -> np.array:
-    return self.problem.var_lb
-
-  @property
-  def var_ub(self) -> np.array:
-    return self.problem.var_ub
-
-  @property
-  def cons_lb(self) -> np.array:
-    return self.problem.cons_lb
-
-  @property
-  def cons_ub(self) -> np.array:
-    return self.problem.cons_ub
+  # Actual arguments processed in __cinit__
+  def __init__(self, *args, **kwds):
+    super().__init__(self.problem)
 
   @property
   def hess_struct(self) -> HessianStruct:
@@ -285,15 +297,8 @@ cdef class Problem:
     return self.problem
 
 
-cdef class LSQProblem:
-  cdef dict __dict__
-
-  cdef _Problem problem
+cdef class LSQProblem(BaseProblem):
   cdef _Func funcref
-
-  cdef Settings _settings
-
-  cdef object _func
 
   def __cinit__(self,
                 object func,
@@ -353,51 +358,16 @@ cdef class LSQProblem:
     except AttributeError:
       pass
 
-  @property
-  def func(self):
-      return self._func
-
-  @property
-  def num_vars(self) -> int:
-    return self.problem.num_vars
-
-  @property
-  def num_cons(self) -> int:
-    return self.problem.num_cons
-
-  @property
-  def var_lb(self) -> np.array:
-    return self.problem.var_lb
-
-  @property
-  def var_ub(self) -> np.array:
-    return self.problem.var_ub
-
-  @property
-  def cons_lb(self) -> np.array:
-    return self.problem.cons_lb
-
-  @property
-  def cons_ub(self) -> np.array:
-    return self.problem.cons_ub
-
-  @property
-  def hess_struct(self) -> HessianStruct:
-    return self.problem.hess_struct
+  # Actual arguments processed in __cinit__
+  def __init__(self, *args, **kwds):
+    super().__init__(self.problem)
 
   def _get_problem(self):
     return self.problem
 
 
-cdef class DynProblem:
-  cdef dict __dict__
-
-  cdef _Problem problem
+cdef class DynProblem(BaseProblem):
   cdef _Func funcref
-
-  cdef Settings _settings
-
-  cdef object _func
 
   def __cinit__(self,
                 object func,
@@ -452,33 +422,9 @@ cdef class DynProblem:
     except AttributeError:
       pass
 
-  @property
-  def func(self):
-      return self._func
-
-  @property
-  def num_vars(self) -> int:
-    return self.problem.num_vars
-
-  @property
-  def num_cons(self) -> int:
-    return self.problem.num_cons
-
-  @property
-  def var_lb(self) -> np.array:
-    return self.problem.var_lb
-
-  @property
-  def var_ub(self) -> np.array:
-    return self.problem.var_ub
-
-  @property
-  def cons_lb(self) -> np.array:
-    return self.problem.cons_lb
-
-  @property
-  def cons_ub(self) -> np.array:
-    return self.problem.cons_ub
+  # Actual arguments processed in __cinit__
+  def __init__(self, *args, **kwds):
+    super().__init__(self.problem)
 
   @property
   def hess_struct(self) -> HessianStruct:

@@ -264,7 +264,7 @@ sleqp_timer_display(SleqpTimer* timer,
 
   if (num_runs == 0)
   {
-    snprintf(buffer, BUF_SIZE, "%30s: %5d", description, num_runs);
+    snprintf(buffer, BUF_SIZE, "%40s: %5d", description, num_runs);
   }
   else
   {
@@ -278,7 +278,7 @@ sleqp_timer_display(SleqpTimer* timer,
     {
       snprintf(buffer,
                BUF_SIZE,
-               "%30s: %5d (%6.2f %*s%s = %6.2f%%)",
+               "%40s: %5d (%6.2f %*s%s = %6.2f%%)",
                description,
                num_runs,
                total_time,
@@ -295,7 +295,7 @@ sleqp_timer_display(SleqpTimer* timer,
 
       snprintf(buffer,
                BUF_SIZE,
-               "%30s: %5d (%6.2f %*s%s avg, %8.2f %*s%s total = %6.2f%%)",
+               "%40s: %5d (%6.2f %*s%s avg, %8.2f %*s%s total = %6.2f%%)",
                description,
                num_runs,
                avg_time,

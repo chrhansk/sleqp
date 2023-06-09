@@ -1,10 +1,11 @@
-image: "moto.math.nat.tu-bs.de:5050/code/images/sleqp_builddeps:latest"
+image: $SLEQP_BUILD_IMAGE
 
 stages:
   - test
   - build
   - package
   - postpackage
+  - deploy
   - release
   - downstream
 
@@ -16,5 +17,6 @@ include:
   - local: /.gitlab/ci/build.gitlab-ci.yml
   - local: /.gitlab/ci/package.gitlab-ci.yml
   - local: /.gitlab/ci/postpackage.gitlab-ci.yml
+  - local: /.gitlab/ci/deploy.gitlab-ci.yml
   - local: /.gitlab/ci/release.gitlab-ci.yml
   - local: /.gitlab/ci/downstream.gitlab-ci.yml
