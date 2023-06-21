@@ -28,7 +28,9 @@ if(PythonInterp_FOUND AND PythonLibs_FOUND)
 
   add_dependencies(sleqp_python sleqp_local_headers sleqp)
 
-  add_dependencies(build_tests sleqp_python)
+  if(SLEQP_ENABLE_UNIT_TESTS)
+    add_dependencies(build_tests sleqp_python)
+  endif()
 
   add_dependencies(doc sleqp_python_doc)
 
