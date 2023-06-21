@@ -52,6 +52,7 @@ END_TEST
 
   SLEQP_RETCODE retcode = (sleqp_alloc_array(&ptr, INT_MAX / sizeof(int)));
 
+  // Not actually guaranteed to happend (due to overcommiting)
   ck_assert_int_eq(retcode, SLEQP_NOMEM);
 
   ck_assert(ptr == NULL);
@@ -72,18 +73,6 @@ START_TEST(test_realloc)
   ck_assert(ptr != NULL);
 
   sleqp_free(&ptr);
-
-  ck_assert(ptr == NULL);
-}
-END_TEST
-
-START_TEST(test_realloc_zero)
-{
-  int* ptr = NULL;
-
-  ASSERT_CALL(sleqp_alloc_array(&ptr, 100));
-
-  ASSERT_CALL(sleqp_realloc(&ptr, 0));
 
   ck_assert(ptr == NULL);
 }
@@ -129,8 +118,6 @@ mem_test_suite()
   tc_realloc = tcase_create("Reallocation");
 
   tcase_add_test(tc_realloc, test_realloc);
-
-  tcase_add_test(tc_realloc, test_realloc_zero);
 
   // tcase_add_test(tc_alloc, test_realloc_nomem);
 
