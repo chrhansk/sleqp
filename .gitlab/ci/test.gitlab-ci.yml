@@ -5,7 +5,6 @@ test_fact:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
       -DSLEQP_ENABLE_PYTHON=Off
       -DSLEQP_FACT=$FACT
       -DSLEQP_LPS=$DEFAULT_LPS
@@ -30,7 +29,6 @@ test_lps:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
       -DSLEQP_ENABLE_PYTHON=Off
       -DSLEQP_FACT=$DEFAULT_FACT
       -DSLEQP_LPS=$LPS
@@ -48,7 +46,6 @@ test_coverage:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
       -DSLEQP_ENABLE_PYTHON=Off
       -DSLEQP_GENERATE_COVERAGE=On
       -DSLEQP_FACT=$DEFAULT_FACT
@@ -68,7 +65,6 @@ test_num_asserts:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
       -DSLEQP_ENABLE_NUM_ASSERTS=On
       -DSLEQP_ENABLE_PYTHON=Off
       -DSLEQP_FACT=$DEFAULT_FACT
@@ -84,7 +80,6 @@ test_memcheck:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
       -DSLEQP_ENABLE_PYTHON=Off
       -DSLEQP_FACT=$DEFAULT_FACT
       -DSLEQP_LPS=$DEFAULT_LPS
@@ -104,7 +99,6 @@ test_sanitizers:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
       -DSLEQP_ENABLE_PYTHON=Off
       -DSLEQP_FACT=$DEFAULT_FACT
       -DSLEQP_LPS=$DEFAULT_LPS
@@ -123,7 +117,7 @@ test_python:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=Off
+      -DSLEQP_ENABLE_C_UNIT_TESTS=Off
       -DSLEQP_ENABLE_PYTHON=On
       -DSLEQP_FACT=$DEFAULT_FACT
       -DSLEQP_LPS=$DEFAULT_LPS
@@ -140,7 +134,6 @@ test_octave_mex:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
       -DSLEQP_ENABLE_PYTHON=Off
       -DSLEQP_ENABLE_OCTAVE_MEX=On
       -DSLEQP_FACT=$DEFAULT_FACT
@@ -154,7 +147,6 @@ test_ampl:
     - >-
       cmake ..
       -DCMAKE_BUILD_TYPE="Debug"
-      -DSLEQP_ENABLE_UNIT_TESTS=On
       -DSLEQP_ENABLE_PYTHON=Off
       -DSLEQP_ENABLE_AMPL=On
       -DSLEQP_FACT=$DEFAULT_FACT

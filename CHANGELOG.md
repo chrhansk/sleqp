@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+### Fixed
+
+- Fixed multiple build issues on Mac OS
+- Removed invalid unit test
+
 ## [1.0.0] - 2023-06-09
 
 ### Added

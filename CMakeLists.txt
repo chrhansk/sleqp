@@ -56,6 +56,8 @@ string(TOUPPER "${PROJECT_NAME}" PROJECT_PREFIX)
 
 option(SLEQP_ENABLE_UNIT_TESTS "Whether or not to enable unit tests" ON)
 
+option(SLEQP_ENABLE_C_UNIT_TESTS "Whether or not to enable C unit tests" ON)
+
 option(SLEQP_ENABLE_NUM_ASSERTS "Whether or not to numerical assertions" OFF)
 
 option(SLEQP_ENABLE_CUTEST "Whether or not to include the CUTest suite" OFF)
@@ -113,7 +115,7 @@ if(SLEQP_ENABLE_AMPL AND NOT(COINASL_FOUND))
   message(FATAL_ERROR "Could not find ASL")
 endif()
 
-find_package(Check)
+find_package(CHECK)
 find_package(Threads REQUIRED)
 
 if(NOT(OpenMP_FOUND))
@@ -128,6 +130,10 @@ set(SLEQP_DEPENDENCIES
   ${SLEQP_LPS_LIBRARIES}
   ${SLEQP_FACT_LIBRARIES}
   m)
+
+set(SLEQP_LIBRARY_DIRS
+  ${SLEQP_FACT_LIBRARY_DIRS}
+  ${SLEQP_LPS_LIBRARY_DIRS})
 
 if(UNIX AND NOT APPLE)
   list(APPEND SLEQP_DEPENDENCIES rt)
@@ -151,13 +157,14 @@ enable_testing()
 
 set(TEST_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src/test" CACHE INTERNAL "")
 
-if(CHECK_FOUND)
-  include_directories(${CHECK_INCLUDE_DIR})
+if(SLEQP_ENABLE_UNIT_TESTS)
   add_custom_target(build_tests)
-else()
-  message(STATUS "Could not find Check, unit tests will be disabled")
-  set(SLEQP_ENABLE_UNIT_TESTS OFF)
-  set(SLEQP_ENABLE_CUTEST OFF)
+  if(CHECK_FOUND)
+    include_directories(${CHECK_INCLUDE_DIR})
+  else()
+    message(STATUS "Could not find Check, C unit tests will be disabled")
+    set(SLEQP_ENABLE_C_UNIT_TESTS OFF)
+  endif()
 endif()
 
 if(SLEQP_ENABLE_CUTEST)

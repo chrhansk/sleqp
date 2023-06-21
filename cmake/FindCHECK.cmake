@@ -16,22 +16,13 @@ endif()
 
 if(UNIX AND NOT APPLE)
   find_library(PTHREAD_LIBRARY NAMES pthread)
-
-  find_package_handle_standard_args(Check
-    REQUIRED_VARS PTHREAD_LIBRARY)
 endif()
 
 if(NOT CHECK_FOUND)
   find_path(CHECK_INCLUDE_DIR NAMES check.h)
   find_library(CHECK_LIBRARY NAMES check)
 
-  set(REQUIRED_VARS
-    CHECK_INCLUDE_DIR CHECK_LIBRARY)
-
   set(CHECK_LIBRARIES ${CHECK_LIBRARY})
-
-  find_package_handle_standard_args(Check
-    REQUIRED_VARS ${REQUIRED_VARS})
 
   message(STATUS ${CHECK_LIBRARIES})
 
@@ -41,6 +32,11 @@ endif()
 
 if(UNIX AND NOT APPLE)
   list(APPEND CHECK_LIBRARIES ${PTHREAD_LIBRARY})
+endif()
+
+if(NOT CHECK_FOUND)
+  find_package_handle_standard_args(CHECK
+    REQUIRED_VARS CHECK_INCLUDE_DIRS CHECK_LIBRARIES)
 endif()
 
 # hide advanced variables from CMake GUIs
