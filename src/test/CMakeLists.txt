@@ -22,10 +22,15 @@ add_library(test_common
   ${TEST_COMMON_SRC})
 
 target_link_libraries(test_common
+  PUBLIC
   ${SLEQP_DEPENDENCIES}
   ${CHECK_LIBRARIES}
   m
   sleqp_objects)
+
+target_link_directories(test_common
+  PUBLIC
+  ${SLEQP_LIBRARY_DIRS})
 
 add_custom_target(run_tests
   COMMAND ${CMAKE_CTEST_COMMAND}

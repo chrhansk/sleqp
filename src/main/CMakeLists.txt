@@ -149,6 +149,10 @@ target_link_libraries(sleqp
   sleqp_objects
   ${SLEQP_DEPENDENCIES})
 
+target_link_directories(sleqp
+  PRIVATE
+  ${SLEQP_LIBRARY_DIRS})
+
 set_target_properties(sleqp
   PROPERTIES
   VERSION ${PROJECT_VERSION})
