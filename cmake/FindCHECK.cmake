@@ -43,5 +43,8 @@ if(UNIX AND NOT APPLE)
   list(APPEND CHECK_LIBRARIES ${PTHREAD_LIBRARY})
 endif()
 
+find_package_handle_standard_args(CHECK
+    REQUIRED_VARS CHECK_INCLUDE_DIRS CHECK_LIBRARIES)
+
 # hide advanced variables from CMake GUIs
 mark_as_advanced(CHECK_INCLUDE_DIRS CHECK_LIBRARIES)

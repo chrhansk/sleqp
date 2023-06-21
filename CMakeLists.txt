@@ -113,7 +113,7 @@ if(SLEQP_ENABLE_AMPL AND NOT(COINASL_FOUND))
   message(FATAL_ERROR "Could not find ASL")
 endif()
 
-find_package(Check)
+find_package(CHECK)
 find_package(Threads REQUIRED)
 
 if(NOT(OpenMP_FOUND))
