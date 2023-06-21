@@ -3,7 +3,6 @@
 
 #include <assert.h>
 #include <mex.h>
-#include <threads.h>
 
 #include "sleqp.h"
 

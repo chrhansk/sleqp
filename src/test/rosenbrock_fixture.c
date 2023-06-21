@@ -1,7 +1,5 @@
 #include "rosenbrock_fixture.h"
 
-#include <threads.h>
-
 #include "cmp.h"
 #include "mem.h"
 

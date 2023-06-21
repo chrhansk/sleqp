@@ -1,7 +1,6 @@
 #include "mex_func.h"
 
 #include <assert.h>
-#include <threads.h>
 
 #include "mex_error.h"
 #include "mex_fields.h"
