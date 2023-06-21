@@ -1,6 +1,6 @@
 set(ENABLE_UNIT_TESTS On)
 
-if(NOT TOX)
+if((NOT TOX) AND (SLEQP_ENABLE_UNIT_TESTS))
   message(WARNING "Could not find tox executable, python unit tests will be disabled")
   set(ENABLE_UNIT_TESTS Off)
 endif()
@@ -75,7 +75,7 @@ function(add_python_project)
     COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${PYTHON_EXECUTABLE} -m build -w
     WORKING_DIRECTORY ${PROJECT_DIR})
 
-  if(ENABLE_UNIT_TESTS)
+  if((ENABLE_UNIT_TESTS) AND (SLEQP_ENABLE_UNIT_TESTS))
     add_test(NAME "${TARGET_NAME}_tests"
       COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LD_LIBRARY_PATH=${ARGS_EXTRA_LIBDIR}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${TOX}
       WORKING_DIRECTORY "${PROJECT_DIR}")
