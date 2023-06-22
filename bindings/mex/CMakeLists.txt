@@ -96,7 +96,9 @@ if(SLEQP_ENABLE_OCTAVE_MEX)
 
   add_dependencies(sleqp_mex sleqp_octave_ext)
 
-  add_dependencies(build_tests sleqp_mex)
+  if(SLEQP_ENABLE_UNIT_TESTS)
+    add_dependencies(build_tests sleqp_mex)
+  endif()
 
   foreach(MATLAB_TEST ${MEX_TESTS})
     get_filename_component(TEST_NAME ${MATLAB_TEST} NAME_WE)
@@ -175,5 +177,7 @@ if(SLEQP_ENABLE_MATLAB_MEX)
 
   add_dependencies(sleqp_mex sleqp_matlab_ext)
 
-  add_dependencies(build_tests sleqp_mex)
+  if(SLEQP_ENABLE_UNIT_TESTS)
+    add_dependencies(build_tests sleqp_mex)
+  endif()
 endif()

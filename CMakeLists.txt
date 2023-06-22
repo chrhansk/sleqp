@@ -165,6 +165,8 @@ if(SLEQP_ENABLE_UNIT_TESTS)
     message(STATUS "Could not find Check, C unit tests will be disabled")
     set(SLEQP_ENABLE_C_UNIT_TESTS OFF)
   endif()
+else()
+  set(SLEQP_ENABLE_C_UNIT_TESTS OFF)
 endif()
 
 if(SLEQP_ENABLE_CUTEST)
