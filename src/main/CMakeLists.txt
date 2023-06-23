@@ -199,7 +199,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sleqp.h.in"
   "${CMAKE_BINARY_DIR}/sleqp.h"
   @ONLY)
 
-configure_file("${CMAKE_SOURCE_DIR}/src/main/defs.h.in"
+configure_file("${PROJECT_SOURCE_DIR}/src/main/defs.h.in"
   "${SLEQP_DEFS_FILE_NAME}")
 
 generate_export_header(sleqp

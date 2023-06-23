@@ -16,13 +16,14 @@ to C, Python, AMPL, and MATLAB / Octave. It uses an active set method based on a
 combination of successive linear programming and equality constrained \
 quadratic programming.")
 
+include(FeatureSummary)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(FindPackageHandleStandardArgs)
 include(GenerateExportHeader)
 include(CTest)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
 set(VERSION_FILE "${CMAKE_BINARY_DIR}/sleqp_version")
 write_file(${VERSION_FILE} "${PROJECT_VERSION}")
@@ -33,7 +34,7 @@ include(Sanitizers)
 # Get the current working branch
 execute_process(
   COMMAND git rev-parse --abbrev-ref HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   OUTPUT_VARIABLE "PROJECT_GIT_BRANCH"
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
@@ -41,14 +42,14 @@ execute_process(
 # Get the latest abbreviated commit hash of the working branch
 execute_process(
   COMMAND git log -1 --format=%h
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   OUTPUT_VARIABLE "PROJECT_GIT_COMMIT_HASH"
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 set(PROJECT_NAMESPACE "${PROJECT_NAME}::")
 set(LICENSE_FILE_NAME "LICENSE")
-set(LICENSE_FILE "${CMAKE_SOURCE_DIR}/${LICENSE_FILE_NAME}")
+set(LICENSE_FILE "${PROJECT_SOURCE_DIR}/${LICENSE_FILE_NAME}")
 
 string(TOUPPER "${PROJECT_NAME}" PROJECT_PREFIX)
 
@@ -145,7 +146,7 @@ add_custom_target(doc)
 
 set(PKGCONFIG_FILE "${CMAKE_BINARY_DIR}/sleqp.pc")
 
-configure_file("${CMAKE_SOURCE_DIR}/cmake/sleqp.pc.in"
+configure_file("${PROJECT_SOURCE_DIR}/cmake/sleqp.pc.in"
   "${PKGCONFIG_FILE}"
   @ONLY)
 
@@ -210,7 +211,7 @@ set(CONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/sleqp")
 
 set(PKGCONFIG_DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 
-set(CONFIG_FILE "${CMAKE_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake")
+set(CONFIG_FILE "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake")
 set(CONFIG_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake")
 
 set(TARGET_FILE "${PROJECT_NAME}-targets.cmake")
@@ -247,3 +248,11 @@ install(
 )
 
 include(Packaging)
+
+add_feature_info(AMPL SLEQP_ENABLE_AMPL "Interface to AMPL using ASL")
+add_feature_info(CUTEst SLEQP_ENABLE_CUTEST "Interface to CUTEst instances")
+add_feature_info(Python SLEQP_ENABLE_PYTHON "Python interface")
+add_feature_info(MATLAB SLEQP_ENABLE_MATLAB_MEX "MATLAB mex interface")
+add_feature_info(Octave SLEQP_ENABLE_OCTAVE_MEX "Octave mex interface")
+
+feature_summary(WHAT ALL)

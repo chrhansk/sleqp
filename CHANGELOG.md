@@ -4,10 +4,13 @@
 
 ### Added
 
+- Added feature summary
+
 ### Fixed
 
 - Fixed multiple build issues on Mac OS
 - Removed invalid unit test
+- Removed source directory variables from cmake-related files
 
 ## [1.0.0] - 2023-06-09
 
