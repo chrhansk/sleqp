@@ -1,6 +1,6 @@
 include_directories(
-  "${CMAKE_SOURCE_DIR}/src/main"
-  "${CMAKE_SOURCE_DIR}/src/test"
+  "${PROJECT_SOURCE_DIR}/src/main"
+  "${PROJECT_SOURCE_DIR}/src/test"
   "${CMAKE_BINARY_DIR}/sleqp")
 
 set(TEST_COMMON_SRC
