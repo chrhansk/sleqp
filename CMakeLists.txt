@@ -16,6 +16,7 @@ to C, Python, AMPL, and MATLAB / Octave. It uses an active set method based on a
 combination of successive linear programming and equality constrained \
 quadratic programming.")
 
+include(FeatureSummary)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(FindPackageHandleStandardArgs)
@@ -247,3 +248,11 @@ install(
 )
 
 include(Packaging)
+
+add_feature_info(AMPL SLEQP_ENABLE_AMPL "Interface to AMPL using ASL")
+add_feature_info(CUTEst SLEQP_ENABLE_CUTEST "Interface to CUTEst instances")
+add_feature_info(Python SLEQP_ENABLE_PYTHON "Python interface")
+add_feature_info(MATLAB SLEQP_ENABLE_MATLAB_MEX "MATLAB mex interface")
+add_feature_info(Octave SLEQP_ENABLE_OCTAVE_MEX "Octave mex interface")
+
+feature_summary(WHAT ALL)
