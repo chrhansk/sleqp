@@ -25,7 +25,7 @@ include(CTest)
 
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/")
 
-set(VERSION_FILE "${CMAKE_BINARY_DIR}/sleqp_version")
+set(VERSION_FILE "${PROJECT_BINARY_DIR}/sleqp_version")
 write_file(${VERSION_FILE} "${PROJECT_VERSION}")
 
 include(CompilerOptions)
@@ -144,13 +144,13 @@ add_custom_target(doc)
 
 # Config files
 
-set(PKGCONFIG_FILE "${CMAKE_BINARY_DIR}/sleqp.pc")
+set(PKGCONFIG_FILE "${PROJECT_BINARY_DIR}/sleqp.pc")
 
 configure_file("${PROJECT_SOURCE_DIR}/cmake/sleqp.pc.in"
   "${PKGCONFIG_FILE}"
   @ONLY)
 
-include_directories("${CMAKE_BINARY_DIR}")
+include_directories("${PROJECT_BINARY_DIR}")
 
 # Testing
 
