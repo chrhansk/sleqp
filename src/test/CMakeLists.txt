@@ -20,7 +20,6 @@ set(TEST_COMMON_SRC
   zero_func.c)
 
 add_library(test_common
-  EXCLUDE_FROM_ALL
   ${TEST_COMMON_SRC})
 
 target_include_directories(test_common
@@ -52,7 +51,6 @@ function(add_unit_test TEST_NAME)
   get_filename_component(BASE_NAME ${TEST_NAME} NAME)
 
   add_executable(${BASE_NAME}
-    EXCLUDE_FROM_ALL
     "${TEST_NAME}.c")
 
   target_link_libraries(${BASE_NAME}
