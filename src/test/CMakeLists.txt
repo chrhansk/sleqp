@@ -1,3 +1,5 @@
+add_subdirectory(install)
+
 include_directories(
   "${PROJECT_SOURCE_DIR}/src/main"
   "${PROJECT_SOURCE_DIR}/src/test"

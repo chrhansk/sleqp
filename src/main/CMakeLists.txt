@@ -138,11 +138,15 @@ target_include_directories(sleqp_objects
 
 target_include_directories(sleqp_objects
   PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:"${CMAKE_INSTALL_INCLUDEDIR}/sleqp">)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 add_library(sleqp SHARED
   sleqp.c)
+
+target_include_directories(sleqp
+  PUBLIC
+  $<BUILD_INTERFACE:${SLEQP_LOCAL_HEADER_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 target_link_libraries(sleqp
   PRIVATE
@@ -159,6 +163,8 @@ set_target_properties(sleqp
 
 set(SLEQP_EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/sleqp/export.h")
 set(SLEQP_DEFS_FILE_NAME "${PROJECT_BINARY_DIR}/sleqp/defs.h")
+
+add_library(${PROJECT_NAMESPACE}sleqp ALIAS sleqp)
 
 # Generate include list
 

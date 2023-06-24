@@ -75,7 +75,7 @@ macro(find_lp_solver)
     set(SLEQP_LPS_VERSION "${${RESULT_NAME}_VERSION}")
     set(SLEQP_LPS_DEPS_DEBIAN "${${RESULT_NAME}_DEPS_DEBIAN}")
 
-    add_feature_info(${SLEQP_LPS} ${${RESULT_NAME}_FOUND} "Interface to LP solver ${SLEQP_LPS}")
+    add_feature_info(${ARGS_NAME} SLEQP_LPS_FOUND "Interface to LP solver ${SLEQP_LPS}")
 
   elseif(${ARGS_REQUIRED})
     message(FATAL_ERROR "Could not find LP solver ${ARGS_NAME}")

@@ -115,7 +115,8 @@ macro(find_fact)
     set(SLEQP_FACT_VERSION "${${RESULT_NAME}_VERSION}")
     set(SLEQP_FACT_DEPS_DEBIAN "${${RESULT_NAME}_DEPS_DEBIAN}")
 
-    add_feature_info(${SLEQP_FACT} ${${RESULT_NAME}_FOUND} "Interface to factorization ${SLEQP_FACT}")
+    add_feature_info(${ARGS_NAME} SLEQP_FACT_FOUND "Interface to factorization ${SLEQP_FACT}")
+
   elseif(${ARGS_REQUIRED})
     message(FATAL_ERROR "Could not find factorization library ${ARGS_NAME}")
   endif()
