@@ -127,7 +127,7 @@ set_target_properties(sleqp_objects
 set(SLEQP_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE STRING "" FORCE)
 set(SLEQP_LIBRARY_DIR "${CMAKE_CURRENT_BINARY_DIR}" CACHE STRING "" FORCE)
 
-set(SLEQP_LOCAL_HEADER_DIR "${CMAKE_BINARY_DIR}" CACHE STRING "" FORCE)
+set(SLEQP_LOCAL_HEADER_DIR "${PROJECT_BINARY_DIR}" CACHE STRING "" FORCE)
 
 target_include_directories(sleqp_objects
   PRIVATE
@@ -138,11 +138,15 @@ target_include_directories(sleqp_objects
 
 target_include_directories(sleqp_objects
   PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-  $<INSTALL_INTERFACE:"${CMAKE_INSTALL_INCLUDEDIR}/sleqp">)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
 
 add_library(sleqp SHARED
   sleqp.c)
+
+target_include_directories(sleqp
+  PUBLIC
+  $<BUILD_INTERFACE:${SLEQP_LOCAL_HEADER_DIR}>
+  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 target_link_libraries(sleqp
   PRIVATE
@@ -157,8 +161,10 @@ set_target_properties(sleqp
   PROPERTIES
   VERSION ${PROJECT_VERSION})
 
-set(SLEQP_EXPORT_FILE_NAME "${CMAKE_BINARY_DIR}/sleqp/export.h")
-set(SLEQP_DEFS_FILE_NAME "${CMAKE_BINARY_DIR}/sleqp/defs.h")
+set(SLEQP_EXPORT_FILE_NAME "${PROJECT_BINARY_DIR}/sleqp/export.h")
+set(SLEQP_DEFS_FILE_NAME "${PROJECT_BINARY_DIR}/sleqp/defs.h")
+
+add_library(${PROJECT_NAMESPACE}sleqp ALIAS sleqp)
 
 # Generate include list
 
@@ -178,7 +184,7 @@ foreach(PUB_HEADER ${PUB_HEADERS})
     COMPONENT "headers")
 
   set(HEADER_FULL "${CMAKE_CURRENT_SOURCE_DIR}/${PUB_HEADER}")
-  set(HEADER_DEST "${CMAKE_BINARY_DIR}/sleqp/${HEADER_DIR}/${HEADER_NAME}")
+  set(HEADER_DEST "${PROJECT_BINARY_DIR}/sleqp/${HEADER_DIR}/${HEADER_NAME}")
 
   add_custom_command(
     TARGET sleqp_local_headers
@@ -196,7 +202,7 @@ add_dependencies(sleqp_objects sleqp_local_headers)
 string(JOIN "\n" PUB_HEADER_INCLUDES ${HEADER_INCLUDES})
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/sleqp.h.in"
-  "${CMAKE_BINARY_DIR}/sleqp.h"
+  "${PROJECT_BINARY_DIR}/sleqp.h"
   @ONLY)
 
 configure_file("${PROJECT_SOURCE_DIR}/src/main/defs.h.in"
@@ -221,6 +227,6 @@ install(
 
 install(
   FILES
-  "${CMAKE_BINARY_DIR}/sleqp.h"
+  "${PROJECT_BINARY_DIR}/sleqp.h"
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   COMPONENT "headers")

@@ -1,14 +1,9 @@
-cmake_minimum_required(VERSION 3.3)
+set(EXAMPLE_FILE example.c)
 
-project(sleqp_example
-  LANGUAGES C)
+configure_file(cmake_fetch/CMakeLists.txt.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake_fetch/CMakeLists.txt
+  @ONLY)
 
-add_executable (sleqp_example example.c)
-
-find_package(sleqp REQUIRED)
-
-target_link_libraries(sleqp_example sleqp::sleqp)
-
-enable_testing()
-
-add_test(NAME sleqp_example COMMAND sleqp_example)
+file(COPY ${EXAMPLE_FILE} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/make)
+file(COPY ${EXAMPLE_FILE} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/cmake_install)
+file(COPY ${EXAMPLE_FILE} DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/cmake_fetch)

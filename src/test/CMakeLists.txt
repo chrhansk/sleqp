@@ -1,7 +1,9 @@
+add_subdirectory(install)
+
 include_directories(
   "${PROJECT_SOURCE_DIR}/src/main"
   "${PROJECT_SOURCE_DIR}/src/test"
-  "${CMAKE_BINARY_DIR}/sleqp")
+  "${PROJECT_BINARY_DIR}/sleqp")
 
 set(TEST_COMMON_SRC
   test_common.c
@@ -18,7 +20,6 @@ set(TEST_COMMON_SRC
   zero_func.c)
 
 add_library(test_common
-  EXCLUDE_FROM_ALL
   ${TEST_COMMON_SRC})
 
 target_include_directories(test_common
@@ -50,7 +51,6 @@ function(add_unit_test TEST_NAME)
   get_filename_component(BASE_NAME ${TEST_NAME} NAME)
 
   add_executable(${BASE_NAME}
-    EXCLUDE_FROM_ALL
     "${TEST_NAME}.c")
 
   target_link_libraries(${BASE_NAME}
@@ -67,7 +67,7 @@ function(add_unit_test TEST_NAME)
 
   add_dependencies(${BASE_NAME} sleqp sleqp_local_headers)
 
-  add_test(NAME ${BASE_NAME} COMMAND ${BASE_NAME} WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+  add_test(NAME ${BASE_NAME} COMMAND ${BASE_NAME} WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 endfunction()
 
 add_unit_test(lp/lpi_test)
@@ -115,7 +115,7 @@ set(EXAMPLE_PARAM_FILE
   "sleqp_example.opt")
 
 file(COPY ${EXAMPLE_PARAM_FILE}
-  DESTINATION ${CMAKE_BINARY_DIR})
+  DESTINATION ${PROJECT_BINARY_DIR})
 
 if(SLEQP_ENABLE_CUTEST)
   add_subdirectory(cutest)

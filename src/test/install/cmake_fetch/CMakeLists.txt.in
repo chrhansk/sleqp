@@ -1,0 +1,25 @@
+cmake_minimum_required(VERSION 3.3)
+
+project(sleqp_example
+  LANGUAGES C)
+
+include(FetchContent)
+
+# Pass on options to external dependencies
+set(SLEQP_ENABLE_PYTHON Off)
+
+FetchContent_Declare(
+  sleqp-external
+  GIT_REPOSITORY @PROJECT_SOURCE_DIR@
+  GIT_TAG @PROJECT_GIT_COMMIT_HASH@
+)
+
+FetchContent_MakeAvailable(sleqp-external)
+
+add_executable (sleqp_example example.c)
+
+target_link_libraries(sleqp_example sleqp::sleqp)
+
+enable_testing()
+
+add_test(NAME sleqp_example COMMAND sleqp_example)
