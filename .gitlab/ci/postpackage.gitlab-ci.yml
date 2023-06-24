@@ -16,7 +16,7 @@ test_install_cmake:
   extends: .test_install
   script:
     - cd $CI_PROJECT_DIR/src/test/install
-    - ./test_cmake.sh
+    - ./test_cmake_install.sh
 
 test_install_python_sdist:
   extends: .test_install
