@@ -5,6 +5,7 @@
 ### Added
 
 - Added feature summary
+- Added support for usage via FetchContent()
 
 ### Fixed
 
