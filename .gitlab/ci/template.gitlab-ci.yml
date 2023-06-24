@@ -10,7 +10,7 @@
 .test_install:
   stage: postpackage
   extends:
-    - .rules:default-or-release-branch
+    - .rules:buildsystem-test
   before_script:
     - cd build
     - apt -y install ./*.deb
@@ -27,7 +27,7 @@
 .package:
   stage: package
   extends:
-    - .rules:default-or-release-branch
+    - .rules:buildsystem-test
 
 .release:
   stage: release

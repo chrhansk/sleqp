@@ -1,6 +1,6 @@
 build:
   extends:
-    - .rules:default-or-release-branch
+    - .rules:buildsystem-test
   stage: build
   script:
     - mkdir -p build

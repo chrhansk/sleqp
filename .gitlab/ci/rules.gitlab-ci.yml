@@ -4,6 +4,9 @@
 .if-release-branch: &if-release-branch
   if: '$CI_COMMIT_REF_NAME =~ /^releases/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
 
+.if-buildsystem-branch: &if-buildsystem-branch
+  if: '$CI_COMMIT_REF_NAME =~ /buildsystem/ && $CI_PIPELINE_SOURCE != "merge_request_event"'
+
 .rules:release-branch:
   rules:
     - <<: *if-release-branch
@@ -12,3 +15,9 @@
   rules:
     - <<: *if-default-branch
     - <<: *if-release-branch
+
+.rules:buildsystem-test:
+  rules:
+    - <<: *if-default-branch
+    - <<: *if-release-branch
+    - <<: *if-buildsystem-branch
