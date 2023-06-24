@@ -14,6 +14,14 @@
   before_script:
     - cd build
     - apt -y install ./*.deb
+    - >-
+      cmake ..
+      -DCMAKE_BUILD_TYPE="Debug"
+      -DSLEQP_ENABLE_PYTHON=Off
+      -DSLEQP_ENABLE_OCTAVE_MEX=Off
+      -DSLEQP_ENABLE_UNIT_TESTS=On
+      -DSLEQP_FACT=$DEFAULT_FACT
+      -DSLEQP_LPS=$DEFAULT_LPS
     - cd $CI_PROJECT_DIR
 
 .package:
