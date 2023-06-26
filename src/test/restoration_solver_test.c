@@ -24,8 +24,8 @@ restoration_solver_setup()
 
   ASSERT_CALL(
     sleqp_settings_set_bool_value(settings,
-                                 SLEQP_SETTINGS_BOOL_ENABLE_RESTORATION_PHASE,
-                                 true));
+                                  SLEQP_SETTINGS_BOOL_ENABLE_RESTORATION_PHASE,
+                                  true));
 
   ASSERT_CALL(sleqp_problem_create_simple(&problem,
                                           wachbieg_func,

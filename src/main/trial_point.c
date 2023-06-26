@@ -440,7 +440,38 @@ sleqp_trial_point_solver_set_cons_weights(SleqpTrialPointSolver* solver)
 bool
 sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver)
 {
-  return solver->locally_infeasible;
+  SleqpSettings* settings = solver->settings;
+
+  const double feas_tol
+    = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
+  const double eps
+    = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_EPS);
+
+  // Iterate is feasible anyways
+  if (solver->feasibility_residuum <= feas_tol)
+  {
+    return false;
+  }
+
+  const double lp_step_norm = sleqp_vec_norm(solver->lp_step);
+
+  // Nonzero step computed
+  if (!sleqp_is_zero(lp_step_norm, eps))
+  {
+    return false;
+  }
+
+  const double step_norm
+    = sleqp_vec_norm(sleqp_direction_primal(solver->trial_direction));
+
+  // Step may be zero, but may be possible to
+  // escape using second order information
+  if (!sleqp_is_zero(step_norm, eps))
+  {
+    return false;
+  }
+
+  return true;
 }
 
 SLEQP_RETCODE

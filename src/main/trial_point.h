@@ -72,8 +72,6 @@ typedef struct
   double lp_trust_radius;
   double trust_radius;
 
-  bool locally_infeasible;
-
   double feasibility_residuum;
   bool allow_global_reset;
   bool performed_global_reset;
