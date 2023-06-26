@@ -6,6 +6,8 @@
 
 - Added feature summary
 - Added support for usage via FetchContent()
+- Added more documentation of python interface
+- Made numpy arrays passed to function callbacks read-only
 
 ### Fixed
 

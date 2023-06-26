@@ -17,6 +17,13 @@ class Array(np.ndarray):
     self._token = getattr(obj, '_token', None)
 
 cdef class Scaling:
+  """
+  Scaling of a problem, consisting of weights (powers of 2) for
+  variables, constraints, and objective. Scaling weights can also be
+  given as nominal values, i.e., values which are transformed to ~1 by
+  the scaling.
+
+  """
   cdef dict __dict__
   cdef csleqp.SleqpScaling* scaling
   cdef csleqp.SleqpVec* gradient
@@ -42,10 +49,16 @@ cdef class Scaling:
 
   @property
   def num_vars(self):
+    """
+    Number of variables in the scaling
+    """
     return csleqp.sleqp_scaling_num_vars(self.scaling)
 
   @property
   def num_cons(self):
+    """
+    Number of constraints in the scaling
+    """
     return csleqp.sleqp_scaling_num_cons(self.scaling)
 
   def __dealloc__(self):
@@ -67,22 +80,37 @@ cdef class Scaling:
 
   @staticmethod
   def weights_to_nominal_values(weights):
+    """
+    Convert weights to nominal values
+    """
     return np.ldexp(np.ones(weights.shape), weights)
 
   @staticmethod
   def nominal_values_to_weights(nominal_values):
+    """
+    Convert nominal values to weights
+    """
     return np.frexp(nominal_values)[1]
 
   @staticmethod
   def nominal_value_to_weight(nominal_value):
+    """
+    Convert single nominal value to weight
+    """
     return np.frexp(np.array([nominal_value]))[1].item()
 
   @staticmethod
   def weight_to_nominal_value(weight):
+    """
+    Convert single weight to nominal value
+    """
     return np.ldexp(np.ones(1), np.array([weight])).item()
 
   @property
   def obj_weight(self):
+    """
+    Weight of objective
+    """
     return csleqp.sleqp_scaling_obj_weight(self.scaling)
 
   @obj_weight.setter
@@ -92,6 +120,9 @@ cdef class Scaling:
 
   @property
   def var_weights(self):
+    """
+    Weights of variables
+    """
     length = self.num_vars
     cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_var_weights(self.scaling)
 
@@ -110,6 +141,9 @@ cdef class Scaling:
 
   @property
   def cons_weights(self):
+    """
+    Weights of constraints
+    """
     length = self.num_cons
     cdef int[:] values = <int[:length]> csleqp.sleqp_scaling_cons_weights(self.scaling)
 

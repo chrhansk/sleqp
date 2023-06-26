@@ -1,6 +1,12 @@
 #cython: language_level=3
 
 
+cdef _readonly(arr):
+    result = arr.view()
+    result.flags.writeable = False
+    return result
+
+
 cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
                                          csleqp.SleqpFunc* cfunc,
                                          np.ndarray var_lb,
@@ -186,6 +192,9 @@ cdef class _Problem:
 
 
 cdef class BaseProblem:
+  """
+  Base class modeling a nonlinear optimization problem (NLP)
+  """
   cdef dict __dict__
 
   cdef object _problem
@@ -197,30 +206,51 @@ cdef class BaseProblem:
 
   @property
   def num_vars(self) -> int:
+    """
+    Number of variables in the problem
+    """
     return self._problem.num_vars
 
   @property
   def num_cons(self) -> int:
+    """
+    Number of constraints in the problem
+    """
     return self._problem.num_cons
 
   @property
   def var_lb(self) -> np.array:
-    return self._problem.var_lb
+    """
+    Lower bounds on variables in [-oo, oo)
+    """
+    return _readonly(self._problem.var_lb)
 
   @property
   def var_ub(self) -> np.array:
-    return self._problem.var_ub
+    """
+    Upper bounds on variables in (-oo, oo]
+    """
+    return _readonly(self._problem.var_ub)
 
   @property
   def cons_lb(self) -> np.array:
-    return self._problem.cons_lb
+    """
+    Lower bounds on constraints in [-oo, oo)
+    """
+    return _readonly(self._problem.cons_lb)
 
   @property
   def cons_ub(self) -> np.array:
-    return self._problem.cons_ub
+    """
+    Upper bounds on constraints in (-oo, oo]
+    """
+    return _readonly(self._problem.cons_ub)
 
   @property
   def func(self) -> object:
+    """
+    Underlying (user-provided) nonlinear function
+    """
     return self._func
 
   @property
@@ -291,6 +321,9 @@ cdef class Problem(BaseProblem):
 
   @property
   def hess_struct(self) -> HessianStruct:
+    """
+    Block structure of the Hessian matrix
+    """
     return self.problem.hess_struct
 
   def _get_problem(self):
@@ -298,6 +331,11 @@ cdef class Problem(BaseProblem):
 
 
 cdef class LSQProblem(BaseProblem):
+  """
+  Class modeling a least-squares (LSQ) problem
+  """
+
+  cdef _Problem problem
   cdef _Func funcref
 
   def __cinit__(self,
@@ -367,6 +405,13 @@ cdef class LSQProblem(BaseProblem):
 
 
 cdef class DynProblem(BaseProblem):
+  """
+  Class modeling a dynamic problem, i.e.,
+  a problem where evaluations have a limited,
+  but controllable accuracy
+  """
+
+  cdef _Problem problem
   cdef _Func funcref
 
   def __cinit__(self,
@@ -428,6 +473,9 @@ cdef class DynProblem(BaseProblem):
 
   @property
   def hess_struct(self) -> HessianStruct:
+    """
+    Block structure of the Hessian matrix
+    """
     return self.problem.hess_struct
 
   def _get_problem(self):
