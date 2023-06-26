@@ -494,17 +494,23 @@ sleqp_restoration_problem_transform(SleqpProblem* problem,
                                     const SleqpVec* cons_val,
                                     SleqpVec* result)
 {
-  const int num_variables   = sleqp_problem_num_vars(problem);
-  const int num_constraints = sleqp_problem_num_cons(problem);
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
 
-  assert(primal->dim == num_variables);
-  assert(cons_val->dim == num_constraints);
+  assert(primal->dim == num_vars);
+  assert(cons_val->dim == num_cons);
 
-  assert(result->dim == (num_variables + num_constraints));
+  assert(result->dim == (num_vars + num_cons));
 
   SLEQP_CALL(sleqp_vec_clear(result));
 
-  SLEQP_CALL(sleqp_vec_reserve(result, primal->nnz + cons_val->nnz));
+  const SleqpVec* c  = cons_val;
+  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
+  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
+
+  int cons_nnz = SLEQP_MIN(num_cons, lb->nnz + ub->nnz + c->nnz);
+
+  SLEQP_CALL(sleqp_vec_reserve(result, primal->nnz + cons_nnz));
 
   for (int k = 0; k < primal->nnz; ++k)
   {
@@ -513,19 +519,15 @@ sleqp_restoration_problem_transform(SleqpProblem* problem,
 
   int k_lb = 0, k_c = 0, k_ub = 0;
 
-  const SleqpVec* c  = cons_val;
-  const SleqpVec* lb = sleqp_problem_cons_lb(problem);
-  const SleqpVec* ub = sleqp_problem_cons_ub(problem);
-
   while (k_c < c->nnz || k_lb < lb->nnz || k_ub < ub->nnz)
   {
     bool valid_c  = (k_c < c->nnz);
     bool valid_lb = (k_lb < lb->nnz);
     bool valid_ub = (k_ub < ub->nnz);
 
-    int i_c  = valid_c ? c->indices[k_c] : num_constraints + 1;
-    int i_lb = valid_lb ? lb->indices[k_lb] : num_constraints + 1;
-    int i_ub = valid_ub ? ub->indices[k_ub] : num_constraints + 1;
+    int i_c  = valid_c ? c->indices[k_c] : num_cons + 1;
+    int i_lb = valid_lb ? lb->indices[k_lb] : num_cons + 1;
+    int i_ub = valid_ub ? ub->indices[k_ub] : num_cons + 1;
 
     int i_combined;
 
@@ -544,7 +546,7 @@ sleqp_restoration_problem_transform(SleqpProblem* problem,
 
     if (c_val != 0.)
     {
-      SLEQP_CALL(sleqp_vec_push(result, num_variables + i_combined, c_val));
+      SLEQP_CALL(sleqp_vec_push(result, num_vars + i_combined, c_val));
     }
 
     if (valid_c)

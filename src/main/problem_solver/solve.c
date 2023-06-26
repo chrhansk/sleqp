@@ -100,19 +100,30 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   SleqpProblem* problem = solver->problem;
   SleqpIterate* iterate = solver->iterate;
 
-  const int num_variables   = sleqp_problem_num_vars(problem);
-  const int num_constraints = sleqp_problem_num_cons(problem);
+  const int num_vars = sleqp_problem_num_vars(problem);
+  const int num_cons = sleqp_problem_num_cons(problem);
 
   solver->abort_on_local_infeasibility = abort_on_local_infeasibility;
   solver->status                       = SLEQP_PROBLEM_SOLVER_STATUS_RUNNING;
 
+  if (sleqp_problem_is_unconstrained(problem))
+  {
+    sleqp_log_info("Solving an unconstrained problem with %d variables",
+                   num_vars);
+  }
+  else if (num_cons == 0)
+  {
+    sleqp_log_info("Solving a box-constrained problem with %d variables",
+                   num_vars);
+  }
+  else
   {
     SleqpMat* cons_jac = sleqp_iterate_cons_jac(iterate);
 
     sleqp_log_info("Solving a problem with %d variables, %d constraints, %d "
                    "Jacobian nonzeros",
-                   num_variables,
-                   num_constraints,
+                   num_vars,
+                   num_cons,
                    sleqp_mat_nnz(cons_jac));
   }
 
@@ -137,7 +148,8 @@ sleqp_problem_solver_solve(SleqpProblemSolver* solver,
   SLEQP_CALL(sleqp_timer_reset(solver->elapsed_timer));
 
   const double deadpoint_bound
-    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_DEADPOINT_BOUND);
+    = sleqp_settings_real_value(solver->settings,
+                                SLEQP_SETTINGS_REAL_DEADPOINT_BOUND);
 
   SLEQP_CALL(sleqp_problem_solver_print_header(solver));
 

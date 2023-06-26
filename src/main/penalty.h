@@ -8,7 +8,6 @@ SLEQP_RETCODE
 sleqp_update_penalty(SleqpProblem* problem,
                      SleqpIterate* iterate,
                      SleqpCauchy* cauchy_data,
-                     double* penalty_parameter,
-                     bool* locally_infeasible);
+                     double* penalty_parameter);
 
 #endif /* SLEQP_PENALTY_H */

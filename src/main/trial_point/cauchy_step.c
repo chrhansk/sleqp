@@ -54,8 +54,6 @@ update_penalty(SleqpTrialPointSolver* solver)
 
   if (is_feasible)
   {
-    solver->locally_infeasible = false;
-
     if (solver->allow_global_reset)
     {
       const SleqpVec* cons_dual = sleqp_iterate_cons_dual(iterate);
@@ -84,8 +82,7 @@ update_penalty(SleqpTrialPointSolver* solver)
     SLEQP_CALL(sleqp_update_penalty(problem,
                                     iterate,
                                     solver->cauchy_data,
-                                    &(solver->penalty_parameter),
-                                    &(solver->locally_infeasible)));
+                                    &(solver->penalty_parameter)));
   }
 
   if (solver->penalty_parameter != last_penalty_parameter)
@@ -100,10 +97,6 @@ static SLEQP_RETCODE
 compute_cauchy_direction(SleqpTrialPointSolver* solver)
 {
   SleqpIterate* iterate = solver->iterate;
-
-  const bool enable_restoration
-    = sleqp_settings_bool_value(solver->settings,
-                               SLEQP_SETTINGS_BOOL_ENABLE_RESTORATION_PHASE);
 
 #if SLEQP_DEBUG
 
@@ -139,7 +132,8 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
 
   {
     const double stat_eps
-      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_STAT_TOL);
+      = sleqp_settings_real_value(solver->settings,
+                                  SLEQP_SETTINGS_REAL_STAT_TOL);
 
     SLEQP_NUM_ASSERT_PARAM(stat_eps);
 
@@ -157,11 +151,6 @@ compute_cauchy_direction(SleqpTrialPointSolver* solver)
   const double original_penalty = solver->penalty_parameter;
 
   SLEQP_CALL(update_penalty(solver));
-
-  if (solver->locally_infeasible && enable_restoration)
-  {
-    return SLEQP_OKAY;
-  }
 
   if (original_penalty != solver->penalty_parameter)
   {

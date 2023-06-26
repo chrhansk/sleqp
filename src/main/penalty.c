@@ -12,14 +12,11 @@ SLEQP_RETCODE
 sleqp_update_penalty(SleqpProblem* problem,
                      SleqpIterate* iterate,
                      SleqpCauchy* cauchy_data,
-                     double* penalty_parameter,
-                     bool* locally_infeasible)
+                     double* penalty_parameter)
 {
   const int num_constraints = sleqp_problem_num_cons(problem);
 
   assert(num_constraints > 0);
-
-  (*locally_infeasible) = false;
 
   double current_violation;
 
@@ -45,16 +42,6 @@ sleqp_update_penalty(SleqpProblem* problem,
                                 NULL,
                                 (*penalty_parameter),
                                 SLEQP_CAUCHY_OBJTYPE_FEAS));
-
-  {
-    SLEQP_CALL(
-      sleqp_cauchy_locally_infeasible(cauchy_data, locally_infeasible));
-
-    if (*locally_infeasible)
-    {
-      sleqp_log_warn("Current iterate is locally infeasible");
-    }
-  }
 
   double inf_violation;
 
