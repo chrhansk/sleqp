@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 project(sleqp
-  VERSION 1.0.0
+  VERSION 1.0.1
   LANGUAGES C CXX)
 
 set(PROJECT_DESCRIPTION "Active set-based NLP solver")
