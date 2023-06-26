@@ -34,7 +34,8 @@ create_dual_estimation(SleqpTrialPointSolver* solver)
   SleqpSettings* settings = solver->settings;
 
   SLEQP_DUAL_ESTIMATION_TYPE estimation_type
-    = sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_DUAL_ESTIMATION_TYPE);
+    = sleqp_settings_enum_value(settings,
+                                SLEQP_SETTINGS_ENUM_DUAL_ESTIMATION_TYPE);
 
   if (estimation_type == SLEQP_DUAL_ESTIMATION_TYPE_LP)
   {
@@ -63,7 +64,7 @@ create_dual_estimation(SleqpTrialPointSolver* solver)
 static SLEQP_RETCODE
 create_aug_jac(SleqpTrialPointSolver* solver)
 {
-  SleqpProblem* problem = solver->problem;
+  SleqpProblem* problem   = solver->problem;
   SleqpSettings* settings = solver->settings;
 
   const int num_constraints = sleqp_problem_num_cons(problem);
@@ -160,15 +161,16 @@ create_aug_jac(SleqpTrialPointSolver* solver)
 static SLEQP_RETCODE
 create_cauchy_solver(SleqpTrialPointSolver* solver)
 {
-  SleqpProblem* problem = solver->problem;
+  SleqpProblem* problem   = solver->problem;
   SleqpSettings* settings = solver->settings;
 
   const int num_constraints = sleqp_problem_num_cons(problem);
 
   if (sleqp_problem_is_unconstrained(problem))
   {
-    SLEQP_CALL(
-      sleqp_unconstrained_cauchy_create(&solver->cauchy_data, problem, settings));
+    SLEQP_CALL(sleqp_unconstrained_cauchy_create(&solver->cauchy_data,
+                                                 problem,
+                                                 settings));
   }
   else if (num_constraints == 0)
   {
@@ -178,9 +180,8 @@ create_cauchy_solver(SleqpTrialPointSolver* solver)
   }
   else
   {
-    SLEQP_CALL(sleqp_standard_cauchy_create(&solver->cauchy_data,
-                                            problem,
-                                            settings));
+    SLEQP_CALL(
+      sleqp_standard_cauchy_create(&solver->cauchy_data, problem, settings));
   }
 
   return SLEQP_OKAY;
@@ -189,7 +190,7 @@ create_cauchy_solver(SleqpTrialPointSolver* solver)
 static SLEQP_RETCODE
 create_eqp_solver(SleqpTrialPointSolver* solver)
 {
-  SleqpProblem* problem = solver->problem;
+  SleqpProblem* problem   = solver->problem;
   SleqpSettings* settings = solver->settings;
 
   SLEQP_TR_SOLVER tr_solver
@@ -226,7 +227,7 @@ create_parametric_solver(SleqpTrialPointSolver* solver)
 {
   SLEQP_PARAMETRIC_CAUCHY parametric_cauchy
     = sleqp_settings_enum_value(solver->settings,
-                               SLEQP_SETTINGS_ENUM_PARAMETRIC_CAUCHY);
+                                SLEQP_SETTINGS_ENUM_PARAMETRIC_CAUCHY);
 
   if (parametric_cauchy == SLEQP_PARAMETRIC_CAUCHY_DISABLED)
   {
@@ -280,7 +281,8 @@ sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
 
   SLEQP_CALL(sleqp_direction_create(&solver->soc_direction, problem, settings));
 
-  SLEQP_CALL(sleqp_direction_create(&solver->trial_direction, problem, settings));
+  SLEQP_CALL(
+    sleqp_direction_create(&solver->trial_direction, problem, settings));
 
   SLEQP_CALL(sleqp_vec_create_empty(&solver->multipliers, num_constraints));
 
@@ -300,12 +302,14 @@ sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
                                      settings,
                                      solver->merit));
 
-  SLEQP_CALL(
-    sleqp_working_step_create(&solver->working_step, solver->problem, settings));
+  SLEQP_CALL(sleqp_working_step_create(&solver->working_step,
+                                       solver->problem,
+                                       settings));
 
   SLEQP_CALL(create_eqp_solver(solver));
 
-  SLEQP_CALL(sleqp_soc_data_create(&solver->soc_data, solver->problem, settings));
+  SLEQP_CALL(
+    sleqp_soc_data_create(&solver->soc_data, solver->problem, settings));
 
   SLEQP_CALL(create_parametric_solver(solver));
 
@@ -587,7 +591,8 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
     bool direction_valid;
 
     const double zero_eps
-      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
+      = sleqp_settings_real_value(solver->settings,
+                                  SLEQP_SETTINGS_REAL_ZERO_EPS);
 
     SLEQP_CALL(sleqp_direction_check(solver->cauchy_direction,
                                      solver->problem,
@@ -604,7 +609,8 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
     bool direction_valid;
 
     const double zero_eps
-      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
+      = sleqp_settings_real_value(solver->settings,
+                                  SLEQP_SETTINGS_REAL_ZERO_EPS);
 
     SLEQP_CALL(sleqp_direction_check(solver->newton_direction,
                                      solver->problem,
@@ -621,7 +627,8 @@ compute_trial_point_newton(SleqpTrialPointSolver* solver,
 
   {
     SLEQP_LINESEARCH lineserach
-      = sleqp_settings_enum_value(solver->settings, SLEQP_SETTINGS_ENUM_LINESEARCH);
+      = sleqp_settings_enum_value(solver->settings,
+                                  SLEQP_SETTINGS_ENUM_LINESEARCH);
 
     double step_length;
 
@@ -678,12 +685,13 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
   const SleqpSettings* settings = solver->settings;
 
   const bool quadratic_model
-    = sleqp_settings_bool_value(settings, SLEQP_SETTINGS_BOOL_USE_QUADRATIC_MODEL);
+    = sleqp_settings_bool_value(settings,
+                                SLEQP_SETTINGS_BOOL_USE_QUADRATIC_MODEL);
 
   const bool perform_newton_step
     = quadratic_model
       && sleqp_settings_bool_value(settings,
-                                  SLEQP_SETTINGS_BOOL_PERFORM_NEWTON_STEP);
+                                   SLEQP_SETTINGS_BOOL_PERFORM_NEWTON_STEP);
 
   if (perform_newton_step)
   {
@@ -708,7 +716,8 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
     bool direction_valid;
 
     const double zero_eps
-      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
+      = sleqp_settings_real_value(solver->settings,
+                                  SLEQP_SETTINGS_REAL_ZERO_EPS);
 
     SLEQP_CALL(sleqp_direction_check(solver->trial_direction,
                                      solver->problem,
@@ -741,7 +750,8 @@ compute_trial_point_deterministic(SleqpTrialPointSolver* solver,
                                     &actual_merit_value));
     }
 
-    const double eps = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
+    const double eps
+      = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_EPS);
 
     SLEQP_NUM_ASSERT_PARAM(eps);
 
@@ -758,7 +768,8 @@ compute_required_error_bound(SleqpTrialPointSolver* solver,
                              double model_reduction)
 {
   const double accepted_reduction
-    = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ACCEPTED_REDUCTION);
+    = sleqp_settings_real_value(solver->settings,
+                                SLEQP_SETTINGS_REAL_ACCEPTED_REDUCTION);
 
   // TODO: Make this adjustable
   // must be > 0, < .5 *accepted_reduction
@@ -809,12 +820,13 @@ solver_refine_step(SleqpTrialPointSolver* solver,
   assert(sleqp_func_get_type(func) == SLEQP_FUNC_TYPE_DYNAMIC);
 
   const bool quadratic_model
-    = sleqp_settings_bool_value(settings, SLEQP_SETTINGS_BOOL_USE_QUADRATIC_MODEL);
+    = sleqp_settings_bool_value(settings,
+                                SLEQP_SETTINGS_BOOL_USE_QUADRATIC_MODEL);
 
   const bool perform_newton_step
     = quadratic_model
       && sleqp_settings_bool_value(settings,
-                                  SLEQP_SETTINGS_BOOL_PERFORM_NEWTON_STEP);
+                                   SLEQP_SETTINGS_BOOL_PERFORM_NEWTON_STEP);
 
   while (true)
   {
@@ -978,7 +990,8 @@ compute_trial_point_soc_dynamic(SleqpTrialPointSolver* solver,
     = sleqp_settings_real_value(solver->settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   const bool quadratic_model
-    = sleqp_settings_bool_value(settings, SLEQP_SETTINGS_BOOL_USE_QUADRATIC_MODEL);
+    = sleqp_settings_bool_value(settings,
+                                SLEQP_SETTINGS_BOOL_USE_QUADRATIC_MODEL);
 
   SLEQP_CALL(
     sleqp_soc_compute_step(solver->soc_data,
