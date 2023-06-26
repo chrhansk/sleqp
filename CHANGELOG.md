@@ -8,12 +8,14 @@
 - Added support for usage via FetchContent()
 - Added more documentation of python interface
 - Made numpy arrays passed to function callbacks read-only
+- Improved restoration phase
 
 ### Fixed
 
 - Fixed multiple build issues on Mac OS
 - Removed invalid unit test
 - Removed source directory variables from cmake-related files
+- Fixed error in restoration mode
 
 ## [1.0.0] - 2023-06-09
 
