@@ -86,7 +86,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_cons_weights(csleqp.SleqpFunc* func,
     func_obj = (<object> func_data)
 
     num_cons = csleqp.sleqp_func_num_cons(func)
-    cons_view = <double[:num_cons]> cons_weights
+    cons_view = _readonly(<double[:num_cons]> cons_weights)
 
     func_obj.set_cons_weights(np.copy(cons_view))
 

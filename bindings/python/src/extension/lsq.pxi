@@ -80,7 +80,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(csleqp.SleqpFunc* func,
   try:
       func_obj = (<object> func_data)
 
-      forward_direction_array = sleqp_sparse_vec_to_array(forward_direction)
+      forward_direction_array = _readonly(sleqp_sparse_vec_to_array(forward_direction))
 
       product_array = func_obj.lsq_jac_forward(forward_direction_array)
 
@@ -113,7 +113,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(csleqp.SleqpFunc* func,
   try:
       func_obj = (<object> func_data)
 
-      adjoint_direction_array = sleqp_sparse_vec_to_array(adjoint_direction)
+      adjoint_direction_array = _readonly(sleqp_sparse_vec_to_array(adjoint_direction))
 
       product_array = func_obj.lsq_jac_adjoint(adjoint_direction_array)
 

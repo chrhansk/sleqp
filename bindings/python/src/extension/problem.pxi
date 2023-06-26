@@ -1,6 +1,12 @@
 #cython: language_level=3
 
 
+cdef _readonly(arr):
+    result = arr.view()
+    result.flags.writeable = False
+    return result
+
+
 cdef csleqp.SLEQP_RETCODE create_problem(csleqp.SleqpProblem** problem,
                                          csleqp.SleqpFunc* cfunc,
                                          np.ndarray var_lb,
@@ -217,28 +223,28 @@ cdef class BaseProblem:
     """
     Lower bounds on variables in [-oo, oo)
     """
-    return self._problem.var_lb
+    return _readonly(self._problem.var_lb)
 
   @property
   def var_ub(self) -> np.array:
     """
     Upper bounds on variables in (-oo, oo]
     """
-    return self._problem.var_ub
+    return _readonly(self._problem.var_ub)
 
   @property
   def cons_lb(self) -> np.array:
     """
     Lower bounds on constraints in [-oo, oo)
     """
-    return self._problem.cons_lb
+    return _readonly(self._problem.cons_lb)
 
   @property
   def cons_ub(self) -> np.array:
     """
     Upper bounds on constraints in (-oo, oo]
     """
-    return self._problem.cons_ub
+    return _readonly(self._problem.cons_ub)
 
   @property
   def func(self) -> object:

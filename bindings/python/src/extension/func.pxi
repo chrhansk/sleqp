@@ -10,7 +10,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
                                          void* func_data):
 
   try:
-    x_array = sleqp_sparse_vec_to_array(x)
+    x_array = _readonly(sleqp_sparse_vec_to_array(x))
 
     func_obj = (<object> func_data)
 
@@ -237,8 +237,8 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod(csleqp.SleqpFunc* func,
 
     num_vars = csleqp.sleqp_func_num_vars(func)
 
-    direction_array = sleqp_sparse_vec_to_array(direction)
-    cons_dual_array = sleqp_sparse_vec_to_array(cons_dual)
+    direction_array = _readonly(sleqp_sparse_vec_to_array(direction))
+    cons_dual_array = _readonly(sleqp_sparse_vec_to_array(cons_dual))
 
     product_array = func_obj.hess_prod(direction_array, cons_dual_array)
 
