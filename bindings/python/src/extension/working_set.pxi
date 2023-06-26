@@ -1,6 +1,10 @@
 #cython: language_level=3
 
 cdef class WorkingSet:
+  """
+  The working set associated with an iterate, containing
+  the states of all variables and constraints.
+  """
   cdef csleqp.SleqpWorkingSet* working_set
 
   cdef dict __dict__
@@ -18,6 +22,9 @@ cdef class WorkingSet:
 
   @property
   def num_vars(self) -> int:
+    """
+    The total number of (active or inactive) variables in the working set
+    """
     cdef csleqp.SleqpProblem* problem
 
     problem = csleqp.sleqp_working_set_problem(self.working_set)
@@ -26,6 +33,9 @@ cdef class WorkingSet:
 
   @property
   def num_cons(self) -> int:
+    """
+    The total number of (active or inactive) constraints in the working set
+    """
     cdef csleqp.SleqpProblem* problem
 
     problem = csleqp.sleqp_working_set_problem(self.working_set)
@@ -34,17 +44,28 @@ cdef class WorkingSet:
 
   @property
   def num_active_vars(self) -> int:
+    """
+    The total number of active (lower or upper or both)
+    variables in the working set
+    """
     assert self.working_set
 
     return csleqp.sleqp_working_set_num_active_vars(self.working_set)
 
   @property
   def num_active_cons(self) -> int:
+    """
+    The total number of active (lower or upper or both)
+    constraints in the working set
+    """
     assert self.working_set
 
     return csleqp.sleqp_working_set_num_active_cons(self.working_set)
 
   def var_state(self, int i) -> ActiveState:
+    """
+    State of variable i
+    """
     assert self.working_set
 
     state = csleqp.sleqp_working_set_var_state(self.working_set,
@@ -53,6 +74,9 @@ cdef class WorkingSet:
     return ActiveState(state)
 
   def cons_state(self, int i) -> ActiveState:
+    """
+    State of constraint i
+    """
     assert self.working_set
 
     state = csleqp.sleqp_working_set_cons_state(self.working_set,
@@ -76,6 +100,10 @@ cdef class WorkingSet:
 
   @property
   def size(self) -> int:
+    """
+    Size of the working set, i.e., number of active variables
+    and active constraints
+    """
     assert self.working_set
 
     return csleqp.sleqp_working_set_size(self.working_set)

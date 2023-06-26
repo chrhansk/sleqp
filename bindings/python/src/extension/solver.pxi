@@ -5,7 +5,9 @@ from libc.stdlib cimport malloc, free
 cdef object solvers = weakref.WeakSet()
 
 cdef class Solver:
-
+  """
+  Solver class for NLP problems
+  """
   cdef dict __dict__
 
   cdef object __weakref__
@@ -112,6 +114,15 @@ cdef class Solver:
   def solve(self,
             max_num_iterations: int = None,
             time_limit: float = None) -> None:
+    """
+    Solve the underlying NLP.
+
+    :param max_num_iterations: Iteration limit, `None` for unlimited
+    :type value: int
+
+    :param time_limit: Time limit, `None` for unlimited
+    :type value: float
+    """
 
     cdef int max_it = csleqp.SLEQP_NONE
     cdef double time = csleqp.SLEQP_NONE
@@ -126,6 +137,9 @@ cdef class Solver:
 
   @property
   def status(self) -> Status:
+    """
+    Returns status code of last solve
+    """
     return Status(csleqp.sleqp_solver_status(self.solver))
 
   def abort(self):
@@ -171,6 +185,9 @@ cdef class Solver:
 
   @property
   def solution(self) -> Iterate:
+    """
+    Solution iterate of last call to solve()
+    """
     cdef csleqp.SleqpIterate* _iterate
     cdef Iterate iterate = Iterate(_create=True)
 
@@ -183,7 +200,7 @@ cdef class Solver:
 
   def add_callback(self, event, function):
     """
-    Adds a callback function to the solver.
+    Adds a callback function to the solver
     """
     cdef CallbackHandle callback_handle = CallbackHandle(self, event, function)
 
@@ -229,7 +246,9 @@ cdef class Solver:
 
   @property
   def states(self):
-
+    """
+    Return state of the solver as dict
+    """
     stat_residuals = None
 
     csleqp_call(csleqp.sleqp_solver_vec_state(self.solver,
