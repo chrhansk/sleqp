@@ -12,6 +12,9 @@
 
 if(PKG_CONFIG_FOUND)
   pkg_check_modules(HIGHS highs)
+  if(HIGHS_FOUND)
+    set(HIGHS_LIBRARIES ${HIGHS_LINK_LIBRARIES})
+  endif()
 endif()
 
 if(NOT HIGHS_FOUND)
