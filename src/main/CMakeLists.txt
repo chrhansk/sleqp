@@ -211,6 +211,10 @@ configure_file("${PROJECT_SOURCE_DIR}/src/main/defs.h.in"
 generate_export_header(sleqp
   EXPORT_FILE_NAME ${SLEQP_EXPORT_FILE_NAME})
 
+# Make sure we are exporting symbols when compiling sleqp_objects
+# NOTE: implicitly added `target_compile_definitions(sleqp PRIVATE sleqp_EXPORTS)` is not enough
+target_compile_definitions(sleqp_objects PRIVATE sleqp_EXPORTS)
+
 install(TARGETS sleqp
   EXPORT sleqp-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
