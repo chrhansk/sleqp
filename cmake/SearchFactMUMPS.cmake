@@ -47,4 +47,7 @@ mark_as_advanced(
   MUMPS_INCLUDE_DIRS
   MUMPS_LIBRARIES)
 
-set(SLEQP_WITH_MPI ON)
+
+if(SLEQP_MUMPS_NEEDS_MPI)
+  set(SLEQP_WITH_MPI ON)
+endif()

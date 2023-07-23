@@ -76,6 +76,8 @@ option(SLEQP_ENABLE_MATLAB_MEX "Compile with MATLAB MEX interface." OFF)
 
 option(SLEQP_ENABLE_AMPL "Compile with AMPL interface." OFF)
 
+option(SLEQP_MUMPS_NEEDS_MPI "Does MUMPS require MPI?" ON)
+
 # Required for MUMPS
 set(SLEQP_WITH_MPI OFF)
 
