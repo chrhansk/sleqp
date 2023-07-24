@@ -65,14 +65,14 @@ function(add_python_project)
 
   add_custom_command(
     TARGET "${TARGET_NAME}_sdist"
-    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${PYTHON_EXECUTABLE} -m build -s
+    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${Python_EXECUTABLE} -m build -s
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   add_custom_target("${TARGET_NAME}_bdist_wheel")
 
   add_custom_command(
     TARGET "${TARGET_NAME}_bdist_wheel"
-    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${PYTHON_EXECUTABLE} -m build -w
+    COMMAND ${CMAKE_COMMAND} -E env "CFLAGS=${PYTHON_CFLAGS}" "${EXTRA_ARGS}" "LDFLAGS=\"${PYTHON_LDFLAGS}\"" ${Python_EXECUTABLE} -m build -w
     WORKING_DIRECTORY ${PROJECT_DIR})
 
   if((ENABLE_UNIT_TESTS) AND (SLEQP_ENABLE_UNIT_TESTS))
