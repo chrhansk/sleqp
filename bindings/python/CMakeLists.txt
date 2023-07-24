@@ -7,9 +7,9 @@ file(RENAME
   "${CMAKE_CURRENT_BINARY_DIR}/${LICENSE_FILE_NAME}"
   "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 
-find_package(Python3 COMPONENTS Interpreter)
+find_package(Python 3.0 COMPONENTS Interpreter)
 
-if(Python3_FOUND)
+if(Python_FOUND)
   find_program(TOX "tox")
 
   include(PythonHelpers)
