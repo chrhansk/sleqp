@@ -6,7 +6,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_nonzeros(csleqp.SleqpFunc* func,
                                              int* jac_adj_nnz,
                                              int* cons_val_nnz,
                                              int* cons_jac_nnz,
-                                             void* func_data):
+                                             void* func_data) noexcept:
 
   try:
     func_obj = (<object> func_data)
@@ -36,7 +36,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_nonzeros_nogil(csleqp.SleqpFunc* func,
                                                    int* jac_adj_nnz,
                                                    int* cons_val_nnz,
                                                    int* cons_jac_nnz,
-                                                   void* func_data) nogil:
+                                                   void* func_data) noexcept nogil:
 
   with gil:
     return sleqp_lsq_nonzeros(func,
@@ -50,7 +50,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_nonzeros_nogil(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals(csleqp.SleqpFunc* func,
                                               csleqp.SleqpVec* residual,
-                                              void* func_data):
+                                              void* func_data) noexcept:
   try:
     func_obj = (<object> func_data)
 
@@ -66,7 +66,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals_nogil(csleqp.SleqpFunc* func,
                                                     csleqp.SleqpVec* residual,
-                                                    void* func_data) nogil:
+                                                    void* func_data) noexcept nogil:
   with gil:
     return sleqp_lsq_residuals(func,
                                residual,
@@ -76,7 +76,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_residuals_nogil(csleqp.SleqpFunc* func,
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(csleqp.SleqpFunc* func,
                                                 const csleqp.SleqpVec* forward_direction,
                                                 csleqp.SleqpVec* product,
-                                                void* func_data):
+                                                void* func_data) noexcept:
   try:
       func_obj = (<object> func_data)
 
@@ -98,7 +98,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward(csleqp.SleqpFunc* func,
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward_nogil(csleqp.SleqpFunc* func,
                                                       const csleqp.SleqpVec* forward_direction,
                                                       csleqp.SleqpVec* product,
-                                                      void* func_data) nogil:
+                                                      void* func_data) noexcept nogil:
   with gil:
     return sleqp_lsq_jac_forward(func,
                                  forward_direction,
@@ -109,7 +109,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_forward_nogil(csleqp.SleqpFunc* func,
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(csleqp.SleqpFunc* func,
                                                 const csleqp.SleqpVec* adjoint_direction,
                                                 csleqp.SleqpVec* product,
-                                                void* func_data):
+                                                void* func_data) noexcept:
   try:
       func_obj = (<object> func_data)
 
@@ -130,7 +130,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint(csleqp.SleqpFunc* func,
 cdef csleqp.SLEQP_RETCODE sleqp_lsq_jac_adjoint_nogil(csleqp.SleqpFunc* func,
                                                       const csleqp.SleqpVec* adjoint_direction,
                                                       csleqp.SleqpVec* product,
-                                                      void* func_data) nogil:
+                                                      void* func_data) noexcept nogil:
   with gil:
     return sleqp_lsq_jac_adjoint(func,
                                  adjoint_direction,

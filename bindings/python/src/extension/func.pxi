@@ -7,7 +7,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set(csleqp.SleqpFunc* func,
                                          csleqp.SleqpVec* x,
                                          csleqp.SLEQP_VALUE_REASON reason,
                                          csleqp.bool* reject,
-                                         void* func_data):
+                                         void* func_data) noexcept:
 
   try:
     x_array = _readonly(sleqp_sparse_vec_to_array(x))
@@ -33,7 +33,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_set_nogil(csleqp.SleqpFunc* func,
                                                csleqp.SleqpVec* x,
                                                csleqp.SLEQP_VALUE_REASON reason,
                                                csleqp.bool* reject,
-                                               void* func_data) nogil:
+                                               void* func_data) noexcept nogil:
   with gil:
     return sleqp_func_set(func,
                           x,
@@ -47,7 +47,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_nonzeros(csleqp.SleqpFunc* func,
                                               int* cons_val_nnz,
                                               int* cons_jac_nnz,
                                               int* hess_prod_nnz,
-                                              void* func_data):
+                                              void* func_data) noexcept:
 
   try:
     func_obj = (<object> func_data)
@@ -75,7 +75,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_nonzeros_nogil(csleqp.SleqpFunc* func,
                                                     int* cons_val_nnz,
                                                     int* cons_jac_nnz,
                                                     int* hess_prod_nnz,
-                                                    void* func_data) nogil:
+                                                    void* func_data) noexcept nogil:
   with gil:
     return sleqp_func_nonzeros(func,
                                obj_grad_nnz,
@@ -87,7 +87,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_nonzeros_nogil(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val(csleqp.SleqpFunc* func,
                                              double* obj_val,
-                                             void* func_data):
+                                             void* func_data) noexcept:
   try:
 
     func_obj = (<object> func_data)
@@ -105,7 +105,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val_nogil(csleqp.SleqpFunc* func,
                                                    double* obj_val,
-                                                   void* func_data) nogil:
+                                                   void* func_data) noexcept nogil:
   with gil:
     return sleqp_func_obj_val(func,
                               obj_val,
@@ -114,7 +114,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_val_nogil(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad(csleqp.SleqpFunc* func,
                                               csleqp.SleqpVec* obj_grad,
-                                              void* func_data):
+                                              void* func_data) noexcept:
   cdef int num_vars
   try:
 
@@ -139,7 +139,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad_nogil(csleqp.SleqpFunc* func,
                                                     csleqp.SleqpVec* obj_grad,
-                                                    void* func_data) nogil:
+                                                    void* func_data) noexcept nogil:
   with gil:
     return sleqp_func_obj_grad(func,
                                obj_grad,
@@ -148,7 +148,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_obj_grad_nogil(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
                                               csleqp.SleqpVec* cons_vals,
-                                              void* func_data):
+                                              void* func_data) noexcept:
   cdef int num_cons
   try:
 
@@ -173,7 +173,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val_nogil(csleqp.SleqpFunc* func,
                                                     csleqp.SleqpVec* cons_vals,
-                                                    void* func_data) nogil:
+                                                    void* func_data) noexcept nogil:
   with gil:
     return sleqp_func_cons_val(func,
                                cons_vals,
@@ -182,7 +182,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_val_nogil(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
                                               csleqp.SleqpMat* cons_jac,
-                                              void* func_data):
+                                              void* func_data) noexcept:
   cdef int num_vars
   cdef int num_cons
   try:
@@ -212,7 +212,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_func_cons_jac_nogil(csleqp.SleqpFunc* func,
                                                     csleqp.SleqpMat* cons_jac,
-                                                    void* func_data) nogil:
+                                                    void* func_data) noexcept nogil:
   with gil:
     return sleqp_func_cons_jac(func,
                                cons_jac,
@@ -223,7 +223,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod(csleqp.SleqpFunc* func,
                                                const csleqp.SleqpVec* direction,
                                                const csleqp.SleqpVec* cons_dual,
                                                csleqp.SleqpVec* product,
-                                               void* func_data):
+                                               void* func_data) noexcept:
 
   cdef int num_vars
 
@@ -259,7 +259,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod_nogil(csleqp.SleqpFunc* func,
                                                      const csleqp.SleqpVec* direction,
                                                      const csleqp.SleqpVec* cons_dual,
                                                      csleqp.SleqpVec* product,
-                                                     void* func_data) nogil:
+                                                     void* func_data) noexcept nogil:
   with gil:
     return sleqp_func_hess_prod(func,
                                 direction,
@@ -268,7 +268,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_func_hess_prod_nogil(csleqp.SleqpFunc* func,
                                 func_data)
 
 
-cdef csleqp.SLEQP_RETCODE sleqp_func_free(void* func_data):
+cdef csleqp.SLEQP_RETCODE sleqp_func_free(void* func_data) noexcept:
   return csleqp.SLEQP_OKAY
 
 

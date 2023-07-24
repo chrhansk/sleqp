@@ -4,7 +4,7 @@ cimport libc.time
 
 cdef void sleqp_python_handler(csleqp.SLEQP_LOG_LEVEL level,
                                libc.time.time_t time,
-                               const char* message):
+                               const char* message) noexcept:
   levels = {
     csleqp.SLEQP_LOG_DEBUG: logging.DEBUG,
     csleqp.SLEQP_LOG_ERROR: logging.ERROR,
@@ -20,7 +20,7 @@ cdef void sleqp_python_handler(csleqp.SLEQP_LOG_LEVEL level,
 
 cdef void sleqp_python_handler_nogil(csleqp.SLEQP_LOG_LEVEL level,
                                      libc.time.time_t time,
-                                     const char* message) nogil:
+                                     const char* message) noexcept nogil:
   with gil:
     sleqp_python_handler(level, time, message)
 

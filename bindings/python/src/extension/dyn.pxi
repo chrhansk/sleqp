@@ -4,7 +4,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_eval(csleqp.SleqpFunc* func,
                                          double* obj_val,
                                          csleqp.SleqpVec* cons_val,
                                          double* error,
-                                         void* func_data):
+                                         void* func_data) noexcept:
   try:
     func_obj = (<object> func_data)
 
@@ -30,7 +30,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_eval_nogil(csleqp.SleqpFunc* func,
                                                double* obj_val,
                                                csleqp.SleqpVec* cons_val,
                                                double* error,
-                                               void* func_data) nogil:
+                                               void* func_data) noexcept nogil:
   with gil:
     return sleqp_dyn_eval(func,
                           obj_val,
@@ -40,7 +40,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_eval_nogil(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_error_bound(csleqp.SleqpFunc* func,
                                                     double error_bound,
-                                                    void* func_data):
+                                                    void* func_data) noexcept:
   try:
     func_obj = (<object> func_data)
 
@@ -52,7 +52,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_error_bound(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_error_bound_nogil(csleqp.SleqpFunc* func,
                                                           double error_bound,
-                                                          void* func_data) nogil:
+                                                          void* func_data) noexcept nogil:
   with gil:
     return sleqp_dyn_set_error_bound(func,
                                      error_bound,
@@ -60,7 +60,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_error_bound_nogil(csleqp.SleqpFunc* func
 
 cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_obj_weight(csleqp.SleqpFunc* func,
                                                    double obj_weight,
-                                                   void* func_data):
+                                                   void* func_data) noexcept:
   try:
     func_obj = (<object> func_data)
 
@@ -72,7 +72,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_obj_weight(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_obj_weight_nogil(csleqp.SleqpFunc* func,
                                                          double obj_weight,
-                                                         void* func_data) nogil:
+                                                         void* func_data) noexcept nogil:
   with gil:
     return sleqp_dyn_set_obj_weight(func,
                                     obj_weight,
@@ -80,7 +80,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_obj_weight_nogil(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_cons_weights(csleqp.SleqpFunc* func,
                                                      const double* cons_weights,
-                                                     void* func_data):
+                                                     void* func_data) noexcept:
   cdef double[:] cons_view
   try:
     func_obj = (<object> func_data)
@@ -96,7 +96,7 @@ cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_cons_weights(csleqp.SleqpFunc* func,
 
 cdef csleqp.SLEQP_RETCODE sleqp_dyn_set_cons_weights_nogil(csleqp.SleqpFunc* func,
                                                            const double* cons_weights,
-                                                           void* func_data) nogil:
+                                                           void* func_data) noexcept nogil:
   with gil:
     return sleqp_dyn_set_cons_weights(func,
                                       cons_weights,
