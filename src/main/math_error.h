@@ -7,7 +7,7 @@
 #include "error.h"
 #include "types.h"
 
-#if defined(MATH_ERREXCEPT) && !defined(SLEQP_MATH_ERREXCEPT)
+#if defined(math_errhandling) && defined(MATH_ERREXCEPT) && !defined(SLEQP_MATH_ERREXCEPT)
 #define SLEQP_MATH_ERREXCEPT math_errhandling & MATH_ERREXCEPT
 #else
 #define SLEQP_MATH_ERREXCEPT 1
