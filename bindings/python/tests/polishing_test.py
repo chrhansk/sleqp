@@ -100,7 +100,7 @@ class PolishingTest(unittest.TestCase):
     solver = sleqp.Solver(problem,
                           self.initial_sol)
 
-    solver.solve(100, 3600)
+    solver.solve(100, 3600.)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
 
@@ -115,7 +115,7 @@ class PolishingTest(unittest.TestCase):
     solver = sleqp.Solver(problem,
                           self.initial_sol)
 
-    solver.solve(100, 3600)
+    solver.solve(100, 3600.)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
 

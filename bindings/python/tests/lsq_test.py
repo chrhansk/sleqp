@@ -83,7 +83,7 @@ class LSQTest(unittest.TestCase):
     solver = sleqp.Solver(problem,
                           self.initial_sol)
 
-    solver.solve(100, 3600)
+    solver.solve(100, 3600.)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
 
@@ -101,7 +101,7 @@ class LSQTest(unittest.TestCase):
     solver = sleqp.Solver(problem,
                           self.initial_sol)
 
-    solver.solve(100, 3600)
+    solver.solve(100, 3600.)
 
     self.assertEqual(solver.status, sleqp.Status.Optimal)
 
@@ -122,7 +122,7 @@ class LSQTest(unittest.TestCase):
     sleqp.set_release_gil(True)
 
     try:
-      solver.solve(100, 3600)
+      solver.solve(100, 3600.)
 
       self.assertEqual(solver.status, sleqp.Status.Optimal)
 

@@ -23,7 +23,7 @@ class UnconstrainedTest(unittest.TestCase):
                                initial_sol)
 
   def test_solve(self):
-    self.solver.solve(100, 3600)
+    self.solver.solve(100, 3600.)
 
     self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
@@ -34,7 +34,7 @@ class UnconstrainedTest(unittest.TestCase):
     sleqp.set_release_gil(True)
 
     try:
-      self.solver.solve(100, 3600)
+      self.solver.solve(100, 3600.)
 
       self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
