@@ -7,7 +7,10 @@
 #include "fail.h"
 #include "log.h"
 #include "mem.h"
+
+#ifdef SLEQP_WITH_MPI
 #include "mpi_utils.h"
+#endif
 
 static const bool sleqp_mumps_verbose = true;
 
@@ -48,7 +51,9 @@ typedef struct SleqpMUMPSData
 static SLEQP_RETCODE
 sleqp_mumps_create(SleqpMUMPSData** star)
 {
+#ifdef SLEQP_WITH_MPI
   SLEQP_CALL(sleqp_mpi_initialize());
+#endif
 
   SLEQP_CALL(sleqp_malloc(star));
 

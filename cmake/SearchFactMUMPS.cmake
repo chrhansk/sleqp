@@ -23,16 +23,24 @@ if(MUMPS_INCLUDE_DIR)
     MUMPS_VERSION)
 endif()
 
-find_package(MPI)
+if(SLEQP_MUMPS_NEEDS_MPI)
+    find_package(MPI)
+endif()
 
-find_library(MUMPS_COMMON NAMES mumps_common)
-find_library(MUMPS_LIBRARY NAMES dmumps)
+find_library(MUMPS_COMMON NAMES mumps_common coinmumps)
+find_library(MUMPS_LIBRARY NAMES dmumps coinmumps)
 
 include(FindPackageHandleStandardArgs)
 
-find_package_handle_standard_args(MUMPS
-  REQUIRED_VARS MUMPS_INCLUDE_DIR MUMPS_LIBRARY MUMPS_COMMON MPI_C_LIBRARIES MPI_C_INCLUDE_DIRS
-  VERSION_VAR MUMPS_VERSION)
+if(SLEQP_MUMPS_NEEDS_MPI)
+    find_package_handle_standard_args(MUMPS
+      REQUIRED_VARS MUMPS_INCLUDE_DIR MUMPS_LIBRARY MUMPS_COMMON MPI_C_LIBRARIES MPI_C_INCLUDE_DIRS
+      VERSION_VAR MUMPS_VERSION)
+else()
+    find_package_handle_standard_args(MUMPS
+      REQUIRED_VARS MUMPS_INCLUDE_DIR MUMPS_LIBRARY MUMPS_COMMON
+      VERSION_VAR MUMPS_VERSION)
+endif()
 
 set(MUMPS_LIBRARIES
   ${MUMPS_LIBRARY}
