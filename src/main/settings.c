@@ -466,6 +466,41 @@ sleqp_settings_set_enum_value(SleqpSettings* settings,
   return SLEQP_OKAY;
 }
 
+SLEQP_RETCODE
+sleqp_settings_set_enum_value_by_string(SleqpSettings* settings,
+                              SLEQP_SETTINGS_ENUM option,
+                              const char* value)
+{
+  if (!OPT_VALID(option, SLEQP_NUM_ENUM_SETTINGS))
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid enum option (%d)", option);
+  }
+
+  const SleqpEnum* settings_enum = get_enum(option);
+
+  if (!settings_enum)
+  {
+    sleqp_raise(SLEQP_ILLEGAL_ARGUMENT, "Invalid enum option (%d)", option);
+  }
+
+  const SleqpEnumEntry* entry = settings_enum->entries;
+
+  for (; entry->name; ++entry)
+  {
+    if (!strcmp(entry->name, value))
+    {
+
+      settings->enum_values[option] = entry->value;
+      return SLEQP_OKAY;
+    }
+  }
+
+  sleqp_raise(SLEQP_ILLEGAL_ARGUMENT,
+              "Invalid option value (%s) for option %s",
+              value,
+              sleqp_settings_enum_desc(option));
+}
+
 int
 sleqp_settings_int_value(const SleqpSettings* settings,
                          SLEQP_SETTINGS_INT option)

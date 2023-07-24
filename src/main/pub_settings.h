@@ -116,6 +116,11 @@ sleqp_settings_set_enum_value(SleqpSettings* settings,
                               SLEQP_SETTINGS_ENUM option,
                               int value);
 
+SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+sleqp_settings_set_enum_value_by_string(SleqpSettings* settings,
+                              SLEQP_SETTINGS_ENUM option,
+                              const char* value);
+
 SLEQP_EXPORT
 int
 sleqp_settings_int_value(const SleqpSettings* settings,
