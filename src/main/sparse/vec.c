@@ -69,7 +69,10 @@ sleqp_vec_push(SleqpVec* vec, int idx, double value)
 }
 
 SLEQP_RETCODE
-sleqp_vec_set_from_raw(SleqpVec* vec, double* values, int dim, double zero_eps)
+sleqp_vec_set_from_raw(SleqpVec* vec,
+                       const double* values,
+                       int dim,
+                       double zero_eps)
 {
   int nnz = 0;
 

@@ -374,7 +374,7 @@ sleqp_problem_has_nonlinear_cons(SleqpProblem* problem)
 }
 
 int
-sleqp_problem_num_vars(SleqpProblem* problem)
+sleqp_problem_num_vars(const SleqpProblem* problem)
 {
   return problem->num_variables;
 }
@@ -434,19 +434,19 @@ sleqp_problem_cons_ub(SleqpProblem* problem)
 }
 
 int
-sleqp_problem_num_cons(SleqpProblem* problem)
+sleqp_problem_num_cons(const SleqpProblem* problem)
 {
   return problem->num_general_constraints + problem->num_linear_constraints;
 }
 
 int
-sleqp_problem_num_lin_cons(SleqpProblem* problem)
+sleqp_problem_num_lin_cons(const SleqpProblem* problem)
 {
   return problem->num_linear_constraints;
 }
 
 int
-sleqp_problem_num_gen_cons(SleqpProblem* problem)
+sleqp_problem_num_gen_cons(const SleqpProblem* problem)
 {
   return problem->num_general_constraints;
 }
