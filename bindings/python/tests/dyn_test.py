@@ -62,7 +62,7 @@ class DynTest(unittest.TestCase):
                                initial_sol)
 
   def test_solve(self):
-    self.solver.solve(100, 3600)
+    self.solver.solve(100, 3600.)
 
     self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 
@@ -72,25 +72,25 @@ class DynTest(unittest.TestCase):
   def test_eval_error(self):
     self.func.eval = error_func
     with self.assertRaises(Exception):
-      self.solver.solve(100, 3600)
+      self.solver.solve(100, 3600.)
 
   def test_weight_error(self):
     self.func.set_obj_weight = error_func
     with self.assertRaises(Exception):
       solver = sleqp.Solver(self.problem,
                             initial_sol)
-      solver.solve(100, 3600)
+      solver.solve(100, 3600.)
 
   def test_bound_error(self):
     self.func.set_error_bound = error_func
     with self.assertRaises(Exception):
-      self.solver.solve(100, 3600)
+      self.solver.solve(100, 3600.)
 
   def test_solve_nogil(self):
     sleqp.set_release_gil(True)
 
     try:
-      self.solver.solve(100, 3600)
+      self.solver.solve(100, 3600.)
 
       self.assertEqual(self.solver.status, sleqp.Status.Optimal)
 

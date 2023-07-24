@@ -56,7 +56,7 @@ class SecondOrderTest(unittest.TestCase):
     self.expected_sol = np.array([0.])
 
   def test_solve(self):
-    self.solver.solve(100, 3600)
+    self.solver.solve(100, 3600.)
 
     # Want to detect the infeasibility
     # at least before the iterations run out

@@ -7,10 +7,9 @@ file(RENAME
   "${CMAKE_CURRENT_BINARY_DIR}/${LICENSE_FILE_NAME}"
   "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
 
-find_package(PythonInterp "3")
-find_package(PythonLibs "3")
+find_package(Python3 COMPONENTS Interpreter)
 
-if(PythonInterp_FOUND AND PythonLibs_FOUND)
+if(Python3_FOUND)
   find_program(TOX "tox")
 
   include(PythonHelpers)
