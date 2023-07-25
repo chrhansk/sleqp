@@ -218,10 +218,15 @@ generate_export_header(sleqp
 # NOTE: implicitly added `target_compile_definitions(sleqp PRIVATE sleqp_EXPORTS)` is not enough
 target_compile_definitions(sleqp_objects PRIVATE sleqp_EXPORTS)
 
+# Install for main library target (runtime destination required for
+# windows, "COMPONENT" has to be repeated everywhere)
 install(TARGETS sleqp
   EXPORT sleqp-targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  COMPONENT "libraries"
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  COMPONENT "libraries"
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   COMPONENT "libraries")
 
 
