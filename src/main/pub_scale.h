@@ -79,12 +79,12 @@ SLEQP_RETCODE
 sleqp_scaling_reset(SleqpScaling* scaling);
 
 SLEQP_EXPORT int
-sleqp_scaling_num_vars(SleqpScaling* scaling);
+sleqp_scaling_num_vars(const SleqpScaling* scaling);
 SLEQP_EXPORT int
-sleqp_scaling_num_cons(SleqpScaling* scaling);
+sleqp_scaling_num_cons(const SleqpScaling* scaling);
 
 SLEQP_EXPORT int
-sleqp_scaling_obj_weight(SleqpScaling* scaling);
+sleqp_scaling_obj_weight(const SleqpScaling* scaling);
 
 SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
 sleqp_scaling_set_obj_weight(SleqpScaling* scaling, int weight);

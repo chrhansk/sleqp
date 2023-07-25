@@ -134,19 +134,19 @@ sleqp_scaling_create(SleqpScaling** star,
 }
 
 int
-sleqp_scaling_num_vars(SleqpScaling* scaling)
+sleqp_scaling_num_vars(const SleqpScaling* scaling)
 {
   return scaling->num_variables;
 }
 
 int
-sleqp_scaling_num_cons(SleqpScaling* scaling)
+sleqp_scaling_num_cons(const SleqpScaling* scaling)
 {
   return scaling->num_constraints;
 }
 
 int
-sleqp_scaling_obj_weight(SleqpScaling* scaling)
+sleqp_scaling_obj_weight(const SleqpScaling* scaling)
 {
   return scaling->obj_weight;
 }

@@ -4,9 +4,9 @@
 #include "sleqp/export.h"
 
 #include "sleqp/pub_func.h"
+#include "sleqp/pub_settings.h"
 #include "sparse/pub_mat.h"
 #include "sparse/pub_vec.h"
-#include "sleqp/pub_settings.h"
 
 /**
  * @file pub_problem.h
@@ -108,21 +108,21 @@ sleqp_problem_create(SleqpProblem** star,
  * linear) of the problem.
  **/
 SLEQP_EXPORT int
-sleqp_problem_num_cons(SleqpProblem* problem);
+sleqp_problem_num_cons(const SleqpProblem* problem);
 
 /**
  * Returns the total number \f$ m_{\lin} \f$ of linear constraints of
  * the problem.
  **/
 SLEQP_EXPORT int
-sleqp_problem_num_lin_cons(SleqpProblem* problem);
+sleqp_problem_num_lin_cons(const SleqpProblem* problem);
 
 /**
  * Returns the total number \f$ m_{\nonlin} \f$ of general constraints
  * of the problem.
  **/
 SLEQP_EXPORT int
-sleqp_problem_num_gen_cons(SleqpProblem* problem);
+sleqp_problem_num_gen_cons(const SleqpProblem* problem);
 
 /**
  * Returns the function, composed of the objective \f$ f \f$ and the
@@ -136,7 +136,7 @@ sleqp_problem_func(SleqpProblem* problem);
  * Returns the number \f$ n \f$ of variables of the problem.
  **/
 SLEQP_EXPORT int
-sleqp_problem_num_vars(SleqpProblem* problem);
+sleqp_problem_num_vars(const SleqpProblem* problem);
 
 /**
  * Returns the lower bounds \f$ l_x \f$ of the variables

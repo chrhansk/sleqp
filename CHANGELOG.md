@@ -17,6 +17,7 @@
 - Removed source directory variables from cmake-related files
 - Fixed error in restoration mode
 - Fixed compile / test errors in python extension
+- Improved const correctness of interface functions
 
 ## [1.0.0] - 2023-06-09
 
