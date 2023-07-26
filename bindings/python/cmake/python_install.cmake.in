@@ -17,10 +17,10 @@ set(INSTALL_ENV @INSTALL_ENV@)
 
 # debug_message("INSTALL_ENV=${INSTALL_ENV}")
 
-# debug_message("Executing \"@PYTHON_EXECUTABLE@\"  -m pip install --no-deps --root=\"${ROOT_DIR}\" . in @PROJECT_DIR@")
+# debug_message("Executing \"@Python_EXECUTABLE@\"  -m pip install --no-deps --root=\"${ROOT_DIR}\" . in @PROJECT_DIR@")
 
 execute_process(COMMAND
-  ${CMAKE_COMMAND} -E env ${INSTALL_ENV} @PYTHON_EXECUTABLE@ -m pip install --no-deps --ignore-installed --root=${ROOT_DIR} .
+  ${CMAKE_COMMAND} -E env ${INSTALL_ENV} @Python_EXECUTABLE@ -m pip install --no-deps --ignore-installed --root=${ROOT_DIR} .
   WORKING_DIRECTORY "@PROJECT_DIR@"
   # TODO: Add for cmake >= 3.19
   # COMMAND_ERROR_IS_FATAL ANY
