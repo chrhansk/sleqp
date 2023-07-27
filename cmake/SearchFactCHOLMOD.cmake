@@ -4,14 +4,6 @@
 #  CHOLMOD_LIBRARIES      - List of libraries when using CHOLMOD.
 #  CHOLMOD_FOUND          - True if CHOLMOD found.
 
-function(extract_define file name result)
-  file(STRINGS "${file}"
-    file_result
-    REGEX "^#define ${name} +[0-9]+")
-  string(REGEX REPLACE "^#define ${name} +([0-9]+).*" "\\1" replace_result ${file_result})
-  set(${result} ${replace_result} PARENT_SCOPE)
-endfunction()
-
 find_path(CHOLMOD_INCLUDE_DIRS
   NAMES cholmod.h
   PATHS $ENV{CHOLMOD_DIR} ${INCLUDE_INSTALL_DIR}

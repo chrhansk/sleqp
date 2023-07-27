@@ -29,6 +29,7 @@ set(VERSION_FILE "${PROJECT_BINARY_DIR}/sleqp_version")
 write_file(${VERSION_FILE} "${PROJECT_VERSION}")
 
 include(CompilerOptions)
+include(ExtractDefine)
 include(Sanitizers)
 
 # Get the current working branch
@@ -76,7 +77,9 @@ option(SLEQP_ENABLE_MATLAB_MEX "Compile with MATLAB MEX interface." OFF)
 
 option(SLEQP_ENABLE_AMPL "Compile with AMPL interface." OFF)
 
-# Required for MUMPS
+option(SLEQP_MUMPS_INIT_MPI "Should MUMPS interface manually initialize MPI?" ON)
+
+# May be required for MUMPS
 set(SLEQP_WITH_MPI OFF)
 
 set(SLEQP_LPS ""
@@ -125,19 +128,27 @@ endif()
 
 add_library(trlib INTERFACE IMPORTED)
 
-set(SLEQP_DEPENDENCIES
+set(SLEQP_DEP_LIBRARIES
   Threads::Threads
   trlib::trlib
   ${SLEQP_LPS_LIBRARIES}
   ${SLEQP_FACT_LIBRARIES}
   m)
 
-set(SLEQP_LIBRARY_DIRS
+set(SLEQP_DEP_LIBRARY_DIRS
   ${SLEQP_FACT_LIBRARY_DIRS}
   ${SLEQP_LPS_LIBRARY_DIRS})
 
+set(SLEQP_DEP_INCLUDE_DIRS
+  ${SLEQP_FACT_INCLUDE_DIRS}
+  ${SLEQP_LPS_INCLUDE_DIRS})
+
+set(SLEQP_DEP_DEFINITIONS
+  ${SLEQP_FACT_DEFINITIONS}
+  ${SLEQP_LPS_DEFINITIONS})
+
 if(UNIX AND NOT APPLE)
-  list(APPEND SLEQP_DEPENDENCIES rt)
+  list(APPEND SLEQP_DEP_LIBRARIES rt)
 endif()
 
 add_custom_target(doc)

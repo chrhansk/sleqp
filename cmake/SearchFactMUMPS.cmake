@@ -4,47 +4,52 @@
 #  MUMPS_LIBRARIES      - List of libraries when using Umfpack.
 #  MUMPS_FOUND          - True if Umfpack found.
 
-function(extract_define file name result)
-  file(STRINGS "${file}"
-    file_result
-    REGEX "^#define ${name} \"[0-9\.]+\"")
-  string(REGEX REPLACE "^#define ${name} \"([0-9\.]+)\"" "\\1" replace_result ${file_result})
-  set(${result} ${replace_result} PARENT_SCOPE)
-endfunction()
-
 find_path(MUMPS_INCLUDE_DIR
   NAMES dmumps_c.h
   PATHS $ENV{MUMPSDIR}
   PATH_SUFFIXES mumps mumps-seq-shared)
 
 if(MUMPS_INCLUDE_DIR)
-  extract_define("${MUMPS_INCLUDE_DIR}/dmumps_c.h"
-    "MUMPS_VERSION"
+  define_extract_version(
+    "${MUMPS_INCLUDE_DIR}/dmumps_c.h"
     MUMPS_VERSION)
 endif()
 
-find_package(MPI)
-
-find_library(MUMPS_COMMON NAMES mumps_common)
-find_library(MUMPS_LIBRARY NAMES dmumps)
+find_library(MUMPS_COMMON NAMES mumps_common coinmumps)
+find_library(MUMPS_LIBRARY NAMES dmumps coinmumps)
 
 include(FindPackageHandleStandardArgs)
 
-find_package_handle_standard_args(MUMPS
-  REQUIRED_VARS MUMPS_INCLUDE_DIR MUMPS_LIBRARY MUMPS_COMMON MPI_C_LIBRARIES MPI_C_INCLUDE_DIRS
-  VERSION_VAR MUMPS_VERSION)
+set(MUMPS_REQUIRED_VARS
+  MUMPS_INCLUDE_DIR
+  MUMPS_LIBRARY
+  MUMPS_COMMON)
 
 set(MUMPS_LIBRARIES
   ${MUMPS_LIBRARY}
-  ${MUMPS_COMMON}
-  ${MPI_C_LIBRARIES})
+  ${MUMPS_COMMON})
 
 set(MUMPS_INCLUDE_DIRS
-  ${MUMPS_INCLUDE_DIR}
-  ${MPI_C_INCLUDE_DIRS})
+  ${MUMPS_INCLUDE_DIR})
+
+# If we need to initialize MPI manually, we need
+# access to MPI itself (i.e., link against the library)
+if(SLEQP_MUMPS_INIT_MPI)
+  find_package(MPI)
+
+  list(APPEND MUMPS_REQUIRED_VARS MPI_C_LIBRARIES MPI_C_INCLUDE_DIRS)
+  list(APPEND MUMPS_LIBRARIES ${MPI_C_LIBRARIES})
+  list(APPEND MUMPS_INCLUDE_DIRS ${MPI_C_INCLUDE_DIRS})
+
+  set(SLEQP_WITH_MPI On)
+
+  set(MUMPS_DEFINITIONS "SLEQP_MUMPS_INIT_MPI")
+endif()
+
+find_package_handle_standard_args(MUMPS
+  REQUIRED_VARS ${MUMPS_REQUIRED_VARS}
+  VERSION_VAR MUMPS_VERSION)
 
 mark_as_advanced(
   MUMPS_INCLUDE_DIRS
   MUMPS_LIBRARIES)
-
-set(SLEQP_WITH_MPI ON)
