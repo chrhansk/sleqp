@@ -3,27 +3,16 @@
 #  METIS_LIBRARIES      - List of libraries when using METIS.
 #  METIS_FOUND          - True if MA27 found.
 
-function(extract_define file name result)
-  file(STRINGS "${file}"
-    file_result
-    REGEX "^#define ${name} +[0-9]+")
-  string(REGEX REPLACE "^#define ${name} +([0-9]+).*" "\\1" replace_result ${file_result})
-  set(${result} ${replace_result} PARENT_SCOPE)
-endfunction()
-
 find_path(METIS_INCLUDE_DIR
   NAMES metis.h
   PATHS $ENV{METISDIR})
 
 if(METIS_INCLUDE_DIR)
-  extract_define("${METIS_INCLUDE_DIR}/metis.h"
-    "METIS_VER_MAJOR"
+  define_extract_int("${METIS_INCLUDE_DIR}/metis.h"
     METIS_VER_MAJOR)
-  extract_define("${METIS_INCLUDE_DIR}/metis.h"
-    "METIS_VER_MINOR"
+  define_extract_int("${METIS_INCLUDE_DIR}/metis.h"
     METIS_VER_MINOR)
-  extract_define("${METIS_INCLUDE_DIR}/metis.h"
-    "METIS_VER_SUBMINOR"
+  define_extract_int("${METIS_INCLUDE_DIR}/metis.h"
     METIS_VER_SUBMINOR)
 
   set(METIS_VERSION "${METIS_VER_MAJOR}.${METIS_VER_MINOR}.${METIS_VER_SUBMINOR}")

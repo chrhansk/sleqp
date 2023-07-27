@@ -4,22 +4,14 @@
 #  MUMPS_LIBRARIES      - List of libraries when using Umfpack.
 #  MUMPS_FOUND          - True if Umfpack found.
 
-function(extract_define file name result)
-  file(STRINGS "${file}"
-    file_result
-    REGEX "^#define ${name} \"[0-9\.]+\"")
-  string(REGEX REPLACE "^#define ${name} \"([0-9\.]+)\"" "\\1" replace_result ${file_result})
-  set(${result} ${replace_result} PARENT_SCOPE)
-endfunction()
-
 find_path(MUMPS_INCLUDE_DIR
   NAMES dmumps_c.h
   PATHS $ENV{MUMPSDIR}
   PATH_SUFFIXES mumps mumps-seq-shared)
 
 if(MUMPS_INCLUDE_DIR)
-  extract_define("${MUMPS_INCLUDE_DIR}/dmumps_c.h"
-    "MUMPS_VERSION"
+  define_extract_version(
+    "${MUMPS_INCLUDE_DIR}/dmumps_c.h"
     MUMPS_VERSION)
 endif()
 

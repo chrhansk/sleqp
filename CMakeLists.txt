@@ -29,6 +29,7 @@ set(VERSION_FILE "${PROJECT_BINARY_DIR}/sleqp_version")
 write_file(${VERSION_FILE} "${PROJECT_VERSION}")
 
 include(CompilerOptions)
+include(ExtractDefine)
 include(Sanitizers)
 
 # Get the current working branch

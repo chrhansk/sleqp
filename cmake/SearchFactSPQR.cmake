@@ -4,28 +4,17 @@
 #  SPQR_LIBRARIES      - List of libraries when using SPQR.
 #  SPQR_FOUND          - True if SPQR found.
 
-function(extract_define file name result)
-  file(STRINGS "${file}"
-    file_result
-    REGEX "^#define ${name} +[0-9]+")
-  string(REGEX REPLACE "^#define ${name} +([0-9]+).*" "\\1" replace_result ${file_result})
-  set(${result} ${replace_result} PARENT_SCOPE)
-endfunction()
-
 find_path(SPQR_INCLUDE_DIRS
   NAMES SuiteSparseQR_C.h
   PATHS $ENV{SPQR_DIR} ${INCLUDE_INSTALL_DIR}
   PATH_SUFFIXES suitesparse ufsparse)
 
 if(SPQR_INCLUDE_DIRS)
-  extract_define("${SPQR_INCLUDE_DIRS}/SuiteSparseQR_definitions.h"
-    "SPQR_MAIN_VERSION"
+  define_extract_int("${SPQR_INCLUDE_DIRS}/SuiteSparseQR_definitions.h"
     SPQR_MAIN_VERSION)
-  extract_define("${SPQR_INCLUDE_DIRS}/SuiteSparseQR_definitions.h"
-    "SPQR_SUB_VERSION"
+  define_extract_int("${SPQR_INCLUDE_DIRS}/SuiteSparseQR_definitions.h"    "SPQR_SUB_VERSION"
     SPQR_SUB_VERSION)
-  extract_define("${SPQR_INCLUDE_DIRS}/SuiteSparseQR_definitions.h"
-    "SPQR_SUBSUB_VERSION"
+  define_extract_int("${SPQR_INCLUDE_DIRS}/SuiteSparseQR_definitions.h"
     SPQR_SUBSUB_VERSION)
 
   set(SPQR_VERSION "${SPQR_MAIN_VERSION}.${SPQR_SUB_VERSION}.${SPQR_SUBSUB_VERSION}")
