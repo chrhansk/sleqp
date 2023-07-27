@@ -105,10 +105,6 @@ endif()
 add_library(sleqp_objects OBJECT
   ${SOURCES})
 
-if(SLEQP_MUMPS_INIT_MPI)
-  target_compile_definitions(sleqp_objects PRIVATE SLEQP_MUMPS_INIT_MPI)
-endif()
-
 set_property(TARGET sleqp_objects PROPERTY C_STANDARD 11)
 
 if(HAVE_MACRO_PREFIX_MAP)
@@ -121,7 +117,11 @@ endif()
 
 target_link_libraries(sleqp_objects
   PRIVATE
-  ${SLEQP_DEPENDENCIES})
+  ${SLEQP_DEP_LIBRARIES})
+
+target_compile_definitions(sleqp_objects
+  PRIVATE
+  ${SLEQP_DEP_DEFINITIONS})
 
 set_target_properties(sleqp_objects
   PROPERTIES
@@ -137,8 +137,7 @@ target_include_directories(sleqp_objects
   PRIVATE
   ${SLEQP_LOCAL_HEADER_DIR}
   "${SLEQP_LOCAL_HEADER_DIR}/sleqp"
-  ${SLEQP_FACT_INCLUDE_DIRS}
-  ${SLEQP_LPS_INCLUDE_DIRS})
+  ${SLEQP_DEP_INCLUDE_DIRS})
 
 target_include_directories(sleqp_objects
   PUBLIC
@@ -155,11 +154,11 @@ target_include_directories(sleqp
 target_link_libraries(sleqp
   PRIVATE
   sleqp_objects
-  ${SLEQP_DEPENDENCIES})
+  ${SLEQP_DEP_LIBRARIES})
 
 target_link_directories(sleqp
   PRIVATE
-  ${SLEQP_LIBRARY_DIRS})
+  ${SLEQP_DEP_LIBRARY_DIRS})
 
 set_target_properties(sleqp
   PROPERTIES

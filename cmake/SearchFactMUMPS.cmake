@@ -42,6 +42,8 @@ if(SLEQP_MUMPS_INIT_MPI)
   list(APPEND MUMPS_INCLUDE_DIRS ${MPI_C_INCLUDE_DIRS})
 
   set(SLEQP_WITH_MPI On)
+
+  set(MUMPS_DEFINITIONS "SLEQP_MUMPS_INIT_MPI")
 endif()
 
 find_package_handle_standard_args(MUMPS
