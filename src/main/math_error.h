@@ -7,11 +7,18 @@
 #include "error.h"
 #include "types.h"
 
+#if defined(math_errhandling) && defined(MATH_ERREXCEPT)                       \
+  && !defined(SLEQP_MATH_ERREXCEPT)
+#define SLEQP_MATH_ERREXCEPT (math_errhandling & MATH_ERREXCEPT)
+#else
+#define SLEQP_MATH_ERREXCEPT 1
+#endif
+
 #define SLEQP_INIT_MATH_CHECK                                                  \
   fenv_t fenv_current;                                                         \
   do                                                                           \
   {                                                                            \
-    if (math_errhandling & MATH_ERREXCEPT)                                     \
+    if (SLEQP_MATH_ERREXCEPT)                                                  \
     {                                                                          \
       fegetenv(&fenv_current);                                                 \
       fesetenv(FE_DFL_ENV);                                                    \
@@ -21,7 +28,7 @@
 #define SLEQP_MATH_CHECK_ERRORS(error_flags)                                   \
   do                                                                           \
   {                                                                            \
-    if (math_errhandling & MATH_ERREXCEPT)                                     \
+    if (SLEQP_MATH_ERREXCEPT)                                                  \
     {                                                                          \
       bool has_errors = fetestexcept(error_flags);                             \
                                                                                \
@@ -41,7 +48,7 @@
 #define SLEQP_MATH_CHECK_WARNINGS(warn_flags)                                  \
   do                                                                           \
   {                                                                            \
-    if (math_errhandling & MATH_ERREXCEPT)                                     \
+    if (SLEQP_MATH_ERREXCEPT)                                                  \
     {                                                                          \
       const bool has_warning = fetestexcept(warn_flags);                       \
                                                                                \
@@ -61,7 +68,7 @@
 #define SLEQP_MATH_CHECK(error_flags, warn_flags)                              \
   do                                                                           \
   {                                                                            \
-    if (math_errhandling & MATH_ERREXCEPT)                                     \
+    if (SLEQP_MATH_ERREXCEPT)                                                  \
     {                                                                          \
       SLEQP_MATH_CHECK_WARNINGS(warn_flags);                                   \
       SLEQP_MATH_CHECK_ERRORS(error_flags);                                    \
