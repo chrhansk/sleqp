@@ -15,39 +15,39 @@ if(MUMPS_INCLUDE_DIR)
     MUMPS_VERSION)
 endif()
 
-if(SLEQP_MUMPS_NEEDS_MPI)
-    find_package(MPI)
-endif()
-
 find_library(MUMPS_COMMON NAMES mumps_common coinmumps)
 find_library(MUMPS_LIBRARY NAMES dmumps coinmumps)
 
 include(FindPackageHandleStandardArgs)
 
-if(SLEQP_MUMPS_NEEDS_MPI)
-    find_package_handle_standard_args(MUMPS
-      REQUIRED_VARS MUMPS_INCLUDE_DIR MUMPS_LIBRARY MUMPS_COMMON MPI_C_LIBRARIES MPI_C_INCLUDE_DIRS
-      VERSION_VAR MUMPS_VERSION)
-else()
-    find_package_handle_standard_args(MUMPS
-      REQUIRED_VARS MUMPS_INCLUDE_DIR MUMPS_LIBRARY MUMPS_COMMON
-      VERSION_VAR MUMPS_VERSION)
-endif()
+set(MUMPS_REQUIRED_VARS
+  MUMPS_INCLUDE_DIR
+  MUMPS_LIBRARY
+  MUMPS_COMMON)
 
 set(MUMPS_LIBRARIES
   ${MUMPS_LIBRARY}
-  ${MUMPS_COMMON}
-  ${MPI_C_LIBRARIES})
+  ${MUMPS_COMMON})
 
 set(MUMPS_INCLUDE_DIRS
-  ${MUMPS_INCLUDE_DIR}
-  ${MPI_C_INCLUDE_DIRS})
+  ${MUMPS_INCLUDE_DIR})
+
+# If we need to initialize MPI manually, we need
+# access to MPI itself (i.e., link against the library)
+if(SLEQP_MUMPS_INIT_MPI)
+  find_package(MPI)
+
+  list(APPEND MUMPS_REQUIRED_VARS MPI_C_LIBRARIES MPI_C_INCLUDE_DIRS)
+  list(APPEND MUMPS_LIBRARIES ${MPI_C_LIBRARIES})
+  list(APPEND MUMPS_INCLUDE_DIRS ${MPI_C_INCLUDE_DIRS})
+
+  set(SLEQP_WITH_MPI On)
+endif()
+
+find_package_handle_standard_args(MUMPS
+  REQUIRED_VARS ${MUMPS_REQUIRED_VARS}
+  VERSION_VAR MUMPS_VERSION)
 
 mark_as_advanced(
   MUMPS_INCLUDE_DIRS
   MUMPS_LIBRARIES)
-
-
-if(SLEQP_MUMPS_NEEDS_MPI)
-  set(SLEQP_WITH_MPI ON)
-endif()

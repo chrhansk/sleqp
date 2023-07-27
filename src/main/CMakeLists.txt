@@ -105,8 +105,8 @@ endif()
 add_library(sleqp_objects OBJECT
   ${SOURCES})
 
-if(SLEQP_WITH_MPI)
-target_compile_definitions(sleqp_objects PRIVATE SLEQP_WITH_MPI)
+if(SLEQP_MUMPS_INIT_MPI)
+  target_compile_definitions(sleqp_objects PRIVATE SLEQP_MUMPS_INIT_MPI)
 endif()
 
 set_property(TARGET sleqp_objects PROPERTY C_STANDARD 11)

@@ -8,7 +8,7 @@
 #include "log.h"
 #include "mem.h"
 
-#ifdef SLEQP_WITH_MPI
+#ifdef SLEQP_MUMPS_INIT_MPI
 #include "mpi_utils.h"
 #endif
 
@@ -51,7 +51,7 @@ typedef struct SleqpMUMPSData
 static SLEQP_RETCODE
 sleqp_mumps_create(SleqpMUMPSData** star)
 {
-#ifdef SLEQP_WITH_MPI
+#ifdef SLEQP_MUMPS_INIT_MPI
   SLEQP_CALL(sleqp_mpi_initialize());
 #endif
 
