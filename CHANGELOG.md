@@ -1,6 +1,19 @@
 # Changelog
 
-## [1.0.0] - 2023-06-26
+## Unreleased
+
+### Added
+
+- Added function to set enum value from strings in settings
+- Added support for coinmumps, absense of MPI
+
+### Fixed
+
+- Added missing symbol export / installation to Windows installation
+- Fixed compile / test errors in python extension
+- Improved const-correctness of interface functions
+
+## [1.0.1] - 2023-06-26
 
 ### Added
 
@@ -16,8 +29,6 @@
 - Removed invalid unit test
 - Removed source directory variables from cmake-related files
 - Fixed error in restoration mode
-- Fixed compile / test errors in python extension
-- Improved const correctness of interface functions
 
 ## [1.0.0] - 2023-06-09
 

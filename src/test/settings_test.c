@@ -8,6 +8,25 @@
 
 const char* settings_file_name = "sleqp_example.opt";
 
+START_TEST(test_settings_from_string)
+{
+  SleqpSettings* settings;
+
+  ASSERT_CALL(sleqp_settings_create(&settings));
+
+  ASSERT_CALL(
+    sleqp_settings_set_enum_value_from_string(settings,
+                                              SLEQP_SETTINGS_ENUM_DERIV_CHECK,
+                                              "FirstObj"));
+
+  ck_assert_int_eq(
+    sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_DERIV_CHECK),
+    SLEQP_DERIV_CHECK_FIRST_OBJ);
+
+  ASSERT_CALL(sleqp_settings_release(&settings));
+}
+END_TEST
+
 START_TEST(test_read_settings)
 {
   SleqpSettings* settings;
@@ -16,16 +35,23 @@ START_TEST(test_read_settings)
 
   ASSERT_CALL(sleqp_settings_read_file(settings, settings_file_name));
 
-  ck_assert_double_eq(sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS),
-                      1e-2);
+  ck_assert_double_eq(
+    sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS),
+    1e-2);
 
-  ck_assert_int_eq(sleqp_settings_enum_value(settings, SLEQP_SETTINGS_ENUM_DUAL_ESTIMATION_TYPE),
-                   SLEQP_DUAL_ESTIMATION_TYPE_LP);
+  ck_assert_int_eq(
+    sleqp_settings_enum_value(settings,
+                              SLEQP_SETTINGS_ENUM_DUAL_ESTIMATION_TYPE),
+    SLEQP_DUAL_ESTIMATION_TYPE_LP);
 
-  ck_assert_int_eq(sleqp_settings_int_value(settings, SLEQP_SETTINGS_INT_MAX_NEWTON_ITERATIONS),
-                   10);
+  ck_assert_int_eq(
+    sleqp_settings_int_value(settings,
+                             SLEQP_SETTINGS_INT_MAX_NEWTON_ITERATIONS),
+    10);
 
-  ck_assert(sleqp_settings_bool_value(settings, SLEQP_SETTINGS_BOOL_GLOBAL_PENALTY_RESETS) == false);
+  ck_assert(sleqp_settings_bool_value(settings,
+                                      SLEQP_SETTINGS_BOOL_GLOBAL_PENALTY_RESETS)
+            == false);
 
   ASSERT_CALL(sleqp_settings_release(&settings));
 }
@@ -43,6 +69,7 @@ settings_test_suite()
 
   suite_add_tcase(suite, tc_read);
 
+  tcase_add_test(tc_read, test_settings_from_string);
   tcase_add_test(tc_read, test_read_settings);
 
   return suite;
