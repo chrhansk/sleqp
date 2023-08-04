@@ -12,8 +12,6 @@
 #include "mpi_utils.h"
 #endif
 
-static const bool sleqp_mumps_verbose = true;
-
 typedef struct SleqpMUMPSData
 {
   DMUMPS_STRUC_C id;
@@ -61,7 +59,7 @@ sleqp_mumps_create(SleqpMUMPSData** star)
 
   *sleqp_mumps_data = (SleqpMUMPSData){0};
 
-  if (sleqp_mumps_verbose)
+  if (sleqp_log_level() >= SLEQP_LOG_DEBUG)
   {
     sleqp_mumps_data->id.icntl[3] = 3;
   }
