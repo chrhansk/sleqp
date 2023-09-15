@@ -70,7 +70,7 @@ dyn_func_eval(SleqpFunc* func,
 
   SLEQP_CALL(sleqp_func_cons_val(constrained_func, func_data.orig_cons_val));
 
-  generate_noise(error);
+  SLEQP_CALL(generate_noise(error));
 
   SLEQP_CALL(
     sleqp_vec_add(func_data.orig_cons_val, func_data.noise, 0., cons_val));

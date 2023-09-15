@@ -14,13 +14,13 @@ extern "C"
 
   typedef struct SleqpMeasure SleqpMeasure;
 
-  SLEQP_NODISCARD
+  SLEQP_WARNUNUSED
   SLEQP_RETCODE
   sleqp_measure_create(SleqpMeasure** star,
                        SleqpProblem* problem,
                        SleqpSettings* settings);
 
-  SLEQP_NODISCARD
+  SLEQP_WARNUNUSED
   SLEQP_RETCODE
   sleqp_measure_set_iterates(SleqpMeasure* measure,
                              SleqpIterate* iterate,
@@ -40,27 +40,27 @@ extern "C"
   double
   sleqp_measure_step_norm(SleqpMeasure* measure);
 
-  SLEQP_NODISCARD
+  SLEQP_WARNUNUSED
   SLEQP_RETCODE
   sleqp_measure_report_trial_point(SleqpMeasure* measure,
                                    const SleqpVec* multipliers);
 
-  SLEQP_NODISCARD
+  SLEQP_WARNUNUSED
   SLEQP_RETCODE
   sleqp_measure_report_soc_trial_point(SleqpMeasure* measure,
                                        SleqpIterate* soc_iterate);
 
-  SLEQP_NODISCARD
+  SLEQP_WARNUNUSED
   SLEQP_RETCODE
   sleqp_measure_lag_nonlin(SleqpMeasure* measure,
                            const SleqpVec* multipliers,
                            double* lag_nonlinearity);
 
-  SLEQP_NODISCARD
+  SLEQP_WARNUNUSED
   SLEQP_RETCODE
   sleqp_measure_capture(SleqpMeasure* measure);
 
-  SLEQP_NODISCARD
+  SLEQP_WARNUNUSED
   SLEQP_RETCODE
   sleqp_measure_release(SleqpMeasure** star);
 

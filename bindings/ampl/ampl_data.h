@@ -30,15 +30,15 @@ typedef struct
 
 } SleqpAmplData;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 map_ampl_inf(double* values, int num_values);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_ampl_data_create(SleqpAmplData** star, ASL* asl, FILE* nl);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_ampl_data_free(SleqpAmplData** star);
 

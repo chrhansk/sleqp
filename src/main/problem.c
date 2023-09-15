@@ -473,7 +473,7 @@ sleqp_problem_set_value(SleqpProblem* problem,
   return SLEQP_OKAY;
 }
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_problem_nonzeros(SleqpProblem* problem,
                        int* obj_grad_nnz,
                        int* cons_val_nnz,

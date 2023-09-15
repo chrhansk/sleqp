@@ -5,7 +5,7 @@
 
 #include "ampl_data.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_ampl_problem_create(SleqpProblem** star,
                           SleqpAmplData* data,

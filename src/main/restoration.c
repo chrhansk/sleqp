@@ -396,7 +396,7 @@ sleqp_restoration_func_cons_val(SleqpFunc* restoration_func, SleqpVec** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_restoration_func_cons_jac(SleqpFunc* restoration_func, SleqpMat** star)
 {
@@ -409,7 +409,7 @@ sleqp_restoration_func_cons_jac(SleqpFunc* restoration_func, SleqpMat** star)
   return SLEQP_OKAY;
 }
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_restoration_func_init(SleqpFunc* restoration_func,
                             SleqpVec* restoration_primal,

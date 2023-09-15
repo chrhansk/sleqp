@@ -11,7 +11,7 @@
 
 #include "sparse/mat.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_umfpack_create(SleqpFact** star, SleqpSettings* settings);
 

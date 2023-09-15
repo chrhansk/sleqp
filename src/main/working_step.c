@@ -500,7 +500,7 @@ sleqp_working_step_violated_cons_multipliers(SleqpWorkingStep* step)
   return step->violated_constraint_multipliers;
 }
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_step_set_multipliers(SleqpWorkingStep* step,
                                    const SleqpVec* multipliers)
@@ -510,10 +510,8 @@ sleqp_working_step_set_multipliers(SleqpWorkingStep* step,
 
   SleqpVec* direction_hess = sleqp_direction_hess(step->step_direction);
 
-  SLEQP_CALL(sleqp_problem_hess_prod(problem,
-                                     primal,
-                                     multipliers,
-                                     direction_hess));
+  SLEQP_CALL(
+    sleqp_problem_hess_prod(problem, primal, multipliers, direction_hess));
 
   return SLEQP_OKAY;
 }

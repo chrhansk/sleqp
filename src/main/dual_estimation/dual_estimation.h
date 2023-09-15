@@ -21,13 +21,13 @@
 
 typedef struct SleqpDualEstimation SleqpDualEstimation;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_dual_estimation_create(SleqpDualEstimation** star,
                              SleqpDualEstimationCallbacks* callbacks,
                              void* estimation_data);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_estimate_duals(SleqpDualEstimation* estimation,
                      const SleqpIterate* iterate,
@@ -37,11 +37,11 @@ sleqp_estimate_duals(SleqpDualEstimation* estimation,
 void*
 sleqp_dual_estimation_data(SleqpDualEstimation* estimation);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_dual_estimation_capture(SleqpDualEstimation* estimation);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_dual_estimation_release(SleqpDualEstimation** star);
 

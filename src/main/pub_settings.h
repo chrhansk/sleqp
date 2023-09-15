@@ -88,7 +88,7 @@ sleqp_settings_bool_name(SLEQP_SETTINGS_BOOL settings);
 SLEQP_EXPORT const char*
 sleqp_settings_bool_desc(SLEQP_SETTINGS_BOOL settings);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_create(SleqpSettings** star);
 
 SLEQP_EXPORT const char*
@@ -101,7 +101,7 @@ SLEQP_EXPORT double
 sleqp_settings_real_value(const SleqpSettings* settings,
                           SLEQP_SETTINGS_REAL param);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_set_real_value(SleqpSettings* setting,
                               SLEQP_SETTINGS_REAL param,
                               double value);
@@ -111,12 +111,12 @@ int
 sleqp_settings_enum_value(const SleqpSettings* settings,
                           SLEQP_SETTINGS_ENUM option);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_set_enum_value(SleqpSettings* settings,
                               SLEQP_SETTINGS_ENUM option,
                               int value);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_set_enum_value_from_string(SleqpSettings* settings,
                                           SLEQP_SETTINGS_ENUM option,
                                           const char* value);
@@ -126,7 +126,7 @@ int
 sleqp_settings_int_value(const SleqpSettings* settings,
                          SLEQP_SETTINGS_INT option);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_set_int_value(SleqpSettings* settings,
                              SLEQP_SETTINGS_INT option,
                              int value);
@@ -136,11 +136,10 @@ bool
 sleqp_settings_bool_value(const SleqpSettings* settings,
                           SLEQP_SETTINGS_BOOL option);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_set_bool_value(SleqpSettings* settings,
                               SLEQP_SETTINGS_BOOL option,
                               bool value);
-
 
 /**
  * Read settings from file on the disk and
@@ -150,14 +149,14 @@ sleqp_settings_set_bool_value(SleqpSettings* settings,
  * @param[in]     settings_filename  Name of settings file
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_read_file(SleqpSettings* settings,
                          const char* settings_filename);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_capture(SleqpSettings* settings);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_settings_release(SleqpSettings** star);
 
 #endif /* SLEQP_PUB_SETTINGS_H */

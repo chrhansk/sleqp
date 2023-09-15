@@ -90,7 +90,7 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
   return SLEQP_OKAY;
 }
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_parametric_solver_set_penalty(SleqpParametricSolver* solver,
                                     double penalty_parameter)

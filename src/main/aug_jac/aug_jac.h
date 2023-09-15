@@ -6,14 +6,14 @@
 
 typedef struct SleqpAugJac SleqpAugJac;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_aug_jac_create(SleqpAugJac** star,
                      SleqpProblem* problem,
                      SleqpAugJacCallbacks* callbacks,
                      void* aug_jac_data);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac, SleqpIterate* iterate);
 
@@ -30,7 +30,7 @@ sleqp_aug_jac_set_iterate(SleqpAugJac* aug_jac, SleqpIterate* iterate);
  * @param[out] sol        The solution \f$ x \f$
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_aug_jac_solve_min_norm(SleqpAugJac* aug_jac,
                              const SleqpVec* rhs,
@@ -48,7 +48,7 @@ sleqp_aug_jac_solve_min_norm(SleqpAugJac* aug_jac,
  * @param[out] sol        The solution \f$ x \f$
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_aug_jac_solve_lsq(SleqpAugJac* aug_jac,
                         const SleqpVec* rhs,
@@ -67,13 +67,13 @@ sleqp_aug_jac_solve_lsq(SleqpAugJac* aug_jac,
  * @param[out] sol        The solution \f$ x \f$
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_aug_jac_project_nullspace(SleqpAugJac* aug_jac,
                                 const SleqpVec* rhs,
                                 SleqpVec* sol);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_aug_jac_condition(SleqpAugJac* aug_jac, bool* exact, double* condition);
 
@@ -83,11 +83,11 @@ sleqp_aug_jac_creation_timer(SleqpAugJac* aug_jac);
 SleqpTimer*
 sleqp_aug_jac_solution_timer(SleqpAugJac* aug_jac);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_aug_jac_capture(SleqpAugJac* jacobian);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_aug_jac_release(SleqpAugJac** star);
 

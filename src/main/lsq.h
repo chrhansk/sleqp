@@ -12,7 +12,7 @@ sleqp_lsq_func_get_levenberg_marquardt(SleqpFunc* func);
 int
 sleqp_lsq_func_num_residuals(SleqpFunc* func);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_lsq_func_nonzeros(SleqpFunc* func,
                         int* residual_nnz,
                         int* jac_fwd_nnz,
@@ -20,15 +20,15 @@ sleqp_lsq_func_nonzeros(SleqpFunc* func,
                         int* cons_val_nnz,
                         int* cons_jac_nnz);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_lsq_func_residuals(SleqpFunc* func, SleqpVec* residuals);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_lsq_func_jac_forward(SleqpFunc* func,
                            const SleqpVec* forward_direction,
                            SleqpVec* product);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_lsq_func_jac_adjoint(SleqpFunc* func,
                            const SleqpVec* adjoint_direction,
                            SleqpVec* product);

@@ -133,7 +133,7 @@ typedef struct
  * @param[in]  func_data       User-provided function data
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_lsq_func_create(SleqpFunc** fstar,
                       SleqpLSQCallbacks* callbacks,
                       int num_variables,
@@ -146,13 +146,13 @@ sleqp_lsq_func_create(SleqpFunc** fstar,
 /**
  * Sets the callbacks of this LSQ function to the specified ones
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_lsq_func_set_callbacks(SleqpFunc* func, SleqpLSQCallbacks* callbacks);
 
 /**
  * Sets the regularization factor \f$ \lmfact \f$
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_lsq_func_set_lm_factor(SleqpFunc* func, double lm_factor);
 
 #endif /* SLEQP_PUB_LSQ_H */

@@ -24,14 +24,14 @@ typedef struct
 
 } SleqpCutestData;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_cutest_data_create(SleqpCutestData** star,
                          integer funit,
                          int num_variables,
                          int num_constraints);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_cutest_data_free(SleqpCutestData** star);
 

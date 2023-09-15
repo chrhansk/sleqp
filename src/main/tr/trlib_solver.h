@@ -3,7 +3,7 @@
 
 #include "tr_solver.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trlib_solver_create(SleqpTRSolver** star,
                           SleqpProblem* problem,

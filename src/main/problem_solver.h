@@ -85,36 +85,36 @@ struct SleqpProblemSolver
   bool abort_on_local_infeasibility;
 };
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_create(SleqpProblemSolver** star,
                             SLEQP_SOLVER_PHASE solver_phase,
                             SleqpProblem* problem,
                             SleqpSettings* settings);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_add_callback(SleqpProblemSolver* solver,
                                   SLEQP_PROBLEM_SOLVER_EVENT solver_event,
                                   void* callback_func,
                                   void* callback_data);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_remove_callback(SleqpProblemSolver* solver,
                                      SLEQP_PROBLEM_SOLVER_EVENT solver_event,
                                      void* callback_func,
                                      void* callback_data);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_reset(SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_abort(SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_set_iteration(SleqpProblemSolver* solver, int iteration);
 
@@ -124,7 +124,7 @@ sleqp_problem_solver_elapsed_iterations(const SleqpProblemSolver* solver);
 double
 sleqp_problem_solver_elapsed_seconds(const SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_set_cons_weights(SleqpProblemSolver* solver);
 
@@ -134,25 +134,25 @@ sleqp_problem_solver_iterate(const SleqpProblemSolver* solver);
 SLEQP_PROBLEM_SOLVER_STATUS
 sleqp_problem_solver_status(const SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_print_stats(const SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_set_func_value(SleqpProblemSolver* solver,
                                     SleqpIterate* iterate,
                                     SLEQP_VALUE_REASON reason,
                                     bool* reject);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_update_trust_radius(SleqpProblemSolver* solver,
                                          double reduction_ratio,
                                          bool trial_step_accepted,
                                          double direction_norm);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_update_lp_trust_radius(SleqpProblemSolver* solver,
                                             bool trial_step_accepted,
@@ -162,19 +162,19 @@ sleqp_problem_solver_update_lp_trust_radius(SleqpProblemSolver* solver,
                                             double eps,
                                             double* lp_trust_radius);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_get_real_state(const SleqpProblemSolver* solver,
                                     SLEQP_SOLVER_STATE_REAL state,
                                     double* value);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_get_int_state(const SleqpProblemSolver* solver,
                                    SLEQP_SOLVER_STATE_INT state,
                                    int* value);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_get_vec_state(const SleqpProblemSolver* solver,
                                    SLEQP_SOLVER_STATE_VEC value,
@@ -189,7 +189,7 @@ sleqp_problem_solver_print_initial_line(SleqpProblemSolver* solver);
 SLEQP_RETCODE
 sleqp_problem_solver_print_line(SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver);
 
@@ -201,26 +201,26 @@ sleqp_problem_solver_perform_iteration(SleqpProblemSolver* solver);
  * for dynamic functions
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_solve(SleqpProblemSolver* solver,
                            int max_num_iterations,
                            double time_limit,
                            bool abort_on_local_infeasibility);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_reject_step(SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_accept_step(SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_capture(SleqpProblemSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_problem_solver_release(SleqpProblemSolver** star);
 

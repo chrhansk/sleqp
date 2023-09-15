@@ -5,7 +5,7 @@
 
 #include "sleqp.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_ampl_report(SleqpProblem* problem,
                   SleqpSolver* solver,

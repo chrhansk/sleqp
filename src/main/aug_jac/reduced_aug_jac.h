@@ -11,7 +11,7 @@
  * on the system \f$ A_W A_W^{T} \f$
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_reduced_aug_jac_create(SleqpAugJac** star,
                              SleqpProblem* problem,

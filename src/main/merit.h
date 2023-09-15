@@ -13,7 +13,7 @@
 
 typedef struct SleqpMeritData SleqpMerit;
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_merit_create(SleqpMerit** star,
                    SleqpProblem* problem,
                    SleqpSettings* params);
@@ -34,7 +34,7 @@ sleqp_merit_create(SleqpMerit** star,
  * @param[out] merit_value       The exact merit value
  *
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_merit_func(SleqpMerit* merit,
                  SleqpIterate* iterate,
                  double penalty_parameter,
@@ -46,7 +46,8 @@ sleqp_merit_func(SleqpMerit* merit,
  * a direction \f$ d \f$ is given by
  *
  * \f[
- * \ell_v(\overline{x}, d) := f(\overline{x}) + \langle \nabla f(\overline{x}), d \rangle
+ * \ell_v(\overline{x}, d) := f(\overline{x}) + \langle \nabla f(\overline{x}),
+ *d \rangle
  * + v \left( \sum_{i=1}^{m} \max((c_i(\overline{x}) + \langle \nabla
  * c_i(\overline{x}) , d \rangle) - u_i, 0) \right)
  * + v  \left(\sum_{i=1}^{m} \max(l_i - (c_i(\overline{x}) + \langle \nabla
@@ -61,7 +62,7 @@ sleqp_merit_func(SleqpMerit* merit,
  * @param[out] merit_value       The linearized merit value
  *
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_merit_linear(SleqpMerit* merit,
                    SleqpIterate* iterate,
                    SleqpDirection* direction,
@@ -88,17 +89,17 @@ sleqp_merit_linear(SleqpMerit* merit,
  * @param[out] merit_value       The quadratic merit value
  *
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_merit_quadratic(SleqpMerit* merit,
                       SleqpIterate* iterate,
                       SleqpDirection* direction,
                       double penalty_parameter,
                       double* merit_value);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_merit_capture(SleqpMerit* merit);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_merit_release(SleqpMerit** star);
 
 #endif /* SLEQP_MERIT_H */

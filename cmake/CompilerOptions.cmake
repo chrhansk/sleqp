@@ -17,6 +17,16 @@ check_c_source_compiles(
 
 check_c_source_compiles(
     "
+        struct [[nodiscard(\"message\")]] error_info { int status; };
+        int main(void) {return 0;}
+    "
+    SLEQP_HAVE_ATTRIBUTE_NODISCARD
+    FAIL_REGEX "-Wattributes"
+)
+
+
+check_c_source_compiles(
+    "
         __attribute__((__format__(__printf__, 1, 2)))
         void f(const char* format, ...) {};
         int main(void) {return 0;}

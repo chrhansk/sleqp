@@ -34,7 +34,7 @@
        SLEQP_ERROR)                                                            \
     : SLEQP_OKAY
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_free(void** ptr);
 
 #define sleqp_malloc(ptr) sleqp_allocate_memory(ptr, sizeof(**ptr))

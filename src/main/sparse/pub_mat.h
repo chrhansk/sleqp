@@ -31,7 +31,7 @@ typedef struct SleqpMat SleqpMat;
  * @param[in] num_cols   The desired number of columns
  * @param[in] nnz_max    The desired number of nonzeros
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_create(SleqpMat** matrix, int num_rows, int num_cols, int nnz_max);
 
 /**
@@ -40,7 +40,7 @@ sleqp_mat_create(SleqpMat** matrix, int num_rows, int num_cols, int nnz_max);
  * @param[in] matrix   The matrix
  * @param[in] nnz      The desired number of nonzeros
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_reserve(SleqpMat* matrix, int nnz);
 
 /**
@@ -53,10 +53,10 @@ sleqp_mat_reserve(SleqpMat* matrix, int nnz);
  * @param[in] num_rows   The desired number of rows
  * @param[in] num_cols   The desired number of columns
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_resize(SleqpMat* matrix, int num_rows, int num_cols);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_scale(SleqpMat* matrix, double scale);
 
 /**
@@ -86,7 +86,7 @@ sleqp_mat_nnz_max(const SleqpMat* matrix);
 /**
  * Sets the number of nonzeros of the given matrix
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_set_nnz(SleqpMat* matrix, int nnz);
 
 /**
@@ -116,16 +116,16 @@ sleqp_mat_rows(const SleqpMat* matrix);
 /**
  * Pushes a new entry to the matrix. Fails if the matrix is at capacity
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_push(SleqpMat* matrix, int row, int col, double value);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_push_vec(SleqpMat* matrix, int col, SleqpVec* vec);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_push_col(SleqpMat* matrix, int col);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_pop_col(SleqpMat* matrix, int col);
 
 /**
@@ -134,20 +134,20 @@ sleqp_mat_pop_col(SleqpMat* matrix, int col);
  * @param[in]     source     The source matrix
  * @param[in,out] target     The target matrix
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_copy(const SleqpMat* source, SleqpMat* target);
 
 /**
  * Increases the reference count of the given matrix
  */
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_capture(SleqpMat* matrix);
 
 /**
  * Decreases the reference count of the given matrix, freeing it
  * if the reference count reaches count
  */
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mat_release(SleqpMat** star);
 
 #endif /* SLEQP_PUB_MAT_H */

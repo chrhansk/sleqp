@@ -22,7 +22,7 @@ typedef struct SleqpIterate SleqpIterate;
  * @param[in] problem     The underlying problem
  * @param[in] x           The point of the iterate
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_iterate_create(SleqpIterate** star,
                      SleqpProblem* problem,
                      const SleqpVec* x);
@@ -39,7 +39,7 @@ sleqp_iterate_primal(const SleqpIterate* iterate);
 SLEQP_EXPORT double
 sleqp_iterate_obj_val(const SleqpIterate* iterate);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_iterate_set_obj_val(SleqpIterate* iterate, double value);
 
 /**
@@ -79,10 +79,10 @@ sleqp_iterate_cons_dual(const SleqpIterate* iterate);
 SLEQP_EXPORT SleqpVec*
 sleqp_iterate_vars_dual(const SleqpIterate* iterate);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_iterate_capture(SleqpIterate* iterate);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_iterate_release(SleqpIterate** star);
 
 #endif /* SLEQP_PUB_ITERATE_H */

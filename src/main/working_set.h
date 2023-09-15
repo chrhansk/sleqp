@@ -19,13 +19,13 @@ sleqp_working_set_state(const SleqpWorkingSet* working_set,
                         bool constraint,
                         int index);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_set_supports_cons_dual(const SleqpWorkingSet* working_set,
                                      SleqpVec* cons_dual,
                                      bool* supports);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_set_supports_vars_dual(const SleqpWorkingSet* working_set,
                                      SleqpVec* vars_dual,
@@ -37,7 +37,7 @@ sleqp_working_set_supports_vars_dual(const SleqpWorkingSet* working_set,
  * @param[in]  vec     A pointer to the vector
  * @param[in]  output  A pointer to an output `FILE*`
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_set_fprintf(const SleqpWorkingSet* working_set, FILE* output);
 
@@ -47,7 +47,7 @@ sleqp_working_set_fprintf(const SleqpWorkingSet* working_set, FILE* output);
  * @param[in]  source  A pointer to the copy source
  * @param[in]  target  A pointer to the copy target
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_set_copy(const SleqpWorkingSet* source, SleqpWorkingSet* target);
 
@@ -56,11 +56,11 @@ sleqp_working_set_copy(const SleqpWorkingSet* source, SleqpWorkingSet* target);
  *
  * @param[in]  working_set           The working set
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_set_reset(SleqpWorkingSet* working_set);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 bool
 sleqp_working_set_eq(SleqpWorkingSet* first, SleqpWorkingSet* second);
 
@@ -74,7 +74,7 @@ sleqp_working_set_eq(SleqpWorkingSet* first, SleqpWorkingSet* second);
  * @note The `state` must not be @ref SLEQP_INACTIVE
  * @note Variables must be added before constraints
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_set_add_var(SleqpWorkingSet* working_set,
                           int index,
@@ -90,13 +90,13 @@ sleqp_working_set_add_var(SleqpWorkingSet* working_set,
  * @note The `state` must not be @ref SLEQP_INACTIVE
  * @note Variables must be added before constraints
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_set_add_cons(SleqpWorkingSet* working_set,
                            int index,
                            SLEQP_ACTIVE_STATE state);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_set_add(SleqpWorkingSet* working_set,
                       int index,

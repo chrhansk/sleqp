@@ -3,7 +3,7 @@
 
 #include "aug_jac.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_box_constrained_aug_jac_create(SleqpAugJac** star, SleqpProblem* problem);
 

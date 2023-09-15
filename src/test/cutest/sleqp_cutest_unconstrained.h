@@ -5,13 +5,13 @@
 
 #include "sleqp_cutest_data.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_cutest_uncons_func_create(SleqpFunc** star,
                                 int num_variables,
                                 SleqpSettings* settings);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_cutest_uncons_problem_create(SleqpProblem** star,
                                    SleqpCutestData* data,

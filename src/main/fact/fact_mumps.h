@@ -5,7 +5,7 @@
 #include "sparse/mat.h"
 #include "types.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_mumps_create(SleqpFact** star, SleqpSettings* settings);
 

@@ -14,21 +14,21 @@
 #include "sparse/mat.h"
 #include "sparse/vec.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_violated_cons_multipliers(SleqpProblem* problem,
                                 const SleqpVec* cons_vals,
                                 SleqpVec* multipliers,
                                 SleqpWorkingSet* working_set);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_violated_constraints(SleqpProblem* problem,
                            SleqpVec* cons_val,
                            int* violated_constraints,
                            int* num_violated_constraints);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_violation_values(SleqpProblem* problem,
                        const SleqpVec* cons_val,
@@ -39,7 +39,7 @@ sleqp_violation_values(SleqpProblem* problem,
  * to the upper / lower bounds of the underlying problem.
  * The residuals are unsigned (i.e., always non-negative).
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_feasibility_residuals(SleqpProblem* problem,
                             const SleqpVec* cons_val,
@@ -52,7 +52,7 @@ sleqp_feasibility_residuals(SleqpProblem* problem,
  * The residuals are signed, i.e., positive if a constraint value exceeds its
  * upper bound, and negative if the lower bound exceeds the constraint value.
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_signed_feasibility_residuals(SleqpProblem* problem,
                                    const SleqpVec* cons_val,
@@ -67,7 +67,7 @@ sleqp_signed_feasibility_residuals(SleqpProblem* problem,
  * @param[in]  cons_val      Constraint values
  * @param[out] max_violation Total violation
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_max_violation(SleqpProblem* problem,
                     SleqpVec* cons_val,
@@ -81,7 +81,7 @@ sleqp_max_violation(SleqpProblem* problem,
  * @param[in]  cons_val        Constraint values
  * @param[out] total_violation Total violation
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_total_violation(SleqpProblem* problem,
                       SleqpVec* cons_val,

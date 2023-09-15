@@ -66,7 +66,7 @@ sleqp_step_rule_apply(SleqpStepRule* rule,
   return SLEQP_OKAY;
 }
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_step_rule_reset(SleqpStepRule* rule)
 {

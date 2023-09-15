@@ -33,7 +33,7 @@ typedef struct SleqpVec
  * @param[in]  nnz_max The desired amount of nonzeros of the vector
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_create(SleqpVec** vec, int dim, int nnz_max);
 
 /**
@@ -44,7 +44,7 @@ sleqp_vec_create(SleqpVec** vec, int dim, int nnz_max);
  * @param[in]  dim     The desired dimension of the vector
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_create_empty(SleqpVec** vec, int dim);
 
 /**
@@ -55,7 +55,7 @@ sleqp_vec_create_empty(SleqpVec** vec, int dim);
  * @param[in]  dim     The desired dimension of the vector
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_create_full(SleqpVec** vec, int dim);
 
 /**
@@ -66,7 +66,7 @@ sleqp_vec_create_full(SleqpVec** vec, int dim);
  * @param[in]     idx    The index of the new entry
  * @param[in]     value  The value of the new entry
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_push(SleqpVec* vec, int idx, double value);
 
 /**
@@ -80,7 +80,7 @@ sleqp_vec_push(SleqpVec* vec, int idx, double value);
  * @param[in]     dim         The dimension of the values input
  * @param[in]     zero_eps    The numerical tolerance
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_set_from_raw(SleqpVec* vec,
                        const double* values,
                        int dim,
@@ -93,7 +93,7 @@ sleqp_vec_set_from_raw(SleqpVec* vec,
  * @param[in,out] vec         A pointer to the vector
  * @param[in]     value       The given value
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_fill(SleqpVec* vec, double value);
 
 /**
@@ -105,7 +105,7 @@ sleqp_vec_fill(SleqpVec* vec, double value);
  * @param[in] values  A pointer to the output array
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_to_raw(const SleqpVec* vec, double* values);
 
 /**
@@ -114,7 +114,7 @@ sleqp_vec_to_raw(const SleqpVec* vec, double* values);
  * @param[in] source     A pointer to the copy source
  * @param[out] target    A pointer to the copy target
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_copy(const SleqpVec* source, SleqpVec* target);
 
 /**
@@ -123,7 +123,7 @@ sleqp_vec_copy(const SleqpVec* source, SleqpVec* target);
  *
  * @param[in,out] vec     A pointer to the vector
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_clear(SleqpVec* vec);
 
 /**
@@ -132,7 +132,7 @@ sleqp_vec_clear(SleqpVec* vec);
  * @param[in,out] vec     A pointer to the vector
  * @param[in]     nnz_max The number of nonzeros
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_reserve(SleqpVec* vec, int nnz);
 
 /**
@@ -142,10 +142,10 @@ sleqp_vec_reserve(SleqpVec* vec, int nnz);
  * @param[in,out] vec     A pointer to the vector
  * @param[in]     dim     The new dimension
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_resize(SleqpVec* vec, int dim);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_concat(const SleqpVec* first,
                  const SleqpVec* second,
                  SleqpVec* result);
@@ -170,7 +170,7 @@ sleqp_vec_eq(const SleqpVec* first, const SleqpVec* second, double eps);
  * @param[in]  second    A pointer to the second vector
  * @param[out] product   A pointer to the result
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_dot(const SleqpVec* first, const SleqpVec* second, double* product);
 
 /**
@@ -179,7 +179,7 @@ sleqp_vec_dot(const SleqpVec* first, const SleqpVec* second, double* product);
  * @param[in,out] vector   A pointer to the vector
  * @param[in]     factor   The factor
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_scale(SleqpVec* vector, const double factor);
 
 /**
@@ -189,7 +189,7 @@ sleqp_vec_scale(SleqpVec* vector, const double factor);
  * @param[in]  second        A pointer to the second vector
  * @param[out] result        A pointer to the result
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_add(const SleqpVec* first,
               const SleqpVec* second,
               const double eps,
@@ -204,7 +204,7 @@ sleqp_vec_add(const SleqpVec* first,
  * @param[in]  second_factor A factor for the second vector
  * @param[out] result        A pointer to the result
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_add_scaled(const SleqpVec* first,
                      const SleqpVec* second,
                      const double first_factor,
@@ -218,7 +218,7 @@ sleqp_vec_add_scaled(const SleqpVec* first,
  * @param[in,out] vector   A pointer to the vector
  * @param[in]      value   The value
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_fill(SleqpVec* vec, double value);
 
 /**
@@ -297,7 +297,7 @@ sleqp_vec_is_boxed(const SleqpVec* x, const SleqpVec* lb, const SleqpVec* ub);
  *
  SLEQP_EXPORT * @sa sleqp_vec_is_boxed
 **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_clip(const SleqpVec* x,
                const SleqpVec* lb,
                const SleqpVec* ub,
@@ -310,7 +310,7 @@ sleqp_vec_clip(const SleqpVec* x,
  * @param[in]  vec     A pointer to the vector
  * @param[in]  output  A pointer to an output `FILE*`
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_fprintf(const SleqpVec* vec, FILE* output);
 
 /**
@@ -330,7 +330,7 @@ sleqp_vec_is_valid(const SleqpVec* vec);
 SLEQP_EXPORT bool
 sleqp_vec_is_finite(const SleqpVec* vec);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_vec_free(SleqpVec** vec);
 
 #endif /* SLEQP_PUB_VEC_H */

@@ -18,7 +18,7 @@ typedef enum
  * *symmetric* (but possible indefinite) systems occuring during the
  * optimization
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_create(SleqpFact** star,
                   const char* name,
@@ -34,26 +34,26 @@ sleqp_fact_name(SleqpFact* factorization);
 const char*
 sleqp_fact_version(SleqpFact* factorization);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_set_matrix(SleqpFact* factorization, SleqpMat* matrix);
 
 SLEQP_FACT_FLAGS
 sleqp_fact_flags(SleqpFact* factorization);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_create_default(SleqpFact** star, SleqpSettings* settings);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_capture(SleqpFact* factorization);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_solve(SleqpFact* factorization, const SleqpVec* rhs);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_solution(SleqpFact* factorization,
                     SleqpVec* sol,
@@ -61,11 +61,11 @@ sleqp_fact_solution(SleqpFact* factorization,
                     int end,
                     double zero_eps);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_cond(SleqpFact* factorization, double* condition);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_release(SleqpFact** star);
 

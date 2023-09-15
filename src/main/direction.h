@@ -8,13 +8,13 @@
 
 typedef struct SleqpDirection SleqpDirection;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_create(SleqpDirection** star,
                        SleqpProblem* problem,
                        SleqpSettings* settings);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_reset(SleqpDirection* direction,
                       SleqpProblem* problem,
@@ -44,15 +44,15 @@ sleqp_direction_cons_jac(const SleqpDirection* direction);
 SleqpVec*
 sleqp_direction_hess(const SleqpDirection* direction);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_scale(SleqpDirection* direction, double factor);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_set_zero(SleqpDirection* direction);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_add_scaled(const SleqpDirection* first,
                            const SleqpDirection* second,
@@ -61,15 +61,15 @@ sleqp_direction_add_scaled(const SleqpDirection* first,
                            const double eps,
                            SleqpDirection* result);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_copy(const SleqpDirection* source, SleqpDirection* target);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_capture(SleqpDirection* direction);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_release(SleqpDirection** star);
 

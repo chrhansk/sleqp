@@ -12,7 +12,19 @@
 
 #include "sleqp/pub_log.h"
 
-typedef enum
+#ifdef SLEQP_HAVE_ATTRIBUTE_WARN_UNUSED_RESULT
+#define SLEQP_WARNUNUSED __attribute__((warn_unused_result))
+#else
+#define SLEQP_WARNUNUSED
+#endif
+
+#ifdef SLEQP_HAVE_ATTRIBUTE_NODISCARD
+#define SLEQP_NODISCARD(x) [[nodiscard(x)]]
+#else
+#define SLEQP_NODISCARD(x)
+#endif
+
+typedef enum SLEQP_NODISCARD("error indicator")
 {
   SLEQP_ERROR      = -1,
   SLEQP_OKAY       = 0,
@@ -30,12 +42,6 @@ typedef enum
   SLEQP_INVALID_DERIV,
   SLEQP_ILLEGAL_ARGUMENT
 } SLEQP_ERROR_TYPE;
-
-#ifdef SLEQP_HAVE_ATTRIBUTE_WARN_UNUSED_RESULT
-#define SLEQP_NODISCARD __attribute__((warn_unused_result))
-#else
-#define SLEQP_NODISCARD
-#endif
 
 /**
  * The state of a variable or constraint with respect
