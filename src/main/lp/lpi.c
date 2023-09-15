@@ -239,7 +239,7 @@ lpi_free(SleqpLPi** lp_star)
 {
   SleqpLPi* lp_interface = *lp_star;
 
-  lp_interface->callbacks.free_problem(&lp_interface->lp_data);
+  SLEQP_CALL(lp_interface->callbacks.free_problem(&lp_interface->lp_data));
 
   SLEQP_CALL(sleqp_timer_free(&lp_interface->timer));
 
