@@ -64,7 +64,7 @@ typedef struct SleqpProblem SleqpProblem;
  * @param[in] settings    Settings (`NULL` for default settings)
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_problem_create_simple(SleqpProblem** star,
                             SleqpFunc* func,
                             const SleqpVec* var_lb,
@@ -91,7 +91,7 @@ sleqp_problem_create_simple(SleqpProblem** star,
  * @param[in] settings    Settings (`NULL` for default settings)
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_problem_create(SleqpProblem** star,
                      SleqpFunc* func,
                      const SleqpVec* var_lb,
@@ -200,10 +200,10 @@ sleqp_problem_cons_lb(SleqpProblem* problem);
 SLEQP_EXPORT SleqpVec*
 sleqp_problem_cons_ub(SleqpProblem* problem);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_problem_capture(SleqpProblem* problem);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_problem_release(SleqpProblem** star);
 
 /**

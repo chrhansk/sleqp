@@ -5,23 +5,23 @@
 
 typedef struct SleqpPolishing SleqpPolishing;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_polishing_create(SleqpPolishing** star,
                        SleqpProblem* problem,
                        SleqpSettings* settings);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_polishing_polish(SleqpPolishing* polishing,
                        SleqpIterate* iterate,
                        SLEQP_POLISHING_TYPE polishing_type);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_polishing_capture(SleqpPolishing* polishing);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_polishing_release(SleqpPolishing** star);
 

@@ -18,11 +18,11 @@ typedef struct HSLMatrix
 
 } HSLMatrix;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 hsl_matrix_set(HSLMatrix* hsl_matrix, SleqpMat* matrix);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 hsl_matrix_clear(HSLMatrix* hsl_matrix);
 

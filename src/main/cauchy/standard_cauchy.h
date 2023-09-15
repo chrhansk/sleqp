@@ -12,7 +12,7 @@
 
 #include "lp/lpi.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_standard_cauchy_create(SleqpCauchy** star,
                              SleqpProblem* problem,

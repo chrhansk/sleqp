@@ -13,7 +13,7 @@
 
 #include "quasi_newton_types.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_sr1_create(SleqpQuasiNewton** star,
                  SleqpFunc* func,

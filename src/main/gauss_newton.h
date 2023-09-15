@@ -5,7 +5,7 @@
 #include "problem.h"
 #include "working_step.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_gauss_newton_solver_create(SleqpEQPSolver** star,
                                  SleqpProblem* problem,

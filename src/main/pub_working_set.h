@@ -57,7 +57,7 @@ typedef struct SleqpWorkingSet SleqpWorkingSet;
  * @param[out] star            A pointer to the working set to be created
  * @param[int] problem         The underlying problem
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_working_set_create(SleqpWorkingSet** star, SleqpProblem* problem);
 
 /**
@@ -126,10 +126,10 @@ sleqp_working_set_num_active_cons(const SleqpWorkingSet* working_set);
 SLEQP_EXPORT int
 sleqp_working_set_size(const SleqpWorkingSet* working_set);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_working_set_capture(SleqpWorkingSet* working_set);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_working_set_release(SleqpWorkingSet** star);
 
 #endif /* SLEQP_PUB_WORKING_SET_H */

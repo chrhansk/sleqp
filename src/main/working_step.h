@@ -9,20 +9,20 @@
 
 #include "direction.h"
 #include "iterate.h"
-#include "settings.h"
 #include "problem.h"
+#include "settings.h"
 
 #include "aug_jac/aug_jac.h"
 
 typedef struct SleqpWorkingStep SleqpWorkingStep;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_step_create(SleqpWorkingStep** star,
                           SleqpProblem* problem,
                           SleqpSettings* settings);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_step_set_iterate(SleqpWorkingStep* step,
                                SleqpIterate* iterate,
@@ -48,16 +48,16 @@ sleqp_working_step_newton_obj_offset(SleqpWorkingStep* step,
 SleqpVec*
 sleqp_working_step_violated_cons_multipliers(SleqpWorkingStep* step);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_step_set_multipliers(SleqpWorkingStep* step,
                                    const SleqpVec* multipliers);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_step_capture(SleqpWorkingStep* step);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_working_step_release(SleqpWorkingStep** star);
 

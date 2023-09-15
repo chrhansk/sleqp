@@ -33,35 +33,35 @@
 #include "iterate.h"
 #include "problem.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_restoration_problem_create(SleqpProblem** star,
                                  SleqpSettings* settings,
                                  SleqpProblem* problem);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_restoration_problem_transform(SleqpProblem* problem,
                                     const SleqpVec* primal,
                                     const SleqpVec* cons_val,
                                     SleqpVec* result);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_restoration_func_cons_val(SleqpFunc* restoration_func, SleqpVec** star);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_restoration_func_cons_jac(SleqpFunc* restoration_func, SleqpMat** star);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_restoration_func_init(SleqpFunc* restoration_func,
                             SleqpVec* restoration_primal,
                             SleqpVec* orig_cons_val,
                             SleqpMat* orig_cons_jac);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_restoration_problem_restore(SleqpProblem* problem,
                                   const SleqpVec* input,

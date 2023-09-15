@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_mpi_initialize();
 
 #endif /* SLEQP_MPI_UTILS_H */

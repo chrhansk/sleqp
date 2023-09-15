@@ -24,7 +24,7 @@
  * \f$ \nabla_x L(x, \lambda, \mu) \f$.
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_bfgs_create(SleqpQuasiNewton** star,
                   SleqpFunc* func,

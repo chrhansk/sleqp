@@ -8,27 +8,27 @@
  **/
 
 #include "iterate.h"
-#include "settings.h"
 #include "problem.h"
+#include "settings.h"
 
 #include "tr_types.h"
 
 typedef struct SleqpTRSolver SleqpTRSolver;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_tr_solver_create(SleqpTRSolver** star,
                        SleqpTRCallbacks* callbacks,
                        void* solver_data);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_tr_solver_set_time_limit(SleqpTRSolver* solver, double time_limit);
 
 SleqpTimer*
 sleqp_tr_solver_get_solve_timer(SleqpTRSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_tr_solver_solve(SleqpTRSolver* solver,
                       SleqpAugJac* jacobian,
@@ -38,17 +38,17 @@ sleqp_tr_solver_solve(SleqpTRSolver* solver,
                       double trust_radius,
                       double* tr_dual);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_tr_solver_current_rayleigh(SleqpTRSolver* solver,
                                  double* min_rayleigh,
                                  double* max_rayleigh);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_tr_solver_capture(SleqpTRSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_tr_solver_release(SleqpTRSolver** star);
 

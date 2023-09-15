@@ -200,7 +200,7 @@ typedef struct
  * @param[in]  num_constraints  The number of constraints
  * @param[in]  func_data        User-provided function data
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_create(SleqpFunc** fstar,
                   SleqpFuncCallbacks* callbacks,
                   int num_variables,
@@ -225,7 +225,7 @@ sleqp_func_num_cons(const SleqpFunc* func);
  * @param[in]     func            The function
  * @param[in]     callbacks       The new callbacks
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_set_callbacks(SleqpFunc* func, SleqpFuncCallbacks* callbacks);
 
 /**
@@ -244,10 +244,10 @@ sleqp_func_hess_struct(SleqpFunc* func);
 SLEQP_EXPORT void*
 sleqp_func_get_data(SleqpFunc* func);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_capture(SleqpFunc* func);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_release(SleqpFunc** fstar);
 
 /**

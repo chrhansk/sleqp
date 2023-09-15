@@ -26,7 +26,7 @@ typedef struct
 
 } SleqpStepRuleCallbacks;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_step_rule_create(SleqpStepRule** star,
                        SleqpProblem* problem,
@@ -34,7 +34,7 @@ sleqp_step_rule_create(SleqpStepRule** star,
                        SleqpStepRuleCallbacks* callbacks,
                        void* step_data);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_step_rule_apply(SleqpStepRule* rule,
                       double iterate_merit,
@@ -43,19 +43,19 @@ sleqp_step_rule_apply(SleqpStepRule* rule,
                       bool* accept_step,
                       double* reduction_ratio);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_step_rule_reset(SleqpStepRule* rule);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_step_rule_capture(SleqpStepRule* rule);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_step_rule_release(SleqpStepRule** star);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_step_rule_create_default(SleqpStepRule** star,
                                SleqpProblem* problem,

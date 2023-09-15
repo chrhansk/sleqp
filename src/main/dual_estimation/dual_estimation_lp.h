@@ -4,7 +4,7 @@
 #include "cauchy/cauchy.h"
 #include "dual_estimation.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_dual_estimation_lp_create(SleqpDualEstimation** star,
                                 SleqpCauchy* cauchy);

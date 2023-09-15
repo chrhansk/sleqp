@@ -4,13 +4,13 @@
 #include "aug_jac/aug_jac.h"
 #include "dual_estimation.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_dual_estimation_lsq_create(SleqpDualEstimation** star,
                                  SleqpProblem* problem,
                                  SleqpAugJac* aug_jacobian);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_estimate_duals_lsq(SleqpDualEstimation* estimation,
                          const SleqpIterate* iterate,

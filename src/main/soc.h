@@ -14,13 +14,13 @@
 
 typedef struct SleqpSOC SleqpSOC;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_soc_data_create(SleqpSOC** star,
                       SleqpProblem* problem,
                       SleqpSettings* settings);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_soc_compute_correction(SleqpSOC* soc_data,
                              SleqpAugJac* augmented_jacobian,
@@ -28,7 +28,7 @@ sleqp_soc_compute_correction(SleqpSOC* soc_data,
                              const SleqpIterate* trial_iterate,
                              SleqpVec* soc_direction);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_soc_compute_step(SleqpSOC* soc_data,
                        SleqpAugJac* augmented_jacobian,
@@ -37,7 +37,7 @@ sleqp_soc_compute_step(SleqpSOC* soc_data,
                        const SleqpIterate* trial_iterate,
                        SleqpVec* soc_step);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
                               SleqpAugJac* augmented_jacobian,
@@ -47,11 +47,11 @@ sleqp_soc_compute_trial_point(SleqpSOC* soc_data,
                               SleqpVec* soc_trial_point,
                               double* soc_step_norm);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_soc_data_capture(SleqpSOC* soc_data);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_soc_data_release(SleqpSOC** star);
 

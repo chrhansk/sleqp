@@ -127,14 +127,14 @@ typedef struct
  * @param[in]  num_constraints  The number of constraints
  * @param[in]  func_data        The function data
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_dyn_func_create(SleqpFunc** fstar,
                       SleqpDynFuncCallbacks* callbacks,
                       int num_variables,
                       int num_constraints,
                       void* func_data);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_dyn_func_set_callbacks(SleqpFunc* func, SleqpDynFuncCallbacks* callbacks);
 
 #endif /* SLEQP_PUB_DYN_H */

@@ -99,7 +99,7 @@ sleqp_func_set_value(SleqpFunc* func,
   return SLEQP_OKAY;
 }
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_nonzeros(SleqpFunc* func,
                     int* obj_grad_nnz,
                     int* cons_val_nnz,

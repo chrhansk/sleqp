@@ -5,7 +5,7 @@
 
 #include "vec.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_vstack(const SleqpMat* first,
                  const SleqpMat* second,
@@ -19,7 +19,7 @@ sleqp_mat_vstack(const SleqpMat* first,
  * @param[out] result     The result array (size equal to the number of columns
  *of the matrix)
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_mult_vec(const SleqpMat* matrix,
                    const SleqpVec* vector,
@@ -35,7 +35,7 @@ sleqp_mat_mult_vec(const SleqpMat* matrix,
  * @param[out] result     The result vector (dimension equal to the number of
  *rows of the matrix)
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_mult_vec_trans(const SleqpMat* matrix,
                          const SleqpVec* vector,
@@ -66,7 +66,7 @@ sleqp_mat_at(SleqpMat* matrix, int row, int col);
 double
 sleqp_mat_value_at(SleqpMat* matrix, int row, int col);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_col(const SleqpMat* matrix, int col, SleqpVec* vec);
 
@@ -111,7 +111,7 @@ sleqp_mat_remove_entries(const SleqpMat* source,
  *
  * @param[in] matrix     The matrix
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_clear(SleqpMat* matrix);
 
@@ -121,7 +121,7 @@ sleqp_mat_clear(SleqpMat* matrix);
  * @param[in] matrix     The matrix
  * @param[in] output     The output file
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_fprintf(const SleqpMat* matrix, FILE* output);
 
@@ -131,11 +131,11 @@ sleqp_mat_fprintf(const SleqpMat* matrix, FILE* output);
  * @param[in] matrix     The matrix
  * @param[in] output     The output file
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_dump(const SleqpMat* matrix, FILE* output);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_dump_to_file(const SleqpMat* matrix, const char* name);
 
@@ -154,7 +154,7 @@ sleqp_mat_is_valid(const SleqpMat* matrix);
  * @param[out] target    The target to store the transposed source
  * @param[in]  row_cache Cache having at least as many entries as rows of source
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_mat_trans(const SleqpMat* source, SleqpMat* target, int* row_cache);
 

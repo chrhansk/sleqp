@@ -59,13 +59,13 @@ typedef enum
  * @param[out] cons_jac_nnz    The number of nonzeros of the constraint Jacobian
  *\f$ J_c(x) \f$
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_set_value(SleqpFunc* func,
                      SleqpVec* x,
                      SLEQP_VALUE_REASON reason,
                      bool* reject);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_nonzeros(SleqpFunc* func,
                     int* obj_grad_nnz,
                     int* cons_val_nnz,
@@ -82,37 +82,37 @@ sleqp_func_nonzeros(SleqpFunc* func,
  * @param[out]    cons_jac        The constraint Jacobian \f$ J_c(x) \f$
  * @param[in,out] func_data       The function data
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_eval(SleqpFunc* func,
                 double* obj,
                 SleqpVec* obj_grad,
                 SleqpVec* cons_val,
                 SleqpMat* cons_jac);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_obj_val(SleqpFunc* func, double* obj);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_obj_grad(SleqpFunc* func, SleqpVec* obj_grad);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_cons_val(SleqpFunc* func, SleqpVec* cons_val);
 
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_func_cons_jac(SleqpFunc* func, SleqpMat* cons_jac);
 
 SLEQP_FUNC_FLAGS
 sleqp_func_flags(const SleqpFunc* func);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_func_flags_add(SleqpFunc* func, SLEQP_FUNC_FLAGS flags);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_func_flags_remove(SleqpFunc* func, SLEQP_FUNC_FLAGS flags);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_func_flags_set(SleqpFunc* func, SLEQP_FUNC_FLAGS flags, bool value);
 
@@ -199,7 +199,7 @@ sleqp_func_get_hess_timer(SleqpFunc* func);
  * @param[out]    product           The resulting product
  *
  */
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_func_hess_prod(SleqpFunc* func,
                      const SleqpVec* direction,
@@ -216,7 +216,7 @@ sleqp_func_hess_prod(SleqpFunc* func,
  * @param[out]    bilinear_prod     The resulting bilinear product
  *
  */
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_func_hess_bilinear(SleqpFunc* func,
                          const SleqpVec* direction,

@@ -9,14 +9,14 @@
 
 #include "eqp.h"
 #include "iterate.h"
-#include "settings.h"
 #include "problem.h"
+#include "settings.h"
 #include "timer.h"
 #include "working_step.h"
 
 #include "aug_jac/aug_jac.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_newton_solver_create(SleqpEQPSolver** star,
                            SleqpProblem* problem,

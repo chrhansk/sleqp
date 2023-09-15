@@ -19,7 +19,7 @@
 
 typedef struct SleqpLSQRSolver SleqpLSQRSolver;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
                          SleqpSettings* settings,
@@ -28,17 +28,17 @@ sleqp_lsqr_solver_create(SleqpLSQRSolver** star,
                          SleqpLSQRCallbacks* callbacks,
                          void* data);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_lsqr_set_time_limit(SleqpLSQRSolver* solver, double time_limit);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_lsqr_solver_resize(SleqpLSQRSolver* solver,
                          int forward_dim,
                          int adjoint_dim);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
                         const SleqpVec* rhs,
@@ -46,11 +46,11 @@ sleqp_lsqr_solver_solve(SleqpLSQRSolver* solver,
                         double trust_radius,
                         SleqpVec* sol);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_lsqr_solver_capture(SleqpLSQRSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_lsqr_solver_release(SleqpLSQRSolver** star);
 

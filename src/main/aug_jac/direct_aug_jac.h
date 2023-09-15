@@ -9,7 +9,7 @@
  * by QR factorizing \f$ A_W \f$
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direct_aug_jac_create(SleqpAugJac** star,
                             SleqpProblem* problem,

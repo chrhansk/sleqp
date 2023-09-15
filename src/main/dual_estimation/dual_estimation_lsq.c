@@ -161,7 +161,7 @@ estimate_duals_lsq(const SleqpIterate* iterate,
                                  &num_clipped_cons);
 }
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_estimate_duals_lsq(SleqpDualEstimation* estimation,
                          const SleqpIterate* iterate,

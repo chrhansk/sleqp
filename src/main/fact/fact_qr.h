@@ -16,7 +16,7 @@
  * with \f$ \overline{R} \in \mathbb{R}^{n \times n}\f$
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_qr_create(SleqpFactQR** star,
                 const char* name,
@@ -34,7 +34,7 @@ sleqp_qr_version(SleqpFactQR* fact);
 /**
  * Sets the matrix \f$ A \f$
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_qr_set_matrix(SleqpFactQR* fact, SleqpMat* matrix);
 
@@ -44,7 +44,7 @@ sleqp_qr_set_matrix(SleqpFactQR* fact, SleqpMat* matrix);
  * @param[in]  rhs The right-hand side \f$ y \in \mathbb{R}^{m} \f$
  * @param[out] sol The solution \f$ x \in \mathbb{R}^{m} \f$
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_qr_solve_tri(SleqpFactQR* fact, const SleqpVec* rhs, SleqpVec* sol);
 
 /**
@@ -53,7 +53,7 @@ sleqp_qr_solve_tri(SleqpFactQR* fact, const SleqpVec* rhs, SleqpVec* sol);
  * @param[in]  rhs The right-hand side \f$ y \in \mathbb{R}^{m} \f$
  * @param[out] sol The solution \f$ x \in \mathbb{R}^{m} \f$
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_qr_solve_tri_trans(SleqpFactQR* fact, const SleqpVec* rhs, SleqpVec* sol);
 
 /**
@@ -62,7 +62,7 @@ sleqp_qr_solve_tri_trans(SleqpFactQR* fact, const SleqpVec* rhs, SleqpVec* sol);
  * @param[in]  direction The direction \f$ x \in \mathbb{R}^{n} \f$
  * @param[out] product   The product \f$ y \in \mathbb{R}^{n} \f$
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_qr_mult_orth(SleqpFactQR* fact,
                    const SleqpVec* direction,
                    SleqpVec* product);
@@ -73,22 +73,22 @@ sleqp_qr_mult_orth(SleqpFactQR* fact,
  * @param[in]  direction The direction \f$ x \in \mathbb{R}^{n} \f$
  * @param[out] product   The product \f$ y \in \mathbb{R}^{n} \f$
  **/
-SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_qr_mult_orth_trans(SleqpFactQR* fact,
                          const SleqpVec* direction,
                          SleqpVec* product);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_qr_capture(SleqpFactQR* fact);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_qr_release(SleqpFactQR** star);
 
 #ifdef SLEQP_HAVE_QR_FACT
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_fact_qr_create_default(SleqpFactQR** star, SleqpSettings* settings);
 

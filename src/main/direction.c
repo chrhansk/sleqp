@@ -192,7 +192,7 @@ sleqp_direction_set_zero(SleqpDirection* direction)
   return SLEQP_OKAY;
 }
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_add_scaled(const SleqpDirection* first,
                            const SleqpDirection* second,

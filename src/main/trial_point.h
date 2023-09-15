@@ -84,56 +84,56 @@ typedef struct
 
 } SleqpTrialPointSolver;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_create(SleqpTrialPointSolver** star,
                                 SleqpProblem* problem,
                                 SleqpSettings* settings);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_iterate(SleqpTrialPointSolver* solver,
                                      SleqpIterate* iterate);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_penalty_info(SleqpTrialPointSolver* solver,
                                           double feas_res,
                                           bool allow_global_reset);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_time_limit(SleqpTrialPointSolver* solver,
                                         double time_limit);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_trust_radius(SleqpTrialPointSolver* solver,
                                           double trust_radius);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_lp_trust_radius(SleqpTrialPointSolver* solver,
                                              double lp_trust_radius);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_penalty(SleqpTrialPointSolver* solver,
                                      double penalty_parameter);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_penalty(SleqpTrialPointSolver* solver,
                                  double* penalty_parameter);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_set_cons_weights(SleqpTrialPointSolver* solver);
 
 bool
 sleqp_trial_point_solver_locally_infeasible(SleqpTrialPointSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_penalty_info(SleqpTrialPointSolver* solver,
                                       bool* performed_global_reset);
@@ -150,25 +150,25 @@ sleqp_trial_point_solver_trial_direction(SleqpTrialPointSolver* solver);
 SleqpVec*
 sleqp_trial_point_solver_soc_step(SleqpTrialPointSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_rayleigh(SleqpTrialPointSolver* solver,
                                   double* min_rayleigh,
                                   double* max_rayleigh);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_print_stats(SleqpTrialPointSolver* solver,
                                      double elapsed_seconds);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_compute_cauchy_step(SleqpTrialPointSolver* solver,
                                              double* cauchy_merit_value,
                                              bool quadratic_model,
                                              bool* full_step);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
                                              SleqpIterate* trial_iterate,
@@ -177,17 +177,17 @@ sleqp_trial_point_solver_compute_trial_point(SleqpTrialPointSolver* solver,
                                              bool* full_step,
                                              bool* reject);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_compute_trial_point_soc(SleqpTrialPointSolver* solver,
                                                  SleqpIterate* trial_iterate,
                                                  bool* reject);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_capture(SleqpTrialPointSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_trial_point_solver_release(SleqpTrialPointSolver** star);
 

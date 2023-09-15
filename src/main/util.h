@@ -14,14 +14,14 @@
 #include "sparse/mat.h"
 #include "sparse/vec.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_set_and_evaluate(SleqpProblem* problem,
                        SleqpIterate* iterate,
                        SLEQP_VALUE_REASON reason,
                        bool* reject);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_direction_in_working_set(SleqpProblem* problem,
                                const SleqpIterate* iterate,
@@ -30,7 +30,7 @@ sleqp_direction_in_working_set(SleqpProblem* problem,
                                double eps,
                                bool* in_working_set);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_max_step_length(const SleqpVec* x,
                       const SleqpVec* direction,

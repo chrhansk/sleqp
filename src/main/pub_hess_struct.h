@@ -31,7 +31,7 @@
  **/
 typedef struct SleqpHessStruct SleqpHessStruct;
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_create(SleqpHessStruct** star, int dimension, bool empty);
 
 /**
@@ -51,7 +51,7 @@ sleqp_hess_struct_num_blocks(const SleqpHessStruct* hessian_struct);
  * @param[out] begin           The 0-based index \f$ j_l \f$
  * @param[out] end             The 0-based index \f$ j_{l+1} \f$
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_block_range(const SleqpHessStruct* hessian_struct,
                               int block,
                               int* begin,
@@ -63,7 +63,7 @@ sleqp_hess_struct_block_range(const SleqpHessStruct* hessian_struct,
  * @param[in]  hessian_struct  The Hessian structure
  * @param[out] end             The 0-based index \f$ j_{l+1} \f$
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_push_block(SleqpHessStruct* hessian_struct, int end);
 
 /**
@@ -71,7 +71,7 @@ sleqp_hess_struct_push_block(SleqpHessStruct* hessian_struct, int end);
  *
  * @param[in]  hessian_struct  The Hessian structure
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_clear(SleqpHessStruct* hessian_struct);
 
 /**
@@ -82,24 +82,24 @@ sleqp_hess_struct_clear(SleqpHessStruct* hessian_struct);
  * @param[out]  end             The value \f$ n \f$
  *
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_lin_range(const SleqpHessStruct* hessian_struct,
                             int* begin,
                             int* end);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_copy(const SleqpHessStruct* source, SleqpHessStruct* target);
 
 /**
  * Prints the Hessian structure
  **/
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_fprintf(SleqpHessStruct* hessian_struct, FILE* output);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_capture(SleqpHessStruct* hessian_struct);
 
-SLEQP_EXPORT SLEQP_NODISCARD SLEQP_RETCODE
+SLEQP_EXPORT SLEQP_WARNUNUSED SLEQP_RETCODE
 sleqp_hess_struct_release(SleqpHessStruct** star);
 
 #endif /* SLEQP_PUB_HESS_STRUCT_H */

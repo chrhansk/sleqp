@@ -20,7 +20,7 @@ typedef struct SleqpLineSearch SleqpLineSearch;
  * @param[in] merit_data  A merit-function
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_linesearch_create(SleqpLineSearch** star,
                         SleqpProblem* problem,
@@ -39,7 +39,7 @@ sleqp_linesearch_create(SleqpLineSearch** star,
  *trust radius
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_linesearch_set_iterate(SleqpLineSearch* linesearch,
                              SleqpIterate* iterate,
@@ -60,7 +60,7 @@ sleqp_linesearch_set_iterate(SleqpLineSearch* linesearch,
  *Cauchy step
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
                              SleqpDirection* direction,
@@ -89,7 +89,7 @@ sleqp_linesearch_cauchy_step(SleqpLineSearch* linesearch,
  *the trial step
  *
  **/
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
                             const SleqpDirection* cauchy_direction,
@@ -100,7 +100,7 @@ sleqp_linesearch_trial_step(SleqpLineSearch* linesearch,
                             double* step_length,
                             double* trial_quadratic_merit_value);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
                                   const SleqpDirection* cauchy_direction,
@@ -114,11 +114,11 @@ sleqp_linesearch_trial_step_exact(SleqpLineSearch* linesearch,
 SleqpTimer*
 sleqp_linesearch_get_timer(SleqpLineSearch* linesearch);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_linesearch_capture(SleqpLineSearch* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_linesearch_release(SleqpLineSearch** star);
 

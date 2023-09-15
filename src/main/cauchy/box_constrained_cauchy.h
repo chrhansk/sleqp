@@ -4,7 +4,7 @@
 #include "cauchy.h"
 #include "problem.h"
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_box_constrained_cauchy_create(SleqpCauchy** star,
                                     SleqpProblem* problem,

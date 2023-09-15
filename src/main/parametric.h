@@ -23,7 +23,7 @@
 
 typedef struct SleqpParametricSolver SleqpParametricSolver;
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                SleqpProblem* problem,
@@ -31,12 +31,12 @@ sleqp_parametric_solver_create(SleqpParametricSolver** star,
                                SleqpMerit* merit,
                                SleqpLineSearch* linesearch);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_parametric_solver_set_penalty(SleqpParametricSolver* solver,
                                     double penalty_parameter);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
                               SleqpIterate* iterate,
@@ -47,11 +47,11 @@ sleqp_parametric_solver_solve(SleqpParametricSolver* solver,
                               double* trust_radius,
                               double* quadratic_merit_value);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_parametric_solver_capture(SleqpParametricSolver* solver);
 
-SLEQP_NODISCARD
+SLEQP_WARNUNUSED
 SLEQP_RETCODE
 sleqp_parametric_solver_release(SleqpParametricSolver** star);
 
