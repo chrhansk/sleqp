@@ -22,6 +22,13 @@ nonlinear constraints, while the vectors `x_l, x_u ∈ ℝⁿ` are bounds on
 the variables. The functions `f(x)` and `c(x)` can be nonlinear and
 nonconvex, but should be twice continuously differentiable.
 
+
+## Publication
+
+Details regarding this implementation may be found in the accompanying article
+
+Hansknecht, C., & Kirches, C. (2023). SLEQP: An open-source package for nonlinear programming. Proceedings in Applied Mathematics and Mechanics, 00, e202300241. https://doi.org/10.1002/pamm.202300241 
+
 ## Dependencies
 
 For the solution of the linear programming problem, one of the

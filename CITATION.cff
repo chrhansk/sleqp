@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Hansknecht"
+  given-names: "Christoph"
+  orcid: "https://orcid.org/0000-0003-3948-9344"
+- family-names: "Kirches"
+  given-names: "Christian"
+  orcid: "https://orcid.org/0000-0002-3441-8822"
+title: "SLEQP: An open-source package for nonlinear programming"
+doi: 10.1002/pamm.202300241
+url: "https://github.com/chrhansk/sleqp"
