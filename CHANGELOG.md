@@ -7,6 +7,7 @@
 - Added function to set enum value from strings in settings
 - Added support for coinmumps, absense of MPI
 - Added nodiscard attribute to return codes
+- Added reference to published PAMM paper
 
 ### Fixed
 
