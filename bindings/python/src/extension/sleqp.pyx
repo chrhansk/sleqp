@@ -2,6 +2,7 @@
 
 import numpy as np
 cimport numpy as np
+cimport cython
 
 import enum
 import traceback

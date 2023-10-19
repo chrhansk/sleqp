@@ -24,11 +24,14 @@ cdef class CallbackHandle:
 cdef csleqp.SLEQP_RETCODE accepted_iterate(csleqp.SleqpSolver* sol,
                                            csleqp.SleqpIterate* it,
                                            void* callback_data):
-  cdef Iterate iterate = Iterate(_create=True)
-  cdef CallbackHandle callback_object = None
-  iterate._set_iterate(it)
+  cdef Iterate iterate
+  cdef CallbackHandle callback_object
 
   try:
+    iterate = Iterate(_create=True)
+    callback_object = None
+    iterate._set_iterate(it)
+
     callback_object = (<CallbackHandle> callback_data)
 
     function = callback_object.function
@@ -46,7 +49,7 @@ cdef csleqp.SLEQP_RETCODE accepted_iterate(csleqp.SleqpSolver* sol,
 
 cdef csleqp.SLEQP_RETCODE accepted_iterate_nogil(csleqp.SleqpSolver* solver,
                                                  csleqp.SleqpIterate* iterate,
-                                                 void* callback_data) nogil:
+                                                 void* callback_data) noexcept nogil:
   with gil:
     return accepted_iterate(solver, iterate, callback_data)
 
@@ -70,7 +73,7 @@ cdef csleqp.SLEQP_RETCODE performed_iteration(csleqp.SleqpSolver* sol,
   return csleqp.SLEQP_OKAY
 
 cdef csleqp.SLEQP_RETCODE performed_iteration_nogil(csleqp.SleqpSolver* solver,
-                                                    void* callback_data) nogil:
+                                                    void* callback_data) noexcept nogil:
   with gil:
     return performed_iteration(solver, callback_data)
 
@@ -78,11 +81,14 @@ cdef csleqp.SLEQP_RETCODE performed_iteration_nogil(csleqp.SleqpSolver* solver,
 cdef csleqp.SLEQP_RETCODE finished(csleqp.SleqpSolver* sol,
                                    csleqp.SleqpIterate* it,
                                    void* callback_data):
-  cdef Iterate iterate = Iterate(_create=True)
-  cdef CallbackHandle callback_object = None
-  iterate._set_iterate(it)
+  cdef Iterate iterate
+  cdef CallbackHandle callback_object
 
   try:
+    iterate = Iterate(_create=True)
+    callback_object = None
+    iterate._set_iterate(it)
+
     callback_object = (<CallbackHandle> callback_data)
 
     function = callback_object.function
@@ -100,7 +106,7 @@ cdef csleqp.SLEQP_RETCODE finished(csleqp.SleqpSolver* sol,
 
 cdef csleqp.SLEQP_RETCODE finished_nogil(csleqp.SleqpSolver* solver,
                                          csleqp.SleqpIterate* iterate,
-                                         void* callback_data) nogil:
+                                         void* callback_data) noexcept nogil:
   with gil:
     return finished(solver, iterate, callback_data)
 
