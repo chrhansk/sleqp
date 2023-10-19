@@ -1,5 +1,6 @@
 #cython: language_level=3
 
+
 cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpVec* vec):
   assert vec
   values = np.zeros((vec.dim,), dtype=np.float64)
@@ -8,6 +9,21 @@ cdef object sleqp_sparse_vec_to_array(const csleqp.SleqpVec* vec):
     values[vec.indices[k]] = vec.data[k]
 
   return values
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef csleqp.SLEQP_RETCODE array_set_values(np.ndarray array,
+                                           csleqp.SleqpVec* vec) except csleqp.SLEQP_ERROR:
+  cdef Py_ssize_t i
+  cdef Py_ssize_t n = array.shape[0]
+  cdef double v
+
+  for i in range(n):
+    v = array[i]
+    if v != 0.:
+      csleqp_call(csleqp.sleqp_vec_push(vec, i, v))
+
 
 cdef csleqp.SLEQP_RETCODE array_to_sleqp_sparse_vec(np.ndarray array,
                                                     csleqp.SleqpVec* vec) except csleqp.SLEQP_ERROR:
@@ -24,11 +40,7 @@ cdef csleqp.SLEQP_RETCODE array_to_sleqp_sparse_vec(np.ndarray array,
 
   csleqp_call(csleqp.sleqp_vec_reserve(vec, dim))
 
-  for i in range(dim):
-    if array[i] != 0.:
-      csleqp_call(csleqp.sleqp_vec_push(vec,
-                                                  i,
-                                                  array[i]))
+  csleqp_call(array_set_values(array, vec))
 
   return csleqp.SLEQP_OKAY
 
