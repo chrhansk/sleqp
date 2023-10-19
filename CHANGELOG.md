@@ -14,6 +14,7 @@
 - Added missing symbol export / installation to Windows installation
 - Fixed compile / test errors in python extension
 - Improved const-correctness of interface functions
+- Fixed Cython (>= 3) warnings
 
 ## [1.0.1] - 2023-06-26
 
