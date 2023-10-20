@@ -59,15 +59,6 @@ sleqp_mumps_create(SleqpMUMPSData** star)
 
   *sleqp_mumps_data = (SleqpMUMPSData){0};
 
-  if (sleqp_log_level() >= SLEQP_LOG_DEBUG)
-  {
-    sleqp_mumps_data->id.icntl[3] = 3;
-  }
-  else
-  {
-    sleqp_mumps_data->id.icntl[3] = 1;
-  }
-
   // Mark as symmetric
   sleqp_mumps_data->id.sym = 2;
 
@@ -78,6 +69,15 @@ sleqp_mumps_create(SleqpMUMPSData** star)
   sleqp_mumps_data->id.job = -1;
   SLEQP_MUMPS_CALL(sleqp_mumps_data->id);
 
+  if (sleqp_log_level() >= SLEQP_LOG_DEBUG)
+  {
+    sleqp_mumps_data->id.icntl[3] = 3;
+  }
+  else
+  {
+    sleqp_mumps_data->id.icntl[3] = 1;
+  }
+  
   return SLEQP_OKAY;
 }
 
