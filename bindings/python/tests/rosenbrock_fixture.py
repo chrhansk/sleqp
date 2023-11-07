@@ -7,54 +7,56 @@ import sleqp
 num_variables = 2
 num_constraints = 0
 
+
 class RosenbrockFunc:
 
-  def __init__(self):
-    self.a = 1
-    self.b = 1
+    def __init__(self):
+        self.a = 1
+        self.b = 1
 
-  def set_value(self, v, reason):
-    self.v = v
+    def set_value(self, v, reason):
+        self.v = v
 
-  def obj_val(self):
-    [x, y] = self.v
-    (a, b) = (self.a, self.b)
+    def obj_val(self):
+        [x, y] = self.v
+        (a, b) = (self.a, self.b)
 
-    xsq = x**2
+        xsq = x**2
 
-    return (a - x)**2 + b*(y - xsq)**2
+        return (a - x)**2 + b*(y - xsq)**2
 
-  def obj_grad_nnz(self):
-    return 2
+    def obj_grad_nnz(self):
+        return 2
 
-  def obj_grad(self):
-    [x, y] = self.v
-    (a, b) = (self.a, self.b)
+    def obj_grad(self):
+        [x, y] = self.v
+        (a, b) = (self.a, self.b)
 
-    xsq = x**2
+        xsq = x**2
 
-    g = np.array([(4*b*x*(xsq - y)) + 2*x - 2*a,
-                  -2*b*(xsq - y)])
+        g = np.array([(4*b*x*(xsq - y)) + 2*x - 2*a,
+                      -2*b*(xsq - y)])
 
-    return g
+        return g
 
-  def cons_vals(self):
-    return np.zeros((num_constraints,))
+    def cons_vals(self):
+        return np.zeros((num_constraints,))
 
-  def cons_jac(self):
-    return np.zeros((num_constraints, num_variables))
+    def cons_jac(self):
+        return np.zeros((num_constraints, num_variables))
 
-  def hess_prod(self, direction, _):
-    [x, y] = self.v
-    (a, b) = (self.a, self.b)
-    [dx, dy] = direction
+    def hess_prod(self, direction, _):
+        [x, y] = self.v
+        (a, b) = (self.a, self.b)
+        [dx, dy] = direction
 
-    xsq = x**2
+        xsq = x**2
 
-    product = np.array([((8.*b*xsq + 4.*b*(xsq - y) + 2.)*dx - (4.*b*x)*dy),
-                        ((-4.*b*x)*dx + (2.*b)*dy)])
+        product = np.array([((8.*b*xsq + 4.*b*(xsq - y) + 2.)*dx - (4.*b*x)*dy),
+                            ((-4.*b*x)*dx + (2.*b)*dy)])
 
-    return product
+        return product
+
 
 inf = np.inf
 

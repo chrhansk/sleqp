@@ -10,124 +10,125 @@ import sleqp
 num_variables = 2
 num_constraints = 1
 
+
 class MatrixErrorFunc:
-  def set_value(self, v, reason):
-    pass
+    def set_value(self, v, reason):
+        pass
 
-  def set_matrix_value(self, m):
-    self.m = m
+    def set_matrix_value(self, m):
+        self.m = m
 
-  def obj_val(self):
-    return 0
+    def obj_val(self):
+        return 0
 
-  def obj_grad_nnz(self):
-    return 1
+    def obj_grad_nnz(self):
+        return 1
 
-  def cons_jac_nnz(self):
-    return 1
+    def cons_jac_nnz(self):
+        return 1
 
-  def cons_vals(self):
-    return np.zeros((num_constraints,))
+    def cons_vals(self):
+        return np.zeros((num_constraints,))
 
-  def obj_grad(self):
-    return np.array([0]*num_variables)
+    def obj_grad(self):
+        return np.array([0]*num_variables)
 
-  def hess_prod(self, direction, cons_dual):
-    return np.array([0]*num_variables)
+    def hess_prod(self, direction, cons_dual):
+        return np.array([0]*num_variables)
 
-  def cons_jac(self):
-    return self.m
+    def cons_jac(self):
+        return self.m
 
 
 class MatrixErrorTest(unittest.TestCase):
-  def setUp(self):
-    inf = sleqp.inf()
+    def setUp(self):
+        inf = sleqp.inf()
 
-    self.var_lb = np.array([-inf]*num_variables)
-    self.var_ub = np.array([inf]*num_variables)
+        self.var_lb = np.array([-inf]*num_variables)
+        self.var_ub = np.array([inf]*num_variables)
 
-    self.cons_lb = np.array([0]*num_constraints)
-    self.cons_ub = np.array([])*num_constraints
+        self.cons_lb = np.array([0]*num_constraints)
+        self.cons_ub = np.array([])*num_constraints
 
-    self.x = np.array([0.]*num_variables)
+        self.x = np.array([0.]*num_variables)
 
-  def test_string_error(self):
-    func = MatrixErrorFunc()
+    def test_string_error(self):
+        func = MatrixErrorFunc()
 
-    func.set_matrix_value("asd")
+        func.set_matrix_value("asd")
 
-    problem = sleqp.Problem(func,
-                            self.var_lb,
-                            self.var_ub,
-                            self.cons_lb,
-                            self.cons_ub)
+        problem = sleqp.Problem(func,
+                                self.var_lb,
+                                self.var_ub,
+                                self.cons_lb,
+                                self.cons_ub)
 
-    solver = sleqp.Solver(problem,
-                          self.x)
+        solver = sleqp.Solver(problem,
+                              self.x)
 
-    with self.assertRaises(Exception):
-      solver.solve(max_num_iterations=1)
+        with self.assertRaises(Exception):
+            solver.solve(max_num_iterations=1)
 
-  def test_error_chain(self):
-    func = MatrixErrorFunc()
+    def test_error_chain(self):
+        func = MatrixErrorFunc()
 
-    func.set_matrix_value("asd")
+        func.set_matrix_value("asd")
 
-    problem = sleqp.Problem(func,
-                            self.var_lb,
-                            self.var_ub,
-                            self.cons_lb,
-                            self.cons_ub)
+        problem = sleqp.Problem(func,
+                                self.var_lb,
+                                self.var_ub,
+                                self.cons_lb,
+                                self.cons_ub)
 
-    solver = sleqp.Solver(problem,
-                          self.x)
+        solver = sleqp.Solver(problem,
+                              self.x)
 
-    failed = False
+        failed = False
 
-    try:
-      solver.solve(max_num_iterations=1)
-    except Exception as exc:
-      cause = exc.__cause__
-      assert(isinstance(cause, sleqp.EvaluationError))
-      failed = True
+        try:
+            solver.solve(max_num_iterations=1)
+        except Exception as exc:
+            cause = exc.__cause__
+            assert (isinstance(cause, sleqp.EvaluationError))
+            failed = True
 
-    if not failed:
-      self.fail("No exception thrown")
+        if not failed:
+            self.fail("No exception thrown")
 
-  def test_wrong_shape(self):
-    func = MatrixErrorFunc()
+    def test_wrong_shape(self):
+        func = MatrixErrorFunc()
 
-    func.set_matrix_value(np.array((2, 2, 2)))
+        func.set_matrix_value(np.array((2, 2, 2)))
 
-    problem = sleqp.Problem(func,
-                            self.var_lb,
-                            self.var_ub,
-                            self.cons_lb,
-                            self.cons_ub)
+        problem = sleqp.Problem(func,
+                                self.var_lb,
+                                self.var_ub,
+                                self.cons_lb,
+                                self.cons_ub)
 
-    solver = sleqp.Solver(problem,
-                          self.x)
+        solver = sleqp.Solver(problem,
+                              self.x)
 
-    with self.assertRaises(Exception):
+        with self.assertRaises(Exception):
+            solver.solve(max_num_iterations=1)
+
+    def test_sparse_type(self):
+        func = MatrixErrorFunc()
+
+        m = scipy.sparse.lil_matrix((num_constraints, num_variables))
+
+        func.set_matrix_value(m)
+
+        problem = sleqp.Problem(func,
+                                self.var_lb,
+                                self.var_ub,
+                                self.cons_lb,
+                                self.cons_ub)
+
+        solver = sleqp.Solver(problem,
+                              self.x)
+
         solver.solve(max_num_iterations=1)
-
-  def test_sparse_type(self):
-    func = MatrixErrorFunc()
-
-    m = scipy.sparse.lil_matrix((num_constraints, num_variables))
-
-    func.set_matrix_value(m)
-
-    problem = sleqp.Problem(func,
-                            self.var_lb,
-                            self.var_ub,
-                            self.cons_lb,
-                            self.cons_ub)
-
-    solver = sleqp.Solver(problem,
-                          self.x)
-
-    solver.solve(max_num_iterations=1)
 
 
 if __name__ == '__main__':

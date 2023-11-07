@@ -7,134 +7,136 @@ import sleqp
 
 from .constrained_fixture import *
 
+
 class SolverTest(unittest.TestCase):
 
-  def setUp(self):
-    self.func = ConstrainedFunc()
+    def setUp(self):
+        self.func = ConstrainedFunc()
 
-  def get_solver(self, settings=None):
+    def get_solver(self, settings=None):
 
-    problem = sleqp.Problem(self.func,
-                            var_lb,
-                            var_ub,
-                            cons_lb,
-                            cons_ub,
-                            settings)
+        problem = sleqp.Problem(self.func,
+                                var_lb,
+                                var_ub,
+                                cons_lb,
+                                cons_ub,
+                                settings)
 
-    return sleqp.Solver(problem,
-                        initial_sol)
+        return sleqp.Solver(problem,
+                            initial_sol)
 
-  def test_solve(self):
-    solver = self.get_solver()
+    def test_solve(self):
+        solver = self.get_solver()
 
-    solver.solve(max_num_iterations=100)
+        solver.solve(max_num_iterations=100)
 
-    self.assertEqual(solver.status, sleqp.Status.Optimal)
+        self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    solution = solver.solution
+        solution = solver.solution
 
-    self.assertTrue(np.allclose(expected_sol, solution.primal))
+        self.assertTrue(np.allclose(expected_sol, solution.primal))
 
-  def test_solve_linesearch(self):
-    settings = sleqp.Settings(linesearch=sleqp.LineSearch.Exact)
+    def test_solve_linesearch(self):
+        settings = sleqp.Settings(linesearch=sleqp.LineSearch.Exact)
 
-    solver = self.get_solver(settings=settings)
+        solver = self.get_solver(settings=settings)
 
-    solver.solve(max_num_iterations=1000)
+        solver.solve(max_num_iterations=1000)
 
-    self.assertEqual(solver.status, sleqp.Status.Optimal)
+        self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    solution = solver.solution
+        solution = solver.solution
 
-    self.assertTrue(np.allclose(expected_sol, solution.primal))
+        self.assertTrue(np.allclose(expected_sol, solution.primal))
 
-  def test_solve_lp_duals(self):
-    settings = sleqp.Settings(dual_estimation_type=sleqp.DualEstimationType.LP)
+    def test_solve_lp_duals(self):
+        settings = sleqp.Settings(
+            dual_estimation_type=sleqp.DualEstimationType.LP)
 
-    solver = self.get_solver(settings=settings)
+        solver = self.get_solver(settings=settings)
 
-    solver.solve(max_num_iterations=1000)
+        solver.solve(max_num_iterations=1000)
 
-    self.assertEqual(solver.status, sleqp.Status.Optimal)
+        self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    solution = solver.solution
+        solution = solver.solution
 
-    self.assertTrue(np.allclose(expected_sol, solution.primal))
+        self.assertTrue(np.allclose(expected_sol, solution.primal))
 
-  def test_solve_no_newton(self):
-    tol = 1e-4
+    def test_solve_no_newton(self):
+        tol = 1e-4
 
-    settings = sleqp.Settings(stat_tol=tol, perform_newton_step=False)
+        settings = sleqp.Settings(stat_tol=tol, perform_newton_step=False)
 
-    solver = self.get_solver(settings=settings)
+        solver = self.get_solver(settings=settings)
 
-    solver.solve(max_num_iterations=1000)
+        solver.solve(max_num_iterations=1000)
 
-    self.assertEqual(solver.status, sleqp.Status.Optimal)
+        self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    solution = solver.solution
+        solution = solver.solution
 
-    self.assertTrue(np.allclose(expected_sol,
-                                solution.primal,
-                                rtol=tol))
+        self.assertTrue(np.allclose(expected_sol,
+                                    solution.primal,
+                                    rtol=tol))
 
-  def test_solve_linear(self):
-    settings = sleqp.Settings(use_quadratic_model=False)
+    def test_solve_linear(self):
+        settings = sleqp.Settings(use_quadratic_model=False)
 
-    solver = self.get_solver(settings=settings)
+        solver = self.get_solver(settings=settings)
 
-    solver.solve(max_num_iterations=1000)
+        solver.solve(max_num_iterations=1000)
 
-    self.assertEqual(solver.status, sleqp.Status.Optimal)
+        self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    solution = solver.solution
+        solution = solver.solution
 
-    self.assertTrue(np.allclose(expected_sol, solution.primal))
+        self.assertTrue(np.allclose(expected_sol, solution.primal))
 
-  def test_solve_linear_no_newton(self):
-    settings = sleqp.Settings(perform_newton_step=False,
-                              use_quadratic_model=False)
+    def test_solve_linear_no_newton(self):
+        settings = sleqp.Settings(perform_newton_step=False,
+                                  use_quadratic_model=False)
 
-    solver = self.get_solver(settings=settings)
+        solver = self.get_solver(settings=settings)
 
-    solver.solve(max_num_iterations=1000)
+        solver.solve(max_num_iterations=1000)
 
-    self.assertEqual(solver.status, sleqp.Status.Optimal)
+        self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    solution = solver.solution
+        solution = solver.solution
 
-    self.assertTrue(np.allclose(expected_sol, solution.primal))
+        self.assertTrue(np.allclose(expected_sol, solution.primal))
 
-  def test_iterate(self):
-    solver = self.get_solver()
+    def test_iterate(self):
+        solver = self.get_solver()
 
-    solver.solve(max_num_iterations=1000)
+        solver.solve(max_num_iterations=1000)
 
-    self.assertEqual(solver.status, sleqp.Status.Optimal)
+        self.assertEqual(solver.status, sleqp.Status.Optimal)
 
-    solution = solver.solution
+        solution = solver.solution
 
-    self.func.set_value(solution.primal, sleqp.ValueReason.NoReason)
+        self.func.set_value(solution.primal, sleqp.ValueReason.NoReason)
 
-    expected_obj_val = self.func.obj_val()
+        expected_obj_val = self.func.obj_val()
 
-    self.assertTrue(np.allclose(np.array([expected_obj_val]),
-                                np.array([solution.obj_val])))
+        self.assertTrue(np.allclose(np.array([expected_obj_val]),
+                                    np.array([solution.obj_val])))
 
-    expected_cons_vals = self.func.cons_vals()
+        expected_cons_vals = self.func.cons_vals()
 
-    self.assertTrue(np.allclose(expected_cons_vals,
-                                solution.cons_val))
+        self.assertTrue(np.allclose(expected_cons_vals,
+                                    solution.cons_val))
 
-    expected_cons_jac = self.func.cons_jac()
+        expected_cons_jac = self.func.cons_jac()
 
-    actual_cons_jac = solution.cons_jac.toarray()
+        actual_cons_jac = solution.cons_jac.toarray()
 
-    self.assertTrue(np.allclose(expected_cons_jac,
-                                actual_cons_jac))
+        self.assertTrue(np.allclose(expected_cons_jac,
+                                    actual_cons_jac))
 
 
 if __name__ == '__main__':
-  import logging
-  logging.basicConfig(level=logging.INFO)
-  unittest.main()
+    import logging
+    logging.basicConfig(level=logging.INFO)
+    unittest.main()

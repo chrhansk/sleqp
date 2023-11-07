@@ -19,6 +19,7 @@ class LSQFunc:
     To adapt to any least squares problem, it is sufficient
     to replace the `eval_lsq_func` and `eval_lsq_jac` functions.
     """
+
     def __init__(self):
         self.a = 1
         self.b = 100
@@ -83,6 +84,7 @@ class LSQImplicitFunc:
     and `eval_lsq_jac_adjoint` functions.
 
     """
+
     def __init__(self):
         self.a = 1
         self.b = 100
@@ -159,7 +161,6 @@ class LSQTest(unittest.TestCase):
 
         self.target_sol = np.array([1., 1.])
 
-
     def test_simple(self):
 
         func = LSQFunc()
@@ -180,7 +181,6 @@ class LSQTest(unittest.TestCase):
 
         self.assertTrue(np.allclose(self.target_sol, solver.solution.primal))
 
-
     def test_implicit(self):
 
         func = LSQImplicitFunc()
@@ -200,6 +200,7 @@ class LSQTest(unittest.TestCase):
         self.assertEqual(solver.status, sleqp.Status.Optimal)
 
         self.assertTrue(np.allclose(self.target_sol, solver.solution.primal))
+
 
 if __name__ == "__main__":
     unittest.main()
