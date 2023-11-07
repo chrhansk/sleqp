@@ -29,9 +29,6 @@ class MatrixErrorFunc:
   def cons_vals(self):
     return np.zeros((num_constraints,))
 
-  def cons_jac(self):
-    return np.zeros((num_constraints, num_variables))
-
   def obj_grad(self):
     return np.array([0]*num_variables)
 

@@ -80,7 +80,7 @@ class ConstrainedMinimizeTest(unittest.TestCase):
     self.assertTrue(res.success)
     self.assertTrue(np.allclose(res.x, self.expected_sol))
 
-  def test_constrained_jac(self):
+  def test_constrained_jac_explicit(self):
     cons = ({'type': 'ineq', 'fun': self.cons_funcs[0], 'jac': self.cons_jacs[0]},
             {'type': 'ineq', 'fun': self.cons_funcs[1], 'jac': self.cons_jacs[1]},
             {'type': 'ineq', 'fun': self.cons_funcs[2], 'jac': self.cons_jacs[2]})
@@ -90,7 +90,7 @@ class ConstrainedMinimizeTest(unittest.TestCase):
     self.assertTrue(res.success)
     self.assertTrue(np.allclose(res.x, self.expected_sol))
 
-  def test_constrained_jac(self):
+  def test_constrained_jac_combined(self):
     cons = ({'type': 'ineq', 'fun': self.combined_funcs[0], 'jac': True},
             {'type': 'ineq', 'fun': self.combined_funcs[1], 'jac': True},
             {'type': 'ineq', 'fun': self.combined_funcs[2], 'jac': True})
