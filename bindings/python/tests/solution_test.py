@@ -7,6 +7,7 @@ import sleqp
 
 from .zero_func import *
 
+
 class SolutionTest(unittest.TestCase):
 
     def setUp(self):

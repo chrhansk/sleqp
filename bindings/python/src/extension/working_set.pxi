@@ -1,112 +1,112 @@
-#cython: language_level=3
+# cython: language_level=3
 
 cdef class WorkingSet:
-  """
-  The working set associated with an iterate, containing
-  the states of all variables and constraints.
-  """
-  cdef csleqp.SleqpWorkingSet* working_set
-
-  cdef dict __dict__
-
-  cdef _release(self):
-    if self.working_set:
-      csleqp_call(csleqp.sleqp_working_set_release(&self.working_set))
-
-  cdef _set_working_set(self, csleqp.SleqpWorkingSet* working_set):
-    self._release()
-
-    csleqp_call(csleqp.sleqp_working_set_capture(working_set))
-
-    self.working_set = working_set
-
-  @property
-  def num_vars(self) -> int:
     """
-    The total number of (active or inactive) variables in the working set
+    The working set associated with an iterate, containing
+    the states of all variables and constraints.
     """
-    cdef csleqp.SleqpProblem* problem
+    cdef csleqp.SleqpWorkingSet * working_set
 
-    problem = csleqp.sleqp_working_set_problem(self.working_set)
+    cdef dict __dict__
 
-    return csleqp.sleqp_problem_num_vars(problem)
+    cdef _release(self):
+        if self.working_set:
+            csleqp_call(csleqp.sleqp_working_set_release( & self.working_set))
 
-  @property
-  def num_cons(self) -> int:
-    """
-    The total number of (active or inactive) constraints in the working set
-    """
-    cdef csleqp.SleqpProblem* problem
+    cdef _set_working_set(self, csleqp.SleqpWorkingSet * working_set):
+        self._release()
 
-    problem = csleqp.sleqp_working_set_problem(self.working_set)
+        csleqp_call(csleqp.sleqp_working_set_capture(working_set))
 
-    return csleqp.sleqp_problem_num_cons(problem)
+        self.working_set = working_set
 
-  @property
-  def num_active_vars(self) -> int:
-    """
-    The total number of active (lower or upper or both)
-    variables in the working set
-    """
-    assert self.working_set
+    @property
+    def num_vars(self) -> int:
+        """
+        The total number of (active or inactive) variables in the working set
+        """
+        cdef csleqp.SleqpProblem * problem
 
-    return csleqp.sleqp_working_set_num_active_vars(self.working_set)
+        problem = csleqp.sleqp_working_set_problem(self.working_set)
 
-  @property
-  def num_active_cons(self) -> int:
-    """
-    The total number of active (lower or upper or both)
-    constraints in the working set
-    """
-    assert self.working_set
+        return csleqp.sleqp_problem_num_vars(problem)
 
-    return csleqp.sleqp_working_set_num_active_cons(self.working_set)
+    @property
+    def num_cons(self) -> int:
+        """
+        The total number of (active or inactive) constraints in the working set
+        """
+        cdef csleqp.SleqpProblem * problem
 
-  def var_state(self, int i) -> ActiveState:
-    """
-    State of variable i
-    """
-    assert self.working_set
+        problem = csleqp.sleqp_working_set_problem(self.working_set)
 
-    state = csleqp.sleqp_working_set_var_state(self.working_set,
-                                               i)
+        return csleqp.sleqp_problem_num_cons(problem)
 
-    return ActiveState(state)
+    @property
+    def num_active_vars(self) -> int:
+        """
+        The total number of active (lower or upper or both)
+        variables in the working set
+        """
+        assert self.working_set
 
-  def cons_state(self, int i) -> ActiveState:
-    """
-    State of constraint i
-    """
-    assert self.working_set
+        return csleqp.sleqp_working_set_num_active_vars(self.working_set)
 
-    state = csleqp.sleqp_working_set_cons_state(self.working_set,
-                                                i)
+    @property
+    def num_active_cons(self) -> int:
+        """
+        The total number of active (lower or upper or both)
+        constraints in the working set
+        """
+        assert self.working_set
 
-    return ActiveState(state)
+        return csleqp.sleqp_working_set_num_active_cons(self.working_set)
 
-  def __str__(self):
-    str_val = "Active set, variables: {0}, constraints: {1}\n".format(self.num_vars,
-                                                                      self.num_cons)
+    def var_state(self, int i) -> ActiveState:
+        """
+        State of variable i
+        """
+        assert self.working_set
 
-    str_val += "\n".join(("State of variable {0}: {1}".format(j, str(self.var_state(j)))
-                          for j in range(self.num_vars)))
+        state = csleqp.sleqp_working_set_var_state(self.working_set,
+                                                   i)
 
-    str_val += "\n"
+        return ActiveState(state)
 
-    str_val += "\n".join(("State of constraint {0}: {1}".format(i, str(self.cons_state(i)))
-                          for i in range(self.num_cons)))
+    def cons_state(self, int i) -> ActiveState:
+        """
+        State of constraint i
+        """
+        assert self.working_set
 
-    return str_val
+        state = csleqp.sleqp_working_set_cons_state(self.working_set,
+                                                    i)
 
-  @property
-  def size(self) -> int:
-    """
-    Size of the working set, i.e., number of active variables
-    and active constraints
-    """
-    assert self.working_set
+        return ActiveState(state)
 
-    return csleqp.sleqp_working_set_size(self.working_set)
+    def __str__(self):
+        str_val = "Active set, variables: {0}, constraints: {1}\n".format(self.num_vars,
+                                                                          self.num_cons)
 
-  def __dealloc__(self):
-    self._release()
+        str_val += "\n".join(("State of variable {0}: {1}".format(j, str(self.var_state(j)))
+                              for j in range(self.num_vars)))
+
+        str_val += "\n"
+
+        str_val += "\n".join(("State of constraint {0}: {1}".format(i, str(self.cons_state(i)))
+                              for i in range(self.num_cons)))
+
+        return str_val
+
+    @property
+    def size(self) -> int:
+        """
+        Size of the working set, i.e., number of active variables
+        and active constraints
+        """
+        assert self.working_set
+
+        return csleqp.sleqp_working_set_size(self.working_set)
+
+    def __dealloc__(self):
+        self._release()

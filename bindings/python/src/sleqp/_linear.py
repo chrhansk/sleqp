@@ -6,44 +6,44 @@ import scipy.sparse
 
 @dataclass
 class LinearConstraints:
-  lb: object = None
-  coeffs: object = None
-  ub: object = None
+    lb: object = None
+    coeffs: object = None
+    ub: object = None
 
 
 def convert_to_sparse(array):
-  (m, n) = array.shape
+    (m, n) = array.shape
 
-  mat = scipy.sparse.dok_matrix((m, n))
+    mat = scipy.sparse.dok_matrix((m, n))
 
-  for i in range(m):
-    for j in range(n):
-      value = array[i, j]
+    for i in range(m):
+        for j in range(n):
+            value = array[i, j]
 
-      if value:
-        mat[i, j] = value
+            if value:
+                mat[i, j] = value
 
-  return mat
+    return mat
 
 
 def create_linear_constraints(constraints):
 
-  if not(constraints):
-    return LinearConstraints()
+    if not (constraints):
+        return LinearConstraints()
 
-  linear_lb = np.hstack([constraint.lb for constraint in constraints])
+    linear_lb = np.hstack([constraint.lb for constraint in constraints])
 
-  linear_ub = np.hstack([constraint.ub for constraint in constraints])
+    linear_ub = np.hstack([constraint.ub for constraint in constraints])
 
-  matrices = []
+    matrices = []
 
-  for constraint in constraints:
-    matrix = constraint.A
-    if not(scipy.sparse.issparse(matrix)):
-      matrix = convert_to_sparse(matrix)
+    for constraint in constraints:
+        matrix = constraint.A
+        if not (scipy.sparse.issparse(matrix)):
+            matrix = convert_to_sparse(matrix)
 
-    matrices.append([matrix])
+        matrices.append([matrix])
 
-  matrix = scipy.sparse.bmat(matrices)
+    matrix = scipy.sparse.bmat(matrices)
 
-  return LinearConstraints(lb=linear_lb, coeffs=matrix, ub=linear_ub)
+    return LinearConstraints(lb=linear_lb, coeffs=matrix, ub=linear_ub)

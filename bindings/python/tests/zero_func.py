@@ -9,7 +9,7 @@ initial_sol = np.array([1., 0., 2., 0.])
 class ZeroFunc:
 
     def set_value(self, values, reason):
-        assert((values == initial_sol).all())
+        assert ((values == initial_sol).all())
 
     def obj_val(self):
         return 0.

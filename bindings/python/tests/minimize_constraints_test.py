@@ -11,85 +11,84 @@ import sleqp
 
 class ConstrainedMinimizeTest(unittest.TestCase):
 
-  def setUp(self):
-    self.obj = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2
+    def setUp(self):
+        self.obj = lambda x: (x[0] - 1)**2 + (x[1] - 2.5)**2
 
-    self.grad = lambda x: [2.*(x[0] - 1), 2.*(x[1] - 2.5)]
+        self.grad = lambda x: [2.*(x[0] - 1), 2.*(x[1] - 2.5)]
 
-    self.hessp = lambda x, d: 2*d
+        self.hessp = lambda x, d: 2*d
 
-    cons_matrix = np.array([[ 1., -2.],
-                            [-1., -2.]])
+        cons_matrix = np.array([[1., -2.],
+                                [-1., -2.]])
 
-    cons_lb = np.array([-2.,
-                        -6.])
+        cons_lb = np.array([-2.,
+                            -6.])
 
-    cons_ub = np.array([np.inf,
-                        np.inf])
+        cons_ub = np.array([np.inf,
+                            np.inf])
 
-    self.linear_cons = LinearConstraint(cons_matrix,
-                                        cons_lb,
-                                        cons_ub)
+        self.linear_cons = LinearConstraint(cons_matrix,
+                                            cons_lb,
+                                            cons_ub)
 
-    nonlinear_fun = lambda x: np.dot(cons_matrix, x)
-    nonlinear_jac = lambda x: cons_matrix
+        def nonlinear_fun(x): return np.dot(cons_matrix, x)
+        def nonlinear_jac(x): return cons_matrix
 
-    self.nonlinear_cons = NonlinearConstraint(nonlinear_fun,
-                                              cons_lb,
-                                              cons_ub,
-                                              jac=nonlinear_jac,
-                                              hess='2-point')
+        self.nonlinear_cons = NonlinearConstraint(nonlinear_fun,
+                                                  cons_lb,
+                                                  cons_ub,
+                                                  jac=nonlinear_jac,
+                                                  hess='2-point')
 
-    self.initial_sol = np.array([2, 0])
-    self.expected_sol = np.array([1.4, 1.7])
-    self.bounds = ((0, None), (0, None))
+        self.initial_sol = np.array([2, 0])
+        self.expected_sol = np.array([1.4, 1.7])
+        self.bounds = ((0, None), (0, None))
 
+    def test_infeasible(self):
 
-  def test_infeasible(self):
+        infeas_cons_matrix = np.array([[1., 1.],
+                                       [1., 1.]])
 
-    infeas_cons_matrix = np.array([[1., 1.],
-                                   [1., 1.]])
+        infeas_lb = np.array([1.,
+                              -np.inf])
 
-    infeas_lb = np.array([1.,
-                          -np.inf])
+        infeas_ub = np.array([np.inf,
+                              0.])
 
-    infeas_ub = np.array([np.inf,
-                          0.])
+        infeas_cons = LinearConstraint(infeas_cons_matrix,
+                                       infeas_lb,
+                                       infeas_ub)
 
-    infeas_cons = LinearConstraint(infeas_cons_matrix,
-                                   infeas_lb,
-                                   infeas_ub)
+        res = sleqp.minimize(self.obj,
+                             self.initial_sol,
+                             jac=self.grad,
+                             hessp=self.hessp,
+                             bounds=self.bounds,
+                             constraints=infeas_cons)
 
-    res = sleqp.minimize(self.obj,
-                         self.initial_sol,
-                         jac=self.grad,
-                         hessp=self.hessp,
-                         bounds=self.bounds,
-                         constraints=infeas_cons)
+        self.assertFalse(res.success)
+        self.assertTrue(res.maxcv > 0.)
 
-    self.assertFalse(res.success)
-    self.assertTrue(res.maxcv > 0.)
+    def test_linear_constraint(self):
 
-  def test_linear_constraint(self):
+        res = sleqp.minimize(self.obj,
+                             self.initial_sol,
+                             jac=self.grad,
+                             hessp=self.hessp,
+                             bounds=self.bounds,
+                             constraints=self.linear_cons)
 
-    res = sleqp.minimize(self.obj,
-                         self.initial_sol,
-                         jac=self.grad,
-                         hessp=self.hessp,
-                         bounds=self.bounds,
-                         constraints=self.linear_cons)
+        self.assertTrue(res.success)
+        self.assertTrue(np.allclose(res.x, self.expected_sol))
 
-    self.assertTrue(res.success)
-    self.assertTrue(np.allclose(res.x, self.expected_sol))
+    def test_nonlinear_constraint(self):
 
-  def test_nonlinear_constraint(self):
+        res = sleqp.minimize(self.obj,
+                             self.initial_sol,
+                             jac=self.grad,
+                             hessp=self.hessp,
+                             bounds=self.bounds,
+                             constraints=self.nonlinear_cons)
 
-    res = sleqp.minimize(self.obj,
-                         self.initial_sol,
-                         jac=self.grad,
-                         hessp=self.hessp,
-                         bounds=self.bounds,
-                         constraints=self.nonlinear_cons)
-
-    self.assertTrue(res.success)
-    self.assertTrue(np.allclose(res.x, self.expected_sol))
+        self.assertTrue(res.success)
+        self.assertTrue(np.allclose(res.x, self.expected_sol))
