@@ -15,6 +15,7 @@
 - Fixed compile / test errors in python extension
 - Improved const-correctness of interface functions
 - Fixed Cython (>= 3) warnings
+- Fixed python unit test warnings and indentation
 
 ## [1.0.1] - 2023-06-26
 
