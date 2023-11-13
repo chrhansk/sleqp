@@ -64,9 +64,11 @@ soplex_create_problem(void** lp_data,
   assert(
     soplex.setRealParam(soplex::SoPlexBase<double>::INFTY, sleqp_infinity()));
 
-  const double feas_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
+  const double feas_eps
+    = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_FEAS_TOL);
 
-  const double stat_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL);
+  const double stat_eps
+    = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_STAT_TOL);
 
   assert(soplex.setRealParam(soplex::SoPlexBase<double>::FEASTOL,
                              feas_eps * tolerance_factor));
@@ -85,30 +87,10 @@ soplex_create_problem(void** lp_data,
 
   soplex.spxout = spxout;
 
-  const double zero_eps = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
+  const double zero_eps
+    = sleqp_settings_real_value(settings, SLEQP_SETTINGS_REAL_ZERO_EPS);
 
   soplex.setRealParam(soplex::SoPlex::EPSILON_ZERO, zero_eps);
-
-  if (sleqp_log_level() >= SLEQP_LOG_DEBUG)
-  {
-    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
-                       soplex::SoPlex::VERBOSITY_HIGH);
-  }
-  else if (sleqp_log_level() >= SLEQP_LOG_INFO)
-  {
-    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
-                       soplex::SoPlex::VERBOSITY_NORMAL);
-  }
-  else if (sleqp_log_level() >= SLEQP_LOG_WARN)
-  {
-    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
-                       soplex::SoPlex::VERBOSITY_WARNING);
-  }
-  else if (sleqp_log_level() >= SLEQP_LOG_ERROR)
-  {
-    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
-                       soplex::SoPlex::VERBOSITY_ERROR);
-  }
 
   /*
   soplex.setIntParam(soplex::SoPlex::ALGORITHM,
@@ -166,10 +148,41 @@ soplex_write(void* lp_data, const char* filename)
 }
 
 static SLEQP_RETCODE
+soplex_set_log_level(SleqpLpiSoplex* spx)
+{
+  soplex::SoPlex& soplex = *(spx->soplex);
+
+  if (sleqp_log_level() >= SLEQP_LOG_DEBUG)
+  {
+    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
+                       soplex::SoPlex::VERBOSITY_HIGH);
+  }
+  else if (sleqp_log_level() >= SLEQP_LOG_INFO)
+  {
+    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
+                       soplex::SoPlex::VERBOSITY_NORMAL);
+  }
+  else if (sleqp_log_level() >= SLEQP_LOG_WARN)
+  {
+    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
+                       soplex::SoPlex::VERBOSITY_WARNING);
+  }
+  else if (sleqp_log_level() >= SLEQP_LOG_ERROR)
+  {
+    soplex.setIntParam(soplex::SoPlex::VERBOSITY,
+                       soplex::SoPlex::VERBOSITY_ERROR);
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 soplex_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
 {
   SleqpLpiSoplex* spx    = (SleqpLpiSoplex*)lp_data;
   soplex::SoPlex& soplex = *(spx->soplex);
+
+  SLEQP_CALL(soplex_set_log_level(spx));
 
   if (time_limit != SLEQP_NONE)
   {

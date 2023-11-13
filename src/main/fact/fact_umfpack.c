@@ -102,6 +102,21 @@ umfpack_fact_free_fact(UmfpackData* umfpack)
 }
 
 static SLEQP_RETCODE
+umfpack_set_print_level(UmfpackData* umfpack)
+{
+  if (sleqp_log_level() >= SLEQP_LOG_DEBUG)
+  {
+    umfpack->control[UMFPACK_PRL] = 2;
+  }
+  else
+  {
+    umfpack->control[UMFPACK_PRL] = 1;
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 umfpack_fact_set_matrix(void* fact_data, SleqpMat* matrix)
 {
   UmfpackData* umfpack = (UmfpackData*)fact_data;
@@ -119,12 +134,7 @@ umfpack_fact_set_matrix(void* fact_data, SleqpMat* matrix)
     umfpack->current_size = num_rows;
   }
 
-  /*
-  if(sleqp_log_level() >= SLEQP_LOG_DEBUG)
-  {
-    factorization->control[UMFPACK_PRL] = 2;
-  }
-  */
+  SLEQP_CALL(umfpack_set_print_level(umfpack));
 
   SLEQP_CALL(umfpack_fact_free_fact(umfpack));
 
@@ -204,6 +214,8 @@ umfpack_fact_solve(void* fact_data, const SleqpVec* rhs)
   assert(rhs->dim == sleqp_mat_num_rows(matrix));
 
   SLEQP_CALL(set_cache(umfpack->rhs, rhs));
+
+  SLEQP_CALL(umfpack_set_print_level(umfpack));
 
   UMFPACK_CALL(umfpack_di_solve(UMFPACK_A,
                                 sleqp_mat_cols(matrix),
