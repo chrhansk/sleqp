@@ -98,12 +98,6 @@ highs_create_problem(void** star,
   lp_interface->highs = Highs_create();
   void* highs         = lp_interface->highs;
 
-  if (sleqp_log_level() < SLEQP_LOG_DEBUG)
-  {
-    SLEQP_HIGHS_CALL(Highs_setBoolOptionValue(highs, "output_flag", false),
-                     highs);
-  }
-
   {
     const int num_threads
       = sleqp_settings_int_value(settings, SLEQP_SETTINGS_INT_NUM_THREADS);
@@ -243,6 +237,18 @@ prepare_problem(SleqpLpiHIGHS* lp_interface)
 }
 
 static SLEQP_RETCODE
+highs_set_output_flag(SleqpLpiHIGHS* lp_interface)
+{
+  bool enable_output = sleqp_log_level() >= SLEQP_LOG_DEBUG;
+
+  SLEQP_HIGHS_CALL(
+    Highs_setBoolOptionValue(highs, "output_flag", enable_output),
+    highs);
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
 {
   int model_status;
@@ -250,6 +256,7 @@ highs_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
   SleqpLpiHIGHS* lp_interface = (SleqpLpiHIGHS*)lp_data;
   void* highs                 = lp_interface->highs;
 
+  SLEQP_CALL(highs_set_output_flag(lp_interface));
   SLEQP_CALL(prepare_problem(lp_interface));
 
   assert(lp_interface->dirty == NONE);

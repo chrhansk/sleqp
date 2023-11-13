@@ -88,11 +88,6 @@ gurobi_create_problem(void** star,
     sleqp_raise(SLEQP_INTERNAL_ERROR, "Failed to create Gurobi environment");
   }
 
-  if (sleqp_log_level() < SLEQP_LOG_DEBUG)
-  {
-    SLEQP_GRB_CALL(GRBsetintparam(env, GRB_INT_PAR_OUTPUTFLAG, 0), env);
-  }
-
   {
     const int num_threads
       = sleqp_settings_int_value(settings, SLEQP_SETTINGS_INT_NUM_THREADS);
@@ -163,6 +158,23 @@ gurobi_write(void* lp_data, const char* filename)
 }
 
 static SLEQP_RETCODE
+gurobi_set_output_flag(SleqpLpiGRB* lp_interface)
+{
+  GRBenv* env = lp_interface->env;
+
+  if (sleqp_log_level() < SLEQP_LOG_DEBUG)
+  {
+    SLEQP_GRB_CALL(GRBsetintparam(env, GRB_INT_PAR_OUTPUTFLAG, 0), env);
+  }
+  else
+  {
+    SLEQP_GRB_CALL(GRBsetintparam(env, GRB_INT_PAR_OUTPUTFLAG, 1), env);
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 gurobi_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
 {
   SleqpLpiGRB* lp_interface = lp_data;
@@ -178,6 +190,8 @@ gurobi_solve(void* lp_data, int num_cols, int num_rows, double time_limit)
     SLEQP_GRB_CALL(GRBsetdblparam(model_env, GRB_DBL_PAR_TIMELIMIT, time_limit),
                    model_env);
   }
+
+  SLEQP_CALL(gurobi_set_output_flag(lp_interface));
 
   SLEQP_GRB_CALL(GRBoptimize(model), env);
 

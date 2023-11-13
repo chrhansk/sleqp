@@ -155,11 +155,27 @@ matrix_fill(SleqpMUMPSData* sleqp_mumps_data, SleqpMat* matrix)
 }
 
 static SLEQP_RETCODE
+sleqp_mumps_set_print_level(SleqpMUMPSData* sleqp_mumps_data)
+{
+  if (sleqp_log_level() >= SLEQP_LOG_DEBUG)
+  {
+    sleqp_mumps_data->id.icntl[3] = 3;
+  }
+  else
+  {
+    sleqp_mumps_data->id.icntl[3] = 1;
+  }
+
+  return SLEQP_OKAY;
+}
+
+static SLEQP_RETCODE
 sleqp_mumps_set_matrix(void* fact_data, SleqpMat* matrix)
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)fact_data;
 
   SLEQP_CALL(matrix_fill(sleqp_mumps_data, matrix));
+  SLEQP_CALL(sleqp_mumps_set_print_level(sleqp_mumps_data));
 
   sleqp_mumps_data->id.n  = sleqp_mumps_data->dim;
   sleqp_mumps_data->id.nz = sleqp_mumps_data->nnz;
@@ -183,6 +199,8 @@ static SLEQP_RETCODE
 sleqp_mumps_solve(void* fact_data, const SleqpVec* rhs)
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)fact_data;
+
+  SLEQP_CALL(sleqp_mumps_set_print_level(sleqp_mumps_data));
 
   const int dim = sleqp_mumps_data->dim;
 
@@ -222,6 +240,8 @@ static SLEQP_RETCODE
 sleqp_mumps_free(void** star)
 {
   SleqpMUMPSData* sleqp_mumps_data = (SleqpMUMPSData*)(*star);
+
+  SLEQP_CALL(sleqp_mumps_set_print_level(sleqp_mumps_data));
 
   // de-init job
   sleqp_mumps_data->id.job = -2;
