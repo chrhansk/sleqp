@@ -239,6 +239,7 @@ prepare_problem(SleqpLpiHIGHS* lp_interface)
 static SLEQP_RETCODE
 highs_set_output_flag(SleqpLpiHIGHS* lp_interface)
 {
+  void* highs        = lp_interface->highs;
   bool enable_output = sleqp_log_level() >= SLEQP_LOG_DEBUG;
 
   SLEQP_HIGHS_CALL(
